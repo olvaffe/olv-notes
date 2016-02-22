@@ -1,0 +1,122 @@
+Wayland
+=======
+
+## Wayland core
+
+* Binaries
+  * `wayland-scanner` scans an Wayland protocol XML and outputs C code, client
+    header and server header.
+  * `libwayland-server` is a library for implementing a Wayland server
+  * `libwayland-client` is a library for implementing a Wayland client
+* Headers
+  * `wayland-server.h` is the header of `libwayland-server`
+  * `wayland-client.h` is the header of `libwayland-client`
+  * `wayland-egl.h` is the header of `libwayland-egl`, which is provided by the
+    EGL vendor
+    * clients use it to create EGL native types from wayland native types
+    * EGL native types can then be used with EGL
+* `wl_connection` is an abstraction of the socket fd to the compositor
+  * there are `in`/`out` and `fds_in`/`fds_out` buffers
+  * calling `wl_connection_data` with `WL_CONNECTION_WRITABLE` writes `out` and
+    `fds_out` buffers to the socket.  If all bytes are written, the `update`
+    callback is called with `WL_CONNECTION_READABLE`, meaning that there is
+    nothing in the connection to be written (because `WL_CONNECTION_WRITABLE` is
+    no longer set).  It returns the number of bytes in the `in` buffer.
+  * calling `wl_connection_data` with `WL_CONNECTION_READABLE` reads data from
+    the socket and stores them in `in` and `fds_in` buffers.
+  * In `wl_connection_write`, data are put on the `out` buffer.
+    `wl_connection_data` is called only when the buffer is full.  If the
+    connection was empty, the `update` callback is called with both
+    `WL_CONNECTION_WRITABLE` and `WL_CONNECTION_READABLE` set, meaning there are
+    data to be written and read.
+* See also `mesa-wayland`
+
+## Deep look at simple-shm
+
+* Connect to display
+  * `wl_display_connect(name)` connects to the named socket, or `wayland-0` if
+    `NULL` is given.  `wl_display` is returned.  Internally,
+    * `wl_connection_create(fd, ...)` is called to create a `wl_connection` for
+      the socket fd
+  * `wl_display_add_global_listener` add a callback to be invoked on each global
+    objects
+  * `wl_display_iterate` is called to read inbound data
+
+## How does a client work
+
+* Render with SHM
+  * `display = wl_display_connect(NULL)` to connecto to the server and return
+    `wl_display`
+  * Listen for `wl_compositor` global and create `wl_compositor`
+  * `surface = wl_compositor_create_surface(compositor)` to create `wl_surface`
+  * an SHM buffer is created and an SHM-based `wl_buffer` is created with
+    `buf = wl_shm_create_buffer(shm, fd, w, h, stride, vis)`
+  * the SHM buffer is mapped for direct rendering
+  * `wl_buffer_damage` is called to notify the buffer contents need revalidation
+  * `wl_surface_attach` to attach the buffer to the surface
+  * `wl_surface_damage` to notify the surface needs revalidation
+* Render with EGL
+  * `egldpy = eglGetDisplay(display)` to return the `EGLDisplay` of the
+    `wl_display`
+  * `native = wl_egl_window_create(surface)` to create the EGL native window
+    from the `wl_surface`
+  * `egl_surface = eglCreateWindowSurface(...)` to create the `EGLSurface` from
+    the EGL native window
+  * `eglMakeCurrent` and start rendering
+  * after rendering a frame, `eglSwapBuffers` is called to present
+* Render to pixmap (not used anywhere)
+  * similar to rendering with SHM, except
+  * A native pixmap is created instead of a SHM buffer
+    * `pix = wl_egl_pixmap_create(w, h, vis, 0)`
+  * `egl_surface = eglCreatePixmapSurface(...)` is called so that GL instead of
+    CPU can be used for rendering 
+    * `eglMakeCurrent` should work
+    * `img = eglCreateImageKHR(..., EGL_NATIVE_PIXMAP_KHR, pix, NULL)`,
+      `glEGLImageTargetTexture2DOES`, and render-to-texture should work too,
+      without context switching
+  * `wl_egl_pixmap_create_buffer` is called instead of `wl_shm_create_buffer`
+    for presenting
+* Render with cairo
+  * the key is how the `cairo_surface_t` is created
+    * SHM buffer and `cairo_image_surface_create_for_data` for CPU rendering
+    * Pixmap and `cairo_gl_surface_create_for_texture` for GPU rendering
+      * require `EGL_KHR_image_pixmap`
+    * `wl_surface` and `cairo_gl_surface_create_for_egl` for GPU rendering
+* More hints
+  * after a buffer is attached to a surface, the buffer is owned by the
+    compositor until the `release` event is received
+  * if the compositor never sends the `release` event, clients will allocate a
+    new buffer for each frame
+  * a buffer may be attached to multiple surfaces
+    * how does the `release` event work?
+
+## How does a compositor work
+
+* `wl_surface`
+  * a surface has a texture object
+  * when a buffer attached, the data are downloaded to the texture object
+  * when a buffer is damaged, its data are re-downloaded
+  * for DRM-based buffer, there is zero copy.
+  * DRM-based buffers are not supported by core, but by mesa.  It is an internal
+    mechanism
+
+## mesa
+
+* `libwayland-egl` is an implementation of `wayland-egl.h`, defined by core
+* `libwayland-drm` defines `wl_drm` interface that is for internal use
+  * when a client connects, `wl_drm` advertises the DRM device name
+  * `authenticate` can be used to auth a DRM fd
+  * `create_buffer` can be used to create a `wl_buffer` for the named bo
+* `EGL_WL_bind_wayland_display` is used by EGL-based Wayland servers to run on
+  an alternative window system.
+  * It allows a server `wl_display` to be bound to an `EGLDisplay` for the
+    alternative window system.
+  * It allows an `EGLImageKHR` to be created from a `wl_buffer`
+  * It adds `wl_drm` interface to the `wl_display`.
+    * DRM device name is from the alternative window system
+    * `authenticate` is implemented using the alternative window system
+    * `create_buffer` creates a `__DRIimage` from the named bo
+* Client EGL support
+  * The color buffers of an `EGLSurface` are allocated by the DRI driver.
+  * For each color buffer, there is an associated `wl_buffer` created using
+    `wl_drm` interface
