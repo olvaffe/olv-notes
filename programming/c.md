@@ -1,3 +1,25 @@
+## C11
+
+- `aligned_alloc`
+- `threads.h`
+- `stdatomic.h`
+- anonymous structures and unions
+  - anonymous structures are not available in C++
+- `static_assert`
+
+## C99
+
+- `inline`
+- `stdbool.h`
+- `stdint.h`
+- designated initializers
+- compound literals
+  - 3 or 3.14 are called integer constants; unchangeable.
+  - literals are changeable in C99; such as compound literals here
+  - literals are unchangeable in C++ spec
+- variadic macros
+- `restrict` qual
+
 ## Constants in C
 
 Actually, it's not that complicated:
