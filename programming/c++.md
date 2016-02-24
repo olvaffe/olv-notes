@@ -1,6 +1,48 @@
 The C++ Programming Language
 ============================
 
+## Initializations
+
+- Static Initializations
+  - Zero Initialization
+    - for scalars, initialized to `0` casted to the types
+    - for others, recursively zero-initialized with padding bits zeroed
+  - Constant Initialization
+    - initialize to a constexpr
+- Dynamic Initializations
+  - Default Initialization
+    - `T obj;` or `new T;`, etc.
+    - for classes, call the default constructor
+    - for arrays, recursively default-initialized
+    - otherwise, nothing.  Initial value is indeterminate.
+  - Value Initialization
+    - `T obj();` or `new T();`, etc.
+    - for classes with implicitly-defined or defaulted default constructors,
+      zero-initialized then default-initialized
+    - for other classes (e.g., with user-provided or no default constructors),
+      default-initialized
+    - for arrays, recursively value-initialized
+    - otherwise, zero-initialized
+  - Direct Initialization
+    - `T obj(args);` or `new T(args)`, etc.
+    - for classes, call the suitable constructor
+    - otherwise, initialized to the values casted to the types
+  - Copy Initialization
+    - `T obj = other;` or function parameters, etc.
+    - for classes and the values are of compatible types, call the suitable
+      converting constructor
+    - for classes and the values are incompatible classes, or for non-classes
+      and the values are classes, direct-initialized with the values converted
+      to the types
+    - otherwise, initialized to the values casted to the types
+  - List Initialization
+    - `T obj{args};` or `new T{args};` or `T obj = {args};`, etc.
+  - Aggregate Initialization
+    - `T obj{args};` or `T obj = {args};`
+    - only when T is an aggregate (arrays or POD classes)
+  - Reference Initialization
+    - when T is a reference
+
 ## Caveats
 
 * `friend` is a sign of ill-designed interface
