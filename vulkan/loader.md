@@ -55,8 +55,6 @@ Vulkan Loader
     forward calls to.  But if all functions are exported to apps, it could
     not make short cuts because those functions jump via dispatch tables
     and it must always set them up
-- loader physical device functions and device functions
-  - get dispatch table and jump
 - loader non-dispatchable functions
   - `vkEnumerateInstanceLayerProperties`
     - load all ICDs, call into them, and aggregate the results
@@ -93,23 +91,23 @@ Vulkan Loader
     - call into all ICDs to aggregate
     - initialize physical device dispatch tables for all `VkPhysicalDevice`
       - memory for physical device dispatch tables is owned by instance
-      - for most slots, can initialize to the results of ICDs'
-        `vkGetInstanceProcAddr` calls
-      - for `vkCreateDevice`, device dispatch table needs to be set up
-        additionally.  Initialize the slot to loader's version which
-        initialize device dispatch table as follows
-        - memory for device dispatch table is owned by device
-	- for most slots, can initialize to the results of device's
-	  `vkGetDeviceProcAddr` calls
-	- for `vkGetDeviceProcAddr`, initialize to loader's version which
-	  looks up in the device dispatch table first
-          - so that `vkGetDeviceQueue`, `vkAllocateCommandBuffers` and
-            itself cannot be bypassed
-          - for unknown functions (defined by extensions), call into the ICD
-        - for `vkGetDeviceQueue` and `vkAllocateCommandBuffers`, which return
-          dispatchable objects, use loader's versions which set up device
-          dispatch tables additionally
-          - otherwise, "dispatch table and jump" will crash
+      - initialize to the results of ICDs' `vkGetInstanceProcAddr` calls
+- loader physical device functions and device functions
+  - get dispatch table and jump, except for those who return dispatchable
+    objects and `vkGetDeviceProcAddr`
+  - `vkGetDeviceQueue` and `vkAllocateCommandBuffers`
+     - they return dispatchable objects
+     - set up device dispatch tables additionally after dispatching
+       - otherwise, "dispatch table and jump" will crash
+  - `vkCreateDevice`
+     - device dispatch table needs to be set up additionally
+     - memory for device dispatch table is owned by device
+     - initialize to the results of device's `vkGetDeviceProcAddr` calls
+  - `vkGetDeviceProcAddr`
+    - return loader's versions for `vkGetDeviceQueue`,
+      `vkAllocateCommandBuffers` and itself
+    - looks up in the device dispatch table then
+    - for unknown functions (defined by extensions), call into the ICD
 
 ## Platforms with layer libraries and single ICD
 
