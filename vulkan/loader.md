@@ -111,10 +111,56 @@ Vulkan Loader
 
 ## Platforms with layer libraries and single ICD
 
-  - TODO what do we need to set up the call chain?  Layer library ABI?
-  - TODO is it enough to replace device's `GetProcAddr` by the chain's?
-  - TODO
-  - TODO
+- loader non-dispatchable functions
+  - `vkEnumerateInstanceLayerProperties`
+    - load all layer libraries and ICD, call into them, and aggregate the
+      results
+  - `vkEnumerateInstanceExtensionProperties`
+    - load all layer libraries and ICD
+    - if used to enumerate a layer, forward to the first layer library that
+      supports the layer
+    - otherwise, forward to ICD
+  - `vkCreateInstance`
+    - load all layer libraries (if any enabled) and ICD
+    - add a chain of `vkGetInstanceProcAddr` for each enabled layer and ICD to
+      `pCreateInfo->pNext`
+    - call into the first layer/ICD
+    - initialize instance dispatch table using first layer/ICD's
+      `vkGetInstanceProcAddr`
+- loader instance functions
+  - `vkGetInstanceProcAddr`
+    - return loader's version for non-dispatchable functions
+    - otherwise, return from the instance dispatch table
+    - otherwise, they are unknown.  Call into first layer/ICD.
+  - `vkEnumeratePhysicalDevices`
+    - call into first layer/ICD
+    - initialize physical device dispatch tables for all `VkPhysicalDevice`
+      - memory for physical device dispatch tables is owned by instance
+      - initialize to the results of first layer/ICD's `vkGetInstanceProcAddr`
+        calls
+  - `vkCreateXxxSurfaceKHR` and others
+    - get dispatch table and jump
+- loader physical device functions and device functions
+  - get dispatch table and jump, except for those who return dispatchable
+    objects or `vkGetDeviceProcAddr` or `vkEnumerateDeviceLayerProperties`
+  - `vkGetDeviceQueue` and `vkAllocateCommandBuffers`
+     - they return dispatchable objects
+     - set up device dispatch tables additionally after dispatching
+       - otherwise, "dispatch table and jump" will crash
+  - `vkCreateDevice`
+     - set up chaining
+     - device dispatch table needs to be set up additionally
+     - memory for device dispatch table is owned by device
+     - initialize to the results of device's `vkGetDeviceProcAddr` calls
+  - `vkGetDeviceProcAddr`
+    - return loader's versions for `vkGetDeviceQueue`,
+      `vkAllocateCommandBuffers`, itself, and
+      `vkEnumerateDeviceLayerProperties`
+    - looks up in the device dispatch table then
+    - for unknown functions (defined by extensions), call into the first
+      layer/ICD
+  - `vkEnumerateDeviceLayerProperties`
+    - need to add additional layer libaries
 
 ## Layer Chaining
 
