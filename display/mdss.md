@@ -1,0 +1,53 @@
+- Example timing for 2560x1440
+  - clock 237800 khz
+  - hdisplay 2560
+  - hsync start 2608 (front porch 48)
+  - hsync end 2640 (hblank 32)
+  - htotal 2720 (back porch 80)
+  - vdisplay 1440
+  - vsync start 1442 (front porch 2)
+  - vsync end 1445 (vblank 3)
+  - vtotal 1457 (back porch 12)
+  - vrefresh 60
+  - hblank 32/clock = 0.1us
+  - vblank 3*2720/clock = 34.3us
+  - v-inactive 17*2720/clock = 0.2ms
+
+- IRQs per frame
+  - ping-pong done irq
+    - shortly before vsync (~2.2ms)
+    - double-buffered registers for the next frame latched
+    - non-double-buffered registers for the next frame can be programmed
+  - vsync irq
+    - new frame start / vblank end
+    - current frame end / vblank start
+    - unclear which
+    - the previous buffer can be modified
+
+- ATOMIC UPDATE
+  `mdss_mdp_overlay_kickoff`, 3ms
+   - `sspp_programming`, 0.3ms
+     - map buffers
+   - `dest_scaler_programming`, 0.1ms
+   - `display_commit`, 2.5ms
+     - `prepare_fnc`, 1us
+     - `mixer_programming`, 0.1ms
+     - `postproc_programming`, 2us
+     - `frame_ready`
+     - `wait_pingpong`, 2~6ms
+       - ping pong done interrupt indicates the previous mdp kickoff has
+         completed
+       - happens ~2ms before vsync
+       - wait for it before updating non-double-buffered registers
+     - `flush_kickoff`, 0.1ms
+       - flush register changes
+   - `display_wait4comp`, 0.02ms
+     - busy wait for register flush to complete
+   - `overlay_cleanup`, 0.1ms
+     - unmap buffers
+
+- `mdss_fb_0`
+  - incremented after `wait_pingpong` and before `flush_kickoff`
+  - basically, incremented after each ping-pong IRQ
+- `mdss_fb0_retire`
+  - incremented after each vsync irq
