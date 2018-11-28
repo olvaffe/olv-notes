@@ -1,3 +1,56 @@
+## Pipeline
+
+- SSPP: Source Surface Processor Pipes
+  - read layers from memory
+  - limited pre-blending per-layer processing
+    - chroma upsampling
+  - `sde_hw_sspp.h`
+  - scaler
+  - QoS?
+  - sharpen
+  - multirect
+  - solidfill
+  - csc (yuv->rgb)
+  - format
+    - rot90, flip h/v
+    - chroma upsampling
+    - deinterleave
+    - ubwc
+  - placeholders
+    - pixel extension: hue, sat, val, cont, memcolor
+    - histogram
+    - igc (inverse gamma correction)
+- layer mixer
+  - `sde_hw_lm.h`
+  - misr?
+  - dimlayer?
+  - bordercolor
+  - alpha-out (select fg or bg)
+  - blend-config (fg alpha, bg alpha, blend op)
+  - mixer-out (set output size)
+  - placeholders
+    - gc (gamma correction)
+- DSPP: Destination Surface Processor Pipes
+  - post-blending global processing
+  - `sde_hw_dspp.h`
+  - `msm_drm_pp.h`
+  - igc - inverse gamma correction
+  - pcc - panel color correction (3x3 / 3x11 matrix, polynomial)
+  - gc - gamma correction
+  - pa hsic - hue, sat, val, cont
+  - memcolor - skin, ski, foliage, protect
+  - six-zone?
+  - gamut - 3D lut, size 17 or 5 or 13
+  - dither - 4x4 matrix, strength, etc.
+  - histogram
+  - vlut? - size 256
+  - ad?
+  - placeholders
+    - sharpening
+    - danger-safe
+
+## vsync
+
 - Example timing for 2560x1440
   - clock 237800 khz
   - hdisplay 2560
