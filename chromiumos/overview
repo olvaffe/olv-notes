@@ -1,0 +1,223 @@
+# Host
+
+## Source Code
+
+ - Follow Chromium OS Developer Guide to get the source code
+   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+   - ./depot_tools/repo init -u https://chromium.googlesource.com/chromiumos/manifest.git
+          --repo-url https://chromium.googlesource.com/external/repo.git
+   - ./depot_tools/repo sync -q -j4
+ - Source Tree Layout
+   - chromite, build tools and scripts
+   - chromium, random code from Chromium
+   - docs
+   - infra, CI, test infrastructure
+   - infra_virtualenv, python virtualenv that infra depends on
+   - manifest*, repo manifests
+   - src
+     - aosp, random code from AOSP
+     - overlays
+     - platform
+     - platform2
+     - third_party, tons of third-party projects
+     - weave, google weave
+ - Build Artifacts
+   - chroot
+   - devserver, images for use by dev server
+   - src/build
+ - Portage
+   - src/third_party/portage-stable, mirror Gentoo portage-stable?
+   - src/third_party/chromiumos-overlay, ebuilds for Chromium OS-specific apps
+   - overlays add board-specific ebuilds
+
+## chroot
+
+ - minimal ChromiumOS distribution
+   - "cat /etc/lsb-release" gives "DISTRIB_CODENAME=ChromiumOS"
+   - is based on Gentoo
+   - packages are installed by emerge
+   - target packages (also ChromiumOS distributions) are managed by emerge-$BOARD
+     - ./setup_board installs emerge-$BOARD and other binaries to /usr/local/bin
+ - /mnt/host/source, host repo sync root
+ - /opt, toolchains to build coreboot, Java VM, container/VM images, etc.
+ - /packages, cached binary emerge packages
+ - /usr/local/portage, portage-stable and chromiumos-overlay
+ - /var/cache/chromeos-cache/distfiles, emerge artifacts
+ - /build/$BOARD, emerge-$BOARD builds and installs packages here
+
+## Build image
+
+ - Relax sudo
+   - /etc/sudoers.d/relax_requirements
+       Defaults !tty_tickets
+       Defaults timestamp_timeout=180
+ - "cros_sdk" to enter chroot
+ - "export BOARD=<BOARD-NAME>"
+ - switch kernel branch
+   - cros_workon --board=${BOARD} start sys-kernel/chromeos-kernel-4_19
+   - cd ~/trunk/src/third_party/kernel/v4.19
+   - git fetch cros <branch>
+     - https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>
+   - git checkout -b <branch> FETCH_HEAD
+   - cd ~/trunk/src/scripts
+ - USE="kgdb vtconsole" ./build_packages --board=${BOARD} 
+ - ./build_image \
+     --boot_args="noinitrd slub_debug=FZPUA panic=0" \
+     --board=${BOARD} \
+     --noenable_rootfs_verification \
+     test
+ - cros flash usb:// ${BOARD}/latest
+   - cros flash ssh://<DUT-IP> ${BOARD}/latest
+
+# DUT
+
+## Cr50, H1 based security microcontroller
+
+ - Overview
+   - Cr50 runs on H1 and implements TPM2 and CCD
+     - the Cr50 firmware is built from Chromium OS EC
+   - Cr50 does not reboot (unless the battery dies)
+   - A host device can talk to Cr50, when a SuzyQ cable is used to connect them
+   - The AP (the firmware/os runs on the AP CPU) can also talk to Cr50 via TPM
+ - Suzy-Q allows a host device to talk to DUT's Cr50
+   - It is a USB-A to USB-C cable.  The USB-C end is non-standard.  It needs
+     to be connect to a specific port of DUT and in a specific orientation to
+     work.
+   - Once connected, several USB devices show up to the host
+     - 18d1:501f is Suzy-Q itself
+       - 18d1:501b is Servo v4
+     - 18d1:5014 is Cr50
+   - Servo v4 has three USB endpoints that are TTY devices
+     - requires usbserial in the host kernel; /dev/ttyUSBx
+   - Cr50 also makes three endpoints available to the host
+     - first TTY is Cr50 console
+     - second TTY is AP console
+     - third TTY is EC console
+ - gsctool is a helper tool to talk to Cr50
+   - On host, it uses Cr50 console over serial
+   - On DUT, it ueses TPM
+   - "emerge ec-utils", to get gsctool
+   - "emerge-<board> chromeos-cr50", to get the latest RW images for DUT
+     - prod image is for MP devices
+     - pre-pvt image is for pre-pvt devices and developers
+   - "gsctool <cr50-firmware>", to update the RW firmware
+   - "gsctool -f", or type "version" in Cr50 console, to get the RW firmware version
+ - Servo
+   - "emerge hdctools", hardware debug and control tools
+   - "sudo servo_updater -b servo_v4" to update the firmware
+   - "servod" to start the servo daemon
+   - "dut-control"
+ - "flash_ec", another way to update Cr50
+   - update both RO and RW?
+   - untested
+
+## coreboot
+
+ - coreboot lives on SPI storage
+   - use "futility update" or "flashrom" to flash a new image
+   - to backup, "sudo flashrom -V -p raiden_debug_spi:target=AP -r old.bin"
+   - to update, "sudo flashrom -V -p raiden_debug_spi:target=AP -w new.bin"
+   - it takes multiple (5-10) minutes to run!  Be patient.
+ - Keyboard shortcuts
+   - need to use AP console if physical keyboard does not work in coreboot
+   - enter recovery mode: hold ESC and F3/Refresh, then press power button to boot
+   - enter developer mode: while in recovery mode, press Ctrl-D
+   - boot from usb: at developer mode warning or red screen, press Ctrl-U
+     - ctrl-D to boot from disk/ufs
+     - ctrl-N to boot from network
+     - ctrl-U to boot from USB
+       - require "crossystem dev_boot_usb=1" or "enable_dev_usb_boot" in shell first
+       - USB stick holds a live image
+       - run "chromeos-install" to install to disk/ufs
+
+## Chromium OS
+
+ - Keyboard shortcuts
+   - enter console: Ctrl-Alt-{F2,F3,...}
+ - Testing ssh key
+   - "ssh -i ~/chromiumos/chromite/ssh_keys/testing_rsa root@<DUT-IP>"
+ - Upstart
+   - configs are at "/etc/init"
+   - initctl
+     - reload
+     - restart
+     - start
+     - stop
+     - list
+     - status
+   - job "ui" starts "session_manager" which starts chrome processes
+ - Logs are under /var/log
+ - Disk layout
+   - sda1: users, data, 111G
+   - sda2: kernel, 32M
+   - sda3: rootfs, 4G
+     - remount as rw: mount -o remount,rw /
+   - sda{4,5}: second kernel/rootfs
+   - sda8: OEM data, 16M (not used yet)
+   - sda12: EFI, 32M
+ - Daemons
+   - third party
+     - udevd, agetty, dbus-daemon, rsyslogd, wpa_supplicant, ModemManager
+     - avahi-daemon, bluetoothd
+     - conntrackd, netfilter conntrack
+     - upstart (init)
+     - tlsdated, NTP-like
+       - https://github.com/ioerror/tlsdate
+   - chromium os platform2
+     - https://chromium.googlesource.com/chromiumos/platform2
+     - powerd, userspace power manager
+     - sessnion_manager, starts chrome
+     - debugd
+     - shill, network connection manager
+     - midis, MIDI the audio
+     - permission_broker, access /dev
+     - mtpd, Media Transfer Protocol (phones)
+     - cros-disks, mounting removable media
+     - btdispatch, bluetooth
+     - anomaly_collector, crash reporter
+     - timberslide, EC crash reporter
+     - trunksd, Trunks TPM Library
+     - tpm_managerd
+     - chapsd, PKCS#11
+     - attestationd, certificates
+     - cryptohomed, mounting encrypted home dirs
+     - metrics_daemon, metric collection
+     - memd, collect high memory pressure data
+   - chromium os others
+     - frecon, terminal emulator over KMS to replace VT
+       - https://chromium.googlesource.com/chromiumos/platform/frecon/+/HEAD/DESIGN-DOC.md
+     - cros_camera_service, camera
+       - https://chromium.googlesource.com/chromiumos/platform/arc-camera/
+     - cras, Chromium OS Audio Server
+       - https://chromium.googlesource.com/chromiumos/third_party/adhd/
+     - minijail, put programs in jail
+       - https://android.googlesource.com/platform/external/minijail/
+     - update_engine, runtime system update
+       - https://android.googlesource.com/platform/system/update_engine/
+   - android
+   - chrome
+
+# Development
+
+## Kernel
+
+ - "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
+ - make changes to src/third_party/kernel/v4.19
+ - to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
+ - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
+
+## Mesa
+
+ - "cros_workon --board=$BOARD start libdrm"
+ - make changes to src/third_party/libdrm
+ - "emerge-$BOARD libdrm"
+ - "cros deploy <DUT-IP> libdrm"
+ - same for mesa
+   - "cros_workon --board=$BOARD start mesa"
+   - make changes to src/third_party/mesa
+   - "cros deploy <DUT-IP> mesa"
+
+## Tests
+
+ - drm-tests
+   - https://chromium.googlesource.com/chromiumos/platform/drm-tests/
