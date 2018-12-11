@@ -218,8 +218,3 @@
    - "cros_workon --board=$BOARD start mesa"
    - make changes to src/third_party/mesa
    - "cros deploy <DUT-IP> mesa"
-
-## Tests
-
- - drm-tests
-   - https://chromium.googlesource.com/chromiumos/platform/drm-tests/
