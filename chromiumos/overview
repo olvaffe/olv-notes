@@ -19,6 +19,8 @@
      - overlays
      - platform
      - platform2
+     - repohooks
+     - scripts, to build and install packages in chroot
      - third_party, tons of third-party projects
      - weave, google weave
  - Build Artifacts
