@@ -1,0 +1,57 @@
+# Development
+
+## Kernel
+
+ - "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
+ - make changes to src/third_party/kernel/v4.19
+ - to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
+ - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
+
+## Mesa
+
+ - "cros_workon --board=$BOARD start libdrm"
+ - make changes to src/third_party/libdrm
+ - "emerge-$BOARD libdrm"
+ - "cros deploy <DUT-IP> libdrm"
+ - same for mesa
+   - "cros_workon --board=$BOARD start mesa"
+   - make changes to src/third_party/mesa
+   - "cros deploy <DUT-IP> mesa"
+
+## Cross Compile
+
+ - autotools
+   - SYSROOT="/build/$BOARD"
+   - "autoreconf -f -v -i -I $SYSROOT/usr/share/aclocal"
+   - TARGET="arch-vendor-sys-abi"
+   - PATH adds "$SYSROOT/build/bin"
+   - PKG_CONFIG points to "$SYSROOT/build/bin/pkg-config"
+   - CC="$TARGET-clang"
+   - CXX="$TARGET-clang"
+   - CPPFLAGS="--sysroot=$SYSROOT"
+   - LDFLAGS="--sysroot=$SYSROOT"
+   - CFLAGS and CXXFLAGS add "-march=... -mtune=... ..."
+
+## Debug
+
+ - On DUT
+   - PORT=1234
+   - use ssh forwarding
+     - ssh -L $PORT:localhost:$PORT
+     - or allow debug port if blocked
+       - iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+       - iptables -L INPUT
+   - gdbserver :$PORT <program>
+ - On host
+   - $TARGET-gdb \
+	-ex "set sysroot /build/$BOARD" \
+	-ex "set solib-absolute-prefix /build/$BOARD" \
+	-ex "set debug-file-directory /build/$BOARD/usr/lib/debug" \
+        -ex "set directories $SRC_DIRS" \
+	-ex "target remote :$PORT"
+   - libs being developed needs to be copied to /build/$BOARD for $TARGET-gdb to pick them up?
+     - $TARGET-objcopy --only-keep-debug $lib /build/$BOARD/usr/lib/debug/usr/lib/$lib.debug
+     - $TARGET-objcopy --strip-debug \
+         --add-gnu-debuglink=/build/$BOARD/usr/lib/debug/usr/lib/$lib.debug \
+         $lib /build/$BOARD/usr/lib/$lib
+     - scp /build/$BOARD/usr/lib/$lib $DUT:/usr/lib/$lib

@@ -136,8 +136,7 @@
 
  - Keyboard shortcuts
    - enter console: Ctrl-Alt-{F2,F3,...}
- - Testing ssh key
-   - "ssh -i ~/chromiumos/chromite/ssh_keys/testing_rsa root@<DUT-IP>"
+ - login as root/test0000
  - Upstart
    - configs are at "/etc/init"
    - initctl
@@ -199,22 +198,14 @@
    - android
    - chrome
 
-# Development
+## SSH
 
-## Kernel
-
- - "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
- - make changes to src/third_party/kernel/v4.19
- - to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
- - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
-
-## Mesa
-
- - "cros_workon --board=$BOARD start libdrm"
- - make changes to src/third_party/libdrm
- - "emerge-$BOARD libdrm"
- - "cros deploy <DUT-IP> libdrm"
- - same for mesa
-   - "cros_workon --board=$BOARD start mesa"
-   - make changes to src/third_party/mesa
-   - "cros deploy <DUT-IP> mesa"
+ - Login with testing ssh key
+   - "ssh -i ~/chromiumos/chromite/ssh_keys/testing_rsa root@<DUT-IP>"
+ - ssh_config
+   - User root
+   - IdentityFile ~/chromiumos/chromite/ssh_keys/testing_rsa
+   - ControlMaster auto
+   - ControlPath ~/.ssh/control-%r@%h:%p
+   - ControlPersist yes
+   - LocalForward 1234 localhost:1234 # for gdbserver
