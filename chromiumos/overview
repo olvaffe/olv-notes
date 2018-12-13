@@ -71,6 +71,21 @@
  - cros flash usb:// ${BOARD}/latest
    - cros flash ssh://<DUT-IP> ${BOARD}/latest
 
+## Build image internals
+
+ - build_packages
+   - it builds and emerges these packages by default to /build/$BOARD
+     - virtual/target-os, base OS image
+     - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
+     - virtual/target-os-factory, factory tools
+     - virtual/target-os-factory-shim, factory installer (flashrom, etc)
+     - virtual/target-os-test, deqp, etc.
+     - chromeos-base/autotest-all
+   - binary packages can be found under /build/$BOARD/packages
+ - build_image
+   - it builds images under ~/trunc/src/build/$BOARD
+   - it always wipes the build directory clean, install packages, and done
+
 # DUT
 
 ## Cr50, H1 based security microcontroller
