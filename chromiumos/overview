@@ -162,7 +162,7 @@
 
  - Keyboard shortcuts
    - enter console: Ctrl-Alt-{F2,F3,...}
- - login as root/test0000
+ - console login as root/test0000
  - Upstart
    - configs are at "/etc/init"
    - initctl
