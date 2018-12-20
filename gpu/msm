@@ -1,0 +1,387 @@
+# MSM
+
+## Overview
+
+ - "msm_drm_register" registers these drivers in order
+   - "mdp5_driver" named "msm_mdp" for "qcom,mdp5" and more
+     - this has been replaced by DPU since SDM845
+   - "dpu_driver" named "msm_dpu" for "qcom,sdm845-dpu" and more
+   - "dsi_phy_platform_driver" named "msm_dsi_phy" for "qcom,dsi-phy-10nm" and more
+   - "dsi_driver" named "msm_dsi" for "qcom,mdss-dsi-ctrl" and more
+   - "edp_driver" named "msm_edp" for "qcom,mdss-edp" and more
+   - "msm_hdmi_phy_platform_driver" named "msm_hdmi_phy" for "qcom,hdmi-phy-8996" and more
+   - "msm_hdmi_driver" named "hdmi_msm" for "qcom,hdmi-tx-8996" and more
+   - "adreno_driver" named "adreno" for "qcom,adreno" and more
+   - "msm_platform_driver" named "msm" for "qcom,sdm845-mdss" and more
+ - Device Tree sdm845.dtsi
+   - "mdss: mdss@ae00000" compat "qcom,sdm845-mdss"
+     - "mdss_mdp: mdp@ae01000" compat "qcom,sdm845-dpu"
+     - "dsi0: dsi@ae94000" compat "qcom,mdss-dsi-ctrl"
+     - "dsi0_phy: dsi-phy@ae94400" compat "qcom,dsi-phy-10nm"
+     - "dsi1: dsi@ae96000" compat "qcom,mdss-dsi-ctrl"
+     - "dsi1_phy: dsi-phy@ae96400" compat "qcom,dsi-phy-10nm"
+   - "gpu@5000000" compat "qcom,adreno"
+ - Device Tree sdm845-cheza.dtsi
+   - "edp_brij_i2c: &i2c3" compat "ti,sn65dsi86"
+     - DSI-to-eDP bridge
+ 
+## MDSS
+
+ - componentized device
+   - when a subdevice is probed, add it with "component_add"
+   - when the master device is probed, describe the required subdevices and
+     add the master with "component_master_add_with_match"
+     - it will attempt to bind the master device to its driver
+     - the driver init function calls "component_bind_all" to bind the
+       subdevices to their respective drivers
+ - "msm_drm_init" is the driver init function for the master device
+   - it initializes MDSS with "dpu_mdss_init" first
+   - it then binds all subdevices
+   - the binding of DPU initializes KMS with "dpu_bind"
+   - it then calls kms's "hw_init"
+   - it starts a "crtc_commit:%d" and a "crtc_event:%d" thread for each crtc
+   - "drm_vblank_init"
+
+## DRM funcs
+
+ - static const struct drm_mode_config_funcs mode_config_funcs
+        .fb_create = msm_framebuffer_create,
+        .output_poll_changed = drm_fb_helper_output_poll_changed,
+        .atomic_check = drm_atomic_helper_check,
+        .atomic_commit = drm_atomic_helper_commit,
+ - static const struct drm_mode_config_helper_funcs mode_config_helper_funcs
+        .atomic_commit_tail = msm_atomic_commit_tail,
+ - static const struct drm_framebuffer_funcs msm_framebuffer_funcs
+        .create_handle = drm_gem_fb_create_handle,
+        .destroy = drm_gem_fb_destroy,
+ - static const struct drm_connector_funcs dsi_mgr_connector_funcs
+        .detect = dsi_mgr_connector_detect,
+        .fill_modes = drm_helper_probe_single_connector_modes,
+        .destroy = dsi_mgr_connector_destroy,
+        .reset = drm_atomic_helper_connector_reset,
+        .atomic_duplicate_state = drm_atomic_helper_connector_duplicate_state,    
+        .atomic_destroy_state = drm_atomic_helper_connector_destroy_state,
+ - static const struct drm_connector_helper_funcs
+        .get_modes = dsi_mgr_connector_get_modes,
+        .mode_valid = dsi_mgr_connector_mode_valid,
+        .best_encoder = dsi_mgr_connector_best_encoder,
+ - static const struct drm_bridge_funcs dsi_mgr_bridge_funcs
+        .pre_enable = dsi_mgr_bridge_pre_enable,
+        .enable = dsi_mgr_bridge_enable,
+        .disable = dsi_mgr_bridge_disable,
+        .post_disable = dsi_mgr_bridge_post_disable,
+        .mode_set = dsi_mgr_bridge_mode_set,
+ - static const struct drm_encoder_funcs dpu_encoder_funcs
+        .destroy = dpu_encoder_destroy,
+        .late_register = dpu_encoder_late_register,
+        .early_unregister = dpu_encoder_early_unregister, 
+ - static const struct drm_encoder_helper_funcs
+        .mode_set = dpu_encoder_virt_mode_set,
+        .disable = dpu_encoder_virt_disable,
+        .enable = dpu_kms_encoder_enable,
+        .atomic_check = dpu_encoder_virt_atomic_check,
+        .commit = dpu_encoder_virt_enable,
+ - static const struct drm_plane_funcs dpu_plane_funcs
+        .update_plane = drm_atomic_helper_update_plane,
+        .disable_plane = drm_atomic_helper_disable_plane,
+        .destroy = dpu_plane_destroy,
+        .reset = dpu_plane_reset,
+        .atomic_duplicate_state = dpu_plane_duplicate_state,
+        .atomic_destroy_state = dpu_plane_destroy_state,
+        .late_register = dpu_plane_late_register,
+        .early_unregister = dpu_plane_early_unregister,
+ - static const struct drm_plane_helper_funcs dpu_plane_helper_funcs
+        .prepare_fb = dpu_plane_prepare_fb,
+        .cleanup_fb = dpu_plane_cleanup_fb,
+        .atomic_check = dpu_plane_atomic_check,
+        .atomic_update = dpu_plane_atomic_update,
+ - static const struct drm_crtc_funcs dpu_crtc_funcs
+        .set_config = drm_atomic_helper_set_config,
+        .destroy = dpu_crtc_destroy,
+        .page_flip = drm_atomic_helper_page_flip,
+        .reset = dpu_crtc_reset,
+        .atomic_duplicate_state = dpu_crtc_duplicate_state,       
+        .atomic_destroy_state = dpu_crtc_destroy_state, 
+        .late_register = dpu_crtc_late_register,
+        .early_unregister = dpu_crtc_early_unregister,
+ - static const struct drm_crtc_helper_funcs dpu_crtc_helper_funcs
+        .disable = dpu_crtc_disable,
+        .atomic_enable = dpu_crtc_enable,
+        .atomic_check = dpu_crtc_atomic_check,
+        .atomic_begin = dpu_crtc_atomic_begin,
+        .atomic_flush = dpu_crtc_atomic_flush,
+ - static const struct file_operations fops
+        .owner              = THIS_MODULE,
+        .open               = drm_open,
+        .release            = drm_release,
+        .unlocked_ioctl     = drm_ioctl,
+        .compat_ioctl       = drm_compat_ioctl,
+        .poll               = drm_poll,
+        .read               = drm_read,
+        .llseek             = no_llseek,
+        .mmap               = msm_gem_mmap,
+ - static const struct vm_operations_struct vm_ops
+        .fault = msm_gem_fault,
+        .open = drm_gem_vm_open,
+        .close = drm_gem_vm_close,
+ - static const struct drm_driver msm_driver
+        .driver_features    = DRIVER_HAVE_IRQ |
+                                DRIVER_GEM |
+                                DRIVER_PRIME |
+                                DRIVER_RENDER |
+                                DRIVER_ATOMIC |
+                                DRIVER_MODESET,
+        .open               = msm_open,
+        .postclose           = msm_postclose,
+        .lastclose          = drm_fb_helper_lastclose,
+        .irq_handler        = msm_irq,
+        .irq_preinstall     = msm_irq_preinstall,
+        .irq_postinstall    = msm_irq_postinstall,
+        .irq_uninstall      = msm_irq_uninstall,
+        .enable_vblank      = msm_enable_vblank,
+        .disable_vblank     = msm_disable_vblank,
+        .gem_free_object    = msm_gem_free_object,
+        .gem_vm_ops         = &vm_ops,
+        .dumb_create        = msm_gem_dumb_create,
+        .dumb_map_offset    = msm_gem_dumb_map_offset,
+        .prime_handle_to_fd = drm_gem_prime_handle_to_fd,
+        .prime_fd_to_handle = drm_gem_prime_fd_to_handle,
+        .gem_prime_export   = drm_gem_prime_export,
+        .gem_prime_import   = drm_gem_prime_import,
+        .gem_prime_res_obj  = msm_gem_prime_res_obj,
+        .gem_prime_pin      = msm_gem_prime_pin,
+        .gem_prime_unpin    = msm_gem_prime_unpin,
+        .gem_prime_get_sg_table = msm_gem_prime_get_sg_table,
+        .gem_prime_import_sg_table = msm_gem_prime_import_sg_table,
+        .gem_prime_vmap     = msm_gem_prime_vmap,
+        .gem_prime_vunmap   = msm_gem_prime_vunmap,
+        .gem_prime_mmap     = msm_gem_prime_mmap,
+        .debugfs_init       = msm_debugfs_init,
+        .ioctls             = msm_ioctls,
+        .num_ioctls         = ARRAY_SIZE(msm_ioctls),
+        .fops               = &fops,
+        .name               = "msm",
+        .desc               = "MSM Snapdragon DRM",
+        .date               = "20130625",
+        .major              = MSM_VERSION_MAJOR,
+        .minor              = MSM_VERSION_MINOR,
+        .patchlevel         = MSM_VERSION_PATCHLEVEL,
+
+## Memory Management
+
+ - ioctls
+   - MSM_GEM_NEW
+     - msm_ioctl_gem_new takes a size and a flags
+	- it kzallocs a msm_gem_object, which is also a drm_gem_object
+	- the gem object is added to the device's private inactive_list
+	- drm_gem_object_init is called to set up filp
+	- drm_gem_handle_create is called and the handle is the id into file's private object_idr
+   - DRM_IOCTL_GEM_CLOSE
+     - drm_gem_handle_delete is called and it deletes the handle in file's private object_idr
+     - drm_gem_object_release_handle is called
+       - if there are prime handles, they are removed from file's private prime table
+       - if there are vmas with this file's tag, they are removed
+       - if there is a name, it is removed from the device's object_name_idr
+       - if exported as dma_buf, the handle is removed
+   - DRM_IOCTL_GEM_FLINK
+     - it creates a name for the BO and adds the name to device's object_name_idr
+   - DRM_IOCTL_GEM_OPEN
+     - it looks up a BO using its name, and create a handle to the file's object_idr
+   - DRM_IOCTL_PRIME_HANDLE_TO_FD
+     - it looks up a BO from the file's object_idr
+     - it calls drm_gem_prime_export and save the dma_buf to BO's dma_buf
+     - it inserts the dma_buf into file's prime table
+     - it finds an fd for the dma_buf and return the fd
+     - if the BO was imported, use the original dma_buf
+     - if the BO has been exported, use the same dma_buf
+   - DRM_IOCTL_PRIME_FD_TO_HANDLE
+     - if the dma-buf was already imported or exported, return
+     - if the dma-buf was created by the device, grab the backing BO
+     - if the dma-buf points to a non-GEM BO, create a new BO around its pages
+     - create a handle for the BO in file's object_idr
+     - add the dma_buf to the file's prime table
+   - MSM_GEM_INFO
+     - when MSM_INFO_IOVA is set, return the offset in GPU address_space
+       - create a new VMA
+       - get_pages() to get the pages and sg table
+       - msm_gem_map_vma to initialize the VMA and to set up IOMMU
+       - return the offset of the VMA
+     - otherwise, intialize obj->vma_node within dev->vma_offset_manager and
+       returns the VMA offset
+   - MSM_GEM_MADVISE
+   - MSM_GEM_CPU_PREP
+   - MSM_GEM_CPU_FINI
+ - mmap
+   - use the VMA to look up the object from dev->vma_offset_manager
+   - drm_vma_node_is_allowed checks if the object has an associlated file private handle
+   - set vma->vm_ops to driver's vm_operations_struct
+   - in fault handler, get_pages() and update MMU
+ - reservation_object
+   - each newly created BO owns a reservation_object
+   - each dma-buf import creates a BO with the reservation_object of the dma-buf
+   - a reservation_object can hold an exclusive dma_fence and a list of shared dma_fence
+
+## Command Submission and Fence
+
+ - Fence
+   - msm_fence_context is a seqno-based per-ring fence context
+     - it goes by the name "gpu-ring-%d"
+     - each dma_fence allocated from the context is assocaited with a seqno (++fctx->last_fence)
+     - each bo submission is assocaited with a dma_fence (and its seqno)
+     - when a submission completes, msm_update_fence is called to update
+       fctx->completed_fence to the submission's seqno.
+     - to check if a dma_fence is signaled, (fctx->completed_fence >= fence->seqno)
+   - each submission may have a fence fd input
+     - it must point a valid sync_file if not -1
+     - sync_file_get_fence converts it to a dma_fence
+     - if the dma_fence is not from ring->fctx, do a blocking dma_fence_wait
+   - each submission may request a fence fd output
+     - it converts the dma_fence associated with the submission into a sync_file
+     - and return the fd to the userspace
+ - MSM_GEM_SUBMIT
+   - a submission consists of a bunch of drm_msm_gem_submit_cmd and drm_msm_gem_submit_bo
+     - each bo has a flag, indicating
+   - submit_lookup_objects initializes submit->bos from drm_msm_gem_submit_bo array
+     - it looks up handles from file->object_idr to get BOs
+     - it temporarily sets iova of each BOs to the presumed address set by userspace
+   - submit_lock_objects locks the BOs' reservation_object
+     - if failed to lock any BO, it does a slow lock on the BO
+   - submit_fence_sync waits for the BOs to be ready
+     - if the BO is only read-only by the submission, reserve a shared fence
+       for the BO.  The shared fence makes sure no one writes to the BO before
+       the submission completes.
+     - return early if the explicit fence fd input is used
+     - otherwise, msm_gem_sync_object is called
+       - if there is a explicit fence for the BO (someone wrote to the BO), do
+         a CPU wait with dma_fence_wait
+       - if we are going to write to the BO, do CPU wait on all shared fences
+         of the BO
+   - submit_pin_objects pins all BOs and finalizes their IOVAs
+     - if presumed address is correct, mark BO_VALID
+     - otherwise, clear BO_VALID.  Need to apply reloc.
+   - for each drm_msm_gem_submit_cmd,
+     - lookup the BO (which is specified using drm_msm_gem_submit_bo)
+     - remember the type, offseted IOVA, size
+     - if reloc is required, submit_reloc applies the reloc list
+   - msm_gpu_submit is called
+     - it calls msm_gpu_hw_init in case the GPU was suspended
+     - "submit->seqno = ++ring->seqno", which the ring's seqno, unrelated to fence seqno
+     - it dumps the submission with msm_rd_dump_submit, if the debugfs file is opened
+     - it updates GPU SW counters
+     - for each BO, if marked for reading or writing, call msm_gem_move_to_active
+       - this adds the submission's dma_fence to the reservation_object of the BO
+       - also move the BO from drm inactive_list to gpu active_list
+     - a6xx_submit is called
+       - for each cmd,
+         - emit CP_INDIRECT_BUFFER_PFE with the cmd's IOVA offset and size
+       - emit REG_A6XX_CP_SCRATCH_REG to write submit->seqno (ring seqno) to scratch reg
+       - emit CP_EVENT_WRITE
+         - arg1: request timestamp and an interrupt
+         - arg2: address of msm_rbmemptrs.fence
+         - arg3: submit->seqno
+         - this writes submit->seqno to msm_rbmemptrs.fence
+       - write to REG_A6XX_CP_RB_WPTR to update write pointer
+   - msm_gpu_retire is triggered by the irq requested by msm_gpu_submit 
+     - it wakes up retire_worker
+       - update_fences calls msm_update_fence with all completed submission fences
+       - for each completed submission, its msm_gem_submit is freed
+     - it updates SW counters
+ - other ioctls
+   - MSM_SUBMITQUEUE_NEW
+     - create a file-local msm_submitqueue for a ring buffer
+   - MSM_SUBMITQUEUE_CLOSE
+     - destroy a msm_submitqueue
+   - MSM_WAIT_FENCE is legacy path and calls msm_wait_fence to wait for a specified seqno
+
+## GPU
+
+ - When device "qcom,adreno" is bound,
+   - adreno_info is determined
+         {
+                .rev = ADRENO_REV(6, 3, 0, ANY_ID),
+                .revn = 630,
+                .name = "A630",
+                .fw = {
+                        [ADRENO_FW_SQE] = "a630_sqe.fw",
+                        [ADRENO_FW_GMU] = "a630_gmu.bin",
+                },
+                .gmem = SZ_1M,
+                .inactive_period = DRM_MSM_INACTIVE_PERIOD,
+                .init = a6xx_gpu_init,
+        },
+   - init is called to get an "msm_gpu"
+     - a6xx_gpu_init calls adreno_gpu_init with 1 ring
+     - msm_gpu_init creates a 4G address space as requested
+     - it also creates 1 msm_ringbuffer as requested
+       - a 32K BO
+       - start/end/enxt/cur as indices
+       - submits is a list of ?
+       - fctx is a fence context goes by the name "gpu-ring-%d"
+       - memptrs points to a BO managed by msm_gpu
+   - static const struct adreno_gpu_funcs funcs
+        .base = {
+                .get_param = adreno_get_param,
+                .hw_init = a6xx_hw_init,
+                .pm_suspend = a6xx_pm_suspend,
+                .pm_resume = a6xx_pm_resume,
+                .recover = a6xx_recover,
+                .submit = a6xx_submit,
+                .flush = a6xx_flush,
+                .active_ring = a6xx_active_ring,
+                .irq = a6xx_irq,
+                .destroy = a6xx_destroy,
+                .show = a6xx_show,
+                .gpu_busy = a6xx_gpu_busy,
+                .gpu_get_freq = a6xx_gmu_get_freq,
+                .gpu_set_freq = a6xx_gmu_set_freq,
+        },
+        .get_timestamp = a6xx_get_timestamp,
+ - when the DRM device is opened, adreno_load_gpu is called
+   - it loads the GPU firmware
+   - turns on the PM
+   - calls msm_gpu_hw_init
+
+## DPU
+
+## debugfs
+
+ - dma-buf
+   - /d/dma_buf/buf_info
+     - "dma_buf_export" creates a new dma_buf.  This file shows all dma_buf,
+       who did the exports, exclusive and shared fences,
+ - drm_core_init adds
+   - /d/dri/drm_master_relax allows normal users to set/drop master
+ - drm_debugfs_init adds
+   - /d/dri/<minor>/name dumps dev name
+   - /d/dri/<minor>/clients dumps all opened files of the dev
+   - /d/dri/<minor>/gem_names dumps object_name_idr (flink names)
+ - drm_atomic_debugfs_init adds
+   - /d/dri/<minor>/state, enabled when atomic commit is supported, print the plane/crtc/connector states
+ - drm_framebuffer_debugfs_init adds
+   - /d/dri/<minor>/framebuffer lists the current framebuffers
+ - drm_client_debugfs_init adds
+   - /d/dri/<minor>/internal_clients lists the in-kernel clients, which is only used by fbdev
+ - drm_debugfs_crtc_add adds
+   - /d/dri/<minor>/crtc-<index>
+ - drm_debugfs_connector_add adds
+   - /d/dri/<minor>/<connector-name>/force to force connector on/off
+   - /d/dri/<minor>/<connector-name>/edid_override for EDID override
+ - msm_debugfs_init adds
+   - /d/dri/<minor>/gem dumps all GEM objects
+   - /d/dri/<minor>/mm dumps vma_offset_manager mm
+   - /d/dri/<minor>/fb dumps all framebuffers
+   - /d/dri/<minor>/gpu dumps GPU states (crash the system!)
+ - dpu_kms_debugfs_init adds
+   - /d/dri/<minor>/debug/*, a bunch of stuff
+ - msm_rd_debugfs_init adds
+   - /d/dri/<minor>/rd, when opened, dump all submits
+   - /d/dri/<minor>/hangrd, when opened, dump the submit that triggers hangchecker
+ - msm_perf_debugfs_init adds
+   - /d/dri/<minor>/perf, when opened, starts SW and hW counters and dumps the stats
+ - _dpu_crtc_init_debugfs adds
+   - /d/dri/<minor>/crtc<id>
+ - _dpu_encoder_init_debugfs adds
+   - /d/dri/<minor>/encoder<id>
+ - _dpu_plane_init_debugfs adds
+   - /d/dri/<minor>/plane<id>
+   

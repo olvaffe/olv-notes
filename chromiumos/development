@@ -1,11 +1,20 @@
 # Development
 
+## Portage
+
+ - src/overlays/chipset-qc845/profiles/base/make.defaults
+   - CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-qualcomm"
+   - CHROMEOS_KERNEL_ARCH="arm64"
+   - BOARD_COMPILER_FLAGS="-march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard"
+
 ## Kernel
 
  - "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
  - make changes to src/third_party/kernel/v4.19
  - to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
  - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
+ - change kernel config
+   - chromeos/config/*/*.config
 
 ## Mesa
 
