@@ -281,6 +281,11 @@
          - arg3: submit->seqno
          - this writes submit->seqno to msm_rbmemptrs.fence
        - write to REG_A6XX_CP_RB_WPTR to update write pointer
+     - there are three types of commands
+       - MSM_SUBMIT_CMD_IB_TARGET_BUF: emit CP_INDIRECT_BUFFER_PFE to execute
+       - MSM_SUBMIT_CMD_CTX_RESTORE_BUF: emit CP_INDIRECT_BUFFER_PFE to execute
+         _if_ the last submit is from a different opened drm file
+       - MSM_SUBMIT_CMD_IB_TARGET_BUF: ignored (except reloc was applied in a prior step)
    - msm_gpu_retire is triggered by the irq requested by msm_gpu_submit 
      - it wakes up retire_worker
        - update_fences calls msm_update_fence with all completed submission fences
@@ -385,3 +390,220 @@
  - _dpu_plane_init_debugfs adds
    - /d/dri/<minor>/plane<id>
    
+## cffdump
+
+ - rd_open writes RD_GPU_ID
+ - msm_rd_dump_submit writes
+   - RD_CMD for comm name, comm pid, submit ring seqno
+   - if module loaded with rd_full=true, for each BO,
+     - write a RD_GPUADDR
+     - write a RD_BUFFER_CONTENTS
+   - for each cmd,
+     - write a RD_GPUADDR for the BO
+     - write a RD_BUFFER_CONTENTS for the BO
+     - write a RD_CMDSTREAM_ADDR
+
+## PM4 Command Packets
+
+ - From Radeon South Island Programming Guide
+   - Packet DW0[31:30] spcifies the type
+   - Type 0 updates registers in the first 64K DW
+     - use type 3 instead
+     - type0(u16 startReg, u14 count, u32 value[count])
+   - Type 2 is no-op, to fill up the trailing space
+   - Type 3 executes the specified opcode
+     - tyep3(u8 opcode, bool predicate, u32 payload[])
+     - Initialization Packets
+       - MI_INITIALIZE
+     - Command Buffer Packets
+       - INDIRECT_BUFFER
+     - Draw/Dispatch Packets
+       - DRAW_INDEX
+       - DRAW_INDEX_AUTO
+       - DRAW_INDIRECT
+     - State Management Packets
+     - Command Predication Packets
+     - Synchronization Packets
+       - EVENT_WRITE: initiate an event and optionally write a value to the
+         specified address when the event completes
+     - Atomic
+     - Misc Packets
+ - From freedreno
+   - type 7 works similar to type 3
+   - type 4 works similar to type 0
+
+## Freedreno
+
+ - fd_draw_vbo emits into batch->draw using fd6_draw_vbo
+   - fd6_emit_state
+     - check dirty states and create (or reference pre-created) state objects (small IBs)
+       - FD6_GROUP_VBO
+       - FD6_GROUP_VBO_BINNING
+       - FD6_GROUP_ZSA
+       - FD6_GROUP_LRZ
+       - FD6_GROUP_LRZ_BINNING
+       - FD6_GROUP_PROG
+       - FD6_GROUP_PROG_BINNING
+       - FD6_GROUP_RASTERIZER
+       - FD6_GROUP_VS_CONST
+       - FD6_GROUP_VS_TEX
+       - FD6_GROUP_FS_TEX
+     - emit many other non-stateobj states
+     - SET_DRAW_STATE() to reference the stateobjs
+   - REG_WRITE(VFD_INDEX_OFFSET): first index
+   - REG_WRITE(PC_RESTART_INDEX): primitive restart
+   - emit_marker6(): for debugging
+   - DRAW_INDEX_OFFSET(draw_patches, instance_count, count)
+   - emit_marker6(): for debugging
+ - fd_batch_flush queues jobs into "flush_queue" thread
+   - fd_gmem_render_tiles does the jobs
+     - sysmem mode: bypassing GMEM and is used for very simple operations (blits)
+       - emit_sysmem_prep
+       - emit_ib
+       - emit_sysmem_fini
+     - gmem mode:
+       - emit_tile_init
+       - for each tile
+         - emit_tile_prep
+         - emit_tile_mem2gmem
+         - emit_tile_renderprep
+         - emit_ib
+         - emit_tile_gmem2mem
+       - emit_tile_fini
+
+## Freedreno render_tiles
+
+ - fd6_emit_tile_init
+   - fd6_emit_restore
+     - fd6_cache_flush
+       - EVENT_WRITE(0x31) to trigger cache flush
+     - REG_WRITE(HLSQ_UPDATE_CNTL, 0xfffff)
+     - REG_WRITE(a bunch of registers)
+     - emit_marker6
+       - REG_WRITE(SCRATCH_REG7, ++marker_cnt)
+     - REG_WRITE(some more registers)
+     - SET_DRAW_STATE() ?
+     - REG_WRITE(a bunch more regs)
+   - fd6_emit_lrz_flush
+     - EVENT_WRITE(LRZ_FLUSH)
+   - fd6_cache_flush
+   - SKIP_IB2_ENABLE_GLOBAL(0)
+   - fd_wfi
+     - WAIT_FOR_IDLE()
+   - REG_WRITE(RB_CCU_CNTL, 0x7c40004)
+   - emit_zs
+     - REG_WRITE(RB_DEPTH_BUFFER_INFO, ...)
+     - REG_WRITE(GRAS_SU_DEPTH_BUFFER_INF, ...)
+     - REG_WRITE(GRAS_LRZ_BUFFER_BASE_LO, ...)
+     - REG_WRITE(RB_STENCIL_INFO, ...)
+   - emit_mrt
+     - for each render target
+       - REG_WRITE(RB_MRT_BUF_INFO, ...): addr, format, tiling, stride
+       - REG_WRITE(SP_FS_MRT_REG): format
+     - REG_WRITE(RB_SRGB_CNTL): sRGB rendering
+     - REG_WRITE(SP_SRGB_CNTL): sRGB rendering
+     - REG_WRITE(SRB_RENDER_COMPONENTS): which MRTs are on
+     - REG_WRITE(SP_FS_RENDER_COMPONENTS): which MRTs are on
+   - disable_msaa
+     - REG_WRITE(SP_TP_RAS_MSAA_CNTL, ...);
+     - REG_WRITE(GRAS_RAS_MSAA_CNTL, ...);
+     - REG_WRITE(RB_RAS_MSAA_CNTL, ...);
+   - set_bin_size(BINNING_PASS)
+     - REG_WRITE(GRAS_BIN_CONTROL): bin width/height
+     - REG_WRITE(RB_BIN_CONTROL): bin width/height
+     - REG_WRITE(RB_BIN_CONTROL2): bin width/height
+   - update_render_cntl(true)
+     - CP_ONE_REG_WRITE(RB_RENDER_CNTL, ...)
+   - emit_binning_pass
+     - set_scissor
+       - REG_WRITE(GRAS_SC_WINDOW_SCISSOR_TL)
+       - REG_WRITE(GGRAS_RESOLVE_CNTL_1)
+     - emit_marker6
+     - SET_MARKER(RM6_BINNING): switch to binning mode
+     - emit_marker6
+     - SET_VISIBILITY_OVERRIDE(1)
+     - SET_MODE(1)
+     - WAIT_FOR_IDLE()
+     - REG_WRITE(VFD_MODE_CNTL, BINNING_PASS)
+     - update_vsc_pipe
+       - REG_WRITE(VSC_BIN_SIZE, ...)
+       - REG_WRITE(VSC_BIN_COUNT)
+       - REG_WRITE(VSC_PIPE_CONFIG_REG, ...)
+       - REG_WRITE(VSC_PIPE_DATA2_ADDRESS_LO, ...)
+       - REG_WRITE(VSC_PIPE_DATA_ADDRESS_LO, ...)
+     - REG_WRITE(unknown regs)
+     - EVENT_WRITE(0x2c)
+     - REG_WRITE(RB_WINDOW_OFFSET)
+     - REG_WRITE(SP_TP_WINDOW_OFFSET)
+     - fd6_emit_ib(batch->draw)
+       - emit_marker6
+       - INDIRECT_BUFFER(address, size)
+       - emit_marker6
+     - SET_DRAW_STATE()
+     - EVENT_WRITE(0x2d)
+     - EVENT_WRITE(CACHE_FLUSH_TS, blit_mem, 0x0)
+     - fd_wfi
+   - set_bin_size(USE_VIZ)
+   - REG_WRITE(VFD_MODE_CNTL, 0)
+   - update_render_cntl(false)
+ - for each tile
+   - fd6_emit_tile_prep
+     - SET_MARKER(MODE(0x7))
+     - emit_marker6
+     - SET_MARKER(RM6_GMEM)
+     - emit_marker6
+     - set_scissor
+     - set_window_offset
+       - REG_WRITE(RB_WINDOW_OFFSET)
+       - REG_WRITE(RB_WINDOW_OFFSET2)
+       - REG_WRITE(SP_WINDOW_OFFSET)
+       - REG_WRITE(SP_TP_WINDOW_OFFSET)
+     - REG_WRITE(VPC_SO_OVERRIDE, DISABLE)
+     - WAIT_FOR_ME()
+     - SET_VISIBILITY_OVERRIDE(0)
+     - SET_MODE(0)
+     - SET_BIN_DATA5()
+   - fd6_emit_tile_mem2gmem
+     - no-op
+   - fd6_emit_tile_renderprep
+     - fd6_emit_ib(batch->tile_setup)
+   - fd6_emit_ib(batch->draw)
+   - fd6_emit_tile_gmem2mem
+     - fd6_emit_ib(batch->tile_fini)
+ - fd6_emit_tile_fini
+   - REG_WRITE(GRAS_LRZ_CNTL, ENABLE | UNK3)
+   - EVENT_WRITE(LRZ_FLUSH)
+   - fdm_event_write(CACHE_FLUSH_TS)
+     - EVENT_WRITE(CACHE_FLUSH_TS, blit_mem, seqno)
+ - This is it.  Let's visit IBs
+ - fd6_clear_lrz creates batch->lrz_clear
+   - emit_marker6()
+   - SET_MARKER(RM6_BYPASS)
+   - emit_marker6()
+   - REG_WRITE(RB_CCU_CNTL, 0x10000000)
+   - emit_marker6()
+   - SET_MARKER(0xc)
+   - emit_marker6()
+   - REG_WRITE(unknown)
+   - REG_WRITE(SP_PS_2D_SRC_INFO)
+   - REG_WRITE(a bunch more)
+   - REG_WRITE(RB_2D_DST_INFO)
+   - REG_WRITE(more)
+   - EVENT_WRITE(0x3f)
+   - WAIT_FOR_IDLE()
+   - REG_WRITE(unknown)
+   - BLIT(SCALE)
+   - REG_WRITE(unknown)
+   - EVENT_WRITE(0x1d)
+   - EVENT_WRITE(FACENESS_FLUSH)
+   - EVENT_WRITE(CACHE_FLUSH_TS)
+   - fd6_cache_flush
+
+
+ - CP_BLIT: sys mem to sys mem 2D blit
+ - EVENT_WRITE(BLIT): sys mem <-> gmem blit
+   - GMEM mode (GMEM is dest): sys -> gmem
+   - RESOLVE mode (GMEM is src): gmem -> sys
+   - CP_SET_MARKER sets the mode
+   - RB_BLIT_xxx to set up sys mem address
+
