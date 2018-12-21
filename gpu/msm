@@ -167,6 +167,8 @@
         .minor              = MSM_VERSION_MINOR,
         .patchlevel         = MSM_VERSION_PATCHLEVEL,
 
+## DPU
+
 ## Memory Management
 
  - ioctls
@@ -346,8 +348,6 @@
    - turns on the PM
    - calls msm_gpu_hw_init
 
-## DPU
-
 ## debugfs
 
  - dma-buf
@@ -450,6 +450,11 @@
        - FD6_GROUP_FS_TEX
      - emit many other non-stateobj states
      - SET_DRAW_STATE() to reference the stateobjs
+       - the opcode specifies a set of IBs and a set of masks saying when are the IBs applied (binning or rendering)
+         - the IBs are probably cached in an internal memory
+         - so that HW can execute different IBs in different states (binding or rendering)
+       - each IB has a key to allow partial updates
+         - update this IB in the internal cache but not others
    - REG_WRITE(VFD_INDEX_OFFSET): first index
    - REG_WRITE(PC_RESTART_INDEX): primitive restart
    - emit_marker6(): for debugging
@@ -470,6 +475,80 @@
          - emit_ib
          - emit_tile_gmem2mem
        - emit_tile_fini
+ - pipeline
+   - RBBM
+   - CP
+   - GRAS
+   - RB
+   - PC
+   - HLSQ
+   - VFD
+   - VPC
+   - SP
+   - VBIF
+   - VSC
+ - VFD (vertex fetch and decode)
+   - set_vertex_buffer
+     - REG_WRITE(VFD_FETCH) and friends in FD6_GROUP_VBO
+   - bind_vertex_element_states
+     - REG_WRITE(VFD_DECODE) and friends in FD6_GROUP_VBO
+ - VS
+   - set_clip_state
+     - baked into VS
+   - set_constant_buffer
+     - CP_LOAD_STATE6_GEOM(offset=slot, SB6_VS_SHADER, ST6_CONSTANTS) in FD6_GROUP_VS_CONST
+   - set_shader_buffers
+     - CP_LOAD_STATE6_GEOM(SB6_SSBO) in draw IB
+     - CP_LOAD_STATE6_GEOM(SB6_VS_SHADER) in draw IB, to describe buffer sizes
+   - bind_sampler_states and set_sampler_views
+     - save to 'ctx->tex[shaderStage]' first and process later in fd6_emit_textures
+     - convert sampler states to an array of (4-dword SAMPLER_STATE) in BO
+     - convert sampler views to an array of (16-dword SAMPLER_VIEW) in BO
+     - in FD6_GROUP_VS_TEX IB,
+       - CP_LOAD_STATE6_GEOM(SB6_VS_TEX) to load both arrays
+       - REG_WRITE(P_VS_TEX_SAMP_LO) and friends
+   - bind_vs_state
+     - in creation, NIR IR is stored
+       - HW instr is not generated until the "variant" is known
+     - CP_LOAD_STATE6_GEMO(offset=0, SB6_VS_SHADER, ST6_SHADER, indirect) to load the consts
+     - fd6_program_create looks at all bs (binning shader), vs, and fs to create a stateobj
+       - REG_WRITE(SP_VS_CONFIG)
+       - REG_WRITE(HLSQ_VS_CNTL)
+       - REG_WRITE(SP_VS_CTRL_REG0)
+       - REG_WRITE(VPC_VAR_DISABLE)
+       - REG_WRITE(SP_VS_OUT_REG)
+       - REG_WRITE(SP_VS_VPC_DST_REG)
+       - REG_WRITE(SP_VS_OBJ_START_LO)
+       - CP_LOAD_STATE6_GEOM() to load VS
+       - REG_WRITE(SP_PRIMITIVE_CNTL)
+ - GRAS (gemoetry rasterizer?)
+   - set_viewport_states
+     - REG_WRITE(GRAS_CL_VPORT_XOFFSET_0) and friends in draw IB
+   - bind_rasterizer_state
+     - in state creation, an IB is created to REG_WRITE(GRAS_SU_CNTL) and friends
+     - in bind, the IB is used as FD6_GROUP_RASTERIZER
+     - the state also interacts with other states
+   - set_scissor_states
+     - REG_WRITE(GRAS_SC_WINDOW_SCISSOR_TL) and friends in gmem IB
+     - affects binning
+ - VSC (binning / visibility stream c?)
+ - FS
+   - see VS
+   - set_shader_images
+     - CP_LOAD_STATE6_FRAG(offset=slot, SB6_FS_TEX, ST6_CONSTANTS, direct) for use by imageLoad
+     - CP_LOAD_STATE6_FRAG(offset=slot, SB6_SSBO, ST6_2, direct) for use by imageStore
+     - CP_LOAD_STATE6_FRAG(SB6_FS_SHADER) to describe image dimensions
+ - RB (render buffer?)
+   - set_blend_color
+     - REG_WRITE(RB_BLEND_RED_F32) and friends in draw IB
+   - set_stencil_ref
+     - REG_WRITE(RB_STENCILREF) in draw IB
+   - bind_blend_states
+     - REG_WRITE(RB_MRT_CONTROL) and friends in draw IB
+   - bind_depth_stencil_alpha_state
+     - in state creation, an IB is created to REG_WRITE(RB_ALPHA_CONTROL) and friends
+     - in bind, the IB is used as FD6_GROUP_ZSA
+   - set_framebuffer_state
 
 ## Freedreno render_tiles
 
