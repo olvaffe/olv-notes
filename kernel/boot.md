@@ -178,3 +178,33 @@ Kernel Boot on x86-32
     `current_thread_info` works.
   * Accidentally, the `init_thread_union` (or, more accurately `init_task`)
     becomes the idle thread in `rest_init`.
+
+## Kernel
+
+* Linux x86 boot protocol is defined in `Documentation/x86/boot.txt`
+  * the bootloader should load the kernel to certain memory addresses
+  * the first sector of the kernel is used for communications between the
+    bootloader and the kernel: how big is the kernel?  where did the bootloader
+    write the commandline to?  where was the initramfs loaded?
+* After arch specific code, `start_kernel` in `init/main.c` is called.  It
+  spawns a thread to run `kernel_init`
+  * In `do_initcalls`, `populate_rootfs` is called.  It unpacks the the internal
+    initramfs to the rootfs, which is usually empty.  It then loads the external
+    initramfs as loaded by the bootloader.  See
+    `Documentation/filesystems/ramfs-rootfs-initramfs.txt`
+  * In `init_post`, if `/init` exists (from initramfs), it runs the command.
+  * If no initiramfs, it calls `prepare_namespace` to mount the root device and
+    runs `/sbin/init`.  For `root=/dev/sda1`, it is translated to major/minor.
+    `/dev/root` is created using the major/minor and is used for mounting.
+    In `mount_block_root`, the device is mounted to `/root` and the kernel chdir
+    to `/root`.  Finally, the mount point is moved to `/`.
+  * Otherwise, see next section
+
+## initramfs
+
+* An initiramfs can be unpacked using
+  `$ gunzip -c /boot/initrd.img-3.2.0-2-amd64 | cpio -idv`
+* `/init` is executed.  It parses the kernel cmdline and does many other things.
+  Among them,
+  * it sources `/scripts/local` and run `mountroot` to mount the root
+* finally, it calls `/sbin/init` of the root device
