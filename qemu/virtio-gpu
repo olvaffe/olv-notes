@@ -21,3 +21,18 @@
    - virglrenderer calls
      - glBlendColor when VIRGL_CCMD_SET_BLEND_COLOR
      - many more
+
+# Memory Management
+
+ - virtio_gpu_resource_create_ioctl
+   - every virtio_gpu_object is created with a guest-managed unique
+     hw_res_handle (id)
+   - guest allocates pages
+   - host is also requested to create backing storage (GL buffer)
+   - guest calls RESOURCE_ATTACH_BACKING and host creates iovec over guest pages
+ - DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST
+   - host copies guest pages into GL buffer
+ - DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST
+   - host copies GL buffer into guest pages
+ - DRM_IOCTL_VIRTGPU_MAP
+   - map guest pages
