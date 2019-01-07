@@ -97,6 +97,37 @@ Vulkan
      - `vkQueuePresentKHR`
      - `vkQueueWaitIdle`
 
+# Objects
+
+ - VkInstance is an instance of Vulkan
+ - VkPhysicalDevice is used to query device caps and features
+ - VkDevice and the available VkQueue's are created together
+ - VkCommandBuffer are command buffers that get submitted to specific queues
+ - VkCommandPool is to enable suballocations of command buffers
+ - VkSemaphore is for cross-queue synchronization with submit granularity
+ - VkFence is for vk/cpu synchronization with submit granularity
+   - wait is on the CPU side
+ - VkBuffer and VkImage are created without any backing store
+ - VkDeviceMemory, the backing store, is allocated separately
+ - VkBufferView and VkImageView are views of the pipelines into the buffers /
+   images
+ - VkEvent is for vk/cpu synchronization with command granularity
+   - wait is on the GPU side
+ - VkQueryPool is for querying GPU stats
+ - VkSampler describes a sampler (min filter, etc)
+ - VkShaderModule is a shader stage compiled from SPIR-V
+ - VkDescriptorSetLayout describes the layout (bindings) of a descriptor set
+ - VkPipelineLayout is a group of descriptor set layouts
+ - VkRenderPass describes a rendering pass abstractly; no image but only their
+   formats, etc.
+ - VkFramebuffer is created from VkRenderPass and a list of VkImageView as the
+   attachments
+ - VkPipelineCache is for faster pipeline creation
+ - VkPipeline is a huge object created from VkPipelineLayout and VkRenderPass
+   and other states (but not VkFramebuffer)
+ - VkDescriptorPool is to enable suballocations of descriptor sets
+ - VkDescriptorSet describes shader resources
+
 # Descriptor Sets
 
  - Types of descriptors
@@ -111,12 +142,24 @@ Vulkan
  - A descriptor pool mallocs
    - `sizeof(descriptor_set) * maxSets`
    - `sizeof(descriptor) * numDescriptors`, for each descriptor type
- - A descriptor set is suballocated from the pool
  - A descriptor set layout is described as
    - binding X: N descriptors of certain type used by certain shader stages
    - there can be arbitrarily many bindings, using arbitrarily binding numbers
    - this is enough for impl to calculate the total number of HW descriptors
      required and to maps "descriptor #n at binding X" to "HW descriptor #m"
+ - A descriptor set is suballocated from the pool
+   - `vkUpdateDescriptorSets` is used to update a descriptor set
+   - a descriptor set may simply hold shallow pointers to various VkImageView,
+     VkSampler, VkBuffer, etc.  HW descriptors are generated at draw time.
+
+# Pipelines
+
+ - A pipeline layout consists of multiple descriptor set layouts and push
+   constants.
+ - A pipeline is created from a pipeline layout and many other states
+   - renderPass / subpass
+   - pipeline cache
+   - base pipeline
 
 # Command Buffers
 
