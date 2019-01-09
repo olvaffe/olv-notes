@@ -36,6 +36,9 @@
  - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
  - change kernel config
    - chromeos/config/*/*.config
+ - update kernel cmdline
+   - on DUT: /usr/share/vboot/bin/make_dev_ssd.sh --edit_config
+   - update_kernel.sh: edit src/build/images/<BOARD>/latest/config.txt
 
 ## Mesa
 
