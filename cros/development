@@ -20,6 +20,13 @@
    - CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-qualcomm"
    - CHROMEOS_KERNEL_ARCH="arm64"
    - BOARD_COMPILER_FLAGS="-march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard"
+ - update package
+   - cros_portage_upgrade --upgrade --board=amd64-generic:arm-generic <package-name>
+   - manual
+     - add new ebuild
+     - change KEYWORDS to "*"
+     - ebuild <package-name>.ebuild
+     - egencache --update --repo <chromiumos|portage-stable> <package-name>
 
 ## Kernel
 
