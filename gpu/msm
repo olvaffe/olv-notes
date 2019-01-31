@@ -686,3 +686,32 @@
    - CP_SET_MARKER sets the mode
    - RB_BLIT_xxx to set up sys mem address
 
+## Formats
+
+ - mesa formats
+   - MESA_FORMAT_<COMPONENTS>_<TYPE>
+   - <COMPONENTS> convention
+     - packed: in LSB to MSB order
+     - array: in low to high order
+ - pipe formats
+   - PIPE_FORMAT_<COMPONENTS>_<TYPE>
+   - <COMPONENTS> convention
+     - packed (is_bitmask): in LSB to MSB order
+     - array (!is_bitmask): in low to high order
+ - vk formats
+   - VK_FORMAT_<COMPONENTS>_<TYPE>
+   - <COMPONENTS> convention
+     - packed: in MSB to LSB order
+     - array: in low to high order
+ - msm formats
+   - little-endian
+   - for (MSB A R G B LSB), swap is (W X Y Z)
+   - for (MSB A B G R LSB), swap is (W Z Y X)
+   - in other words, swap labels each component in msb-to-lsb order
+     - X means R (or D)
+     - Y means G (or S)
+     - Z means B
+     - W means A
+   - when format has 3 components, W is at the leading position
+   - when format has 2 components, WZ is at the leading positions
+   - when format has 1 components, WZY is at the leading positions
