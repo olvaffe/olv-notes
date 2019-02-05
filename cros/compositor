@@ -121,3 +121,7 @@
 
  - drm-tests
    - https://chromium.googlesource.com/chromiumos/platform/drm-tests/
+
+## Wayland
+
+ - XDG_RUNTIME_DIR=/var/run/chrome
