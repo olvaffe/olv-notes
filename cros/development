@@ -8,36 +8,45 @@
        Defaults timestamp_timeout=180
  - "cros_sdk" to enter chroot
  - "export BOARD=<BOARD-NAME>"
- - switch kernel branch
-   - cros_workon --board=${BOARD} start sys-kernel/chromeos-kernel-4_19
-   - cd ~/trunk/src/third_party/kernel/v4.19
-   - git fetch cros <branch>
-     - https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>
-   - git checkout -b <branch> FETCH_HEAD
-   - cd ~/trunk/src/scripts
+ - switch kernel branch, if needed
  - USE="kgdb vtconsole" ./build_packages --board=${BOARD} 
  - ./build_image \
      --boot_args="noinitrd slub_debug=FZPUA panic=0" \
      --board=${BOARD} \
      --noenable_rootfs_verification \
      test
- - cros flash usb:// ${BOARD}/latest
-   - cros flash ssh://<DUT-IP> ${BOARD}/latest
+ - internals
+   - build_packages
+     - it builds and emerges these packages by default to /build/$BOARD
+       - virtual/target-os, base OS image
+       - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
+       - virtual/target-os-factory, factory tools
+       - virtual/target-os-factory-shim, factory installer (flashrom, etc)
+       - virtual/target-os-test, deqp, etc.
+       - chromeos-base/autotest-all
+     - binary packages can be found under /build/$BOARD/packages
+   - build_image
+     - it builds images under ~/trunc/src/build/$BOARD
+     - it always wipes the build directory clean, install packages, and done
 
-## Build image internals
+## Flash Images
 
- - build_packages
-   - it builds and emerges these packages by default to /build/$BOARD
-     - virtual/target-os, base OS image
-     - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
-     - virtual/target-os-factory, factory tools
-     - virtual/target-os-factory-shim, factory installer (flashrom, etc)
-     - virtual/target-os-test, deqp, etc.
-     - chromeos-base/autotest-all
-   - binary packages can be found under /build/$BOARD/packages
- - build_image
-   - it builds images under ~/trunc/src/build/$BOARD
-   - it always wipes the build directory clean, install packages, and done
+ - <https://www.chromium.org/chromium-os/build/cros-flash>
+ - `cros flash <device> <image>`
+   - `<device>` can be `usb://` or `ssh://<DUT-IP>`
+   - `<image>` is `latest` by default
+   - for prod images, specify `--disable-rootfs-verification` to remove rootfs verification
+ - flash a locally built image
+   - `cros flash ssh://<DUT-IP>`
+     - or, `cros flash ssh://<DUT-IP> latest`
+     - or, `cros flash ssh://<DUT-IP> ${BOARD}/latest`
+   - these flash `~/trunk/src/build/images/$BOARD/latest`
+ - flash using a devserver
+   - `cros flash ssh://<DUT-IP> xbuddy://remote/<<BOARD>/<VERSION>/<TYPE>`
+ - disable rootfs verification afterwards
+   - untested
+   - crossystem dev_boot_signed_only=0
+   - /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification
 
 ## Portage
 
@@ -71,6 +80,8 @@
 
  - "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
  - make changes to src/third_party/kernel/v4.19
+   - or fetch a WIP branch, "git fetch cros <branch>"
+     - https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>
  - to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
  - to deploy, "./update_kernel.sh --remote=<DUT IP address>"
  - change kernel config
