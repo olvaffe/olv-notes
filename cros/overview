@@ -120,6 +120,14 @@
        - https://android.googlesource.com/platform/system/update_engine/
    - android
    - chrome
+     - one browser (no --type)
+       - UI
+       - manage tabs
+     - some --type=renderer
+       - each tab is rendered by a renderer process
+     - two --type=zygote
+     - one --type=gpu-process
+     - one --type=-broker
 
 ## SSH
 

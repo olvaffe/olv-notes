@@ -57,6 +57,7 @@
    - it takes multiple (5-10) minutes to run!  Be patient.
  - Keyboard shortcuts
    - need to use AP console if physical keyboard does not work in coreboot
+   - shutdown the device: hold power key until the device shutdown
    - enter recovery mode: hold ESC and F3/Refresh, then press power button to boot
    - enter developer mode: while in recovery mode, press Ctrl-D
    - boot from usb: at developer mode warning or red screen, press Ctrl-U

@@ -476,15 +476,15 @@
          - emit_tile_gmem2mem
        - emit_tile_fini
  - pipeline
+   - VFD: vertex fetch and decode
+   - SP: stream processor
+   - VPC: to store vs outout
+   - GRAS: rasterizer
+   - RB: render buffer?
    - RBBM
    - CP
-   - GRAS
-   - RB
    - PC
-   - HLSQ
-   - VFD
-   - VPC
-   - SP
+   - HLSQ: shader resoureces?
    - VBIF
    - VSC
  - VFD (vertex fetch and decode)
