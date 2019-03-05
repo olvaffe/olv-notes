@@ -35,33 +35,6 @@
     $MACHINE_OPTS $BLOCK_OPTS $NETWORK_OPTS $DISPLAY_OPTS \
     -cdrom <cd>.iso -boot d
  - Arch
-   - bootstrap
-     - echo -e 'n\np\n\n\n\nw\n' | fdisk /dev/sda
-     - mkfs.ext4 /dev/sda1
-     - mount /dev/sda1 /mnt
-     - pacstrap /mnt base
-     - genfstab -U /mnt >> /mnt/etc/fstab
-   - chroot
-     - arch-chroot /mnt
-     - echo myhostname > /etc/hostname
-     - echo -e '127.0.0.1\tlocalhost' >> /etc/hosts
-     - pacman -S grub
-     - grub-install /dev/sda
-     - grub-mkconfig -o /boot/grub/grub.cfg
-     - exit
-   - reboot
-   - post-installation
-     - systemctl start dhcpcd
-     - pacman -S vim
-     - pacman -S openssh
-       - systemctl start sshd
-       - set PermitRootLogin to yes in /etc/ssh/sshd_config
-     - pacman -S xorg xorg-xinit xterm
-     - echo 'exec xterm' > ~/.xinitrc
-     - startx
-   - development
-     - pacman -S base-devel
-     - pacman -S git meson cmake
 
 # Tips
 
