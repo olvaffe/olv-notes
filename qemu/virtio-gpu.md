@@ -36,3 +36,25 @@
    - host copies GL buffer into guest pages
  - DRM_IOCTL_VIRTGPU_MAP
    - map guest pages
+
+# Fences
+
+# glxgears
+
+ - after initial setup, interact with the device only in `glXSwapBuffers`
+ - specifically, only in the implicit flush
+   - `glXSwapBuffers` -> `dri3_swap_buffers` -> ... -> `dri_flush`
+ - `dri_flush` waits on the oldest fence associated with the drawable for
+   throttling
+   - `virgl_fence_finish` -> `virgl_fence_wait` -> `DRM_IOCTL_VIRTGPU_WAIT`
+   - `virgl_fence_reference(..., NULL)` -> `virgl_drm_resource_reference` -> `DRM_IOCTL_GEM_CLOSE`
+ - `dri_flush` flushes the current context and associate the fence with the
+   drawable
+   - `virgl_flush_from_st` -> `virgl_drm_winsys_submit_cmd` -> `DRM_IOCTL_VIRTGPU_EXECBUFFER`
+     - `_IOC(_IOC_READ|_IOC_WRITE,
+             DRM_IOCTL_BASE,
+             DRM_COMMAND_BASE + DRM_VIRTGPU_EXECBUFFER,
+             sizeof(struct drm_virtgpu_execbuffer))`
+     - `_IOC(_IOC_READ|_IOC_WRITE, 0x64, 0x42, 0x20)`
+   - `virgl_flush_from_st` -> `virgl_cs_create_fence` -> `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`
+ - a fence is a BO of size 8
