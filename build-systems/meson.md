@@ -21,3 +21,45 @@
  - "ninja test" to run tests
  - "ninja install" to install
    - "DESTDIR" is supported
+
+## Meson Cross-Compilation
+
+ - `meson --cross-file <cross_file.txt>`
+ - target 32-bit x86
+    [binaries]
+    c = '/usr/bin/gcc'
+    cpp = '/usr/bin/g++'
+    ar = '/usr/bin/gcc-ar'
+    strip = '/usr/bin/strip'
+    pkgconfig = '/usr/bin/pkg-config'
+    
+    [properties]
+    c_args = ['-m32']
+    c_link_args = ['-m32']
+    cpp_args = ['-m32']
+    cpp_link_args = ['-m32']
+    
+    [host_machine]
+    system = 'linux'
+    cpu_family = 'x86'
+    cpu = 'i686'
+    endian = 'little'
+ - target 32-bit arm
+    [binaries]
+    ar = '/usr/bin/$HOST-ar'
+    c = '/usr/bin/$HOST-clang'
+    cpp = '/usr/bin/$HOST-clang++'
+    strip = '/usr/bin/$HOST-strip'
+    pkgconfig = '$SYSROOT/build/bin/pkg-config'
+    
+    [properties]
+    c_args = ['--sysroot=$SYSROOT', ...]
+    c_link_args = ['--sysroot=$SYSROOT', '-Wl,-O2', '-Wl,--as-needed']
+    cpp_args = ['--sysroot=$SYSROOT', ...]
+    cpp_link_args = ['--sysroot=$SYSROOT', '-Wl,-O2', '-Wl,--as-needed']
+    
+    [host_machine]
+    system = 'linux'
+    cpu_family = 'arm'
+    cpu = 'armv7a'
+    endian = 'little'
