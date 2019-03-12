@@ -65,6 +65,7 @@
    - profiles/base/make.defaults
      - make.conf-like configs for the overlay
  - src/overlays/chipset-qc845/profiles/base/make.defaults
+   - `toolchain.conf` for toolchain
    - CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-qualcomm"
    - CHROMEOS_KERNEL_ARCH="arm64"
    - BOARD_COMPILER_FLAGS="-march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard"
