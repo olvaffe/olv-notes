@@ -60,12 +60,31 @@
    - status can be checked by comparing `fence->seq` and
      `vgdev->fence_drv.last_seq`
 
-# IOCTLs
+# BOs
 
- - `VIRTGPU_MAP` returns an offset for `mmap`ing the BO
- -
+ - `VIRTGPU_RESOURCE_CREATE` creates a BO
+   - `virtio_gpu_alloc_object` to creates a `virtio_gpu_object`
+   - `virtio_gpu_cmd_resource_create_3d`
+   - `virtio_gpu_object_attach`
+ - `VIRTGPU_MAP` returns an offset for `mmap`ing a BO
+ - `VIRTGPU_WAIT` waits for a BO to be ready
+ - `VIRTGPU_TRANSFER_FROM_HOST`
+ - `VIRTGPU_TRANSFER_TO_HOST`
+ - `VIRTGPU_RESOURCE_INFO`
+ - `VIRTGPU_EXECBUFFER` requires `VIRTIO_GPU_F_VIRGL`
+   - it calls `virtio_gpu_object_list_validate` to validate all referenced BOs
+     - it reserves the BOs
+     - it also validates the BOs, making sure they are allocated and on the
+       right heaps
+     - it then queues a `VIRTIO_GPU_CMD_SUBMIT_3D` command packet
+     - it associates the BO with the command fence
 
-# Commands
+# Misc ioctls
+
+ - `VIRTGPU_GET_CAPS` queries Gallium caps
+ - `VIRTGPU_GETPARAM` queries driver/device params
+
+# Misc Commands
 
  - `VIRTIO_GPU_CMD_GET_CAPSET_INFO`
  - `VIRTIO_GPU_CMD_GET_EDID`
