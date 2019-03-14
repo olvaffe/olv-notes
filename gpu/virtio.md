@@ -30,7 +30,8 @@
      - 96 bytes for inline cmd
      - 24 bytes for inline response
    - must specify response buffer and response callback
-   - there is also `data_buf`
+   - there is also `data_buf`, where data are things like sg table for BOs, or
+     cmdbufs for execbuf
  - `virtio_gpu_queue_ctrl_buffer` queues a command packet
  - after the device writes, `virtio_gpu_ctrl_ack` is called to schedule
    `virtio_gpu_dequeue_ctrl_func`
@@ -62,22 +63,38 @@
 
 # BOs
 
- - `VIRTGPU_RESOURCE_CREATE` creates a BO
-   - `virtio_gpu_alloc_object` to creates a `virtio_gpu_object`
-   - `virtio_gpu_cmd_resource_create_3d`
-   - `virtio_gpu_object_attach`
- - `VIRTGPU_MAP` returns an offset for `mmap`ing a BO
  - `VIRTGPU_WAIT` waits for a BO to be ready
+   - calls `ttm_bo_reserve` to lock the reservation object
+   - calls `ttm_bo_wait` to wait on all fences, exclusive or shared
+   - calls `ttm_bo_unreserve` to unlock the reservation object
  - `VIRTGPU_TRANSFER_FROM_HOST`
+   - calls `ttm_bo_reserve` to lock the reservation object
+   - calls `ttm_bo_validate` to move the BO to the right heap
+   - calls `virtio_gpu_cmd_transfer_from_host_3d` to queue a DMA
+   - calls `reservation_object_add_excl_fence` to add the DMA fence 
+   - calls `ttm_bo_unreserve` to unlock the reservation object
  - `VIRTGPU_TRANSFER_TO_HOST`
- - `VIRTGPU_RESOURCE_INFO`
- - `VIRTGPU_EXECBUFFER` requires `VIRTIO_GPU_F_VIRGL`
-   - it calls `virtio_gpu_object_list_validate` to validate all referenced BOs
+   - similar to `VIRTGPU_TRANSFER_FROM_HOST`
+ - `VIRTGPU_RESOURCE_CREATE` creates a BO
+   - `virtio_gpu_alloc_object` to initialize a `virtio_gpu_object`
+     - it has the regular GEM backing store (shmem)
+   - `virtio_gpu_object_list_validate` to move the BO to the right heap
+   - `virtio_gpu_cmd_resource_create_3d` to queue a resource create cmd
+   - `virtio_gpu_object_attach` to set up an sg table and to queue an attach
+     cmd that sends the sg table to the device
+   - `ttm_eu_fence_buffer_objects` to make the cmd fence a exclusive fence of
+     the BO
+ - `VIRTGPU_MAP` returns an offset for `mmap`ing a BO
+ - `VIRTGPU_RESOURCE_INFO` to query the resource id/size (after importing a
+   dma-buf)
+ - `VIRTGPU_EXECBUFFER`
+   - calls `virtio_gpu_object_list_validate` to validate all referenced BOs
      - it reserves the BOs
      - it also validates the BOs, making sure they are allocated and on the
        right heaps
-     - it then queues a `VIRTIO_GPU_CMD_SUBMIT_3D` command packet
-     - it associates the BO with the command fence
+   - queues a `VIRTIO_GPU_CMD_SUBMIT_3D` command packet to execute the cmdbuf
+   - calls `ttm_eu_fence_buffer_objects` to make the cmd fence a exclusive
+     fence of the referenced BOs
 
 # Misc ioctls
 
@@ -88,3 +105,33 @@
 
  - `VIRTIO_GPU_CMD_GET_CAPSET_INFO`
  - `VIRTIO_GPU_CMD_GET_EDID`
+
+# Gallium Winsys
+
+ - `transfer_get` is `VIRTGPU_TRANSFER_FROM_HOST`
+ - `transfer_put` is `VIRTGPU_TRANSFER_TO_HOST`
+ - `resource_create` is `VIRTGPU_RESOURCE_CREATE` with reuse
+   - for VBO, UBO, IBO, or custom BO (for fences), attemp to reuse
+   - reuse check requires a `VIRTGPU_WAIT` to check for busy
+ - `resource_unref` is `GEM_CLOSE` with reuse and refcount
+ - `resource_map` is `VIRTGPU_MAP` followed by `mmap`
+ - `resource_wait` is `VIRTGPU_WAIT`
+ - `cmd_buf_create` allocates a struct on heap
+ - `emit_res` tracks a BO in cmdbuf
+ - `res_is_referenced` checks if a BO is used by cmdbuf
+   - dummpy impl and almost always returns true at the moment
+ - `submit_cmd` is `VIRTGPU_EXECBUFFER`
+ - `cs_create_fence` creates a dummy resource, optionally with an addional
+   `sync_file`
+   - it reuses; does that work?
+ - `fence_wait` is `VIRTGPU_WAIT` on the dummy resource, optionally
+   `sync_wait` as well
+ - `fence_server_sync` is `sync_accumulate`, accumulate optional `sync_file`
+   to the cmdbuf
+ - `fence_get_fd` gets the optional `sync_file`
+
+# Gallium Driver
+
+ - resource `clean_mask` and `virgl_resource_dirty`
+   - a (level of a) resource is clean when the guest sees up-to-date contents
+     of the resource (i.e., no host write since last sync)
