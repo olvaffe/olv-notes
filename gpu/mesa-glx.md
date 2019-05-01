@@ -221,3 +221,16 @@ Mesa and GLX
     drawables as the context knows
   * when `dri2.draw_stamp` is not equal to `dri2.stamp` of the draw drawable,
     the context is updated
+
+## DRI3
+
+ - on-screen render area is called Window in X11
+ - off-screen render area is called Pixmap in X11
+ - internally, they are all just Pixmap (because of compositor?)
+ - for windows, mesa allocates buffers and use DRI3PixmapFromBuffer to create
+   Pixmaps for presentation
+ - for pixmaps, the server allocates buffers and Mesa uses
+   DRI3PixmapFromBuffer to get the buffers
+ - in Xwayland, a Pixmap is created by allocating `gbm_bo` or importing
+   dma-bufs.  The `gbm_bo` is wrapped in a `wl_buffer`
+   - in virtio, that is `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`

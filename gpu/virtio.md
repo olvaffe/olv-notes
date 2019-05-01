@@ -135,3 +135,18 @@
  - resource `clean_mask` and `virgl_resource_dirty`
    - a (level of a) resource is clean when the guest sees up-to-date contents
      of the resource (i.e., no host write since last sync)
+
+# Display
+
+ - there is no vblank support; pageflip is executed immediately
+   - vblank event of type page-flip-complete is still delivered
+ - when pageflip happens, a set scanout command and a resource flush command
+   are queued
+ - when the user space decides the current fb is dirty and does a DIRTYFB
+   ioctl, a resource flush command is queued
+ - qemu
+   - there is a host win fb and a guest fb
+   - upon set scanout command, it calls `dpy_gl_scanout_texture` to make the
+     buffer the guest fb
+   - upon resource flush command, it calls `dpy_gl_update` to blit guest fb to
+     host win fb
