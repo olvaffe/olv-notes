@@ -22,7 +22,7 @@
    driver, `virtio-pci`, that puts PCI devices onto `virtio` bus
  - virtio drivers are for devices on `virtio` bus
 
-## A PCI virtio device
+## A legacy PCI virtio device
 
 * Three BARs
   * BAR0 1KB PIO

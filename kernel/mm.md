@@ -78,3 +78,56 @@ Kernel Memory Management
   * `struct inode_operations`
   * `struct vm_operations_struct`
 
+## x86-64 Paging Table
+
+* 4-level paging
+  * 48-bit virtual address and 46-bit physical address
+  * CR3 bit 51..12: PA to the 4KB-aligned PML4 (Page Map Level 4) table
+    * 512 64-bit entries called PML4Es
+  * VA bit 47..39: select one of the 512 PML4Es
+    * each PML4E contains a PA to a PDP (page-directory-pointer) table
+    * there are 512 64-bit entries called PDPEs
+  * VA bit 38..30: select one of the 512 PDPEs
+    * each PDPE contains a PA to a PD (page directory)
+    * there are 512 64-bit entries called PDEs
+  * VA bit 29..21: select one of the 512 PDEs
+    * each PDE contains a PA to a page table
+    * there are 512 64-bit entries called PTEs
+  * VA bit 20..12: select one of the 512 PTEs
+    * each PTE contains a PA to a page
+  * VA bit 11..0: 12-bit offset into the page
+* 5-level paging
+  * 57-bit virtual address and 52-bit physical address
+  * CR3 bit 51..12: PA to the 4KB-aligned PML5 (Page Map Level 5) table
+  * VA bit 56..48: select one of the 512 PML5Es
+    * each PML5E contains a PA to a PML4 table
+    * there are 512 64-bit entries called PML5Es
+* All entries at all levels have a standand format
+  * bit 63..52: 12-bit for flags
+    * bit 63 is NX (no execute)
+    * more
+  * bit 51..12: 40-bit pfn
+  * bit 11..0: 12-bit for flags
+    * bit 4 is page cache disabled (for the next table; or page when it is PTE)
+    * bit 3 is page write through (for the next table; or page when it is PTE)
+    * bit 1 is writable
+    * bit 0 is present
+    * more
+
+## Nested Paging
+
+* AMD-V Nested Paging White Paper
+  * <http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1%201-final-TM.pdf>
+* SW shadow page table
+  * guest has a guest page table
+  * hypervisor has a shadow page table
+  * the HW MMU uses the shadow page table when the guest is active
+  * the guest page table is marked read-only
+    * whenever the guest updates it, it traps into the hypersor
+    * the hypervisor updates both the guest and the shadow page tables
+* HW nested page table
+  * HW MMU uses the guest page table directly
+  * an additional nested page table set up by the hypervisor is used to
+    translate guest physical address to host physical address
+  * for a 4-level paging walk in guest results in 5 walks in the nested page
+    walker (to access PML4, PDPE, PDE, PTE, and the page)
