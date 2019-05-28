@@ -142,13 +142,23 @@
     memory, it is assumed to be backed by MMIO (usually device registers).  If
     the kernel cannot emulate it, it exits `KVM_RUN` with `KVM_EXIT_MMIO`.
   * `KVM_IOEVENTFD` is an alternative to `KVM_EXIT_IO` or `KVM_EXIT_MMIO`.
-    When the guest accesses a pio or mmio to the registered region, the
-    corresponding eventfd is set.  This is useful when the PIO/MMIO only needs
-    to trigger a notification and can be handled asynchronously.
+    When the guest writes a pio or mmio address that is in the registered
+    region, the corresponding eventfd is set.  This is useful when the
+    PIO/MMIO only needs to trigger a notification and can be handled
+    asynchronously.
 * IRQ
   * `KVM_IRQ_LINE` triggers IRQ explicitly
   * `KVM_IRQFD` injects IRQ to he guest whenever the eventfd is set by the
     host kernel or the userspace.
+  * MSI
+    * Traditionally, a device has an interrupt line (pin) which is asserted
+      when the device wants to signal an interrupt.  This is out-of-band
+      because it requires an extra pin rather than the main data path.
+    * With MSI, the device writes an interrupt descriptor to a special MMIO
+      address to signal an interrupt.  The signaling is in-band with the
+      data path.
+    * The device has a BAR for MSI MMIO.  This allows the driver to program
+      the special MMIO address for the device to signal interrupts.
 * PCI
   * ioports at `PCI_CONFIG_DATA (0xcfc)` and `PCI_CONFIG_ADDRESS (0xcf8)`
     * address is 32-bit composed of bus/dev/func/reg numbers together with an
@@ -163,13 +173,9 @@
   * PCI configuration space has interrupt pin and interrupt line fields
     * pin is INTA#...INTD#.  Just use INTA#.
     * line is the IRQ number 0..15
+  * Example: PCI device with guest mappable device memory
+    * there is a BAR of the size of the device memory for mapping in guest
+    * the storage of the device memory is specified with
+      `KVM_SET_USER_MEMORY_REGION`, like physical memories
 * VFIO can assign host physical PCI devices to guests (PCI passthrough)
-* a PCI device with its own memory is made available to the guest with
-  `KVM_SET_USER_MEMORY_REGION` and described to the guest as PCI BAR
-  (see `pci_shmem__init`)
-    pci__init
-* if KVM supports `KVM_CAP_IOEVENTFD`, 
-    ioeventfd__init
-* irqfd
 * virtio-dev
-    virtio_net__init (and many others)
