@@ -179,3 +179,21 @@
       `KVM_SET_USER_MEMORY_REGION`, like physical memories
 * VFIO can assign host physical PCI devices to guests (PCI passthrough)
 * virtio-dev
+
+## `KVM_SET_USER_MEMORY_REGION`
+
+* the ioctl turns a host virtual memory region into a guest physical memory region
+  * it creates `kvm_memory_slot`
+  * it specifies the `gpa->hva` mapping
+* when the guest acceeces a gpa in the region for the first time
+  * it triggers an EPT violation
+    * `handle_ept_violation` -> `kvm_mmu_page_fault` -> `tdp_page_fault`
+  * indirectly in `__gfn_to_pfn_memslot`,
+    * it find the `kvm_memory_slot` from the gpa
+    * it maps gpa to hva using the slot
+    * it pages in the page pointed to by hva and return the hpa
+    * for MMIO that has no page, it walks the paging table to find the hva
+  * with gpa and hva, the shadow page table entry can be updated
+* when the host updates the vma of the host memory (e.g, swap in/out, move)
+  * the registered notifier callback calls `kvm_set_pte_rmapp`
+  * it updates the spte to point to the new hpa
