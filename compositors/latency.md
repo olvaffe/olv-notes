@@ -40,7 +40,7 @@
     * this is possible when the host display server socket is exported to the
       VM, such as using `virtio-vsock`?
 
-## Rendering
+## Rendering and Explicit Fencing
 
 * the client responds to the input event, updates its states, and generates
   new frames for the display server
@@ -62,9 +62,9 @@
     object which is signaled when the rendering completes.  In the case with
     CPU rendering, the fence is already signaled when it is sent.
   * we want this kind of pipelining because by the time the server picks up
-    the buffer, the rendering might already complete.  Even better, when the
-    servier presents the buffer using device "coherent" with the rendering
-    device, the fence becomes irrelevant.
+    the buffer, the rendering might already complete.  There will be no
+    waiting at all.  Also, when the server presents the buffer using a device
+    "coherent" with the rendering device, there will be no waiting either.
   * because the server can also sample the buffer using a GPU or a similar
     device, when the server is done with the buffer, the sampling might just
     begin.  When the client "acquires", the client should also receive a
@@ -73,7 +73,28 @@
 ## Output
 
 * the display server receives a client frame
-  * server in the host
-  * server in the guest
-* the kernel receives a page flip
-  * vsync
+  * the client frame may still be busy.  Inspect its fence smartly.
+  * the server uses a single scanout buffer
+    * It can copy the client frame content to the scanout buffer immediately
+      (w/ tearing) or on next vsync (no tearing).  Its returned fence signals
+      when the copying is completed.
+  * the server page flips between two scanout buffers
+    * flip between front and back scanout buffers on vsyncs
+    * It can copy the client frame content to the back scanout buffer
+      immediately (no tearing).  Its returned fence signals when the copying
+      is completed.
+  * the client is full screen or the server supports overlays
+    * the client frame can be made the scanout buffer (or the source buffer of
+      an overlay) on next vsync.  The server's returned fence signals when
+      there is another buffer replacing the client frame as the scanout buffer
+      (or the source buffer).
+  * the client is in a guest and connects to the server in the host using a
+    proxy in the guest.
+    * the client frame reachs the proxy first before reaching the real server
+      in the host
+    * fences in both directions also need to be relayed
+* the kernel receives a page flip requests
+  * kernel returns immediately and return a fence
+  * the HW flips to the new buffer on next vsync
+    * this can be simulated in SW using a thread
+  * kernel signals the fence
