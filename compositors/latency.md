@@ -98,3 +98,35 @@
   * the HW flips to the new buffer on next vsync
     * this can be simulated in SW using a thread
   * kernel signals the fence
+    * the fence signals when the display controller starts reading from the
+      new buffer, not finishes reading.  In other words, the previous frame
+      becomes idle.
+  * with `virtio-gpu`, the flip of buffers translates to
+    `VIRTIO_GPU_CMD_SET_SCANOUT`.  The hypervisor makes the new buffer the
+    texture for scanout.
+
+## Measuring Latency
+
+* Example
+  * +0us:   input IRQ (i8042)
+  * +136us: X wake up to send the input event
+  * +356us: glxgears wake up
+  * +421us: glxgears handles the input event
+  * +436us: glxgears calls GL
+  * +738us: glxgears swap buffers (which flushes) to present the frame on next msc
+  * +905us: X wake up and waits for the next vsync
+  * some time later
+  * +0us: vsync IRQ (i915)
+  * +63us: X wake up again to copy from app buffer to scanout buffer
+  * new content shows up tear-free
+* Interesting events
+  * input: irq -> server -> client
+  * client: input -> state update -> acquire -> render -> present
+  * output: client -> server -> pageflip -> vsync
+* ftrace
+  * `sched/sched_switch`: which process is running
+  * `irq`: input irq
+  * `drm`: vblank and pageflip-complete events
+  * `dma_fence`: when is fence signaled
+  * `trace_marker`: client events
+* set `trace_clock` (no need to resort to kvm ptp?)

@@ -163,9 +163,12 @@ Kernel DRM
 
 ## Events
 
-* Kernel sends two types of events to the userspace
-  * `DRM_EVENT_VBLANK`
-  * `DRM_EVENT_FLIP_COMPLETE`
+* Kernel sends three types of events to the userspace
+  * `DRM_EVENT_VBLANK`, in response to `DRM_IOCTL_WAIT_VBLANK` with
+    `_DRM_VBLANK_EVENT` bit
+  * `DRM_EVENT_FLIP_COMPLETE`, in response to `DRM_IOCTL_MODE_PAGE_FLIP` or
+    `DRM_IOCTL_MODE_ATOMIC`, with `DRM_MODE_PAGE_FLIP_EVENT` bit
+  * `DRM_EVENT_CRTC_SEQUENCE`, in response to `DRM_IOCTL_CRTC_QUEUE_SEQUENCE`
 * `drmWaitVBlank`
   * there is a counter for the number of vblanks since the system booted
   * `_DRM_VBLANK_ABSOLUTE` waits until the counter matches the specified number 
