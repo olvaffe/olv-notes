@@ -93,7 +93,7 @@
     * the client frame reachs the proxy first before reaching the real server
       in the host
     * fences in both directions also need to be relayed
-* the kernel receives a page flip requests
+* the kernel receives a page flip or atomic commit request
   * kernel returns immediately and return a fence
   * the HW flips to the new buffer on next vsync
     * this can be simulated in SW using a thread
@@ -103,7 +103,12 @@
       becomes idle.
   * with `virtio-gpu`, the flip of buffers translates to
     `VIRTIO_GPU_CMD_SET_SCANOUT`.  The hypervisor makes the new buffer the
-    texture for scanout.
+    texture for scanout.  That is, it blits from the new buffer to the host
+    window, and does a swap buffer on the host window.
+  * with `virtio-gpu`, the copying to scanout buffer translates to
+    `VIRTIO_GPU_CMD_RESOURCE_FLUSH`.  The hypervisor makes sure the texture is
+    scanned out again.  That is, it blits from the current buffer to the host
+    window, and does a swap buffer on the host window.
 
 ## Measuring Latency
 
