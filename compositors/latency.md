@@ -124,6 +124,21 @@
   * +0us: vsync IRQ (i915)
   * +63us: X wake up again to copy from app buffer to scanout buffer
   * new content shows up tear-free
+* Example (inside a guest, on a different host than above)
+  * +   0us: input IRQ (i8042)
+  * + 180us: X wake up to send the input event
+  * + 341us: glxgears wake up
+  * + 380us: glxgears handles the input event
+  * + 395us: glxgears calls GL
+  * + 516us: glxgears swap buffers (which flushes) to present the frame on next msc
+  * + 723us: X wake up (no wait for vsync because virtio-gpu does not support
+      it)
+  * + 821us: X submits copy
+  * +1663us: X submits copy returns
+    * it take a while because `virtqueue_kick` (`vp_notify` specifically)
+      writes to the notification register.  If host has pending works for us,
+      they are fired before the write returns
+  * +1719us: X flushes resource (dirty fb)
 * Interesting events
   * input: irq -> server -> client
   * client: input -> state update -> acquire -> render -> present

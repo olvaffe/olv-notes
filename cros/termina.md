@@ -54,3 +54,16 @@
  - Xwayland is run
  - sommelier is a wayland compositor that forwards the traffic to the host
    wayland compositor via `/dev/wl0`
+
+# Processes
+
+* `imageloader` to load disk images
+* `crosdns`
+* `vmlog_forwarder`
+* `seneschal` manages 9P servers
+* `vm_concierge`
+* `crosvm run --cpus 4 --mem 5901 --root /run/imageloader/... --tap-fd 16 --cid 3`
+  * `--socket /run/vm/vm.Ucaif1/crosvm.sock`
+  * `--wayland-sock /run/chrome/wayland-0`
+  * `--wayland-dmabuf`
+  * `--gpu`
