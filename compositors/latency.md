@@ -124,31 +124,7 @@
   * +0us: vsync IRQ (i915)
   * +63us: X wake up again to copy from app buffer to scanout buffer
   * new content shows up tear-free
-* Example (glxgears in guest)
-  * +0us: input IRQ (i8042)
-  * +129us: X wake up to send the input event
-  * after a while
-  * +0us: qemu wake up
-    * qemu wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` (30) ms, or
-      `SDL2_REFRESH_INTERVAL_BUSY` (10) ms.
-  * +272us: qemu `handle_keydown`
-    * +316us: qemu generates an input IRQ for the guest
-  * +405us: qemu vcpu0 wake up
-  * +448us: qemu vcpu0 enters guest
-  * +1925us: qemu processes GPU command (after guest glxgears swap buffers?)
-  * +3108us: `i915_request_add`
-  * +3234us: qemu processes GPU command (some fenced cmd)
-  * +3560us: qemu generates a vq IRQ
-  * +3602us: qemu processes GPU command (X copy)
-  * +3648us: `i915_request_add`
-  * several more: qemu processes GPU command (some fenced cmds?)
-  * +5151us: qemu process GPU command (?)
-  * +5924us: `i915_request_add`
-  * +6665us: qemu `scanout_flush`
-  * +7072us: `i915_request_add` (qemu blits from guest scanout buffer to
-                                 window)
-  * +8394us: X copy buffers
-* Example (inside a guest, on a different host than above)
+* Example (glxgears in guest, traced in guest, on a different host than above)
   * +   0us: input IRQ (i8042)
   * + 180us: X wake up to send the input event
   * + 341us: glxgears wake up
@@ -163,6 +139,32 @@
       writes to the notification register.  If host has pending works for us,
       they are fired before the write returns
   * +1719us: X flushes resource (dirty fb)
+* Example (glxgears in guest, traced in host)
+  * +   0us: input IRQ (i8042)
+  * + 151us: X wake up to send the input event
+  * after a while
+  * +   0us: qemu wake up
+    * qemu wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` (30) ms, or
+      `SDL2_REFRESH_INTERVAL_BUSY` (10) ms.
+  * + 287us: qemu `handle_keydown`
+  * + 313us: qemu generates an input IRQ for the guest
+  * +1561us: guest notifies host about glxgears GPU command with MMIO write
+  * +1782us: qemu process guest glxgears GPU command
+  * +2253us: guest notifies host about X copy GPU command with MMIO write
+  * +3250us: qemu `i915_request_add` for the guest glxgears
+  * +3794us: qemu generates a cmd done IRQ (qemu polls GL sync every 10ms)
+  * +4116us: qemu process guest X GPU command
+  * +4482us: guest notifies host about `RESOURCE_FLUSH` GPU command with
+             MMIO write
+  * +4723us: qemu `i915_request_add` for the guest X
+             (no IRQ is generated in the captured timeframe)
+  * +5565us: qemu process guest `RESOURCE_FLUSH` GPU command
+  * +5988us: qemu `i915_request_add` to blit from guest scanout to window
+  * +6230us: X wake up
+  * +7089us: X `i915_request_add` to copy
+  * Note that qemu produces a new frame every 30ms-ish and creates noises
+  * Note that guest fences are translated to GPU commands on guest kernel 5.2
+    or older.  That creates noises.
 * Interesting events
   * input: irq -> server -> client
   * client: input -> state update -> acquire -> render -> present
