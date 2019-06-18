@@ -150,3 +150,29 @@
      buffer the guest fb
    - upon resource flush command, it calls `dpy_gl_update` to blit guest fb to
      host win fb
+
+## QEMU virtio-gpu
+
+* `pci_vga_init`
+  * `virtio_pci_realize`
+  * `virtio_vga_base_realize`
+    * add BAR0, 8MB, `vga.vram`
+  * `virtio_pci_device_plugged`
+    * add BAR2, 16KB, `virtio-pci`
+      * offset  0KB, size 4KB: COMMON CFG
+      * offset  4KB, size 4KB: ISR CFG
+      * offset  8KB, size 4KB: DEVICE CFG
+      * offset 12KB, size 4KB: NOTIFY CFG
+    * add BAR4, 4KB, `virtio-vga-msix`
+* after the guest writes to the vq, it writes to NOTIFY CFG to notify the host
+  * the host handles the writes and call `virtio_queue_notify`
+  * it calls `virtio_gpu_handle_ctrl` eventually
+  * to see this in ftrace,
+    * `lspci -vvnn` in guest to find the gpa of BAR2
+    * add 0x3000 to the gpa
+    * ftrace `kvm_mmio`
+* after the host writes to the vq, it calls `virtio_notify`
+  * it ends up in `virtio_pci_notify`
+  * to see this in ftrace,
+    * `lspci -vvnn` in guest to find the IRQ of the device
+    * ftrace `kvm_set_irq`

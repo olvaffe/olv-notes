@@ -112,7 +112,7 @@
 
 ## Measuring Latency
 
-* Example
+* Example (glxgears on host)
   * +0us:   input IRQ (i8042)
   * +136us: X wake up to send the input event
   * +356us: glxgears wake up
@@ -124,6 +124,30 @@
   * +0us: vsync IRQ (i915)
   * +63us: X wake up again to copy from app buffer to scanout buffer
   * new content shows up tear-free
+* Example (glxgears in guest)
+  * +0us: input IRQ (i8042)
+  * +129us: X wake up to send the input event
+  * after a while
+  * +0us: qemu wake up
+    * qemu wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` (30) ms, or
+      `SDL2_REFRESH_INTERVAL_BUSY` (10) ms.
+  * +272us: qemu `handle_keydown`
+    * +316us: qemu generates an input IRQ for the guest
+  * +405us: qemu vcpu0 wake up
+  * +448us: qemu vcpu0 enters guest
+  * +1925us: qemu processes GPU command (after guest glxgears swap buffers?)
+  * +3108us: `i915_request_add`
+  * +3234us: qemu processes GPU command (some fenced cmd)
+  * +3560us: qemu generates a vq IRQ
+  * +3602us: qemu processes GPU command (X copy)
+  * +3648us: `i915_request_add`
+  * several more: qemu processes GPU command (some fenced cmds?)
+  * +5151us: qemu process GPU command (?)
+  * +5924us: `i915_request_add`
+  * +6665us: qemu `scanout_flush`
+  * +7072us: `i915_request_add` (qemu blits from guest scanout buffer to
+                                 window)
+  * +8394us: X copy buffers
 * Example (inside a guest, on a different host than above)
   * +   0us: input IRQ (i8042)
   * + 180us: X wake up to send the input event
