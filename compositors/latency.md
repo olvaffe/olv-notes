@@ -112,6 +112,17 @@
 
 ## Measuring Latency
 
+* glxgears X traffic
+     000:>:0065: Event KeyPress(2) keycode=0x41 time=0x001bb075 root=0x0000039c event=0x00400002 child=None(0x00000000) root-x=984 root-y=384 event-x=174 event-y=-6 state=Mod2 same-screen=true(0x01)
+     000:<:0066: 72: Present-Request(146,1): Pixmap window=0x00400002 pixmap=0x0040000a serial=3 valid=0x00000000 update=0x00000000 x_off=0 y_off=0 target_crtc=0x00000000 wait_fence=0x00000000 idle_fence=0x0040000b options=0 target_msc=25769803776 divisor=0 remainder=0 notifies=;
+     000:>:0066: Event Generic(35) Present(146) IdleNotify(2) event=0x00400005 window=0x00400002 serial=2 pixmap=0x00400008 idle_fence=0x00400009
+     000:>:0066: Event Generic(35) Present(146) CompleteNotify(1) kind=Pixmap(0x00) mode=Copy(0x00) event=0x00400005 window=0x00400002 serial=3 ust=7790846842723368960 msc=38654705664
+     (Flip instead of Copy when fullscreen)
+* X main loop calls `Dispatch`
+  * `WaitForSomething`
+    * at the beginning, it calls `BlockHandler`
+    * if there is nothing to do, it sleeps
+    * after it wakes up, it calls `WakeupHandler`
 * Example (glxgears on host)
   * +0us:   input IRQ (i8042)
   * +136us: X wake up to send the input event
@@ -165,6 +176,66 @@
   * Note that qemu produces a new frame every 30ms-ish and creates noises
   * Note that guest fences are translated to GPU commands on guest kernel 5.2
     or older.  That creates noises.
+* Example (glxgears in crosvm, traced in crosvm)
+  * when there is any client, X wake up every second
+    * call block handlers twice
+      * call xwayland block handler
+      * call glamor block handler
+      * glFlush
+  * glxgears
+    * +0us: virtio-wl irq
+    * +488us: sommilier wake up
+      * it `VIRTWL_IOCTL_RECV`, demarshal the data to wayland traffic to a
+      	socket, read the wayland traffic, and send it to X
+    * +721us: sommilier sends the wayland traffic to X
+    * +920us: X wake up and enter `socket_handler` to read wl events and send
+              X events
+    * +1617us: X enters block handlers and glamor `glFlush`
+      * twice!
+    * +1787us: glxgears wake up
+    * +2238us: glxgears queues a GPU command
+    * +4090us: X wake up again and flips
+    * +4281us: sommilier wake up
+      * `sl_host_surface_attach`, it seems
+        * +6574us: `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+        * +6627us: `DRM_VIRTGPU_WAIT`
+        * +6634us: `DRM_IOCTL_GEM_CLOSE`
+    * +6975us: sommilier `VIRTWL_IOCTL_SEND`
+* Example (glxgears in crosvm, traced in host)
+  * idle (guest X wakes up every second)
+    * +0us  : vcpu thread wake up
+    * +248us: vgpu wake up
+    * +355us: i915 execbuffer
+    * +769us: vcpu again
+    * +893us: vgpu again
+    * +978us: i915 again
+  * glxgears
+    * +0us    : irq (i8042)
+    * +180us  : chrome evdev thread wake up
+    * +263us  : chrome main thread wake up (exo?)
+    * +576us  : crosvm wl thread wake up
+    * +686us  : virtio-wl irq generated in host
+    * +1072us : virtio-wl irq acked by guest
+    * guest doing its work
+    * +7453us : virtio-gpu wake up
+    * +7503us : virtio-gpu execbuf (dummy for X)
+    * +8068us : virtio-gpu execbuf (dummy for X)
+    * +8394us : virtio-gpu execbuf (for glxgears)
+    * +8677us : virtio-wl mmio (`guest->host` notification)
+    * +8684us : crosvm wl thread wake up
+    * +8702us : chrome main thread wake up
+      * +8794us: chrome io thread wake up
+      * it wakes up ChildIOT in chrome gpu process
+    * +8908us : chrome gpu process wake up
+    * +8956us : chrome main thread wake up
+    * +10962us: chrome gpu process wake up
+    * +11009us: chrome gpu process execbuffer
+    * +11194us: virtio-gpu execbuf (?)
+    * +11364us: chrome DrmThread wake up
+    * +11396us: `DRM_IOCTL_MODE_ATOMIC`
+    * +11445us: `i915_pipe_update_start`
+    * +11455us: `i915_pipe_update_end`
+    * some time later: vblank and flip complete
 * Interesting events
   * input: irq -> server -> client
   * client: input -> state update -> acquire -> render -> present
