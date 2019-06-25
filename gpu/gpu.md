@@ -7,11 +7,32 @@ GPU
 * It has access to its VRAM and system memory through GART
 * Both needs to be mapped into GPU's address space
 
-
-## CPU v.s. GPU
+## CPU vs. GPU
 
 * CPU devides itself to cache, flow control, and the ALUs
-* GPU denotes most of itself to ALUs
+* GPU devotes most of itself to ALUs
+* start with a CPU scalar core
+  * one CU and one EU
+  * if we can get rid of cache, out-of-order, branch predictor, memory
+    pre-fetcher, the core becomes very simple, efficient, and affordable
+* let's have 16 cores
+  * each CU in the cores share the same instruction stream
+  * if we can put more EUs into each core, we can share the CU
+* let's have 8 EUs in each core
+  * in each core, it is SIMT (single instruction, multiple threads)
+  * wasted EUs if only some of them are active because of branching
+  * stalled CU/EUs if some of them execute high latency operation (e.g.,
+    texturing)
+* let's context switch (super-threading) between 4 instruction streams in each
+  core
+  * it can execute `16*8*4` = 512 threads concurrently.
+  * some are interleaved
+* Fermi (2010)
+  * a core has 2 CUs and 32 EUs; it can interleave 48 instruction streams
+  * there are 15 cores: `15*32*48` = 23040 threads!
+* Turing (2018)
+  * each core has 4 CUs and 64 EUs; it can interleave 128 instruction streams
+  * there are 68 cores: `68*64*128` = 557056 threads
 
 ## CUDA
 

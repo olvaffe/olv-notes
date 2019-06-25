@@ -147,7 +147,7 @@
     PIO/MMIO only needs to trigger a notification and can be handled
     asynchronously.
 * IRQ
-  * `KVM_IRQ_LINE` triggers IRQ explicitly
+  * `KVM_IRQ_LINE` sets IRQ line high or low explicitly
   * `KVM_IRQFD` injects IRQ to he guest whenever the eventfd is set by the
     host kernel or the userspace.
   * MSI
@@ -159,6 +159,7 @@
       data path.
     * The device has a BAR for MSI MMIO.  This allows the driver to program
       the special MMIO address for the device to signal interrupts.
+    * `KVM_SIGNAL_MSI` triggers MSI explicitly
 * PCI
   * ioports at `PCI_CONFIG_DATA (0xcfc)` and `PCI_CONFIG_ADDRESS (0xcf8)`
     * address is 32-bit composed of bus/dev/func/reg numbers together with an
@@ -179,6 +180,14 @@
       `KVM_SET_USER_MEMORY_REGION`, like physical memories
 * VFIO can assign host physical PCI devices to guests (PCI passthrough)
 * virtio-dev
+
+## IRQ
+
+* i8042
+  * to simulate a keyboard press, set the irq line high
+  * the guest will be interrupted.  It will read the status register, which
+    should indicate that there is keyboard data
+  * the guest will read the data register, which should set the irq line low
 
 ## `KVM_SET_USER_MEMORY_REGION`
 

@@ -51,3 +51,13 @@
     * to ack an irq
   * `VIRTIO_MSI_CONFIG_VECTOR (20)`
   * `VIRTIO_MSI_QUEUE_VECTOR (22)`
+
+## A modern PCI virtio device
+
+* guest-to-host
+  * guest writes to BAR2 @ 12KB
+  * vcpu thread triggers userspace exit and ask the device thread to parse the
+    vq
+* host-to-guest
+  * device thread kicks the main thread to triggers `KVM_SIGNAL_MSI`
+  * vcpu thread wake up to handle the irq in the guest
