@@ -127,3 +127,22 @@
 * register files are optimized for speed (at the cost of power/heat/die-space)
 * caches are optimized for die-space and then power (at the cost of speed)
 * registers and L1 are also closer to EUs than L2/L3
+
+## cpuidle
+
+* each task consists of a sequence of instructions to execute
+* a task is runnable if nothing prevents it from running
+* the CPU scheduler assigns runnable tasks to CPUs
+* a CPU can have multiple runnable tasks, time-sharing the CPU
+* when a CPU has no runnable task, it runs the "idle" task.  The CPU is
+  considered idle
+* the idle task executes an idle loop.  In each iteration
+  * it asks the governor in cpuidle subsystem which idle state it should enter
+  * it then asks the driver in cpuidle subsystem to enter the idle state
+
+## cpufreq
+
+* /sys/devices/system/cpu/cpufreq/policyX
+* cur, max, min freq of a CPU
+* cur, max, min freq set by the scaling driver
+* governor

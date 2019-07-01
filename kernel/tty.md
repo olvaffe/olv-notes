@@ -1,28 +1,33 @@
-See also vt and keyboard
+# TTY
 
-TTY is mainly in tty_io.c
+## Old
 
-tty_fops->open:
-* struct tty_driver and index is looked up first through dev_t (major and minor device numbers)
-* corresponding struct tty_struct is tty_reopen or tty_init_dev
-* in tty_init_dev, tty_ldisc_setup is called, which calls tty_ldisc_ops->open and tty_ldisc_enable
-* tty_operations->open is called
+* See also vt.md and keyboard.md
+* TTY is mainly in `tty_io.c`
+* all tty chardev use `tty_fops`
+  * `tty_open`
+    * struct tty_driver and index is looked up first through dev_t (major and minor device numbers)
+    * corresponding struct tty_struct is tty_reopen or tty_init_dev
+    * in tty_init_dev, tty_ldisc_setup is called, which calls tty_ldisc_ops->open and tty_ldisc_enable
+    * tty_operations->open is called
+  * `tty_read`
+    * tty_ldisc_ops->read is called
+  * `tty_write`
+    * tty_ldisc_ops->write is called
+    * which calls tty_operations->write
+  * `tty_ioctl`
+    * TIOC* is handled in tty_ioctl
+    * tty_operations->ioctl is called.  In vt's case, KBD* and VT_*  are handled
+    * tty_ldisc_ops->ioctl is called at last, more TIOC* is handled
+    * in n_tty case, it calls n_tty_ioctl_helper, which calls tty_mode_ioctl
+    * tcsetattr calls TCSETSW, which is handled by tty_mode_ioctl, which calls set_termios
+    * then tty_operations->set_termios
+    * then tty_ldisc_ops->set_termios
+* /dev/tty
+  * the controlling terminal of a process
+* /dev/console
+  * the printk console which is also a tty
 
-tty_fops->read:
-* tty_ldisc_ops->read is called
-
-tty_fops->write:
-* tty_ldisc_ops->write is called
-* which calls tty_operations->write
-
-tty_fops->ioctl:
-* TIOC* is handled in tty_ioctl
-* tty_operations->ioctl is called.  In vt's case, KBD* and VT_*  are handled
-* tty_ldisc_ops->ioctl is called at last, more TIOC* is handled
-* in n_tty case, it calls n_tty_ioctl_helper, which calls tty_mode_ioctl
-* tcsetattr calls TCSETSW, which is handled by tty_mode_ioctl, which calls set_termios
-* then tty_operations->set_termios
-* then tty_ldisc_ops->set_termios
 
 (keyboard) Input to TTY:
 * will finally be flush_to_ldisc
