@@ -91,6 +91,22 @@ Kernel DRM
     * `drm_atomic_helper_cleanup_planes` to clean up after the commit
   * `drm_atomic_helper_commit_cleanup_done` to update pregress
   * no failure allowed
+* In userspace API
+  * `DRM_MODE_ATOMIC_NONBLOCK` means `DRM_IOCTL_MODE_ATOMIC` should be
+    non-blocking
+  * `DRM_MODE_PAGE_FLIP_ASYNC` means tearing is fine; the atomic commit does
+    not need to happen on vsyncs
+
+## Atomic Modesetting as the Driver Mechanism
+
+* `DRM_IOCTL_MODE_PAGE_FLIP` can be implemented with the generic
+  `drm_atomic_helper_page_flip`
+  * it does a non-blocking atomic commit to udpate a `fb->plane->crtc`
+    sub-datapth
+* `DRM_IOCTL_MODE_DIRTYFB` can be implemented with the genric
+  `drm_atomic_helper_dirtyfb`
+  * it does a blocking atomic commit to udpate the `FB_DAMAGE_CLIPS` property
+    of a plane
 
 ## Memories
 

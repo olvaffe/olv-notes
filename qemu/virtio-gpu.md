@@ -37,6 +37,24 @@
  - DRM_IOCTL_VIRTGPU_MAP
    - map guest pages
 
+# Scanout
+
+* When guest X has a new frame, it either copies the new frame to the scanout
+  buffer or makes the new frame the new scanout buffer
+  * after copying, guest needs to call `drmModeDirtyFB`
+    (`DRM_IOCTL_MODE_DIRTYFB`)
+  * to page flip, guest needs to call `drmModeAtomicCommit`
+    (`DRM_IOCTL_MODE_ATOMIC`) or `drmModePageFlip`
+    (`DRM_IOCTL_MODE_PAGE_FLIP`)
+* either way, it triggers a plane update to virtio-gpu kernel driver
+  * the driver sends `VIRTIO_GPU_CMD_SET_SCANOUT` to replace the scanout
+    buffer
+  * the driver sends `VIRTIO_GPU_CMD_RESOURCE_FLUSH` to flush the dirty region
+* in qemu, the scanout buffer is a host GL fbo.  It gets blitted to the
+  window.
+  * set-scanout means to use another fbo for scanout
+  * resource-flush means to do the blit and swapbuffer
+
 # Fences
 
 # glxgears
