@@ -197,8 +197,9 @@
 * when the guest acceeces a gpa in the region for the first time
   * it triggers an EPT violation
     * `handle_ept_violation` -> `kvm_mmu_page_fault` -> `tdp_page_fault`
-  * indirectly in `__gfn_to_pfn_memslot`,
-    * it find the `kvm_memory_slot` from the gpa
+  * in `try_async_pf`,
+    * it finds the `kvm_memory_slot` from the gpa with
+      `kvm_vcpu_gfn_to_memslot`
     * it maps gpa to hva using the slot
     * it pages in the page pointed to by hva and return the hpa
     * for MMIO that has no page, it walks the paging table to find the hva
