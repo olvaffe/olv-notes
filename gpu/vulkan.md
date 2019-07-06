@@ -270,6 +270,22 @@ Vulkan
 - Within a render pass subpass, commands are executed in recorded order
 - Between render pass subpasses, there is no implicit ordering
 
+# Resource Exclusive Ownership
+
+- resources should only be accessed in the Vulkan instance that has exclusive
+  ownership of the underlying memory
+- only one Vulkan instance has exclusive ownership of a resource's underlying
+  memory at any time
+- it takes three steps to transfer exclusive ownership
+  - the source instance or API releases exclusive ownership
+  - wait with a fence or semaphore
+  - the destination instance or API acquires exclusive ownership
+- furthermore, within a Vulkan instance, resources created with
+  `VK_SHARING_MODE_EXCLUSIVE` should only be accessed in the queue that has
+  exclusive ownership
+- releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
+  `VkImageMemoryBarrier`
+
 SPIR-V
 ======
 
