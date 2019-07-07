@@ -96,6 +96,31 @@
    - calls `ttm_eu_fence_buffer_objects` to make the cmd fence a exclusive
      fence of the referenced BOs
 
+# BO Reference Counting
+
+- `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`
+  - `drm_gem_object_init` sets refcount to 1
+  - `virtio_gpu_object_create` gets and puts when fenced, refcount 1
+  - `drm_gem_handle_create` gets for handle, refcount 2
+  - `virtio_gpu_resource_create_ioctl` explicitly
+    `drm_gem_object_put_unlocked` before returning the handle, refcount 1
+- `DRM_IOCTL_GEM_CLOSE` (with no other reference)
+  - `virtio_gpu_gem_object_close` prepares for close and has no effect on
+    refcount, refcount 1
+  - `drm_gem_object_release_handle` releases the handle and puts, refcount 0
+  - `virtio_gpu_gem_free_object` puts the contained ttm bo, which also becomes
+    refcount 0
+  - `virtio_gpu_ttm_bo_destroy` frees the bo with the contained ttm bo
+- insert `DRM_IOCTL_VIRTGPU_TRANSFER_TO_HOST` before close?
+  - `drm_gem_object_lookup` on enter
+  - `drm_gem_object_put_unlocked` on exit
+  - no difference
+- the problem is TTM
+  - `ttm_bo_put` delays destroy when the BO is busy
+    (`ttm_bo_cleanup_refs_or_queue`) and adds BO to an delete list
+  - `ttm_bo_delayed_delete` wakes up every HZ/100 (10ms) and really destroys a
+    BO when it is idle (`ttm_bo_cleanup_refs`)
+
 # Misc ioctls
 
  - `VIRTGPU_GET_CAPS` queries Gallium caps
