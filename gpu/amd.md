@@ -38,3 +38,107 @@
     * e.g., when a fragment shader needs 32 registers, there can be 8
       wavefronts processing 512 fragments at the same time
   * has 16-lane ALU; thus it takes 4 cycles to execute one wavefront
+
+## Kernel Driver
+
+- for each `drm_device`, `amdgpu_driver_load_kms` is called
+  - depending on the HW generation, it adds a bunch of IP blocks with
+    `amdgpu_device_ip_block_add`
+  - each IP block goes through `early_init`, `sw_init`, `hw_init`, and
+    `late_init`
+- `AMD_IP_BLOCK_TYPE_GMC` is the graphics memory controller
+  - use `gmc_v9_0_sw_init` and `gmc_v9_0_hw_init` with `CHIP_VEGA20` for
+    example
+  - there are two hubs: GFX (graphics and compute) and MM (sdma, uvd, vce)
+  - xGMI is inter-chip global memory interconnect, for mulitple cards to share
+    their resources, I guess
+  - colloect information
+    - `mc_mask` is 48-bit
+    - `mc_vram_size` is the VRAM size and is read from `mmRCC_CONFIG_MEMSIZE`
+      reg.  `real_vram_size` is set to `mc_vram_size`
+    - `aper_base` and `aper_size` is PCI BAR 0.  It provides MMIO access to the
+      VRAM.  It is usually 256MiB, and the driver makes an (usually failed)
+      attempt to resize it to `mc_vram_size`
+    - `visible_vram_size` is set to `aper_size`
+    - `gart_size` is fixed at 512M (requires swap in/out when accessing system
+      memory)
+  - with all these information, we can assign the GPU physical address space
+    - `fb_start` and `fb_end` are read from `mmMC_VM_FB_LOCATION_BASE/TOP`,
+      and they specify the address range of the VRAM.  In xGMI setup, a card
+      can see the VRAMs of any card in the hive
+    - `gart_start` and `gart_end` are assigned to either the begin or the end
+      of the entire address space.  It is merely 512M.
+    - `agp_start` and `agp_size` use the bigger one of the two holes outside
+      of fb and gart
+  - initialize BO manager
+    - mark `aper_base`/`aper_size` WC with MTRR
+    - init `TTM_PL_VRAM` of size `real_vram_size`
+    - init `TTM_PL_TT` of size the smaller of `mc_vram_size` and 75% of system
+      ram 
+      - because GART is 512MB, GPU can only see 512MB of it at any point
+  - enable GART and others
+    - allocate from VRAM a BO to hold the GART table
+    - set `mmVM_CONTEXT0_PAGE_TABLE_BASE_ADDR_LO32/HI32` to the BO physical
+      address to specify the location of the GART table
+    - set `mmVM_CONTEXT0_PAGE_TABLE_START_ADDR_LO32/HI32` to `gart_start`
+    - set `mmVM_CONTEXT0_PAGE_TABLE_END_ADDR_LO32/HI32` to `gart_end`
+    - set `mmMC_VM_AGP_BOT/TOP` to `agp_start` and `agp_end`
+    - set `mmMC_VM_SYSTEM_APERTURE_LOW/HIGH_ADDR` to the used range of the
+      physical address space
+- each process has its own virtual address space for GPU
+  - VM is initialized with `amdgpu_vm_init`
+  - `job->vm_pd_addr = amdgpu_gmc_pd_addr(vm->root.base.bo)` and send the
+    physical address of the page directly to the engine
+- `DRM_IOCTL_AMDGPU_INFO` with `AMDGPU_INFO_MEMORY` returns the memory
+  information
+  - it reports the sizes of three heaps: `vram`, `cpu_accessible_vram`, and
+    `gtt`
+  - vram size is `adev->gmc.real_vram_size`
+  - `cpu_accessible_vram` size is `adev->gmc.visible_vram_size`
+  - `gtt` size is `adev->mman.bdev.man[TTM_PL_TT].size`
+  - there is also `AMDGPU_INFO_VRAM_GTT` which is deprecated
+- `DRM_IOCTL_AMDGPU_GEM_CREATE`
+  - `amdgpu_bo_do_create`
+  - all flags are trasnalted to a `ttm_placement` and a ttm bo is created
+- `DRM_IOCTL_AMDGPU_GEM_VA`
+  - the userspace finds a 48-bit VA for the bo and call this ioctl with
+    `AMDGPU_VA_OP_MAP`
+  - translate userspace flags to `va_flags`: read/write/exec, NC/WC/CC/UC
+  - assocaite a `amdgpu_bo_va_mapping` with the BO
+  - i guess at some point, the BO is mapped into the VM
+- `DRM_IOCTL_AMDGPU_GEM_MMAP` sets up a mmap offset and mmap is handled by
+  `ttm_bo_mmap`
+  - `ttm_bo_mmap` installs `ttm_bo_vm_fault` as the fault handler
+  - the fault handler calls `->fault_reserve_notify` to move the BO to a
+    visible place: no-op if GTT, move to BAR 0 if VRAM
+  - the fault handler calls `->io_mem_reserve`
+  - if GTT, get the pfn of the page; if VRAM, `->ttm_bo_io_mem_pfn` to get the
+    pfn of an address in BAR 0
+  - pte is set up as requested: UC, WC or WB
+    - VRAM is either UC or WC
+    - GTT can also be WB.  When WB, `AMDGPU_PTE_SNOOPED` is also set in GPU VM
+
+## Heaps and Memory Mapping
+
+- radv heaps and memory types are
+  - heap 0: vram minus cpu-accessible-vram
+  - heap 1: cpu-accessible-vram
+  - heap 2: gtt (`radeon_info` calls it gart, but it is gtt)
+  - type 0 is called VRAM: use heap 0
+  - type 1 is called `GTT_WRITE_COMBINE`: use heap 2 w/ coherency w/o cache
+  - type 2 is called `VRAM_CPU_ACCESS`: use heap 1 w/ coherency w/o cache
+  - type 3 is called `GTT_CACHED`: use heap 2 w/ coherency w/ cache
+- `vkAllocateMemory`
+  - userspace is responsbile for managing the VM of GPU for itself
+  - it find a VA in the VM
+  - it allocate a BO with `DRM_IOCTL_AMDGPU_GEM_CREATE`
+  - it maps the BO into the VM with `DRM_IOCTL_AMDGPU_GEM_VA`
+- External Memory Import
+  - getting the BO handle
+    - for prime, it is the standard `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+    - for userptr, it is `DRM_IOCTL_AMDGPU_GEM_USERPTR`
+  - it is then followed by finding a VA for the imported BO and map it into
+    the VM
+- `vkMapMemory`
+  - if userptr, return directly
+  - otherse, `DRM_IOCTL_AMDGPU_GEM_MMAP` followed by an mmap

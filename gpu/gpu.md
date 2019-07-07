@@ -78,3 +78,25 @@ GPU
    - a set is an array of bindings
      - each binding has an array of a descriptor type
      - layout(binding = B) uniform Type[count];
+
+## GART
+
+- GART was introduced with AGP
+  - the graphics device is called the master
+  - the core-logic (northbridge) is called the target
+  - an aperture is a contiguous range of the physical address space where
+    master accesses are re-mapped by the target to physically non-contiguous
+    system memory pages
+  - the remapping is accomplished through GART, Graphics Aperture Re-mapping
+    Table, living in the system memory
+  - core-logic coherency
+    - master accesses outside of the aperture must be coherent
+      - master writes is visible to CPU
+      - CPU writes is visible to master reads
+    - master accesses inside the aperture depends on `ita_coh` and
+      `gart_entry_coh`
+      - when `gart_entry_coh` is set, `ita_coh` (read-only, core-logic cap)
+      	decides the coherency
+      - when `gart_entry_coh` is unset, coherency is undefined
+- In PCI-e, GART is implemented by the graphics device using the VRAM, not by
+  the core-logic

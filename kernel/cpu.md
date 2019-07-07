@@ -146,3 +146,21 @@
 * cur, max, min freq of a CPU
 * cur, max, min freq set by the scaling driver
 * governor
+
+## system-on-chip
+
+- traditionally, there are two core-logic chipsets outside of the CPU
+  - northbridge is connected to the CPU using FSB and serves as the controller
+    for RAM, AGP, high-speed PCI-e
+  - southbridge is connected to northbridge and serves as the controller for
+    low-speed buses
+- overtime, things moved into a SoC design
+  - there are several CPU cores, each with its own frontend, execution engine,
+    and memory subsystem (L$/L2)
+    - the cores are connected together with a ring interconnect
+  - there is a separate huge GPU core
+  - both CPU cores and GPU core are connected to a shared L3
+  - there is a system agent, evolved from northbridge, that sits between the
+    L3 and the I/O buses
+  - southbridge evolved into platform controller hub, PCH, and is slowly
+    moving into the system agent
