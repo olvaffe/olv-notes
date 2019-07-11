@@ -104,3 +104,19 @@
 * when a key is pressed, it is processed by the display (SDL2/gtk/...) and
   `qkbd_state_key_event` is called
   * it goes a long way but eventually `qemu_input_event_send_impl` is called
+
+# main loop
+
+- `main_loop` is pretty standard
+  - if there is any timer, timeout is set to the diff to the next timer;
+    otherwise, timeout is indefinite
+  - it unlocks the global iothread lock with `qemu_mutex_unlock_iothread`
+  - it polls fds with timer timeout
+  - after waking up, it grabs the global lock with `qemu_mutex_lock_iothread`
+  - it processes all polled fds with pending works
+  - it runs all of its timers with `qemu_clock_run_all_timers`
+    - `text_console_update_cursor` wakes up every `CONSOLE_CURSOR_PERIOD / 2`
+      (250) ms
+    - `gui_update` wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` or
+      `GUI_REFRESH_INTERVAL_IDLE` ms (to process input)
+  -

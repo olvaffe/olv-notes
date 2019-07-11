@@ -76,3 +76,44 @@
      - `_IOC(_IOC_READ|_IOC_WRITE, 0x64, 0x42, 0x20)`
    - `virgl_flush_from_st` -> `virgl_cs_create_fence` -> `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`
  - a fence is a BO of size 8
+
+# Notify & IRQ
+
+- qemu vcpu thread
+  - the guest writes to an MMIO address to notify the device
+  - qemu cpu exits because of `KVM_EXIT_MMIO`
+  - `address_space_rw` is called to simulate the MMIO write
+    - `prepare_mmio_access` (this locks the iothread mutex)
+    - `memory_region_dispatch_write`
+        -> `virtio_pci_notify_write`
+        -> `virtio_gpu_handle_ctrl_cb`
+        -> `qemu_bh_schedule`
+    - `qemu_mutex_unlock_iothread`
+  - qemu cpu `KVM_RUN`s again
+- qemu main thread (iothread)
+  - the iothread exits poll with the global mutex locked
+  - it handles all pending fds with `glib_pollfds_poll`
+    - `g_main_context_dispatch`
+      -> `aio_ctx_dispatch`
+      -> `aio_bh_call`
+      -> `virtio_gpu_ctrl_bh`
+  - `virtio_gpu_virgl_process_cmd` processes all commands and responds to
+    finished commands.  It creates fences for fenced commands with
+    `virgl_renderer_create_fence`
+  - fenced commands are added to `fenceq` and a timer is started.  When the
+    timer fires, it calls `virtio_gpu_fence_poll` to check all fences.  Each
+    signaled fence generates a call to `virgl_write_fence` to retire the
+    fenced command and to generate an IRQ
+- qemu iothread has various responsibilities.  It sleeps and talks to Xorg a
+  lot while holding the iothread lock (bad).  Suppose the iothread has been
+  notified of cmd1.  If the guest goes on to notify of cmd2 now,
+  - the MMIO would be blocked in host `prepare_mmio_access` trying to grab the
+    iothread lock
+  - the iothread finally stops talking to X and starts processing cmd1.
+    Suppose cmd1 is lightweight, the iothread goes on to retire it and
+    generates an IRQ
+  - The guest starts processing the IRQ, which requires grabbing the spinlock
+    of the vq to get responses.  However, the app process still holds the lock
+    while inside `virtqueue_kick`
+  - finally the host iothread releases its lock.  The host vcpu thread grabs
+    the lock and notifies of cmd2
