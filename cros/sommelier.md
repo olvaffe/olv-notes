@@ -23,6 +23,33 @@
     * `SOMMELIER_XFONT_PATH=...`
     * `SOMMELIER_GLAMOR=1`
     * `-X --x-display=0`
+* There can be multiple master sommeliers.  Each master sommelier is a wayland
+  server that does almost nothing.  Whenever a client connects to it, the
+  master instance forks a peer instance to serve the client.  The peer
+  instance relays the traffic between the client and the host server.  Each
+  new client appears as a new client for the host server.
+* There can be multiple X11 sommeliers.  Each X11 sommelier has a single
+  client, Xwayalnd, connected to it.  It replays the traffic between Xwayland
+  and the host server.  Xwayland appears as a client for the host server.
+* 2D wayland clients
+  * each 2D wayland client is served by a peer instance
+  * the peer instance gets the frame data from the app via `wl_shm`
+  * the peer instance also creates another SHM shared with the host compositor
+  * when the client attaches, the peer instance attaches this other SHM to the
+    host server
+  * when the client commits, the peer instance memcpy()s from the app's SHM to
+    the peer's SHM and commits to the host server
+* 3D wayland clients
+  * each 3D wayland client is served by a peer instance
+  * the peer instance gets the frame data from the app via `wl_drm`
+  * a prime fd is also a host buffer; the host compositor can see it directly
+  * when the client attaches a buffer, the peer instance attaches the the
+    buffer to the host compositor
+  * when the client commits, the peer instance commits to the host server
+* X11 clients
+  * Xwayland renders with glamor and is a 3D wayland client served by a X11
+    sommelier
+  * it does not matter whether the X11 clients are 2D or 3D
 
 ## VirtWL
 
@@ -34,6 +61,12 @@
 * `VIRTWL_IOCTL_NEW` to get a context fd.  When the context fd is readable,
   `VIRTWL_IOCTL_RECV` to read the data, massage the data, and write the data
   into the socketpair.
+* `VIRTWL_IOCTL_NEW_ALLOC` asks the host device to create a memfd, map it,
+  inject the pages into the guest, and return the gpa to the guest kernel
+  driver
+* `VIRTWL_IOCTL_NEW_DMABUF` asks the host device to create a GEM BO, map it,
+  inject the pages into the guest, and return the gpa to the guest kernel
+  driver
 
 ## X11 Sommelier
 
