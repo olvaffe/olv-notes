@@ -163,3 +163,63 @@ Kernel Memory Management
   * In EPT (extended page table, used by KVM), MTRR is ignored and EPT bits
     5:3 replace MTRR (0: UC, 1: WC, 4: WT, 5 WP, 6: WB)
     * `vmx_get_mt_mask`
+
+## x86-64
+
+- Kconfig
+  - `64BIT`
+  - `X86_64`
+  - `MTRR`
+  - `X86_PAT`
+  - `DYNAMIC_MEMORY_LAYOUT`
+  - `SPARSEMEM_VMEMMAP`
+  - `SPARSEMEM`
+  - `PHYS_ADDR_T_64BIT`
+  - `NEED_SG_DMA_LENGTH`
+  - `NEED_DMA_MAP_STATE`
+  - `ARCH_DMA_ADDR_T_64BIT`
+  - `SLUB`
+  - `HAVE_MEMBLOCK_NODE_MAP`
+  - `HAVE_ARCH_HUGE_VMAP`
+  - `SWIOTLB`
+  - no `X86_5LEVEL`
+  - no `HAVE_MEMBLOCK_PHYS_MAP`
+  - no `DEFERRED_STRUCT_PAGE_INIT`
+  - no `ARCH_HAS_SYNC_DMA_FOR_DEVICE`
+  - no 32-bit specific tricks
+    - no `X86_32`
+    - no `HIGHMEM4G`
+    - no `VMSPLIT_3G`
+    - no `PAGE_OFFSET`
+    - no `PAE`
+    - no `HIGHPTE`
+- `start_kernel`
+  - `setup_arch`
+    - set up memblock according to e820, `e820__memblock_setup`
+      - `memblock_add` adds a memory region to memblock
+      - `memblock_reserve` adds a reserved region to memblock
+      - an allocation finds a region in the memory region and adds it to the
+      	reserved region
+    - `init_mem_mapping` initializes `PAGE_OFFSET` mapping
+      - direct mapping to all physical memory
+      - space for page tables are from the BSS of the kernel image
+    - `initmem_init` assigns the entire memblock memory region to node 0
+    - `native_pagetable_init` is defined to `paging_init`
+      - `sparse_init` calls `sparse_mem_map_populate` (vmemmap version), which
+      	allocates page tables and `struct page` from memblock, and set up a
+      	mapping for contiguous `struct page` array at `VMEMMAP_START`
+      - `zone_sizes_init` tells the buddy page allocator the sizes of memory zones
+  - `mm_init`
+    - `mem_init`
+      - `memblock_free_all` releases all pages from memblock to the buddy page
+      	allocator.  Those in the reserved regions are marked `PG_reserved`.
+    - `kmem_cache_init` initializes the slab allocator on top of the buddy
+      allocator
+    - `vmalloc_init` prepares for vmallocs/ioremaps that will use
+      `VMALLOC_START` and onward (32TB)
+- `page_address(page)`
+  -> `lowmem_page_address(page)`
+  -> `page_to_virt(page)`
+  -> `__va(PFN_PHYS(page_to_pfn(page)))`
+  - `page_offset_base + ((page - vmemmap_base) << 12)`
+- `kmap` is `page_address`; `kunmap` is no-op
