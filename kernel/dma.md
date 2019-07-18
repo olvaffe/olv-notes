@@ -58,10 +58,12 @@ Kernel and DMA
   - otherwise, it calls `get_arch_dma_ops(dev->bus)`
     - on x86 it is usually NULL unless there is intel/amd iommu
     - on arm, it is non-NULL
-- one can get coherent DMA buffer with `dma_alloc_coherent`
-  - it is CPU/device coherent
-- oen can also use the streaming API `dma_map_sg` and families
-  - it syncs for device on map, and syncs for CPU on unmap
+- one can allocate coherent DMA buffer with `dma_alloc_coherent`
+  - it is a piece of CPU/device coherent memory
+  - `dma_mmap_wc` can map it to user space
+- oen can also use the streaming API `dma_map_sg` and families with regular
+  pages
+  - it syncs for device on `dma_map`, and syncs for CPU on `dma_unmap`
     - no-op on x86 and arm
     - invalidate/flush CPU caches on arm64
   - it can also be persistently mapped; then explicit flush/invalidate with

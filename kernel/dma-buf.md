@@ -134,3 +134,12 @@
 ## udmabuf
 
 * create a dma-buf that wraps ranges of memfds from userspace
+
+## anon inode
+
+- `anon_inodefs` is a pseudo-filesystem for creating anonymous files and fds
+  for userspace
+  - `anon_inode_getfile` allocates a `struct file` for the anonymous inode
+    with the specified name, fops, and private data.
+  - `anon_inode_getfd` gets an unused fd, point the fd to the anon file, and
+    return the fd
