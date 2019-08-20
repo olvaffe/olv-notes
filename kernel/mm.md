@@ -227,6 +227,76 @@ Kernel Memory Management
     - `vmalloc_init` prepares for vmallocs/ioremaps that will use
       `VMALLOC_START` and onward (32TB)
 
+## Memory Initialization (old)
+
+* x86-64 uses 4-level page table.
+  * `PGDIR_SHIFT == 39`
+  * `PUD_SHIFT == 30`
+  * `PMD_SHIFT == 21`.
+  * `PTRS_PER_PGD` is 512, `1 << (48 - 39)`.
+  * `PTRS_PER_PUD` is 512, `1 << (39 - 30)`.
+  * `PTRS_PER_PMD` is 512, `1 << (30 - 21)`.
+  * `PTRS_PER_PTE` is 512, `1 << (21 - 12)`.
+* There are three memory allocators
+  * brk
+  * e820 and `alloc_low_page`
+  * bootmem
+  * buddy allocator
+* In `start_kernel`, after the linux banner is printed, `setup_arch` is called.
+  * It calls `e820__memory_setup` to decide physical memory maps.
+  * It calls `e820__end_of_ram_pfn` to decide 
+    * `max_pfn`, (pfn of the last page of the DRAM) + 1.
+    * `max_arch_pfn`, `1 << MAX_PHYSMEM_BITS`
+  * It calls `e820__end_of_low_ram_pfn` to decide
+    * `max_low_pfn`, which is `min(max_pfn, 4GB>>12)`
+  * It calls `reserve_brk` to resert brk region.
+  * It calls `init_mem_mapping` to map the low memory.
+    * It runs before bootmem for early direct access.
+    * The first range is the first 4MB (`PMD_SIZE`), using 4K page.
+    * The second range is the rest, using 4M page
+    * It calls `find_early_table_space` to reserve in `e820_table_start` and
+      `e820_table_end` a place to store the page tables.
+      * This storage is available to others through `alloc_low_page`.  It is
+        the `MAPPING_BEYOND_END` mapped in `head_32.S` 
+      * This storage is reserved by `reserve_early`.
+    * The mappings are set up by `kernel_physical_mapping_init`.
+    * cr3 is loaded, with `swapper_pg_dir` still being the PDE table.
+    * `max_low_pfn_mapped` and `max_pfn_mapped` are set to `max_low_pfn`
+      if everything goes normally.
+    * That is, the mapped memory goes from 8MB to whole low memory.
+  * It calls `initmem_init` to set up bootmem, boot-time physical memory
+    allocator.
+    * `e820_register_active_regions` is called with node 0 and all physical
+      memory.  All e820 ram regions are stored in `early_node_map` of buddy
+      allocator.
+    * `setup_bootmem_allocator` is called.  It sets `after_bootmem` to 1.
+    * It `reserve_early` an area for `bootmap`.
+    * Later, `early_res_to_bootmem` is called to migrate early reserved area to
+      bootmem map.
+  * It calls `paging_init` to allocate an array of all `struct page *` from
+    bootmem.
+    * All pages are initialized as reserved at this point by `memmap_init_zone`.
+* Much later in `start_kernel`, `mem_init` is called
+  * It calls `free_all_bootmem` to return unused pages in bootmem to the buddy
+    allocator.
+  * `zap_low_mappings` is called to, forget low memory mappings.  That is,
+    virtual address `< PAGE_OFFSET` is no longer mapped.  This is so that one
+    can only access kernel memory from kernel address space.
+* An example of early reserved regions
+
+    (8 early reservations) ==> bootmem [0000000000 - 00377fe000]
+      #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+      #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
+      #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
+      #3 [0000100000 - 00004cb180]    TEXT DATA BSS ==> [0000100000 - 00004cb180]
+      #4 [00004cc000 - 00004cf000]    INIT_PG_TABLE ==> [00004cc000 - 00004cf000]
+      #5 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
+      #6 [0000007000 - 0000008000]          PGTABLE ==> [0000007000 - 0000008000]
+      #7 [0000008000 - 000000f000]          BOOTMAP ==> [0000008000 - 000000f000]
+  * PGTABLE is one page because only the first 4M uses 4K page.  The rest uses
+    4M page and does not need to allocate memory.
+
+
 ## Memory Mapping
 
 - map pages in...
