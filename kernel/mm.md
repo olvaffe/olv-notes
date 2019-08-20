@@ -239,8 +239,8 @@ Kernel Memory Management
   * `PTRS_PER_PTE` is 512, `1 << (21 - 12)`.
 * There are three memory allocators
   * brk
+  * memblock
   * e820 and `alloc_low_page`
-  * bootmem
   * buddy allocator
 * In `start_kernel`, after the linux banner is printed, `setup_arch` is called.
   * It calls `e820__memory_setup` to decide physical memory maps.
@@ -296,6 +296,24 @@ Kernel Memory Management
   * PGTABLE is one page because only the first 4M uses 4K page.  The rest uses
     4M page and does not need to allocate memory.
 
+## brk section
+
+* Introduced in `93dbda7cbcd70a0bd1a99f39f44a9ccde8ab9040`, 2009.
+  * And modified several times after.
+* In the linker script, `.brk` is reserved for `*(.brk_reservation)` and
+  is delimited by `__brk_base` and `__brk_limit`.  It comes just after `.bss`
+  and just before `.end`.
+* `RESERVE_BRK` is used to reserve brk space
+  * It creates `.brk_reservation` section with the given size
+  * It is used to reserve space for init page tables and dmi
+* When `head_32.S` creates `default_entry`, it creats page tables in `.brk`.
+  * `_brk_end` marks the location after the page tables.
+  * `extend_brk` is used to alloc space in brk.  It extends `_brk_end`.
+    * It is used indirectly by `dmi_alloc` in `drivers/firmware/dmi_scan.c`.
+* `reserve_brk` is called to reserve brk as `reserve_early`.  It also pins the
+  brk as read-only.
+  * It reserves up to `_brk_end`, not to `_brk_limit`.  Therefore, it is safe to
+    `RESERVE_BRK` a large (safe) region.
 
 ## Memory Mapping
 
