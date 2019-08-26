@@ -201,3 +201,34 @@
   * to see this in ftrace,
     * `lspci -vvnn` in guest to find the IRQ of the device
     * ftrace `kvm_set_irq`
+
+## SHMEM helper
+
+- use `DEFINE_DRM_GEM_SHMEM_FOPS` to define the `file_operations`
+- there should be an ioctl to create a BO
+  - the BO should embed a `drm_gem_shmem_object`, which is a `drm_gem_object`
+- there should be an ioctl to return a magic offset for mapping a BO
+  - return `drm_vma_node_offset_addr` from the BO
+- when the DRM file is mapped with the magic offset, `drm_gem_shmem_mmap` is
+  called
+  - it calls `drm_gem_mmap` to look up the BO from the magic offset
+  - `vm_area_struct` is set up with
+    - `VM_IO`
+    - `VM_MIXEDMAP`
+    - `pgprot_writecombine`
+    - `drm_gem_shmem_vm_ops`
+  - pagefault calls `vmf_insert_page`
+- `vma->vm_flags` is set to `0x140440fb`
+  - `VM_SHARED`, `VM_WRITE`, `VM_READ`
+  - `VM_MAYREAD`, `VM_MAYWRITE`, `VM_MAYEXEC`, `VM_MAYSHARE`
+  - `VM_IO`, `VM_DONTEXPAND`, `VM_DONTDUMP`
+  - `VM_MIXEDMAP`
+  - `vm_get_page_prot` maps it to `PAGE_SHARED`
+    - `_PAGE_PRESENT`
+    - `_PAGE_RW`
+    - `_PAGE_USER`
+    - `_PAGE_ACCESSED`
+    - `_PAGE_NX`
+- `vma->vm_page_prot` is set to `0x800000000000002f` on x86
+  - PAT and PCD bits are cleared and PWT bit is set.
+  - according to `pat_init`, it maps to `_PAGE_CACHE_MODE_WC`
