@@ -75,3 +75,22 @@ Kernel and DMA
   transparently set up through the dma ops returned by `get_arch_dma_ops`
 - there is a generic DMA-API to IOMMU-API glue layer,
   `drivers/iommu/dma-iommu.c`, to simplify the implementation of the dma ops
+
+## swiotlb
+
+- 64-bit kernels with >4GB RAM normally require swiotlb
+- on x86-64
+  - dmesg shows
+    - `PCI-DMA: Using software bounce buffering for IO (SWIOTLB)`
+    - `software IO TLB: mapped [mem 0x7bfdf000-0x7ffdf000] (64MB)`
+  - there is a 16MB ISA DMA zone, `MAX_DMA_PFN`
+  - there is a 4GB DMA32 zone, `MAX_DMA32_PFN`
+  - `pci_swiotlb_detect_4gb` detects if there is more than 4GB of memory and
+    enables swiotlb
+- direct dma (no `dma_map_ops`) falls back to swiotlb transparently
+  - swiotlb allocates 64MB of memory pool from memblock
+  - when a device cannot DMA-access a page, `dma_map_sg` falls back to
+    `swiotlb_tbl_map_single`.  swiotlb allocates a bounce (shadow) page from
+    its pool and return the dma address to the shadow page 
+  - in `dma_unmap_sg` or `dma_sync_sg_for_*`, swiotlb transparently memcpy's
+    between the real page and the shadow page
