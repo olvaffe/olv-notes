@@ -3,32 +3,73 @@ Kernel and IRQ
 
 ## Boot Time Setup
 
-* Before going to protected mode in `go_to_protected_mode`, `cli` is issued to
-  disable local irq and `mask_all_interrupts` is called to mask all irq in PIC.
-* In `kernel/head_32.S`, IDT (interrupt descriptor table) is created.
-  * `setup_idt` is called after paging is enabled and stack is set up
-  * `idt_table` is defined in `kernel/traps.c`.
-  * All 256 entries of IDT are set up to call `ignore_int`, except for several
-    of them who point to `early_divide_err`, `early_illegal_opcode`,
-    `early_protection_fault`, and `early_page_fault` respectively.
-* In `start_kernel`, after `setup_arch` and before `mem_init`,
-  * `trap_init` is called
-  * `early_irq_init` is called
-  * `init_IRQ` is called
-  * `early_boot_irqs_on` is called to set `early_boot_irqs_enabled` to true.
-  * `local_irq_enable` is called to enable local irq.
-* In `kernel/entry_32.S`, an array of function pointers is defined in
-  `interrupt`.
-  * It has members as many as the number of user-defined vectores.
-  * They point to code snippet that pushes the vector number and then indirectly
-    jumps to `common_interrupt`.  It plays a trick to make it stack look exactly
-    like `pt_regs`, with `orig_ax = ~vector_number`.  It then calls `do_IRQ` and
-    pasees its stack as the first argument.
-* `init_IRQ` is actually `native_init_IRQ`.
-  * vector 0x20 and above is for user defined interrupt.
-  * IRQx is mapped to vector `IRQx_VECTOR`, which starts from `0x20 + 0x10`.
-  * It installs vectors for all user-defined interrupts, using the array
-    `interrupt`.
+- IDT size is 256 with the first 32 reserved for processor exceptions (traps)
+  - `IDT_ENTRIES` and `NR_VECTORS` is 256
+  - `NUM_EXCEPTION_VECTORS` and `FIRST_EXTERNAL_VECTOR` is 32
+  - traps include
+    - `X86_TRAP_DE` divide-by-zero
+    - `X86_TRAP_NMI` NMI
+    - `X86_TRAP_OF` overflow
+    - `X86_TRAP_PF` page fault
+    - and others
+- `NR_IRQS` is `NR_VECTORS + IO_APIC_VECTOR_LIMIT`
+  - `FIRST_SYSTEM_VECTOR` is 256, following IDT
+  - unless when there is local APIC, then `FIRST_SYSTEM_VECTOR` is 0xec
+- In `go_to_protected_mode`,
+  - `realmode_switch_hook` issues `cli` to disable local irq
+  - `mask_all_interrupts` masks out all irq in PIC
+  - loads a null IDT
+  - jumps to protect mode and call `startup_32`
+    - which jumps to long mode (64-bit) and call `startup_64`
+    - which calls `x86_64_start_kernel`
+- In `x86_64_start_kernel`,
+  - `idt_setup_early_handler` sets up the IDT from `early_idt_handler_array`,
+    where all traps are handled by `early_idt_handler_common` that sets
+    up early pgtable and works around bugs
+  - at the end, `start_kernel` is called
+- In `setup_arch` called by `start_kernel`,
+  - `idt_setup_early_traps` updates some trap handlers in IDT
+  - `idt_setup_early_pf` updated `X86_TRAP_PF` handler
+- In `start_kernel` after `setup_arch`,
+  - `trap_init` calls `idt_setup_traps` and `idt_setup_ist_traps` to set the
+    final trap handlers
+  - `early_irq_init` initializes the kernel IRQ subsystem and calls
+    `arch_early_irq_init`
+  - `init_IRQ` initializes all HW IRQs after traps.
+    `idt_setup_apic_and_irq_gates` initializes that part of IDT from
+    `irq_entries_start` to be handled by `common_interrupt` and `do_IRQ`
+  - `local_irq_enable` is called
+
+## Hardware Interrupts
+
+- PIC maps hardware interrups, IRQ#n, to vectors in IDT 
+- when a hardware interrupt is received, CPU disables interrupts (`cli`)
+  automatically
+- IDT entries from `FIRST_EXTERNAL_VECTOR` to `NR_VECTORS` point to the table
+  at `irq_entries_start`.  The entries handle interrupts in a uniform way
+  - constructs `pt_regs` on stack
+  - call `do_IRQ`
+- IRQ handling
+  - `early_irq_init` sets up irq to `irq_desc` mappings
+  - `idt_setup_apic_and_irq_gates` sets up IDT
+  - `irq_set_chip_and_handler` updates an `irq_desc` to point to the specified
+    `irq_chip` and handler
+  - when a hw irq happens, `IDT -> do_IRQ -> irq_desc::handle_irq`
+  - the handler acks the irq, and calls each action in the `irq_desc::action`
+    list
+  - `request_irq` registers an action to an `irq_desc`
+
+## Syscalls
+
+- x86-64 has an instruction, `syscall`, that loads rip from `MSR_LSTAR` MSR.
+  - `syscall_init` initializes `MSR_LSTAR` to `entry_SYSCALL_64`
+- `entry_SYSCALL_64` does
+  - construct `pt_regs` on stack
+  - call `do_syscall_64`
+    - enable IRQ for kernel mode
+    - execute the syscall
+    - disable IRQ for user mode
+  - `iretq` or `sysretq` that restore flags
 
 ## Privilege
 
@@ -40,31 +81,8 @@ Kernel and IRQ
     than the program caused the interrupt and the program has enough privilege
     to cause the interrupt.
   * `cs:eip` becomes `segment selector:offset` in the IDT entry.
-* Kernel calls `set_system_trap_gate` to set syscall interrupt
-  * The DPL is `0x3`, user mode
-  * Thew segment selector is `__KERNEL_CS`, which is `GDT_ENTRY_KERNEL_CS << 3`.
-    That is, the new segment will be kernel code segment in GDT with highest
-    RPL and CPL.
-* In `setup_gdt` in `boot/pm.c`, `BOOT_CS` and `BOOT_DS` GDT have acess flags
-  `0x9b` and `0x93`.  Both indicate highest privilege.
-
-## arm assembly
-
-* `ldr r0, =0xhhhhhhhh`, if the constant is representable by mov, mov is used,
-  otherwise, ldr is used
-
-When an interrupt happens, cli (disable interrupt) automatically by CPU.  Then
-* do_IRQ is called, which...
-* irq_enter (increase preempt_count by HARDIRQ_OFFSET)
-* irq_to_desc to get struct irq_desc *, and then desc->handle_irq
-* irq_exit is called
-* iret sets FLAGS
-
-In start_kernel,
-* init_IRQ is called to setup irq_desc, irq_desc->handle_irq is hooked to handle_level_irq, which...
-* mask_ack irq, and handle_IRQ_event
-* in handle_IRQ_event, sti, call actions, and then cli
-* umask
+* In `setup_gdt` in `boot/pm.c`, `GDT_ENTRY_BOOT_CS` and `GDT_ENTRY_BOOT_DS`
+  GDT have acess flags `0x9b` and `0x93`.  Both indicate highest privilege.
 
 Preempt count:
 
@@ -84,11 +102,3 @@ By default
 * preempt_schedule inc/dec preempt_count by PREEMPT_ACTIVE before/after schedule()
 
 * spin_lock() -> _spin_lock(); on UP, call preempt_disable(); on SMP, it then does the real stuff
-
-irq on s3cxxxx
-* interrupt -> set SRCPND -> arbitration -> set INTPND or FIQ or nothing
-* INTMSK masks interrupts
-* my guess: arbitration happens when INTPND or SRCPND change.
-* when an (non-fiq) interrupt happens, SRCPND is set and arbitration happens, which sets INTPND
-* If INTPND is cleared before SRCPND, INTPND is set again!
-* So one should clear SRCPND and then INTPND
