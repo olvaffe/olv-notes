@@ -232,3 +232,68 @@
 - `vma->vm_page_prot` is set to `0x800000000000002f` on x86
   - PAT and PCD bits are cleared and PWT bit is set.
   - according to `pat_init`, it maps to `_PAGE_CACHE_MODE_WC`
+
+## virglrenderer
+
+- `virgl_renderer_init`
+  - initializes the global `vrend_state` of type `global_renderer_state`
+  - creates the global resource hash table, `res_hash`
+  - creates a temporary gl context to get caps and then destroys it
+  - create context 0, and sub-context 0 in it, for internal use
+  - contexts are stored in the global `dec_ctx` array of type
+    `vrend_decode_ctx`
+- `virgl_renderer_context_create`
+  - creates a client context of type `vrend_context` with context id >0
+    - in gallium driver, this maps to the "pipe screen"
+  - also creates a `vrend_sub_context` of id 0 for internal use
+    - each `vrend_sub_context` has its own gl context
+- `virgl_renderer_submit_cmd`
+  - parses and executes the `VIRGL_CCMD_*` commands
+    - `VIRGL_CCMD_CREATE_SUB_CTX` create a client sub-context, which maps to a
+      "pipe context" in the gallium driver
+    - `VIRGL_CCMD_SET_SUB_CTX` selects a sub-context and makes it current
+    - `VIRGL_CCMD_CREATE_OBJECT` adds a "pipe state" to the current sub-context
+- `virgl_renderer_resource_create`
+  - creates a `vrend_resource` and inserts it to the global `res_hash`
+  - a `vrend_resource` owns a GL resource
+- `virgl_renderer_ctx_attach_resource`
+  - makes a resource available to a context (i.e., add it to the context's
+    resource hash table)
+  - `VIRGL_CCMD_*` can only reference attached resources
+- `virgl_renderer_resource_attach_iov`
+  - attaches iovs to a resource for transfers
+- `virgl_renderer_transfer_write_iov`
+  - copies data from the attached iovs to the GL resource of a
+    `vrend_resource`
+- `virgl_renderer_create_fence`
+  - inserts a fence into the GL command stream
+- `virgl_renderer_poll`
+  - check the status of the inserted fences
+  - if a fence is signaled, notify the caller of its associated seqno
+
+## virglrenderer: vtest
+
+- normal operation
+  - listen to `/tmp/.virgl_test` and wait in
+    `vtest_main_wait_for_socket_accept`
+  - for each new connection, fork a child to run `vtest_main_run_renderer`
+  - `vtest_main_run_renderer` will
+    - poll for input
+    - read vtest header
+    - `virgl_renderer_poll` to update fence seqno
+    - dispatch to using the `vtest_commands` dispatch table
+    - `virgl_renderer_create_fence` to add a new fence
+- a client must send `VCMD_CREATE_RENDERER` first
+  - it initializes the global variable `vtest_renderer`
+  - it calls `virgl_renderer_context_create` with context id 1
+- `VCMD_SUBMIT_CMD` calls `virgl_renderer_submit_cmd`
+- `VCMD_RESOURCE_CREATE2`
+  - calls `virgl_renderer_resource_create` first
+  - calls `virgl_renderer_ctx_attach_resource` to attach the resource to
+    the context
+  - creates a memfd, mmaps it, and sends the fd to the client
+  - calls `virgl_renderer_resource_attach_iov` to attach the iov to the
+    resource 
+- `VCMD_TRANSFER_PUT2`
+  - calls `virgl_renderer_transfer_write_iov` to copy from the attached memfd
+    iov to the resource
