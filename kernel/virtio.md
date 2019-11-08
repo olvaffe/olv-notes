@@ -74,19 +74,24 @@
 * vring internals
   * the driver prepares a "buffer"
     * the buffer is usually a struct for the driver
-    * the struct is followed by some "out" data that is read-only to the
-      device
-    * the "out" data is followed by some "in" data that is write-only to the
-      device and is for device response
-  * when the buffer is ready, it is added to the vring
-    * `virtqueue_add_sgs` expects the buffer to be described as an arary of
-      `struct scatterlist`
+    * the struct can point to some "out" data that is read-only to the device
+    * the struct can point to some "in" data that is write-only to the device
+      and is used for device response
+  * the buffer is added to the vring
+    * the "out" and "in" data must be described as an array of `struct
+      scatterlist *`
+    * `virtqueue_add_sgs` adds the data to the vring
+      * for "out" only vq, `virtqueue_add_outbuf` can be used
+      * for "in" only vq, `virtqueue_add_inbuf` can be used
+      * a pointer to the driver "buffer" is also given as a cookie and is
+      	returned in `virtqueue_get_buf` when the buffer is retired.
     * each node of each `struct scatterlist` requires a `vring_desc`
       descriptor
       * the descriptor saves the gpa/len of the page
     * the index of the descriptor chain head is written to the avail ring
   * the device is notified with `virtqueue_kick`
   * the device interrupts the guest when the buffer is retired
+    * buffers might not be executed in-order nor retired in-order
   * the driver calls `virtqueue_get_buf` to get the buffer back
     * the vring descriptors become free again
   * the driver retires the buffer

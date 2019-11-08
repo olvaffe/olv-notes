@@ -34,19 +34,16 @@ Kernel and DMA
 
 ## Scatter-Gather
 
-- A scatter list is an array of `struct scatterlist`
-  - Each of the `struct scatterlist` in the array describes a (page, offset,
-    length) tuple.
-  - A `struct scatterlist` can also act as a pointer to another array of
-    scatter list.  See `sg_chain`.
-  - We like to limit the array size to `SG_MAX_SINGLE_ALLOC` (128) and use
-    chaining
-- An `sg_table` points to a chain of scatter list arrays
-* Say, I have a buffer I want to write to device
-  * I call `sg_init_table` on my sg list on stack
-  * I manage to make the sg list wrap the buffer.  There are some helper
-    functions for this.
-  * I queue the sg list to my dma function.
+- A `struct scatterlist` describes a contiguous memory range
+  - `page_link` is the starting page
+  - `offset` is the offset in the starting page
+  - `length` is the length of the range and can exceed the starting page
+- A `struct sg_table` manages `struct scatterlist` nodes
+  - `sg_alloc_table` allocates the specified count of nodes
+  - when the number of nodes exceeds `SG_MAX_SINGLE_ALLOC` (128),
+    `sg_alloc_table` makes multiple memory allocations for the nodes.
+    - A `struct scatterlist` can also act as a pointer to another array of
+      scatter list.  See `sg_chain`.
 
 ## DMA Mapping
 
