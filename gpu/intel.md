@@ -108,3 +108,16 @@
   regular client to host X.
 * Latency: host swap is minimal (presented next vsync after swap buffers);
   From guest swap to host swap, there are two additional copies
+
+## Caching
+
+- `i915_gem_object_pin_map` is called when the kernel needs to access the
+  BO from CPU
+  - e.g., cmd parsing, reloc patching
+  - it calls vmap internally to set up a WB or WC mapping
+  - this does not modify the kernel linear map
+- `i915_gem_mmap_ioctl` is called when ther userspace needs to access the BO
+  from CPU
+  - it calls `vm_mmap` to set up a vma for the shmem file, and modifies
+    `vma->vm_page_prot` to use the desired cache mode
+  - 

@@ -55,9 +55,11 @@ Kernel and DMA
   - otherwise, it calls `get_arch_dma_ops(dev->bus)`
     - on x86 it is usually NULL unless there is intel/amd iommu
     - on arm, it is non-NULL
-- one can allocate coherent DMA buffer with `dma_alloc_coherent`
+- one can allocate coherent DMA buffer with `dma_alloc_coherent` (or
+  `dma_alloc_wc`)
   - it is a piece of CPU/device coherent memory
-  - `dma_mmap_wc` can map it to user space
+  - it returns both a virtual address for CPU and a `dma_addr_t`
+  - `dma_mmap_coherent` (or `dma_mmap_wc`) can map it to user space
 - oen can also use the streaming API `dma_map_sg` and families with regular
   pages
   - it syncs for device on `dma_map`, and syncs for CPU on `dma_unmap`
@@ -91,3 +93,19 @@ Kernel and DMA
     its pool and return the dma address to the shadow page 
   - in `dma_unmap_sg` or `dma_sync_sg_for_*`, swiotlb transparently memcpy's
     between the real page and the shadow page
+
+## Archs
+
+- Classic ARM with MMU/IOMMU
+  - when a dma device is found in the device tree, `of_dma_configure` is
+    called.  Depending on whether the device is dma coherent, also specified
+    in device tree, `arch_setup_dma_ops` picks `iommu_coherent_ops` or `iommu_ops`.
+    - when without iommu, it picks `arm_coherent_dma_ops` or `arm_dma_ops`
+  - when device is coherent, `dma_alloc_coherent` allocates with `alloc_pages`
+    - the virtual address from the linear map is returned for CPU
+    - the pages are mapped in IOMMU and `dma_addr_t` is returned
+    - when device is incoherent, the only difference is that the virtual
+      address is not from the linear map.  Instead, a UC or WC vmap is set up.
+    - because it uses FLATMEM memory model,j:
+
+  - always use `arm_dma_ops`

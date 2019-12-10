@@ -166,3 +166,25 @@
     L3 and the I/O buses
   - southbridge evolved into platform controller hub, PCH, and is slowly
     moving into the system agent
+
+## Caches
+
+- Four-way set associative cache
+  - each memory block can be cached in four possible row entries of the cache
+  - each cache row entry consists of
+    - tag
+    - data block, usually 64 bytes
+    - flag bits
+  - e.g., a four-way set associative cache of size 8KB and 64-byte cache
+    blocks has
+    - 8KB/64 = 128 cache blocks
+    - 128/4 = 32 sets
+    - a 32-bit memory address is splitted into 21bit tag, 5bit index, and 6bit
+      offset
+      - every 2KB of memory share the same tag
+      - every 64B goes to a different set
+- VIPT, virtually indexed and physicalled tagged
+  - Intel
+  - ARM I$
+- PIPT, physically indexed and physically tagged
+  - ARM D$

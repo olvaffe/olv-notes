@@ -194,7 +194,7 @@ Kernel Memory Management
           regions are considered available
       - an allocation finds a range in the memory regions but not in the
       	reserved regions, and then adds the range to the reserved regions
-    - `init_mem_mapping` initializes `PAGE_OFFSET` mapping
+    - `init_mem_mapping` initializes `PAGE_OFFSET` linear mapping
       - direct mappings to all physical memory regions; gaps between the
       	memory regions are not mapped
       - va `PAGE_OFFSET + x`  is mapped to pa `x` as long as x belong to a
@@ -226,6 +226,12 @@ Kernel Memory Management
       allocator
     - `vmalloc_init` prepares for vmallocs/ioremaps that will use
       `VMALLOC_START` and onward (32TB)
+
+## ARM
+
+- In `setup_arch`,
+  - `paging_init` sets up the page tables
+    - `map_lowmem` creates the linear map
 
 ## Memory Initialization (old)
 
