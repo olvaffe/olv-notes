@@ -194,7 +194,7 @@
 * the ioctl turns a host virtual memory region into a guest physical memory region
   * it creates `kvm_memory_slot`
   * it specifies the `gpa->hva` mapping
-* when the guest acceeces a gpa in the region for the first time
+* On x86-64, when the guest acceeces a gpa in the region for the first time
   * it triggers an EPT violation
     * `handle_ept_violation` -> `kvm_mmu_page_fault` -> `tdp_page_fault`
   * in `try_async_pf`,
@@ -203,7 +203,35 @@
     * it maps gpa to hva using the slot
     * it pages in the page pointed to by hva and return the hpa
     * for MMIO that has no page, it walks the paging table to find the hva
-  * with gpa and hva, the shadow page table entry can be updated
-* when the host updates the vma of the host memory (e.g, swap in/out, move)
-  * the registered notifier callback calls `kvm_set_pte_rmapp`
+    * it is async because the host user page might need to be paged in
+  * with gpa and hva, the shadow (i.e., second-level) page table entry can be
+    updated
+    * `__direct_map` find the entry, `sptep`, to be updated and calls
+      `mmu_set_spte`
+    * the memory type is from `vmx_get_mt_mask`
+      * the guest page table defines the PAT memory type
+      * the (host-managed `gpa->hpa`) ept page table defines the EPT memory
+      	type
+      * When "Ignore PAT" is set, EPT memory type is used; otherwise, the
+      	weaker of the two is used.
+      * right now, `VMX_EPT_IPAT_BIT` is set and the EPT memory type is set to
+      	`MTRR_TYPE_WRBACK`
+* On ARM, when the guest accesses a gpa in the region for the first time
+  * it triggers an abort and is handled by `kvm_handle_guest_abort`
+  * gpa, also known as ipa or intermediate physical address, can be read from
+    the status register
+  * `kvm_memory_slot` can be looked up from the gpa using `gfn_to_memslot`
+  * with the memory slot, we can find hva
+  * with hva, we can find the vma
+  * from vma, we can find hpa
+  * `stage2_set_pte` updates the stage-2 page table for `gpa->hpa` mapping
+* when the host updates the vma of the host memory (e.g, swap in/out, move),
+  KVM core calls `kvm_set_spte_hva`
+  * On x86, the registered notifier callback calls `kvm_set_pte_rmapp`
+  * On ARM, it calls `handle_hva_to_gpa`.  This does `hva->gpa` by searching
+    the memslots, and update stage-2 page table for `gpa->hpa` mapping
   * it updates the spte to point to the new hpa
+
+## ARM
+
+- 
