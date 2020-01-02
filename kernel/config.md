@@ -53,11 +53,6 @@ Kernel Config
 
 - select `IA32 Emulation`
 
-## Firmware Drivers
-
-- select `EFI (Extensible Firmware Interface) Support`
-  - select `EFI Variable Support via sysfs`
-
 ## Virtualization
 
 - select `Kernel-based Virtual Machine (KVM) support`
@@ -80,7 +75,7 @@ Kernel Config
 - select `Bluetooth subsystem support`
 - select `Wireless`
   - select `cfg80211 - wireless configuration API`
-  - select `Generic IEEE 802.11 Networking Stack`
+  - select `Generic IEEE 802.11 Networking Stack (mac80211)`
 - select `RF switch subsystem support`
 
 ## Device Drivers
@@ -97,24 +92,25 @@ Kernel Config
 - select `SCSI device support`
   - select `SCSI device support`
   - select `SCSI disk support`
+  - deselect `SCSI low-level drivers`
 - select `Serial ATA and Parallel ATA drivers (libata)`
   - select `AHCI SATA support`
 - select `Network device support`
   - select `Ethernet driver support`
-    - deselect all
+    - deselect all but the desired drivers
   - select `USB Network Adapters`
-    - deselect all
+    - deselect all but the desired drivers
   - select `Wireless LAN`
-    - deselect all
+    - deselect all but the desired drivers
 - select `Input device support`
   - deselect `Support for memoryless force-feedback devices`
   - select `Event interface`
+  - select `Synaptics RMI4 bus support`
+  - select `RMI4 SMB Support`
 - select `Character devices`
   - deselect `Legacy (BSD) PTY support`
-  - select `Serial drivers`
-    - select `8250/16550 and compatible serial support`
   - select `Hardware Random Number Generator Core support`
-    - deselect all
+    - deselect all but the desired drivers
   - deselect `/dev/port character device`
 - select `Multimedia support`
   - select `Cameras/video grabbers support`
@@ -133,7 +129,8 @@ Kernel Config
       - select `Build Realtek HD-audio codec support`
 - select `HID support`
   - select `Special HID drivers`
-    - deselect all
+    - deselect all but the desired drivers, such as
+    - select `Synaptics RMI4 device support`
 - select `USB support`
   - select `xHCI HCD (USB 3.0) support`
   - select `EHCI HCD (USB 2.0) support`
@@ -151,6 +148,7 @@ Kernel Config
 
 - select `The Extended 4 (ext4) filesystem`
 - select `Btrfs filesystem support`
+- deselect `Dnotify support`
 - select `FUSE (Filesystem in Userspace) support`
 - select `CD-ROM/DVD Filesystems`
   - select `ISO 9660 CDROM file system support`
@@ -158,6 +156,8 @@ Kernel Config
 - select `DOS/FAT/NT Filesystems`
   - select `VFAT (Windows-95) fs support`
   - select `Enable FAT UTF-8 option by default`
+- deselect `Miscellaneous filesystems`
+- deselect `Network File Systems`
 - select `Native language support`
   - select `Codepage 437 (United States, Canada)`
   - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
@@ -172,7 +172,15 @@ Kernel Config
 
 ## Tips
 
-- Built-in script (#!) support for init scripts
-- Built-in scsi/ata/fs drivers to mount
-- Built-in keyboard driver to interact
-- Built-in graphics driver to see console
+- Unable to boot?
+  - Built-in script (#!) support for init scripts
+  - Built-in devtmpfs and unix socket support for udev
+  - Built-in graphics driver to see console
+  - Built-in keyboard driver to interact
+  - Built-in scsi/ata/fs drivers to mount
+
+## Out-of-tree drivers
+
+- Broadcom wireless
+  - `pacman -S broadcom-wl-dkms`
+  - `dkms autoinstall`
