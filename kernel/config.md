@@ -5,18 +5,19 @@ Kernel Config
 
 - `make alldefconfig`
 - `make menuconfig`
-- select `Processor type and features`
-  - select `Symmetric multi-processing support`
-- select `Enable loadable module support`
-- select `Networking support`
-- select `Device Drivers`
-  - select `PCI support`
-  - select `USB support`
-    - select `Support for Host-side USB`
-  - select `LED support`
-    - select `LED Class Support`
-- select `Kernel hacking`
-  - select `Kernel debugging`
+- quick first pass to reveal more options
+  - select `Processor type and features`
+    - select `Symmetric multi-processing support`
+  - select `Enable loadable module support`
+  - select `Networking support`
+  - select `Device Drivers`
+    - select `PCI support`
+    - select `USB support`
+      - select `Support for Host-side USB`
+    - select `LED support`
+      - select `LED Class Support`
+  - select `Kernel hacking`
+    - select `Kernel debugging`
 
 ## General setup
 
@@ -85,6 +86,7 @@ Kernel Config
   - select `Message Signaled Interrupts (MSI and MSI-X)`
 - select `Generic Driver Options`
   - select `Maintain a devtmpfs filesystem to mount at /dev`
+    (required by recent udev and systemd)
 - select `Block devices`
   - select `Loopback device support`
 - select `NVME Support`
@@ -126,7 +128,7 @@ Kernel Config
   - select `Advanced Linux Sound Architecture`
     - select `HD-Audio`
       - select `HD Audio PCI`
-      - select `Build Realtek HD-audio codec support`
+      - select `Build Realtek HD-audio codec support` or desired codecs
 - select `HID support`
   - select `Special HID drivers`
     - deselect all but the desired drivers, such as
@@ -192,8 +194,15 @@ Kernel Config
   - select `Device Drivers`
     - select `Generic Target Core Mod (TCM) and ConfigFS Infrastructure`
 - Guest
-  - disable virtualization, host drivers, EFI, etc.
+  - deselect virtualization, host drivers, EFI, etc.
+  - select `Networking support`
+    - select `Networking options`
+      - select `Virtual Socket protocol`
+      - select `virtio transport for Virtual Sockets`
   - select `Device Drivers`
+    - select `SCSI device support`
+      - select `SCSI low-level drivers`
+      - select `virtio-scsi support`
     - select `Network device support`
       - select `Virtio network driver`
     - select `Character devices`
