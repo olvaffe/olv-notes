@@ -179,6 +179,33 @@ Kernel Config
   - Built-in keyboard driver to interact
   - Built-in scsi/ata/fs drivers to mount
 
+## KVM
+
+- Host
+  - select `Virtualization`
+    - select `Host kernel accelerator for virtio net`
+    - select `VHOST_SCSI TCM fabric driver`
+    - select `vhost virtio-vsock driver`
+  - select `Networking support`
+    - select `Networking options`
+      - select `Virtual Socket protocol`
+  - select `Device Drivers`
+    - select `Generic Target Core Mod (TCM) and ConfigFS Infrastructure`
+- Guest
+  - disable virtualization, host drivers, EFI, etc.
+  - select `Device Drivers`
+    - select `Network device support`
+      - select `Virtio network driver`
+    - select `Character devices`
+      - select `Serial drivers`
+        - select `8250/16550 and compatible serial support`
+        - select `Console on 8250/16550 and compatible serial port`
+    - select `Graphics support`
+      - select `Virtio GPU driver`
+    - select `Virtio drivers`
+      - select `PCI driver for virtio devices`
+      - select `Virtio input driver`
+
 ## Out-of-tree drivers
 
 - Broadcom wireless
