@@ -40,6 +40,7 @@ Kernel Config
 
 - deselect `Enable MPS table`
 - deselect `Support for extended (non-PC) x86 platforms`
+- select `Intel Low Power Subsystem Support`
 - select `Processor family (Core 2/newer Xeon)`
 - deselect `AMD MCE features`
 - select `EFI runtime service support`
@@ -107,13 +108,14 @@ Kernel Config
 - select `Input device support`
   - deselect `Support for memoryless force-feedback devices`
   - select `Event interface`
-  - select `Synaptics RMI4 bus support`
-  - select `RMI4 SMB Support`
 - select `Character devices`
   - deselect `Legacy (BSD) PTY support`
   - select `Hardware Random Number Generator Core support`
     - deselect all but the desired drivers
   - deselect `/dev/port character device`
+- select `I2C support`
+  - select `I2C Hardware Bus support`
+    - select `Synopsys DesignWare Platform` (used by Intel LPSS)
 - select `Multimedia support`
   - select `Cameras/video grabbers support`
   - select `Media USB Adapters`
@@ -128,11 +130,15 @@ Kernel Config
   - select `Advanced Linux Sound Architecture`
     - select `HD-Audio`
       - select `HD Audio PCI`
-      - select `Build Realtek HD-audio codec support` or desired codecs
+      - select desired codecs, such as
+      - select `Build Realtek HD-audio codec support`
 - select `HID support`
   - select `Special HID drivers`
     - deselect all but the desired drivers, such as
-    - select `Synaptics RMI4 device support`
+    - select `HID Multitouch panels`
+    - select `Synaptics RMI4 device support` for USB Synaptics touchpads
+  - select `I2C HID support`
+    - select `HID over I2C transport layer` for I2C Synaptics touchpads
 - select `USB support`
   - select `xHCI HCD (USB 3.0) support`
   - select `EHCI HCD (USB 2.0) support`
