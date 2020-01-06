@@ -43,6 +43,8 @@ Kernel Config
 - select `Intel Low Power Subsystem Support`
 - select `Processor family (Core 2/newer Xeon)`
 - deselect `AMD MCE features`
+- select `Numa Memory Allocation and Scheduler Support` (for Intel Core i7)
+- deselect `Old style AMD Opteron NUMA detection`
 - select `EFI runtime service support`
   - select `EFI stub support`
 - select `Timer frequency (1000 HZ)`
@@ -157,6 +159,7 @@ Kernel Config
 - select `The Extended 4 (ext4) filesystem`
 - select `Btrfs filesystem support`
 - deselect `Dnotify support`
+- select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
 - select `FUSE (Filesystem in Userspace) support`
 - select `CD-ROM/DVD Filesystems`
   - select `ISO 9660 CDROM file system support`
@@ -164,6 +167,8 @@ Kernel Config
 - select `DOS/FAT/NT Filesystems`
   - select `VFAT (Windows-95) fs support`
   - select `Enable FAT UTF-8 option by default`
+- select `Pseudo filesystems`
+  - select `Tmpfs virtual memory file system support (former shm fs)`
 - deselect `Miscellaneous filesystems`
 - deselect `Network File Systems`
 - select `Native language support`
@@ -200,6 +205,11 @@ Kernel Config
   - select `Device Drivers`
     - select `Generic Target Core Mod (TCM) and ConfigFS Infrastructure`
 - Guest
+  - select `Processor type and features`
+    - select `Support x2apic`
+    - select `Linux guest support`
+      - select `Enable paravirtualization code`
+      - select `Paravirtualization layer for spinlocks`
   - deselect virtualization, host drivers, EFI, etc.
   - select `Networking support`
     - select `Networking options`
@@ -208,7 +218,7 @@ Kernel Config
   - select `Device Drivers`
     - select `SCSI device support`
       - select `SCSI low-level drivers`
-      - select `virtio-scsi support`
+        - select `virtio-scsi support`
     - select `Network device support`
       - select `Virtio network driver`
     - select `Character devices`
