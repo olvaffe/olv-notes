@@ -7,6 +7,39 @@ QEMU
  - cd qemu
  - git submodule init
  - git submodule update --recursive
+   - `capstone` is a disassembly framework
+     `https://github.com/aquynh/capstone`
+   - `dtc` is DeviceTree compiler
+     `https://git.kernel.org/pub/scm/utils/dtc/dtc.git`
+   - `slirp` is a user-mode TCP/IP emulator
+     `https://gitlab.freedesktop.org/slirp/libslirp`
+   - `ui/keycodemapd` maps between key codes/symbols/etc and is owned by QEMU
+   - `roms/QemuMacDrivers` is a guest VGA driver for Mac PPC
+      `https://github.com/ozbenh/QemuMacDrivers`
+   - `roms/SLOF` is a OpenFirmware (standard developed by Sun) BIOS for PPC
+     `https://github.com/aik/SLOF/`
+   - `roms/edk2` is a UEFI/PI development environment
+     `https://github.com/tianocore/edk2`
+   - `roms/ipxe` is a PXE implementation
+     `git://git.ipxe.org/ipxe.git`
+   - `roms/openbios` is a OpenFirmware implementation
+     `https://github.com/openbios/openbios`
+   - `roms/openhackware` is a (deprecated?) PowerPC Reference Platform (PReP)
+     implementation
+   - `roms/opensbi` is a RISV-V SBI implementation
+     `https://github.com/riscv/opensbi`
+   - `roms/qboot` is a minimal x86 BIOS
+     `https://github.com/bonzini/qboot`
+   - `roms/qemu-palcode` is the firmware for Alpha
+   - `roms/seabios` is an implementation of x86 BIOS and VGA BIOS
+     `https://git.seabios.org/seabios.git`
+   - `roms/seabios-hppa` is a port for parisc/hppa
+     `https://github.com/hdeller/seabios-hppa`
+   - `roms/sgabios` is an implementation of x86 VGA BIOS over a serial port
+   - `roms/skiboot` is OpenPower Abstraction Layer (OPAL) for POWER
+     `https://github.com/open-power/skiboot`
+   - `roms/u-boot` is a bootloader for ARM, PPC, MIPS, etc.
+     `https://gitlab.denx.de/u-boot/u-boot`
 
 ## Build
 
