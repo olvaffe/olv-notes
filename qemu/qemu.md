@@ -1,11 +1,14 @@
-# Get Source Code
+QEMU
+====
+
+## Get Source Code
 
  - git clone https://git.qemu.org/git/qemu.git
  - cd qemu
  - git submodule init
  - git submodule update --recursive
 
-# Build
+## Build
 
  - ./configure \
     --target-list=x86_64-softmmu \
@@ -24,7 +27,8 @@
      - enables "-vga virtio"
  - make
 
-# Bootstrap
+
+## Bootstrap
 
  - ./qemu-img create -f qcow2 <disk>.qcow2 35G
  - MACHINE_OPTS="-machine q35 -smp 2 -m 4G"
@@ -36,7 +40,7 @@
     -cdrom <cd>.iso -boot d
  - Arch
 
-# Tips
+## Tips
 
  - release mouse grab
    - Ctrl-Alt or
@@ -44,7 +48,63 @@
  - SSH
    - ssh ssh://root@localhost:2222
 
-# Starup
+## Options
+
+- there are always two parts of an emulated device
+  - the emulated guest hardware, or the frontend
+  - the backend in the host
+- there are usually three ways to configure an emulated device
+  - the legacy way: do not use
+  - the new way: tedious
+  - the convenient way
+- `-nodefaults` to disable default devices
+- Character devices
+  - the new way
+    - `-device TYPE,chardev=BLAH` for the frontend
+    - `-chardev TYPE,id=BLAH` for the backend
+  - the convenient way
+    - `-serial`
+  - example
+    - `-device virtio-serial` to add a frontend bus
+    - `-device virtserialport,chardev=BLAH` to add the frontend
+    - `-chardev socket,path=FOO,id=BLAH`
+- Network devices
+  - the legacy way
+    - `-net nic,model=MODEL` for the frontend
+    - `-net BACKEND` for the backend
+  - the new way
+    - `-device MODEL,netdev=BLAH` for the frontend
+    - `-netdev BACKEND,id=BLAH` for the backend
+  - the convenient way
+    - `-nic BACKEND,model=MODEL`
+  - example
+    - `-nic user,model=virtio-net-pci`
+- Block devices
+  - the old way
+    - `-drive if=TYPE,format=qcow2,file=FOO`
+  - the new way
+    - `-device TYPE,drive=BLAH` for the frontend
+    - `-blockdev driver=TYPE,node-name=BLAH` for the backend
+  - the convenient way
+    - `-hda`, `-cdrom`, `-pflash`
+  - example
+    - `-device ide-hd,drive=BLAH` to add the frontend disk
+    - `-blockdev driver=file,node-name=FILE,filename=PATH_TO_IMAGE` for
+      accessing the file
+    - `-blockdev driver=qcow2,node-name=BLAH,file=FILE` for accessing the file
+      as a qcow2 image
+  - example
+    - `-device virtio-scsi-pci` to add a frontend SCSI HBA
+    - `-device scsi-hd,drive=BLAH` to add the frontend disk
+    - `-blockdev driver=file,node-name=BLAH,filename=PATH_TO_FILE` for the
+      backend
+- Input devices
+  - `-device virtio-keyboard-pci`
+  - `-device virtio-mouse-pci`
+- VGA
+  - 
+
+## Starup
 
 * most things in qemu are modules
 * modules are registered before `main()` using `register_module_init`
@@ -75,7 +135,7 @@
   * this calls `pc_q35_init` for q35 machine
   * it adds a bunch more essential devices (each of a QOM type) to the machine
 
-# Display
+## Display
 
 * Before main, type `virtio-vga` is registered to the QOM
 * `-vga virtio` selects the `virtio-vga` as the VGA type for the machine
@@ -93,7 +153,7 @@
 * finally `qemu_display_init` is called
   * this creates the window for the VM
 
-# virtio-input
+## virtio-input
 
 * `-device virtio-keyboard-pci` and ` -device virtio-mouse-pci`
   * when devices are added to the machine, the options add the desired PCI devices
@@ -105,7 +165,7 @@
   `qkbd_state_key_event` is called
   * it goes a long way but eventually `qemu_input_event_send_impl` is called
 
-# main loop
+## main loop
 
 - `main_loop` is pretty standard
   - if there is any timer, timeout is set to the diff to the next timer;
