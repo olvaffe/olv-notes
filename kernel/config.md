@@ -197,39 +197,36 @@ Kernel Config
 - Host
   - select `Virtualization`
     - select `Host kernel accelerator for virtio net`
-    - select `VHOST_SCSI TCM fabric driver`
     - select `vhost virtio-vsock driver`
   - select `Networking support`
     - select `Networking options`
       - select `Virtual Socket protocol`
-  - select `Device Drivers`
-    - select `Generic Target Core Mod (TCM) and ConfigFS Infrastructure`
 - Guest
   - select `Processor type and features`
     - select `Support x2apic`
     - select `Linux guest support`
       - select `Enable paravirtualization code`
       - select `Paravirtualization layer for spinlocks`
-  - deselect virtualization, host drivers, EFI, etc.
   - select `Networking support`
     - select `Networking options`
       - select `Virtual Socket protocol`
       - select `virtio transport for Virtual Sockets`
   - select `Device Drivers`
-    - select `SCSI device support`
-      - select `SCSI low-level drivers`
-        - select `virtio-scsi support`
+    - select `Block devices`
+      - select `Virtio block driver`
     - select `Network device support`
       - select `Virtio network driver`
     - select `Character devices`
       - select `Serial drivers`
         - select `8250/16550 and compatible serial support`
         - select `Console on 8250/16550 and compatible serial port`
+      - select `Virtio console`
     - select `Graphics support`
       - select `Virtio GPU driver`
     - select `Virtio drivers`
       - select `PCI driver for virtio devices`
       - select `Virtio input driver`
+  - deselect virtualization, host drivers, EFI, etc.
 
 ## Out-of-tree drivers
 
