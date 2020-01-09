@@ -48,4 +48,3 @@ USB Serial Converter is a TTY driver:
 
 cu:
 ? set raw, every keystroke is passed directly to destination
-* 
