@@ -710,3 +710,32 @@ modeset
   * it calls `i915_gem_retire_request` to require requests
   * objects that are modified (has write domain) are moved to flushing list
   * the others are moved to inactive
+
+## dumb
+
+- `DRM_IOCTL_MODE_CREATE_DUMB`
+  - in: width, height, bpp
+  - out: handle, pitch, size
+- `DRM_IOCTL_MODE_ADDFB`
+  - in: width, height, bpp, pitch, depth
+- `DRM_IOCTL_MODE_MAP_DUMB` return an fake offset for mmap
+  - for software rendering
+- `DRM_CAP_DUMB_BUFFER` checks if the driver supports dumb
+- `DRM_CAP_DUMB_PREFERRED_DEPTH` returns the preferred depth
+  - static, usually 24 (because alpha is ignored)
+  - 0 on virtio-gpu
+- `DRM_CAP_DUMB_PREFER_SHADOW` returns whether shadow is preferred
+  - static, usually true (because dumb might be in vram and/or uncached)
+  - false on virtio-gpu
+- xorg-modesetting without gbm does
+  - when preferred depth is 8 or 16, depth=16, bpp=16, kbpp=0
+  - otherwise,
+    - depth=24, bpp=32, kbpp=0 if bpp=32 dumb and fb is supported
+    - depth=24, bpp=32, kbpp=24 and forces bpp=32 shadow
+- i915 assumes the dumb bo format to be `DRM_FORMAT_C8`, `DRM_FORMAT_RGB565`,
+  or `DRM_FORMAT_XRGB8888` depending on bpp
+
+## DRM formats
+
+- `DRM_IOCTL_MODE_ADDFB2` takes a format instead of bpp/depth.  It also
+  supports modifiers and planar formats.
