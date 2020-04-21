@@ -1,5 +1,31 @@
 # VFS
 
+## Concepts
+
+- a filesystem consists of tons of objects (files, directories, fifos, etc.)
+  and a superblock (metadata) to help manage the objects
+  - a `struct super_block` is a in-memory representation of the filesystem
+    superblock
+  - a `struct inode` is a in-memory reprentation of a filesystem object
+  - a pathname is a key to look up an object from the super block
+  - a soft link is a separate inode (an seprate fs object); a hard link is the
+    same inode (not an seprate fs object)
+- to look up /for/example,
+  - after the filesystem is mounted, we have the inode for "/"
+  - we look up the inode for "for" under "/"
+  - we look up the inode for "example" under "/foo"
+- dcache speeds up lookups
+  - once an inode is looked up, we set up a `struct dentry` with
+    - `d_parent` points to the parent dentry
+    - `d_subdirs` is a list of children dentry
+    - `d_name` equal to the name
+    - `d_inode` points to the inode
+- page cache speeds up read/write
+  - each inode has a `i_mapping` pointing to its own `i_data`, which is a
+    `struct address_space`
+  - given a `pgoff_t`, allocate a page, read the object at the offset into
+    the page, and add the page into `address_space`
+
 ## Introduction
 
 * VFS provides directory entry cache (aka dentry cache or dcache) to map a
@@ -52,3 +78,13 @@
 
 ## Directory Entry Cache (dcache)
 
+## `anon_inodefs`
+
+- during kernel init, `anon_inode_init` mounts the filesystem
+  - it also calls `alloc_anon_inode` to allocate an inode
+    - the function assigns the inode a unique ino allocated by `get_next_ino`
+  - this is the only inode in the filesystem
+- `anon_inode_getfile` opens the only inode and returns a file
+  - it calls `alloc_file_pseudo`, which
+    - calls `d_alloc_pseudo` to create a dentry with the given name
+    - calls `alloc_file` to create a file and install the given fops

@@ -135,11 +135,11 @@
 
 * create a dma-buf that wraps ranges of memfds from userspace
 
-## anon inode
+## `dmabuf` filesystem
 
-- `anon_inodefs` is a pseudo-filesystem for creating anonymous files and fds
-  for userspace
-  - `anon_inode_getfile` allocates a `struct file` for the anonymous inode
-    with the specified name, fops, and private data.
-  - `anon_inode_getfd` gets an unused fd, point the fd to the anon file, and
-    return the fd
+- in kernel init, `dma_buf_init` is called
+  - it mounts `dmabuf` fs
+- when `dma_buf_export` is called to export a driver allocation,
+  - it allocates a `struct dma_buf`
+  - it allocates a new inode from the fs
+  - and it allocates a new file for the inode
