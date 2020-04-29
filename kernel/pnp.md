@@ -34,6 +34,8 @@ PNP
   - calls `devm_rtc_allocate_device` to add a `rtc_device` under the pnp
     device
   - sysfs attrs such as `date`, `time`, and `since_epoch`
+  - calls `rtc_nvmem_register` to add a `nvmem_device` under the pnp device
+    and on the nvmem bus
 - `drivers/input/serio/i8042.c`
   - `i8042-x86ia64io.h` provides `i8042 kbd` and `i8042 aux` pnp drivers
   - `i8042_platform_init` registers the drivers.  Their probe functions finds

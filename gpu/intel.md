@@ -1,5 +1,26 @@
 # Intel GPUs
 
+## uArchs
+
+- Nehalem
+  - Nehalem, 2008, 45nm, 1st gen, Gen4
+  - Westmere, 2010, 32nm, 1st gen, Gen5
+- Sandy Bridge
+  - Sandy Bridge, 2011, 32nm, 2nd gen, Gen6
+  - Ivy Bridge, 2012, 22nm, 3th gen, Gen7
+- Haswell
+  - Haswell, 2013, 22nm, 4th gen, Gen7.5
+  - Broadwell, 2014, 14nm, 5th gen, Gen8
+- Skylake
+  - Skylake, 2015, 14nm, 6th gen, Gen9
+  - Kaby Lake, 2016, 14nm, 7th gen, Gen9.5
+  - Coffee Lake, 2017, 14nm, 8th/9th gen, Gen9.5
+  - (SKIPPED) Cannon Lake, 2018, 10nm, 9th gen, Gen10
+  - Comet Lake, 2019, 14nm, 10th gen, Gen9.5
+- Ice Lake
+  - Ice Lake, 2019, 10nm, 10th gen, Gen11
+  - Tiger Lake?, 2020, 10nm, 11th gen, Gen12
+
 ## IRQs
 
 * `gen8_de_irq_handler` for display engine related interrupts
