@@ -11,6 +11,30 @@ Process
 
 ## ELF
 
+- An ELF file starts with ELF header at file offset 0
+  - `e_type`, `ET_DYN` for relocatable and `ET_EXEC` for fixed-address
+  - `e_entry`, where the kernel should jump to, or 0
+  - `e_phoff`, where the program headers are in the file, or 0
+  - `e_shoff`, where the section headers are in the file, or 0
+  - `e_ehsize`, ELF header size
+  - `e_phentsize` and `e_phnum`, program header size and count
+  - `e_shentsize` and `e_shnum`, section header size and count
+- A program header describes a segment.  For `PT_LOAD`,
+  - `p_offset` is the file offset of the first byte of the segment
+  - `p_filesz` is the size of the file image of the segment
+  - `p_vaddr` is the virtual address of the segment
+  - `p_memsz` is the size of the memory image of the segment
+  - `p_flags` is R, W, X
+  - `p_align` must be the page size
+- A `PT_INTERP` program header specifies the dynamic loader
+  - on x86-64, normally the dynamic loader and the executable are both
+    relocable.  The kernel loads both at random addresses.
+- A section descrbies a section
+  - `sh_name`, the name of the section
+  - `sh_type`, the type of the section
+  - `sh_offset`, the offset of the section in the file
+  - `sh_size`, the size of the section in the file
+  - `sh_addr`, the address of the section in the memory
 * one ELF header followed by
   Program header table, describing zero or more segments
   Section header table, describing zero or more sections
