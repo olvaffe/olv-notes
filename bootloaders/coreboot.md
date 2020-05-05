@@ -31,12 +31,25 @@ coreboot
   - for each file in `cbfs-files-y`,
     - it is an file to be created inside cbfs
     - $(file)-file specifies which on-disk file to copy from
+- example
+  - `coreboot.pre` is created with the size specified by `fmap.fmap`
+    - for each CBFS section, the CBFS header is generated
+    - for each file to be added to CBFS
+      - find the CBFS header and memcpy the file into `coreboot.pre`
+  - when there are other sections, for proprietary code,
+    - `SI_DESC` section is dd'ed from a `descriptor.bin`; this makes
+      `coreboot.pre` an IFDT image
+    - the other sections, such as `SI_ME` are patched into `coreboot.pre` from
+      `me.bin` using ifdttool
 
 ## bootblock
 
 - take x86 for example
 - the entry point is defined by `arch/x86/bootblock_crt0.S`
 - when CPU is reset, it executes from `CONFIG_X86_RESET_VECTOR`
+  - `CONFIG_X86_RESET_VECTOR` is 0xfffffff0; this is the first instruction the
+    CPU fetches and executes after reset
+  - well, except for FIT (Firmware Interface Table)
 - the reset vector points to `_start` in `cpu/x86/16bit/reset16.inc`, and it
   jumps to `_start16bit` in `cpu/x86/16bit/entry16.inc`
 - `_start16bit` does a bit of initialization and enters the protected mode by
@@ -81,18 +94,44 @@ coreboot
 - tianocore for UEFI
 - depthcharge for Chromebook
 
+## Intel ucode, FSP, and ME
+
+- ucode can be updated through FIT, Firmware Interface Table
+- FSP provides proprietary code that can be integrated into various stages to
+  perform the tasks
+
+## Flashmap
+
+- `.fmd` describe how the flash (usually NOR flash) is paritioned
+- take x86 for example
+  - usually starts with `FLASH@0xfe000000 0x2000000` for a 32MB NOR flash at
+    the top of the 4GB address space
+  - [0MB..5MB]
+    - 4KB `SI_DESC` for Intel Flash Descriptor
+    - the rest is `SI_ME` for Intel ME
+  - [5MB..20MB] is for legacy CBFS
+  - [20MB..28MB] is for RW
+  - [28MB..32MB] is for coreboot.rom
+
 ## vboot
 
 - verified boot
 - divide the SPI flahs into 4 sections
   - read-only section
-  - GBB (Google Binary Blob) area
+  - read-only GBB (Google Binary Blob) area
   - read-write section A
   - read-write section B
 - read-only section has
   - VPD (Vital Product Data) area
   - firmware id area
   - recovery firmware
-- GBB section has
-  - RSA key
+  - bootblock
+- read-only GBB section has
+  - root public RSA key
   - more
+- read-write sections have
+  - `VBLOCK` subsection
+    - verified using the root key
+    - extract the firmware signing key to verify `FW_MAIN`
+  - `FW_MAIN` subsection contains
+    - romstage, ramstage, and payload
