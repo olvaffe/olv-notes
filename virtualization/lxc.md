@@ -20,10 +20,6 @@ Linux Containers
   - `lxc-attach`
 - stop the container
   - `lxc-stop stop`
-- list the containers
-  - `lxc-ls --fancy`
-- get the state of a container
-  - `lxc-state test`
 
 ## Namespaces
 
@@ -65,6 +61,30 @@ Linux Containers
 
 ## Networks
 
+- on the host
+  - `ip link add name lxcbr0 type bridge`
+  - `ip link set lxcbr0 up`
+  - for wired host
+    - `ip link set eth0 master lxcbr0`
+  - for wireless host
+    - `ip addr add 192.168.5.1/24 dev lxcbr0`
+    - `sysctl net.ipv4.ip_forward=1`
+    - `iptables -A POSTROUTING -t nat -j MASQUERADE`
+- container config
+  - edit `/var/lib/lxc/<container>/config`
+  - `lxc.net.0.type = veth`
+  - `lxc.net.0.link = lxcbr0`
+  - `lxc.net.0.flags = up`
+- inside container
+  - for wired host
+    - dhcp
+  - for wireless host
+    - `ip addr add 192.168.5.2/24 dev eth0`
+    - `ip route add default via 192.168.5.1 dev eth0`
+
 ## Other Commands
 
-- 
+- list the containers
+  - `lxc-ls --fancy`
+- get the state of a container
+  - `lxc-state test`
