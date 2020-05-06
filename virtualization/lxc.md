@@ -37,6 +37,7 @@ Linux Containers
   - `pid_namespaces(7)`
   - `nsenter -t <pid> -p kill some-pid`
   - ps scans /proc and its output depends on mnt namespace
+  - reboot(2) in a pid namespace kills pid 1
 - different net namespace
   - `network_namespaces(7)`
   - `nsenter -t <pid> -n ip link`
@@ -45,6 +46,9 @@ Linux Containers
   - `/sbin/init` thinks it is the root cgroup (in the new namespace)
   - from the host's view, lxc sets it up to be a new cgroup under the root
     cgroup
+- different user namespace, when running unprivileged containers
+  - `user_namespaces(7)`
+  - root in container is nobody-like outside
 
 ## Shells
 
@@ -70,15 +74,19 @@ Linux Containers
     - `ip addr add 192.168.5.1/24 dev lxcbr0`
     - `sysctl net.ipv4.ip_forward=1`
     - `iptables -A POSTROUTING -t nat -j MASQUERADE`
+    - optionally, start a DNS/DHCP server
+      - `dnsmasq --conf-file= -a 192.168.5.1 -F 192.168.5.2,192.168.5.254`
 - container config
   - edit `/var/lib/lxc/<container>/config`
   - `lxc.net.0.type = veth`
   - `lxc.net.0.link = lxcbr0`
   - `lxc.net.0.flags = up`
+  - veth is a virtual ethernet device that always comes in pairs
+    - one end in host
+    - one end in container ns
 - inside container
-  - for wired host
-    - dhcp
-  - for wireless host
+  - DHCP
+  - or static
     - `ip addr add 192.168.5.2/24 dev eth0`
     - `ip route add default via 192.168.5.1 dev eth0`
 
@@ -88,3 +96,16 @@ Linux Containers
   - `lxc-ls --fancy`
 - get the state of a container
   - `lxc-state test`
+
+## Unprivileged Containers
+
+- update /etc/sub{uid,gid} to something like
+  - `<user>:100000:65536`
+- update /etc/lxc/default.conf
+  - `lxc.idmap = u 0 100000 65536`
+  - `lxc.idmap = g 0 100000 65536`
+- update /etc/pam.d/system-login
+  - `session    optional   pam_cgfs.so -c freezer,memory,name=systemd,unified`
+- we can start, as root, unprivileged containers with the changes above
+- to start containers as a regular user, update /etc/lxc/lxc-usernet
+  - `<user> veth lxcbr0 10`
