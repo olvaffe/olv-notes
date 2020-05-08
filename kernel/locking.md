@@ -35,6 +35,24 @@
       is no writer
   * `read_unlock`
 
+## Semaphore History
+
+- Problem 1: N processes want to run concurrently but with critical sections
+- Solution 1: use a spinlock to protect the critical sections
+  - lock contention means wasted CPU cycles
+- Idea:
+  - lock contention should put processes to sleep
+  - unlock should wake them up
+- Solution 1a: binary semaphore aka mutex
+- Problem 2: producer/consumer with a bounded buffer
+- Solution 2: counting semaphore
+  - requires 2 counting semaphores and 1 mutex
+- For comparison, today
+  - we still use mutexes
+  - counting semaphores are often replaced by condition variables and ints
+  - that is, counters are separated out from counting semaphores, making
+    semaphores a pure sync mechanism; mutexes are used to protect the counters
+
 ## `struct mutex`
 
 * defined in `include/linux/mutex.h` and implemented in

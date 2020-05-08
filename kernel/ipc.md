@@ -132,6 +132,8 @@ IPC
 
 ## Synchronizations
 
+- not about the kernel anymore
+- see locking.md
 - synchronize access to a shared resource
 - semaphore
   - up adds a token (of resource readiness)
@@ -142,7 +144,7 @@ IPC
     - up increments the futex, and `FUTEX_WAKE` if was 0
     - down atomically does `FUTEX_WAIT(0)` and decrements the futex
       - in a loop where only one waiter can decrement and exit
-- mutex
+- mutex (essentially binary semaphore)
   - lock to acquire ownership (of a resource)
   - unlock to relese ownership (of a resource)
   - naive implementation
@@ -163,14 +165,12 @@ IPC
       the futex after signaled
     - signal set the first futex to 1 and `FUTEX_WAKE`
 - scenarios
-  - I have two threads who need to call `produce` and `consume` in a specific
-    order (one producer and one consumer)
-    - the caller can use a semaphore to order the threads
-    - need two semaphores for the produce/consume cycle to keep going
-  - I have two threads who want to call `produce` concurrently (two producers)
-    - `produce` can use a mutex to avoid race
-  - I have two producers and one consumer
-    - `produce` and `consume` can use a mutex and a condition variable
+  - N processes with N critical sections
+    - use a mutex to protect the critical sections
+  - producer/consumer with a bounded buffer
+    - need a mutex to protect `produce` and `consume`
+    - use two counting semaphores to signal each other
+    - or, use two condition variables to signal each other
 
 ## Miscs
 
