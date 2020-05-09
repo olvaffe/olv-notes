@@ -67,8 +67,11 @@ Kernel and IRQ
 ## Syscalls
 
 - x86-64 has an instruction, `syscall`, that loads rip from `MSR_LSTAR` MSR.
-  - `syscall_init` initializes `MSR_LSTAR` to `entry_SYSCALL_64`
+  - the intr also loads cs/ss from `MSR_STAR` MSR
+  - `syscall_init` initializes `MSR_LSTAR` to `entry_SYSCALL_64` and
+    `MSR_STAR` to `__KERNEL_CS`
 - `entry_SYSCALL_64` does
+  - save user rsp and set it to `cpu_current_top_of_stack`
   - construct `pt_regs` on stack
   - call `do_syscall_64`
     - enable IRQ for kernel mode

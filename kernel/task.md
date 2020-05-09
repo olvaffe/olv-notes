@@ -119,6 +119,7 @@ Task
 * `arch/x86/kernel/process_32.c:sys_execve` ->
   `fs/exec.c:do_execve` -> copy argv, envp from userspace, read first
   `BINPRM_BUF_SIZE` bytes, etc.  And calls `search_binary_handler`.
+  - `bprm_mm_init` sets up a temporary stack
 * `load_elf_binary` is called to load the elf.
   the elf header is checked for consistency.
   the program header table is read
@@ -127,15 +128,17 @@ Task
   dynamic loader is opened and its elf header is read and checked
   `flush_old_exec` is called to flush old info
   "current" is modified, which is the point of no return
-  `arch_pick_mmap_layout` is called to set up mm
-  stack is prepared
-  segments of type `PT_LOAD` are mapped to the correct locations
-  `set_brk` is called
-  if no interpreter, `elf_entry` is set to ELF entry address; else, `load_elf_interp`
-  `elf_exec_fileno` is closed
-  `set_binfmt` is called so that "current" is an ELF executable
-  `create_elf_tables` is called to, among others, push argc, argv, envp, and auxp to stack
-  finally, `start_thread` is called to set EIP to `elf_entry`
+- `arch_pick_mmap_layout` is called to set up mm
+- `setup_arg_pages`
+  - stack is prepared at `STACK_TOP`
+    - `STACK_TOP` is (`1<<47 - PAGE_SIZE)` on x86-64
+- segments of type `PT_LOAD` are mapped to the correct locations
+- `set_brk` is called
+- if no interpreter, `elf_entry` is set to ELF entry address; else, `load_elf_interp`
+- `elf_exec_fileno` is closed
+- `set_binfmt` is called so that "current" is an ELF executable
+- `create_elf_tables` is called to, among others, push argc, argv, envp, and auxp to stack
+- finally, `start_thread` is called to set EIP to `elf_entry`
 * `load_elf_interp` to load dynamic loader and decide new entry point
   /lib/ld.so specifies 0x0 as its virtual address, which makes itself
   be mapped at around 0xb8000000
