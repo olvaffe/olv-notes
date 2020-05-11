@@ -73,6 +73,8 @@ Kernel Boot on x86-64
   * it prints a "Linux version" banner
   * it calls `setup_arch`
   * it spawns a thread to run `kernel_init`
+    - the thread is the first and has pid 1
+    - it will later `do_execve("/sbin/init")`
 * in `kernel_init`
   * In `do_initcalls`, `populate_rootfs` is called.  It unpacks the the internal
     initramfs to the rootfs, which is usually empty.  It then loads the external

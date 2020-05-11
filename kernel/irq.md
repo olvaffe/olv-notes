@@ -47,7 +47,12 @@ Kernel and IRQ
   automatically
 - IDT entries from `FIRST_EXTERNAL_VECTOR` to `NR_VECTORS` point to the table
   at `irq_entries_start`.  The entries handle interrupts in a uniform way
-  - constructs `pt_regs` on stack
+  - HW disables interrups and pushes the original context registers onto stack
+    before entry
+  - `interrupt_entry` switches to the kernel stack
+    (`cpu_current_top_of_stack`), pushes the original context registers to the
+    kernel stack, construct `pt_regs` on kernel stack, switches to the irq
+    stack (`hardirq_stack_ptr`)
   - call `do_IRQ`
 - IRQ handling
   - `early_irq_init` sets up irq to `irq_desc` mappings
