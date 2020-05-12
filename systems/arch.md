@@ -37,23 +37,23 @@
 
 ## Network
 
- - for temporary wired connection, run `dhcpcd`
- - NetworkManager
-   - `pacman -S networkmanager`
-   - `systemctl enable NetworkManager`
-   - `nmcli device wifi connect <SSID> password <PASSWORD>`
- - for wireless adapter that requiers out-of-tree driver,
-   - /etc/modules-load.d/
-   - /etc/modprobe.d/blacklist.conf
+- for temporary wired connection, run `dhcpcd`
+- NetworkManager
+  - `pacman -S networkmanager`
+  - `systemctl enable NetworkManager`
+  - `nmcli device wifi connect <SSID> password <PASSWORD>`
+- for wireless adapter that requiers out-of-tree driver,
+  - /etc/modules-load.d/
+  - /etc/modprobe.d/blacklist.conf
 
 ## X11
 
- - `pacman -S xorg xorg-xinit xterm`
- - `pacman -S i3`
+- `pacman -S xorg xorg-xinit xterm`
+- `pacman -S i3`
 
 ## Development
 
- - `pacman -S base-devel`
- - `pacman -S git meson cmake`
+- `pacman -S base-devel`
+- `pacman -S git meson cmake`
 
 ## Wayland

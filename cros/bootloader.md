@@ -1,13 +1,16 @@
+Chrome OS Bootloader
+====================
+
 ## coreboot
 
- - coreboot lives on SPI storage
-   - use `futility update` or `flashrom` to flash a new image
-   - might need to disable write-protection, `flashrom --wp-disable`
-   - to backup, `sudo flashrom -V -p raiden_debug_spi:target=AP -r old.bin`
-   - to update, `sudo flashrom -V -p raiden_debug_spi:target=AP -w new.bin`
-   - it takes multiple (5-10) minutes to run!  Be patient.
- - coreboot loads depthcharge payload which boots cros
-   - it can be hacked to load SeaBIOS or TianoCore to boot linux
+- coreboot lives on SPI storage
+  - use `futility update` or `flashrom` to flash a new image
+  - might need to disable write-protection, `flashrom --wp-disable`
+  - to backup, `sudo flashrom -V -p raiden_debug_spi:target=AP -r old.bin`
+  - to update, `sudo flashrom -V -p raiden_debug_spi:target=AP -w new.bin`
+  - it takes multiple (5-10) minutes to run!  Be patient.
+- coreboot loads depthcharge payload which boots cros
+  - it can be hacked to load SeaBIOS or TianoCore to boot linux
 
 ## depthcharge
 

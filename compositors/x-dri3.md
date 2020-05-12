@@ -1,4 +1,7 @@
-# DRI3
+X DRI3 Extension
+================
+
+## DRI3
 
  - `DRI3PixmapFromBuffer`: make the prime fd the backing store of a pixmap
  - `DRI3BufferFromPixmap`: get the prime fd of the backing store of a pixmap
@@ -6,7 +9,7 @@
  - `DRI3FDFromFence`: get the xshmfence fd of the backing store of a server
                       fence
 
-# Present
+## Present
 
  - `PresentPixmap`
    - make the pixmap the backing store of the window, to be visible at the
@@ -26,7 +29,7 @@
    immediately.  Even there is no vblank support, a `DRM_EVENT_FLIP_COMPLETE`
    event is still delievered after the pageflip takes place.
 
-# Atomic Commit
+## Atomic Commit
 
  - it always starts by allocating a `drm_atomic_state`
  - all commit parameters are saved into `drm_atomic_state`

@@ -3,13 +3,13 @@ Kernel and Firmware
 
 ## `request_firmware`
 
-* The one stop.
-  * `Documentation/firmware_class/README`.
-* e100 asks for `e100/d101m_ucode.bin`, and udev receives an event where it
-  * `echo 1 > /sys/$DEVPATH/loading`
-  * `cat $FIRMWARE > /sys/$DEVPATH/data`
-  * `echo 0 > /sys/$DEVPATH/loading`
-  and `request_firmware` returns.
+- `request_firmware` loads the firmware directly from `/lib/firmware`
+- `firmware_fallback_sysfs` is deprecated
+  - e100 asks for `e100/d101m_ucode.bin`
+  - udev receives an event and
+    - `echo 1 > /sys/$DEVPATH/loading`
+    . `cat $FIRMWARE > /sys/$DEVPATH/data`
+    - `echo 0 > /sys/$DEVPATH/loading`
 
 ## Firmware and KBuild
 

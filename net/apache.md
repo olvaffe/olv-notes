@@ -3,52 +3,52 @@ Apache
 
 ## Scope
 
-* `<Directory>` limits the scope by directory
-* `<Files>` limits the scope by filename
-* `<Location>` limits the scope by URL
-* There is a "Match" variant which implies regular expression by default
-* The order (latter sections override earlier ones)
+- `<Directory>` limits the scope by directory
+- `<Files>` limits the scope by filename
+- `<Location>` limits the scope by URL
+- There is a "Match" variant which implies regular expression by default
+- The order (latter sections override earlier ones)
   1. `<Directory>` and .htaccess
   2. `<DirectoryMatch>`
   3. `<Files>` and `<FilesMatch>`
   4. `<Location>` and `<LocationMatch>`
-* Except `<Directory>`, each group is processed in the order they appear in the
+- Except `<Directory>`, each group is processed in the order they appear in the
   configuration.  `<Directory>` is processed from the shortest to longest.
 
 ## Handler
 
-* Files are handled differently depending on their types
-* e.g. `AddHandler cgi-script .cgi` to handle `.cgi` by `cgi-script` handler
+- Files are handled differently depending on their types
+- e.g. `AddHandler cgi-script .cgi` to handle `.cgi` by `cgi-script` handler
 
 ## Mapping
 
 Mapping maps URLs to filesystem locations
 
-* URL-Path (the part of the URL after host and port) is appended to `<DocumentRoot>`
-* `Alias URL-path file-path|directory-path`.  Trailing `/` matters.
-* When `AcceptPathInfo` is on (default for CGI), trailing path info of an
+- URL-Path (the part of the URL after host and port) is appended to `<DocumentRoot>`
+- `Alias URL-path file-path|directory-path`.  Trailing `/` matters.
+- When `AcceptPathInfo` is on (default for CGI), trailing path info of an
   existing file will be set in `PATH_INFO`.
 
 ## `mode_access`
 
-* Allow from network/domain/host
-* Order Allow,Deny
+- Allow from network/domain/host
+- Order Allow,Deny
   1. Evaluate Allow; reject if none matches
   2. Evaluate Deny; reject if any matches
   3. Reject by default
-* Order Deny,Allow
+- Order Deny,Allow
   1. Evaluate Deny; reject if any matches, unless it also matches an Allow
   2. Accept by default
 
 ## vhost
 
-* <http://httpd.apache.org/docs/2.2/vhosts/>
-* `Listen 8080` to make the server listen on port 8080
-* `NameVirtualHost *:8080` to designate the IP address/port for virtual hosting
-* Multiple `<VirtualHost *:8080>` blocks for each host
-  * At least, `ServerName` and `DocumentRoot` must be given
-  * `ServerAlias` to list other names
-* The requests are handled this way
+- <http://httpd.apache.org/docs/2.2/vhosts/>
+- `Listen 8080` to make the server listen on port 8080
+- `NameVirtualHost *:8080` to designate the IP address/port for virtual hosting
+- Multiple `<VirtualHost *:8080>` blocks for each host
+  - At least, `ServerName` and `DocumentRoot` must be given
+  - `ServerAlias` to list other names
+- The requests are handled this way
 
   > Now when a request arrives, the server will first check if it is using an IP
   > address that matches the NameVirtualHost. If it is, then it will look at each
@@ -60,30 +60,30 @@ Mapping maps URLs to filesystem locations
 
 ## CGI
 
-* <http://hoohoo.ncsa.illinois.edu/cgi/env.html>
-* env
-  * `PATH_INFO`: The extra path information, as given by the client. In other
+- <http://hoohoo.ncsa.illinois.edu/cgi/env.html>
+- env
+  - `PATH_INFO`: The extra path information, as given by the client. In other
     words, scripts can be accessed by their virtual pathname, followed by extra
     information at the end of this path. The extra information is sent as
     `PATH_INFO`.  This information should be decoded by the server if it comes
     from a URL before it is passed to the CGI script.
-  * `SCRIPT_NAME`: A virtual path to the script being executed, used for
+  - `SCRIPT_NAME`: A virtual path to the script being executed, used for
     self-referencing URLs. 
-  * `QUERY_STRING`: The information which follows the ? in the URL which
+  - `QUERY_STRING`: The information which follows the ? in the URL which
     referenced this script.  This is the query information. It should not be
     decoded in any fashion. This variable should always be set when there is
     query information, regardless of command line decoding. 
-* script should be able to reference itself with
+- script should be able to reference itself with
   `http://$SERVER_NAME:$SERVER_PORT$SCRIPT_NAME$PATH_INFO`
 
 ## `mod_rewrite`
 
-* 
+- 
 
 ## Request
 
-* <http://httpd.apache.org/docs/2.2/developer/request.html>
-* `ap_process_request_internal`
+- <http://httpd.apache.org/docs/2.2/developer/request.html>
+- `ap_process_request_internal`
   1. Unescapes the URL
   2. Strips Parent and This Elements from the URI
   3. Initial URI Location Walk
@@ -94,10 +94,10 @@ Mapping maps URLs to filesystem locations
   8. security checking
   9. Hook: type_checker: determine content type
   10. Hook: fixups
-* `ap_invoke_handler`
+- `ap_invoke_handler`
   1. Hook: insert_filter
   2. Hook: handler
-* Hooks
+- Hooks
 
         ap_hook_post_config
             this is where the old _init routines get registered

@@ -92,21 +92,28 @@ Kernel and IRQ
 * In `setup_gdt` in `boot/pm.c`, `GDT_ENTRY_BOOT_CS` and `GDT_ENTRY_BOOT_DS`
   GDT have acess flags `0x9b` and `0x93`.  Both indicate highest privilege.
 
-Preempt count:
+## Preempt count
 
-By default
-* PREEMPT_MASK: 0x000000ff
-* SOFTIRQ_MASK: 0x0000ff00
-* HARDIRQ_MASK: 0x0fff0000
-* #define in_irq()		(hardirq_count())
-* #define in_softirq()		(softirq_count())
-* #define in_interrupt()	(irq_count()) /* hardirq count + softirq count */
-
-* local_irq_{disable,enable,save,restore} calls raw_local_irq_xxx, which calls native_irq_xxx, which sti/cli
-
-* preempt_count() is per-thread
-* preempt_disable() increases preempt_count
-* preempt_enable() decreases preempt_count; in case TIF_NEED_RESCHED is set, call preempt_schedule
-* preempt_schedule inc/dec preempt_count by PREEMPT_ACTIVE before/after schedule()
-
-* spin_lock() -> _spin_lock(); on UP, call preempt_disable(); on SMP, it then does the real stuff
+- By default
+  - `PREEMPT_MASK: 0x000000ff`
+  - `SOFTIRQ_MASK: 0x0000ff00`
+  - `HARDIRQ_MASK: 0x000f0000`
+  - `NMI_MASK:     0x00100000`
+- `#define in_irq()		(hardirq_count())`
+- `#define in_softirq()		(softirq_count())`
+- `#define in_interrupt()	(irq_count())`
+- `preempt_count()` is per-thread
+- `preempt_disable()` increments `preempt_count`
+- `preempt_enable()` decrements `preempt_count`; when 0 is reached, call
+  `__preempt_schedule`
+- `__irq_enter` increments `prement_count` by `HARDIRQ_OFFSET`
+- `local_irq_save` calls `arch_local_irq_save`
+  - on x86, it `pushf; pop` to saves EFLAGS register to flags and then `cli`
+- `local_irq_restore` restores to the saved flags
+  - on x86, it `push; popf` to restore EFLAGS register from flags
+- `spin_lock` on UP simply calls `preempt_disable`; it does the real stuff
+  only on SMP
+- `spin_lock_irqsave` on UP simply calls `local_irq_save`; on SMP, it does
+  - `local_irq_save`
+  - `preempt_disable`
+  - real locking

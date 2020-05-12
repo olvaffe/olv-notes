@@ -3,64 +3,64 @@ Programming
 
 ## A new project
 
-* must have when applicable
-  * c99:
-    * <http://www.open-std.org/jtc1/sc22/wg14/www/newinc9x.htm>
-    * `inline`
-    * designated initializer
-    * stdbool and stdint
-    * trailing comma in enum
-    * `__VA_ARGS__`
-    * `__function__`
-  * `log.c` for logging
-    * log destinations (stderr, syslog, ...)
-    * log levels (as used by syslog)
-  * `utils.c` for data structures
-    * kernel list
-    * kernel kref
-    * hash table
-  * `loop.c` for event loop
-    * IO
-    * Timer
-    * Signal
-    * Idle
-    * Watch out for source removal during dispatching.  It may happen that both
+- must have when applicable
+  - c99:
+    - <http://www.open-std.org/jtc1/sc22/wg14/www/newinc9x.htm>
+    - `inline`
+    - designated initializer
+    - stdbool and stdint
+    - trailing comma in enum
+    - `__VA_ARGS__`
+    - `__function__`
+  - `log.c` for logging
+    - log destinations (stderr, syslog, ...)
+    - log levels (as used by syslog)
+  - `utils.c` for data structures
+    - kernel list
+    - kernel kref
+    - hash table
+  - `loop.c` for event loop
+    - IO
+    - Timer
+    - Signal
+    - Idle
+    - Watch out for source removal during dispatching.  It may happen that both
       source N and N+k are to be dispatched, but source N removes source N+k
       before the dispatch of source N+k happens.
-    * Also note that a fd should be EPOLL_CTL_DEL before closing
-    * Another thing to consider is that, how the program cleans up itself after
+    - Also note that a fd should be EPOLL_CTL_DEL before closing
+    - Another thing to consider is that, how the program cleans up itself after
       quitting the loop.
-    * Do not necessarily need to use the main loop for all signals.
-  * `settings.c` for project wide configuration
-    * `const struct proj_settings *proj_get_settings(void);`
-* high-level structures and low-level structures
-  * high-level structures has pointers to low-level structures
-  * low-level structures _must_ not know about the high-level strucutres
-    * otherwise, they won't be low-level anymore
-  * reference count the low-level strucutres, not the high-level ones
-    * this allows the low-level structures to be passed around
-* Reference counting
-  * the number of current users of an object
-    * garbage collect an object when the count reaches zero
-    * on the other hand, the object always exists as long as there are users
-  * a must if an object is used by multiple threads concurrently
-    * otherwise, imagine how to handle one thread calling obj_do_someting and
+    - Do not necessarily need to use the main loop for all signals.
+  - `settings.c` for project wide configuration
+    - `const struct proj_settings *proj_get_settings(void);`
+- high-level structures and low-level structures
+  - high-level structures has pointers to low-level structures
+  - low-level structures _must_ not know about the high-level strucutres
+    - otherwise, they won't be low-level anymore
+  - reference count the low-level strucutres, not the high-level ones
+    - this allows the low-level structures to be passed around
+- Reference counting
+  - the number of current users of an object
+    - garbage collect an object when the count reaches zero
+    - on the other hand, the object always exists as long as there are users
+  - a must if an object is used by multiple threads concurrently
+    - otherwise, imagine how to handle one thread calling obj_do_someting and
       the other thread calling obj_destroy
-  * how is it useful for non-threaded environment?
-    * Garbage collection.  If object A is created only for object B, we may want
+  - how is it useful for non-threaded environment?
+    - Garbage collection.  If object A is created only for object B, we may want
       object A to be destroyed automatically with B.
-    * Async operation.  Suppose destroying object A requires killing a child
+    - Async operation.  Suppose destroying object A requires killing a child
       process, which takes time.  We may want the object to exist a little long
       until the child process is terminated.
-  * If object A automatically creates many object B's, and each object B owns a
+  - If object A automatically creates many object B's, and each object B owns a
     reference of object A, how do we destroy object A without manually
     destroying B's first?
-    * We should avoid this.  Instead, require B to have a shorter lifetime than
+    - We should avoid this.  Instead, require B to have a shorter lifetime than
       A.  B can be automatically destroyed with A.
-    * If B is reference counted, it should not point back to A.
-* Error handling
-  * how to propogate errors to the caller
-  * `GError`?
+    - If B is reference counted, it should not point back to A.
+- Error handling
+  - how to propogate errors to the caller
+  - `GError`?
 
 ## old
 
