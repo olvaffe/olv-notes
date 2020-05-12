@@ -13,7 +13,7 @@ GPU History
   - second pixel pipeline doubling the rendering speed
   - 32-bit pixel formats
   - 24-bit depth buffer and 8-bit stencil
-  - texture mipmapping and trilinear filtering
+  - dual texture and bilinear filtering
   - 1024x1024 textures
 - NV5 released in 1999
   - RIVA TNT2
@@ -22,10 +22,12 @@ GPU History
 - NV10 released in 1999
   - GeForce 256
   - Direct3D 7.0
-  - four 64-bit pixel pipeline
+  - hardware TNL
   - cube mapping
   - dot product bump mapping
-  - hardware TNL
+  - 2x anisotropic and trilinear filtering
+  - texture compression
+  - four 64-bit pixel pipelines
 - NV15 released in 2000
   - GeForce 2
   - Direct3D 7.0
@@ -33,8 +35,10 @@ GPU History
 - NV20 released in 2001
   - GeForce 3
   - Direct3D 8.0 w/ shader model 1.1
+  - 3D textures
+  - shadow maps
+  - 8x anisotropic filtering
   - MSAA
-  - 8-tap anisotropic filtering
 - NV25 released in 2002
   - GeForce 4
   - Direct3D 8.0a w/ shader model 1.1/1.3
@@ -42,10 +46,14 @@ GPU History
 - NV30 released in 2003
   - GeForce FX
   - Direct3D 9.0a w/ shader model 2.0a
+    - longer shaders and more ops
   - better filtering and multisampling
 - NV40 released in 2004
   - GeForce 6
   - Direct3D 9.0c w/ shader model 3.0
+    - more flow controls
+  - vertex texture fetch
+  - 64-bit HDR
   - multi gpu
   - 16 pixel pipelines
 - G7x released in 2005
@@ -54,9 +62,12 @@ GPU History
 - G8x released in 2006
   - GeForce 8
   - Direct3D 10.0 w/ shader model 4.0
+    - geometry shader
+    - unified shader
   - Tesla architecture
   - unified shader architecture
   - 64 stream processors; scalar only, no vector
+  - CUDA
   - high quality texture filtering
   - MSAA/CSAA
   - 128-bit HDR

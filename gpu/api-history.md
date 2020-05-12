@@ -85,6 +85,7 @@ API History
 
 - 1.0 was released in 2016
   - HW features are about GL 4.3 or GLES 3.1
+  - plus persistent and coherent memory
 - 1.1 was released in 2018
   - protected content
   - subgroup operations
@@ -100,6 +101,8 @@ API History
 
 ## OpenGL
 
+- for modern versions
+  - <https://gitlab.freedesktop.org/mesa/mesa/-/blob/master/docs/features.txt>
 - 1.0 was released in 1992
 - 1.1 was released in 1997
   - vertex arrays
