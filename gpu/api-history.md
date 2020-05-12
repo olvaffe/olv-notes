@@ -1,0 +1,259 @@
+API History
+===========
+
+## Direct3D
+
+- for modern feature levels
+  - <https://en.wikipedia.org/wiki/Feature_levels_in_Direct3D>
+- 5.0 was released in 1997
+- 6.0 was released in 1998
+  - multitexturing
+- 7.0 was released in 1999
+  - HW TCL (transformation, clipping, and lighting)
+- 8.0 was released in 2000
+  - shader model 1.1
+- 9.0 was released in 2002
+  - shader model 2 and 3
+  - floating-point formats
+  - MRT
+  - texturing in VS
+- 10.0 was released in 2007
+  - shader model 4
+  - feature levels instead of caps
+  - common shader core
+  - geometry shader
+  - stream output
+  - integer ops in shaders
+  - texture arrays
+  - instancing
+- 11.0 was released in 2009
+  - shader model 5
+  - tessellation
+  - compute
+  - `9_1`
+    - shader model 2.0
+    - 2K textures
+    - volume textures
+    - event queries
+    - BC1-3 compressions
+  - `9_2`
+    - occlusion queries
+    - floating point formats
+  - `9_3`
+    - shader model 2.x
+    - instancing
+    - 4K textures
+    - 4 MRTs
+    - floating point blending
+  - `10_0`
+    - shader model 4.0
+    - geometry shader
+    - stream out
+    - alpha-to-coverage
+    - 8K textures
+    - MSAA textures
+    - 2-sided stencil
+    - general render target view
+    - texture arrays
+    - BC4-5
+    - full floating point support
+  - `10_1`
+    - shader model 4.1
+    - cubemap arrays
+    - extended MSAA
+  - `11_0`
+    - shader model 5.0
+    - hull and domain shaders
+    - DirectCompute (CS 4.1)
+    - 16K textures
+    - BC6H/7
+    - more formats
+  - `11_1`
+    - logical blend operations
+    - target-independent rasterization
+    - UAV at every stage
+    - UAV-only rendering
+    - constant buffer offsetting and partial updates
+  - `12_0`
+  - `12_1`
+- 11.1 was released in 2012
+  - UAVs
+- 11.2 was released in 2013
+- 12.0 was released in 2015
+
+## Vulkan
+
+- 1.0 was released in 2016
+  - HW features are about GL 4.3 or GLES 3.1
+- 1.1 was released in 2018
+  - protected content
+  - subgroup operations
+  - multi-view
+  - device groups
+  - external memory/fence/semaphore
+  - advanced compute
+  - HLSL
+  - YCbCr
+- 1.2 was released in 2020
+  - timeline semaphore
+  - descriptor indexing
+
+## OpenGL
+
+- 1.0 was released in 1992
+- 1.1 was released in 1997
+  - vertex arrays
+  - texture objects
+- 1.2 was released in 1998
+  - 3D textures
+- 1.3 was released in 2001
+  - multitexturing
+  - multitsampling
+  - cube maps
+  - compressed textures
+- 1.4 was released in 2002
+  - multi draw arrays
+  - depth texture
+  - more fixed functions
+- 1.5 was released in 2003
+  - VBOs
+  - occlusion queries
+- 2.0 was released in 2004
+  - GLSL 1.0 and 1.1
+  - MRT
+  - npot
+- 2.1 was released in 2006
+  - GLSL 1.2
+  - PBOs
+  - sRGB
+- 3.0 was released in 2008
+  - GLSL 1.3
+  - profiles
+  - VAOs
+  - FBOs
+  - conditional rendering
+  - floating-point and depth texture formats
+  - half-float
+  - integer formats
+  - texture arrays
+  - transform feedback
+- 3.1 was released in 2009
+  - GLSL 1.4
+  - UBOs
+  - TBOs
+  - instanced rendering
+  - buffer textures
+  - rectangle textures
+- 3.2 was released in 2009
+  - GLSL 1.5
+  - core and compat profiles
+  - geometry shader
+  - multisample textures
+  - fence sync objects
+- 3.3 was released in 2010
+  - backport certain 4.0 features
+  - GLSL 3.3
+  - dual-source blending
+  - sampler objects
+  - sampler swizzle
+  - 1010102
+  - instanced arrays
+- 4.0 was released in 2010
+  - GLSL 4.0
+  - tessellation
+  - 64-bit
+  - indirect draw
+  - buffer textures
+  - cube map arrays
+  - multiple transform feedback
+- 4.1 was released in 2010
+  - ES2 compat
+  - separate shader objects
+  - 64-bit vertex attributes
+  - viewport array
+- 4.2 was released in 2011
+  - atomics
+  - shader images
+  - more formats
+- 4.3 was released in 2012
+  - ES3 compat
+  - compute shader
+  - SSBOs
+  - array-of-arrays in GLSL
+  - multi draw indirect
+  - stencil texturing
+  - texture views
+- 4.4 was released in 2013
+  - more immutable storage (`GL_ARB_buffer_storage` and coherent mapping)
+  - multi bind
+  - bindless texture ext
+  - sparse texture ext
+- 4.5 was released in 2014
+  - ES3.1 compat
+  - DSA (direct state access)
+  - texture barrier
+- 4.6 was released in 2017
+  - SPIR-V
+  - anisotropic
+  - more atomics
+  - shader group vote
+- Deprecation Model
+ - some features are marked for deprecation in OpenGL 3.0
+ - most of them are removed from OpenGL 3.1 and are added back through GL_ARB_compatibility
+ - In OpenGL 3.2, removed features are only available in compatibility profile
+ - A forward-compatible context removes deprecated features, in addtion to removed features
+
+- Removed Features
+ - all objects must be pre-generated with glGen*
+ - no more color index mode
+ - GLSL 1.1 and 1.2
+ - glBegin and glEnd
+ - edge flags and fixed-function vertex processing
+   (gl*Pointer, gl*ClientState, matrix, frustum/ortho, lighting)
+ - client vertex and index arrays (must use buffer object)
+ - glRect*
+ - glRasterPos
+ - non-sprite point
+ - POLYGON, QUADS, QUAD_STRIP
+ - PolygonMode and PolygonStipple
+ - pixel transfer modes and operations
+ - pixel drawing
+ - bitmap
+ - legacy pixel formats - alpha, luminance, intensity
+ - depth texture mode
+ - texture CLAMP mode
+ - texture border
+ - automatic mipmap generation
+ - fixed-function fragment processing (TexEnv, Fog)
+ - alpha test
+ - accumulation buffers
+ - glCopyPixels
+ - auxiliary buffers
+ - evaluators
+ - selection and feedback modes
+ - display lists
+ - glHints
+ - attribute stack
+ - unified extension string
+ - (Deprecated only) glLineWidth
+
+## OpenGL ES
+
+- 1.0 was released in 2003
+  - based on GL 1.3
+- 1.1 was released in 2003?
+  - based on GL 1.5
+- 2.0 was released in 2007
+  - based on GL 2.0 without fixed-function
+- 3.0 was released in 2012
+  - occolusion queries, transform feedback, instanced rendering
+  - ETC2/EAC
+  - floating-pint textures, array textures, npot, depth textures, etc.
+- 3.1 was released in 2014
+  - compute
+  - shader images
+- 3.2 was released in 2015
+  - geometry and tessellation shaders
+  - floating-pint RT
+  - ASTC compression
+  - TBOs, multisample 2D array, cubemap arrays

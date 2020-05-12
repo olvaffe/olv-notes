@@ -1,0 +1,112 @@
+GPU History
+===========
+
+## nVidia
+
+- NV1 released in 1995
+- NV3 released in 1997
+  - RIVA 128
+  - Direct3D 5.0
+- NV4 released in 1998
+  - RIVA TNT
+  - Direct3D 6.0
+  - second pixel pipeline doubling the rendering speed
+  - 32-bit pixel formats
+  - 24-bit depth buffer and 8-bit stencil
+  - texture mipmapping and trilinear filtering
+  - 1024x1024 textures
+- NV5 released in 1999
+  - RIVA TNT2
+  - Direct3D 6.0
+  - 2048x2048 textures
+- NV10 released in 1999
+  - GeForce 256
+  - Direct3D 7.0
+  - four 64-bit pixel pipeline
+  - cube mapping
+  - dot product bump mapping
+  - hardware TNL
+- NV15 released in 2000
+  - GeForce 2
+  - Direct3D 7.0
+  - two texture units per pixel pipeline
+- NV20 released in 2001
+  - GeForce 3
+  - Direct3D 8.0 w/ shader model 1.1
+  - MSAA
+  - 8-tap anisotropic filtering
+- NV25 released in 2002
+  - GeForce 4
+  - Direct3D 8.0a w/ shader model 1.1/1.3
+  - second vertex pipeline
+- NV30 released in 2003
+  - GeForce FX
+  - Direct3D 9.0a w/ shader model 2.0a
+  - better filtering and multisampling
+- NV40 released in 2004
+  - GeForce 6
+  - Direct3D 9.0c w/ shader model 3.0
+  - multi gpu
+  - 16 pixel pipelines
+- G7x released in 2005
+  - GeForce 7
+  - Direct3D 9.0c w/ shader model 3.0
+- G8x released in 2006
+  - GeForce 8
+  - Direct3D 10.0 w/ shader model 4.0
+  - Tesla architecture
+  - unified shader architecture
+  - 64 stream processors; scalar only, no vector
+  - high quality texture filtering
+  - MSAA/CSAA
+  - 128-bit HDR
+- G9x released in 2008
+  - GeForce 9
+  - Direct3D 10.0 w/ shader model 4.0
+  - Tesla architecture
+- GT200 released in 2008
+  - GeForce 200
+  - Direct3D 10.1 w/ shader model 4.0
+  - Tesla architecture
+- GF10x released in 2010
+  - GeForce 400
+  - Direct3D 11.0 (or 12.0 with `11_0` feature level)
+  - Fermi architecture
+  - 16 SMs (stream multiprocessors) of 32 cuda cores
+- GF11x released in 2010
+  - GeForce 500
+  - Direct3D 11.0
+  - Fermi architecture
+- GK10x released in 2012
+  - GeForce 600
+  - Direct3D 11.0
+  - Kepler architecture
+  - energy efficiency
+  - a SM has 192 cores
+  - bindless textures
+- GK11x released in 2013
+  - GeForce 700
+  - Direct3D 11.0
+  - Kepler architecture
+  - compute performance
+- GM10x released in 2014
+  - GeForce 900
+  - Direct3D 12.0 with `12_1` feature level
+  - Maxwell architecture
+  - a SM has 128 cores
+- GP10x released in 2016
+  - GeForce 10
+  - Direct3D 12.0 with `12_1` feature level
+  - Pascal architecture
+  - a SM has 128 cores
+  - HBM, high bandwidth memory
+  - unified memory w/ page migration engine
+  - NVLink
+  - raytracing
+- TU10x released in 2018
+  - GeForce 20
+  - Direct3D 12.0 with `12_2` feature level
+  - Turing architecture
+  - cuda cores
+  - raytracing cores
+  - tensor cores
