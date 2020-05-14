@@ -1,4 +1,54 @@
-# AMD
+AMD
+===
+
+## History
+
+- ATI Rage released in 1996 to 1999
+- R100 released in 2000
+  - Direct3D 7.0
+  - `radeon_dri.so`
+- R200 released in 2001
+  - Direct3D 8.1 w/ shader model 1.4
+  - `r200_dri.so`
+- R300 released in 2002
+  - Direct3D 9.0 w/ shader model 2.0
+  - `r300_dri.so`
+- R400 released in 2004
+  - Direct3D 9.0b w/ shader model 2.0b
+  - `r300_dri.so`
+- R500 released in 2005
+  - Direct3D 9.0c w/ shader model 3.0
+  - `r300_dri.so`
+- R600 released in 2007
+  - Direct3D 10.1 w/ shader model 4.1
+  - `r600_dri.so`
+- R700 released in 2008
+  - Direct3D 10.1 w/ shader model 4.1
+  - `r600_dri.so`
+- Evergreen released in 2009
+  - Direct3D 11.0 w/ `11_0` feature level
+  - `r600_dri.so` Evergreen
+- Northern Islands released in 2010
+  - Direct3D 11.0 w/ `11_0` feature level
+  - `r600_dri.so` Cayman
+- Southern Islands released in 2012
+  - Direct3D 12.0 w/ `11_1` feature level
+  - `radeonsi_dri.so` GFX6
+- Sea Islands released in 2013
+  - Direct3D 12.0 w/ `11_1` feature level
+  - `radeonsi_dri.so` GFX7
+- Volcanic Islands released in 2014
+  - Direct3D 12.0 w/ `12_0` feature level
+  - `radeonsi_dri.so` GFX8
+- Polaris released in 2016
+  - Direct3D 12.0 w/ `12_0` feature level
+  - `radeonsi_dri.so` GFX8
+- Vega released in 2017
+  - Direct3D 12.0 w/ `12_1` feature level
+  - `radeonsi_dri.so` GFX9
+- Navi released in 2019
+  - Direct3D 12.0 w/ `12_1` feature level
+  - `radeonsi_dri.so` GFX10
 
 ## GCN
 

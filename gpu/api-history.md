@@ -96,6 +96,7 @@ API History
   - HLSL
   - YCbCr
 - 1.2 was released in 2020
+  - no new HW feature
   - timeline semaphore
   - descriptor indexing
 
@@ -249,14 +250,36 @@ API History
 - 2.0 was released in 2007
   - based on GL 2.0 without fixed-function
 - 3.0 was released in 2012
-  - occolusion queries, transform feedback, instanced rendering
+  - occolusion queries
+  - transform feedback
+  - instanced rendering
+  - MRT >=4
   - ETC2/EAC
-  - floating-pint textures, array textures, npot, depth textures, etc.
+  - texturing
+    - floating-point textures
+    - 3D textures
+    - depth textures
+    - vertex textures
+    - npot textures
+    - R/RG textures
+    - array textures
+    - swizzles
+    - seamless cube maps
+  - more guaranteed render/texture formats
+  - GLSL
 - 3.1 was released in 2014
   - compute
-  - shader images
+  - indirect draws
+  - shader images and ssbo
+  - texture gather, multisample textures, stencil textures
+  - separate shader object
+  - GLSL
 - 3.2 was released in 2015
-  - geometry and tessellation shaders
+  - Android Extension Pack (AEP)
+    - ASTC
+    - geometry and tessellation shaders
+    - per-sample interpolation and shading
+    - different blend modes for each RT
+    - guaranteed ssbo, images, atomics in FS
   - floating-pint RT
-  - ASTC compression
   - TBOs, multisample 2D array, cubemap arrays

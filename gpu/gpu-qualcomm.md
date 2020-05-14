@@ -1,4 +1,37 @@
-# MSM
+Qualcomm Adreno
+===============
+
+## History
+
+- Snapdragon S1 released in 2008
+  - Adreno 200
+  - GLES 2.0
+- Snapdragon S2 released in 2010
+  - Adreno 205
+- Snapdragon S3 released in 2010
+  - Adreno 220
+- Snapdragon S4 released in 2012
+  - Adreno 320
+  - GLES 3.0
+- Snapdragon 800 released in 2013
+  - Adreno 330
+- Snapdragon 805 released in 2013
+  - Adreno 420
+  - GLES 3.2
+  - Vulkan 1.0
+- Snapdragon 810 released in 2014
+  - Adreno 430
+- Snapdragon 820 released in 2015
+  - Adreno 530
+- Snapdragon 835 released in 2016
+  - Adreno 540
+  - Vulkan 1.1
+- Snapdragon 845 released in 2017
+  - Adreno 630
+- Snapdragon 855 released in 2018
+  - Adreno 640
+- Snapdragon 865 released in 2019
+  - Adreno 650
 
 ## Overview
 

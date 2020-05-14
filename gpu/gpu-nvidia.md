@@ -1,7 +1,7 @@
-GPU History
-===========
+nVidia
+======
 
-## nVidia
+## History
 
 - NV1 released in 1995
 - NV3 released in 1997
