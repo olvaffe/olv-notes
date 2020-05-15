@@ -50,6 +50,48 @@ AMD
   - Direct3D 12.0 w/ `12_1` feature level
   - `radeonsi_dri.so` GFX10
 
+## RDNA
+
+- AMD Navi Radeon RX 5700 XT
+- $399
+- 2 Shader Engines, each has
+  - 2 64-bit Memory Controllers, each has
+    - 4 256KB slices of L2
+  - 2 Shader Arrays, each has
+    - 1 L1
+    - 1 Primitive Unit
+      - Primitive Assembly
+      - Tessellation
+    - 1 Rasterizer
+      - Rasterization
+    - 4 Render Backends
+      - Depth/Stencil/Alpha Test
+      - Blend
+    - 5 Dual Compute Units
+- a Dual Compute Unit has
+  - 1 32KB L0
+  - 1 128KB Local Data Share
+  - 2 LD/ST/Tex Units
+  - 4 SIMDs, each has
+    - ? Schedulers
+    - 32 ALUs
+      - together can execute one instruction each cycle for wave32
+    - 1 128KB Vector Register File
+      - 1024 32-bit registers for each ALU
+    - 1 scalar ALU
+    - 1 10KB Scalar Register File
+- the primitive unit can cull 2 primitves and output 1 primitive to
+  rasterizer per clock
+  - cull rate is `engine count * array count * 2 * mhz = 2*2*2*1905 = 15240`
+  - output rate is 7620 mtris/s
+- the rasterizer can output up to 16 pixels per clock
+  - output rate is `engine count * array count * 16 * mhz = 2*2*16*1905 =
+    121920` mpixels/s
+- flops are
+  - `engine count * array count * cu count * simd count * simd width * fma =
+     2 * 2 * 5 * 4 * 32 * 2 = 5120` flops/cycle
+  - 9.753 tflops/s
+
 ## GCN
 
 * Micro Engine / Micro Engine Compute, ME / MEC

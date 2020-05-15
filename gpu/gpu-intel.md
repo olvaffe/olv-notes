@@ -21,6 +21,55 @@
   - Ice Lake, 2019, 10nm, 10th gen, Gen11
   - Tiger Lake?, 2020, 10nm, 11th gen, Gen12
 
+## Ice Lake
+
+- a GPU has several engines
+  - display
+  - media
+  - GPE, graphics processing engine
+- Gen11LP GT2
+  - 1 Unslice, which has
+    - 1 GTI
+    - 1 Command Streamer
+    - 1 Media Fixed Function
+    - 1 Blitter
+    - 1 Thread Dispatch
+    - 1 Geometry
+    - 1 POSH
+      - tiler
+  - 1 slice, which has
+    - 1 configurable L3$
+      - URB
+      - tiler output
+      - cache
+    - 1 Slice Common
+      - 1 Raster
+      - 1 HIZ/Z
+      - 1 Pixel Dispatch
+      - 1 Pixel Backend
+    - 8 SubSlices, each has
+      - 1 I$ and thread dispatch
+      - 1 Sampler
+        - Tex$
+        - L1$
+      - 1 Media Sampler
+      - 1 SLM
+        - shared local memory
+      - 1 Dataport
+        - load/store
+      - 8 EUs, each has
+        - 2 4-wide SIMD ALUs
+        - 7 4KB General Register Files, each has
+          - 128 GRF registers, each 8x32 bits
+          - allow 7 threads
+        - 7 Architecture Register Files
+        - 1 Thread Control
+          - Thread Arbiter picks instructions to run from runnable threads
+          - dispatch instructions
+          - co-issue up to 4 instructions per cycle
+        - 1 Branch unit
+        - 1 Send unit
+
 ## IRQs
 
 * `gen8_de_irq_handler` for display engine related interrupts

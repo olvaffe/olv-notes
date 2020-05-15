@@ -98,7 +98,7 @@ API History
 - 1.2 was released in 2020
   - no new HW feature
   - timeline semaphore
-  - descriptor indexing
+  - (optional) descriptor indexing
 
 ## OpenGL
 

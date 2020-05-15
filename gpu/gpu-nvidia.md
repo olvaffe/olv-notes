@@ -121,3 +121,65 @@ nVidia
   - cuda cores
   - raytracing cores
   - tensor cores
+
+## Turing
+
+- nVidia Turing TU102 GPU
+- $999
+- 6 Graphics Processor Clusters, each has
+  - 1 Raster Engine
+    - Edge Setup
+    - Rasterization
+    - Z-Cull
+  - 2 32-bit GDDR6 memory controllers, each has
+    - 8 ROP units
+    - 1 512KB L2
+  - 6 Texture Processing Clusters, each has
+    - 1 PolyMorph Engine
+      - Vertex Fetch
+      - Tessellation
+      - Viewport Transform
+      - Attribute Setup
+      - Stream Output
+    - 2 Streaming Multiprocessors (SMs)
+- a SM has
+  - 1 96KB configurable shared memory / L1
+  - 4 texture units
+  - 1 RT Core
+  - 4 Processing Blocks, each has
+    - 1 Dispatch Unit
+    - 1 Warp Scheduler
+    - 1 64KB Register File
+    - 1 L0
+    - 16 FP32 CUDA Cores + accompanying INT32 Cores
+    - 2 Tensor Cores
+    - 4 LD/ST Units
+      - memory access
+    - 1 SFU
+      - sin/cos/etc
+
+## Life of a Triangle
+
+- insert a draw command into the pushbuffer
+- ask GPU Host Interface to pick up the pushbuffer which is processed by Front
+  End
+- Primitive Distributor processes the indices in the index buffer and
+  distribute triangle work batches to GPCs (Graphics Processor Clusters)
+- Poly Morph Engine takes care of fetching vertex data
+- after the vertex data has been fetched, warps of 32 threads are scheduled
+  inside the SM
+- the warp scheduler decides which warp to run and which instruction to issue
+- warps advance in lock-step; when a warp is waiting for slow operations such
+  as memory load, the scheduler may pick another warp to run.
+  Context-switching is cheap because each warp has its own registers in the
+  register file.  The more registers a shader need, the less concurrent warps
+  there can be.
+- Viewport Transform
+- bin triangles into tiles and send tiles to GPCs via Work Distribution
+  Crossbar
+- Attribute Setup turns vertex data into a more friendly format
+- Raster Engine does back-face culling and z-culling; then generate pixel
+  information
+- once there are 8 2x2 pixel quads, the warp scheduler will manage the task
+- the color and depth values are sent to ROP, which does depth testing,
+  blending, etc.

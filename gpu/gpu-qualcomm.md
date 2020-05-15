@@ -33,6 +33,45 @@ Qualcomm Adreno
 - Snapdragon 865 released in 2019
   - Adreno 650
 
+## Architecture
+
+- Adreno
+  - a big L2 sitting in from of system memory
+  - all memory accesses are via L2
+  - a Texture Processor / L1 for Sampling and Image Read
+  - multiple Shader Processors
+- a Shader Processor (SP) is
+  - core block of Adreno GPUs with many moudles including ALU, load/store
+    unit, control flow unit, register files, etc.
+  - each SP corresponds to a OpenCL compute unit
+  - load/store through L2 for buffer objects and (r/w) image objects
+  - load/sample through  texture processor / L1 for read-ony image objects
+- a Texture Processor (TP) is
+  - texture fetching and filtering
+- A unified L2 cache (UCHE)
+  - respond to SP's load/store and L1's load requests
+- Waves and fibers
+  - the smallest unit of execution is a fiber (thread...)
+  - a collection of fibers execute in lock-step is a wave
+  - wave size can be 8, 16, 32, 64, 128, etc.
+  - a SP can have multiple active waves, for latency hiding
+    - maximum number of active waves depend on register file size and register
+      footprint of the waves
+  - an OpenCL kernel launches multiple workgroups
+    - each workgroup is assigned to an SP
+    - each SP processes one (or multiple on highend) workgroup at a time
+    - the remaining SPs are queued in GPU for execution
+  - an OpenCL workgroup is processed by multiple waves
+    - the larger the better, but not always
+    - larger workgroups means more waves and better latency hiding
+- OpenCL Memory Model
+  - global memory is system memory
+  - local memory is on-chip GMEM in SP
+  - private memory is registers, on-chip GMEM, or system memory decided by
+    compiler
+  - constant memory is on-chip if can fit; system memory otherwise
+  - not coherent between CPU/GPU on A5xx
+
 ## Overview
 
  - "msm_drm_register" registers these drivers in order
