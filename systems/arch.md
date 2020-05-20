@@ -1,4 +1,33 @@
-# ArchLinux
+ArchLinux
+=========
+
+## Pacman
+
+- `/var/lib/pacman/sync`
+  - sync database
+  - read-only, downloaded from the server
+  - `$repo.db` is the package database for $repo
+    - refreshed with `pacman -Sy`
+  - `$repo.files` is the files database for $repo
+    - refreshed with `pacman -Fy`
+    - to list package files before installation
+- `/var/lib/pacman/local`
+  - local database
+  - `$pkg/desc` is package description and metadata
+  - `$pkg/files` is package files
+  - `$pkg/mtree` is package file attributes
+- `/var/cache/pacman/pkg`
+  - cache of downloaded packages
+- local database operations
+  - `pacman -Q` queries the local database
+  - `pacman -U` adds a downloaded package to the local database
+    - `pacman -U $pkg.tar.xz`
+  - `pacman -R` remove a package from the local database
+  - `pacman -T` tests if a package is in the local database
+  - `pacman -D` manipulates the local database 
+- sync database operations
+  - `pacman -S`
+  - `pacman -F` queries the sync files database
 
 ## Installation
 

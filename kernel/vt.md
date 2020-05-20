@@ -1,6 +1,17 @@
 Kernel VT
 =========
 
+## Ctrl-C and others
+
+- ctrl has keycode `KEY_LEFTCTRL` (29)
+  - `ctrl_map` maps it to keysym `0xf702`, which is handled by `k_shift`
+- c has keycode `KEY_C` (46)
+  - `ctrl_map` maps it to keysym `0xf003`, which is handled by `k_self`
+- this causes ascii `0x3` to be inserted with `tty_insert_flip_char`
+- on the receiving end, `n_tty_receive_signal_char` is called to send `SIGINT`
+- other key combinations are handled similarly
+  - Ctrl-S / Ctrl-Q sends 0x13 / 0x11 to stop / start tty
+
 ## for display, I guess
 
 * there is a system-wide console driver for all VTs
@@ -13,7 +24,7 @@ Kernel VT
 
 ## (old) Overview:
 
-* See also kernel-tty and kernel-keyboard
+* See also tty.md
 * /dev/tty == tty of current process
 * /dev/console == first console that is also a tty
 * /dev/tty0 == foreground virtual console of vt
@@ -196,3 +207,24 @@ userspace=cu -l /dev/ttyACM0 -> TTY -> Line Discipline -> Serial Core -> UART dr
 - terminfo
   - describe the capabilities of a terminal emulator
   - `infocmp` to decompile a terminfo
+
+## fbdev
+
+- In kernel, a fbdev is a VT driver.  That is how VT draws characters on screen.
+- The first thing to do is to switch to a new VT and ask the VT not to draw to
+  the screen
+  - `ioctl(fd, VT_ACTIVATE, vtno)`
+  - `ioctl(fd, KDSETMODE, KD_GRAPHICS)`
+- Then we can open the fbdev device and draw at will
+- Xorg
+  - observed via `ps -ax -o sid,comm,tpgid,pid,tty` and the source
+  - The server is in its own session.
+  - It has the new VT as the controlling terminal
+    - to set the new VT to graphics mode
+    - to avoid other processes stealing the VT
+  - It is also the foreground process of the new VT
+  - Input events are received from evdev
+    - the new VT is constantly flushed to keep its buffer clean
+    - the new VT is made raw to avoid signals and others
+  - It is also the foreground process of the old VT
+    - it can receive Ctrl-C from the old VT
