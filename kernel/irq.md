@@ -1,6 +1,58 @@
 Kernel and IRQ
 ==============
 
+## x86
+
+- `asm/segment.h`
+  - Interrupt Descriptor Table, IDT
+    - there are 256 (`IDT_ENTRIES`) descriptors
+    - the table is loaded with `lidt` instruction
+    - each descriptor is 16 bytes
+    - it describes when an interrupt happens, where to jump to (and the
+      priviledge level, irq disable, whether to save context, etc.)
+    - the jump targets are defined by `identry` in `entry_64.S`
+- `asm/irq_vectors.h`
+  - vectors
+    - there are 256 (`NR_VECTORS`) vectors
+    - vector 0..31 are for system traps and exceptions and are hardcoded by CPU
+    - vector 32..127 are for device interrupts
+      - `FIRST_EXTERNAL_VECTOR` is 32
+      - `ISA_IRQ_VECTOR` uses 48..63 for ISA
+      - these are initialized from `irq_entries_start` and call `do_IRQ` after
+      	some setups
+    - vector 128 is for legacy int80 syscall
+      - `IA32_SYSCALL_VECTOR` is 128
+    - vector 129..230ish is unused
+    - the rest is for kernel-defined IPIs
+      - starting from `FIRST_SYSTEM_VECTOR`
+
+## IRQ Domain
+
+- each irq controller is a `irq_domain`
+  - irq controllers and domains are hierarchical
+- kernel uses virtual irq numbers
+  - there are `NR_VECTOR` hardware vectors
+  - however, `NR_IRQS` can be thousands or tens of thousands
+- for an irq controller with N hwirqs, `__irq_domain_alloc_irqs` is called
+  - normally, `irq_base` is -1
+  - `irq_domain_alloc_descs` finds an unused virtual irq number range,
+    allocates the `irq_desc` structs, and sets up `irq_to_desc` mappings
+  - `irq_domain_alloc_irqs_hierarchy` is then called to allocate hw resources
+    - this initializes `irq_desc::irq_data`, especially `hwirq` and `chip`
+      fields recursively
+  - `irq_domain_insert_irq` is called on each virq to set up hwirq-to-virq
+    mapping
+- `request_irq` requests a virq
+  - `irq_to_desc` to look up the `irq_desc`
+  - `irq_domain_activate_irq` is called to activate the line recursively from
+    the root
+  - on x86, this sets `vector_irq[hwirq]` to the `irq_desc`
+  - `do_IRQ` handles normal device IRQs on x86.  It gets the `irq_desc` from
+    the per-cpu `vector_irq` array and call `irq_desc::handle_irq`.  The
+    handler is usually one of `handle_edge_irq` or `handle_level_irq`
+  - the handler specified in `request_irq` is internally known as an
+    `irqaction`.  `handle_irq_event` invokes all actions.
+
 ## Boot Time Setup
 
 - IDT size is 256 with the first 32 reserved for processor exceptions (traps)
