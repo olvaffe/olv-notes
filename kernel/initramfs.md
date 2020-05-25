@@ -1,7 +1,7 @@
 initramfs
 =========
 
-## initramfs
+## cpio archive
 
 - `CONFIG_BLK_DEV_INITRD` enables initramfs/initrd support
 - `usr/initramfs_data.S` defines `__initramfs_size` in `.init.ramfs` section
@@ -9,31 +9,37 @@ initramfs
     cpio archive
   - otherwise, it generates a cpio archive according to
     `usr/default_cpio_list`
+  - the cpio archive is embedded in the kernel image
 - `INIT_RAM_FS` defines `__initramfs_start` and includes `.init.ramfs` section
-- cmdline `initrd=` requests the bootloader to load an external cpio archive
+  to help find the embedded archive
+
+## cmdline
+
+- `initrd=` requests the bootloader to load an external cpio archive
   - `initrd_start` and `initrd_end` are set to the address of the loaded
     cpio archive in memory
+- `init=` is handled by `init_setup` and updates `execute_command`
+  - default to `/sbin/init`
+- `rdinit=` is handled by `rdinit_setup` and updates `ramdisk_execute_command`
+  - default to `/init`
+- `root=` is handled by `root_dev_setup` and updates `saved_root_name`
 
+## mount
 
+- `populate_rootfs` is called by `do_initcalls`
+  - it unpacks the built-in initramfs at `__initramfs_start`
+  - it then unpacks the external initramfs at `initrd_start`
+  - if unpack of `initrd_start` failed and `CONFIG_BLK_DEV_RAM` is set, assume
+    `initrd_start` points to a ramdisk image instead
+- without `CONFIG_BLK_DEV_INITRD`, `default_rootfs` is called instead to
+  populate a minimal rootfs
 
-INIT_DATA_SECTION
+## init
 
-
-
-
-* at build time, a cpio archive is put in .init.ramfs section, which is accessible through  __initramfs_start, __initramfs_end
-* in arch, initrd_start and initrd_end is set (because of initrd=)
-* rootfs_initcall populate_rootfs() prepares the rootfs
-* if there is no '/init', prepare_namespace()
-* finally in init_post(), '/dev/console' is opened, '/init' or '/sbin/init' is executed.
-* or those specified by init= or rdinit=
-
-populate_rootfs:
-* unpack .init.ramfs
-* if initrd_start, and if CONFIG_BLK_DEV_RAM, dump to /initrd.image if failed to unpack
-* if no CONFIG_BLK_DEV_RAM, simply unpack initrd_start
-
-prepare_namespace:
-* ROOT_DEV (major:minor) is determined from root=
-* try initrd_load, which dump /initrd.image to /dev/ram and mount it to execute /linuxrc
-* if failed, mount root=
+- `kernel_init` kthread has pid 1 and runs `kernel_init`.  At the end, it
+  `do_execve` init and become the userspace pid 1.  Before that...
+- `console_on_rootfs` opens `/dev/console` and dups to fd 0, 1, and 2
+- if initramfs contains `/init`,  `ramdisk_execute_command` is set to `/init`
+  - otherwise, `prepare_namespace` sets `ROOT_DEV` according to `root=` and
+    mounts the real rootfs
+- `run_init_process` calls `do_execve`
