@@ -204,6 +204,9 @@ Kernel Config
     - select `VHOST drivers`
       - select `Host kernel accelerator for virtio net`
       - select `vhost virtio-vsock driver`
+    - select `IOMMU Hardware Support`
+      - select `Support for Intel IOMMU using DMA Remapping Devices`
+      - select `Support for Interrupt Remapping`
 - Guest
   - select `Processor type and features`
     - select `Support x2apic`
@@ -231,8 +234,11 @@ Kernel Config
       - select `Virtio input driver`
   - deselect virtualization, host drivers, EFI, etc.
 
-## Out-of-tree drivers
+## Arch
 
-- Broadcom wireless
+- `make install`
+- `make modules_install`
+- `mkinitcpio -k $version -g /boot/initramfs.img`
+- out-of-tree drivers
   - `pacman -S broadcom-wl-dkms`
   - `dkms autoinstall`
