@@ -180,6 +180,8 @@ Kernel Config
 
 - select `printk and dmesg options`
   - select `Show timing information on printks`
+- select `Generic Kernel Debugging Instruments`
+  - select `Debug Filesystem`
 - select Tracers
   - select `Trace process context switches and events`
 
@@ -195,12 +197,13 @@ Kernel Config
 ## KVM
 
 - Host
-  - select `Virtualization`
-    - select `Host kernel accelerator for virtio net`
-    - select `vhost virtio-vsock driver`
   - select `Networking support`
     - select `Networking options`
       - select `Virtual Socket protocol`
+  - select `Device Drivers`
+    - select `VHOST drivers`
+      - select `Host kernel accelerator for virtio net`
+      - select `vhost virtio-vsock driver`
 - Guest
   - select `Processor type and features`
     - select `Support x2apic`
