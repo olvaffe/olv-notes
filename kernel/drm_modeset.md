@@ -1,6 +1,32 @@
 DRM Modesetting
 ===============
 
+## Atomic Modesetting Purpose
+
+- <https://lwn.net/Articles/653071/>
+- before atomic,
+  - there was `DRM_IOCTL_MODE_SETCRTC` to update primary plane (or set mode)
+  - there was `DRM_IOCTL_MODE_CURSOR` to update cursor plane
+  - then there was `DRM_IOCTL_MODE_PAGE_FLIP` to update primary plane vsync'ed
+  - then there was `DRM_IOCTL_MODE_SETPLANE` to update overlay plane
+- after atomic,
+  - all primary/cursor/overlay planes are just planes
+  - a crtc is a pipeline that connects planes (scanout engines) to connectors
+    (screens)
+- we want to use hw planes (over GPU) for composition because
+  - it saves memory bandwidth: no more composition to a final buffer, yuv can
+    be directly scanned out than converting to RGB and scaling
+  - hw planes are more energy-efficient to convert and scale
+- we need atomic modes setting because
+  - planes have complicated restrictions: we want all or nothing
+  - old apis are not vsync'ed
+- `DRM_IOCTL_MODE_ATOMIC` is used for two different operations
+  - atomic mode setting: the screen might go black for seconds
+  - atomic plane update: update buffers without changing the mode
+    - this is called "nuclear page flip" sometimes
+- note that atomic modesetting is disabled for X
+  - see how `DRM_CLIENT_CAP_ATOMIC` is handled in `drm_setclientcap`
+
 ## KMS Datapaths
 
 - framebuffers feed data into planes, 1:1
