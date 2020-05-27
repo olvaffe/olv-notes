@@ -182,8 +182,9 @@ Kernel Config
   - select `Show timing information on printks`
 - select `Generic Kernel Debugging Instruments`
   - select `Debug Filesystem`
-- select Tracers
-  - select `Trace process context switches and events`
+- select `Tracers`
+  - select `Kernel Function Tracer`
+  - select `Trace syscalls`
 
 ## Tips
 
@@ -239,6 +240,11 @@ Kernel Config
 - `make install`
 - `make modules_install`
 - `mkinitcpio -k $version -g /boot/initramfs.img`
+- `/boot/loader/entries/custom.conf`
+  - `title Custom Linux`
+  - `linux /vmlinuz`
+  - `initrd /initramfs.img`
+  - `options root=/dev/sda2 rw`
 - out-of-tree drivers
   - `pacman -S broadcom-wl-dkms`
   - `dkms autoinstall`
