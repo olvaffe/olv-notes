@@ -57,11 +57,6 @@ Kernel Config
 
 - select `IA32 Emulation`
 
-## Virtualization
-
-- select `Kernel-based Virtual Machine (KVM) support`
-  - select `KVM for Intel processors support`
-
 ## Enable loadable module support
 
 - select `Module unloading`
@@ -70,12 +65,19 @@ Kernel Config
 
 - select `Kernel support for MISC binaries`
 
+## Memory Management options
+
+- select `Transparent Hugepage Support`
+- select `Transparent Hugepage Support sysfs defaults (madvice)`
+
 ## Networking support
 
 - select `Networking options`
   - select `Packet socket`
   - select `Unix domain sockets`
   - select `TCP/IP networking`
+  - select `Network packet filtering framework (Netfilter)`
+  - select `802.1d Ethernet Bridging`
 - select `Bluetooth subsystem support`
 - select `Wireless`
   - select `cfg80211 - wireless configuration API`
@@ -126,6 +128,9 @@ Kernel Config
 - select `Graphics support`
   - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
   - select `Intel 8xx/9xx/G3x/G4x/HD Graphics`
+  - select `Frame buffer Devices`
+    - select `Support for frame buffer devices`
+      - select `EFI-based Framebuffer Support`
   - select `Backlight & LCD device support`
     - deselect `Generic (aka Sharp Corgi) Backlight Driver`
 - select `Sound card support`
@@ -198,6 +203,9 @@ Kernel Config
 ## KVM
 
 - Host
+  - select `Virtualization`
+    - select `Kernel-based Virtual Machine (KVM) support`
+      - select `KVM for Intel processors support`
   - select `Networking support`
     - select `Networking options`
       - select `Virtual Socket protocol`

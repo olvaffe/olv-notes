@@ -136,6 +136,7 @@ Kernel Boot on x86-64
   other things.  Among them,
   - it mounts the root
   - execs `/sbin/init` of the root device with the help of `switch_root`
+  - add break=premount or break=postmount to spawn a shell
 
 ## Resources
 

@@ -1,6 +1,34 @@
 Kernel VT
 =========
 
+## `struct consw` and `struct console`
+
+- `struct console` is used with `register_console` to register a console to
+  printk
+  - it is implemented by serial drivers, vt, etc. to show printk messages
+- `struct consw` is used with `do_take_over_console` to register a drawing
+  driver to vt
+  - it is implemented by vgacon, dummycon, fbcon, etc.
+  - vt provides `MAX_NR_CONSOLES` (63) virtual terminals that are internally
+    called virtual consoles.  Virtual consoles need `struct consw` to draw.
+- each virtual console of VT can be driven by fbcon or vgacon (or others)
+  - fbcon is a midlayer and requires fbdevs to work
+  - a fbdev is registered with `register_framebuffer`.  Examples are drmfb,
+    vesafb, efifb, simplefb, etc.
+    - drmfb is again a midlayer between fbdev and drm
+
+## Boot
+
+- printk's `console_init` is called very early
+  - it calls vt's `con_init` to use dummycon's `dummy_con` as the consw
+- `fbmem_init` is called during subsys init.  But there is no fbdev yet.
+- `sysfb_init` adds a "efi-framebuffer" platform device
+- `efifb_probe` calls `register_framebuffer` to registers the fbdev
+   - fbcon takes over the vt consoles from dummycon
+- `drm_fb_helper_initial_config` called by i915 to register "inteldrmfb"
+  - `do_remove_conflicting_framebuffers` unregisters efifb first
+  - inteldrmfb takes over
+
 ## Ctrl-C and others
 
 - ctrl has keycode `KEY_LEFTCTRL` (29)
