@@ -1,6 +1,59 @@
 X DRI2 Extension
 ================
 
+## History
+
+- <http://hoegsberg.blogspot.com/2007/08/redirected-direct-rendering.html>
+- released 2008
+
+## Model
+
+- with compositors, clients need to render to an offscreen pixmap instead
+  - DRI1 clients render to the global back buffer directly
+- each drawable has its own set of buffers
+  - the front buffer may be a fake front buffer
+- client drivers no longer need exclusive ownership of the hw
+- client drivers can allocate memory freely (for textures, vbos, etc.)
+- server allocates
+- 
+
+## Initialization
+
+- `DRI2Connect`
+  - server returns DRM device name and DRI driver name
+  - client opens DRM device and loads DRI driver directly
+- `DRI2Authenticate`
+  - client gets the magic using `drmGetMagic`
+  - server authenticates the magic
+
+## Contexts and Drawables
+
+- only client driver contexts; no more server contexts
+- only client driver drawables; no more server drawables (in the released
+  version)
+- `DRI2GetBuffers`
+  - server returns the requested buffers for a (regular) drawable
+    - unless server is really old (without DRI2GetBuffersWithFormat) , when
+      front buffer is requred for a Window, the fake front buffer is also
+      returned
+    - each buffer is allocated by server and returned as a GEM flink name
+    - in practice, all we care about is DRI2BufferFakeFrontLeft` and
+      `DRI2BufferBackLeft`; `DRI2BufferFrontLeft` is used with
+      `DRI2CopyRegion`
+  - request made by client driver
+- `DRI2CopyRegion`
+  - server copies from one buffer attachment to another
+  - client driver
+    - when double buffered, render to `DRI2BufferBackLeft`; glXSwapBuffers
+      uses the command to copy `DRI2BufferBackLeft` to `DRI2BufferFrontLeft`
+    - when single buffered, render to `DRI2BufferFakeFrontLeft`; glFlush is
+      equivalent to glXWaitGL, and uses the command to copy
+      `DRI2BufferFakeFrontLeft` to `DRI2BufferFrontLeft`
+    - even `DRI2BufferFrontLeft` is not scanout when redirected to the
+      compositor
+    - compositor uses another drawable's `DRI2BufferFrontLeft` as the texture
+- `DRI2SwapBuffers`
+
 ## `ScheduleSwap`
 
 - kernel provides `drmWaitVBlank` to (sync or async) wait for a vblank event.
