@@ -77,7 +77,7 @@ Kernel Config
   - select `Unix domain sockets`
   - select `TCP/IP networking`
   - select `Network packet filtering framework (Netfilter)`
-  - select `802.1d Ethernet Bridging`
+  - select `802.1d Ethernet Bridging` for containers
 - select `Bluetooth subsystem support`
 - select `Wireless`
   - select `cfg80211 - wireless configuration API`
@@ -102,6 +102,7 @@ Kernel Config
   - deselect `SCSI low-level drivers`
 - select `Serial ATA and Parallel ATA drivers (libata)`
   - select `AHCI SATA support`
+  - deselect `ATA SFF support (for legacy IDE and PATA)`
 - select `Network device support`
   - select `Ethernet driver support`
     - deselect all but the desired drivers
@@ -120,6 +121,8 @@ Kernel Config
 - select `I2C support`
   - select `I2C Hardware Bus support`
     - select `Synopsys DesignWare Platform` (used by Intel LPSS)
+- select `Watchdog Timer Support`
+  - select `Intel TCO Timer/Watchdog`
 - select `Multimedia support`
   - select `Cameras/video grabbers support`
   - select `Media USB Adapters`
