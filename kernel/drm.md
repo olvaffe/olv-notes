@@ -50,6 +50,31 @@ Kernel DRM
 - each `drm_gem_object` also has a unique `dma_buf`.  Calling
   `drm_gem_prime_fd_to_handle` twice on the same fd returns the same handle.
 
+## Security
+
+- any user in `video` group can open the primary device
+- the user becomes master automatically if the primary device has no user
+  - don't rely on this to run Xorg rootless
+  - imagine VT swtiches, rootless Xorg cannot drop/acquire master
+- any user can open the render node
+- root-only ops
+  - `DRM_IOCTL_SET_MASTER`
+  - `DRM_IOCTL_DROP_MASTER`
+- master-only ops
+  - modesetting ioctls
+- authenticated-only ops
+  - `DRM_IOCTL_GEM_FLINK`
+  - `DRM_IOCTL_GEM_OPEN`
+  - not used in DRI3
+- rendernode-allowed ops
+  - `DRM_IOCTL_PRIME_HANDLE_TO_FD`
+  - `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+  - `DRM_IOCTL_GEM_CLOSE`
+  - and driver-specific execbuffer and alloc ops
+  - rendernode-allowed ops must be explicitly whitelisted
+  - while rendernode is assumed authenticated, the autenticated-only ops above
+    are not on the white list
+
 ## Memories
 
 - Ideas: GPU

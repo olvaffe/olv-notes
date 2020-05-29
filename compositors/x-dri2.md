@@ -5,17 +5,24 @@ X DRI2 Extension
 
 - <http://hoegsberg.blogspot.com/2007/08/redirected-direct-rendering.html>
 - released 2008
+- with compositors, clients need to render to an offscreen pixmap instead
+  - DRI1 clients render to the global back buffer directly
 
 ## Model
 
-- with compositors, clients need to render to an offscreen pixmap instead
-  - DRI1 clients render to the global back buffer directly
-- each drawable has its own set of buffers
-  - the front buffer may be a fake front buffer
-- client drivers no longer need exclusive ownership of the hw
-- client drivers can allocate memory freely (for textures, vbos, etc.)
-- server allocates
-- 
+- each client has its own hw context and does not require exclusive ownership
+  of the hw
+- each client can allocate buffers freely (for textures, vbos, fbos, etc.)
+- for a server drawable,
+  - sever can allocate a set of buffers
+    - front, back, depth, fake front
+  - client can get the buffers
+    - using GEM flink names
+- a client never directly renders to the front buffer of a drawable
+  - when a client does single-buffered rendering, it renders to fake front
+    which gets copied to real front in glFlush or glXWaitGL
+  - when a client does double-buffered rendering, it renders to back which
+    gets copied to real front in glXSwapBuffers
 
 ## Initialization
 
