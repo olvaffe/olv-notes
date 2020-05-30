@@ -1,6 +1,66 @@
 Kernel and DMA
 ==============
 
+## Arch
+
+- before a device is to be probed by a driver, the bus system calls the
+  optional `dma_configure` op on the device
+  - pci and platform busses have the op
+    - `pci_bus_type` and `pci_dma_configure`
+    - `platform_bus_type` and `platform_dma_configure`
+  - at the end of the op, `arch_setup_dma_ops` is called to set up device dma
+    ops
+    - x86: no-op
+    - arm64: when the device is behind an iommu, use `iommu_dma_ops` which can
+      translate DMA-API to IOMMU-API
+    - arm: picks when the device is behind an iommu, pick `iommu_coherent_ops`
+      or `iommu_ops`; otherwise, pick `arm_coherent_dma_ops` or `arm_dma_ops`
+- when `dma_map_sg` is called, `get_dma_ops` returns the device's dma ops or
+  a global one returned by `get_arch_dma_ops`
+  - x86: normally NULL but can be `intel_dma_ops`, etc.
+  - arm: `arm_dma_ops` or NULL
+  - arm64: NULL
+- Classic ARM with MMU/IOMMU
+  - when device is coherent, `dma_alloc_coherent` allocates with `alloc_pages`
+    - the virtual address from the linear map is returned for CPU
+    - the pages are mapped in IOMMU and `dma_addr_t` is returned
+    - when device is incoherent, the only difference is that the virtual
+      address is not from the linear map.  Instead, a UC or WC vmap is set up.
+    - because it uses FLATMEM memory model,j:
+
+## DMA Engine
+
+- some systems have devices that share an external dma engine
+  - some devices have their own built-in dma engines insteadd
+  - external dma engines are under `drivers/dma`
+  - not to be confused with dma mapping, which is under `kernel/dma`
+    - a page must be dma-mapped to be dma-able by built-in or external engines
+- a (external) dma engine has several channels and several request lines
+  - a request line is a pysical connection from a device to the engine
+  - a channel is what does the transfers
+- A dma engine is represented by a `dma_device` and is registered with
+  `dma_async_device_register`
+  - `dma_cap_set` sets what the engine is capable of
+    - `DMA_MEMCPY`, memory-to-memory copies
+    - `DMA_SLAVE`, device-to-memory copies
+- Using a dma engine
+  - allocate a dma slave channel
+    - `dma_request_chan`
+  - config the channel
+    - `dmaengine_slave_config`
+  - get the descriptor for a transaction
+    - `dmaengine_prep_slave_sg` transfers sg list to/from device
+    - `dmaengine_prep_dma_cyclic` transfers ring buffer to/from device
+    - direction, `dma_transfer_direction`, is indicated
+      - `DMA_MEM_TO_MEM`
+      - `DMA_MEM_TO_DEV`
+      - `DMA_DEV_TO_MEM`
+      - `DMA_DEV_TO_DEV`
+  - submit the transaction to the pending queue
+    - `dmaengine_submit`
+  - issue transfers
+    - `dma_async_issue_pending`
+
 ## DMA Mapping
 
 * It is an API a platform could implement, or not.
@@ -105,19 +165,3 @@ Kernel and DMA
     its pool and return the dma address to the shadow page 
   - in `dma_unmap_sg` or `dma_sync_sg_for_*`, swiotlb transparently memcpy's
     between the real page and the shadow page
-
-## Archs
-
-- Classic ARM with MMU/IOMMU
-  - when a dma device is found in the device tree, `of_dma_configure` is
-    called.  Depending on whether the device is dma coherent, also specified
-    in device tree, `arch_setup_dma_ops` picks `iommu_coherent_ops` or `iommu_ops`.
-    - when without iommu, it picks `arm_coherent_dma_ops` or `arm_dma_ops`
-  - when device is coherent, `dma_alloc_coherent` allocates with `alloc_pages`
-    - the virtual address from the linear map is returned for CPU
-    - the pages are mapped in IOMMU and `dma_addr_t` is returned
-    - when device is incoherent, the only difference is that the virtual
-      address is not from the linear map.  Instead, a UC or WC vmap is set up.
-    - because it uses FLATMEM memory model,j:
-
-  - always use `arm_dma_ops`
