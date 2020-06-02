@@ -1,6 +1,70 @@
 Kernel Driver 123
 =================
 
+## `/sysfs/bus`
+
+- `buses_init`
+  - `bus_kset` is created with `kset_create_and_add` with no parent kobject
+  - `system_kset` is created with `kset_create_and_add` under `devices_kset`
+- `bus_register` sets `bus->p` to a newly allocated `subsys_private`
+  - `priv->subsys` is a kset under `bus_kset`
+  - `priv->devices_kset` is a kset under `priv->subsys`
+  - `priv->drivers_kset` is a kset under `priv->subsys`
+
+## `/sysfs/class`
+
+- `classes_init`
+  - `class_kset` is created with `kset_create_and_add` with no parent kobject
+- `class_register` sets `cls->p` to a newly allocated `subsys_private`
+  - `priv->subsys` is a kset under `class_kset`
+  - unlike `bus_register`, no `priv->devices_kset` nor `priv->drivers_kset`
+
+## `/sys/devices`
+
+- `devices_init`
+  - `devices_kset` is created with `kset_create_and_add` with no parent
+    kobject
+  - `dev_kobj` is created with `kobject_create_and_add` with no parent kobject
+  - `sysfs_dev_block_kobj` is created with `kobject_create_and_add` under
+    `dev_kobj`
+  - `sysfs_dev_char_kobj` is created with `kobject_create_and_add` under
+    `dev_kobj`
+- `device_register`
+  - `dev->kobj.kset` is initialized to `devices_kset`
+  - for a non-class device, its parent is
+    - the explicitly specified parent, if specified,
+    - the default root (`dev_root`) of the bus, if exists,
+    - NULL
+  - for a class device, its parent is
+    - `virtual_device_parent`, if none specified
+    - the explicitly specified parent, if the parent has a class
+    - a glue dir
+- many of the top-level nodes are PMUs registered by `perf_pmu_register`
+  - `breakpoint` from `init_hw_breakpoint`
+  - `cpu` from `init_hw_perf_events`
+  - `cstate_core` and `cstate_pkg` from `cstate_init`
+  - `i915` from `i915_pmu_register`
+  - `intel_pt` from `pt_init`
+  - `msr` from `msr_init`
+  - `power` from `rapl_pmu_init`
+  - `software` from `perf_event_init`
+  - `tracepoint`, `kprobe`, and `uprobe` from `perf_tp_register`
+  - `uncore_arb`, `uncore_cbox_0`, `uncore_cbox_1`, and `uncore_imc` from
+    `uncore_pmu_register`
+- `isa` is by `isa_bus_init`
+- `LNXSYSTM:00` is by `acpi_device_add` on `ACPI_SYSTEM_HID`
+- `pci0000:00` is by `pci_register_host_bridge`
+- `platform` is by `platform_bus_init`
+- `pnp0` is by `pnp_register_protocol`
+- `wakeup0` is by `pm_autosleep_init`
+- `system` is a kset by `buses_init`
+  - `cpu` is from `cpu_dev_init`
+  - `memory` is from `memory_dev_init`
+  - don't use `subsys_system_register` in new code
+- `virtual` is by `virtual_device_parent`
+  - `workqueue` is from `wq_sysfs_init`, a virtual subsys
+  - `dma_heap` is from `dma_heap_add`, a class device with no parent
+
 ## Device Model
 
 * `/sys/devices` is hierarchical.

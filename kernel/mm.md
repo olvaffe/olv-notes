@@ -1,158 +1,168 @@
 Kernel Memory Management
 ========================
 
-## Kernel Address Space
-
-* layout
-
-    [PAGE_OFFSET ~ high_memory] ~ VMALLOC_OFFSET ~ [VMALLOC_START ~ VMALLOC_END] ~ 8KB ~ [PKMAP_BASE ~ FIXADDR_START ~ 4GB]
-* `high_memory = min(physical memory, MAXMEM)`
-* `MAXMEM = VMALLOC_END - PAGE_OFFSET - __VMALLOC_RESERVE (128MB)`
-* persistent map is used by kmap
-* fixed-mapped linear address is, for example, used by `kmap_atomic`
-
-* the first area (encolosed by the first pair of brackets)
-  * It is linear.
-  * MMU is set up to be `addr -> (addr - PAGE_OFFSET)` in `init_memory_mapping`.
-  * The first 4M of physical memory is mapped using 4k page entry.  The reset of
-    lowmem is mapped using 4M page entry.
-* the second area
-  * For vmalloc, ioremap, etc.
-  * pte is updated on demand through page fault handler, `do_page_fault`.
-  * each subarea is described by `vm_struct`.
-  * see also exception.txt
-* the third area
-  * used by kmap for high memory.
-  * A small fixed adress space (`permanent_kmaps_init`), pointing to dynamically
-    mapped pages.  The address space is fixed and is already in every process's
-    page table. Changes to PTE propogate to all processes automatically.
-* `__FIXADDR_TOP = 0xfffff000`
-
-
 ## Memory Management
 
-* `struct mm_struct`: the address space of a task
-* `struct vm_area_struct` describes a continuous area, with same protection, of the address space
+- `struct mm_struct`: the address space of a task
+- `struct vm_area_struct` describes a continuous area, with same protection, of the address space
   - It has `struct vm_operations_struct`
   - It has `struct file *` for backing store
-* `struct vm_struct`: a continuous kernel virtual area
-* `struct address_space` can be viewed as the MMU of an a on-disk object.
+- `struct vm_struct`: a continuous kernel virtual area
+- `struct address_space` can be viewed as the MMU of an a on-disk object.
   Accessing to the pages of the object goes through its `struct address_space`
   in its inode.
 
 ## `copy_from_user`
 
-* `__get_user_asm` copies 1, 2, or 4 from userspace
-  * It directly `mov src,dst`.
-  * If no fault, done.
-  * If fault, it jumps to `do_page_fault`.
-  * If the fault comes from an invalid address, we will reach `no_context`
-    * this is where the fixup happens
-    * The snippet `_ASM_EXTABLE(1b, 3b)` means if a fault happens at 1b, jumps
+- `__get_user_asm` copies 1, 2, or 4 from userspace
+  - It directly `mov src,dst`.
+  - If no fault, done.
+  - If fault, it jumps to `do_page_fault`.
+  - If the fault comes from an invalid address, we will reach `no_context`
+    - this is where the fixup happens
+    - The snippet `_ASM_EXTABLE(1b, 3b)` means if a fault happens at 1b, jumps
       to 3b to fix it.
-    * at 3b, an error code is set and it jumps to 2b, where normal execution is
+    - at 3b, an error code is set and it jumps to 2b, where normal execution is
       resumed.
-  * If the fault comes from an swapped out area, it calls `handle_mm_fault`.
-* If the user pointer points to an mmaped shmem, it probably goes
+  - If the fault comes from an swapped out area, it calls `handle_mm_fault`.
+- If the user pointer points to an mmaped shmem, it probably goes
   `handle_pte_fault`, `do_linear_fault`, and `__do_fault`.
-  * `vma->vm_ops->fault` is called to fault in the page.
-  * The new page is returned through `vmf->page`.
+  - `vma->vm_ops->fault` is called to fault in the page.
+  - The new page is returned through `vmf->page`.
 
 ## userspace mmap
 
-* Call chain
-  * mmap: userspace mmap call
-  * sys_mmap: kernel space mmap call
-  * do_mmap_pgoff
-  * get_unmapped_area: to find an available starting addr (`addr & ~PAGE_MASK` means error!)
-    * `arch_get_unmapped_area`
-  * mmap_region: a new vma is created (a common case) and `file->f_op->mmap` is called
+- Call chain
+  - `mmap`: userspace mmap call
+  - `sys_mmap`: kernel space mmap call
+  - `ksys_mmap_pgoff`: generic mmap function
+  - `vm_mmap_pgoff`
+  - `do_mmap_pgoff`
+  - `get_unmapped_area`: to find an available starting addr
+    (`addr & ~PAGE_MASK` means error!)
+    - `arch_get_unmapped_area`
+  - `mmap_region`: a new vma is created (a common case) and `file->f_op->mmap`
+    is called
 
 ## x86-64 Paging Table
 
-* 4-level paging
-  * 48-bit virtual address and 46-bit physical address
-  * CR3 bit 51..12: PA to the 4KB-aligned PML4 (Page Map Level 4) table
-    * 512 64-bit entries called PML4Es
-  * VA bit 47..39: select one of the 512 PML4Es
-    * each PML4E contains a PA to a PDP (page-directory-pointer) table
-    * there are 512 64-bit entries called PDPEs
-  * VA bit 38..30: select one of the 512 PDPEs
-    * each PDPE contains a PA to a PD (page directory)
-    * there are 512 64-bit entries called PDEs
-  * VA bit 29..21: select one of the 512 PDEs
-    * each PDE contains a PA to a page table
-    * there are 512 64-bit entries called PTEs
-  * VA bit 20..12: select one of the 512 PTEs
-    * each PTE contains a PA to a page
-  * VA bit 11..0: 12-bit offset into the page
-* 5-level paging
-  * 57-bit virtual address and 52-bit physical address
-  * CR3 bit 51..12: PA to the 4KB-aligned PML5 (Page Map Level 5) table
-  * VA bit 56..48: select one of the 512 PML5Es
-    * each PML5E contains a PA to a PML4 table
-    * there are 512 64-bit entries called PML5Es
-* All entries at all levels have a similar (but different) format
-  * bit 63..52: 12-bit for flags
-    * bit 63 is NX (no execute)
-    * more
-  * bit 51..12: 40-bit pfn
-  * bit 11..0: 12-bit for flags
-    * bit 4 is page cache disabled (for the next table; or page when it is PTE)
-    * bit 3 is page write through (for the next table; or page when it is PTE)
-    * bit 1 is writable
-    * bit 0 is present
-    * more
+- 4-level paging
+  - 48-bit virtual address and 46-bit physical address
+  - CR3 bit 51..12: PA to the 4KB-aligned PML4 (Page Map Level 4) table
+    - 512 64-bit entries called PML4Es
+  - VA bit 47..39: select one of the 512 PML4Es
+    - each PML4E contains a PA to a PDP (page-directory-pointer) table
+    - there are 512 64-bit entries called PDPEs
+  - VA bit 38..30: select one of the 512 PDPEs
+    - each PDPE contains a PA to a PD (page directory)
+    - there are 512 64-bit entries called PDEs
+  - VA bit 29..21: select one of the 512 PDEs
+    - each PDE contains a PA to a page table
+    - there are 512 64-bit entries called PTEs
+  - VA bit 20..12: select one of the 512 PTEs
+    - each PTE contains a PA to a page
+  - VA bit 11..0: 12-bit offset into the page
+- 5-level paging
+  - 57-bit virtual address and 52-bit physical address
+  - CR3 bit 51..12: PA to the 4KB-aligned PML5 (Page Map Level 5) table
+  - VA bit 56..48: select one of the 512 PML5Es
+    - each PML5E contains a PA to a PML4 table
+    - there are 512 64-bit entries called PML5Es
+- All entries at all levels have a similar (but different) format
+  - bit 63..52: 12-bit for flags
+    - bit 63 is NX (no execute)
+    - more
+  - bit 51..12: 40-bit pfn
+  - bit 11..0: 12-bit for flags
+    - bit 4 is page cache disabled (for the next table; or page when it is PTE)
+    - bit 3 is page write through (for the next table; or page when it is PTE)
+    - bit 1 is writable
+    - bit 0 is present
+    - more
 
 ## Nested Paging
 
-* AMD-V Nested Paging White Paper
-  * <http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1%201-final-TM.pdf>
-* SW shadow page table
-  * guest has a guest page table
-  * hypervisor has a shadow page table
-  * the HW MMU uses the shadow page table when the guest is active
-  * the guest page table is marked read-only
-    * whenever the guest updates it, it traps into the hypersor
-    * the hypervisor updates both the guest and the shadow page tables
-* HW nested page table
-  * HW MMU uses the guest page table directly
-  * an additional nested page table set up by the hypervisor is used to
+- AMD-V Nested Paging White Paper
+  - <http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1%201-final-TM.pdf>
+- SW shadow page table
+  - guest has a guest page table
+  - hypervisor has a shadow page table
+  - the HW MMU uses the shadow page table when the guest is active
+  - the guest page table is marked read-only
+    - whenever the guest updates it, it traps into the hypersor
+    - the hypervisor updates both the guest and the shadow page tables
+- HW nested page table
+  - HW MMU uses the guest page table directly
+  - an additional nested page table set up by the hypervisor is used to
     translate guest physical address to host physical address
-  * for a 4-level paging walk in guest results in 5 walks in the nested page
+  - for a 4-level paging walk in guest results in 5 walks in the nested page
     walker (to access PML4, PDPE, PDE, PTE, and the page)
-* memory type selection
-  * MTRR
-    * 0x0: UC
-    * 0x1: WC
-    * 0x4: WT
-    * 0x5: WP (write protected)
-    * 0x6: WB
-    * Linux does not use MTRR.  BIOS(?) sets MTRRdefType to 0xc06, which means
+- memory type selection
+  - MTRR
+    - 0x0: UC
+    - 0x1: WC
+    - 0x4: WT
+    - 0x5: WP (write protected)
+    - 0x6: WB
+    - Linux does not use MTRR.  BIOS(?) sets MTRRdefType to 0xc06, which means
       WB by default.
-  * `IA32_PAT` MSR has 8 3-bit page attribute fields, PA0..PA7
-    * each field can have one of these values
-      * 0x0: UC
-      * 0x1: WC
-      * 0x4: WT
-      * 0x5: WP
-      * 0x6: WB
-      * 0x7: UC-
-    * In `pat_init`, they are initialized to
-      * PA0: WB
-      * PA1: WC
-      * PA2: UC-
-      * PA3: UC
-      * PA4: WB (unused)
-      * PA5: WP
-      * PA6: UC- (unused)
-      * PA7: WT
-  * PTE's bit 7 (PAT), 4 (PCD), and 3 (PWT) form a 3-bit index that is used to
+  - `IA32_PAT` MSR has 8 3-bit page attribute fields, PA0..PA7
+    - each field can have one of these values
+      - 0x0: UC
+      - 0x1: WC
+      - 0x4: WT
+      - 0x5: WP
+      - 0x6: WB
+      - 0x7: UC-
+    - In `pat_init`, they are initialized to
+      - PA0: WB
+      - PA1: WC
+      - PA2: UC-
+      - PA3: UC
+      - PA4: WB (unused)
+      - PA5: WP
+      - PA6: UC- (unused)
+      - PA7: WT
+  - PTE's bit 7 (PAT), 4 (PCD), and 3 (PWT) form a 3-bit index that is used to
     select from PA0..PA7
-    * `pgprot_writecombine` maps to PA1
-  * In EPT (extended page table, used by KVM), MTRR is ignored and EPT bits
+    - `pgprot_writecombine` maps to PA1
+  - In EPT (extended page table, used by KVM), MTRR is ignored and EPT bits
     5:3 replace MTRR (0: UC, 1: WC, 4: WT, 5 WP, 6: WB)
-    * `vmx_get_mt_mask`
+    - `vmx_get_mt_mask`
+
+## x86-64: overview
+
+- get physical memory map from BIOS
+  - `e820__memory_setup` calls `e820__memory_setup_default`
+  - the table is copied from `boot_params` to `e820_table`
+    - `boot_params` was set up with `detect_memory_e820`
+- update e820 table to reserve setup data
+  - `e820__reserve_setup_data` finds setup data from `boot_params` and updates
+    `e820_table`
+- prepare page table storage
+  - the storage uses the brk data section of the kernel binary
+  - `early_alloc_pgt_buf` claims a area from the brk section
+  - `alloc_low_pages` will use the area first before using memblock
+- setup memblock allocator according to e820
+  - `e820__memblock_setup`
+  - `memblock_add` adds a usable RAM range to memblock
+  - `memblock_reserve` marks a usable RAM range reserved
+  - regions containing BIOS or EFI data should be marked reserved
+  - an allocation from memblock finds a usable range and mark it reserved
+- setup linear map
+  - `init_mem_mapping`
+  - `probe_page_size_mask` checks if GB huge page is possible (yes)
+  - `init_mm` is the mm, and `init_mm.pgd` is `init_top_pgt`
+    - i.e., the 4KB space for pgt is in the data section
+  - the storage of the reset of the page tables is allocated using
+    `alloc_low_page`, which uses the area prepared by `early_alloc_pgt_buf`
+- set up `struct page` array and set up zones for buddy allocator
+  - `x86_init.paging.pagetable_init` points to `native_pagetable_init`
+  - `sparse_init_nid` allocates the `struct page` array
+    - `sparse_buffer_init` allocates the storage from memblock
+  - `zone_sizes_init`
+- free pages from memblock to buddy allocator
+  - `memblock_free_all` called by `mem_init`
 
 ## x86-64
 
@@ -244,60 +254,60 @@ Kernel Memory Management
 
 ## Memory Initialization (old)
 
-* x86-64 uses 4-level page table.
-  * `PGDIR_SHIFT == 39`
-  * `PUD_SHIFT == 30`
-  * `PMD_SHIFT == 21`.
-  * `PTRS_PER_PGD` is 512, `1 << (48 - 39)`.
-  * `PTRS_PER_PUD` is 512, `1 << (39 - 30)`.
-  * `PTRS_PER_PMD` is 512, `1 << (30 - 21)`.
-  * `PTRS_PER_PTE` is 512, `1 << (21 - 12)`.
-* There are three memory allocators
-  * brk
-  * memblock
-  * e820 and `alloc_low_page`
-  * buddy allocator
-* In `start_kernel`, after the linux banner is printed, `setup_arch` is called.
-  * It calls `e820__memory_setup` to decide physical memory maps.
-  * It calls `e820__end_of_ram_pfn` to decide 
-    * `max_pfn`, (pfn of the last page of the DRAM) + 1.
-    * `max_arch_pfn`, `1 << MAX_PHYSMEM_BITS`
-  * It calls `e820__end_of_low_ram_pfn` to decide
-    * `max_low_pfn`, which is `min(max_pfn, 4GB>>12)`
-  * It calls `reserve_brk` to resert brk region.
-  * It calls `init_mem_mapping` to map the low memory.
-    * It runs before bootmem for early direct access.
-    * The first range is the first 4MB (`PMD_SIZE`), using 4K page.
-    * The second range is the rest, using 4M page
-    * It calls `find_early_table_space` to reserve in `e820_table_start` and
+- x86-64 uses 4-level page table.
+  - `PGDIR_SHIFT == 39`
+  - `PUD_SHIFT == 30`
+  - `PMD_SHIFT == 21`.
+  - `PTRS_PER_PGD` is 512, `1 << (48 - 39)`.
+  - `PTRS_PER_PUD` is 512, `1 << (39 - 30)`.
+  - `PTRS_PER_PMD` is 512, `1 << (30 - 21)`.
+  - `PTRS_PER_PTE` is 512, `1 << (21 - 12)`.
+- There are three memory allocators
+  - brk
+  - memblock
+  - e820 and `alloc_low_page`
+  - buddy allocator
+- In `start_kernel`, after the linux banner is printed, `setup_arch` is called.
+  - It calls `e820__memory_setup` to decide physical memory maps.
+  - It calls `e820__end_of_ram_pfn` to decide 
+    - `max_pfn`, (pfn of the last page of the DRAM) + 1.
+    - `max_arch_pfn`, `1 << MAX_PHYSMEM_BITS`
+  - It calls `e820__end_of_low_ram_pfn` to decide
+    - `max_low_pfn`, which is `min(max_pfn, 4GB>>12)`
+  - It calls `reserve_brk` to resert brk region.
+  - It calls `init_mem_mapping` to map the low memory.
+    - It runs before bootmem for early direct access.
+    - The first range is the first 4MB (`PMD_SIZE`), using 4K page.
+    - The second range is the rest, using 4M page
+    - It calls `find_early_table_space` to reserve in `e820_table_start` and
       `e820_table_end` a place to store the page tables.
-      * This storage is available to others through `alloc_low_page`.  It is
+      - This storage is available to others through `alloc_low_page`.  It is
         the `MAPPING_BEYOND_END` mapped in `head_32.S` 
-      * This storage is reserved by `reserve_early`.
-    * The mappings are set up by `kernel_physical_mapping_init`.
-    * cr3 is loaded, with `swapper_pg_dir` still being the PDE table.
-    * `max_low_pfn_mapped` and `max_pfn_mapped` are set to `max_low_pfn`
+      - This storage is reserved by `reserve_early`.
+    - The mappings are set up by `kernel_physical_mapping_init`.
+    - cr3 is loaded, with `swapper_pg_dir` still being the PDE table.
+    - `max_low_pfn_mapped` and `max_pfn_mapped` are set to `max_low_pfn`
       if everything goes normally.
-    * That is, the mapped memory goes from 8MB to whole low memory.
-  * It calls `initmem_init` to set up bootmem, boot-time physical memory
+    - That is, the mapped memory goes from 8MB to whole low memory.
+  - It calls `initmem_init` to set up bootmem, boot-time physical memory
     allocator.
-    * `e820_register_active_regions` is called with node 0 and all physical
+    - `e820_register_active_regions` is called with node 0 and all physical
       memory.  All e820 ram regions are stored in `early_node_map` of buddy
       allocator.
-    * `setup_bootmem_allocator` is called.  It sets `after_bootmem` to 1.
-    * It `reserve_early` an area for `bootmap`.
-    * Later, `early_res_to_bootmem` is called to migrate early reserved area to
+    - `setup_bootmem_allocator` is called.  It sets `after_bootmem` to 1.
+    - It `reserve_early` an area for `bootmap`.
+    - Later, `early_res_to_bootmem` is called to migrate early reserved area to
       bootmem map.
-  * It calls `paging_init` to allocate an array of all `struct page *` from
+  - It calls `paging_init` to allocate an array of all `struct page *` from
     bootmem.
-    * All pages are initialized as reserved at this point by `memmap_init_zone`.
-* Much later in `start_kernel`, `mem_init` is called
-  * It calls `free_all_bootmem` to return unused pages in bootmem to the buddy
+    - All pages are initialized as reserved at this point by `memmap_init_zone`.
+- Much later in `start_kernel`, `mem_init` is called
+  - It calls `free_all_bootmem` to return unused pages in bootmem to the buddy
     allocator.
-  * `zap_low_mappings` is called to, forget low memory mappings.  That is,
+  - `zap_low_mappings` is called to, forget low memory mappings.  That is,
     virtual address `< PAGE_OFFSET` is no longer mapped.  This is so that one
     can only access kernel memory from kernel address space.
-* An example of early reserved regions
+- An example of early reserved regions
 
     (8 early reservations) ==> bootmem [0000000000 - 00377fe000]
       #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
@@ -308,26 +318,26 @@ Kernel Memory Management
       #5 [000009fc00 - 0000100000]    BIOS reserved ==> [000009fc00 - 0000100000]
       #6 [0000007000 - 0000008000]          PGTABLE ==> [0000007000 - 0000008000]
       #7 [0000008000 - 000000f000]          BOOTMAP ==> [0000008000 - 000000f000]
-  * PGTABLE is one page because only the first 4M uses 4K page.  The rest uses
+  - PGTABLE is one page because only the first 4M uses 4K page.  The rest uses
     4M page and does not need to allocate memory.
 
 ## brk section
 
-* Introduced in `93dbda7cbcd70a0bd1a99f39f44a9ccde8ab9040`, 2009.
-  * And modified several times after.
-* In the linker script, `.brk` is reserved for `*(.brk_reservation)` and
+- Introduced in `93dbda7cbcd70a0bd1a99f39f44a9ccde8ab9040`, 2009.
+  - And modified several times after.
+- In the linker script, `.brk` is reserved for `*(.brk_reservation)` and
   is delimited by `__brk_base` and `__brk_limit`.  It comes just after `.bss`
   and just before `.end`.
-* `RESERVE_BRK` is used to reserve brk space
-  * It creates `.brk_reservation` section with the given size
-  * It is used to reserve space for init page tables and dmi
-* When `head_32.S` creates `default_entry`, it creats page tables in `.brk`.
-  * `_brk_end` marks the location after the page tables.
-  * `extend_brk` is used to alloc space in brk.  It extends `_brk_end`.
-    * It is used indirectly by `dmi_alloc` in `drivers/firmware/dmi_scan.c`.
-* `reserve_brk` is called to reserve brk as `reserve_early`.  It also pins the
+- `RESERVE_BRK` is used to reserve brk space
+  - It creates `.brk_reservation` section with the given size
+  - It is used to reserve space for init page tables and dmi
+- When `head_32.S` creates `default_entry`, it creats page tables in `.brk`.
+  - `_brk_end` marks the location after the page tables.
+  - `extend_brk` is used to alloc space in brk.  It extends `_brk_end`.
+    - It is used indirectly by `dmi_alloc` in `drivers/firmware/dmi_scan.c`.
+- `reserve_brk` is called to reserve brk as `reserve_early`.  It also pins the
   brk as read-only.
-  * It reserves up to `_brk_end`, not to `_brk_limit`.  Therefore, it is safe to
+  - It reserves up to `_brk_end`, not to `_brk_limit`.  Therefore, it is safe to
     `RESERVE_BRK` a large (safe) region.
 
 ## Memory Mapping
