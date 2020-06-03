@@ -64,6 +64,8 @@ Kernel Config
     - select `TCP/IP networking`
     - select `Network packet filtering framework (Netfilter)`
   - select `Bluetooth subsystem support`
+    - select `Bluetooth device drivers`
+      - select `HCI USB driver`
   - select `Wireless`
     - select `cfg80211 - wireless configuration API`
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
@@ -112,6 +114,8 @@ Kernel Config
   - select `Loopback device support`
 - select `NVME Support`
   - select `NVM Express block device`
+- select `Misc devices`
+  - select `Realtek PCI-E card reader`
 - select `SCSI device support`
   - select `SCSI device support`
   - select `SCSI disk support`
@@ -134,9 +138,18 @@ Kernel Config
   - select `Hardware Random Number Generator Core support`
     - deselect all but the desired drivers
   - deselect `/dev/port character device`
+  - select `TPM Hardware Support`
+    - select `TPM 2.0 CRB Interface`
 - select `I2C support`
   - select `I2C Hardware Bus support`
     - select `Synopsys DesignWare Platform` for Intel CPUs
+- select `Hardware Monitoring support`
+  - select `Intel Core/Core2/Atom temperature sensor`
+- select `Thermal drivers`
+  - select `Intel thermal drivers`
+    - select `ACPI INT340X thermal drivers`
+      - select `ACPI INT340X thermal drivers`
+    - select `Intel PCH Thermal Reporting Driver`
 - select `Watchdog Timer Support`
   - select `Intel TCO Timer/Watchdog`
 - select `Multimedia support`
@@ -154,10 +167,12 @@ Kernel Config
     - deselect `Generic (aka Sharp Corgi) Backlight Driver`
 - select `Sound card support`
   - select `Advanced Linux Sound Architecture`
+    - deselect `Support old ALSA API`
     - select `HD-Audio`
       - select `HD Audio PCI`
       - select desired codecs, such as
       - select `Build Realtek HD-audio codec support`
+      - select `Build HDMI/DisplayPort HD-audio codec support`
 - select `HID support`
   - select `Special HID drivers`
     - deselect all but the desired drivers, such as
@@ -170,13 +185,19 @@ Kernel Config
   - select `EHCI HCD (USB 2.0) support`
   - select `USB Printer support`
   - select `USB Mass Storage support`
+- select `MMC/SD/SDIO card support`
+  - select `Realtek PCI-E SD/MMC Card Interface Driver`
 - select `Real Time Clock`
+- select `DMA Engine support`
+  - select `Synopsys DesignWare AHB DMA platform driver` for Intel LPSS
 - deselect `Virtio drivers`
 - select `X86 Platform Specific Device Drivers`
   - select `Dell Systems Management Base Driver`
   - select `Dell SMBIOS driver`
   - select `Dell Laptop Extras`
 - deselect `IOMMU Hardware Support`
+- select `Generic powercap sysfs driver`
+  - select `Intel RAPL Support via MSR Interface`
 
 ## Config: Containers
 

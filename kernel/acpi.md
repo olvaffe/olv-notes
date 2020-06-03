@@ -21,6 +21,8 @@ ACPI
   - `acpi_bus_attach` recursively calls `acpi_scan_attach_handler` on each
     `acpi_device`
     - this calls the attach callback of the matching `acpi_scan_handler`s
+    - `acpi_default_enumeration` calls `acpi_create_platform_device` to create
+      a corresponding `platform_device`
 - before scanning the root object, scan handlers are registered with
   `acpi_scan_add_handler`
   - `lpss_handler` matches LPSS devices.  `acpi_lpss_create_device` calls
