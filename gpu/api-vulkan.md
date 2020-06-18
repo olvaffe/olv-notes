@@ -1,6 +1,45 @@
 Vulkan
 ======
 
+## Versions
+
+- if `vkGetInstanceProcAddr("vkEnumerateInstanceVersion")` returns NULL, the
+  instance-level version is 1.0
+- otherwise, `vkEnumerateInstanceVersion` returns instance-level version
+- `VkPhysicalDeviceProperties::apiVersion` specifies the device-level version
+- roughly, instance-level version and commands are decided by the loader;
+  device-level version and commands are decided by the driver
+  - a command taking none or VkInstance is a instance-level command
+  - a command taking VkPhysicalDevice and others is a device-level command
+- for instance-level version 1.0, `VkApplicationInfo::apiVersion` must be 1.0
+  - it means the app can only use 1.0 for both instance-level and device-level
+    functions
+- since instance-level version 1.1, `VkApplicationInfo::apiVersion` can be any
+  version
+  - it specifies the max version of both instance-level and device-level
+    versions the app intends to use
+  - instance-level version can differ from device-level version
+
+## Layers
+
+- instance-level layers exist
+- device-level layers are deprecated
+
+## Extensions
+
+- instance-level extensions
+  - when an instance-level extension is not enabled, `vkGetInstanceProcAddr`
+    for a command defined by the extension returns NULL
+    - can a instance extension define a global command that are queriable with
+      `vkGetInstanceProcAddr(NULL, ...)`?  It seems no.
+  - when a device-level extension is availalbe, `vkGetInstanceProcAddr` for a
+    command defined by the extension returns non-NULL
+- device-level extensions
+  - when a device-level extension is not enabled, `vkGetDeviceProcAddr` for a
+    command defined by the extension returns NULL
+  - physical-device-level commands defined by device extensions can be used as
+    long as the device extensions are available
+
 # Example
 
 - create a window
