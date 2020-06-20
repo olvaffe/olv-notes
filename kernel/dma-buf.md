@@ -1,6 +1,33 @@
 dma-buf
 =======
 
+## History
+
+- dma-buf in 2011 by Linaro for cross-device buffer sharing
+  - d15bd7ee445d0702ad801fdaece348fdb79e6581
+- drm prime in 2012 by RedHat to make use of dma-buf
+  - 3248877ea1796915419fba7c89315fdbf00cb56a
+  - for GPU offloading (rendering in one, presenting in another)
+- v4l2 adoption of dma-buf in 2012 by Linaro
+  - c538404869b69db543ce23cf041192c192a65330
+  - for GPU texturing from camera output
+  - there was no fencing; I guess userspace must wait for camera/gpu to idle
+    before sampling/recycling
+- dma-resv in 2013 by Canonical
+  - 786d7257e537da0674c02e16e3b30a44665d1cee
+  - derived from `ttm_bo_reserve`
+  - only `ww_mutex` to allow bo locking with deadlock avoidance
+- dma-fence in 2014 by Canonical
+  - e941759c74a44d6ac2eed21bb0a38b21fe4559e2
+  - dma-fence was also added to dma-resv
+  - dma-resv was also added to dma-buf
+  - cross-device implicit fencing was made possible
+  - userspace can also poll (the implicit fences of) a dma-buf
+- dma-buf cpu ioctl in 2016 by Intel
+  - c11e391da2a8fe973c3c2398452000bed505851e
+- sync-file in 2016 by Collabora
+  - cross-device explicit fencing was made possible
+
 ## dma-fence
 
 - `struct dma_fence` has
