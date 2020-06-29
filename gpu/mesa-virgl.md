@@ -54,6 +54,31 @@ virgl
 - it calls `virtio_gpu_cmd_get_display_info` to initialize display info
   - display modes available
 
+## Kernel Capsets
+
+- virtio-gpu pci config space (`virtio_gpu_config::num_capsets`) specifies the
+  capset count
+- `virtio_gpu_cmd_get_capset_info` is called for each capset to set up `id`,
+  `max_version`, and `max_size` for each `virtio_gpu_drv_capset`
+- `virtio_gpu_get_caps_ioctl` is called by the userspace
+  - userspace specifies `cap_set_id`, `cap_set_ver`, and `size`
+  - `cap_set_id` must match
+  - `cap_set_ver` must be less than or equal to `max_version`
+  - `size` is capped to `max_size`
+  - `virtio_gpu_cmd_get_capset` is called to query capset id/ver with
+    `max_size`
+- because `max_size` can grow, version is bumped when there are
+  backward-incompatible changes
+- `VIRTGPU_PARAM_CAPSET_QUERY_FIX`
+  - without it, kernel always copies `max_size` to userspace
+  - that is problematic because userspace does not know `max_size`
+- capset id 1 is `VIRTIO_GPU_CAPSET_VIRGL`
+  - `max_size` is fixed and is known by userspace
+  - `max_version` is always 1 but userspace always asks for 0
+- capset id 2 is `VIRTIO_GPU_CAPSET_VIRGL2`
+  - `max_size` can change and is unknown by userspace
+  - `max_version` is always 2 but userspace always asks for 0
+
 ## Kernel virtqueue
 
 - a queue is a ring buffer
