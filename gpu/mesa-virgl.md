@@ -6,6 +6,32 @@ virgl
 - OpenGL 4.3
 - OpenGL ES 3.1
 
+## Headers
+
+- kernel uapi
+  - `virtgpu_drm.h` provides ioctl definitions.  Capsets, formats, etc. are
+    opaque u32
+  - `virtio_gpu.h` provides virtio-gpu command and capset id definitions.
+    Capsets, formats, etc. are opaque u32.  Command streams are also opaque
+    data.
+- virglrenderer
+  - `vtest_protocol.h` provides vtest command definitions.
+  - `virgl_protocol.h` provides virgl command definitions.
+  - `virgl_hw.h` provides capset, format, etc. definitions
+  - `virglrenderer.h` provides an API for qemu.  Capsets, formats, etc. are
+    opaque u32
+- mesa
+  - use `vtest_protocol.h`, `virgl_protocol.h`, and `virgl_hw.h` to make
+    ioctls and build command streams that are opaque to kernel/vtest
+- qemu
+  - use `virtio_gpu.h` and `virglrenderer.h` to translate virtio-gpu commands
+    to virglrenderer api calls, with opaque capsets, formats, etc.
+- vulkan support
+  - qemu inits virglrenderer with vulkan support
+  - qemu advertises a virtio-gpu feature
+  - kernel picks up the feature and advertises a param
+  - mesa picks up the param and requests vulkan context (opaque u32)
+
 ## Gallium Winsys
 
 - `transfer_get` is `VIRTGPU_TRANSFER_FROM_HOST`

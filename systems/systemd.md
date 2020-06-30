@@ -271,3 +271,21 @@ systemd
     - prop `ID_SEAT`: if set, specifies the seat the device is assigned to
     - prop `ID_AUTOSEAT`, if 1, the device creates a new seat
     - prop `ID_FOR_SEAT`: seat id can be `seatID_FOR_SEAT`
+
+## suspend
+
+- systemd-logind opens evdev devices for
+  - `KEY_POWER`/`KEY_POWER2`: power key
+  - `KEY_SLEEP`: suspend key
+  - `KEY_SUSPEND`: hibernate key
+  - `SW_LID`: lid opened/closed
+  - `SW_DOCK`: machine docked/undocked
+- when lid closed, `button_lid_switch_handle_action` is called
+  - enumerate DRM connectors in sysfs to see if any external display connected
+  - enumerate `/sys/class/power_supply` to see if AC is online
+  - depending on whether there are external display or whether AC is online,
+    different actions can be taken
+    - such as ignore, poweroff, reboot, halt, suspend, lock, etc.
+  - by default, 
+    - when external displays are connected, lid closed is ignored
+    - otherwise, suspend

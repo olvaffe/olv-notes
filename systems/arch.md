@@ -34,19 +34,24 @@ ArchLinux
 - Pre-installation
  - require an internet connection
    - `ip link`
-   - `dhcpcd <iface>`
-   - no easy way if the wireless adapter is not supported by the live image
+   - wired: `dhcpcd <iface>`
+   - wireless: `iwctl station wlan0 connect <SSID>`
+     - no easy way if the wireless adapter is not supported by the live image
  - system clock
    - `timedatectl set-ntp true`
  - partition disk with fdisk
    - 256M for EFI system partition (type 1), esp
-   - 32G for root partition
-   - remainder for home partition
- - format root and home paritions to btrfs; format esp to vfat
+     - format esp to vfat
+   - remainder for root/home partition
+     - format to btrfs
+     - `mkdir roots homes`
+     - `btrfs subvolume create roots/current` for real root
+     - `btrfs subvolume create homes/current` for real home
+     - `btrfs subvolume set-default roots/current`
  - mount partitions to /mnt, /mnt/home, and /mnt/boot
 - Installation
    - update `/etc/pacman.d/mirrorlist`
-   - `pacstrap /mnt base linux linux-firmware`
+   - `pacstrap /mnt base linux linux-firmware vim iwd systemd-resolvconf`
    - `genfstab -U /mnt >> /mnt/etc/fstab`
 - Enter chroot
    - `arch-chroot /mnt`
@@ -66,11 +71,11 @@ ArchLinux
 
 ## Network
 
-- for temporary wired connection, run `dhcpcd`
-- NetworkManager
-  - `pacman -S networkmanager`
-  - `systemctl enable NetworkManager`
-  - `nmcli device wifi connect <SSID> password <PASSWORD>`
+- for temporary connection, see `Installation`
+  - `/etc/iwd/main.conf`
+    - `[General]`
+    - `EnableNetworkConfiguration=true`
+  - `systemctl restart iwd`
 - for wireless adapter that requiers out-of-tree driver,
   - /etc/modules-load.d/
   - /etc/modprobe.d/blacklist.conf
@@ -78,7 +83,19 @@ ArchLinux
 ## X11
 
 - `pacman -S xorg xorg-xinit xterm`
+- `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoj`
 - `pacman -S i3`
+
+## User
+
+- add user
+  - `useradd -m -G wheel <user>`
+  - `passwd <user>`
+  - `visudo`
+- login as user
+- `git clone https://github.com/olvaffe/olv-etc.git`
+- ./olv-etc/create-links
+- 
 
 ## Development
 

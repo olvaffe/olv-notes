@@ -1,3 +1,6 @@
+USB
+===
+
 ## Hardware
 
 - Speed
@@ -47,3 +50,15 @@
   - MacBook: 87W
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
+
+## lspci / lsusb
+
+- example on my laptop
+- lspci shows one EHCI and one xHCI USB controllers
+  - driven by `ehci-pci` and `xhci_hcd` pci drivers
+  - ECHI controller has one 2.0 root hub usb device
+  - xCHI controller has one 2.0 root hub usb device
+- all usb devices are driven by a `usb_device_driver` called `usb`
+  - the driver enumerates usb interfaces that are driven by the real
+    `usb_driver`s
+- hub interface, root or not, is driven by the `usb_driver` called `hub`
