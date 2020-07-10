@@ -29,12 +29,12 @@ btrfs
   independently and, more importantly, can be snapshotted
 - a possible filesystem layout is
   - `/' is not mounted
-  - `/root/latest` is a subvolume mounted to `/`
-  - `/home/latest is a subvolume mounted to `/home`
+  - `/roots/current` is a subvolume mounted to `/`
+  - `/homes/current is a subvolume mounted to `/home`
   - to snapshot root,
     - `mount -osubvol=/ <dev> /mnt`
-    - `btrfs subvolume snapshot -r / /mnt/root/<timestamp>`
+    - `btrfs subvolume snapshot -r / /mnt/roots/<timestamp>`
   - to roll back root,
     - `mount -osubvol=/ <dev> /mnt`
-    - `btrfs subvolume delete /mnt/root/latest`
-    - `btrfs subvolume snapshot /mnt/root/<timestamp> /mnt/root/latest`
+    - `btrfs subvolume delete /mnt/roots/current`
+    - `btrfs subvolume snapshot /mnt/roots/<timestamp> /mnt/roots/current`

@@ -54,11 +54,16 @@ USB
 ## lspci / lsusb
 
 - example on my laptop
-- lspci shows one EHCI and one xHCI USB controllers
-  - driven by `ehci-pci` and `xhci_hcd` pci drivers
-  - ECHI controller has one 2.0 root hub usb device
-  - xCHI controller has one 2.0 root hub usb device
-- all usb devices are driven by a `usb_device_driver` called `usb`
-  - the driver enumerates usb interfaces that are driven by the real
-    `usb_driver`s
-- hub interface, root or not, is driven by the `usb_driver` called `hub`
+  - two physical USB-A ports
+- lspci -v
+  - one xHCI USB controller driven by `xhci_hcd` pci driver
+- lsusb -t
+  - one USB 2.0 root hub
+    - with built-in USB devices such as webcam, bluetooth, and touchscreen
+      connected
+  - one USB 3.0 root hub
+    - with two USB-A ports for external USB devices
+- most USB devices are driven by a `usb_device_driver` called `usb`
+  - the driver enumerates usb interfaces that can be driven by `usb_driver`s
+- A USB hub, root or not, is driven by a `usb_driver` called `hub`
+- A root hub starts a new bus
