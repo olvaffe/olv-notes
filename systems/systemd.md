@@ -191,6 +191,18 @@ systemd
     for simple profiling
 - `systemd-tty-ask-password-agent`
   - <http://www.freedesktop.org/wiki/Software/systemd/PasswordAgents>
+- `bootctl` shows, lists, installs, removes EFI boot loaders
+  - it can install `systemd-boot`, a simple EFI boot loader
+- `busctl` lists and talks to D-Bus services
+- `coredumpctl` lists saved coredumps
+  - core dumps are piped to `/proc/sys/kernel/core_pattern`, which is set to
+    `systemd-coredump`
+  - man core(5)
+- `homectl` to manage `systemd-homed`-managed users
+- `hostnamectl` sets `/etc/hostname` and others
+- `localectl` sets, gets, and lists locales
+- `networkctl` talks to `systemd-networkd`
+- `timedatectl`
 
 ## Daemons
 
