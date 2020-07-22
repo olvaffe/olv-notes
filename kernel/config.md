@@ -14,16 +14,11 @@ Kernel Config
     - select `PCI support`
     - select `USB support`
       - select `Support for Host-side USB`
-    - select `LED support`
-      - select `LED Class Support`
-  - select `Kernel hacking`
-    - select `Kernel debugging`
 
 ## Config
 
 - select `General setup`
   - deselect `Automatically append version information to the version string`
-  - deselect `Support for paging of anonymous memory (swap)`
   - select `System V IPC`
   - select `POSIX Message Queues`
   - select `Timers subsystem`
@@ -33,23 +28,22 @@ Kernel Config
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
   - select `Control Group support`
+  - select `Automatic process group scheduling`
   - select `Initial RAM filesystem and RAM disk (initramfs/initrd) support`
-  - select `Enable bpf() system call`
 - select `Processor type and features`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
   - select `Intel Low Power Subsystem Support`
   - select `Processor family (Core 2/newer Xeon)`
   - deselect `AMD MCE features`
-  - select `Numa Memory Allocation and Scheduler Support` for Intel Core i7
-  - deselect `Old style AMD Opteron NUMA detection`
   - select `EFI runtime service support`
     - select `EFI stub support`
-  - select `Timer frequency (1000 HZ)`
+  - select `Timer frequency (300 HZ)`
 - select `Power management and ACPI options`
   - select `Cpuidle Driver for Intel Processors`
 - select `Binary Emulations`
   - select `IA32 Emulation`
+- deselect `Virtualization`
 - select `Enable loadable module support`
   - select `Module unloading`
 - select `Executable file formats`
@@ -71,16 +65,11 @@ Kernel Config
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
   - select `RF switch subsystem support`
 - select `File systems`
-  - select `The Extended 4 (ext4) filesystem`
-  - select `Ext4 POSIX Access Control Lists`
   - select `Btrfs filesystem support`
   - select `Btrfs POSIX Access Control Lists`
   - deselect `Dnotify support`
   - select `Kernel automounter support (supports v3, v4 and v5)` for systemd
   - select `FUSE (Filesystem in Userspace) support`
-  - select `CD-ROM/DVD Filesystems`
-    - select `ISO 9660 CDROM file system support`
-    - select `Microsoft Joliet CDROM extensions`
   - select `DOS/FAT/NT Filesystems`
     - select `VFAT (Windows-95) fs support`
     - select `Enable FAT UTF-8 option by default`
@@ -99,6 +88,7 @@ Kernel Config
     - select `Show timing information on printks`
   - select `Generic Kernel Debugging Instruments`
     - select `Debug Filesystem`
+  - select `Kernel debugging`
   - select `Tracers`
     - select `Kernel Function Tracer`
     - select `Trace syscalls`
@@ -110,36 +100,33 @@ Kernel Config
   - select `Message Signaled Interrupts (MSI and MSI-X)`
 - select `Generic Driver Options`
   - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
+  - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
 - select `Block devices`
   - select `Loopback device support`
-- select `NVME Support`
+- select `NVME Support` if have one
   - select `NVM Express block device`
 - select `Misc devices`
-  - select `Realtek PCI-E card reader`
-- select `SCSI device support`
+  - select `Realtek PCI-E card reader` if have one
+- select `SCSI device support` if have SATA
+  - deselect `legacy /proc/scsi/ support`
   - select `SCSI device support`
   - select `SCSI disk support`
   - deselect `SCSI low-level drivers`
-- select `Serial ATA and Parallel ATA drivers (libata)`
+- select `Serial ATA and Parallel ATA drivers (libata)` if have one
   - select `AHCI SATA support`
   - deselect `ATA SFF support (for legacy IDE and PATA)`
 - select `Network device support`
-  - select `Ethernet driver support`
-    - deselect all but the desired drivers
-  - select `USB Network Adapters`
-    - deselect all but the desired drivers
-  - select `Wireless LAN`
-    - deselect all but the desired drivers
+  - select `Ethernet driver support` if have one
+  - select `USB Network Adapters` if have one
+  - select `Wireless LAN` if have one
 - select `Input device support`
-  - deselect `Support for memoryless force-feedback devices`
   - select `Event interface`
 - select `Character devices`
   - deselect `Legacy (BSD) PTY support`
   - select `Hardware Random Number Generator Core support`
     - deselect all but the desired drivers
-  - deselect `/dev/port character device`
   - select `TPM Hardware Support`
-    - select `TPM 2.0 CRB Interface`
+    - select `TPM 2.0 CRB Interface` if have one
 - select `I2C support`
   - select `I2C Hardware Bus support`
     - select `Synopsys DesignWare Platform` for Intel CPUs
@@ -153,10 +140,12 @@ Kernel Config
 - select `Watchdog Timer Support`
   - select `Intel TCO Timer/Watchdog`
 - select `Multimedia support`
-  - select `Cameras/video grabbers support`
-  - select `Media USB Adapters`
-    - select `USB Video Class (UVC)`
-    - deselect `GSPCA based webcams`
+  - select `Media device types`
+    - select `Cameras/video grabbers support`
+  - select `Media drivers`
+    - select `Media USB Adapters`
+      - select `USB Video Class (UVC)`
+      - deselect `GSPCA based webcams`
 - select `Graphics support`
   - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
   - select `Intel 8xx/9xx/G3x/G4x/HD Graphics`
@@ -170,14 +159,12 @@ Kernel Config
     - deselect `Support old ALSA API`
     - select `HD-Audio`
       - select `HD Audio PCI`
-      - select desired codecs, such as
-      - select `Build Realtek HD-audio codec support`
-      - select `Build HDMI/DisplayPort HD-audio codec support`
+      - select `Build Realtek HD-audio codec support` if have one
+      - select `Build HDMI/DisplayPort HD-audio codec support` if have one
 - select `HID support`
   - select `Special HID drivers`
     - deselect all but the desired drivers, such as
     - select `HID Multitouch panels`
-    - select `Synaptics RMI4 device support` for USB Synaptics touchpads
   - select `I2C HID support`
     - select `HID over I2C transport layer` for I2C Synaptics touchpads
 - select `USB support`
@@ -187,14 +174,17 @@ Kernel Config
   - select `USB Mass Storage support`
 - select `MMC/SD/SDIO card support`
   - select `Realtek PCI-E SD/MMC Card Interface Driver`
+- select `LED support`
+  - select `LED Class Support`
 - select `Real Time Clock`
 - select `DMA Engine support`
   - select `Synopsys DesignWare AHB DMA platform driver` for Intel LPSS
 - deselect `Virtio drivers`
+- deselect `VHOST drivers`
 - select `X86 Platform Specific Device Drivers`
-  - select `Dell Systems Management Base Driver`
-  - select `Dell SMBIOS driver`
-  - select `Dell Laptop Extras`
+  - select `Dell Systems Management Base Driver` if Dell
+  - select `Dell SMBIOS driver` if Dell
+  - select `Dell Laptop Extras` if Dell
 - deselect `IOMMU Hardware Support`
 - select `Generic powercap sysfs driver`
   - select `Intel RAPL Support via MSR Interface`
@@ -272,8 +262,10 @@ Kernel Config
 ## Tips
 
 - Unable to boot?
-  - Built-in script (#!) support for init scripts
-  - Built-in devtmpfs and unix socket support for udev
-  - Built-in graphics driver to see console
-  - Built-in keyboard driver to interact
-  - Built-in scsi/ata/fs drivers to mount
+  - must built-in for initramfs
+    - script (#!) support for init scripts
+    - devtmpfs and unix socket support for udev
+  - to debug
+    - Built-in EFI framebuffer to see console
+    - Built-in keyboard driver to interact
+    - Built-in scsi/ata/fs drivers to mount
