@@ -44,6 +44,8 @@ Kernel Config
 - select `Binary Emulations`
   - select `IA32 Emulation`
 - deselect `Virtualization`
+- select `General architecture-dependent options`
+  - select `Provide system calls for 32-bit time_t`
 - select `Enable loadable module support`
   - select `Module unloading`
 - select `Executable file formats`
