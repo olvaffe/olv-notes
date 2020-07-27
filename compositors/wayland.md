@@ -71,6 +71,46 @@ Wayland
     objects
   - `wl_display_iterate` is called to read inbound data
 
+## Rendering Models
+
+- a `wl_surface` is a rectangular area that receives inputs and presents
+  `wl_buffer`
+  - many surface states are double-buffered;
+  - protocol requests change the pending states
+  - `wl_surface_commit` atomically makes all pending states current
+    - the values of the pending states after commit are case by case
+      - pending damage state becomes empty
+      - pending scale state is unchanged
+  - `wl_surface_attach` attaches a `wl_buffer` to a `wl_surface`
+  - `wl_surface_frame` returns a `wl_callback` that is used to notify frame
+    presented
+- a `wl_buffer` is a content-provider for a `wl_surface`.  It is created from
+  factory interfaces and can be attached to surfaces.
+  - `release` event is used to notify that the buffer is released by the
+    server and can be reused for other purposes (e.g., draw next frame)
+- `wl_shm`
+  - client allocates a shmem
+    - client can access any area of the shmem
+  - `wl_shm_create_pool` creates a `wl_shm_pool` from the shmem fd
+    - server is granted access any area of the shmem
+  - client suballocates from the shmem and call `wl_shm_pool_create_buffer`
+    - client and server both know which area is used as the storage of the
+      `wl_buffer`
+- `wl_drm`
+  - interface defined by Mesa, not Wayland
+  - client allocates a GPU BO and export dmabuf
+    - client can render to BO
+  - `wl_drm_create_prime_buffer` to create a buffer from the dmabuf
+    - server can sample from BO
+  - originally, flink is used instead of dmabuf
+- `zwp_linux_dmabuf_v1`
+  - it is similar to `wl_drm` but with multi-planar and modifier support
+
+## Xwayland
+
+- without glamor, `wl_shm` is used
+- with glamor, `wl_drm` and/or `zwp_linux_dmabuf_v1` are used
+
 ## How does a client work
 
 - Render with SHM
