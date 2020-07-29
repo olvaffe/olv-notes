@@ -15,7 +15,7 @@
   - an export operation might steal the payload
     - export-before-submit might or might not be allowed
 - a VkFence is
-  - initialized unsignaled or signaled
+  - initially unsignaled or signaled
   - a signal operation makes it signaled
     - according to `vkQueueSubmit`, it is illegal to signal a signaled
       fence or a fence with pending signal operation
@@ -59,6 +59,19 @@
 - after external VkFence,
   - nothing works unless we put int/cv/seqno in a shmem
 - we need a new kernel mechanism
+- then timeline semaphore comes along
+  - initially can be any value
+  - a signal operation sets it to any value greater than the current one
+    - both CPU and GPU can signal
+    - two pending signal operations must have a dependency to make sure the
+      value is always monotonically increasing
+  - a wait operation waits until it reaches a certain value
+    - both CPU and GPU can wait
+    - wait-before-submit is allowed and wait can be indefinite
+  - it is possible to implement timeline semaphore using binary VkSemaphore
+    and VkFence (and mutex and cv)
+    - the only thing not possible is external timeline semaphore, which
+      requires the states to be on a shmem
 
 ## History
 
@@ -95,7 +108,7 @@
   - conceptually,
     - a syncobj's dma-fence pointer is replaced by {0, dma-fence}
     - there is a list of {seqno, dma-fence}
-    - in practice, `dma_fence_chain` is introduced
+  - in practice, `dma_fence_chain` is introduced
   - `DRM_IOCTL_SYNCOBJ_TIMELINE_SIGNAL`
     - to signal a syncobj, add {seqno, already-signaled-stub-fence}
   - `DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT`
@@ -149,9 +162,55 @@
   - the dma-fence in the legacy view becomes {0, dma-fence}
   - a point is signaled when the associated dma-fence is signaled
   - a syncobj is signaled when all points are signaled
-  - in practice, the pointer in syncobj now points to a `dma_fence_chain`
+- in practice, the pointer in syncobj now points to a `dma_fence_chain`
 - `drm_syncobj_add_point` adds a new point
   - in practice, it adds a new chain node to the previous node and
     replaces the syncobj pointer to point to the new node
 - `drm_syncobj_timeline_signal_ioctl` adds an already signaled point
   {seqno, already-signaled-stub-fence} 
+
+## mapping `drm_syncobj` to Vulkan
+
+- creation
+  - a binary semaphore is created a `drm_syncobj` with {0, NULL}
+  - a fence is created a `drm_syncobj` with {0, NULL} or
+    {0, already-signaled-stub-fence}
+  - a timeline semaphore is created a `drm_syncobj` with
+    {initialValue, already-signaled-stub-fence}
+- cpu signal
+  - `vkSignalSemaphore` maps to `DRM_IOCTL_SYNCOBJ_TIMELINE_SIGNAL`
+- cpu wait
+  - `vkWaitForFences` maps to `DRM_IOCTL_SYNCOBJ_WAIT` with
+    `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_FOR_SUBMIT`.
+    - timeout and `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_ALL` are set accordingly
+  - `vkWaitSemaphores` maps to `DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT` with
+    `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_FOR_SUBMIT`
+    - timeout, `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_ALL`, and points are set
+      accordingly
+- cpu reset
+  - `vkResetFences` maps to `DRM_IOCTL_SYNCOBJ_RESET`
+- cpu query
+  - `vkGetFenceStatus` maps to `DRM_IOCTL_SYNCOBJ_WAIT` with timeout 0 and
+    `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_FOR_SUBMIT`
+    - return 0 means ready; -ETIME means not ready
+  - `vkGetSemaphoreCounterValue` maps to `DRM_IOCTL_SYNCOBJ_QUERY`
+- gpu wait/signal
+  - `vkQueueSubmit`
+    - duplicates all submit info
+    - handle wait-before-submit in userspace
+      - find all wait semaphores that the driver knows will never signal
+      - if any, save the submit info and return
+      - a submit thread is spawned to wait in userspace
+    - submit
+  - for signal, kernel adds or updates {val, dma-fence}
+  - for wait, kernel waits val
+- export
+  - to opaque fd, `DRM_IOCTL_SYNCOBJ_HANDLE_TO_FD`
+  - to sync fd, set `DRM_SYNCOBJ_HANDLE_TO_FD_FLAGS_EXPORT_SYNC_FILE`
+  - do not support exporting timeline to sync fd (what
+    `DRM_IOCTL_SYNCOBJ_TRANSFER` is for?)
+- import
+  - from opaque fd, `DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE`
+  - from sync fd, set `DRM_SYNCOBJ_FD_TO_HANDLE_FLAGS_IMPORT_SYNC_FILE`
+  - do not support importing timeline from sync fd
+    (what `DRM_IOCTL_SYNCOBJ_TRANSFER` is for?)
