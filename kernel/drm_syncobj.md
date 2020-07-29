@@ -1,19 +1,67 @@
 `drm_syncobj`
 =============
 
+## Background
+
+- a VkSemaphore is
+  - initially unsignaled
+  - a signal operation makes it signaled
+    - according to `vkQueueSubmit`, it is illegal to signal a signaled
+      semaphore
+  - a wait operation makes it unsignaled
+    - it is illegal to wait a semaphore that is unsignaled and has no pending
+      signal operation (no wait-before-submit)
+    - it is illegal to have multiple waiters
+  - an export operation might steal the payload
+    - export-before-submit might or might not be allowed
+- a VkFence is
+  - initialized unsignaled or signaled
+  - a signal operation makes it signaled
+    - according to `vkQueueSubmit`, it is illegal to signal a signaled
+      fence or a fence with pending signal operation
+  - a wait operation just waits
+    - it does not reset the fence state
+    - everything is legal, including wait-before-submit
+  - an export operation might steal the payload
+    - export-before-submit might or might not be allowed
+- the bottom line is, GPU signal/wait operations are much more restrictive
+  than CPU signal/wait operations
+- before external VkSemaphore,
+  - a local VkSemaphore can be a dummy BO
+    - the BO gets added to EXECBUFFER for explicit waiting and signaling
+  - it can be a sync fd that is initially -1
+    - a real sync fd is assigned after EXECBUFFER
+  - it can also be a simple seqno
+    - who gets the seqno from kernel
+    - and kernel provides a way to wait for the seqno
+- after external VkSemaphore,
+  - a VkSemaphore can be a dummy BO
+    - it exports an opaque fd (dmabuf of BO)
+  - it can be a sync fd
+    - it returns the sync fd
+    - this works because `vkGetSemaphoreFdKHR` does not allow
+      export-before-submit for sync fd
+  - it cannot be a simple seqno however
+    - unless the seqno is in a shmem that is shared by all
+- before external VkFence,
+  - a local VkFence can be a dummy BO plus an int plus cv
+    - BO is used the same way as in VkSemaphore
+    - kernel needs to provide a BO wait iotctl
+    - the int should have three states: reset, submitted, signaled
+    - wait-before-submit requires a mutex and a cv
+  - it can be a sync fd plus an int plus cv
+    - just like with dummy BO
+  - it can also be a simple seqno
+    - same as in VkSemaphore
+    - 0 is special and means signaled
+    - `UINT64_MAX` is also special and means reset
+    - wait-before-submit just works
+- after external VkFence,
+  - nothing works unless we put int/cv/seqno in a shmem
+- we need a new kernel mechanism
+
 ## History
 
-- an external VkSemaphore cannot be backed by a `sync_file`
-  - because vkGetSemaphoreFdKHR wants an fd before there is a `sync_file`
-  - it can be backed by BOs instead
-- an external VkFence cannot be backed by a `sync_file` or a BO
-  - because vkGetFenceFdKHR wants an fd before there is a `sync_file`
-  - a local VkFence can be backed by BOs instead
-    - there should also be a wait-bo ioctl
-  - VkFence allows wait-before-submit.  For a local VkFence, this can be
-    accomplished by having three states (unsignaled, pending, signaled) and a
-    `cnd_t`.  When a fence is unsignaled, waiting waits on the `cnd_t` first.
-  - for an external VkFence, we need kernel support for "external `cnd_t`"
 - In June 2017, `drm_syncobj` was merged to support external VkSemaphore with
   only
   - `DRM_IOCTL_SYNCOBJ_CREATE`
