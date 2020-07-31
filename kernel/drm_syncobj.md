@@ -123,6 +123,47 @@
   - `DRM_IOCTL_SYNCOBJ_TRANSFER`
     - convert between binary and timeline syncobjs?
 
+## `struct drm_syncobj`
+
+- `drm_syncobj::fence` is a pointer to a `dma_fence`
+  - when the pointer is NULL, the syncobj is unsignaled with no pending signal
+    operation
+  - when the pointer is non-NULL, the syncobj has the same state
+    (signaled/unsignaled) as the fence
+  - marking a syncobj signaled from CPU is commonly done via setting the
+    pointer to an already-signaled fence
+    - `dma_fence_get_stub` is the said fence
+- conceptually, a timeline syncobj has a list of {seqno, dma-fence} pairs
+  - each pair is a point on the timeline
+  - a point is reached when the dma-fence of the point is signaled
+  - the dma-fence of a point can be NULL, meaning unsignaled with no pending
+    signal operation
+  - this extends the traditional binary syncobj
+    - the traditional syncobj can be viewed as a timeline syncobj with only
+      one point {0, dma-fence}
+- in practice, `dma_fence_chain` is introduced
+  - a `dma_fence_chain` is itself a `dma_fence`
+    - `drm_syncobj::fence` pointer can thus point to a chain
+  - a `dma_fence_chain` is also a node in a chain of `dma_fence`
+    - internally, it has a pointer to the previous node of the chain
+  - a `dma_fence_chain` is signaled when all nodes are signaled
+    - see `dma_fence_chain_signaled`
+    - it looks like the nodes can signal out-of-order
+      - vk does not allow that, but kernel does not care
+- a syncobj can switch between a timeline one or a traditional/binary one
+  - depending on whether its fence pointer points to a chain or not
+  - there is no syncobj "type"
+
+## ioctls
+
+- `drm_syncobj_signal_ioctl` sets the fence pointer of the syncobj to the
+  already-siganled stub fence
+- `drm_syncobj_timeline_signal_ioctl` adds {seqno, already-signaled-stub-fence}
+  - it calls `drm_syncobj_add_point` which
+    - creates a new chain node
+    - make `drm_syncobj::fence` the previous node of the new node
+    - set `drm_syncobj::fence` to the new node
+
 ## `syncobj_wait_entry`
 
 - to support `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_FOR_SUBMIT`, a syncobj has a list of
@@ -153,21 +194,6 @@
 - `dma_fence_chain_find_seqno` returns the first node past the specified seqno
 - `dma_fence_chain_walk` returns the next node, ignoring and GCing signaled
   nodes
-
-## timeline syncobj
-
-- conceptually,
-  - a syncobj used to have a pointer to a dma-fence
-  - now it has a list of {seqno, dma-fence} as points on a timeline
-  - the dma-fence in the legacy view becomes {0, dma-fence}
-  - a point is signaled when the associated dma-fence is signaled
-  - a syncobj is signaled when all points are signaled
-- in practice, the pointer in syncobj now points to a `dma_fence_chain`
-- `drm_syncobj_add_point` adds a new point
-  - in practice, it adds a new chain node to the previous node and
-    replaces the syncobj pointer to point to the new node
-- `drm_syncobj_timeline_signal_ioctl` adds an already signaled point
-  {seqno, already-signaled-stub-fence} 
 
 ## mapping `drm_syncobj` to Vulkan
 
