@@ -1,6 +1,142 @@
 Vulkan
 ======
 
+## Spec (1.2.149)
+
+- 2. Fundamentals
+  - 2.2. Execution Model
+    - TODO
+  - 2.3. Object Model
+    - the handle to a dispatchable object is a pointer which is unique during
+      the object's lifetime
+    - the handle to a non-dispatchable object is an opaque `uint64_t`
+      - it can be a pointer
+      - it can be an index to a pool (potentially non-unique if pool objects
+      	are reference counted)
+      - it can be the object states tightly packed (thus non-unique)
+  - 2.3.1. Object Lifetime
+    - conceptually, an object has states and contents
+      - states are immutable after object creation/allocation
+      - contents can change
+    - create/destroy has relatively low-frequency and alloc/free has
+      relatively high-frequency
+    - when an in-parameter is a pointer to app data, the ownership of the app
+      data is temporarily transfered from the app to the driver.  That ends
+      when the command returns.
+    - clean up order
+      - a VkInstance can be destroyed when all VkDevice are destroyed
+      - a VkDevice device can be destroyed when all retrieved VkQueue are idle
+      	and all children objects are destroyed
+	- a pool object is the parent of its children objects; destroying the
+	  pool objects implicitly frees all its children objects
+      - when can a child object of a VkDevice be destroyed?
+        - when it is not used by HW or by another object
+    - command buffer lifecycle
+      - initial, after alloc or reset
+      - recording, after begin
+      - executable, after end or execution
+      - pending, after submission but before completion
+      - invalid, after (one-time) execution or invalidated (e.g., by
+      	destroying object that was recorded)
+    - when a VkQueue is busy, these objects used by the queue must not be
+      destroyed
+      - IOW, these objects might own HW resources that must not be released
+      - VkFence / VkSemaphore
+      - VkCommandBuffer / VkCommandPool
+    - when a command buffer is pending, meaning it is pending HW execution,
+      these objects used by the command buffer must not be destroyed
+      - IOW, these objects might own HW resources that must not be released
+      - these probably own HW memory
+        - VkBuffer / VkImage / VkDeviceMemory
+        - VkDescriptorPool / VkDescriptorSet
+        - VkCommandPool / VkCommandBuffer
+        - VkPipeline
+        - VkEvent
+        - VkQueryPool
+      - these probably own HW descriptors
+        - VkBufferView / VkImageView / VkSampler / VkSamplerYcbcrConversion
+        - VkRenderPass / VkFramebuffer
+    - when a command buffer is recording or executable, destroying any object
+      above used by the command buffer makes the command buffer invalid
+      - IOW, the command buffer might have pointers to those objects and those
+      	pointers become dangling
+      - the command buffer can only be reset or freed when in the invalid
+      	state
+    - more generally, objects of a VkDevice can be destroyed in any order
+      - with caveats, of course
+      - when one objects uses another object
+	- this other object might have been fully parsed, such as in
+	  VkPipeline using VkShaderModule, and can be destroyed
+	- the object might have a pointer to this other object, such as in
+	  VkImageView using VkImage. It is allowed to destroy the other object
+	  and create a dangling pointer, as along as the dangling pointer is
+	  no longer dereferenced.  IOW, the object can only be reset or
+	  destroyed.
+    - these objects are consumed (e.g., fully parsed) when passed to a command
+      that creates another object
+      - they can be destroyed after the create command returns, without
+      	worrying about dangling pointers
+      - VkShaderModule and vkCreate*Pipeline
+      - VkPipelineCache and vkCreate*Pipeline
+      - VkRenderPass and vkCreate*Pipeline
+      - VkRenderPass and vkCreateFramebuffer
+      - VkDescriptorSetLayout and vkCreatePipelineLayout
+        - not true for some impls
+      - VkDescriptorSetLayout and vkCreateDescriptorUpdateTemplate
+  - 2.3.2. External Object Handles
+    - a VkDevice defines a object handle scope
+      - any handle not in scope is said to be external
+      - an external handle is exported from the object in the source scope
+      - an external handle can be imported to an in-scope handle
+  - 2.5. Command Syntax and Duration
+    - VkBool32 can only be 0 or 1
+    - commands that create/destroy objects take the form
+      `vkCreate*`/`vkDestroy*`
+      - either takes `VkAllocationCallbacks` as the last in-parameter
+    - commands that alloc/free objects from a pool take the form
+      `vkAllocate*`/`vkFree*`
+      - they use the pool's `VkAllocationCallbacks`
+    - `vkGet*` and `vkEnumerate*` results are invarant given the same
+      in-parameters, unless called out
+  - 2.6. Threading Behavior
+    - an object is immutable, internally synced, or externally synced
+      - immutable: no state change allowed thus no mutex needed
+      - internally synced: an internal mutex protects some mutable states
+      - externally synced: no two command use the same object at the same time
+    - some commands affect children objects that are enumerated or allocated
+      rather than created and the children objects are externally synced
+      - VkInstance and VkPhysicalDevice
+      - VkDevice and VkQueue
+      - VkDescriptorPool and VkDescriptorSet
+      - VkCommandPool and VkCommandBuffer
+    - some object can either be internally or externally synced
+      - `VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT`
+  - 2.7.2. Implicit Valid Usage
+    - `VK_NULL_HANDLE` is for non-dispatchable objects; `NULL` is for
+      dispatchable objects
+    - `NULL` is allowed for pointers unless called out
+    - char pointer is non-NULL and terminated by a null character; when called
+      out, it can be NULL
+    - `_MAX_ENUM` is not a valid enumerant (the value can theoretically be
+      valid however, if there are enough valid enumerants)
+    - client must ignore bits in a flag that it does not understand; e.g.,
+      driver might set bits returned by a instance command while the bits are
+      gated by device extensions
+    - sType always has a valid value
+    - pNext is either NULL or a valid pointer
+    - in a pnext chain, a struct must not appear more than once unless
+      explicitlly called out
+    - drivers must ignore unknown pnext node
+      - it might be valid to a layer who cannot strip it out
+    - some clarifications on core versons and extensions
+  - 2.7.3. Return Codes
+    - return code is either success (>=0) or runtime error (<0); no
+      programming error
+    - on errors, driver can trash out-parameters (except sType and pNext)
+    - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
+      should enable validation layers to get details, or to file a bug against
+      the validation layers or the driver
+
 ## Versions
 
 - if `vkGetInstanceProcAddr("vkEnumerateInstanceVersion")` returns NULL, the

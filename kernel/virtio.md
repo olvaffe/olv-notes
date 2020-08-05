@@ -98,6 +98,16 @@
     * it can look at the "in" data from the device to know the status
   * virtio 1.1 introduces packed vring
 
+## vring
+
+- a PCI device uses its configuration space to report the maximum queue size
+  supported
+- a `struct vring` is created
+  - `desc` points to an array of `struct vring_desc`
+  - `avail` points to the available ring, `struct vring_avail`
+  - `used` points to the used ring, `struct vring_used`
+
+
 ## PCI transport
 
 * a PCI virtio device has an IRQ for config space change 
