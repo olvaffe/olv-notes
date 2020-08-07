@@ -5,7 +5,31 @@ Vulkan
 
 - 2. Fundamentals
   - 2.2. Execution Model
-    - TODO
+    - work is submitted to queues using queue submission commands such as
+      vkQueueSubmit, vkQueueBindSparse, or vkQueuePresentKHR
+      - optionally take a list of semaphores for waiting and another list of
+      	semaphores for signaling
+    - the work itself, as well as semaphore waiting/signaling, are all queue
+      operations
+    - queue operations on different queues have no implicit ordering
+      constraints and may execute in any order
+      - must use explicit ordering constraints if cross-queue ordering is
+      	needed
+    - queue operations on the same queue also may execute in any order, except
+      when implicit ordering constraints apply
+      - vkQueueSubmit respects submission order and other implicit ordering
+      	constraints
+        - other queue submission commands do not
+      - any queue operation cannot be reordered after a queue signal operation
+        - any memory write also becomes available with queue signal operation
+      - a queue wait operation cannot be reordered before a queue signal
+      	operation sharing the same semaphore
+      	- any memory write that is available also becomes visible
+    - commands recorded in a command buffer are either
+      - action command (draw, dispatch, clear, copy, begin/end renderpass)
+      - state command (bind pipelines, set dynamic states, etc.)
+      - sync command (set/wait events, barriers, render pass deps)
+    - more in 6.2.
   - 2.3. Object Model
     - the handle to a dispatchable object is a pointer which is unique during
       the object's lifetime
@@ -136,6 +160,65 @@ Vulkan
     - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
       should enable validation layers to get details, or to file a bug against
       the validation layers or the driver
+- 6. Synchronization and Cache Control
+  - there are five explicit synchronization mechanisms
+    - fences, semaphores, events, pipeline barriers, and render passes
+  - 6.1. Execution and Memory Dependencies
+    - TODO
+  - 6.2. Implicit Synchronization Guarantees
+    - command buffers and submission order
+      - we need to give a meaning to the order in which commands are recorded
+      	and submitted
+      	- such that a draw command is not reordered before a state command it
+      	  depends on
+      	- or two overlapping triangles are drawn in reverse order
+      - submission order essentially says that the commands must be executed
+      	in the order that they are recorded and submitted
+      	- except for commands in different subpasses of a render pass
+    - semaphores and signal operation order
+      - we need to give a meaning to the order in which queue signal
+      	operations are submitted
+      	- such that two queue signal operations are not reordered
+      - signal operation order essentially says that the queue signal
+      	operations must be executed in the order that they are submitted
+    - submission order and signal operation order are trivial
+      - they exist only because queue operations are allowed to be reordered
+	arbitrarily which is too wild; we need them as fundamental ordering
+	contraints
+      - they don't specify how a command buffer is ordered against its signal
+      	operation
+      	- that will be defined by the semaphore's execution dependency
+      - they also don't specify memory dependency
+	- say, we update an ssbo and sample from it; the submission order
+	  specifies the execution dependency but there is still a memory
+	  dependency that needs to be be specified
+        - `vkCmdPipelineBarrier` to the rescue
+  - 6.4.1. Semaphore Signaling
+    - the semaphore signal operation is a synchronization command
+      - it defines two synchronization scopes and their execution and memory
+      	dependencies
+    - the first sync scope includes all commands in the batch
+    - the second sync scope includes the signal operation itself
+    - these are enough to make sure the semaphore signals after all commands
+      in the batch are executed
+      - and because of the fundamental signal operation order, all commands
+      	before the batch and all prior signal operations are also executed
+    - IOW, a command can be reorderd before a prior signal operation and but
+      after its own signal operation
+  - 6.4.2. Semaphore Waiting
+    - the first sync scope includes all semaphore signal operations that
+      operate on the same semaphore
+    - the second sync scope includes all commands in the batch
+  - 6.5. Events
+    - events can be used for fine-grained host/queue synchronization
+    - they can also be used as a "split" barrier
+      - say, we update an ssbo and sample from it; there is an irrelevant work
+      	that we can insert before vkCmdPipelineBarrier to better utilize the
+      	GPU
+      - when the irrelevant work is complex enough that might confuse
+      	vkCmdPipelineBarrier or make it impractical, we can instead
+      	vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
+      - the barrier is splitted into the signal half and wait half
 
 ## Versions
 
