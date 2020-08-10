@@ -160,6 +160,24 @@ Vulkan
     - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
       should enable validation layers to get details, or to file a bug against
       the validation layers or the driver
+- 5. Command Buffers
+  - secondary command buffer inherits no state from the primary command
+    buffer
+    - except for render pass and subpass
+    - secondary command buffer must explicitly set all other states
+  - 5.4. Command Buffer Recording
+    - `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
+      - an impl might generate self-modifying commands when the flag is set
+        - how?
+      - an impl might skip CPU-intensive optimizations when the flag it set
+    - `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
+      - an impl might need to patch the last command of a secondary command
+      	buffer to jump back to the address of its caller
+      - patching is not possible when the flag is set
+  - 5.7. Secondary Command Buffer Execution
+    - vkCmdExecuteCommands can be inside or outside of a render pass
+      - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
+      	accordingly
 - 6. Synchronization and Cache Control
   - there are five explicit synchronization mechanisms
     - fences, semaphores, events, pipeline barriers, and render passes
@@ -219,6 +237,11 @@ Vulkan
       	vkCmdPipelineBarrier or make it impractical, we can instead
       	vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
       - the barrier is splitted into the signal half and wait half
+- 7. Render Pass
+  - 7.4. Render Pass Commands
+    - depending on VkSubpassContents, any subpass of a render pass either
+      execute only commands in the primary command buffer or only command the
+      secondary command buffers
 
 ## Versions
 
@@ -259,7 +282,7 @@ Vulkan
   - physical-device-level commands defined by device extensions can be used as
     long as the device extensions are available
 
-# Example
+## Example
 
 - create a window
   - `xcb_connect` to create a connection and find the root screen
@@ -355,7 +378,7 @@ Vulkan
     - `vkQueuePresentKHR`
     - `vkQueueWaitIdle`
 
-# Objects
+## Objects
 
 - VkInstance is an instance of Vulkan
 - VkPhysicalDevice is used to query device caps and features
@@ -386,7 +409,7 @@ Vulkan
 - VkDescriptorPool is to enable suballocations of descriptor sets
 - VkDescriptorSet describes shader resources
 
-# Render Passes and Framebuffers
+## Render Passes and Framebuffers
 
 * A VkRenderPass contains a set of (abstract) attachments it will work on
   * each attachment is described with VkAttachmentDescription abstractly
@@ -410,7 +433,7 @@ Vulkan
   * the implementation transitions all attachments to the specified layouts
     automatically when entering a subpass
 
-# Descriptor Sets
+## Descriptor Sets
 
 - A VkDescriptorPool allocates enough memory (host or device, depending on
   the implementations) to hold the specified amount of descriptors of the
@@ -442,7 +465,7 @@ Vulkan
   - a descriptor set may simply hold shallow pointers to various VkImageView,
     VkSampler, VkBuffer, etc.  HW descriptors are generated at draw time.
 
-# Pipelines
+## Pipelines
 
 - A VkPipelineLayout consists of multiple descriptor set layouts and push
   constants.
@@ -452,7 +475,7 @@ Vulkan
   - pipeline cache
   - base pipeline
 
-# Command Buffers
+## Command Buffers
 
 - A command buffer consists of
   - a list of BOs, dynamically growing, with one chained to another
@@ -461,7 +484,7 @@ Vulkan
 - A command pool is almost a dummy object to reset/free a group of command
   buffers in one go
 
-# Execution and Memory Dependencies
+## Execution and Memory Dependencies
 
 - An operation is an arbitrary amount of work to be executed on the host, a
   device, or an external entity.
@@ -494,7 +517,7 @@ Vulkan
   known as pipeline stages.  They must adhere to the implicit ordering: a
   later pipeline stage must not happens-before an earlier pipeline stage.
 
-# Synchronizations
+## Synchronizations
 
 - Synchronization commands introduce explicit execution dependencies or memory
   dependencies.
@@ -518,7 +541,7 @@ Vulkan
 - vkQueueSubmit includes both a domain operation (from the host to the device)
   and a visibility operation
 
-# Command Ordering
+## Command Ordering
 
 - Within a single queue, vkQueueSubmit are executed in call order
 - Within a VkQueueSubmit, VkSubmitInfo are executed in array order
@@ -528,7 +551,7 @@ Vulkan
 - Within a render pass subpass, commands are executed in recorded order
 - Between render pass subpasses, there is no implicit ordering
 
-# Resource Exclusive Ownership
+## Resource Exclusive Ownership
 
 - resources should only be accessed in the Vulkan instance that has exclusive
   ownership of the underlying memory
@@ -543,29 +566,3 @@ Vulkan
   exclusive ownership
 - releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
   `VkImageMemoryBarrier`
-
-SPIR-V
-======
-
-# Tools
-
-- SPIRV-Headers
-  - <https://github.com/KhronosGroup/SPIRV-Headers>
-  - `spirv.h` defines enums for opcodes, scopes, semantics, etc.
-- SPIRV-Tools
-  - <https://github.com/KhronosGroup/SPIRV-Tools>
-  - depends on SPIRV-Headers
-  - provides tools (assembler, disassembler, optimizer, linker, etc.) and
-    `libSPIRV-Tools.a` for working with SPIR-V
-- glslang
-  - <https://github.com/KhronosGroup/glslang>
-  - depends on SPIRV-Tools
-  - provides `glslangValidator` to convert GLSL/HLSL to SPIR-V
-- SPIRV-Cross
-  - <https://github.com/KhronosGroup/SPIRV-Cross>
-  - provides `spirv-cross` to convert SPIR-V to GLSL/HLSL/MSL
-- shaderc
-  - <https://github.com/google/shaderc>
-  - depends on glslang and SPIRV-Tools
-  - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
-    to SPIR-V

@@ -41,3 +41,22 @@ Git
   - each path has permission, the name of associated blob object, and stage
   - stage is always 0, except for files with merge conflicts.  Each version of a
     conflict file is called a stage, with a different stage number.
+
+## Submodules
+
+- `git submodule add <url>` adds a submodule
+  - the submodule repo is cloned to `.git/modules/$SUBMODULE`
+  - the submodule repo is checked out at $SUBMODULE
+  - a `[submodule]` section is added to `.git/config`
+  - a `.gitmodules` file is added
+- `git commit` records two files
+  - `.gitmodules`
+  - `$SUBMODULE` is a special directory for which git only records the commit
+    hash
+  - when a commit is made to $SUBMODULE locally, `git commit` updates the
+    commit hash for the directory
+- when one clones a git repo with submodules, one should
+  - `git submodule init` to add `[submodule]` to `.git/config`
+    - `.gitmodules` serves as a template
+  - `git submodule update` clones all submodules and checks out the recorded
+    commit hashes
