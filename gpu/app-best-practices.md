@@ -84,6 +84,73 @@ Best Practices
     - one for each VkDescriptorLayout
     - one for each thread (to be lock-free)
 
+## Model Rendering
+
+- a model is described by
+  - a mesh
+    - input attributes (pos, normal, texcoord)
+    - raw input data
+  - a material
+    - parameters (roughness, color, etc.)
+    - parameters can be in texture form when they vary pixel-by-pixel
+- at loading time,
+  - remember input attributes
+    - input type (pos, normal, or texcoord)
+    - input stride
+    - input format (VkFormat)
+    - input offset within stride
+  - upload raw input data to VkBuffer
+  - remember material parameters
+    - for uploading as uniforms later
+  - upload textures to VkImage/VkImageView/VkSampler
+- also at loading time, or defer until draw time, create some pieces of
+  VkGraphicsPipelineCreateInfo
+  - it depends on how static these pieces, mostly shader modules, are
+    - when a different graphics quality is chosen, we might choose different
+      shader modules
+    - it might be better to defer until draw time
+  - VkPipelineShaderStageCreateInfo
+    - given the material (and quality and scene), we know exactly which
+      shaders to use
+    - upload shaders as VkShaderModule
+    - inspect shaders and remember
+      - locations of input attributes
+      - offsets/sizes of push constant ranges
+      - sets/bindings of UBOs
+      - sets/bindings of material textures
+  - VkPipelineVertexInputStateCreateInfo
+    - for each input attribute of vs
+      - as the author of vs, we know the type (pos, normal, etc.)
+      - by using compact location=, we can set binding to location
+      - we can find input stride/format/offset from the model
+    - these are enough to initialize VkPipelineVertexInputStateCreateInfo
+    - these are enough for vkCmdBindVertexBuffers
+  - VkPipelineLayout
+    - for each uniform of all shader modules,
+      - we know its set/binding/type
+      - this is enough to initialize a VkDescriptorSetLayoutBinding
+    - we can create a VkDescriptorLayout for each set
+      - by grouping uniforms and VkDescriptorSetLayoutBinding by sets
+    - push constan ranges are already known through shader module inspection
+- at draw time,
+  - after all states of VkGraphicsPipelineCreateInfo are known, we can create
+    the VkPipeline
+    - we definitely need a cache for VkPipeline
+    - "all states" being the lookup key
+  - we can create VkDescriptorSet easily when VkPipelineLayout (thus
+    VkDescriptorSetLayout) known
+    - we want a cache to minimize vkUpdateDescriptorSets
+  - for each texture of all shader modules,
+    - as the author of the shader, we know the corresponding texture in the
+      model and the VkImageView/VkSampler created at loading time
+    - with set, binding, VkImageView, and VkSampler known, we can initialize a
+      VkWriteDescriptorSet
+    - these are enough for vkUpdateDescriptorSet and vkCmdBindDescriptorSets
+  - for each ubo of all shader modules,
+    - we will allocate a VkBuffer (or pick a range of a huge VkBuffer)
+    - we fill map it and fill in transformations, material parameters, etc.
+    - the descripts will be updated together with the textures
+
 ## Life of a Scene
 
 - per-scene data, SceneData

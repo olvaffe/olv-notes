@@ -72,3 +72,26 @@
     lighting
 - skinning and animation
   - TODO
+
+## Terrain Rendering
+
+- can be rendered like a model
+  - highly detailed mesh
+  - albedo texture
+  - normal texture
+- but it is better to do
+  - a grid with height map
+    - vs samples the height map to adjust position of the grid
+  - albedo texture
+  - normal texture
+- designer usually go like
+  - oh, my terrain is going to be 5km x 5km
+  - my resolution is 50cm
+  - I need 10000 x 10000 grid
+- the textures cannot fit GPU memory
+- tricks
+  - divide terrain into tiles
+  - LOD depending on how far a tile is from the camera
+    - LOD for both the mesh and the textures
+  - dynamic tile streaming and sparse textures
+    - alternatively, use a splatmap
