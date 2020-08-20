@@ -236,3 +236,36 @@ Best Practices
       	binding)
   - vkCmdEndRenderPass
   - vkEndCommandBuffer
+
+## Object Cache
+
+- there are objects that we want to cache
+  - we want to cache objects that are persistent and are reused
+    - especially those that are expensive to create
+  - use hashmap to map their create infos to handles
+- VkRenderPass
+  - there are only a handful of them
+  - they are constantly reused
+- VkFramebuffer
+  - similar to VkRenderPass, but swapchainDepth times more
+  - also changes with swapchain resize
+- VkShaderModule
+  - there are some for each scene node type and quality settings
+  - they are constantly reused to create VkPipeline
+- VkPipelineLayout
+  - they can be created with VkShaderModule reflection
+  - they are constantly reused to create VkPipeline
+  - they depend on VkDescriptorSetLayout
+    - should be cached too
+    - there are also immutable VkSampler if used
+- VkPipeline
+  - there are thousands of them
+  - not all of them are constantly reused
+  - but they are too expensive that we definitely should cache
+  - there are dependencies
+    - VkRenderPass
+    - VkShaderModule
+    - VkPipelineLayout
+- VkDescriptorSet
+  - they are not created from VkDevice, but allocated from VkDescriptorPool
+  - doesn't need exact match, but want to minimize vkUpdateDescriptorSets
