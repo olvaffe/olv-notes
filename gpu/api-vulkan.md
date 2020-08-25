@@ -8,23 +8,23 @@ Vulkan
     - work is submitted to queues using queue submission commands such as
       vkQueueSubmit, vkQueueBindSparse, or vkQueuePresentKHR
       - optionally take a list of semaphores for waiting and another list of
-      	semaphores for signaling
+        semaphores for signaling
     - the work itself, as well as semaphore waiting/signaling, are all queue
       operations
     - queue operations on different queues have no implicit ordering
       constraints and may execute in any order
       - must use explicit ordering constraints if cross-queue ordering is
-      	needed
+        needed
     - queue operations on the same queue also may execute in any order, except
       when implicit ordering constraints apply
       - vkQueueSubmit respects submission order and other implicit ordering
-      	constraints
+        constraints
         - other queue submission commands do not
       - any queue operation cannot be reordered after a queue signal operation
         - any memory write also becomes available with queue signal operation
       - a queue wait operation cannot be reordered before a queue signal
-      	operation sharing the same semaphore
-      	- any memory write that is available also becomes visible
+        operation sharing the same semaphore
+        - any memory write that is available also becomes visible
     - commands recorded in a command buffer are either
       - action command (draw, dispatch, clear, copy, begin/end renderpass)
       - state command (bind pipelines, set dynamic states, etc.)
@@ -36,7 +36,7 @@ Vulkan
     - the handle to a non-dispatchable object is an opaque `uint64_t`
       - it can be a pointer
       - it can be an index to a pool (potentially non-unique if pool objects
-      	are reference counted)
+        are reference counted)
       - it can be the object states tightly packed (thus non-unique)
   - 2.3.1. Object Lifetime
     - conceptually, an object has states and contents
@@ -50,9 +50,9 @@ Vulkan
     - clean up order
       - a VkInstance can be destroyed when all VkDevice are destroyed
       - a VkDevice device can be destroyed when all retrieved VkQueue are idle
-      	and all children objects are destroyed
-	- a pool object is the parent of its children objects; destroying the
-	  pool objects implicitly frees all its children objects
+        and all children objects are destroyed
+        - a pool object is the parent of its children objects; destroying the
+          pool objects implicitly frees all its children objects
       - when can a child object of a VkDevice be destroyed?
         - when it is not used by HW or by another object
     - command buffer lifecycle
@@ -61,7 +61,7 @@ Vulkan
       - executable, after end or execution
       - pending, after submission but before completion
       - invalid, after (one-time) execution or invalidated (e.g., by
-      	destroying object that was recorded)
+        destroying object that was recorded)
     - when a VkQueue is busy, these objects used by the queue must not be
       destroyed
       - IOW, these objects might own HW resources that must not be released
@@ -83,23 +83,23 @@ Vulkan
     - when a command buffer is recording or executable, destroying any object
       above used by the command buffer makes the command buffer invalid
       - IOW, the command buffer might have pointers to those objects and those
-      	pointers become dangling
+        pointers become dangling
       - the command buffer can only be reset or freed when in the invalid
-      	state
+        state
     - more generally, objects of a VkDevice can be destroyed in any order
       - with caveats, of course
       - when one objects uses another object
-	- this other object might have been fully parsed, such as in
-	  VkPipeline using VkShaderModule, and can be destroyed
-	- the object might have a pointer to this other object, such as in
-	  VkImageView using VkImage. It is allowed to destroy the other object
-	  and create a dangling pointer, as along as the dangling pointer is
-	  no longer dereferenced.  IOW, the object can only be reset or
-	  destroyed.
+        - this other object might have been fully parsed, such as in
+          VkPipeline using VkShaderModule, and can be destroyed
+        - the object might have a pointer to this other object, such as in
+          VkImageView using VkImage. It is allowed to destroy the other object
+          and create a dangling pointer, as along as the dangling pointer is
+          no longer dereferenced.  IOW, the object can only be reset or
+          destroyed.
     - these objects are consumed (e.g., fully parsed) when passed to a command
       that creates another object
       - they can be destroyed after the create command returns, without
-      	worrying about dangling pointers
+        worrying about dangling pointers
       - VkShaderModule and vkCreate*Pipeline
       - VkPipelineCache and vkCreate*Pipeline
       - VkRenderPass and vkCreate*Pipeline
@@ -172,55 +172,96 @@ Vulkan
       - an impl might skip CPU-intensive optimizations when the flag it set
     - `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
       - an impl might need to patch the last command of a secondary command
-      	buffer to jump back to the address of its caller
+        buffer to jump back to the address of its caller
       - patching is not possible when the flag is set
   - 5.7. Secondary Command Buffer Execution
     - vkCmdExecuteCommands can be inside or outside of a render pass
       - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
-      	accordingly
+        accordingly
 - 6. Synchronization and Cache Control
   - there are five explicit synchronization mechanisms
     - fences, semaphores, events, pipeline barriers, and render passes
   - 6.1. Execution and Memory Dependencies
-    - TODO
+    - an operation is an arbitrary amount of work to be executed on
+      - the host,
+      - a device, or
+      - an external entity such as presentation engine
+    - a synchronization command introduces, between two sets of operations,
+      - an execution dependency
+        - the first synchronization scope defines the first set of operations
+        - the second synchronization scope defines the second set of
+          operations
+      - a memory dependency
+        - the first access scope defines the first set of memory accesses
+        - the second access scope defines the second set of memory accesses
+        - this is needed to deal with memory caches and domains
+    - an execution dependency guarantees the first set of operations
+      happens-before the second set of operations
+      - i.e., the first set complete before the second set is initiated
+      - not enough for RAW hazard, when the first set writes and the second
+        set reads
+      - nor enough for WAW hazard
+    - types of memory access operations include
+      - an availability operation makes writes available to a memory domain
+        (e.g., vkFlushMappedMemoryRanges makes host writes available in host
+        domain)
+      - a memory domain operation makes writes available in one domain
+        available in another (e.g., `VK_ACCESS_HOST_WRITE_BIT` in source
+        access mask makes host writes available in device domain)
+      - a visibility operation makes writes available become visible to the
+        specified memory accesses (e.g., writes available in device domain are
+        made visibile to accesses defined by the destination access mask)
+    - a memory dependency is an execution dependency that includes availibitiy
+      and visibility operations such that
+      - the first set of operations (defined by the first sync scope)
+        happens-before the availibility operation
+      - the availibility operation happens before the visibility operation
+        - the availibility operation applies to memory accesses that are
+          defined the first access scope
+        - the visibility operation applies to memory accesses that are
+          defined the second access scope
+        - note that the sync scopes and the access scopes are different, but
+          the sync scopes often limit the access scopes
+      - the visibility operation happens-before the second set of operations
+        (defined by the second sync scope)
   - 6.2. Implicit Synchronization Guarantees
     - command buffers and submission order
       - we need to give a meaning to the order in which commands are recorded
-      	and submitted
-      	- such that a draw command is not reordered before a state command it
-      	  depends on
-      	- or two overlapping triangles are drawn in reverse order
+        and submitted
+        - such that a draw command is not reordered before a state command it
+          depends on
+        - or two overlapping triangles are drawn in reverse order
       - submission order essentially says that the commands must be executed
-      	in the order that they are recorded and submitted
-      	- except for commands in different subpasses of a render pass
+        in the order that they are recorded and submitted
+        - except for commands in different subpasses of a render pass
     - semaphores and signal operation order
       - we need to give a meaning to the order in which queue signal
-      	operations are submitted
-      	- such that two queue signal operations are not reordered
+        operations are submitted
+        - such that two queue signal operations are not reordered
       - signal operation order essentially says that the queue signal
-      	operations must be executed in the order that they are submitted
+        operations must be executed in the order that they are submitted
     - submission order and signal operation order are trivial
       - they exist only because queue operations are allowed to be reordered
-	arbitrarily which is too wild; we need them as fundamental ordering
-	contraints
+        arbitrarily which is too wild; we need them as fundamental ordering
+        contraints
       - they don't specify how a command buffer is ordered against its signal
-      	operation
-      	- that will be defined by the semaphore's execution dependency
+        operation
+        - that will be defined by the semaphore's execution dependency
       - they also don't specify memory dependency
-	- say, we update an ssbo and sample from it; the submission order
-	  specifies the execution dependency but there is still a memory
-	  dependency that needs to be be specified
+        - say, we update an ssbo and sample from it; the submission order
+          specifies the execution dependency but there is still a memory
+          dependency that needs to be be specified
         - `vkCmdPipelineBarrier` to the rescue
   - 6.4.1. Semaphore Signaling
     - the semaphore signal operation is a synchronization command
       - it defines two synchronization scopes and their execution and memory
-      	dependencies
+        dependencies
     - the first sync scope includes all commands in the batch
     - the second sync scope includes the signal operation itself
     - these are enough to make sure the semaphore signals after all commands
       in the batch are executed
       - and because of the fundamental signal operation order, all commands
-      	before the batch and all prior signal operations are also executed
+        before the batch and all prior signal operations are also executed
     - IOW, a command can be reorderd before a prior signal operation and but
       after its own signal operation
   - 6.4.2. Semaphore Waiting
@@ -231,11 +272,11 @@ Vulkan
     - events can be used for fine-grained host/queue synchronization
     - they can also be used as a "split" barrier
       - say, we update an ssbo and sample from it; there is an irrelevant work
-      	that we can insert before vkCmdPipelineBarrier to better utilize the
-      	GPU
+        that we can insert before vkCmdPipelineBarrier to better utilize the
+        GPU
       - when the irrelevant work is complex enough that might confuse
-      	vkCmdPipelineBarrier or make it impractical, we can instead
-      	vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
+        vkCmdPipelineBarrier or make it impractical, we can instead
+        vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
       - the barrier is splitted into the signal half and wait half
 - 7. Render Pass
   - 7.4. Render Pass Commands
