@@ -231,9 +231,17 @@ Vulkan
         - such that a draw command is not reordered before a state command it
           depends on
         - or two overlapping triangles are drawn in reverse order
+          - this is known as the primitive order and the rasterization order
       - submission order essentially says that the commands must be executed
         in the order that they are recorded and submitted
         - except for commands in different subpasses of a render pass
+      - however, execution can overlap or be out-of-order
+        - as long as, for example, the primitive order is honored
+	- explicit sync is required to avoid overlapping or reordering
+	  - e.g., non-primitive WAR, such as ssbo, requires an execution
+	    dependency
+	  - e.g., non-primitive RAW/WAW, such as ssbo, requires a memory
+	    dependency
     - semaphores and signal operation order
       - we need to give a meaning to the order in which queue signal
         operations are submitted
