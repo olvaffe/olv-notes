@@ -10,6 +10,8 @@
 ## C99
 
 - `inline`
+- flexible array members
+  - array with no size (`[]`) as the last member
 - `stdbool.h`
 - `stdint.h`
 - designated initializers

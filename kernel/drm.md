@@ -49,6 +49,55 @@ Kernel DRM
   creates two different handles to same bo.
 - each `drm_gem_object` also has a unique `dma_buf`.  Calling
   `drm_gem_prime_fd_to_handle` twice on the same fd returns the same handle.
+- `drm_gem_object_funcs`
+  - `open`: called when a bo is added to a `drm_file`
+  - `close`: called when a bo is removed from a `drm_file`
+  - `free`: called when the last reference is gone
+  - `export`: called during handle-to-prime to create a `dma_buf`
+  - `pin`: called when the exported dma-buf is attached
+  - `unpin`: called when the exported dma-buf is detached
+  - `get_sg_table`: called when the exported dma-buf is dma-mapped
+  - `vmap`: called when the exported dma-buf is vmapped
+  - `vunmap`: called when the exported dma-buf is vunmapped
+  - `mmap`: called when the bo or the exported dma-buf is mmaped
+    - i.e., called from `drm_gem_mmap_obj` or `drm_gem_prime_mmap`
+    - it updates vma flags, prot, and ops
+  - legacy funcs in `drm_driver`
+    - `gem_open_object`
+    - `gem_close_object`
+    - `gem_free_object_unlocked`
+    - `gem_prime_export`
+    - `gem_prime_pin`
+    - `gem_prime_unpin`
+    - `gem_prime_get_sg_table`
+    - `gem_prime_vmap`
+    - `gem_prime_vunmap`
+    - `gem_prime_mmap`
+    - no modern equivalent
+      - `gem_create_object`
+      - `gem_prime_import`
+
+## mmap
+
+- MSM
+  - userspace: standard get mmap offset and mmap
+    - always `MSM_BO_WC` at allocation time
+  - kernel: standard `drm_gem_mmap` followed by `msm_gem_mmap_obj`
+    - `msm_gem_fault` pins and faults in pages
+  - dma-buf: standard `drm_gem_mmap_obj` followed by `msm_gem_mmap_obj`
+- i915
+  - userspace: standard get mmap offset and mmap
+    - can be `I915_MMAP_OFFSET_WC` or `I915_MMAP_OFFSET_WB` at map time
+  - kernel: updates vma flags, prot, ops (`vm_ops_cpu`)
+    - `vm_fault_cpu` pins and faults in pages
+  - dma-buf: call down `shmem_mmap`
+    - `shmem_fault` faults in pages
+- amdgpu
+  - userspace: standard get mmap offset and mmap
+    - `RADEON_FLAG_GTT_WC` may be set or cleared at allocation time
+  - kernel: standard `ttm_bo_mmap`
+    - `ttm_bo_vm_fault` pins and faults in pages while adjusting prot per-page
+  - dma-buf: standard `ttm_bo_mmap`
 
 ## Security
 
