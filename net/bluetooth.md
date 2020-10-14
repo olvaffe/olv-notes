@@ -1,23 +1,91 @@
 Bluetooth
 =========
 
+## Basics
+
+- between two bluetooth devices, either can
+  - scan
+  - pair
+  - connect
+- given a new dongle,
+  - let's assume the computer initiates scan/pair/connect
+  - the computer scans to discover the dongle
+    - the dongle must be discoverable 
+  - the computer pairs with the dongle
+    - the computer must be pairable
+    - the dongle must be pairable
+    - a pairing code might be needed
+      - in bluez, an agent is enabled to provide the code interactively
+    - once paired, both the computer and the dongle remember one another in
+      their databases
+  - the computer connects to the paired dongle
+- given a paired dongle,
+  - when the dongle is powered on, it connects to one of the paired computers
+    in its database
+  - because the dongle is in the computer's database, connection is
+    established
+
+## `bluetoothd`
+
+- `/var/lib/bluetooth/nn:nn:nn:nn:nn:nn` contains info about a local
+  controller
+  - each device in the database is a subdirectory
+    - with info about the device and whether it has been paired or not
+- It has well-known name `org.bluez` on system bus
+- For each HCI, an object on path `/org/bluez/<pid>/hciX` is created
+- If an agent (`bluetooth-applet`) for an HCI is running, it will be `/org/bluez/agent/hciX`
+
+## `bluetoothctl`
+
+- a CLI tool to talk to `bluetoothd`
+- `show` shows the controller info
+- `scan` discovers discoverable devices and add them to database
+- `devices` lists devices in the database
+- `info <dev>` shows the device info from the database
+- `pairable on` makes the controller pairable
+- `agent on` enables the agent that can provide pairing code
+- `default-agent` makes the agent the default one
+- `pair <dev>` pairs with the device
+  - the agent provides the pairing code, if needed, interactively
+- `connect <dev>` connects to the device
+- `trust <dev>` trusts the device
+  - what is this for?
+
+## Profiles
+
+- my headset
+  - it has these profiles
+    - SPP (Serial Port Profile)
+    - HSP (Headset Profile)
+    - A2DP (Advanced Audio Distribution Profile) Sink
+    - AVRCP (Audio/Video Remote Control Profile) Controller
+    - AVRCP (Audio/Video Remote Control Profile) Target
+    - HFP (Hands-Free Profile)
+    - PnP Information?
+  - `pactl list cards` shows that pulseaudio talks to bluez directly, rather
+    than talking to an ALSA card created by bluez
+  - `lsmod` shows that uinput is loaded, which is used by bluez to create an
+    input device
+    - `AVRCP -> AVCTP -> uinput_create`
+- my gamepad
+  - I don't have a gamepad
+  - it has thse profiles
+    - HIDP (Human Interface Device Profile)
+    - HOGP (HID over GATT Profile)
+  - `hidp` kernel module calls either `hid_allocate_device` to create a
+    `hid_device`, or calls `input_allocate_device` to create a `input_dev`
+    - this is decided by bluez depending what the device reports
+    - in case of `hid_device`, a real `hid_driver` is needed to drive the
+      `hid_device` and create `input_dev`
+  - in case of HOGP, bluez uses `uhid` to create `hid_device` from userspace,
+    and skips `hidp`
+
 ## Initscript
 
 - `/etc/init.d/bluetooth` starts `bluetoothd`.
 - It runs `rfcomm bind all`
 - It runs `sdptool` if `$SDPTOOL_OPTIONS` is non-empty
 - It runs `hciattach` if `/etc/bluetooth/uart` exists
-
-## `bluetoothd`
-
-- `/var/lib/bluetooth/nn:nn:nn:nn:nn:nn` contains info about a local device.
-  - `linkkeys`
-  - `names`
-  - `features`
-  - `manufacturers`
-- It has well-known name `org.bluez` on system bus
-- For each HCI, an object on path `/org/bluez/<pid>/hciX` is created
-- If an agent (`bluetooth-applet`) for an HCI is running, it will be `/org/bluez/agent/hciX`
 
 ## Stack
 
