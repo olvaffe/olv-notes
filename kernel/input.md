@@ -58,3 +58,52 @@ Input subsystem
 ## `EVIOCGRAB`
 
 * invokes `evdev_grab`
+
+## gamepad
+
+- a cheap gamepad normally has
+  - a d-pad (left, right, up, down)
+  - a left circle pad (i.e., analog stick)
+  - a right circle pad
+  - four buttons on the right (A, B, X, Y)
+  - another four buttons on the top side (L1, L2, R1, R2)
+  - a select key
+  - a start key
+  - a switch to select between keyboard/mouse mode or joystick mode
+- it can be driven by `hid-generic`
+  - with three HID applications: keyboard, mouse, and joystick
+  - three `input_dev`s are created
+  - depending on the mode the gamepad is in, different keycodes are reported
+    to different `input_dev`s
+- when in keyboard/mouse mode,
+  - d-pad reports `EV_KEY` and `KEY_LEFT`/`KEY_RIGHT`/`KEY_UP`/`KEY_DOWN`
+  - left circle pad also reports `EV_KEY` and
+    `KEY_LEFT`/`KEY_RIGHT`/`KEY_UP`/`KEY_DOWN`
+  - right circle pad reports `EV_REL` and `REL_X`/`REL_Y`
+    - the values for X/Y axes are in [-8, 8]
+    - multiple events are reported for 2D directions (e.g., top-right)
+  - A/B/X/Y reports `EV_KEY` and `KEY_A`/`KEY_B`/`KEY_X`/`KEY_Y`
+  - L1/R1 reports `EV_KEY` and `BTN_LEFT`/`BTN_RIGHT`
+  - L2/R2 reports `EV_KEY` and `KEY_L`/`KEY_R`
+  - select reports `EV_KEY` and `KEY_K`
+  - start reports `EV_KEY` and `KEY_S`
+- when in joystick mode,
+  - d-pad reports `EV_ABS` and `ABS_HAT0X`/`ABS_HAT0Y`
+    - key down reports a value of -1 or 1 in X or Y direction
+    - key up reports a value of 0
+    - key down/up can report multiple events (e.g., both X 1 and Y -1 for
+      bottom-right)
+    - it is called hat switch traditionally (because switch resembles a
+      Chinese hat)
+  - A/B/X/Y reports `EV_KEY` and `BTN_SOUTH`/`BTN_EAST`/`BTN_NORTH`/`BTN_WEST`
+  - L1/R1/L2/R2 reports `EV_KEY` and `BTN_TL`/`BTN_TR`/`BTN_TL2`/`BTN_TR2`
+  - select reports `EV_KEY` and `BTN_SELECT`
+  - start reports `EV_KEY` and `BTN_START`
+  - left circle pad reports `EV_ABS` and `ABS_X`/`ABS_Y`
+    - range is in [-128, 127]
+  - right circle pad reports `EV_ABS` and `ABS_Z`/`ABS_RZ`
+    - range is in [-128, 127]
+- a good gamepad also has
+  - force feedback (`EV_FF`)
+  - gyroscope (`EV_ABS`)
+  - accelerometer

@@ -49,7 +49,9 @@ Bluetooth
   - the agent provides the pairing code, if needed, interactively
 - `connect <dev>` connects to the device
 - `trust <dev>` trusts the device
-  - what is this for?
+  - profiles such as HIDP requires authorization every time the device
+    connects for security
+  - by marking the device trusted, the authorization can be skipped
 
 ## Profiles
 
@@ -61,24 +63,27 @@ Bluetooth
     - AVRCP (Audio/Video Remote Control Profile) Controller
     - AVRCP (Audio/Video Remote Control Profile) Target
     - HFP (Hands-Free Profile)
-    - PnP Information?
+    - PnP Information
   - `pactl list cards` shows that pulseaudio talks to bluez directly, rather
     than talking to an ALSA card created by bluez
   - `lsmod` shows that uinput is loaded, which is used by bluez to create an
     input device
     - `AVRCP -> AVCTP -> uinput_create`
-- my gamepad
-  - I don't have a gamepad
+- my old gamepad
   - it has thse profiles
+    - SDP (Service Discovery Protocol)
     - HIDP (Human Interface Device Profile)
-    - HOGP (HID over GATT Profile)
+    - PnP Information
   - `hidp` kernel module calls either `hid_allocate_device` to create a
     `hid_device`, or calls `input_allocate_device` to create a `input_dev`
     - this is decided by bluez depending what the device reports
     - in case of `hid_device`, a real `hid_driver` is needed to drive the
-      `hid_device` and create `input_dev`
-  - in case of HOGP, bluez uses `uhid` to create `hid_device` from userspace,
-    and skips `hidp`
+      `hid_device` and create `input_dev`s
+  - for this gamepad, the `hid_driver` is `hid-generic`
+- my new gamepad
+  - it has thse profiles
+    - HOGP (HID over GATT Profile)
+  - bluez uses `uhid` to create `hid_device` from userspace and skips `hidp`
 
 ## Initscript
 
