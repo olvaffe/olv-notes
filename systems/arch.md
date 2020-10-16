@@ -90,7 +90,7 @@ ArchLinux
 - `pacman -S mesa-demos vulkan-tools`
 - `pacman -S python-mako wayland-protocols`
 - 32-bit
-  - `pacman -S lib32-{mesa,libdrm,libunwind}`
+  - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
 
 ## Pacman
 
