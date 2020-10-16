@@ -44,6 +44,8 @@
     cpu_family = 'x86'
     cpu = 'i686'
     endian = 'little'
+ - since 32-bit x86 shares pkg-config with 64-bit x86, `PKG_CONFIG_PATH`
+   should be specified
  - target 32-bit arm
     [binaries]
     ar = '/usr/bin/$HOST-ar'

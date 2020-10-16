@@ -23,7 +23,9 @@ ArchLinux
  - mount partitions to /mnt, /mnt/home, and /mnt/boot
 - Installation
    - update `/etc/pacman.d/mirrorlist`
-   - `pacstrap /mnt base linux linux-firmware vim iwd`
+   - `pacstrap /mnt base linux linux-firmware vim`
+     - and `iwd` or `dhcpcd` depending on wirelss or wired
+     - or `wpa_supplicant` if `iwd` does not work
    - `genfstab -U /mnt >> /mnt/etc/fstab`
 - Enter chroot
    - `arch-chroot /mnt`
@@ -39,6 +41,10 @@ ArchLinux
    - `bootctl --path=/boot install` for EFI
      - set up `/boot/loader/loader.conf` and `/boot/loader/entries/arch.conf`
      - optionally configure to update the bootloader automatically
+     - on BIOS systems,
+       - `pacman -S grub`
+       - `grub-install /dev/$DISK`
+       - `grub-mkconfig -o /boot/grub/grub.cfg`
 - Reboot
 
 ## Network
@@ -58,6 +64,16 @@ ArchLinux
 - `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
 - `pacman -S i3`
 
+## Development
+
+- `pacman -S base-devel`
+- `pacman -S git meson cmake`
+- 32-bit
+  - uncomment the [multilib] section in /etc/pacman.conf
+  - `pacman -S multilib-devel`
+
+## Wayland
+
 ## User
 
 - add user
@@ -69,12 +85,12 @@ ArchLinux
 - ./olv-etc/create-links
 - 
 
-## Development
+## Mesa
 
-- `pacman -S base-devel`
-- `pacman -S git meson cmake`
-
-## Wayland
+- `pacman -S mesa-demos vulkan-tools`
+- `pacman -S python-mako wayland-protocols`
+- 32-bit
+  - `pacman -S lib32-{mesa,libdrm,libunwind}`
 
 ## Pacman
 
