@@ -25,6 +25,5 @@ Perfetto
     parses it into a in-memory SQL db, and provides SQL API to its clients
   - `TraceProcessor` supports native perfetto trace file, or other legacy
     trace files
-    - linux ftrace
     - android systrace
     - chrome json
