@@ -103,6 +103,27 @@ Input subsystem
     - range is in [-128, 127]
   - right circle pad reports `EV_ABS` and `ABS_Z`/`ABS_RZ`
     - range is in [-128, 127]
+
+## 8BitDo SN30 Pro+
+
+- when connected via USB,
+  - Y+start: 057e:2009 Nintendo Co., Ltd Switch Pro Controller
+  - X+start: 045e:028e Microsoft Corp. Xbox360 Controller
+  - A+start: 054c:05c4 Sony Corp. DualShock 4 [CUH-ZCT1x]
+  - B+start: 2dc8:6002 8BitDo 8BitDo SN30 Pro+
+    - also just start or powered off
+- as 8BitDo 8BitDo SN30 Pro+,
+  - one `input_dev`
+  - L / R: `BTN_TL / TR`
+  - L2 / R2: `BTN_TL2 / TR2`
+  - ABXY: `BTN_SOUTH / EAST / NORTH / SOUTH`
+  - select / start: `BTN_SELECT / START`
+  - home: `BTN_MODE`
+  - star: no response
+  - dpad: `ABS_HAT0X / HAT0Y`, with range [-1, 1]
+  - left stick: `ABS_X / ABS_Y` with bad range?
+  - right stick: `ABS_Z / ABS_RZ` with bad range?
+  - `BTN_C / Z / THUMBL / THUMBR`???
 - a good gamepad also has
   - force feedback (`EV_FF`)
   - gyroscope (`EV_ABS`)
