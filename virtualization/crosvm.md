@@ -49,3 +49,11 @@ crosvm
   - install Arch Linux to `/dev/vda`
     - follow the installation guide
     - remember to extract the installed kernel/initramfs for the host
+
+## virtio
+
+- all virtio devices have `PciClassCode::Other` and
+  `PciVirtioSubclass::NonTransitionalBase`
+- when the device type is `TYPE_GPU`, it should at least be
+  `PciClassCode::DisplayController` for Xorg primary gpu auto selection to
+  work
