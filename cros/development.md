@@ -1,6 +1,26 @@
 Chrome OS Development
 =====================
 
+## New Device
+
+- enable developer mode
+  - hold ESC and F3/Refresh, then press power button to boot into recovery
+    mode
+  - while in recovery mode, press Ctrl-D to enter developer mode
+- select boot device
+  - at developer mode warning, press Ctrl-D or Ctrl-U to boot from disk or usb
+    - for USB boot, need to run `enable_dev_usb_boot` from console first
+- console
+  - while in developer mode, Ctrl-Alt-F2 to enter console
+- rw rootfs
+  - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
+  - `reboot`
+- sshd
+  - `/usr/libexec/debugd/helpers/dev_features_ssh`
+  - `passwd`
+- flash release image
+  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary`
+
 ## Build image
 
 - Relax sudo
