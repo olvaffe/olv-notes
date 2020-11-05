@@ -54,7 +54,7 @@ Chrome OS Development
 
 - <https://www.chromium.org/chromium-os/build/cros-flash>
 - `cros flash <device> <image>`
-  - `<device>` can be `usb://` or `ssh://<DUT-IP>`
+  - `<device>` can be `usb://` or `ssh://<DUT-IP>` or `file://<local-dir>`
   - `<image>` is `latest` by default
   - for prod images, specify `--disable-rootfs-verification` to remove rootfs verification
 - flash a locally built image
@@ -67,6 +67,14 @@ Chrome OS Development
 - flash using a usb disk
   - after flashing the image to a usb disk, boot from usb and run
   - `chromeos-install`
+- download image and flash
+  - `cros flash file://<path/to/file> xbuddy://remote/...`
+  - `cros flash ssh://<DUT-IP> path/to/file`
+- `cros flash -v ssh://<DUT-IP> xbuddy://remote/...`
+  - gsutil cp `chromeos_*_full_dev.bin`, which is rootfs
+  - scp to dut and flash
+  - gsutil cp `stateful.tgz`, which is stateful partition
+  - scp to dut, touch `/mnt/stateful_partition/.update_available`, and reboot
 - disable rootfs verification afterwards
   - untested
   - `crossystem dev_boot_signed_only=0`
