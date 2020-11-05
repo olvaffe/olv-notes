@@ -18,8 +18,8 @@ Chrome OS Development
 - sshd
   - `/usr/libexec/debugd/helpers/dev_features_ssh`
   - `passwd`
-- flash release image
-  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary`
+- flash latest test image
+  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
 
 ## Build image
 
@@ -64,6 +64,9 @@ Chrome OS Development
   - these flash `~/trunk/src/build/images/$BOARD/latest`
 - flash using a devserver
   - `cros flash ssh://<DUT-IP> xbuddy://remote/<<BOARD>/<VERSION>/<TYPE>`
+- flash using a usb disk
+  - after flashing the image to a usb disk, boot from usb and run
+  - `chromeos-install`
 - disable rootfs verification afterwards
   - untested
   - `crossystem dev_boot_signed_only=0`
