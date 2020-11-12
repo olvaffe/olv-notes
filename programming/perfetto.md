@@ -27,3 +27,51 @@ Perfetto
     trace files
     - android systrace
     - chrome json
+
+## Use
+
+- `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
+  - this defines a constexpr `kCategories` array
+  - and declares a `g_category_state_storage` `std::atomic<uint8_t>` array
+  - and defines `kConstExprCategoryRegistry` to wrap above
+  - defines a new struct type, `TrackEvent` inheriting `DataSource`
+- `PERFETTO_TRACK_EVENT_STATIC_STORAGE()`
+  - definitions of declarations in `PERFETTO_DEFINE_CATEGORIES`
+- `perfetto::Tracing::Initialize`
+  - calls `Tracing::InitializeInternal`
+- `perfetto::TrackEvent::Register`
+  - builds `DataSourceDescriptor` proto
+  - calls `TracingMuxerImpl::RegisterDataSource`
+- `TRACE_EVENT_BEGIN("blah", "SliceName")`
+  - `IsDynamicCategory` is false when used this way
+  - compute the index of "blah" at compile-time
+  - calls `TrackEventCategoryRegistry::GetCategoryState` to find out whether
+    the category is enabled or not
+  - if enabled, call `TrackEventDataSource::TraceForCategory` and write a
+    `TracePacket`
+- `TRACE_EVENT_END("blah")`
+  - takes the same path as `TRACE_EVENT_BEGIN`, but with
+    `TrackEvent::TYPE_SLICE_END` instead of `TrackEvent::TYPE_SLICE_BEGIN`
+- the app is a producer and receives commands from the service to
+  setup/start/stop data sources
+  - `OnSetup`/`OnStart`/`OnStop` of `TrackEventDataSource` are called from
+    `TracingMuxerImpl`
+  - they will call `TrackEventInternal::EnableTracing` or
+    `TrackEventInternal::DisableTracing`
+
+## `TracingMuxerImpl`
+
+- in-process backend
+  - the process runs the service and consumers as well
+  - used to collect trace events just for the app (e.g., chrome does this)
+- system backend
+ - the process is just a producer
+ - used to collect trace events in the system-wide profiling
+- `TracingMuxerImpl`
+  - `Initialize`, for each backend, calls `ConnectProducer` (e.g.,
+    `SystemTracingBackend::ConnectProducer`) to create an endpoint and wraps
+    it in a `TracingMuxerImpl::ProducerImpl` 
+  - for system backend, this connects to the system-wide producer socket.
+  - `ProducerIPCClientImpl::OnServiceRequest` is called for requests from the
+    service.  It calls back to `TracingMuxerImpl::ProducerImpl` for things
+    such as `SetupDataSource`, `StartDataSource`, or `StopDataSource`
