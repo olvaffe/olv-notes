@@ -20,35 +20,11 @@ Chrome OS Development
   - `passwd`
 - flash latest test image
   - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
-
-## Build image
-
-- Relax sudo
-  - /etc/sudoers.d/relax_requirements
-      Defaults !tty_tickets
-      Defaults timestamp_timeout=180
-- `cros_sdk` to enter chroot
-- "export BOARD=<BOARD-NAME>"
-- switch kernel branch, if needed
-- `USE="kgdb vtconsole" ./build_packages --board=${BOARD}`
-- `./build_image \
-    --boot_args="noinitrd slub_debug=FZPUA panic=0" \
-    --board=${BOARD} \
-    --noenable_rootfs_verification \
-    test`
-- internals
-  - `build_packages`
-    - it builds and emerges these packages by default to /build/$BOARD
-      - virtual/target-os, base OS image
-      - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
-      - virtual/target-os-factory, factory tools
-      - virtual/target-os-factory-shim, factory installer (flashrom, etc)
-      - virtual/target-os-test, deqp, etc.
-      - chromeos-base/autotest-all
-    - binary packages can be found under /build/$BOARD/packages
-  - `build_image`
-    - it builds images under ~/trunc/src/build/$BOARD
-    - it always wipes the build directory clean, install packages, and done
+- confirm versions
+  - H1 firmware: `gsctool -a -f`
+  - EC firmware: `ectool version`
+  - AP firmware: `crossystem fwid`
+  - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
 
 ## Flash Images
 
@@ -79,6 +55,35 @@ Chrome OS Development
   - untested
   - `crossystem dev_boot_signed_only=0`
   - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
+
+## Build image
+
+- Relax sudo
+  - /etc/sudoers.d/relax_requirements
+      Defaults !tty_tickets
+      Defaults timestamp_timeout=180
+- `cros_sdk` to enter chroot
+- "export BOARD=<BOARD-NAME>"
+- switch kernel branch, if needed
+- `USE="kgdb vtconsole" ./build_packages --board=${BOARD}`
+- `./build_image \
+    --boot_args="noinitrd slub_debug=FZPUA panic=0" \
+    --board=${BOARD} \
+    --noenable_rootfs_verification \
+    test`
+- internals
+  - `build_packages`
+    - it builds and emerges these packages by default to /build/$BOARD
+      - virtual/target-os, base OS image
+      - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
+      - virtual/target-os-factory, factory tools
+      - virtual/target-os-factory-shim, factory installer (flashrom, etc)
+      - virtual/target-os-test, deqp, etc.
+      - chromeos-base/autotest-all
+    - binary packages can be found under /build/$BOARD/packages
+  - `build_image`
+    - it builds images under ~/trunc/src/build/$BOARD
+    - it always wipes the build directory clean, install packages, and done
 
 ## Portage
 
