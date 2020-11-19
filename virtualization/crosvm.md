@@ -57,3 +57,34 @@ crosvm
 - when the device type is `TYPE_GPU`, it should at least be
   `PciClassCode::DisplayController` for Xorg primary gpu auto selection to
   work
+
+## virtio-wl
+
+- when a guest app calls X, sommelier does Y
+  - `wl_shm_create_pool` -> `sl_shm_create_host_pool`
+  - `wl_shm_pool_create_buffer` -> `sl_host_shm_pool_create_host_buffer`
+  - `wl_drm_create_prime_buffer` -> `sl_drm_create_prime_buffer`
+  - `wl_compositor_create_surface` -> `sl_compositor_create_host_surface`
+  - `wl_surface_attach` -> `sl_host_surface_attach`
+    - this creates a buffer in the host and maps it into the guest
+    - the exact host buffer depends on shm driver
+- guest can use `VIRTIO_WL_CMD_VFD_NEW_DMABUF` to allocate a host dmabuf and
+  map it in the guest
+- in virtio-wl process, it calls
+  - `WlState::new_dmabuf`
+  - `WlVfd::dmabuf`
+  - `VmRequester::request(VmMemoryRequest::AllocateAndRegisterGpuMemory)`
+- in crosvm process, it calls
+  - `SystemAllocator::gpu_memory_allocator`
+  - `GpuBufferDevice::allocate`
+  - `Device::create_buffer`
+  - `gbm_bo_create`
+
+## virtio-gpu
+
+- guest can use `VIRTIO_GPU_CMD_RESOURCE_CREATE_3D` to allocate a
+  virglrenderer resource
+- in virtio-gpu process, it calls
+  - `Virtio3DBackend::resource_create_3d`
+  - `Renderer::resource_create`
+  - `virgl_renderer_resource_create`
