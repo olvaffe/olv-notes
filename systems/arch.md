@@ -12,7 +12,7 @@ ArchLinux
  - system clock
    - `timedatectl set-ntp true`
  - partition disk with fdisk
-   - 256M for EFI system partition (type 1), esp
+   - 260M for EFI system partition (type 1), esp
      - format esp to vfat
    - remainder for root partition
      - format to btrfs
@@ -120,3 +120,14 @@ ArchLinux
   - `pacman -S`
   - `pacman -F` queries the sync files database
 
+## Bootstrap
+
+- the bootstrap tarball, `archlinux-bootstrap-XXX.tar.gz`, is for chroot from
+  a running system to pacstrap
+  - the tarball is ~170M
+  - untaring gives ~600M
+- for size comparison,
+  - `pacstrap` just the `base` package results in ~760M
+    - ~630M after `pacman -Scc`
+  - `pacstrap` just the `pacman` package results in ~560M
+    - ~460M after `pacman -Scc`

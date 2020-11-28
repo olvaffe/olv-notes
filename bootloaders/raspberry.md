@@ -42,8 +42,8 @@ Raspberry Pi
 - partitioning
   - fdisk and `g` to use GPT
     - need to update to the latest eeprom
-  - partition 1: 256M, ESP
-  - partition 2: `32*1000-256`M, Linux
+  - partition 1: 260M, ESP
+  - partition 2: `32*1000-260`M, Linux
 - filesystems
   - partition 1: `mkfs.fat -F32`
   - partition 2: `mkfs.btrfs`
