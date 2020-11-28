@@ -36,3 +36,26 @@ Raspberry Pi
     - it instructs stage3 (via `config.txt`) to use EDK2 as armstub
     - it can chainload any EFI bootloader (grub2, systemd-boot,
       linux kernel itself)
+
+## Partitioning
+
+- partitioning
+  - fdisk and `g` to use GPT
+    - need to update to the latest eeprom
+  - partition 1: 256M, ESP
+  - partition 2: `32*1000-256`M, Linux
+- filesystems
+  - partition 1: `mkfs.fat -F32`
+  - partition 2: `mkfs.btrfs`
+- prepare btrfs
+  - mount partition 2
+  - `mkdir roots homes`
+  - `btrfs subvolume create roots/current`
+  - `btrfs subvolume create homes/current`
+  - `btrfs subvolume set-default roots/current`
+  - umount
+- btrfs
+  - mount partition 2 again with `subvol=roots/current`
+  - `mkdir boot home`
+  - mount partition 1 to boot
+  - mount partition 2 to home with `subvol=homes/current`
