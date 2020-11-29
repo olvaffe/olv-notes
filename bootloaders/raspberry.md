@@ -83,6 +83,105 @@ Raspberry Pi
 - one audio device
   - driven by `snd_bcm2835`
 
+## More Devices
+
+- `amba` bus
+  - `fe201000.serial` driven by `uart-pl011`
+- `cec` bus
+  - HDMI consumer electronics control
+  - `cec[0-1]`
+- `clockevents` bus
+  - `clockevent[0-3]`
+  - `broadcast`
+- `clocksource` bus
+  - `clocksource0`
+- `cpu` bus
+  - `cpu[0-3]`
+- `event_source` bus
+  - `armv7_cortex_a15`
+  - `kprobe`
+  - `tracepoint`
+  - etc
+- `gpio` bus
+  - `gpiochip[0-1]`
+- `i2c` bus
+  - `i2c-[11-12]`
+- `mdio_bus` bus
+  - `unimac-mdio`
+- `media` bus
+  - `media[0-1]`
+- `mmc` bus
+  - `mmc[0-1]:*`
+- `nvmem` bus
+- `pci` bus
+  - one driven by `pcieport`
+  - another driven by `xhci_hcd`
+- `pci_express` bus
+  - one driven by `pcie_pme` for power management
+  - another driven by `aer` for advanced error reporting
+- `platform` bus
+  - `3e2fd000.framebuffer` driven by `simple-framebuffer`
+  - `arm-pmu` driven by `armv7-pmu`
+  - `bcm2835-camera`
+  - `bcm2835-power` driven by `bcm2835-power`
+  - `bcm2835-wdt` driven by `bcm2835-wdt`
+  - `cpufreq-dt` driven by `cpufreq-dt`
+  - `fd500000.pcie` driven by `brcm-pcie`
+  - `fd580000.ethernet` driven by `bcmgenet`
+  - `fd5d2000.avs-monitor:thermal` driven by `bcm2711_thermal`
+  - `fe003000.timer`
+  - `fe004000.txp` driven by `vc4_txp`
+  - `fe007000.dma` and `fe007b00.dma` driven by `bcm2835-dma`
+  - `fe00b880.mailbox` driven by `bcm2835-mbox`
+  - `fe100000.watchdog` driven by `bcm2835-pm`
+  - `fe101000.cprman` driven by `bcm2835-clk`
+  - `fe104000.rng` driven by `iproc-rng200`
+  - `fe200000.gpio` driven by `pinctrl-bcm2835`
+  - `fe200000.gpiomem` driven by `gpiomem-bcm2835`
+  - `fe215000.aux` driven by `bcm2835-aux-clk`
+  - `fe300000.mmcnr` driven by `mmc-bcm2835`
+  - `fe340000.emmc2` driven by `sdhci-iproc`
+  - `fe400000.hvs` driven by `vc4_hvs`
+  - `feb00000.hevc-decoder`, `feb10000.rpivid-local-intc`,
+    `feb20000.h264-decoder`, and `feb30000.vp9-decoder` driven by `rpivid-mem`
+  - `fec00000.v3d` driven by `v3d`
+  - `fe206000.pixelvalve`, `fe207000.pixelvalve`, `fe20a000.pixelvalve`,
+    `fe216000.pixelvalve` and `fec12000.pixelvalve` driven by `vc4_crtc`
+  - `fef00000.clock` driven by `brcm2711-dvp`
+  - `fef00700.hdmi` and `fef05700.hdmi` driven by `vc4_hdmi`
+  - `fef04500.i2c` and `fef09500.i2c` driven by `brcmstb-i2c`
+  - `ff800000.local_intc`
+  - `fixedregulator_3v3`, `fixedregulator_5v0`, and `sd_vcc_reg` driven by
+    `reg-fixed-voltage`
+  - `gpu` driven by `vc4-drm`
+  - `kgdboc` driven by `kgdboc`
+  - `leds` driven by `leds-gpio`
+  - `phy`
+  - `raspberrypi-cpufreq` driven by `raspberrypi-cpufreq`
+  - `reg-dummy` driven by `reg-dummy`
+  - `regulatory.0`
+  - `sd_io_1v8_reg` driven by `gpio-regulator`
+  - `snd-soc-dummy` driven by `snd-soc-dummy`
+  - `timer`
+  - `unimac-mdio.-19` driven by `unimac-mdio`
+- `platform` bus (talk to VC firmware)
+  - `bcm2835-codec` driven by `bcm2835-codec`
+  - `bcm2835-isp` driven by `bcm2835-isp`
+  - `fe00b840.mailbox` driven by `bcm2835_vchiq`
+  - `raspberrypi-hwmon` driven by `raspberrypi-hwmon`
+  - `soc:firmware` driven by `raspberrypi-firmware`
+  - `soc:firmware:clocks` driven by `raspberrypi-clk`
+  - `soc:firmware:gpio` driven by `raspberrypi-exp-gpio`
+  - `soc:power` driven by `raspberrypi-power`
+  - `soc:vcsm` driven by `bcm2835-vcsm`
+  - `vcsm-cma` driven by `vcsm-cma`
+- `sdio` bus
+  - `mmc1:0001:[1-3]` driven by `brcmfmac`
+- `serial` bus
+  - `serial0-0` driven by `hci_uart_bcm`
+- `usb` bus
+  - some devices driven by `hub` or `usb`
+
 ## Partitioning
 
 - partitioning
