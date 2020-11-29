@@ -107,5 +107,6 @@ Linux Containers
 - update /etc/pam.d/system-login
   - `session    optional   pam_cgfs.so -c freezer,memory,name=systemd,unified`
 - we can start, as root, unprivileged containers with the changes above
-- to start containers as a regular user, update /etc/lxc/lxc-usernet
-  - `<user> veth lxcbr0 10`
+- to start containers as a regular user,
+  - update `/etc/lxc/lxc-usernet` with `<user> veth lxcbr0 10`
+  - copy `/etc/lxc/default.conf` to `~/.config/lxc/default.confg`
