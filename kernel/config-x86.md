@@ -1,5 +1,5 @@
-Kernel Config
-=============
+Kernel Config x86
+=================
 
 ## Prepare
 
