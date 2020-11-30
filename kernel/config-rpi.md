@@ -78,3 +78,12 @@ Kernel Config (Raspberry Pi)
 - `make`
 - copy `arch/arm64/boot/Image` as `kernel8.img`
 - set `arm_64bit=1` in `config.txt`
+
+## Tips
+
+- No DRM?
+  - `echo 0x1ff > /sys/module/drm/parameters/debug`
+  - `[drm:vc5_hdmi_init_resources [vc4]] ERROR Failed to get HDMI state machine clock`
+    - make sure `vc4` is loaded after `raspberrypi-clk`
+  - `[drm:vc4_hdmi_bind [vc4]] Failed to get ddc i2c adapter by node
+    - make sure `vc4` is loaded after `i2c-brcmstb`
