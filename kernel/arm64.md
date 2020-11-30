@@ -40,6 +40,12 @@ ARM64
 ## Flattened Device Tree (FDT)
 
 - `setup_machine_fdt` passes dtb addr to `setup_machine_fdt`
+  - `early_init_dt_scan_chosen`
+    - `linux,initrd-start`/`linux,initrd-end` for the physical addresses of
+      initramfs
+    - `bootargs` for kernel cmdline
+  - `early_init_dt_scan_root`
+  - `early_init_dt_scan_memory`
 - `early_init_fdt_scan_reserved_mem` scans `/memreserve/` header or
   `reserved-memory` property and reserves them from memblock
   - `fdt_init_reserved_mem` makes reserved memory available to drivers
