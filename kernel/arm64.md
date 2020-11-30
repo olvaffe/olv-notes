@@ -51,3 +51,8 @@ ARM64
   - `fdt_init_reserved_mem` makes reserved memory available to drivers
   - for example, `rmem_cma_setup` is called for memory reserved for
     `shared-dma-pool`
+- `of_platform_default_populate_init` adds `platform_device`s for OF
+  `device_node`s
+  - `/firmware`
+  - `simple-bus`
+  - `simple-mfd`
