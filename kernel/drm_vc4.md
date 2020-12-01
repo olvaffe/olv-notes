@@ -35,12 +35,19 @@ VC4 / V3D
     - `brcm,bcm2711-pixelvalve4`
   - `vc4_v3d_driver`, compatible with
     - `brcm,bcm2835-v3d`
-- RPi [1-3] uses BCM285[5-7]
+- RPi [1-3] uses BCM283[5-7]
   - vc4 can fully support them
 - RPi 4 uses BCM2711
   - vc4 is KMS only
   - no rendering nor rendernode
   - downstream kernel uses v3d for renderering
+- RPi `config.txt` and downstream kernel
+  - by default, all devices are disabled in DT and vc4/v3d are not used
+  - `dtoverlay=vc4-kms-v3d` enables all devices and vc4/v3d take over
+    everything
+  - `dtoverlay=vc4-fkms-v3d` enables only v3d device and a special
+    `raspberrypi,rpi-firmware-kms` device.  vc4/v3d rendering part is
+    unchanged, but the KMS part is modified to talk to the special device.
 
 ## Case Study: Sway
 
