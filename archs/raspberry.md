@@ -9,286 +9,18 @@ Raspberry Pi
 - RPi 2 uses BCM2836
   - VideoCore IV, 250MHz
   - Cortex-A7 (ARMv7)
-- RPi 2 uses BCM2836
+- RPi 3 uses BCM2837
   - VideoCore IV, 300MHz
   - Cortex-A53 (ARMv8)
-- RPi 2 uses BCM2711
+- RPi 4 uses BCM2711
   - Video Core VI, 500MHz
   - Cortex-A72 (ARMv8)
-
-## BCM2835 DT
-
-- BCM2835 CPRMAN clock controller
-  - input: external oscillator
-  - outputs: `BCM2835_CLOCK_*` clocks
-  - compatible: brcm,bcm2835-cprman or brcm,bcm2711-cprman
-  - driver: `CONFIG_CLK_BCM2835`
-- BCM2835 power manager
-  - input: `BCM2835_CLOCK_{V3D,PERI_IMAGE,H264,ISP}`
-  - output: `BCM2835_POWER_DOMAIN_*`
-  - controls power domains, reset lines, and a watchdog timer
-  - compatible: brcm,bcm2835-pm
-  - driver: `CONFIG_ARCH_BCM2835`
-- BCM2835 VCHIQ firmware service
-  - compatible: brcm,bcm283[5-6]-vchiq
-  - driver: `CONFIG_BCM2835_VCHIQ`
-- BCM2835 System Timer
-  - a freerunning counter and 4 timer channels
-  - compatible: brcm,bcm2835-system-timer
-  - driver: `CONFIG_BCM2835_TIMER` (disabled on RPi4)
-- BCM2835 DMA controller
-  - 16 channels
-  - compatible: brcm,bcm2835-dma
-  - driver: `CONFIG_DMA_BCM2835`
-- BCM2835 Thermal Sensor
-  - compatible: brcm,bcm283[5-7]-thermal
-  - driver: `CONFIG_BCM2835_THERMAL` (disabled on RPi4)
-- BCM2835 SPI0 controller
-  - compatible: brcm,bcm283[5-7]-spi or brcm,bcm2711-spi
-  - driver: `CONFIG_SPI_BCM2835`
-- BCM2835 auxiliary peripheral (UART, SPI1/2) clock
-  - input: CPRMAN `BCM2835_CLOCK_VPU`
-  - output: `BCM2835_AUX_CLOCK_*`
-  - compatible: brcm,bcm2835-aux
-  - driver: `CONFIG_CLK_BCM2835`
-- BCM2835 auxiliar UART controller
-  - input: `BCM2835_AUX_CLOCK_UART`
-  - compatible: brcm,bcm2835-aux-uart
-  - driver: `CONFIG_SERIAL_8250_BCM2835AUX`
-- BCM2835 auxiliar SPI1/2 controller
-  - input: `BCM2835_AUX_CLOCK_SPI[1-2]`
-  - compatible: brcm,bcm2835-aux-spi
-  - driver: `CONFIG_SPI_BCM2835AUX`
-- BCM2835 I2S/PCM module
-  - input: `BCM2835_CLOCK_PCM`
-  - compatible: brcm,bcm2835-i2s
-  - driver: `CONFIG_SND_BCM2835_SOC_I2S`
-- BCM2835 Random number generator
-  - compatible: brcm,bcm2835-rng
-  - driver: `CONFIG_HW_RANDOM_BCM2835`
-- BCM2835 PWM controller
-  - input: `BCM2835_CLOCK_PWM`
-  - compatible: brcm,bcm2835-pwm
-  - driver: `CONFIG_PWM_BCM2835`
-- BCM2835 GPIO controller
-  - a combined GPIO controller, GPIO interrupt controller, and a
-    pinmux/control device
-  - input: `BCM2835_CLOCK_PWM`
-  - compatible: brcm,bcm2835-gpio or brcm,bcm2711-gpio
-  - driver: `CONFIG_PINCTRL_BCM2835`
-- IPROC SDHCI controller
-  - compatible: brcm,bcm2835-sdhci or brcm,bcm2711-emmc2
-  - driver: `CONFIG_MMC_SDHCI_IPROC`
-- BCM2835 VideoCore mailbox IPC
-  - compatible: brcm,bcm2835-mbox
-  - driver: `CONFIG_BCM2835_MBOX`
-- BCM2835 Top-Level ("ARMCTRL") Interrupt Controller
-  - up to 72 interrupt sources
-  - compatible: brcm,bcm283[5-6]-armctrl-ic
-  - driver: `CONFIG_ARCH_BCM2835`
-- BCM2836 per-CPU interrupt controller
-  - per-cpu interrupt controller for timer, PMU, IPIs
-  - compatible: brcm,bcm2836-l1-intc
-  - driver: `CONFIG_ARCH_BCM2835`
-- BCM2835 I2C Controller
-  - compatible: brcm,bcm2835-i2c or brcm,bcm2711-i2c
-  - driver: `CONFIG_I2C_BCM2835`
-- BCM2835 VideoCore DPI Controller
-  - input: `BCM2835_CLOCK_{VPU,DPI}`
-  - compatible: brcm,bcm2835-dpi
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore DSI Controller
-  - input: `BCM2835_PLLD_DSI1` and `BCM2835_CLOCK_DSI1[EP]`
-  - compatible: brcm,bcm2835-dsi[0-1]
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore HDMI Controller
-  - input: `BCM2835_PLLH_PIX` and `BCM2835_CLOCK_HSM`
-  - compatible: brcm,bcm2835-hdmi
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore Hardware Video Scaler
-  - compatible: brcm,bcm2835-hvs or brcm,bcm2711-hvs
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore PixelValve
-  - compatible: brcm,bcm2835-pixelvalve[0-2] or brcm,bcm2711-pixelvalve[0-4]
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore TXP (writeback) Controller
-  - compatible: brcm,bcm2835-txp
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore V3D GPU
-  - compatible: brcm,bcm2835-v3d
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore VEC
-  - compatible: brcm,bcm2835-vec
-  - driver: `CONFIG_DRM_VC4`
-- BCM2835 VideoCore IV
-  - combined all (DPI, DSI, HDMI, HVS, PixelValve, TXP, V3D, VEC) above
-  - compatible: brcm,bcm2835-vc4 or brcm,bcm2711-vc5
-  - driver: `CONFIG_DRM_VC4`
-
-## BCM2711 DT
-
-- BCM2711 HDMI DVP
-  - compatible: brcm,brcm2711-dvp
-  - driver: `CONFIG_CLK_BCM2711_DVP`
-- BCM2711 HDMI Controller
-  - compatible: brcm,bcm2711-hdmi[0-1]
-  - driver: `CONFIG_DRM_VC4`
-- STB PCIe Host Controller
-  - compatible: brcm,bcm2711-pcie
-  - driver: `CONFIG_PCIE_BRCMSTB`
-- STB IIC Master Controller
-  - compatible: brcm,bcm2711-hdmi-i2c
-  - driver: `CONFIG_I2C_BRCMSTB`
-- BCM7xxx Ethernet Controller (GENET)
-  - compatible: brcm,bcm2711-genet-v5
-  - driver: `CONFIG_BCMGENET`
-- IPROC HWRNG controller
-  - compatible: brcm,bcm2711-rng200
-  - driver: `CONFIG_HW_RANDOM_IPROC_RNG200`
-- AVS ring oscillator thermal
-  - compatible: `brcm,bcm2711-avs-monitor`
-  - compatible: `brcm,bcm2711-thermal`
-  - driver: `CONFIG_BCM2711_THERMAL`
-
-## Raspberry Pi DT
-
-- Broadcom BCM2711/BCM2835 Platform
-  - compatible: raspberrypi,4-model-b, raspberrypi,3-model-b-plus, ...
-- Raspberry Pi VideoCore firmware driver
-  - compatible: raspberrypi,bcm2835-firmware
-  - compatible: raspberrypi,firmware-clocks
-  - compatible: raspberrypi,firmware-reset
-  - driver: `CONFIG_RASPBERRYPI_FIRMWARE`
-  - driver: `CONFIG_CLK_RASPBERRYPI`
-  - driver: `CONFIG_RESET_RASPBERRYPI`
-- RPi power domain driver
-  - output: `RPI_POWER_DOMAIN_*`
-  - compatible: `raspberrypi,bcm2835-power`
-  - driver: `CONFIG_RASPBERRYPI_POWER`
-- Raspberry Pi GPIO expander
-  - compatible: raspberrypi,firmware-gpio
-  - driver: `CONFIG_GPIO_RASPBERRYPI_EXP`
-
-## Dumped DT on downstream kernel
-
-- compatible: `raspberrypi,4-model-b`
-- `reserved-memory`
-  - `linux,cma`
-    - compatible: `shared-dma-pool`
-    - driver: `CONFIG_DMA_CMA`
-- `clocks`
-  - `clk-osc` and `clk-usb`
-    - compatible: `fixed-clock`
-    - driver: `CONFIG_COMMON_CLK`
-- `memory`
-- `gpu`
-  - compatible: `brcm,bcm2711-vc5`
-  - driver: `CONFIG_DRM_VC4`
-- `arm-pmu`
-  - compatible: `arm,cortex-a72-pmu`
-  - driver: `CONFIG_HW_PERF_EVENTS`
-- `scb`
-  - compatible: `simple-bus`
-  - `dma`
-    - compatible: `brcm,bcm2711-dma`
-  - `ethernet`
-    - compatible: `brcm,bcm2711-genet-v5`
-    - driver: `CONFIG_BCMGENET`
-  - `vp9-decoder`
-    - compatible: `raspberrypi,rpivid-vp9-decoder`
-  - `hevc-decoder`
-    - compatible: `raspberrypi,rpivid-hevc-decoder`
-  - `pcie`
-    - compatible: `brcm,bcm2711-pcie`
-    - driver: `CONFIG_PCIE_BRCMSTB`
-  - `rpivid-local-intc`
-    - compatible: `raspberrypi,rpivid-local-intc`
-  - `h264-decoder`
-    - compatible: `raspberrypi,rpivid-h264-decoder`
-  - `xhci`
-    - compatible: `generic-xhci`
-    - status: `disabled`
-    - driver: `CONFIG_USB_XHCI_PLATFORM`
-- `sd_vcc_reg`, `fixedregulator_3v3`, and `fixedregulator_5v0`
-  - compatible: `regulator-fixed`
-  - driver: `CONFIG_REGULATOR_FIXED_VOLTAGE`
-- `leds`
-  - compatible: `gpio-leds`
-  - driver: `CONFIG_LEDS_GPIO`
-- `chosen`
-  - bootargs
-  - linux,initrd-start
-  - linux,initrd-end
-  - etc
-- `timer`
-  - compatible: `arm,armv8-timer`
-  - driver: `CONFIG_ARM_ARCH_TIMER`
-- `clk-108M`
-  - compatible: `fixed-clock`
-  - driver: `CONFIG_COMMON_CLK`
-- `v3dbus`
-  - compatible: `brcm,2711-v3d`
-  - driver: `CONFIG_DRM_V3D` (downstream only)
-- `phy`
-  - compatible: `usb-nop-xceiv`
-  - driver: `CONFIG_NOP_USB_XCEIV`
-- `emmc2bus`
-  - compatible: `simple-bus`
-  - `emmc2`
-    - compatible: `brcm,bcm2711-emmc2`
-    - driver: `CONFIG_MMC_SDHCI_IPROC`
-- `sd_io_1v8_reg`
-  - compatible: `regulator-gpio`
-  - driver: `CONFIG_REGULATOR_GPIO`
-- `soc`
-  - compatible: `simple-bus`
-  - serial * 6
-  - pixelvalve * 4
-  - cprman
-  - csi * 2
-  - spi * 5
-  - hvs
-  - gpio
-  - mmc * 2
-  - i2c * 7
-  - vcsm
-  - pwm * 2
-  - clock
-  - timer
-  - i2s
-  - hdmi
-  - mailbox * 2
-  - gpiomem
-  - vec
-  - power
-  - firmware
-  - dsi * 2
-  - mmcnr
-  - fb
-  - local_intc
-  - dpi
-  - i2c0mux
-  - watchdog
-  - aux
-  - axiperf
-  - sound
-  - txp
-  - dma
-  - interrupt-controller
-  - firmwarekms
-  - rng
-  - usb
-  - smi
-  - avs-monitor
-
-## SoC
-
-- three main processors with 3 different instruction sets
+- Vide Core has two main processors with differnet instruction sets
   - a VPU, dual-core dual-issue 16-way SIMD for system managements, codecs, etc.
   - QPUs, for 3D works
-  - an ARM CPU, to run applications
+- Linux runs on ARM CPU
 
-## Boot Process on RPi4
+## Bootloader
 
 - When powered on, VPU executes stage1 bootloader on SoC ROM
   - it initializes eMMC controller
@@ -317,53 +49,295 @@ Raspberry Pi
     - it can chainload any EFI bootloader (grub2, systemd-boot,
       linux kernel itself)
 
-## PXE
+## `/sys/firmware/devicetree`
 
-- update EEPROM and `BOOT_ORDER`
-  - <https://github.com/raspberrypi/rpi-eeprom>
-  - extrat config from fw file (or eeprom)
-  - edit `BOOT_ORDER`
-  - apply confi to fw file (or eeprom)
-  - flash
-- it looks for "Raspberry Pi Boot" PXE boot option
-- these files are fetched
-  - <https://github.com/raspberrypi/firmware>
-  - config.txt
-  - start4.elf
-  - fixup4.dat
-  - bcm2711-rpi-4-b.dtb
-  - overlays/overlay_map.dtb
-  - cmdline.txt
-  - kernel7l.img
+- DT is built at kernel build time but the bootloader can patch it at runtime
+- Kernel 32-bit `5.4.79-1-ARCH` with `config.txt`
+  - `gpu_mem=64`
+  - `dtparam=krnbt=on`
+  - `dtoverlay=vc4-kms-v3d-pi4`
+  - `initramfs initramfs-linux.img followkernel`
+- `dtc -I fs /sys/firmware/devicetree/base` shows...
+- compatible: `raspberrypi,4-model-b`
+- `chosen`
+  - bootargs
+  - linux,initrd-start
+  - linux,initrd-end
+  - etc
+- `reserved-memory`
+  - `linux,cma`
+    - compatible: `shared-dma-pool`
+    - driver: `CONFIG_DMA_CMA`
+- `sd_vcc_reg`, `fixedregulator_3v3`, and `fixedregulator_5v0`
+  - compatible: `regulator-fixed`
+  - driver: `CONFIG_REGULATOR_FIXED_VOLTAGE`
+- `sd_io_1v8_reg`
+  - compatible: `regulator-gpio`
+  - driver: `CONFIG_REGULATOR_GPIO`
+- `clocks`
+  - `clk-osc` and `clk-usb`
+    - compatible: `fixed-clock`
+    - driver: `CONFIG_COMMON_CLK`
+- `clk-108M`
+  - compatible: `fixed-clock`
+  - driver: `CONFIG_COMMON_CLK`
+- `arm-pmu`
+  - compatible: `arm,cortex-a72-pmu`
+  - driver: `CONFIG_HW_PERF_EVENTS`
+- `timer`
+  - compatible: `arm,armv8-timer`
+  - driver: `CONFIG_ARM_ARCH_TIMER`
+- `leds`
+  - compatible: `gpio-leds`
+  - driver: `CONFIG_LEDS_GPIO`
+- `phy`
+  - compatible: `usb-nop-xceiv`
+  - driver: `CONFIG_NOP_USB_XCEIV`
+- `emmc2bus`
+  - compatible: `simple-bus`
+  - `emmc2`
+    - compatible: `brcm,bcm2711-emmc2`
+    - driver: `CONFIG_MMC_SDHCI_IPROC`
+    - this is the microSD card
+- `v3dbus`
+  - compatible: `brcm,2711-v3d`
+  - driver: `downstream CONFIG_DRM_V3D`
+  - the downstream v3d driver binds to this device and is render-only without
+    KMS
+- `gpu`
+  - compatible: `brcm,bcm2711-vc5`
+  - driver: `CONFIG_DRM_VC4`
+  - the vc4 driver binds to this device, and it has many component drivers
+    that bind to various other devices (DPI, DSI, HDMI, HVS, PixelValve, TXP,
+    V3D, VEC).
+  - the vc4 driver's v3d component driver cannot not drive the v3d device on
+    RPi4 (it can on RPi 1,2,3).  As such, it is KMS-only without rendering.
+- `scb`
+  - compatible: `simple-bus`
+  - `ethernet`
+    - compatible: `brcm,bcm2711-genet-v5`
+    - driver: `CONFIG_BCMGENET`
+  - `pcie`
+    - compatible: `brcm,bcm2711-pcie`
+    - driver: `CONFIG_PCIE_BRCMSTB`
+  - `xhci`
+    - compatible: `generic-xhci`
+    - driver: `CONFIG_USB_XHCI_PLATFORM`
+    - status: `disabled` (because it is on PCIe bus, not on platform bus)
+  - `dma`
+    - compatible: `brcm,bcm2711-dma`
+    - driver: `downstream CONFIG_DMA_BCM2835`
+  - `rpivid-local-intc`
+    - compatible: `raspberrypi,rpivid-local-intc`
+    - driver: `downstream rpivid-mem`
+  - `vp9-decoder`
+    - compatible: `raspberrypi,rpivid-vp9-decoder`
+    - driver: `downstream rpivid-mem`
+  - `hevc-decoder`
+    - compatible: `raspberrypi,rpivid-hevc-decoder`
+    - driver: `downstream rpivid-mem`
+  - `h264-decoder`
+    - compatible: `raspberrypi,rpivid-h264-decoder`
+    - driver: `downstream rpivid-mem`
+- `soc`
+  - compatible: `simple-bus`
+  - `watchdog`
+    - compatible: `brcm,bcm2835-pm`
+    - driver: `CONFIG_ARCH_BCM2835`
+    - controls power domains, reset lines, and a watchdog timer
+    - takes `BCM2835_CLOCK_{V3D,PERI_IMAGE,H264,ISP}` as inputs and outputs
+      `BCM2835_POWER_DOMAIN_*`
+  - `power`
+    - compatible: `raspberrypi,bcm2835-power`
+    - driver: `CONFIG_RASPBERRYPI_POWER`
+    - outputs `RPI_POWER_DOMAIN_*`
+  - `cprman`
+    - compatible: `brcm,bcm2711-cprman`
+    - driver: `CONFIG_CLK_BCM2835`
+    - takes external oscillator as input and outputs `BCM2835_CLOCK_*` clocks
+  - `aux`
+    - compatible: `brcm,bcm2835-aux`
+    - driver: `CONFIG_CLK_BCM2835`
+    - takes `BCM2835_CLOCK_VPU` as input and outputs `BCM2835_AUX_CLOCK_*`
+  - `clock`
+    - compatible: `brcm,brcm2711-dvp`
+    - driver: `CONFIG_CLK_BCM2711_DVP`
+  - `interrupt-controller`
+    - compatible: `arm,gic-400`
+    - driver: `CONFIG_ARM_GIC`
+  - `local_intc`
+    - compatible: `brcm,bcm2836-l1-intc`
+    - driver: `CONFIG_ARCH_BCM2835`
+    - per-cpu interrupt controller for timer, PMU, IPIs
+  - `mailbox`
+    - compatible: `brcm,bcm2835-mbox`
+    - driver: `CONFIG_BCM2835_MBOX`
+  - `mailbox`
+    - compatible: `brcm,bcm2711-vchiq`
+    - driver: `downstream CONFIG_BCM2835_VCHIQ`
+    - `bcm2835_audio`
+      - compatible: `brcm,bcm2835-audio`
+      - driver: `downstream?`
+      - status: disabled
+  - `firmware`
+    - compatible: `raspberrypi,bcm2835-firmware`
+    - driver: `CONFIG_RASPBERRYPI_FIRMWARE`
+    - `clocks`
+      - compatible: `raspberrypi,firmware-clocks
+      - driver: `CONFIG_CLK_RASPBERRYPI`
+    - `gpio`
+      - compatible: `raspberrypi,firmware-gpio`
+      - driver: `CONFIG_GPIO_RASPBERRYPI_EXP`
+  - `timer`
+    - compatible: `brcm,bcm2835-system-timer`
+    - driver: `CONFIG_BCM2835_TIMER`
+    - a freerunning counter plus 4 timer channels
+  - `dma`
+    - compatible: `brcm,bcm2835-dma`
+    - driver: `CONFIG_DMA_BCM2835`
+    - up to 16 channels
+  - `rng`
+    - compatible: `brcm,bcm2711-rng200`
+    - driver: `CONFIG_HW_RANDOM_IPROC_RNG200`
+  - `usb`
+    - compatible: `brcm,bcm2708-usb`
+    - driver: `downstream?`
+    - status: disabled
+  - `axiperf`
+    - compatible: `brcm,bcm2835-axiperf`
+    - driver: `downstream?`
+    - status: disabled
+    - AXI performance monitor
+  - `avs-monitor`
+    - compatible: `brcm,bcm2711-avs-monitor`
+    - driver: `none?`
+    - `thermal`
+      - compatible: `brcm,bcm2711-thermal`
+      - driver: `CONFIG_BCM2711_THERMAL`
+  - `serial`
+    - compatible: `arm,pl011`
+    - driver: `CONFIG_SERIAL_AMBA_PL011`
+    - this is `/dev/ttyAMA0`
+    - `bluetooth`
+      - compatible: `brcm,bcm43438-bt`
+      - driver: `CONFIG_BT_HCIUART_BCM`
+  - `serial`
+    - compatible: `brcm,bcm2835-aux-uart`
+    - driver: `CONFIG_SERIAL_8250_BCM2835AUX`
+    - this is `/dev/ttyS0`
+    - `bluetooth`
+      - compatible: `brcm,bcm43438-bt`
+      - driver: `CONFIG_BT_HCIUART_BCM`
+      - status: disabled
+  - `serial` * 4
+    - compatible: `arm,pl011`
+    - driver: `CONFIG_SERIAL_AMBA_PL011`
+    - status: disabled
+  - `csi` * 2
+    - compatible: `brcm,bcm2835-unicam`
+    - driver: `downstream?`
+    - status: disabled
+  - `mmcnr`
+    - compatible: `brcm,bcm2835-mmc`
+    - driver: `downstream mmc-bcm2835`
+    - this connects to BCM4345/6 over SDIO
+  - `mmc`
+    - compatible: `brcm,bcm2835-mmc`
+    - driver: `downstream?`
+    - status: disabled
+  - `mmc`
+    - compatible: `brcm,bcm2835-sdhost`
+    - driver: `CONFIG_MMC_BCM2835`
+    - status: disabled
+  - `gpio`
+    - compatible: `brcm,bcm2711-gpio`
+    - driver: `CONFIG_PINCTRL_BCM2835`
+    - followed by a lot of pin definitions
+    - a combined GPIO controller, GPIO interrupt controller, and a
+      pinmux/control device
+    - takes `BCM2835_CLOCK_PWM` as input
+  - `gpiomem`
+    - compatible: `brcm,bcm2835-gpiomem`
+    - driver: `downstream gpiomem-bcm2835`
+  - `i2c0mux`
+    - compatible: `i2c-mux-pinctrl`
+    - driver: `CONFIG_I2C_MUX_PINCTRL`
+    - status: disabled
+  - `i2c` * 2
+    - compatible: `brcm,bcm2711-hdmi-i2c`
+    - driver: `CONFIG_I2C_BRCMSTB`
+  - `i2c` * 6
+    - compatible: `brcm,bcm2711-i2c`
+    - driver: `CONFIG_I2C_BCM2835`
+    - status: disabled
+  - `spi` * 2
+    - compatible: `brcm,bcm2835-aux-spi`
+    - driver: `CONFIG_SPI_BCM2835AUX`
+    - status: one ok and one disabled
+    - takes `BCM2835_AUX_CLOCK_SPI[1-2]` as inputs
+  - `spi` * 5
+    - compatible: `brcm,bcm2835-spi`
+    - driver: `CONFIG_SPI_BCM2835`
+    - status: disabled
+    - `spidev`, for one of the `spi`
+      - compatible: `spidev`
+      - driver: `downstream?`
+  - `i2s`
+    - compatible: `brcm,bcm2835-i2s`
+    - driver: `CONFIG_SND_BCM2835_SOC_I2S`
+    - status: disabled
+    - takes `BCM2835_CLOCK_PCM` as input
+  - `smi`
+    - compatible: `brcm,bcm2835-smi`
+    - driver: `downstream?`
+    - status: disabled
+    - Secondary Memory Interface
+  - `pwm` * 2
+    - compatible: `brcm,bcm2835-pwm`
+    - driver: `CONFIG_PWM_BCM2835`
+    - status: disabled
+    - takes `BCM2835_CLOCK_PWM` as input
+    - controls power to motors, etc.
+  - `vcsm`
+    - compatible: `raspberrypi,bcm2835-vcsm`
+    - driver: `downstream bcm2835-vcsm`
+  - `fb`
+    - compatible: `brcm,bcm2708-fb`
+    - driver: `downstream?`
+    - status: disabled
+  - `firmwarekms`
+    - compatible: `raspberrypi,rpi-firmware-kms-2711`
+    - driver: `downstream CONFIG_DRM_VC4`
+    - status: disabled
+    - vc4 is modified to do KMS over firmware dismanx instead of registers
+  - `txp`
+    - compatible: `brcm,bcm2835-txp`
+    - driver: `CONFIG_DRM_VC4`
+  - `hvs`
+    - compatible: `brcm,bcm2835-hvs`
+    - driver: `CONFIG_DRM_VC4`
+  - `pixelvalve` * 5
+    - compatible: `brcm,bcm2711-pixelvalve.`
+    - driver: `CONFIG_DRM_VC4`
+  - `vec`
+    - compatible: `brcm,bcm2835-vec`
+    - driver: `CONFIG_DRM_VC4`
+    - status: disabled
+  - `hdmi` * 2
+    - compatible: `brcm,bcm2711-hdmi.`
+    - driver: `CONFIG_DRM_VC4`
+  - `dsi` * 2
+    - compatible: `brcm,bcm2835-dsi.`
+    - driver: `CONFIG_DRM_VC4`
+    - status: disabled
+    - takes `BCM2835_PLLD_DSI1` and `BCM2835_CLOCK_DSI1[EP]` as inputs
+  - `dpi`
+    - compatible: `brcm,bcm2835-dpi`
+    - driver: `CONFIG_DRM_VC4`
+    - status: disabled
+    - takes `BCM2835_CLOCK_{VPU,DPI}` as inputs
 
-## Devices
-
-- lsusb
-  - one 5G/s root hub driven by `xhci_hcd/4p`
-  - one 480M/s root hub driven by `xhci_hcd/1p`
-- lspci
-  - one Broadcom pci bridge driven by `pcieport`
-  - one VIA VL805 usb 3.0 controller driven by `xhci_hcd`
-- 6 uarts
-  - <https://www.raspberrypi.org/documentation/configuration/uart.md>
-  - uart 0 is `/dev/ttyAMA0` driven by `amba-pl011`
-  - uart 1 is `/dev/ttyS0`
-  - uart [2-5] is disabled by default
-- one BT/WIFI controller
-  - the WIFI part is driven by `brcmfmac`
-  - add `dtparam=krnbt=on` to `config.txt` to enable the BT part in DT and
-    allow `btbcm` to drive it
-  - otherwise, use `btattach` in userspace to attach `/dev/ttyAMA0`
-- one GPU
-  - managed by propriertary driver by default
-  - add `dtoverlay=vc4-kms-v3d-pi4` to `config.txt` to enable the device in DT
-    and allow `vc4` and `v3d` to drive it
-  - `vc4` drives the display part
-  - `v3d` drives the 3D part
-- one audio device
-  - driven by `snd_bcm2835`
-
-## More Devices
+## `/sys/bus`
 
 - `amba` bus
   - `fe201000.serial` driven by `uart-pl011`
@@ -462,25 +436,81 @@ Raspberry Pi
 - `usb` bus
   - some devices driven by `hub` or `usb`
 
+## More Devices
+
+- lsusb
+  - one 5G/s root hub driven by `xhci_hcd/4p`
+  - one 480M/s root hub driven by `xhci_hcd/1p`
+- lspci
+  - one Broadcom pci bridge driven by `pcieport`
+  - one VIA VL805 usb 3.0 controller driven by `xhci_hcd`
+- 6 uarts
+  - <https://www.raspberrypi.org/documentation/configuration/uart.md>
+  - uart 0 is `/dev/ttyAMA0` driven by `amba-pl011`
+  - uart 1 is `/dev/ttyS0`
+  - uart [2-5] is disabled by default
+- one BT/WIFI controller
+  - the WIFI part is driven by `brcmfmac`
+  - add `dtparam=krnbt=on` to `config.txt` to enable the BT part in DT and
+    allow `btbcm` to drive it
+  - otherwise, use `btattach` in userspace to attach `/dev/ttyAMA0`
+- one GPU
+  - managed by propriertary driver by default
+  - add `dtoverlay=vc4-kms-v3d-pi4` to `config.txt` to enable the device in DT
+    and allow `vc4` and `v3d` to drive it
+  - `vc4` drives the display part
+  - `v3d` drives the 3D part
+- no RTC
+  - get time from NTP
+
+## Unused drivers
+
+- BCM2835 VCHIQ firmware service
+  - compatible: brcm,bcm283[5-6]-vchiq
+  - driver: `CONFIG_BCM2835_VCHIQ`
+  - can potentially support brcm,bcm2711-vchiq?
+- BCM2835 Thermal Sensor
+  - compatible: brcm,bcm283[5-7]-thermal
+  - driver: `CONFIG_BCM2835_THERMAL`
+  - replaced by `CONFIG_BCM2711_THERMAL`
+- BCM2835 Random number generator
+  - compatible: brcm,bcm2835-rng
+  - driver: `CONFIG_HW_RANDOM_BCM2835`
+  - replaced by `CONFIG_HW_RANDOM_IPROC_RNG200`
+- BCM2835 Top-Level ("ARMCTRL") Interrupt Controller
+  - up to 72 interrupt sources
+  - compatible: brcm,bcm283[5-6]-armctrl-ic
+  - driver: `CONFIG_ARCH_BCM2835`
+  - replaced by `CONFIG_ARM_GIC`?
+- Raspberry Pi VideoCore firmware reset
+  - compatible: raspberrypi,firmware-reset
+  - driver: `CONFIG_RESET_RASPBERRYPI`
+  - ???
+- BCM2835 VideoCore V3D GPU
+  - compatible: brcm,bcm2835-v3d
+  - driver: `CONFIG_DRM_VC4`
+  - replaced by `CONFIG_DRM_V3D`
+
+## PXE
+
+- update EEPROM and `BOOT_ORDER`
+  - <https://github.com/raspberrypi/rpi-eeprom>
+  - extrat config from fw file (or eeprom)
+  - edit `BOOT_ORDER`
+  - apply config to fw file (or eeprom)
+  - flash
+- eeprom looks for "Raspberry Pi Boot" PXE boot option
+- it fetches these files with empty `config.txt`
+  - <https://github.com/raspberrypi/firmware>
+  - `config.txt`
+  - `start4.elf`
+  - `fixup4.dat`
+  - `bcm2711-rpi-4-b.dtb`
+  - `overlays/overlay_map.dtb`
+  - `cmdline.txt`
+  - `kernel7l.img`
+
 ## Partitioning
 
-- partitioning
-  - fdisk and `g` to use GPT
-    - need to update to the latest eeprom
-  - partition 1: 260M, ESP
-  - partition 2: `32*1000-260`M, Linux
-- filesystems
-  - partition 1: `mkfs.fat -F32`
-  - partition 2: `mkfs.btrfs`
-- prepare btrfs
-  - mount partition 2
-  - `mkdir roots homes`
-  - `btrfs subvolume create roots/current`
-  - `btrfs subvolume create homes/current`
-  - `btrfs subvolume set-default roots/current`
-  - umount
-- btrfs
-  - mount partition 2 again with `subvol=roots/current`
-  - `mkdir boot home`
-  - mount partition 1 to boot
-  - mount partition 2 to home with `subvol=homes/current`
+- see <../distros/disk.md>
+- need to update to the latest eeprom for GPT support
