@@ -1,6 +1,105 @@
 Raspberry Pi
 ============
 
+## History
+
+- RPi 1 uses BCM2835
+  - VideoCore IV, 250MHz
+  - ARM1176 (ARMv6)
+- RPi 2 uses BCM2836
+  - VideoCore IV, 250MHz
+  - Cortex-A7 (ARMv7)
+- RPi 2 uses BCM2836
+  - VideoCore IV, 300MHz
+  - Cortex-A53 (ARMv8)
+- RPi 2 uses BCM2711
+  - Video Core VI, 500MHz
+  - Cortex-A72 (ARMv8)
+
+## DT
+
+- BCM2835 CPRMAN clock controller
+  - input: external oscillator
+  - outputs: `BCM2835_CLOCK_*` clocks
+  - compatible: brcm,bcm2835-cprman or brcm,bcm2711-cprman
+- BCM2835 power manager
+  - input: `BCM2835_CLOCK_{V3D,PERI_IMAGE,H264,ISP}`
+  - output: `BCM2835_POWER_DOMAIN_*`
+  - controls power domains, reset lines, and a watchdog timer
+  - compatible: brcm,bcm2835-pm
+- RPi power domain driver
+  - output: `RPI_POWER_DOMAIN_*`
+  - compatible: `raspberrypi,bcm2835-power`
+- BCM2835 VCHIQ firmware service
+  - compatible: brcm,bcm283[5-6]-vchiq
+- BCM2835 System Timer
+  - a freerunning counter and 4 timer channels
+  - compatible: brcm,bcm2835-system-timer
+- BCM2835 DMA controller
+  - 16 channels
+  - compatible: brcm,bcm2835-dma
+- BCM2835 Thermal Sensor
+  - compatible: brcm,bcm283[5-7]-thermal
+- BCM2835 SPI0 controller
+  - compatible: brcm,bcm283[5-7]-spi or brcm,bcm2711-spi
+- BCM2835 auxiliary peripheral (UART, SPI1/2) clock
+  - input: CPRMAN `BCM2835_CLOCK_VPU`
+  - output: `BCM2835_AUX_CLOCK_*`
+  - compatible: brcm,bcm2835-aux-clock
+- BCM2835 auxiliar UART controller
+  - input: `BCM2835_AUX_CLOCK_UART`
+  - compatible: brcm,bcm2835-aux-uart
+- BCM2835 auxiliar SPI1/2 controller
+  - input: `BCM2835_AUX_CLOCK_SPI[1-2]`
+  - compatible: brcm,bcm283[5-7]-spi or brcm,bcm2711-spi
+- BCM2835 I2S/PCM module
+  - input: `BCM2835_CLOCK_PCM`
+  - compatible: brcm,bcm2835-i2s
+- BCM2835 Random number generator
+  - compatible: brcm,bcm2835-rng
+- BCM2835 PWM controller
+  - input: `BCM2835_CLOCK_PWM`
+  - compatible: brcm,bcm2835-pwm
+- BCM2835 GPIO controller
+  - a combined GPIO controller, GPIO interrupt controller, and a
+    pinmux/control device
+  - input: `BCM2835_CLOCK_PWM`
+  - compatible: brcm,bcm2835-gpio or brcm,bcm2711-gpio
+- Broadcom IPROC SDHCI controller
+  - compatible: brcm,bcm2835-sdhci or brcm,bcm2711-emmc2
+- BCM2835 VideoCore mailbox IPC
+  - compatible: brcm,bcm2835-mbox
+- BCM2835 Top-Level ("ARMCTRL") Interrupt Controller
+  - up to 72 interrupt sources
+  - compatible: brcm,bcm283[5-6]-armctrl-ic
+- BCM2836 per-CPU interrupt controller
+  - per-cpu interrupt controller for timer, PMU, IPIs
+  - compatible: brcm,bcm2836-l1-intc
+- BCM2835 I2C Controller
+  - compatible: brcm,bcm2835-i2c or brcm,bcm2711-i2c
+- BCM2835 VideoCore DPI Controller
+  - input: `BCM2835_CLOCK_{VPU,DPI}`
+  - compatible: brcm,bcm2835-dpi
+- BCM2835 VideoCore DSI Controller
+  - input: `BCM2835_PLLD_DSI1` and `BCM2835_CLOCK_DSI1[EP]`
+  - compatible: brcm,bcm2835-dsi[0-1]
+- BCM2835 VideoCore HDMI Controller
+  - input: `BCM2835_PLLH_PIX` and `BCM2835_CLOCK_HSM`
+  - compatible: brcm,bcm2835-hdmi
+- BCM2835 VideoCore Hardware Video Scaler
+  - compatible: brcm,bcm2835-hvs or brcm,bcm2711-hvs
+- BCM2835 VideoCore PixelValve (CRTC)
+  - compatible: brcm,bcm2835-pixelvalve[0-2] or brcm,bcm2711-pixelvalve[0-4]
+- BCM2835 VideoCore TXP (writeback) Controller
+  - compatible: brcm,bcm2835-txp
+- BCM2835 VideoCore V3D GPU
+  - compatible: brcm,bcm2835-v3d
+- BCM2835 VideoCore VEC
+  - compatible: brcm,bcm2835-vec
+- BCM2835 VideoCore IV
+  - combined all (DPI, DSI, HDMI, HVS, PixelValve, TXP, V3D, VEC) above
+  - compatible: brcm,bcm2835-vc4 or brcm,bcm2711-vc5
+
 ## SoC
 
 - three main processors with 3 different instruction sets
