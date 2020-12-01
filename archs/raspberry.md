@@ -35,14 +35,14 @@ Raspberry Pi
 - BCM2835 System Timer
   - a freerunning counter and 4 timer channels
   - compatible: brcm,bcm2835-system-timer
-  - driver: `CONFIG_BCM2835_TIMER`
+  - driver: `CONFIG_BCM2835_TIMER` (disabled on RPi4)
 - BCM2835 DMA controller
   - 16 channels
   - compatible: brcm,bcm2835-dma
   - driver: `CONFIG_DMA_BCM2835`
 - BCM2835 Thermal Sensor
   - compatible: brcm,bcm283[5-7]-thermal
-  - driver: `CONFIG_BCM2835_THERMAL`
+  - driver: `CONFIG_BCM2835_THERMAL` (disabled on RPi4)
 - BCM2835 SPI0 controller
   - compatible: brcm,bcm283[5-7]-spi or brcm,bcm2711-spi
   - driver: `CONFIG_SPI_BCM2835`
@@ -168,6 +168,118 @@ Raspberry Pi
 - Raspberry Pi GPIO expander
   - compatible: raspberrypi,firmware-gpio
   - driver: `CONFIG_GPIO_RASPBERRYPI_EXP`
+
+## Dumped DT on downstream kernel
+
+- compatible: `raspberrypi,4-model-b`
+- `reserved-memory`
+  - `linux,cma`
+    - compatible: `shared-dma-pool`
+    - driver: `CONFIG_DMA_CMA`
+- `clocks`
+  - `clk-osc` and `clk-usb`
+    - compatible: `fixed-clock`
+    - driver: `CONFIG_COMMON_CLK`
+- `memory`
+- `gpu`
+  - compatible: `brcm,bcm2711-vc5`
+  - driver: `CONFIG_DRM_VC4`
+- `arm-pmu`
+  - compatible: `arm,cortex-a72-pmu`
+  - driver: `CONFIG_HW_PERF_EVENTS`
+- `scb`
+  - compatible: `simple-bus`
+  - `dma`
+    - compatible: `brcm,bcm2711-dma`
+  - `ethernet`
+    - compatible: `brcm,bcm2711-genet-v5`
+    - driver: `CONFIG_BCMGENET`
+  - `vp9-decoder`
+    - compatible: `raspberrypi,rpivid-vp9-decoder`
+  - `hevc-decoder`
+    - compatible: `raspberrypi,rpivid-hevc-decoder`
+  - `pcie`
+    - compatible: `brcm,bcm2711-pcie`
+    - driver: `CONFIG_PCIE_BRCMSTB`
+  - `rpivid-local-intc`
+    - compatible: `raspberrypi,rpivid-local-intc`
+  - `h264-decoder`
+    - compatible: `raspberrypi,rpivid-h264-decoder`
+  - `xhci`
+    - compatible: `generic-xhci`
+    - status: `disabled`
+    - driver: `CONFIG_USB_XHCI_PLATFORM`
+- `sd_vcc_reg`, `fixedregulator_3v3`, and `fixedregulator_5v0`
+  - compatible: `regulator-fixed`
+  - driver: `CONFIG_REGULATOR_FIXED_VOLTAGE`
+- `leds`
+  - compatible: `gpio-leds`
+  - driver: `CONFIG_LEDS_GPIO`
+- `chosen`
+  - bootargs
+  - linux,initrd-start
+  - linux,initrd-end
+  - etc
+- `timer`
+  - compatible: `arm,armv8-timer`
+  - driver: `CONFIG_ARM_ARCH_TIMER`
+- `clk-108M`
+  - compatible: `fixed-clock`
+  - driver: `CONFIG_COMMON_CLK`
+- `v3dbus`
+  - compatible: `brcm,2711-v3d`
+  - driver: `CONFIG_DRM_V3D` (downstream only)
+- `phy`
+  - compatible: `usb-nop-xceiv`
+  - driver: `CONFIG_NOP_USB_XCEIV`
+- `emmc2bus`
+  - compatible: `simple-bus`
+  - `emmc2`
+    - compatible: `brcm,bcm2711-emmc2`
+    - driver: `CONFIG_MMC_SDHCI_IPROC`
+- `sd_io_1v8_reg`
+  - compatible: `regulator-gpio`
+  - driver: `CONFIG_REGULATOR_GPIO`
+- `soc`
+  - compatible: `simple-bus`
+  - serial * 6
+  - pixelvalve * 4
+  - cprman
+  - csi * 2
+  - spi * 5
+  - hvs
+  - gpio
+  - mmc * 2
+  - i2c * 7
+  - vcsm
+  - pwm * 2
+  - clock
+  - timer
+  - i2s
+  - hdmi
+  - mailbox * 2
+  - gpiomem
+  - vec
+  - power
+  - firmware
+  - dsi * 2
+  - mmcnr
+  - fb
+  - local_intc
+  - dpi
+  - i2c0mux
+  - watchdog
+  - aux
+  - axiperf
+  - sound
+  - txp
+  - dma
+  - interrupt-controller
+  - firmwarekms
+  - rng
+  - usb
+  - smi
+  - avs-monitor
 
 ## SoC
 
