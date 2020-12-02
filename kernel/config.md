@@ -11,6 +11,15 @@ Kernel Config
       - such as
         <https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.10.y/arch/arm64/configs/bcm2711_defconfig>
   - `make menuconfig` to edit generated config
+    - to discover non-discoverable devices,
+      - `dtc -I fs /sys/firmware/devicetree/base` and look for `compatible`
+        property.  Kernel uses the property to bind drivers.
+      - `find /sys/devices/LNXSYSTM:00 -name modalias`.  Kernel uses modalias
+        to bind drivers.  (It is constructed from _HID and _CID of the ACPI
+        devices btw)
+    - to discover discoverable devices,
+      - lspci
+      - lsusb
 - build
   - `make` to build kernel image, modules, and dtbs
 - install
