@@ -65,6 +65,19 @@ Kernel Driver 123
   - `workqueue` is from `wq_sysfs_init`, a virtual subsys
   - `dma_heap` is from `dma_heap_add`, a class device with no parent
 
+## `/sys/module`
+
+- `param_sysfs_init`
+  - `module_kset` is created with `kset_create_and_add`
+  - `version_sysfs_builtin` adds built-in modules and their `version` for all
+    built-in modules with `MODULE_VERSION`
+  - `param_sysfs_builtin` adds built-in modules and their params for all
+    built-in modules with `module_param_named`
+    - `module_param_named` can specify to hide a param though
+- `init_module` syscall calls `load_module`
+  - in `mod_sysfs_init` called from `mod_sysfs_setup`, the module kobj is
+    added with `module_kset` as the kset
+
 ## Drivers
 
 - all `device_driver` can be found under `/sys/bus/*/drivers`
