@@ -23,3 +23,16 @@ TUN/TAP
     frame, and sends back another frame.  This response frame is received by
     the hypervisor via the emulated device and forwarded to the host kernel
     via tap0.  ping receives the response.
+
+## VETH
+
+- veth comes in pairs
+  - the two devices in each pair are connected together
+- to add a veth pair,
+  - `ip link add <p1-name> type veth peer name <p2-name>`
+- to move one of the device to another namespace,
+  - `ip link set <p2-name> netns <p2-ns>`
+  - this allows communications between network namespaces
+- comparing to tap, no userspace handling of frames is needed
+  - tap is for VMs, with hypervisor emulated HWs
+  - veth is for containers

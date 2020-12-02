@@ -500,6 +500,7 @@ Raspberry Pi
   - apply config to fw file (or eeprom)
   - flash
 - eeprom looks for "Raspberry Pi Boot" PXE boot option
+  - with dnsmasq, specify `--pxe-service=0,"Raspberry Pi Boot"`
 - it fetches these files with empty `config.txt`
   - <https://github.com/raspberrypi/firmware>
   - `config.txt`
