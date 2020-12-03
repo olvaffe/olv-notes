@@ -356,3 +356,29 @@ virgl
 - `VCMD_TRANSFER_PUT2`
   - calls `virgl_renderer_transfer_write_iov` to copy from the attached memfd
     iov to the resource
+
+## virglrenderer: formats
+
+- when virgl allocates with `PIPE_FORMAT_B8G8R8X8_UNORM`,
+  - virglrenderer GBM translates it to `GBM_FORMAT_XRGB8888`
+  - mesa gbm or minigbm `gbm_bo_create` translates it to
+    `__DRI_IMAGE_FORMAT_XRGB8888`
+  - mesa DRI `createImage` translates it to `PIPE_FORMAT_BGRX8888_UNORM`
+  - virglrenderer GBM then imports the BO with `glEGLImageTargetTexture2DOES`
+  - Mesa GLES `glEGLImageTargetTexture2DOES` translates it to
+    `MESA_FORMAT_B8G8R8X8_UNORM` with internal format `GL_RGB8`
+    - see `dri_get_egl_image`
+- when virgl transfers to the resource,
+  - virglrenderer GBM calls `virgl_gbm_transfer`
+  - but for synchronized copy transfer, it calls `glTexSubImage2D`
+    - internal format is `GL_RGB8`, set by `dri_get_egl_image`
+    - format is `GL_BGRA_EXT`
+    - the transfer fails
+- when virgl transfers from the resource,
+  - Mesa `GL_IMPLEMENTATION_COLOR_READ_FORMAT` returns `GL_RGBA`
+  - Mesa `glReadnPixelsARB` reads `GL_BGRA_EXT`
+    - it works but imposes a blit
+- for comparision, when GBM is disabled, virglrenderer translate
+  `PIPE_FORMAT_B8G8R8X8_UNORM` to
+  - GLES: internal `GL_BGRA_EXT` / format `GL_BGRA_EXT` / type `GL_UNSIGNED_BYTE`
+  - GL:   internal `GL_RGBA8`    / format `GL_BGRA`     / type `GL_UNSIGNED_BYTE`
