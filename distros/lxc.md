@@ -21,35 +21,6 @@ Linux Containers
 - stop the container
   - `lxc-stop stop`
 
-## Namespaces
-
-- `lsns` or `/proc/<pid>/ns`
-- container's `/sbin/init` is run in differernt namespaces
-- different mnt namespace
-  - `mount_namespaces(7)`
-  - `nsenter -t <pid> -m /bin/ls`
-- different uts namespace
-  - `uts_namespaces(7)`
-  - `nsenter -t <pid> -u hostname`
-- different ipc namespace
-  - `ipc_namespaces(7)`
-- different pid namespace
-  - `pid_namespaces(7)`
-  - `nsenter -t <pid> -p kill some-pid`
-  - ps scans /proc and its output depends on mnt namespace
-  - reboot(2) in a pid namespace kills pid 1
-- different net namespace
-  - `network_namespaces(7)`
-  - `nsenter -t <pid> -n ip link`
-- different cgroup namespace
-  - `cgroup_namespaces(7)`
-  - `/sbin/init` thinks it is the root cgroup (in the new namespace)
-  - from the host's view, lxc sets it up to be a new cgroup under the root
-    cgroup
-- different user namespace, when running unprivileged containers
-  - `user_namespaces(7)`
-  - root in container is nobody-like outside
-
 ## Shells
 
 - lxc-attach
@@ -96,6 +67,80 @@ Linux Containers
   - `lxc-ls --fancy`
 - get the state of a container
   - `lxc-state test`
+
+## `unshare`
+
+- `strace unshare`
+  - `unshare(0)`
+  - `execve("/bin/bash", ...)`
+- use strace to see what the various options do
+- `man 2 clone` first
+  - fork a child process
+  - most of the "execution context" are shared with the child process
+  - `CLONE_NEW*` speicifes which parts of the execution context are not shared
+    - `CLONE_NEWUSER` puts the child in a new user namespace
+- man 2 unshare
+  - unshare parts of the execution context of the calling process (with it
+    sparent)
+  - in other words, the calling process enters new namespaces
+- man 1 share
+  - `CLONE_NEWUSER`, or `-U`
+    - the caller obtains a full set of capabilities in the new namespace
+    - almost always need `-U`
+      - `unshare -p`: Operation not permitted
+      - `unshare -Up`: ok
+    - `-r` is even better
+      - it modifies `/proc/self/uid_map` such that the uid becomes 0
+      - `man subuid`
+  - `CLONE_NEWPID`, or `-p`
+    - The calling process is not moved into the new namespace.  The first
+      child created by the calling process will have the process ID 1 and will
+      assume the role of init(1) in the new namespace
+    - always use with `-f` to fork pid 1
+    - always use with `--mount-proc` to fix up /proc
+  - `CLONE_NEWNS`, or `-m`
+    - If the (mount) namespace is created using unshare(2), the mount point
+      list of the new namespace is a copy of the mount point list in the
+      caller's previous mount namespace.
+    - `-m` also mounts root with `MS_REC|MS_PRIVATE` to make all inherited
+      mount points private
+    - now we can bind mount like crazy
+    - implied by `--mount-proc`
+
+## Namespaces
+
+- `lsns` or `/proc/<pid>/ns`
+- container's `/sbin/init` is run in differernt namespaces
+- different mnt namespace
+  - `mount_namespaces(7)`
+  - `nsenter -t <pid> -m /bin/ls`
+- different uts namespace
+  - `uts_namespaces(7)`
+  - `nsenter -t <pid> -u hostname`
+- different ipc namespace
+  - `ipc_namespaces(7)`
+- different pid namespace
+  - `pid_namespaces(7)`
+  - `nsenter -t <pid> -p kill some-pid`
+  - ps scans /proc and its output depends on mnt namespace
+  - reboot(2) in a pid namespace kills pid 1
+- different net namespace
+  - `network_namespaces(7)`
+  - `nsenter -t <pid> -n ip link`
+- different cgroup namespace
+  - `cgroup_namespaces(7)`
+  - `/sbin/init` thinks it is the root cgroup (in the new namespace)
+  - from the host's view, lxc sets it up to be a new cgroup under the root
+    cgroup
+- different user namespace, when running unprivileged containers
+  - `user_namespaces(7)`
+  - root in container is nobody-like outside
+
+## Unprivileged Internals
+
+- `newuidmap`
+  - parses `/etc/subuid`
+    - `<username>:<first_subid>:<subid_count>`
 
 ## Unprivileged Containers
 

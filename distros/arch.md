@@ -131,3 +131,54 @@ ArchLinux
     - ~630M after `pacman -Scc`
   - `pacstrap` just the `pacman` package results in ~560M
     - ~460M after `pacman -Scc`
+
+## `base` package
+
+- filesystem
+  - directory strucutre (e.g., /root, /usr/bin)
+  - basic links (e.g., /bin to /usr/bin)
+  - some files in /etc (e.g., passwd, group, mtod)
+- gcc-libs
+  - gcc runtime libraries (`libgcc_s.so`, `libstdc++.so`, `libatomic.so`,
+    `libasan.so`)
+- glibc
+  - headers
+  - libraries (ld-linux-x86-64, libc, libdl, libm, libresolv, crt\*.o, etc)
+  - tools (ldconfig, ldd, locale, locale-gen, iconv, etc)
+- systemd
+  - systemd, systemctl, timedatectl, networkctl, resolvect, loginctl,
+    localectl, udevadm, etc.
+- systemd-sysvcompat
+  - init (symlink to systemd), reboot, shutdown, poweroff, halt (symlinks to
+    systemctl)
+- util-linux
+  - agetty, blkid, dmesg, fdisk, kill, login, fsck, mkfs, mount, rfkill, su,
+    switch_root, nsenter, unshare, lsns, etc.
+- bash
+- shadow
+  - grouadd, passwd, useradd, lastlog, newgidmap, newuidmap, etc.
+- coreutils
+  - ls, mv cp, cat, chmod, chown, basename, cut, date, df, du, echo, env,
+    chroot, etc.
+- iputils
+  - ping, tftpd, etc.
+- iproute2
+  - ip, ss, bridge
+- procps-ng - ps, top, free, pidof, pkill
+- psmisc
+  - fuser, killall, pstree, etc.
+- findutils
+  - find, xargs
+- grep
+- sed
+- gawk
+- tar
+- bzip2
+- gzip
+- xz
+- file
+- gettext
+- pciutils
+  - lspci
+- licenses
+- pacman
