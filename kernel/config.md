@@ -127,6 +127,7 @@ Kernel Config
     - select `Packet socket`
     - select `Unix domain sockets`
     - select `TCP/IP networking`
+    - select `NETLINK: socket monitoring interface`
     - select `Network packet filtering framework (Netfilter)`
   - select `Bluetooth subsystem support`
     - select `Bluetooth device drivers` and enable desired drivers

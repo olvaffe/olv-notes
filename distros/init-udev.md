@@ -66,3 +66,13 @@ udev
 ## `vol_id`
 
 - used to add `ID_FS_XXX` properties to block device
+
+## Coldplug and Hotplug
+
+- coldplug and hotplug send uevents
+  - `systemd-udev-trigger.service` invokes `udevadm trigger` to write `add` to
+    `/sys/devices/*/uevent`, which triggers the kernel to send uevents for
+    existing devices
+  - when a device is hotplugged, the kernel sends uevents for the new device
+- udevd drivers.rules does
+  - if `MODALIAS` is set in the uevent, invoke `kmod load $env{MODALIAS}`

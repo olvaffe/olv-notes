@@ -9,6 +9,8 @@ printk
 - after the record is added, it locks and unlocks the console subsystem
   immediately.  `console_unlock` loops over all new records in logbuf and
   calls `call_console_drivers` to write them to all enabled consoles
+  - all mesages are reorded, but `console_loglevel` decides whether to print
+    to consoles or not
 - it also calls `wake_up_klogd` to schedule a wakeup
   - `log_wait` is wait queue head that allows userspace to poll
   - syslogd incorporates a function called klogd which polls /proc/kmsg
