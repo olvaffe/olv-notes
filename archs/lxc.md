@@ -105,3 +105,12 @@ Linux Containers
     - `session    optional   pam_cgfs.so -c freezer,memory,name=systemd,unified`
     - not needed with pure cgroup v2?
   - `chmod o+x $HOME`
+
+## Mounts
+
+- wayland socket
+  - make sure container users have access to host `$XDG_RUNTIME_DIR/wayland-0`
+    - including the socket and the all parent directories
+  - add `lxc.mount.entry = /run/user/1000/wayland-0 mnt/wayland-0 none bind,create=file`
+    - mount to /mnt becuase systemd over-mounts tmpfs to /run after the bind mount
+  - in the container, try `XDG_RUNTIME_DIR=/mnt WAYLAND_DISPLAY=wayland-0 weston-flower`
