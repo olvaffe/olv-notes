@@ -47,9 +47,11 @@ Kernel Config
     - `pacman -S broadcom-wl-dkms`
     - `dkms autoinstall`
 - post install (Raspberry Pi)
+  - copy `arch/arm64/boot/Image` and
+    `arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb`
   - `config.txt`
     - `arm_64bit=1`
-    - `dtparam=krnbt=on`
+    - `kernel=Image`
 
 ## Tips
 
@@ -71,17 +73,25 @@ Kernel Config
 ## Config: First Pass
 
 - quick first pass to reveal more options
-- select `Processor type and features`
-  - select `Symmetric multi-processing support`
 - select `Enable loadable module support`
 - select `Networking support`
 - select `Device Drivers`
   - select `PCI support`
   - select `USB support`
     - select `Support for Host-side USB`
+- select `Kernel hacking`
+  - select `Kernel debugging`
+- for x86
+  - select `Processor type and features`
+    - select `Symmetric multi-processing support`
 - for Raspberry Pi
   - select `Platform selection`
     - select `Broadcom BCM2835 family`
+  - select `Device Drivers`
+    - select `Mailbox Hardware Support`
+      - select `BCM2835 Mailbox`
+  - select `Firmware Drivers`
+    - select `Raspberry Pi Firmware Driver`
   - select `Device Drivers`
     - select `Character devices`
       - select `Serial device bus`
@@ -93,8 +103,6 @@ Kernel Config
         - select `ALSA for SoC audio support`
     - select `Common Clock Framework`
       - select `Raspberry Pi firmware based clock support`
-    - select `Mailbox Hardware Support`
-      - select `BCM2835 Mailbox`
 
 ## Config: General Setup
 
@@ -127,7 +135,6 @@ Kernel Config
     - select `Packet socket`
     - select `Unix domain sockets`
     - select `TCP/IP networking`
-    - select `NETLINK: socket monitoring interface`
     - select `Network packet filtering framework (Netfilter)`
   - select `Bluetooth subsystem support`
     - select `Bluetooth device drivers` and enable desired drivers
@@ -159,6 +166,7 @@ Kernel Config
     - select `NLS UTF-8`
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed
+    - needed by some DRM drivers such as vc4
 - select `Kernel hacking`
   - select `printk and dmesg options`
     - select `Show timing information on printks`
@@ -300,12 +308,10 @@ Kernel Config
     - select `CPU Frequency scaling`
     - select `Generic DT based cpufreq driver`
     - select `Raspberry Pi cpufreq support` if needed
-- select `Firmware Drivers`
-  - select `Raspberry Pi Firmware Driver` if needed
 - select `Device Drivers` for Raspberry Pi
   - select `PCI support`
     - select `PCI controller drivers`
-      - select `Broadcom Brcmstb PCIe host controller` if needed
+      - select `Broadcom Brcmstb PCIe host controller`
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
@@ -342,7 +348,6 @@ Kernel Config
         - select `Simple framebuffer support`
   - select `USB support`
     - select `xHCI HCD (USB 3.0) support`
-      - select `Generic xHCI driver for a platform device`
   - select `MMC/SD/SDIO card support`
     - select `Secure Digital Host Controller Interface support`
     - select `SDHCI platform and OF driver helper`

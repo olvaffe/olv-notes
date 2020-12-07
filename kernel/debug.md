@@ -42,3 +42,8 @@ Kernel Debug
   - `rdinit=/init`
   - `debug` sets console log level to 10
   - `quiet` sets console log level to `CONFIG_CONSOLE_LOGLEVEL_QUIET` (4)
+
+## netconsole
+
+- specify `netconsole=@192.168.0.2/,@192.168.0.1/` in cmdline
+- host does `nc -u -l 6666`
