@@ -20,7 +20,7 @@ ARM64
   - reserved memory
   - etc
 
-## Booting
+## Booting (Raspberry Pi)
 
 - `kernel/head.S`
   - `_head` defined in `head.S` defines the 64-byte image header
@@ -28,14 +28,605 @@ ARM64
   - after some setup and enabling MMU, it jumps to `start_kernel`
   - dtb address is saved to `__fdt_pointer`
 - `start_kernel`
-  - `smp_setup_processor_id` prints "Booting Linux on physical CPU ..."
-  - `linux_banner` is printed ("Linux version ...")
+  - dmesg "Booting Linux on physical CPU ..."
+    - `smp_setup_processor_id`
+  - dmesg "Linux version ..."
+    - `linux_banner`
   - `setup_arch` is arch-specific
-    - `setup_machine_fdt` prints "Machine model: ..."
-    - `efi_init` prints "efi: UEFI not found.", if `CONFIG_EFI`
-    - `arm64_memblock_init` prints "Reserved memory: create CMA memory pool at ..."
-    - more
-  - more
+    - dmesg "Machine model: ..."
+      - `setup_machine_fdt`
+    - dmesg "Reserved memory: create CMA memory pool at ..." and
+      "OF: reserved mem:..."
+      - `arm64_memblock_init`
+      - `early_init_fdt_scan_reserved_mem`
+      - `__reserved_mem_init_node`
+      - `rmem_cma_setup`
+    - dmesg "Zone ranges:" to "%s zone: %lu pages"
+      - `bootmem_init`,
+      - `zone_sizes_init`
+      - `free_area_init`
+    - DEBUG dmesg "cpu logical map 0x%llx"
+      - `smp_init_cpus`
+      - `of_parse_and_init_cpus`
+    - DEBUG dmesg "mask of set bits 0x3" and
+      "MPIDR hash: aff0[0] aff1[6] aff2[14] aff3[30] mask[0x3] bits[2]"
+      - `smp_build_mpidr_hash`
+  - dmesg "percpu: Embedded 30 pages/cpu s82008 r8192 d32680 u122880" and
+    "pcpu-alloc: s82008 r8192 d32680 u122880 alloc=30*4096"
+    - `setup_per_cpu_areas`
+  - dmesg "Detected PIPT I-cache on CPU0"
+    - `smp_prepare_boot_cpu`
+    - `cpuinfo_store_boot_cpu`
+    - `__cpuinfo_store_cpu`
+    - `cpuinfo_detect_icache_policy`
+  - dmesg "CPU features: detected: Spectre-v2" and others
+    - `smp_prepare_boot_cpu`
+    - `cpuinfo_store_boot_cpu`
+    - `init_cpu_features`
+    - `setup_boot_cpu_capabilities`
+    - `update_cpu_capabilities`
+  - dmesg "Built 1 zonelists, mobility grouping on.  Total pages: 996912"
+    - `build_all_zonelists`
+  - dmesg "Kernel command line:"
+    - `saved_command_line`
+  - dmesg "Dentry cache hash table entries:" and "Inode-cache hash table entries:"
+    - `vfs_caches_init_early`
+  - `mm_init`
+    - dmesg "mem auto-init: stack:off, heap alloc:off, heap free:off"
+      - `report_meminit`
+    - dmesg "software IO TLB: mapped [mem ...-...] (64MB)"
+      - `mem_init`
+      - `swiotlb_init`
+      - `swiotlb_init_with_tbl`
+      - `swiotlb_print_info`
+    - dmesg "Memory: 3818092K/4050944K available (10494K kernel code, 1698K rwdata, 2384K rodata, 5888K init, 587K bss, 167316K reserved, 65536K cma-reserved"
+      - `mem_init`
+      - `mem_init_print_info`
+    - dmesg "SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1"
+      - `kmem_cache_init`
+  - dmesg "ftrace: allocating ..."
+    - `ftrace_init`
+  - dmesg "rcu: Hierarchical RCU implementation." and others
+    - `rcu_init`
+    - `rcu_bootup_announce`
+  - dmesg "NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0"
+    - `early_irq_init`
+  - dmesg "GIC: Using split EOI/Deactivate mode"
+    - `init_IRQ`
+    - `irqchip_init`
+    - `of_irq_init`
+    - `gic_of_init`
+    - `__gic_init_bases`
+  - dmesg "random: get_random_bytes called from ..."
+  - dmesg "arch_timer: cp15 timer(s) running at 54.00MHz (phys)."
+    - `time_init`
+    - `timer_probe`
+    - `arch_timer_of_init`
+    - `arch_timer_common_init`
+    - `arch_timer_banner`
+  - dmesg "clocksource: arch_sys_counter: mask: 0xffffffffffffff ..."
+    - `time_init`
+    - `timer_probe`
+    - `arch_timer_of_init`
+    - `arch_timer_common_init`
+    - `arch_counter_register`
+    - `clocksource_register_hz`
+    - `__clocksource_register_scale`
+    - `__clocksource_update_freq_scale`
+  - dmesg "sched_clock: 56 bits at 54MHz, resolution 18ns, wraps every 4398046511102ns"
+    - `time_init`
+    - `timer_probe`
+    - `arch_timer_of_init`
+    - `arch_timer_common_init`
+    - `arch_counter_register`
+    - `sched_clock_register`
+  - dmesg "Console: colour dummy device 80x25" and "printk: console [tty0] enabled"
+    - `console_init`
+    - `con_init`
+  - dmesg "Calibrating delay loop (skipped), value calculated using timer frequency.. 108.50 BogoMIPS ..."
+    - `calibrate_delay`
+  - dmesg "pid_max: default: 32768 minimum: 301"
+    - `pid_idr_init`
+  - dmesg "Mount-cache hash table entries: ..." and "Mountpoint-cache hash table entries: ..."
+    - `vfs_caches_init`
+    - `mnt_init`
+  - `arch_call_rest_init`
+    - `rest_init`
+    - spawns a thread to run `kernel_init` and goes into idle
+- `kernel_init_freeable` called by `kernel_init`
+  - dmesg "CPU0: cluster 0 core 0 thread -1 mpidr 0x00000080000000"
+    - `smp_prepare_cpus`
+    - `store_cpu_topology`
+  - `do_pre_smp_initcalls`
+    - call all `early_initcall()`, including
+    - `trace_init_flags_sys_enter`
+    - `trace_init_flags_sys_exit`
+    - `cpu_suspend_init`
+    - `asids_init`
+    - `spawn_ksoftirqd`
+    - `migration_init`
+    - `srcu_bootup_announce`
+    - `rcu_spawn_core_kthreads`
+    - `rcu_spawn_gp_kthread`
+    - `check_cpu_stall_init`
+    - `rcu_sysrq_init`
+    - `cpu_stop_init`
+    - `init_events`
+    - `init_trace_printk`
+    - `event_trace_enable_again`
+    - `dynamic_debug_init`
+    - `initialize_ptr_random`
+    - `its_pmsi_init`
+    - `its_pci_msi_init`
+    - `dummy_timer_register`
+  - `smp_init`
+    - dmesg "smp: Bringing up secondary CPUs ..."
+    - dmesg "Detected PIPT I-cache on CPU1"
+        - the boot CPU
+          - `bringup_nonboot_cpus`
+          - `cpu_up`
+          - `_cpu_up`
+          - `cpuhp_up_callbacks``
+          - `cpuhp_invoke_callback`
+          - `bringup_cpu`
+          - `__cpu_up`
+          - `boot_secondary`
+          - `smp_spin_table_cpu_boot`
+          - `write_pen_release`
+        - the secondary CPUs
+          - `secondary_holding_pen`
+          - `secondary_startup`
+          - `__secondary_switched`
+          - `secondary_start_kernel`
+          - `cpuinfo_store_cpu`
+            - `__cpuinfo_store_cpu`
+            - `cpuinfo_detect_icache_policy`
+          - dmesg "CPU1: cluster 0 core 1 thread -1 mpidr 0x00000080000001"
+            - `secondary_start_kernel`
+            - `store_cpu_topology`
+          - dmesg "CPU1: Booted secondary processor 0x0000000001 [0x410fd083]"
+            - `secondary_start_kernel`
+    - dmesg "smp: Brought up 1 node, 4 CPUs"
+    - `smp_cpus_done`
+      - dmesg "SMP: Total of 4 processors activated."
+      - dmesg "CPU features: detected: 32-bit EL0 Support" and "CPU features: detected: CRC32 instructions"
+        - `setup_cpu_features`
+        - `setup_system_capabilities`
+        - `update_cpu_capabilities`
+      - dmesg "CPU: All CPU(s) started at EL2"
+        - `hyp_mode_check`
+      - dmesg "alternatives: patching kernel code"
+        - `apply_alternatives_all`
+        - `__apply_alternatives_multi_stop`
+        - `__apply_alternatives`
+  - dmesg "devtmpfs: initialized"
+    - `do_basic_setup`
+    - `driver_init`
+    - `devtmpfs_init`
+- `do_initcalls` called by `do_basic_setup`
+  - `pure_initcall()`s
+    - `ipc_ns_init`
+    - `init_mmap_min_addr`
+    - `pci_realloc_setup_params`
+    - `net_ns_init`
+  - `core_initcall()`s
+    - `fpsimd_init`
+    - `tagged_addr_init`
+    - `enable_mrs_emulation`
+    - `armv8_deprecated_init`
+    - `map_entry_trampoline`
+    - `alloc_frozen_cpus`
+    - `cpu_hotplug_pm_sync_init`
+    - `wq_sysfs_init`
+    - `ksysfs_init`
+    - `schedutil_gov_init`
+    - `pm_init`
+    - `rcu_set_runtime_mode`
+    - `rcu_spawn_tasks_rude_kthread`
+    - `dma_init_reserved_memory`
+    - `init_jiffies_clocksource`
+    - `futex_init`
+    - `cgroup_wq_init`
+    - `cgroup1_wq_init`
+    - `ftrace_mod_cmd_init`
+    - `init_graph_trace`
+    - `cpu_pm_init`
+    - `init_zero_pfn`
+    - `cma_init_reserved_areas`
+    - `fsnotify_init`
+    - `filelock_init`
+    - `init_misc_binfmt`
+    - `init_script_binfmt`
+    - `init_elf_binfmt`
+    - `init_compat_elf_binfmt`
+    - `debugfs_init`
+    - `tracefs_init`
+    - `register_xor_blocks`
+    - `prandom_init_early`
+    - `pinctrl_init`
+    - `gpiolib_dev_init`
+    - `regulator_init`
+    - `iommu_init`
+    - `component_debug_init`
+    - `genpd_bus_init`
+    - `soc_bus_register`
+    - `register_cpufreq_notifier`
+    - `opp_debug_init`
+    - `cpufreq_core_init`
+    - `cpufreq_gov_performance_init`
+    - `cpufreq_dt_platdev_init`
+    - `cpuidle_init`
+    - `sock_init`
+    - `net_inuse_init`
+    - `net_defaults_init`
+    - `init_default_flow_dissectors`
+    - `netpoll_init`
+    - `netlink_proto_init`
+    - `genl_init`
+  - `postcore_initcall()`s
+    - `debug_monitors_init`
+    - `irq_sysfs_init`
+    - `dma_atomic_pool_init`
+    - `release_early_probes`
+    - `bdi_class_init`
+    - `mm_sysfs_init`
+    - `init_per_zone_wmark_min`
+    - `mpi_init`
+    - `kobject_uevent_init`
+    - `pcibus_class_init`
+    - `pci_driver_init`
+    - `amba_init`
+    - `tty_class_init`
+    - `vtconsole_class_init`
+    - `serdev_init`
+    - `iommu_dev_init`
+    - `mipi_dsi_bus_init`
+    - `devlink_class_init`
+    - `software_node_init`
+    - `wakeup_sources_debugfs_init`
+    - `wakeup_sources_sysfs_init`
+    - `regmap_initcall`
+    - `spi_init`
+    - `i2c_init`
+    - `thermal_init`
+    - `init_menu`
+  - `arch_initcall()`s
+    - `reserve_memblock_reserved_regions`
+    - `aarch32_alloc_vdso_pages`
+    - `vdso_init`
+    - `arch_hw_breakpoint_init`
+    - `asids_update_limit`
+    - `cryptomgr_init`
+    - `dma_channel_table_init`
+    - `dma_bus_init`
+    - `iommu_dma_init`
+    - `of_platform_default_populate_init`
+  - `subsys_initcall()`s
+    - `topology_init`
+    - `uid_cache_init`
+    - `param_sysfs_init`
+    - `user_namespace_sysctl_init`
+    - `time_ns_init`
+    - `cgroup_sysfs_init`
+    - `cgroup_namespaces_init`
+    - `user_namespaces_init`
+    - `oom_init`
+    - `default_bdi_init`
+    - `percpu_enable_async`
+    - `kcompactd_init`
+    - `init_user_reserve`
+    - `init_admin_reserve`
+    - `init_reserve_notifier`
+    - `swap_init_sysfs`
+    - `swapfile_init`
+    - `hugepage_init`
+    - `io_wq_init`
+    - `rsa_init`
+    - `crypto_cmac_module_init`
+    - `hmac_module_init`
+    - `crypto_null_mod_init`
+    - `sha256_generic_mod_init`
+    - `blake2b_mod_init`
+    - `crypto_ecb_module_init`
+    - `crypto_ctr_module_init`
+    - `crypto_gcm_module_init`
+    - `crypto_ccm_module_init`
+    - `aes_init`
+    - `crc32c_mod_init`
+    - `xxhash_mod_init`
+    - `drbg_init`
+    - `ghash_mod_init`
+    - `ecdh_init`
+    - `init_bio`
+    - `blk_settings_init`
+    - `blk_ioc_init`
+    - `blk_mq_init`
+    - `genhd_device_init`
+    - `raid6_select_algo`
+    - `gpiolib_debugfs_init`
+    - `pwm_debugfs_init`
+    - `pwm_sysfs_init`
+    - `pci_slot_init`
+    - `fbmem_init`
+    - `regulator_fixed_voltage_init`
+    - `gpio_regulator_init`
+    - `misc_init`
+    - `iommu_subsys_init`
+    - `vga_arb_device_init`
+    - `register_cpu_capacity_sysctl`
+    - `dma_buf_init`
+    - `phy_init`
+    - `usb_common_init`
+    - `usb_init`
+    - `serio_init`
+    - `input_init`
+    - `rtc_init`
+    - `power_supply_class_init`
+    - `hwmon_init`
+    - `mmc_init`
+    - `leds_init`
+    - `arm_pmu_hp_init`
+    - `nvmem_init`
+    - `init_soundcore`
+    - `alsa_sound_init`
+    - `proto_init`
+    - `net_dev_init`
+    - `neigh_init`
+    - `fib_notifier_init`
+    - `ethnl_init`
+    - `nexthop_init`
+    - `bt_init`
+    - `ieee80211_init`
+    - `rfkill_init`
+    - `watchdog_init`
+  - `fs_initcall()`s
+    - `create_debug_debugfs_entry`
+    - `clocksource_done_booting`
+    - `tracer_init_tracefs`
+    - `init_trace_printk_function_export`
+    - `init_graph_tracefs`
+    - `init_dynamic_event`
+    - `init_uprobe_trace`
+    - `init_pipe_fs`
+    - `inotify_user_setup`
+    - `eventpoll_init`
+    - `anon_inode_init`
+    - `proc_locks_init`
+    - `iomap_init`
+    - `proc_cmdline_init`
+    - `proc_consoles_init`
+    - `proc_cpuinfo_init`
+    - `proc_devices_init`
+    - `proc_interrupts_init`
+    - `proc_loadavg_init`
+    - `proc_meminfo_init`
+    - `proc_stat_init`
+    - `proc_uptime_init`
+    - `proc_version_init`
+    - `proc_softirqs_init`
+    - `proc_kmsg_init`
+    - `proc_page_init`
+    - `init_ramfs_fs`
+    - `blk_scsi_ioctl_init`
+    - `dynamic_debug_init_control`
+    - `simplefb_init`
+    - `chr_dev_init`
+    - `firmware_class_init`
+    - `sysctl_core_init`
+    - `eth_offload_init`
+    - `ipv4_offload_init`
+    - `inet_init`
+    - `af_unix_init`
+    - `ipv6_offload_init`
+    - `cfg80211_init`
+    - `pci_apply_final_quirks`
+  - `rootfs_initcall()`s
+    - `populate_rootfs`
+  - `device_initcall()`s
+    - `register_arm64_panic_block`
+    - `cpuinfo_regs_init`
+    - `armv8_pmu_driver_init`
+    - `arch_init_uprobes`
+    - `proc_execdomains_init`
+    - `register_warn_debugfs`
+    - `cpuhp_sysfs_init`
+    - `ioresources_init`
+    - `init_sched_debug_procfs`
+    - `irq_pm_init_ops`
+    - `timekeeping_init_ops`
+    - `init_clocksource_sysfs`
+    - `init_timer_list_procfs`
+    - `alarmtimer_init`
+    - `init_posix_timers`
+    - `clockevents_init_sysfs`
+    - `sched_clock_syscore_init`
+    - `proc_modules_init`
+    - `kallsyms_init`
+    - `pid_namespaces_init`
+    - `ikconfig_init`
+    - `seccomp_sysctl_init`
+    - `utsname_sysctl_init`
+    - `init_tracepoints`
+    - `perf_event_sysfs_init`
+    - `system_trusted_keyring_init`
+    - `kswapd_init`
+    - `extfrag_debug_init`
+    - `mm_compute_batch_init`
+    - `slab_proc_init`
+    - `workingset_init`
+    - `proc_vmalloc_init`
+    - `memblock_init_debugfs`
+    - `procswaps_init`
+    - `slab_sysfs_init`
+    - `fcntl_init`
+    - `proc_filesystems_init`
+    - `start_dirtytime_writeback`
+    - `blkdev_init`
+    - `dio_init`
+    - `aio_setup`
+    - `io_uring_init`
+    - `init_devpts_fs`
+    - `init_fat_fs`
+    - `init_vfat_fs`
+    - `init_exfat_fs`
+    - `init_nls_cp437`
+    - `init_nls_iso8859_1`
+    - `init_nls_utf8`
+    - `fuse_init`
+    - `ipc_init`
+    - `ipc_sysctl_init`
+    - `init_mqueue_fs`
+    - `key_proc_init`
+    - `crypto_algapi_init`
+    - `jent_mod_init`
+    - `calibrate_xor_blocks`
+    - `asymmetric_key_init`
+    - `x509_key_init`
+    - `proc_genhd_init`
+    - `bsg_init`
+    - `deadline_init`
+    - `kyber_init`
+    - `libcrc32c_mod_init`
+    - `percpu_counter_startup`
+    - `bcm2835_pinctrl_driver_init`
+    - `rpi_exp_gpio_driver_init`
+    - `bcm2835_pwm_driver_init`
+    - `pci_proc_init`
+    - `brcm_pcie_driver_init`
+    - `of_fixed_factor_clk_driver_init`
+    - `of_fixed_clk_driver_init`
+    - `gpio_clk_driver_init`
+    - `clk_dvp_driver_init`
+    - `bcm2835_clk_driver_init`
+    - `bcm2835_aux_clk_driver_init`
+    - `raspberrypi_clk_driver_init`
+    - `bcm2835_dma_driver_init`
+    - `bcm2835_power_driver_init`
+    - `rpi_power_driver_init`
+    - `rpi_reset_driver_init`
+    - `reset_simple_driver_init`
+    - `n_null_init`
+    - `pty_init`
+    - `hwrng_modinit`
+    - `bcm2835_rng_driver_init`
+    - `iproc_rng200_driver_init`
+    - `cavium_rng_pf_driver_init`
+    - `cavium_rng_vf_driver_init`
+    - `drm_kms_helper_init`
+    - `drm_core_init`
+    - `topology_sysfs_init`
+    - `cacheinfo_sysfs_init`
+    - `bcm2835_pm_driver_init`
+    - `bcm2835_spi_driver_init`
+    - `bcm2835aux_spi_driver_init`
+    - `net_olddevs_init`
+    - `blackhole_netdev_init`
+    - `phy_module_init`
+    - `phy_module_init`
+    - `fixed_mdio_bus_init`
+    - `unimac_mdio_driver_init`
+    - `bcmgenet_driver_init`
+    - `brcmfmac_module_init`
+    - `xhci_hcd_init`
+    - `xhci_pci_init`
+    - `serport_init`
+    - `input_leds_init`
+    - `evdev_init`
+    - `bcm2835_i2c_driver_init`
+    - `brcmstb_i2c_driver_init`
+    - `rpi_hwmon_driver_init`
+    - `bcm2835_thermal_driver_init`
+    - `bcm2835_wdt_driver_init`
+    - `hci_uart_init`
+    - `dt_cpufreq_platdrv_init`
+    - `raspberrypi_cpufreq_driver_init`
+    - `arm_idle_init`
+    - `mmc_pwrseq_simple_driver_init`
+    - `mmc_pwrseq_emmc_driver_init`
+    - `mmc_blk_init`
+    - `sdhci_drv_init`
+    - `sdhci_pltfm_drv_init`
+    - `sdhci_iproc_driver_init`
+    - `rpi_firmware_driver_init`
+    - `smccc_soc_init`
+    - `hid_init`
+    - `hid_generic_init`
+    - `a4_driver_init`
+    - `apple_driver_init`
+    - `belkin_driver_init`
+    - `ch_driver_init`
+    - `ch_driver_init`
+    - `cp_driver_init`
+    - `ez_driver_init`
+    - `ite_driver_init`
+    - `ks_driver_init`
+    - `lg_driver_init`
+    - `lg_g15_driver_init`
+    - `ms_driver_init`
+    - `mr_driver_init`
+    - `redragon_driver_init`
+    - `hid_init`
+    - `vchiq_driver_init`
+    - `bcm2835_alsa_driver_init`
+    - `bcm2835_mbox_driver_init`
+    - `alsa_timer_init`
+    - `alsa_pcm_init`
+    - `snd_soc_init`
+    - `sock_diag_init`
+    - `gre_offload_init`
+    - `sysctl_ipv4_init`
+    - `tunnel4_init`
+    - `inet_diag_init`
+    - `tcp_diag_init`
+    - `cubictcp_register`
+    - `inet6_init`
+    - `sit_init`
+    - `packet_init`
+  - `late_initcall()`s
+    - `init_oops_id`
+    - `sched_init_debug`
+    - `cpu_latency_qos_init`
+    - `pm_debugfs_init`
+    - `printk_late_init`
+    - `init_srcu_module_notifier`
+    - `swiotlb_create_debugfs`
+    - `tk_debug_sleep_time_init`
+    - `load_system_certificate_list`
+    - `fault_around_debugfs`
+    - `max_swapfiles_check`
+    - `split_huge_pages_debugfs`
+    - `check_early_ioremap_leak`
+    - `init_btrfs_fs`
+    - `init_root_keyring`
+    - `blk_timeout_init`
+    - `prandom_init_late`
+    - `pci_resource_alignment_sysfs_init`
+    - `pci_sysfs_init`
+    - `amba_deferred_retry`
+    - `clk_debug_init`
+    - `sync_state_resume_initcall`
+    - `deferred_probe_initcall`
+    - `genpd_power_off_unused`
+    - `genpd_debug_init`
+    - `init_netconsole`
+    - `of_fdt_raw_init`
+    - `tcp_congestion_default`
+    - `regulatory_init_db`
+    - `init_amu_fie`
+    - `clear_boot_tracer`
+    - `clk_disable_unused`
+    - `regulator_init_complete`
+    - `of_platform_sync_state_init`
+    - `alsa_sound_last_init`
+- `kernel_init`
+  - dmesg "Warning: unable to open an initial console."
+    - `kernel_init_freeable`
+    - `console_on_rootfs`
+  - dmesg "Freeing unused kernel memory: 5888K"
+    - `free_initmem`
+    - `free_reserved_area`
+  - dmesg "Run /init as init process"
+    - `run_init_process`
 
 ## Flattened Device Tree (FDT)
 
@@ -56,3 +647,7 @@ ARM64
   - `/firmware`
   - `simple-bus`
   - `simple-mfd`
+
+## dmesg
+
+-

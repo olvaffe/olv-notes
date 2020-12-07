@@ -68,6 +68,13 @@ Raspberry Pi
   - `linux,cma`
     - compatible: `shared-dma-pool`
     - driver: `CONFIG_DMA_CMA`
+- `cpus`
+  - enable-method: `brcm,bcm2836-smp`
+  - `cpu@0`, `cpu@1`, `cpu@2`, `cpu@3`
+    - enable-method: `spin-table`
+    - this means the firmware should make secondary CPUs spin, and branch to
+      `cpu-release-addr` after thek kernel writes the address of
+      `secondary_holding_pen` to it
 - `sd_vcc_reg`, `fixedregulator_3v3`, and `fixedregulator_5v0`
   - compatible: `regulator-fixed`
   - driver: `CONFIG_REGULATOR_FIXED_VOLTAGE`
