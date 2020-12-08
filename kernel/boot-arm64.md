@@ -28,83 +28,83 @@ ARM64
   - after some setup and enabling MMU, it jumps to `start_kernel`
   - dtb address is saved to `__fdt_pointer`
 - `start_kernel`
-  - dmesg "Booting Linux on physical CPU ..."
+  - dmesg `Booting Linux on physical CPU ...`
     - `smp_setup_processor_id`
-  - dmesg "Linux version ..."
+  - dmesg `Linux version ...`
     - `linux_banner`
   - `setup_arch` is arch-specific
-    - dmesg "Machine model: ..."
+    - dmesg `Machine model: ...`
       - `setup_machine_fdt`
-    - dmesg "Reserved memory: create CMA memory pool at ..." and
-      "OF: reserved mem:..."
+    - dmesg `Reserved memory: create CMA memory pool at ...` and
+      `OF: reserved mem:...`
       - `arm64_memblock_init`
       - `early_init_fdt_scan_reserved_mem`
       - `__reserved_mem_init_node`
       - `rmem_cma_setup`
-    - dmesg "Zone ranges:" to "%s zone: %lu pages"
+    - dmesg `Zone ranges:` to `%s zone: %lu pages`
       - `bootmem_init`,
       - `zone_sizes_init`
       - `free_area_init`
-    - DEBUG dmesg "cpu logical map 0x%llx"
+    - DEBUG dmesg `cpu logical map 0x%llx`
       - `smp_init_cpus`
       - `of_parse_and_init_cpus`
-    - DEBUG dmesg "mask of set bits 0x3" and
-      "MPIDR hash: aff0[0] aff1[6] aff2[14] aff3[30] mask[0x3] bits[2]"
+    - DEBUG dmesg `mask of set bits 0x3` and
+      `MPIDR hash: aff0[0] aff1[6] aff2[14] aff3[30] mask[0x3] bits[2]`
       - `smp_build_mpidr_hash`
-  - dmesg "percpu: Embedded 30 pages/cpu s82008 r8192 d32680 u122880" and
-    "pcpu-alloc: s82008 r8192 d32680 u122880 alloc=30*4096"
+  - dmesg `percpu: Embedded 30 pages/cpu s82008 r8192 d32680 u122880` and
+    `pcpu-alloc: s82008 r8192 d32680 u122880 alloc=30*4096`
     - `setup_per_cpu_areas`
-  - dmesg "Detected PIPT I-cache on CPU0"
+  - dmesg `Detected PIPT I-cache on CPU0`
     - `smp_prepare_boot_cpu`
     - `cpuinfo_store_boot_cpu`
     - `__cpuinfo_store_cpu`
     - `cpuinfo_detect_icache_policy`
-  - dmesg "CPU features: detected: Spectre-v2" and others
+  - dmesg `CPU features: detected: Spectre-v2` and others
     - `smp_prepare_boot_cpu`
     - `cpuinfo_store_boot_cpu`
     - `init_cpu_features`
     - `setup_boot_cpu_capabilities`
     - `update_cpu_capabilities`
-  - dmesg "Built 1 zonelists, mobility grouping on.  Total pages: 996912"
+  - dmesg `Built 1 zonelists, mobility grouping on.  Total pages: 996912`
     - `build_all_zonelists`
-  - dmesg "Kernel command line:"
+  - dmesg `Kernel command line:`
     - `saved_command_line`
-  - dmesg "Dentry cache hash table entries:" and "Inode-cache hash table entries:"
+  - dmesg `Dentry cache hash table entries:` and `Inode-cache hash table entries:`
     - `vfs_caches_init_early`
   - `mm_init`
-    - dmesg "mem auto-init: stack:off, heap alloc:off, heap free:off"
+    - dmesg `mem auto-init: stack:off, heap alloc:off, heap free:off`
       - `report_meminit`
-    - dmesg "software IO TLB: mapped [mem ...-...] (64MB)"
+    - dmesg `software IO TLB: mapped [mem ...-...] (64MB)`
       - `mem_init`
       - `swiotlb_init`
       - `swiotlb_init_with_tbl`
       - `swiotlb_print_info`
-    - dmesg "Memory: 3818092K/4050944K available (10494K kernel code, 1698K rwdata, 2384K rodata, 5888K init, 587K bss, 167316K reserved, 65536K cma-reserved"
+    - dmesg `Memory: 3818092K/4050944K available (10494K kernel code, 1698K rwdata, 2384K rodata, 5888K init, 587K bss, 167316K reserved, 65536K cma-reserved`
       - `mem_init`
       - `mem_init_print_info`
-    - dmesg "SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1"
+    - dmesg `SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1`
       - `kmem_cache_init`
-  - dmesg "ftrace: allocating ..."
+  - dmesg `ftrace: allocating ...`
     - `ftrace_init`
-  - dmesg "rcu: Hierarchical RCU implementation." and others
+  - dmesg `rcu: Hierarchical RCU implementation.` and others
     - `rcu_init`
     - `rcu_bootup_announce`
-  - dmesg "NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0"
+  - dmesg `NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0`
     - `early_irq_init`
-  - dmesg "GIC: Using split EOI/Deactivate mode"
+  - dmesg `GIC: Using split EOI/Deactivate mode`
     - `init_IRQ`
     - `irqchip_init`
     - `of_irq_init`
     - `gic_of_init`
     - `__gic_init_bases`
-  - dmesg "random: get_random_bytes called from ..."
-  - dmesg "arch_timer: cp15 timer(s) running at 54.00MHz (phys)."
+  - dmesg `random: get_random_bytes called from ...`
+  - dmesg `arch_timer: cp15 timer(s) running at 54.00MHz (phys).`
     - `time_init`
     - `timer_probe`
     - `arch_timer_of_init`
     - `arch_timer_common_init`
     - `arch_timer_banner`
-  - dmesg "clocksource: arch_sys_counter: mask: 0xffffffffffffff ..."
+  - dmesg `clocksource: arch_sys_counter: mask: 0xffffffffffffff ...`
     - `time_init`
     - `timer_probe`
     - `arch_timer_of_init`
@@ -113,28 +113,28 @@ ARM64
     - `clocksource_register_hz`
     - `__clocksource_register_scale`
     - `__clocksource_update_freq_scale`
-  - dmesg "sched_clock: 56 bits at 54MHz, resolution 18ns, wraps every 4398046511102ns"
+  - dmesg `sched_clock: 56 bits at 54MHz, resolution 18ns, wraps every 4398046511102ns`
     - `time_init`
     - `timer_probe`
     - `arch_timer_of_init`
     - `arch_timer_common_init`
     - `arch_counter_register`
     - `sched_clock_register`
-  - dmesg "Console: colour dummy device 80x25" and "printk: console [tty0] enabled"
+  - dmesg `Console: colour dummy device 80x25` and `printk: console [tty0] enabled`
     - `console_init`
     - `con_init`
-  - dmesg "Calibrating delay loop (skipped), value calculated using timer frequency.. 108.50 BogoMIPS ..."
+  - dmesg `Calibrating delay loop (skipped), value calculated using timer frequency.. 108.50 BogoMIPS ...`
     - `calibrate_delay`
-  - dmesg "pid_max: default: 32768 minimum: 301"
+  - dmesg `pid_max: default: 32768 minimum: 301`
     - `pid_idr_init`
-  - dmesg "Mount-cache hash table entries: ..." and "Mountpoint-cache hash table entries: ..."
+  - dmesg `Mount-cache hash table entries: ...` and `Mountpoint-cache hash table entries: ...`
     - `vfs_caches_init`
     - `mnt_init`
   - `arch_call_rest_init`
     - `rest_init`
     - spawns a thread to run `kernel_init` and goes into idle
 - `kernel_init_freeable` called by `kernel_init`
-  - dmesg "CPU0: cluster 0 core 0 thread -1 mpidr 0x00000080000000"
+  - dmesg `CPU0: cluster 0 core 0 thread -1 mpidr 0x00000080000000`
     - `smp_prepare_cpus`
     - `store_cpu_topology`
   - `do_pre_smp_initcalls`
@@ -154,14 +154,13 @@ ARM64
     - `init_events`
     - `init_trace_printk`
     - `event_trace_enable_again`
-    - `dynamic_debug_init`
     - `initialize_ptr_random`
     - `its_pmsi_init`
     - `its_pci_msi_init`
     - `dummy_timer_register`
   - `smp_init`
-    - dmesg "smp: Bringing up secondary CPUs ..."
-    - dmesg "Detected PIPT I-cache on CPU1"
+    - dmesg `smp: Bringing up secondary CPUs ...`
+    - dmesg `Detected PIPT I-cache on CPU1`
         - the boot CPU
           - `bringup_nonboot_cpus`
           - `cpu_up`
@@ -181,25 +180,25 @@ ARM64
           - `cpuinfo_store_cpu`
             - `__cpuinfo_store_cpu`
             - `cpuinfo_detect_icache_policy`
-          - dmesg "CPU1: cluster 0 core 1 thread -1 mpidr 0x00000080000001"
+          - dmesg `CPU1: cluster 0 core 1 thread -1 mpidr 0x00000080000001`
             - `secondary_start_kernel`
             - `store_cpu_topology`
-          - dmesg "CPU1: Booted secondary processor 0x0000000001 [0x410fd083]"
+          - dmesg `CPU1: Booted secondary processor 0x0000000001 [0x410fd083]`
             - `secondary_start_kernel`
-    - dmesg "smp: Brought up 1 node, 4 CPUs"
+    - dmesg `smp: Brought up 1 node, 4 CPUs`
     - `smp_cpus_done`
-      - dmesg "SMP: Total of 4 processors activated."
-      - dmesg "CPU features: detected: 32-bit EL0 Support" and "CPU features: detected: CRC32 instructions"
+      - dmesg `SMP: Total of 4 processors activated.`
+      - dmesg `CPU features: detected: 32-bit EL0 Support` and `CPU features: detected: CRC32 instructions`
         - `setup_cpu_features`
         - `setup_system_capabilities`
         - `update_cpu_capabilities`
-      - dmesg "CPU: All CPU(s) started at EL2"
+      - dmesg `CPU: All CPU(s) started at EL2`
         - `hyp_mode_check`
-      - dmesg "alternatives: patching kernel code"
+      - dmesg `alternatives: patching kernel code`
         - `apply_alternatives_all`
         - `__apply_alternatives_multi_stop`
         - `__apply_alternatives`
-  - dmesg "devtmpfs: initialized"
+  - dmesg `devtmpfs: initialized`
     - `do_basic_setup`
     - `driver_init`
     - `devtmpfs_init`
@@ -235,7 +234,6 @@ ARM64
     - `cma_init_reserved_areas`
     - `fsnotify_init`
     - `filelock_init`
-    - `init_misc_binfmt`
     - `init_script_binfmt`
     - `init_elf_binfmt`
     - `init_compat_elf_binfmt`
@@ -619,13 +617,13 @@ ARM64
     - `of_platform_sync_state_init`
     - `alsa_sound_last_init`
 - `kernel_init`
-  - dmesg "Warning: unable to open an initial console."
+  - dmesg `Warning: unable to open an initial console.`
     - `kernel_init_freeable`
     - `console_on_rootfs`
-  - dmesg "Freeing unused kernel memory: 5888K"
+  - dmesg `Freeing unused kernel memory: 5888K`
     - `free_initmem`
     - `free_reserved_area`
-  - dmesg "Run /init as init process"
+  - dmesg `Run /init as init process`
     - `run_init_process`
 
 ## Flattened Device Tree (FDT)
@@ -647,7 +645,3 @@ ARM64
   - `/firmware`
   - `simple-bus`
   - `simple-mfd`
-
-## dmesg
-
--

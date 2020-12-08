@@ -94,7 +94,7 @@ Kernel Config
     - select `Raspberry Pi Firmware Driver`
   - select `Device Drivers`
     - select `Character devices`
-      - select `Serial device bus`
+      - select `Serial device bus` (for bluetooth)
     - select `I2C support`
       - select `I2C support`
     - select `SPI support`
