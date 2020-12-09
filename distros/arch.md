@@ -152,14 +152,14 @@ ArchLinux
   - init (symlink to systemd), reboot, shutdown, poweroff, halt (symlinks to
     systemctl)
 - util-linux
-  - agetty, blkid, dmesg, fdisk, kill, login, fsck, mkfs, mount, rfkill, su,
-    switch_root, nsenter, unshare, lsns, etc.
+  - agetty, blkid, dmesg, fdisk, kill, login, fsck, mkfs, mount, mountpoint,
+    findmnt, rfkill, su, switch_root, nsenter, unshare, lsns, etc.
 - bash
 - shadow
   - grouadd, passwd, useradd, lastlog, newgidmap, newuidmap, etc.
 - coreutils
-  - ls, mv cp, cat, chmod, chown, basename, cut, date, df, du, echo, env,
-    chroot, etc.
+  - ls, mv cp, sync, cat, chmod, chown, basename, cut, date, df, du, echo,
+    env, chroot, etc.
 - iputils
   - ping, tftpd, etc.
 - iproute2

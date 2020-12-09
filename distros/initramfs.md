@@ -20,14 +20,19 @@ initramfs
 - pid 1 calls `console_on_rootfs` to open `/dev/console` and dup it to fd 0,
   1, and 2
   - when initramfs cpio does not have the node, this is skipped
-- pid 1 checks `/init`, and if non-existent, calls `prepare_namespace` to
-  mount the real root device, mount `devtmpfs`, and chroot
-  - when `/init` exists, it replaces `prepare_namespace` completely
-  - otherwise, `mount_root` mount the root device to `/root` and `init_chdir`
-    to `/root`
-  - `devtmpfs_mount` mount devtmpfs to `/root/dev`
-  - `init_mount` and `init_chroot` chroot to `/root`
-- pid 1 finally `execve`s userspace init (from initramfs or real root)
+- pid 1 checks `/init`.  If the unpacked cpio has it, pid 1 `execve`s and
+  handles control to userspace
+- if there is no `/init`, kernel calls `prepare_namespace` to mount `root=`
+  - `name_to_dev_t` parses `root=` to get root device major:minor and save it
+    to `ROOT_DEV`
+  - `mount_root` creates `/dev/root` pointing to `ROOT_DEV` and calls
+    `mount_block_root` to mount it to `/root` and `chdir` to it
+    - on success, dmesg prints `VFS: Mounted root (xxx filesystem) readonly on device xxx:xxx.`
+    - on failure, dmesg prints some info and `VFS: Unable to mount root fs on xxx`
+  - `devtmpfs_mount` mounts devtmpfs to `/root/dev`
+  - `init_mount` move-mounts `/root` to `/`
+  - `init_chroot` chroots
+- pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in initramfs)
 
 ## initramfs
 

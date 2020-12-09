@@ -301,3 +301,22 @@ systemd
   - by default, 
     - when external displays are connected, lid closed is ignored
     - otherwise, suspend
+
+## namespaces
+
+- systemd makes use of linux namespaces
+- `lsns -t mnt`
+  - `systemd-udevd` is configured `PrivateMounts=yes`
+  - `systemd-logind`, `colord`, `ntpd`, and `upowerd` are configured
+    `PrivateTmp=yes`
+  - `bluetoothd`, `NetworkManager` are configured `ProtectSystem=yes`
+  - `irqbalance` is configured `ReadOnlyPaths=/`
+- `lsns -t net`
+  - `rtkit-daemon` is configured `PrivateNetwork=yes`
+- `lsns -t user`
+  - `upowerd` is configured `PrivateUsers=yes`
+- `lsns -t uts`
+  - `systemd-udevd` and `systemd-logind` are configured `ProtectHostname=yes`
+- ipc, pid, cgroup, time
+  - no used by systemd on my system
+  - but chrome makes use of net, user, pid
