@@ -17,6 +17,30 @@ Crostini
   - ask `vm_cicerone` to `SetUpLxdContainerUser`
   - run `vsh` to get the shell to the container
 
+## Disk Images
+
+- When asked, Chrome downloads `cros-termina` component to
+  `/home/chronos/cros-components/cros-termina/<version>`
+  - the component is shareable with all users
+  - the component contains `image.ext4` raw ext4 image
+  - the disk image is loop-mounted at
+    `/run/imageloader/cros-termina/<version>`
+  - the disk image contains
+    - `vm_kernel` is the kernel
+    - `vm_rootfs.img` is a raw ext4 image
+    - `vm_tools.img` is a raw ext4 image
+- When asked, `vm_concierge` creates a disk image under
+  `/home/root/<user-hash>/crosvm`
+  - the disk image is private to the user
+  - the disk image is raw and is formatted to btrfs
+  - the path is bind-mounted to
+    `/run/daemon-store/crosvm/<hash>`
+- crosvm is started with
+  - `--pmem-device vm_rootfs.img` and mounted as ro rootfs by guest
+  - `--disk vm_tools.img` and mounted as ro `/opt/google/cros-containers` by
+    guest
+  - `--rwdisk <created-disk-image>` and mounted as rw `/mnt/stateful` by guest
+
 ## Host
 
 - `vmc` source code is at `src/platform2/vm_tools/crostini_client`
