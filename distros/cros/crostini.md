@@ -63,9 +63,37 @@ Crostini
 
 ## Termina
 
+- <https://chromium.googlesource.com/chromiumos/platform2/+/refs/heads/master/vm_tools/>
 - to get a shell, run `vmc start termina` in host
+- log at host `/run/daemon-store/crosvm/<hash>/log/<random>.log`
+- kernel
+  - `console=hvc0 earlycon=uart8250,io,0x3f8 root=/dev/pmem0 ro`
+  - `/dev/pmem0` is raw ext4 image `vm_rootfs.img`
+  - maitred runs as pid 1
+- maitred
+  - `Init::Setup()`
+    - mounts `/proc`, `/sys`, `/tmp`, `/mnt/external`, `/run`, `/dev/shm`,
+      `/dev/pts`, `/var`, `/sys/fs/cgroup`, 
+    - starts `vm_syslog` and `vshd`
+  - starts grpc server
+    - controlled by host `maitred_client`
+  - listens to gRPCs from `vm_concierge`
+    - mainly fromn `Service::StartVm` in `vm_concierge`
+    - `ServiceImpl::ConfigureNetwork` sets up guest network
+    - `ServiceImpl::Mount` mounts specified images
+      - `/dev/vda`, which is ro raw ext4 image `vm_tools.img`, to
+      	`/opt/google/cros-containers`
+    - `ServiceImpl::Mount9P` mounts 9p
+    - `ServiceImpl::StartTermina`
+      - mount `/dev/vdb`, which is rw raw btrfs image, to `/mnt/stateful`
+      - spawns `crash_reporter`
+      - spawns `lxcfs`
+      - spawns `tremplin`
+      - spawns `ndproxyd` and `mcastd`
+        - <https://chromium.googlesource.com/chromiumos/platform2/+/HEAD/patchpanel>
 - tremplin runs inside the VM and provides an gRPC interface for LXD container management
   - source code at `src/platform/tremplin`
+  - it starts lxd and dnsmasq
   - when requested to `CreateLxdContainer`, it downloads the container from
     the LXD image server
   - when requested to `StartLxdContainer`, it starts the specified container

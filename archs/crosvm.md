@@ -17,7 +17,6 @@ crosvm
 - build
   - `cd src/platform/crosvm`
   - `cargo build --features "gpu x"`
-  - `cargo run`
 - run
   - `./target/debug/crosvm run \
        --disable-sandbox \
@@ -35,6 +34,17 @@ crosvm
     - `sudo mkdir /usr/share/policy`
     - `sudo ln -s /path/to/crosvm/seccomp/x86_64 /usr/share/policy/crosvm`
     - seems to conflict with `--gpu`, need to debug
+- network
+  - run crosvm as root and specify
+    - `--host_ip 192.168.0.1`
+    - `--netmask 255.255.255.0`
+    - `--mac 12:34:56:78:9a:bc`
+  - in the guest
+    - `ip link set enp0s4 up`
+    - `ip addr add 192.168.0.2/24 dev enp0s4`
+    - `ip route add default via 192.168.0.2`
+  - in the host
+    - set up NAT
 - to install Arch Linux
   - create new disk image
     - `./target/debug/crosvm create_qcow2 arch.qcow2 20000000000`
