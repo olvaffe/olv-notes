@@ -1,7 +1,7 @@
 Compressions
 ============
 
-## Lossless
+## Data
 
 - using numbers from lzbench
 - traditionally, best ratio, balanced, and best speed compressors are
@@ -32,51 +32,86 @@ Compressions
 | lz4 1.9.2               |   737 MB/s |  4448 MB/s |   100880800 | 47.60 |
 | lzo1x 2.10 -11          |   735 MB/s |   893 MB/s |   106604629 | 50.30 |
 
-## Lossy: Videos
+## Videos
 
-- MPEG-1 part-2
-  - 1993
-  - used by VCD
-- MPEG-2 part-2 / H.262
-  - 1995
-  - used by DVD, Blu-ray, DVB, SDTV
-- MPEG-4 part-2
-  - 1999
-  - used by DivX, Xvid
-- MPEG-4 part-10 AVC / H.264
-  - 2003
-  - used by Blu-ray, HDTV, streaming
-- VC-1
-  - 2006
-  - used by Blu-ray
-- MPEG-H Part 2 HEVC / H.265
-  - 2013
-  - used by UHD Blu-ray, DVB
-- AV1
-  - 2018
+- MPEG
+  - MPEG-1 part-2
+    - 1993
+    - used by VCD
+  - MPEG-2 part-2 / H.262
+    - 1995
+    - used by DVD, Blu-ray, SDTV (DVB, ATSC)
+  - MPEG-4 part-2
+    - 1999
+    - used by DivX, Xvid
+  - MPEG-4 part-10 AVC / H.264
+    - 2003
+    - used by Blu-ray, HDTV/UHDTV (DVB, ATSC), streaming
+  - MPEG-H Part 2 HEVC / H.265
+    - 2013
+    - used by UHD Blu-ray, UHDTV
+- Microsoft
+  - VC-1
+    - 2006
+    - used by some Blu-ray, WMV, streaming
+- Google / Open
+  - VP8
+    - 2008
+    - used by streaming
+  - VP9
+    - 2013
+    - used by streaming
+  - AV1
+    - 2018
+    - used by streaming
 
-## Lossy: Images
+## Audio
+
+- MPEG
+  - MPEG-1 (and 2) part-3 Layer III / MP3
+    - 1993
+  - MPEG-2 Part 7 AAC
+    - 1997
+  - MPEG-4 Part 3 HE-AAC
+    - 2003
+  - MPEG-H Part 3 3D Audio
+    - 2015
+- Dolby
+  - AC-3
+    - 1991
+  - E-AC-3
+    - 2012
+  - AC-4
+    - 2015
+- Apple
+  - ALAC
+    - 2004
+    - used by Apple
+- Xiph
+  - Vorbis
+    - 2000
+    - used by streaming
+  - FLAC
+    - 2001
+  - Opus
+    - 2012
+
+## Images
 
 - GIF
   - 1992
+  - used for animation
 - JPEG
   - 1992
-- PNG (lossless)
+  - used everywhere
+- PNG
   - 1996
+  - used for lossless
 - AVC in HEIF
   - 2003
+  - no user?
 - HEVC in HEIF
   - 2013
+  - used by Apple
 - AV1 in HEIF
   - 2019
-
-## Lossy: Audio
-
-- MPEG-1 (and 2) part-3 Layer III / MP3
-  - 1993
-- MPEG-2 Part 7 AAC
-  - 1997
-- OGG
-  - 2000
-- OPUS
-  - 2012
