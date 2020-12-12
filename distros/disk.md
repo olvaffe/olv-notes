@@ -18,6 +18,11 @@ Distro Disk
   - `btrfs subvolume create homes/current`
   - `btrfs subvolume set-default roots/current`
   - umount
+- current disk usage on a small laptop
+  - /home: 55G
+  - /var: 8G (down to 3G after pacman -Sc)
+  - /usr: 5G
+  - rest: 1G
 
 ## Mounting
 

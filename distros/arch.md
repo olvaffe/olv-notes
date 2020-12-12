@@ -119,6 +119,8 @@ ArchLinux
 - sync database operations
   - `pacman -S`
   - `pacman -F` queries the sync files database
+- to estimate total installation size
+  - `pacman -Qi | grep 'Installed Size' | grep MiB | awk '{s+=$4} END {print s}'`
 
 ## Bootstrap
 
