@@ -235,3 +235,28 @@
 ## ARM
 
 - 
+
+## Security Hardening
+
+- "Performant Security Hardening", KVM Forum 2016
+  - for performance, PIC, IOAPIC, PIT devices are emulated in kernel
+  - but they are legacy devices not used by performance-sensitive devices
+    - APIC is modern
+  - split irqchip!
+  - PIC
+    - maps from GSI to interrupt directly
+    - necessary for real-mode interrupts during early boot
+    - allows legacy devices such as RTC or PIT to send interrupts
+    - masked early in boot and replaced by IOAPIC
+  - IOAPIC
+    - configurable mapping from level- and edge-triggered GSIi to APIC
+      interrupts
+      - tldr; PIC for multicore
+    - necessary for non-MSI-supporting (INTx) device (RTC, PIT, ...)
+      - devices using MSI bypass IOAPIC
+  - PIT
+    - fixed-frequency timer with multiple counters
+    - typically only used during boot
+  - can move 5% of code, which accounts for 15% of CVEs, to userspace
+  - how modern is modern?
+    - disk and network devices use MSI

@@ -51,6 +51,7 @@ Crostini
   - the disk image has a max size of 90% of the free space, as requested by
     `vmc`
   - `StartVm` runs `crosvm` with runtime directory at `/run/vm`
+    - calls `TerminaVm::Create`
   - it calls `vm->Mount`, which requests `/sbin/init` inside VM to mount `/dev/vd[bcdef...]`
     - normally, `/dev/vdb` is backed by an image file under
       `/home/root/<id>/crosvm` on host and is mounted at `/mnt/stateful` in

@@ -60,6 +60,95 @@ crosvm
     - follow the installation guide
     - remember to extract the installed kernel/initramfs for the host
 
+## Startup Flow
+
+- entrypoint `crosvm::main` in `src/main.rs`
+  - `crosvm::run_vm` handles the `run` subcommand
+    - it creates a default config and parses the args to update the config
+  - `crosvm::platform::run_config` runs the config
+  - `crosvm::platform::run_vm` creates sockets for devices and builds the vm
+  - `crosvm::platform::run_control`
+- `build_vm` is called by `run_vm` before `run_control` to build the vm
+  - `setup_memory` creates memfd
+    - there are usually 2 to 3 ranges
+      - BIOS (optional)
+      - [.. 3.25GB] (`MEM_32BIT_GAP_SIZE`)
+      - [4GB ..]
+    - GuestMemory creates memfd
+  - `create_vm` points to `create_kvm`
+    - it opens `/dev/kvm`
+    - it calls `ioctl(KVM_CREATE_VM)` to get vm fd
+      - the vm has no cpu nor memory yet
+    - `ioctl(KVM_SET_USER_MEMORY_REGION)` for each memory region
+      - the vm has memory now but still no cpu
+  - `create_irq_chip` points to `create_kvm_kernel_irq_chip`
+    - `ioctl(KVM_CREATE_IRQCHIP)`
+      - in-kernel virtual ioapic, virtual pic (two PICs, nested), 
+    - `ioctl(KVM_CREATE_PIT2)`
+      - in-kernel PIT timer
+    - there is `create_kvm_split_irq_chip` to emulate the devices in userspace
+      instead, but is experimental
+  - `create_devices` points to `crosvm::platform::create_devices`
+    - `create_virtio_devices` create virtio devices
+      - note that each virtio device
+        - is put in minijails unless `--disable-sandbox`
+        - has at least one socket for communication
+      - for each `--serial`, `create_console_device`
+      - for each `--disk`, `create_block_device`
+      - for each `--pmem-device`, `create_pmem_device`
+        - this does `ioctl(KVM_SET_USER_MEMORY_REGION)`
+      - always `create_rng_device`
+      - for each `--evdev`, `create_vinput_device`
+      - always `create_balloon_device`
+      - if `--host_ip` or `--tap-fd`, `create_net_device`
+      - if `--enable-gpu`, `create_gpu_device`
+      - for each `--shared-dir`, `create_fs_device`
+    - for each virtio device,
+      - another socket is created for MSI request/response
+      - VirtioPciDevice is created to wrap the virtio device and the MSI
+      	socket
+    - a `XhciController` is created
+  - `generate_pci_root`
+    - this creates a pci root and adds all devices to it
+    - for each device,
+      - an eventfd is created and `ioctl(KVM_IRQFD)`
+      - if the device can be notified (each vq of each device can),
+        `ioctl(KVM_IOEVENTFD)`
+      - if the device is jailed, wrap it in `ProxyDevice`
+        - this is where the device process is forked
+        - this creates yet another socket for communication
+        - there are only four operations handled by
+            `devices::proxy::child_proc`
+          - for pci device, they are read bar, write bar, read config, write
+            config
+  - `setup_io_bus`
+    - create an io bus and adds pci root to it
+    - also legacy devices such as rtc, i8042
+  - `setup_serial_devices` adds COM[0-3] to io bus
+  - `setup_acpi_devices`
+    - adds acpi pm device to io bus
+  - manually set up mptable, smbios, and acpi tables (DSDT/FACP/MADT/XSDT)
+  - load kernel image, cmdline, initramfs into GuestMemory
+  - `configure_system`
+    - set up boot header for kernel
+    - add e820 entries
+- `run_control`
+  - spawns one thread for each vcpu and runs inside `run_vcpu` forever
+  - the main thread enters a loop forever to poll and handle fds
+
+## Sandboxing
+
+- unless `--disable-sandbox` is specified, sandboxing is enabled
+- it uses minijail crate to
+  - set up namespaces
+  - set up seccomp
+- `simple_jail`
+  - checks `/var/empty` and will use it for `pivot_root`
+  - parses `.policy` under `/usr/share/policy/crosvm`
+  - uses pids/user/vfs/net namespaces, with all user caps removed
+    - some devices don't use `simple_jail` to keep user caps
+  - sets up the minijail config
+
 ## virtio
 
 - all virtio devices have `PciClassCode::Other` and
@@ -129,3 +218,14 @@ crosvm
   - thanks to `KVM_IRQFD`
 - when a virtio-device needs the main process to do something, such as
   injecting pages into the guest, it sends a `VmMemoryRequest`
+
+## Crates
+
+- `sys_util` crate
+  - `syslog`
+    - `syslog::init` is called in `crosvm::crosvm_main` to initialize
+    - `syslog::log` logs to syslog and optionally stderr and fd
+      - `echo_stderr` to enable stderr (default on)
+      - `echo_file` to set custom fd (default off)
+    - macros: error!, warn!, info!, debug!, log!
+      - all call `syslog::log`
