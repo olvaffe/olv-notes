@@ -181,6 +181,9 @@ crosvm
 
 ## virtio-gpu
 
+- the main thread waits inside `devices::proxy::child_proc`
+- the gpu thread is spawned from `activate`
+  - 
 - guest can use `VIRTIO_GPU_CMD_RESOURCE_CREATE_3D` to allocate a
   virglrenderer resource
 - in virtio-gpu process, it calls
