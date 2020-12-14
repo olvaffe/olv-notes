@@ -104,8 +104,13 @@ WiFi
   - when multiple devices use the same channel, AP talks to them in turn and
     the bandwidth of the channel is shared among those devices
   - when multiple devices use different channels, all devices get full
-    bandwidth
-    - I guess it also depends on the horsepower of the AP
+    bandwidth?
+    - I guess it also depends on the horsepower of the AP?
+  - there is AC, advertised speed
+    - AC1200: 300Mbit/s for 2.4GHz + 900Mbit/s for 5GHz
+    - it looks like two devices on different channels of the same band still
+      share the bandwidth.  Perhaps it is not even possible for two devices to
+      be on different channels?
 - MIMO
   - multiple antennas to exploit multipath propagation
   - written NxM indicating N transmitters and M receivers
