@@ -110,6 +110,8 @@ crosvm
     - a `XhciController` is created
   - `generate_pci_root`
     - this creates a pci root and adds all devices to it
+      - `PciRoot` does not implement `PciDevice`
+      - but it owns `PciRootConfiguration` which implements `PciDevice`
     - for each device,
       - an eventfd is created and `ioctl(KVM_IRQFD)`
       - if the device can be notified (each vq of each device can),
@@ -117,16 +119,15 @@ crosvm
       - if the device is jailed, wrap it in `ProxyDevice`
         - this is where the device process is forked
         - this creates yet another socket for communication
-        - there are only four operations handled by
-            `devices::proxy::child_proc`
-          - for pci device, they are read bar, write bar, read config, write
-            config
+      - add the io ranges to `mmio_bus`
+  - create `PciConfigIo` which implements BusDevice
+    - to handle PIC config address via port 0xcf8 and 0xcfc
+    - it holds a pointer to pci root
   - `setup_io_bus`
-    - create an io bus and adds pci root to it
+    - create an `io_bus` and adds `PciConfigIo` to it
     - also legacy devices such as rtc, i8042
-  - `setup_serial_devices` adds COM[0-3] to io bus
-  - `setup_acpi_devices`
-    - adds acpi pm device to io bus
+  - `setup_serial_devices` adds COM[0-3] to `io_bus`
+  - `setup_acpi_devices` adds acpi pm device to `io_bus`
   - manually set up mptable, smbios, and acpi tables (DSDT/FACP/MADT/XSDT)
   - load kernel image, cmdline, initramfs into GuestMemory
   - `configure_system`
@@ -135,6 +136,68 @@ crosvm
 - `run_control`
   - spawns one thread for each vcpu and runs inside `run_vcpu` forever
   - the main thread enters a loop forever to poll and handle fds
+
+## vcpu
+
+- main thread
+  - `run_control` calls `run_vcpu` to spawn a vcpu thread
+- each vcpu thread calls `runnable_vcpu` first to create a RunnableVcpu
+  - `create_cpu` calls `ioctl(KVM_CREATE_VCPU)` to get a vcpu fd
+  - mmap first `ioctl(KVM_GET_VCPU_MMAP_SIZE)` bytes of vcpu fd
+    - the region holds a `struct kvm_run` that can be used to communiate wit
+      the vcpu
+  - `configure_vcpu` sets up vcpu cpuid, fpu, segments, and registers
+    - it also follows the kernel boot protocol if BIOS is not used
+- each vcpu thread then enters a loop calling `ioctl(KVM_RUN)`
+  - the thread spends most of the time inside `ioctl(KVM_RUN)` running guest
+    code
+  - on vmexit, it may handle the request in kernel and resume to run guest
+    code; but sometimes, it needs to return from the ioctl and let the
+    userspace handle the request
+- common exit reasons
+  - `VcpuExit::IoIn(port, size)` reads from `io_bus` at `port`
+    - writes to `kvm_run::io::data_offset` where vcpu can see it
+  - `VcpuExit::IoOut(port, size, data)` writes to `io_bus` at `port`
+  - `VcpuExit::MmioRead(addr, size)` reads from `mmio_bus` at `addr`
+    - writes to `kvm_run::mmio::data)`
+  - `VcpuExit::MmioWrite(addr, size, data)` writes to `mmio_bus` at `addr`
+
+## Device I/O
+
+- there are two `devices::bus::Bus`: `io_bus` and `mmio_bus`
+  - they handle pio and mmio respectively
+  - reads or writes are handled by `devices::bus::Bus::{write,read}`
+  - every device on the bus implements `BusDevice`
+  - `addr` is first translated to `(dev, addr)` and then BusDevice's `write`
+    or `read` is called
+- on `io_bus`, there is `PciConfigIo` which implements `BusDevice`
+  - used by kernel's `arch/x86/pci/early.c` and `arch/x86/pci/direct.c`
+    - when the kernel calls `pci_read_config_*`, it reaches `direct.c` and
+      uses this device ultimately
+  - when read at 0xcfc, it calls `pci_root::PciConfigIo::config_space_read` to
+    read from `self.config_address`.  This is done by translating
+    `self.config_address` to pci `(bus, dev, func) and `reg`.
+- when sandboxed, the device is ProxyDevice that imeplements `BusDevice`
+  - `config_register_write` sends a one-way `Command::WriteConfig`
+  - `config_register_read` sends a synchronous `Command::ReadConfig`
+  - `write` sends a one-way `Command::Write`
+  - `read` sends a synchronous `Command::Read`
+- when not sandboxed, or when in the device process, the device is
+  `VirtioPciDevice` (or `XhciController`, `PciRootConfiguration`, etc.) that
+  implements `BusDevice`.  For `VirtioPciDevice`,
+  - `config_register_write` calls the device's `PciConfiguration`'s
+    `write_reg` (unless it is MSI reg)
+  - `config_register_read` calls `PciConfiguration`'s `read_reg`
+  - `write` is MMIO and calls `write_bar`
+  - `read` is MMIO and calls `read_bar`
+  - virtio write/read MMIO is commonly used to access
+    - the common `VirtioPciCommonConfig`
+    - the common `MsixConfig`
+    - the device-specific config such as `virtio_gpu_config`
+- virtio vq notify is handled by kernel
+  - the device is set up with `ioctl(KVM_IOEVENTFD)`
+  - when the guest writes to the registered mmio address, the vmexit is
+    handled by kernel and the eventfd is signaled
 
 ## Sandboxing
 
@@ -148,50 +211,13 @@ crosvm
   - uses pids/user/vfs/net namespaces, with all user caps removed
     - some devices don't use `simple_jail` to keep user caps
   - sets up the minijail config
+- `ProxyDevice::new` wraps a `BusDevice` and forks
+  - the main process does device i/o normally.  The proxy device transparently
+    talk to the device process
+  - the device process loops in `child_proc` indefinitely to handle device i/o
+    requests from the main process
 
 ## virtio
-
-- all virtio devices have `PciClassCode::Other` and
-  `PciVirtioSubclass::NonTransitionalBase`
-- when the device type is `TYPE_GPU`, it should at least be
-  `PciClassCode::DisplayController` for Xorg primary gpu auto selection to
-  work
-
-## virtio-wl
-
-- when a guest app calls X, sommelier does Y
-  - `wl_shm_create_pool` -> `sl_shm_create_host_pool`
-  - `wl_shm_pool_create_buffer` -> `sl_host_shm_pool_create_host_buffer`
-  - `wl_drm_create_prime_buffer` -> `sl_drm_create_prime_buffer`
-  - `wl_compositor_create_surface` -> `sl_compositor_create_host_surface`
-  - `wl_surface_attach` -> `sl_host_surface_attach`
-    - this creates a buffer in the host and maps it into the guest
-    - the exact host buffer depends on shm driver
-- guest can use `VIRTIO_WL_CMD_VFD_NEW_DMABUF` to allocate a host dmabuf and
-  map it in the guest
-- in virtio-wl process, it calls
-  - `WlState::new_dmabuf`
-  - `WlVfd::dmabuf`
-  - `VmRequester::request(VmMemoryRequest::AllocateAndRegisterGpuMemory)`
-- in crosvm process, it calls
-  - `SystemAllocator::gpu_memory_allocator`
-  - `GpuBufferDevice::allocate`
-  - `Device::create_buffer`
-  - `gbm_bo_create`
-
-## virtio-gpu
-
-- the main thread waits inside `devices::proxy::child_proc`
-- the gpu thread is spawned from `activate`
-  - 
-- guest can use `VIRTIO_GPU_CMD_RESOURCE_CREATE_3D` to allocate a
-  virglrenderer resource
-- in virtio-gpu process, it calls
-  - `Virtio3DBackend::resource_create_3d`
-  - `Renderer::resource_create`
-  - `virgl_renderer_resource_create`
-
-## virtio-device
 
 - VM devices are created in `create_devices`
   - To create a virtio-device, a VirtioDevice is created first.  It is then
@@ -221,6 +247,56 @@ crosvm
   - thanks to `KVM_IRQFD`
 - when a virtio-device needs the main process to do something, such as
   injecting pages into the guest, it sends a `VmMemoryRequest`
+- all virtio devices have `PciClassCode::Other` and
+  `PciVirtioSubclass::NonTransitionalBase`
+  - when the device type is `TYPE_GPU`, it should at least be
+    `PciClassCode::DisplayController` for Xorg primary gpu auto selection to
+    work
+
+## virtio-gpu
+
+- the main thread waits inside `devices::proxy::child_proc`
+- the gpu thread is spawned from `activate`
+  - `--gpu backend=3d` sets the backend kind to `BackendKind::Virtio3D`
+  - the gpu thread calls `BackendKind::build`
+    - this calls `DisplayBackend::build` first which calls `XOpenDisplay`
+    - it then calls `virtio_3d_backend::Virtio3DBackend::build` which
+      initializes a `Renderer` which calls `virgl_renderer_init`
+  - it then enters `devices::virtio::gpu::Worker::run` and never leaves
+- the gpu thread mainly
+  - wakes up with event `Token::CtrlQueue` ready when the guest notifies
+    - guest notifies -> vmexit -> host kernel signals eventfd
+  - for each descritopr in the queue, `process_queue`
+    - calls `process_descriptor`
+    - calls `process_gpu_command`
+- guest can use `VIRTIO_GPU_CMD_RESOURCE_CREATE_3D` to allocate a
+  virglrenderer resource
+- in virtio-gpu process, it calls
+  - `Virtio3DBackend::resource_create_3d`
+  - `Renderer::resource_create`
+  - `virgl_renderer_resource_create`
+
+## virtio-wl
+
+- when a guest app calls X, sommelier does Y
+  - `wl_shm_create_pool` -> `sl_shm_create_host_pool`
+  - `wl_shm_pool_create_buffer` -> `sl_host_shm_pool_create_host_buffer`
+  - `wl_drm_create_prime_buffer` -> `sl_drm_create_prime_buffer`
+  - `wl_compositor_create_surface` -> `sl_compositor_create_host_surface`
+  - `wl_surface_attach` -> `sl_host_surface_attach`
+    - this creates a buffer in the host and maps it into the guest
+    - the exact host buffer depends on shm driver
+- guest can use `VIRTIO_WL_CMD_VFD_NEW_DMABUF` to allocate a host dmabuf and
+  map it in the guest
+- in virtio-wl process, it calls
+  - `WlState::new_dmabuf`
+  - `WlVfd::dmabuf`
+  - `VmRequester::request(VmMemoryRequest::AllocateAndRegisterGpuMemory)`
+- in crosvm process, it calls
+  - `SystemAllocator::gpu_memory_allocator`
+  - `GpuBufferDevice::allocate`
+  - `Device::create_buffer`
+  - `gbm_bo_create`
 
 ## Crates
 
