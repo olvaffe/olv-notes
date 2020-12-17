@@ -172,7 +172,6 @@ Kernel Config
     - select `Show timing information on printks`
   - select `Generic Kernel Debugging Instruments`
     - select `Debug Filesystem`
-  - select `Kernel debugging`
   - select `Tracers`
     - select `Kernel Function Tracer`
     - select `Trace syscalls`
