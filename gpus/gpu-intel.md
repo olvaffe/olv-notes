@@ -190,4 +190,22 @@
   from CPU
   - it calls `vm_mmap` to set up a vma for the shmem file, and modifies
     `vma->vm_page_prot` to use the desired cache mode
-  - 
+
+## Implicit Fencing
+
+- in anv, an `anv_bo` is allocated by `anv_device_alloc_bo`
+- all VkDeviceMemory are tracked globally
+  - `anv_AllocateMemory` adds them to `dev->memory_objects`
+- in `anv_queue_execbuf_locked`, `anv_execbuf` is initialized from
+  `anv_queue_submit`
+  - `anv_execbuf_add_bo` is used to add an `anv_bo` to `anv_execbuf`
+  - all but wsi bos are added without `EXEC_OBJECT_WRITE`
+  - in `setup_execbuf_for_cmd_buffer`, all internally tracked bos and all
+    VkDeviceMemory bos are added to `anv_execbuf`
+- in kernel `i915_gem_do_execbuffer`,
+  - `eb_lookup_vmas` makes sure each `drm_i915_gem_object` has a `i915_vma`
+  - `eb_relocate_parse` calls `eb_validate_vmas`, which calls
+    `eb_pin_vma` to pin bo pages inside `i915_vma_pin_ww`
+  - `eb_submit` calls `eb_move_to_gpu`, where `i915_vma_move_to_active` calls
+    `dma_resv_add_excl_fence` or `dma_resv_add_shared_fence` depending on
+    whether `EXEC_OBJECT_WRITE` is set
