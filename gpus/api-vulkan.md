@@ -615,3 +615,23 @@ Vulkan
   exclusive ownership
 - releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
   `VkImageMemoryBarrier`
+
+## Debug Extensions
+
+- `VK_EXT_debug_report`
+  - deprecated by `VK_EXT_debug_utils`
+- `VK_EXT_debug_marker`
+  - promoted to `VK_EXT_debug_utils`
+- `VK_EXT_validation_flags`
+  - deprecated by `VK_EXT_validation_features`
+- `VK_EXT_debug_utils`
+- `VK_EXT_tooling_info`
+  - implemented by tools and layers to report themselves
+- `VK_EXT_validation_features`
+  - enable/disable specific validation features of
+    `VK_LAYER_KHRONOS_validation`
+    - thread safety
+    - api params
+    - object lifetimes
+    - core checks
+    - unique handles
