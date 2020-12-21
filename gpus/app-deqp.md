@@ -13,8 +13,21 @@ dEQP
 - Run Vulkan
   - `external/vulkancts/modules/vulkan/deqp-vk \
        --deqp-caselist-file=../external/vulkancts/mustpass/master/vk-default.txt \
-       --deqp-caselist-file=disable \
+       --deqp-log-images=disable \
        --deqp-log-shader-sources=disable`
+  - `--deqp-log-filename=<file.qpa>` to specify an alternative name
+  - ANV CI also has
+    - `ANV_ABORT_ON_DEVICE_LOSS=true`
+    - `MESA_VK_WSI_PRESENT_MODE=immediate`
+    - `--deqp-surface-type=fbo`
+    - `--deqp-shadercache=disable`
+    - see
+      <https://gitlab.freedesktop.org/Mesa_CI/mesa_jenkins/-/blob/master/vulkancts-test/build.py>
+    - or <https://mesa-ci.01.org/>
+      - Job: vulkancts
+      - Revisions: to see the commits
+      - Platforms: pick desired platform such as gen9
+      - Group: dEQP-VK
 - Run GLES
   - `EGL_PLATFORM=surfaceless
      external/modules/gles2/deqp-gles2 \
