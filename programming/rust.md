@@ -1,6 +1,41 @@
 Rust
 ====
 
+## Installation
+
+- `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+  - this downloads and runs `rustup-init.sh`, which downloads and runs
+    <https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init>
+- `rustup-init`
+  - copies itself as `rustup` to `~/.cargo/bin`, or `$CARGO_HOME/bin`
+    - yes, `rustup-init` is installed as `rustup` itself
+  - creates hardlinks such as `cargo`, `rustc`, etc under `$CARGO_HOME/bin`
+    - yes, toolchain binaries are hardlinks to `rustup`
+    - when executed, they find the binary of the same name under
+      `$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/bin` and execve
+  - runs `rustup` to install these components to `~/.rustup`, or `$RUSTUP_HOME`
+    - cargo
+    - clippy
+    - rust-docs
+    - rust-std
+    - rustc
+    - rustfmt
+  - edit `.profile` to source `$CARGO_HOME/env`
+    - `$CARGO_HOME/env` adds `$CARGO_HOME/bin` to `$PATH`
+
+## cargo
+
+- `~/.cargo` or `$CARGO_HOME`
+- `$CARGO_HOME/registry`
+  - `index` appears to be
+    `git clone --bare https://github.com/rust-lang/crates.io-index.git`
+  - `cache` contains downloaded `.crate` files (can be renamed to `.tar.gz`)
+  - `src` contains un-tared crates
+- `cargo build`
+  - downloads dependencies to `$CARGO_HOME/registry/src`
+  - builds dependencies in `target/debug/deps`
+
+
 ## Ownership
 
 - each value in Rust has a variable that is the owner of the value
