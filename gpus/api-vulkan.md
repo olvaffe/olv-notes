@@ -635,3 +635,58 @@ Vulkan
     - object lifetimes
     - core checks
     - unique handles
+
+## `VkFormat`
+
+- `VkImageAspectFlagBits`
+  - `VK_IMAGE_ASPECT_COLOR_BIT`
+  - `VK_IMAGE_ASPECT_DEPTH_BIT`
+  - `VK_IMAGE_ASPECT_STENCIL_BIT`
+  - `VK_IMAGE_ASPECT_METADATA_BIT`
+  - multi-planar
+    - `VK_IMAGE_ASPECT_PLANE_0_BIT`
+    - `VK_IMAGE_ASPECT_PLANE_1_BIT`
+    - `VK_IMAGE_ASPECT_PLANE_2_BIT`
+  - DRM modifier
+    - `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT`
+    - `VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT`
+    - `VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT`
+    - `VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT`
+- core formats
+  - most core formats have one plane
+  - compressed formats have one plane
+  - depth formats have one plane
+  - stencil formats have one plane
+  - depth/stencil formats have two planes
+    - `VK_FORMAT_D32_SFLOAT_S8_UINT`
+    - `VK_FORMAT_D24_UNORM_S8_UINT`
+- YCbCr formats
+  - some have one plane, such as
+    - `VK_FORMAT_G8B8G8R8_422_UNORM`
+  - some have two planes, such as
+    - `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM`
+  - some have three planes, such as
+    - `K_FORMAT_G8_B8_R8_3PLANE_422_UNORM`
+- `VkImageTiling` and `VkImageLayout`
+  - for each plane, HW needs to store the format data and often also format
+    metadata
+  - layout transition makes sure the format metadata is resolved to the format
+    data for the destination operation
+  - tiling specifies whether the format data is tiled or not
+- DRM modifiers
+  - `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT` mixes tiling and layout
+    together.  Format data and format metadata reside on different memory
+    planes
+  - a single-plane format thus can have multiple memory planes when the tiling is
+    `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
+  - can we combine multi-planar format with drm modifier?  It has `N*M`
+    planes in theory.
+- `VK_IMAGE_CREATE_DISJOINT_BIT`
+  - driver by default allocates a buffer and puts planes on different region of
+    the same buffer
+    - thus only a `VkDeviceMemory` needs to be bound
+  - when `VK_IMAGE_CREATE_DISJOINT_BIT` is specified, driver puts different
+    planes on different buffers
+    - thus multiple `VkDeviceMemory` need to be bound
+  - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
+    which respectively point to different BOs
