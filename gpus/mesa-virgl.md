@@ -254,6 +254,7 @@ virgl
 ## Display
 
 - there is no vblank support; pageflip is executed immediately
+  - `drm_vblank_init` is not called
   - vblank event of type page-flip-complete is still delivered
 - when pageflip happens, a set scanout command and a resource flush command
   are queued
