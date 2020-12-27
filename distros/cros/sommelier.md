@@ -1,6 +1,92 @@
 Sommelier
 =========
 
+## Sommelier Manual Setup/Troubleshooting
+
+- in the guest,
+  - `meson out -Dxwayland_path=/usr/bin/Xwayland -Dxwayland_gl_driver_path=/usr/lib/dri`
+  - `cd out`
+  - `ninja`
+- in the host, run customized sway
+  - Revert "Remove xdg-shell v6 support" in sway and wlroots
+  - in `xdg_surface_handle_surface_commit`, comment out
+    `ZXDG_SURFACE_V6_ERROR_UNCONFIGURED_BUFFER` because sommelier calls commit
+    with unconfigured buffer
+- processes and connections
+  - PIDs
+    - `ctx.xwayland_pid` is the pid of xwayland
+    - `ctx.child_pid` is the pid of the program to run
+  - Wayland Displays
+    - `ctx.display` is the connection to the host server
+      - wraps `virtwl_display_fd`
+    - `ctx.host_display` is the connection that sommelier runs on to serve its
+      clients
+      - creates `/run/user/<uid>/wayland-N`
+  - X11 Connection
+    - `ctx.connection` is the connection to XWayland
+      - wraps `ctx.wm_fd`
+  - FDs
+    - `ctx.virtwl_fd` is `/dev/wl0`
+    - `ctx.virtwl_socket_fd` and `virtwl_display_fd` are a socketpair
+      - `virtwl_display_fd` is the host server that sommelier connects to as a
+        client
+      - sommelier acts as a server to its clients, and sits between its clients
+        and `virtwl_display_fd` to translate wayland requests/events
+      - sommelier also sits between `ctx.virtwl_socket_fd` and
+        `ctx.virtwl_ctx_fd` (see next item)
+    - `ctx.virtwl_ctx_fd` is returned by `VIRTWL_IOCTL_NEW_CTX`
+      - wayland requests are received from `ctx.virtwl_socket_fd` and forwarded
+        to `ctx.virtwl_ctx_fd` using `VIRTWL_IOCTL_SEND`
+      - wayland events are received from `ctx.virtwl_ctx_fd` using
+        `VIRTWL_IOCTL_RECV` and forwarded to `ctx.virtwl_socket_fd`
+    - `client_fd` and `sv[1]` are the second socketpair
+      - `client_fd` is the fd of the wayland connection to the child
+      - `sv[1]` is the fd of of they wayland connection that the child
+      	connects to
+    - `ctx.wm_fd` and `wm[1]` are the third socketpair
+      - it is the X connection between sommelier and Xwayland
+      - sommelier is the window manager (client) of Xwayland
+    - `ds[0]` and `ds[1]` are the fourth socketpair
+      - it is an ad-hoc connection between sommelier and Xwayland for
+      	out-of-band events such as Xwayland-is-ready
+- `./sommelier -X xdpyinfo`
+  - this forks `Xwayland` first
+  - when Xwayland is ready, it forks `xdpyinfo` in
+    `sl_handle_display_ready_event`
+  - internally, sommelier loops in `wl_event_loop_dispatch` at the end of
+    `main`
+    - when `Xwayland` is ready, it writes to an fd which is handled by
+      `sl_handle_display_ready_event`.  This is where `xdpyinfo` is forked.
+    - Xwayland sits between sommelier and xdpyinfo and translate between
+      wayland and x traffic
+    - sommelier receives and dispatches wayland traffic from Xwayland like a
+      regular wayland server; however, it internally translates the traffic
+      again before forwarding them to the host server
+    - when `xdpyinfo` exits, sommelier handles `SIGCHLD` in
+      `sl_handle_sigchld`.  Because `exit_with_child` is true by default, it
+      sends `SIGTERM` to `Xwayland`
+    - `sl_handle_x_connection_event` handles the death of Xwayland
+- `./sommelier -X xev`
+  - there is a window and `sl_window_update` is called.  This requires
+    deprecated `zxdg_shell_v6` from host
+  - for some reason, `sl_host_surface_attach` and `sl_host_surface_commit` are
+    called before `sl_internal_xdg_surface_configure` and triggers
+    `ZXDG_SURFACE_V6_ERROR_UNCONFIGURED_BUFFER` in the host
+- `./sommelier -X --glamor --drm-device=/dev/dri/renderD128 xdpyinfo`
+  - by default, `Xwayland` is invoked with `-shm` and there is no
+    GLX/DRI3/Present
+  - specifying both options enables glamor in Xwayland and allows it to
+    support those extensions
+  - note that `LIBGL_DRIVERS_PATH` is forced to `--xwayland-gl-driver-path` or
+    the build-time default for Xwayland
+- `./sommelier -X --glamor --drm-device=/dev/dri/renderD128 xev`
+  - ???
+- `./sommelier -X --glamor --drm-device=/dev/dri/renderD128 glxinfo`
+  - it should work and use virgl
+- `./sommelier -X --glamor --drm-device=/dev/dri/renderD128 glxgears`
+  - ???
+
+
 ## Run
 
 - From the `.gyp`,

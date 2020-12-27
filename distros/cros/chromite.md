@@ -1,6 +1,20 @@
 Chromite
 ========
 
+## `cros` CLI
+
+- `bin/cros` is a symbolic link to `scripts/wrapper3.py` 
+  - many under `bin/` are symlinks to `scripts/wrapper3.py`
+- when invoked as `cros`, `scripts/wrapper3.py` finds `scripts/cros.py` and
+  calls the `main` function
+- `scripts/cros.py` runs a subcommmand under `cli/cros`
+
+## `cros workon`
+
+- `cli/cros/cros_workon.py`
+  - it runs in chroot, and will automatically chroot if not
+- its config is stored at `/mnt/host/source/.config/cros_workon`
+
 ## Scripts
 
 - use `cros_sdk` as an example
