@@ -21,7 +21,7 @@ wlroots
     - `wlr_gamma_control_manager_v1_create`
     - `wlr_xdg_output_manager_v1_create`
     - `wlr_idle_create`
-    - `wlr_idle_inhibit_manager_v1`
+    - `wlr_idle_inhibit_v1_create`
     - `wlr_layer_shell_v1_create`
     - `wlr_xdg_shell_create`
     - `wlr_tablet_v2_create`
