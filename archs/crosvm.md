@@ -271,10 +271,52 @@ crosvm
     - calls `process_gpu_command`
 - guest can use `VIRTIO_GPU_CMD_RESOURCE_CREATE_3D` to allocate a
   virglrenderer resource
-- in virtio-gpu process, it calls
-  - `Virtio3DBackend::resource_create_3d`
-  - `Renderer::resource_create`
+  - `devices::virtio::gpu::Frontend::process_gpu_command`
+  - `devices::virtio::gpu::virtio_gpu::VirtioGpu::resource_create_3d`
+  - `rutabaga_gfx::rutabaga_core::Rutabaga::resource_create_3d`
   - `virgl_renderer_resource_create`
+  - note that,
+    - `Rutabaga::resource_create_3d` actually calls both
+      `virgl_renderer_resource_create` and
+      `virgl_renderer_resource_export_blob`
+      - export can fail
+    - `VirtioGpu::resource_create_3d` also calls `virgl_renderer_execute` to
+      query
+      - this is optional and can fail
+- guest can also use `VIRTIO_GPU_CMD_RESOURCE_CREATE_BLOB` to allocate a
+  virglrenderer resource
+  - `devices::virtio::gpu::virtio_gpu::VirtioGpu::resource_create_3d`
+  - `rutabaga_gfx::rutabaga_core::Rutabaga::resource_create_3d`
+  - `virgl_renderer_resource_create_blob`
+  - similar to 3D resources, they create/export/query
+- `VIRTIO_GPU_CMD_RESOURCE_MAP_BLOB` is used to map a blob resource into guest
+  - `devices::virtio::gpu::virtio_gpu::VirtioGpu::resource_map_blob`
+  - it asks rutabaga to `virgl_renderer_resource_get_map_info` and retreives
+    the already exported fd, if there is an exported fd
+    - it then calls `VmMemoryRequest::RegisterFdAtPciBarOffset` to map the fd
+      into the guest
+  - otherwise, it calls `virgl_renderer_resource_map` to map without an fd
+    (in-process only)
+
+## ResourceBridge
+
+- ResourceBridge is a connection between virtio-gpu and virtio-wl (and others)
+- guest kernel uses `VIRTIO_WL_CTRL_VFD_SEND_KIND_VIRTGPU` to send a guest
+  dma-buf to host wayland
+  - guest virtio-wl driver first calls `virtio_dma_buf_get_uuid` to get the
+    uuid of a dma-buf
+    - for virtio-gpu dma-buf, uuid is from
+      `VIRTIO_GPU_CMD_RESOURCE_ASSIGN_UUID` thus is determined by crosvm
+  - guest virtio-wl driver sends the uuid with the wayland traffic to host
+- crosvm sees `VIRTIO_WL_CTRL_VFD_SEND_KIND_VIRTGPU` and...
+  - uses `ResourceBridge` to send `ResourceRequest::GetBuffer` from virtio-wl
+    to virtio-gpu
+  - virtio-gpu wakes up to `process_resource_bridge` and `export_resource`
+    - the resource must be already exported
+    - `virgl_renderer_execute` is called to query
+  - virtio-wl nows gets the host dmabuf
+    - the stack is `Worker::run`, `WlState::execute`, `WlState::send`, and
+      `WlState::get_info`
 
 ## virtio-wl
 
