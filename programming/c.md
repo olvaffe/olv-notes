@@ -113,3 +113,98 @@ constant would be a legitimate signed long long.
 
 But yes, "use the suffix when unsure" is a damn good idea, _especially_ since
 the sizeof(long) actually varies between the targets we care about.
+
+## C11 Memory Ordering
+
+- barrier in theory
+  - an ordered sequence of two stores in C from CPU1 might be perceived in the
+    wrong order by CPU2 for several reasons
+    - the compiler might reorder the stores
+    - CPU1 might reorder the stores
+    - the memory coherency system might reorder the stores
+      - e.g., the two stores hits two cachelines of CPU1 local cache, but
+      	flushed in the wrong order
+  - CPU1 must insert a store barrier between the two stores to ensure the
+    correct order
+  - let's say CPU1 does the right thing and does
+    `store 1->VAL; store barrier; store &VAL->PVAL`, and CPU2 does
+    `load PVAL->PTMP; load *PTMP->TMP`
+    - is TMP guaranteed to be 1?  No
+    - the compiler does not reorder the loads because of data dependency
+    - CPU2 does not reorder the loads also because of data dependency
+    - however, the memory coherency system might reorder the loads
+      - e.g., the first load hits the memory and the second load hits CPU2
+      	local cache because of the lack of local cache invalidation
+  - CPU2 must insert a data dependency barrier between the two loads to ensure
+    the correct order
+  - more often, the two loads have no data dependency.  CPU2 must insert a
+    load barrier between the two loads to ensure the correct order
+    - a load barrier is a stronger version of a data dependency barrier and
+      can replace a data dependency barrier
+- barrier abstraction: two-way
+  - store barrier: stores before or after the barrier cannot be reordered
+    across the barrier
+  - data dependency barrier: loads with data dependency before or after the
+    barrier cannot be reordered across the barrier
+    - this seems pointless because the compiler and CPU apparently cannot
+      reorder because of data dependency
+    - but the memory coherency system can still reorder
+      - e.g., the memory coherency system can reorder in ways of CPU local
+      	cache flush/invalidation
+  - load barrier: loads before or after the barrier cannot be reordered across
+    the barrier
+  - general barrier: memory accesses (both stores and loads) before or after
+    the barrier cannot be reordered across the barrier
+- barrier abstraction: one-way
+  - acquire operation: all memory operations after the acquire operation
+    cannot be reordered before the acquire operation
+  - release operation: all memory operations before the release operation
+    cannot be reordered after the release operation
+  - they are the operations implied by mutex lock/unlcok
+- C11 `enum memory_order`
+  - an atomic operation can have an explicit memory order
+  - `memory_order_relaxed`: the atomic operation is atomic but no ordering
+    operation implied
+  - `memory_order_consume`: the load operation also performs a consume operation
+    - used in release-consume ordering
+    - no reads or writes in the current thread with data dependency on the
+      atomic variable can be reordered before this load
+      - seems pointless because reodering in compiler or CPU is not allowed
+      	because of data dependency
+      - this is about memory coherency system reordering
+	- e.g., it may invalidate the cacheline used by a load following the
+	  barrier
+    - writes with data dependency in other threads that release the
+      same atomic variable are visible in the current thread
+    - example
+      - `atomic_uintptr_t ptr = NULL; int val = 0;`
+      - the other thread does
+        - `val = 1; atomic_store_explicit(&ptr, &val, memory_order_release)`
+        - is there really a data dependency here?  Probably not at HW level,
+          but yes at C spec?
+      - the current thread does
+        - `int *pval = atomic_load_explicit(&ptr, memory_order_consume)`
+        - `if (pval == &val) assert(*pval == 1);
+  - `memory_order_acquire`: the load operation also performs an acquire
+    operation
+    - used in release-acquire ordering
+    - no reads or writes in the current thread can be reordered before this
+      load
+      - `mtx_lock` implies an acquire operation
+    - all writes in other threads that releases the same atomic variable are
+      visibile in the current thread
+  - `memory_order_release`: the store operation also performs a release
+    operation
+    - any read or write in the current thread cannot be reordered after this
+      store
+      - `mtx_unlock` implies a release operation 
+    - all writes in the current thread are visible in other threads that
+      acquire the same atomic variable
+    - all writes in the current thread that has a data dependency on the
+      atomic variable are visible in other threads that consume the same
+      atomic variable
+  - `memory_order_acq_rel`: the read-modify-write operation also performs both
+    an acquire operation and a release operation
+  - `memory_order_seq_cst`: the load/store/read-modify also performs an
+    acquire/release/both operation, plus a single total order exists in which
+    all threads observe all modifications in the same order
