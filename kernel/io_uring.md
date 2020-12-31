@@ -140,8 +140,47 @@
       - e.g., `write()` following prior `read()` to implement copy
       - the chain of sqes can have indefinite length
       - different chains can still execute in parallel
-- memory ordering
-  - very confusing
+- SQ memory ordering
+  - userspace is producer, reads head, and updates tail
+    - userspace fills in some sqes and then submit
+    - `io_uring_get_sqe`
+      - `__head = atomic_load_explicit(sq->khead, memory_order_acquire)`
+      - compare head and tail to know if there is still sqe and return the sqe
+      - this allows the sqe to be filled in and can be called multiple times
+    - `__io_uring_flush_sq`
+      - `atomic_store_explicit(sq->ktail, ..., memory_order_release)`
+      - this is called before submit
+  - kernel is consumer, reads tail, and updates head
+    - kernel parses the sqes and schedules ios
+    - `io_submit_sqes`
+      - `smp_load_acquire(&rings->sq.tail)` in `io_sqring_entries` to work out
+      	the number of sqes
+      - `smp_store_release(&rings->sq.head, ctx->cached_sq_head)` in
+      	`io_commit_sqring` to update head
+  - the userspace release is paired with the kernel acquire
+    - writing of sqes in userspace happens before userspace release
+    - reading of sqes in kernel happens after kernel acquire
+  - the userspace acquire is paired with the kernel release
+    - writing of sqes in userspace happens after userspace acquire
+    - reading of sqes in kernel happens before kernel release
+- CQ memory ordering
+  - kernel is producer, reads head, and updates tail
+    - kernel is requested to wait for `min_complete` cqes
+    - `io_cqring_wait`
+      - `smp_rmb()` before `READ_ONCE(rings->cq.head)` in `io_cqring_events`
+      	to get the current number of cqes
+    - `io_req_complete` is called when a sqe has completed
+      - `io_get_cqring` returns a cqe to be filled in
+        - there is "an implicit barrier through a control-dependency"
+      - `io_commit_cqring` updates cq tail and wakes up waiter
+        - `smp_store_release(&rings->cq.tail, ctx->cached_cq_tail);`
+  - userspace is consumer, reads tail, and updates head
+    - `_io_uring_get_cqe`
+      - `__io_uring_peek_cqe`
+        - `atomic_load_explicit(ring->cq.ktail, memory_order_acquire)`
+      - if no cqe, waits in kernel
+    - `io_uring_cqe_seen`
+      - `atomic_store_explicit(cq->khead, ..., memory_order_release)`
 - questions
   - what to do when CQ or SQ is full?
   - doorbell?
