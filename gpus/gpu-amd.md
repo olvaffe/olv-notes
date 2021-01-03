@@ -34,21 +34,27 @@ AMD
 - Southern Islands released in 2012
   - Direct3D 12.0 w/ `11_1` feature level
   - `radeonsi_dri.so` GFX6
+  - GCN1
 - Sea Islands released in 2013
   - Direct3D 12.0 w/ `11_1` feature level
   - `radeonsi_dri.so` GFX7
+  - GCN2
 - Volcanic Islands released in 2014
   - Direct3D 12.0 w/ `12_0` feature level
   - `radeonsi_dri.so` GFX8
+  - GCN3
 - Polaris released in 2016
   - Direct3D 12.0 w/ `12_0` feature level
   - `radeonsi_dri.so` GFX8
+  - GCN4
 - Vega released in 2017
   - Direct3D 12.0 w/ `12_1` feature level
   - `radeonsi_dri.so` GFX9
+  - GCN5
 - Navi released in 2019
   - Direct3D 12.0 w/ `12_1` feature level
   - `radeonsi_dri.so` GFX10
+  - RDNA
 
 ## RDNA
 
