@@ -40,11 +40,21 @@ EC
 
 ## Update EC firmware
 
+- `make BOARD=<board>`
+  - the binary will be at `build/<board>/ec.bin`
+  - or, `emerge-<board> chromeos-ec`
 - `flashrom` on DUT
   - `flashrom -p ec -r <backup.bin>`
   - `flashrom -p ec -w <path-to/ec.bin>`
 - `flash_ec` on host
-  - requires servo
+  - requires working servod
+- this flashes to EC flash, which is different from H1 flash
+
+## Update BIOS
+
+- `emerge-<board> chromeos-bootimage`
+- `futility update -i image-<board>.bin` on DUT
+- `futility update --servo -i image-<board>.bin` on host
 
 ## Cr50, firmware on H1 secure microcontroller
 
@@ -117,13 +127,29 @@ EC
 
 ## Servo
 
-- Servo
-  - usb id 18d1:501b is Servo v4
-  - Servo v4 itself has three USB endpoints that are TTY devices
-    - don't get confused with the cr50/ap/ec consoles
 - `emerge hdctools`, hardware debug and control tools
-  - `sudo servo_updater -b servo_v4` to update the firmware
   - `servod` to start the servo daemon
   - `dut-control`
+- `servod` supports a range of interfaces
+  - mini servo: 18d1:5000
+  - servo v1: 18d1:5001
+  - servo v2: 18d1:5002
+  - servo v3: 18d1:5004
+  - reston: 18d1:5007
+  - fruitpie: 18d1:5009
+  - plankton: 18d1:500c
+  - ryu raiden ccd: 18d1:500f
+  - cr50 ccd: 18d1:5014
+    - cr50 implements ccd and servo protocol
+    - requires CCD open first
+  - servo micro: 18d1:501a
+  - servo v4: 18d1:501b
+    - Servo v4 itself has three USB endpoints that are TTY devices
+    - don't get confused with the cr50/ap/ec consoles
+    - `sudo servo_updater -b servo_v4` to update the firmware
+  - sweetberry: 18d1:5020
+  - fluffy: 18d1:503b
+  - c2d2: 18d1:5041
+  - servo v4.1: 18d1:520d
 - to update EC,
   - `flash_ec --board=<boardname> [--image=<path/to/ec.bin>]`
