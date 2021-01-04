@@ -104,6 +104,17 @@ EC
 - `minicom -D /dev/ttyUSB1` for AP console
 - `minicom -D /dev/ttyUSB2` for EC console
 
+## CCD
+
+- <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md>
+- on DUT or host with working `gsctool`
+  - `gsctool -o`
+  - press power key occasionally for 5 minutes
+  - `minicom -D /dev/ttyUSB0`
+  - `ccd reset factory`
+  - `ccd testlab enable`
+  - press power key several times
+
 ## Servo
 
 - Servo
