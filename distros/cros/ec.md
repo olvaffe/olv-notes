@@ -38,6 +38,14 @@ EC
   - `ectool chipinfo` prints chip info
   - `ectool battery` prints battery info
 
+## Update EC firmware
+
+- `flashrom` on DUT
+  - `flashrom -p ec -r <backup.bin>`
+  - `flashrom -p ec -w <path-to/ec.bin>`
+- `flash_ec` on host
+  - requires servo
+
 ## Cr50, firmware on H1 secure microcontroller
 
 - Google Security Chip H1
@@ -49,9 +57,10 @@ EC
   - each copy is devided into RO and RW sections
   - coming out of reboot, it boots to RO first;  RO then boots to RW.
 - Cr50 runs on H1 and implements TPM2, CCD, and U2F
-  - the Cr50 firmware is built from Chromium OS EC
+  - the Cr50 firmware is also built from Chromium OS EC
     - <https://chromium.googlesource.com/chromiumos/platform/ec>
     - `cr50_stab` branch
+    - `BOARD=cr50`
   - Cr50 does not reboot (unless the battery dies)
 - A host device can talk to Cr50, when a SuzyQ cable is used to connect them
 - The AP (the firmware/os runs on the AP CPU) can also talk to Cr50 via TPM
@@ -75,11 +84,6 @@ EC
   - `gsctool -f` to get the running firmware version
   - `gsctool -b <cr50-firmware>` to check the firmware version
 
-## `flashrom`
-
-- `flashrom -p ec -r <backup.bin>`
-- `flashrom -p ec -w <path-to/ec.bin>`
-
 ## Suzy-Q
 
 - Suzy-Q allows a host device to talk to DUT's EC/Cr50/AP
@@ -97,8 +101,8 @@ EC
   - third TTY is EC console
 - `minicom -D /dev/ttyUSB0` for Cr50 console
   - `version` to get version
-- `minicom -D /dev/ttyUSB1` for EC console
-- `minicom -D /dev/ttyUSB2` for AP console
+- `minicom -D /dev/ttyUSB1` for AP console
+- `minicom -D /dev/ttyUSB2` for EC console
 
 ## Servo
 
