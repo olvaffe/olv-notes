@@ -49,3 +49,13 @@ Chrome OS AP firmware
   - `USE=u-boot` to include u-boot
 - `cbfstool /build/$BOARD/firmware/image-$DEVICE.bin print -r RW_LEGACY` to
   see the included payloads
+- <https://chromium.googlesource.com/chromiumos/docs/+/refs/heads/master/developer_mode.md#alt-firmware>
+  - `flashrom -r /tmp/bios.bin`
+  - `cbfstool /tmp/bios.bin print -r RW_LEGACY`
+  - `cbfstool /tmp/bios.bin add-payload -r RW_LEGACY -c lzma -n <your bootloader name> -f <path/to/your/bootloader.elf>`
+  - `cbfstool /tmp/bios.bin extract -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt`
+  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n altfw/list`
+  - `cbfstool /tmp/bios.bin add -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt -t raw`
+  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n cros_allow_auto_update`
+  - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
+  - `crossystem dev_boot_legacy=1`
