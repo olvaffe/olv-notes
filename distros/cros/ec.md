@@ -55,6 +55,10 @@ EC
 - `emerge-<board> chromeos-bootimage`
 - `futility update -i image-<board>.bin` on DUT
 - `futility update --servo -i image-<board>.bin` on host
+- to see the contents of the bios image,
+  - `cbfstool image-<board>.bin layout`
+  - `cbfstool image-<board>.bin print -r COREBOOT`
+  - `cbfstool image-<board>.bin print -r RW_LEGACY`
 
 ## Cr50, firmware on H1 secure microcontroller
 
