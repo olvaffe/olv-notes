@@ -1,5 +1,44 @@
-U-BOOT
-======
+Das U-Boot
+==========
+
+## Usage
+
+- Environment Variable Commands
+  - `printenv`
+  - `setenv bootargs console=ttyS0,115200` sets kernel cmdline
+  - `saveenv`
+- Storage Commands
+  - `usb reset` rescans USB devices
+  - `usb storage` lists USB storage devices
+  - `usb part` lists USB storage partitions
+  - `ls usb 0:1` lists files in USB storage device 0 partition 1
+  - `load usb 0:1 0x1000000 vmlinuz` loads kernel to 0x1000000
+  - `load usb 0:1 0x2000000 initramfs.img` loads initramfs to 0x2000000
+- Boot Commands
+  - `zboot 0x1000000 - 0x2000000 0x49bd1e2` boots bzImage at 0x1000000 with
+    initramfs at 0x2000000
+    - note that initramfs size is required and is in hex
+    - `Valid Boot Flag`
+    - `Setup Size = 0x00003e00`
+    - `Magic signature found`
+    - `Using boot protocol version 2.0f`
+    - `Linux kernel version ...`
+    - `Building boot_params at 0x00090000`
+    - `Loading bzImage at address 100000 (6375552 bytes)`
+    - `Magic signature found`
+    - `Kernel command line: "console=ttyS0,115200"`
+    - `Magic signature found`
+    - `Starting kernel ...`
+    - after the kernel initializes the console, it prints the banner
+      - `[    0.000000] Linux version ...`
+  - `boot` runs the commands in `bootcmd`
+- Automatic Boot
+  - `setenv bootdelay 5`
+  - `setenv bootcmd "..."` for semicolon-separated commands
+  - `setenv bootargs "..."` for kernel cmdline
+  - it will run `boot` after the delay
+
+## Old
 
 env:
 
