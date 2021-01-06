@@ -5,18 +5,19 @@ Das U-Boot
 
 - Environment Variable Commands
   - `printenv`
-  - `setenv bootargs 'console=ttyS0,115200 console=tty0'` sets kernel cmdline
+  - `setenv bootargs 'console=tty0 console=ttyS0,115200'` sets kernel cmdline
+    - or `ttyS4`
   - `saveenv`
 - Storage Commands
   - `usb reset` rescans USB devices
   - `usb storage` lists USB storage devices
   - `usb part` lists USB storage partitions
   - `ls usb 0:1` lists files in USB storage device 0 partition 1
-  - `load usb 0:1 0x1000000 vmlinuz` loads kernel to 0x1000000
-  - `load usb 0:1 0x2000000 initramfs.img` loads initramfs to 0x2000000
+  - `load usb 0:1 0x3000000 vmlinuz` loads kernel to 0x3000000
+  - `load usb 0:1 0x6000000 initramfs.img` loads initramfs to 0x6000000
 - Boot Commands
-  - `zboot 0x1000000 - 0x2000000 ${filesize}` boots bzImage at 0x1000000 with
-    initramfs at 0x2000000
+  - `zboot 0x3000000 - 0x6000000 ${filesize}` boots bzImage at 0x3000000 with
+    initramfs at 0x6000000
     - note that initramfs size is required and is in hex
     - `Valid Boot Flag`
     - `Setup Size = 0x00003e00`
@@ -24,9 +25,9 @@ Das U-Boot
     - `Using boot protocol version 2.0f`
     - `Linux kernel version ...`
     - `Building boot_params at 0x00090000`
-    - `Loading bzImage at address 100000 (6375552 bytes)`
+    - `Loading bzImage at address 300000 (19126656 bytes)`
     - `Magic signature found`
-    - `Kernel command line: "console=ttyS0,115200 console=tty0"`
+    - `Kernel command line: "console=tty0 console=ttyS4,115200"`
     - `Magic signature found`
     - `Starting kernel ...`
     - after the kernel initializes the console, it prints the banner
