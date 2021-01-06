@@ -6,7 +6,7 @@ Das U-Boot
 - Environment Variable Commands
   - `printenv`
   - `setenv bootargs 'console=ttyS0,115200'` sets kernel cmdline
-    - or `console=tty0`
+    - or `console=tty0` or both
   - `saveenv`
 - Storage Commands
   - `usb reset` rescans USB devices
@@ -38,8 +38,16 @@ Das U-Boot
   - `setenv bootcmd '...'` for semicolon-separated commands
   - `setenv bootargs '...'` for kernel cmdline
   - it will run `boot` after the delay
-- Login
-  - booting from usb storage, login takes ~20 seconds for some reason
+- On my testing machine,
+  - u-boot is really slow because of fb init and updates
+  - there is no `saveenv`
+  - mmc is not supported; has to use usb storage
+  - loading kernel/initramfs to 0x1000000/0x2000000 does not work
+    - initramfs seems to be corrupted
+  - `console=ttyS0,115200` stops working after switching from Debian kernel to
+    Arch kernel
+    - probably just a loglevel issue?
+  - login takes ~20 seconds for some unknown reason
 
 ## Old
 
