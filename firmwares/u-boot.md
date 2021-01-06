@@ -5,8 +5,8 @@ Das U-Boot
 
 - Environment Variable Commands
   - `printenv`
-  - `setenv bootargs 'console=tty0 console=ttyS0,115200'` sets kernel cmdline
-    - or `ttyS4`
+  - `setenv bootargs 'console=ttyS0,115200'` sets kernel cmdline
+    - or `console=tty0`
   - `saveenv`
 - Storage Commands
   - `usb reset` rescans USB devices
@@ -25,9 +25,9 @@ Das U-Boot
     - `Using boot protocol version 2.0f`
     - `Linux kernel version ...`
     - `Building boot_params at 0x00090000`
-    - `Loading bzImage at address 300000 (19126656 bytes)`
+    - `Loading bzImage at address 100000 (9398496 bytes)`
     - `Magic signature found`
-    - `Kernel command line: "console=tty0 console=ttyS4,115200"`
+    - `Kernel command line: "console=ttyS0,115200"`
     - `Magic signature found`
     - `Starting kernel ...`
     - after the kernel initializes the console, it prints the banner
@@ -38,6 +38,8 @@ Das U-Boot
   - `setenv bootcmd '...'` for semicolon-separated commands
   - `setenv bootargs '...'` for kernel cmdline
   - it will run `boot` after the delay
+- Login
+  - booting from usb storage, login takes ~20 seconds for some reason
 
 ## Old
 
