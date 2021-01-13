@@ -1,6 +1,51 @@
 PCI
 ===
 
+## Specs
+
+- PCIe 1.0
+  - 2003
+  - 2.5 GT/s
+  - 8b/10b (encode 8-bit words to 10-bit symbols)
+  - x1: 2.5 GT/s * 8 / 10 = 2 Gb/s = 0.25 GB/s
+  - x16: 4 GB/s
+- PCIe 1.1
+  - 2005
+  - 2.5 GT/s
+- PCIe 2.0
+  - 2007
+  - 5 GT/s
+  - 8b/10b 
+  - x1: 0.5 GB/s
+  - x16: 8 GB/s
+- PCIe 2.1
+  - 2009
+  - 5 GT/s
+- PCIe 3.0
+  - 2010
+  - 8 GT/s
+  - 128b/130b
+  - x1: 8 GTs * 128 / 130 = 7.877 Gb/s = 0.985 GB/s
+  - x16: 15.754 GB/s
+- PCIe 3.1
+  - 2014
+  - 8 GT/s
+- PCIe 4.0
+  - 2017
+  - 16 GT/s
+  - x1: 1.969 GB/s
+  - x16: 31.508 GB/s
+- PCIe 5.0
+  - 2019
+  - 32 GT/s
+  - x1: 3.938 GB/s
+  - x16: 63.015 GB/s
+- PCIe 6.0
+  - 2021
+  - 64 GT/s
+  - x1: 7.877 GB/s
+  - x16: 126.031 GB/s
+
 ## PCI Architecture
 
 - there is a host bus

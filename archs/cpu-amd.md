@@ -10,7 +10,7 @@ AMD CPUs
 - Zen         - 2017 - 14nm
 - Zen+        - 2018 - 12nm
 - Zen 2       - 2019 - 7nm
-- Zen 3       - 2019 - 7nm
+- Zen 3       - 2020 - 7nm
 
 ## CPUs
 
@@ -64,3 +64,9 @@ AMD CPUs
   - Vega GPU
   - Ryzen 3/5/7
     - Renoir
+- Ryzen 5000 series APUs
+  - 2021
+  - Zen 3 uArch
+  - Vega GPU
+  - Ryzen 3/5/7
+    - Cezanne
