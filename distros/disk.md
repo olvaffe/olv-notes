@@ -30,7 +30,7 @@ Distro Disk
 - mount partition 1 to boot
 - mount partition 2 to home with `subvol=homes/current`
 
-## dm-crypt
+## dm-crypt / LUKS
 
 - wipe partition
   - `cryptsetup open --type plain -d /dev/urandom <part> to_be_wiped`
