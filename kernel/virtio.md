@@ -1,4 +1,212 @@
-# virtio
+virtio
+======
+
+## Spec
+
+- 2 Basic Facilities of a Virtio Device
+  - 2.1 Device Status Field
+    - mainly set by guest to report initialization stages
+      - `ACKNOWLEDGE` when device is discovered
+      - `DRIVER` when driver is bound
+      - `FEATURES_OK` when feature negotication has completed
+      - `DRIVER_OK` when driver is fully set up
+      - `FAILED` when driver can't support the device
+    - device can set `DEVICE_NEEDS_RESET`
+  - 2.2 Feature Bits
+    - bit  0..23: specific to device type
+    - bit 24..37: reserved for extensions to virtqueue and feature negotiation
+      - `VIRTIO_F_VERSION_1` is set for virtio 1.0 compliant devices
+    - bit 38..xx: reserved for future extensions
+  - 2.3 Notifications
+    - device to driver
+      - configuration change notification
+      - used buffer notification
+      - usually implemented as interrupts
+    - driver to device
+      - available buffer notification
+      - usually implemented as mmio
+  - 2.4 Device Configuration Space
+    - generally used for rarely changing or intialization time parameters
+    - read generation before and after for atomicy
+    - some regions are optional and are present only when the corresponding
+      feature bits are set by device
+      - no negotiation required
+  - 2.5 Virtqueues
+    - mechanism for bulk data transport
+    - a device can have zero or more virtqueues
+    - driver makes requests by adding available buffers to the queue and
+      optionally triggers available buffer notifications
+    - device executes requests.  When complete, device adds used buffers back
+      to the queue and optionally triggers used buffer notifications
+      - requests might be executed and/or completed out-of-order, depending on
+      	the device
+    - each virtqueue consists of up to 3 parts
+      - descriptor area, used for describing buffers
+      - driver area, extra data supplied by driver to device
+      - device area, extra data supplied by device to driver
+  - 2.6 Split Virtqueues
+    - each split virtqueue consists of
+      - descriptor table
+        - (16*QueueSize) bytes in size
+        - alignment 16
+      - available ring
+        - (6+2*QueueSize) bytes in size
+        - alignment 2
+      - used ring
+        - (6+8*QueueSize) bytes in size
+        - alignment 4
+      - QueueSize is 16-bit and is power-of-2
+        - usually read from configuration space
+      - because ring size is the same as the descriptor table size, the rings
+      	are not full whenever there are still free descriptors
+      - each part is physically contiguous in guest and logically contiguous
+      	in host
+        - in linux, `vring_alloc_queue` uses `dma_alloc_coherent`
+    - a descriptor in the descriptor table describes a buffer and consists of
+      - `le64 addr` is the guest physical address of the buffer
+      - `le32 len` is the size of the buffer
+      - `le16 flags` can be
+        - `VIRTQ_DESC_F_NEXT` indicates that the buffer continues as described
+          by the next descriptor
+	  - used when the buffer is larger than a page and not physically
+	    contiguous
+        - `VIRTQ_DESC_F_WRITE` indicates the buffer is write-only by device
+          (otherwise, read-only by device)
+        - `VIRTQ_DESC_F_INDIRECT` indicates the buffer contains a list of
+          buffer descriptors
+          - thus the real buffer can be huge and discontiguous while being
+            described by one descriptor in the descriptor table
+      - `le16 next` is the index of the next descriptor
+      - if `VIRTIO_F_IN_ORDER` is negotiated, driver must use descriptors in
+      	order starting from 0
+    - the available ring is written by driver and read by device, and consists
+      of (see `struct virtq_avail` for the real layout)
+      - `le16 idx` is incremented when a buffer is added
+        - ring head
+        - `ring[idx++ % QueueSize] = buffer_desc_idx`
+      - `le16 ring[QueueSize]` where each entry is an index into the
+      	descriptor table
+      - if `VIRTIO_F_EVENT_IDX` is negotiated,
+        - `le16 flags` must be 0
+        - `le16 used_event` suppresses used buffer notification until the
+          device writes `ring[used_event]` of the used ring
+          - equivalently, `idx` of the used ring equals to `used_event+1`
+      - if `VIRTIO_F_EVENT_IDX` is not negotiated,
+        - `le16 flags`
+          - `VRING_AVAIL_F_NO_INTERRUPT` suppresses used buffer notification
+        - `le16 used_event` is ignored
+    - the used ring is written by device and read by driver, and consists of
+      (see `struct virtq_used` for the real layout)
+      - `le16 idx`
+        - ring head
+        - `ring[idx++ % QueueSize] = {id, len}`
+      - `le64 ring[QueueSize]` where each entry is a {id, len} pair
+        - `id` is the index of the buffer descriptor
+        - `len` is the total bytes written by device
+      - if `VIRTIO_F_EVENT_IDX` is negotiated,
+        - `le16 flags` must be 0
+        - `le16 avail_event` suppresses available buffer notification until
+          the driver writes `ring[avail_event]` of the available ring
+      - if `VIRTIO_F_EVENT_IDX` is not negotiated,
+        - `le16 flags`
+          - `VIRTQ_USED_F_NO_NOTIFY` suppresses available buffer notification
+        - `le16 avail_event` is ignored
+    - 2.6.13 Supplying Buffers to The Device
+      - the driver places the buffer into free descriptor(s), chaining as
+      	necessary
+      - the driver places the index of the head of the descriptor chain into
+      	the next ring entry of the available ring
+      - repeat the first two steps to batch more buffers
+      - The driver performs a suitable memory barrier to ensure the device
+      	sees the updated descriptor table and available ring before the next
+      	step.
+      	- a write barrier
+      - the available `idx` is increased by the number of descriptor chain
+      	heads added to the available ring.
+      - The driver performs a suitable memory barrier to ensure that it
+      	updates the idx field before checking for notification suppression.
+      	- hmm, according to 2.6.13.4.1, this is to see the device's write to
+      	  `flags` or `avail_event`
+      	- an acquire barrier?
+      - The driver sends an available buffer notification to the device if
+      	such notifications are not suppressed.
+  - 2.7 Packed Virtqueues
+    - negotiated by `VIRTIO_F_RING_PACKED`
+    - each packed virtqueue consists of
+      - Descriptor Ring of a ring of buffer descriptors
+        - alignment 4
+        - size (16*QueueSize)
+      - Driver Event Suppression
+        - a mechanism to reduce used buffer notifications
+        - read-only by device
+        - alignment 4
+        - size 4
+      - Device Event Suppression
+        - a mechanism to reduce available buffer notifications
+        - write-only by device
+        - alignment 4
+        - size 4
+    - each of the driver and the device maintains a 1-bit ring wrap counter
+      - the counters are initialized to 1
+      - the one in the driver is called Driver Ring Wrap Counter
+	- it is flipped whenever the driver marks the last descriptor in the
+	  ring available and wraps to the first descriptor
+      - the one in the device is called Device Ring Wrap Counter
+        - it is flipped whenever the device marks the last descriptor in the
+          ring used and wraps to the first descriptor
+      - to mark a descriptor available, the driver should
+        - if the driver counter is 1, set `VIRTQ_DESC_F_AVAIL` and unset
+          `VIRTQ_DESC_F_USED`
+        - if the driver counter is 1, unset `VIRTQ_DESC_F_AVAIL` and set
+          `VIRTQ_DESC_F_USED`
+      - to mark a descriptor used, the device should
+	- if the device counter is 1, set `VIRTQ_DESC_F_AVAIL` and
+	  `VIRTQ_DESC_F_USED`
+	- if the device counter is 0, unset `VIRTQ_DESC_F_AVAIL` and
+	  `VIRTQ_DESC_F_USED`
+      - to summarize,
+        - when `VIRTQ_DESC_F_AVAIL` and `VIRTQ_DESC_F_USED` differ, the
+          descriptor is available
+        - when `VIRTQ_DESC_F_AVAIL` and `VIRTQ_DESC_F_USED` agree, the
+          descriptor is used (or free)
+        - when the driver counter and the device counter agree, 
+    - a buffer consists of zero or more read-only physically contiguous
+      elements followed by zero or more write-only physically contiguous
+      - there is at least one element
+      - each element is described by a buffer desciptor
+      - same as splitted virtqueue
+      - it differs from splitted virtqueue in that
+        - instead of `VIRTQ_DESC_F_NEXT`, `id==0` indicates that there are
+          more elements described by the following descriptors
+	- instead of incrementing `idx` (ring head), `VIRTQ_DESC_F_AVAIL` and
+	  `VIRTQ_DESC_F_USED` together decide whether a descriptor is
+	  available or used (or free)
+    - each buffer descriptor in the descriptor ring consits of
+      - `le64 addr` is the physical address of the buffer region
+	- a buffer descriptor describes a physically contiguous region that is
+	  either read-only or write-only
+          - just like in splitted virtqueues
+        - a buffer might require mulitple descriptors to describe
+          - when it is not physically contigous, or
+          - when it has both read-only regions and write-only regions
+      - `le32 len` is the size of the buffer region
+      - `le16 id` is opaque
+        - on linux, it is just the index of the descriptor in the ring
+      - `le16 flags`
+        - `VIRTQ_DESC_F_WRITE` if device write-only; otherwise, device
+          read-only
+        - `VIRTQ_DESC_F_AVAIL`
+        - `VIRTQ_DESC_F_USED`
+    - the event suppression struct consists of
+      - `le16 desc`
+      - `le16 flags`
+- `virtio_config_ops` is the kernel abstraction of operations against a virtio
+  device
+  - `get_status` and `set_status` manipulate the status field
+  - `get_features` and `finalize_features` negotiate feature bits
+  - `get` and `set` manipulate the configuration space
+  - `find_vqs` and `del_vqs` set up virtqueues
+  - `get_shm_region`
 
 ## Core
 
