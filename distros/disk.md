@@ -30,6 +30,30 @@ Distro Disk
 - mount partition 1 to boot
 - mount partition 2 to home with `subvol=homes/current`
 
+## dm-crypt
+
+- wipe partition
+  - `cryptsetup open --type plain -d /dev/urandom <part> to_be_wiped`
+  - `dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress`
+  - `cryptsetup close to_be_wiped`
+- format the partition to LUKS
+  - `cryptsetup -y -v luksFormat <part>`
+- open/close the partition
+  - `cryptsetup open <part> cryptroot`
+  - `mkfs.btrfs /dev/mapper/cryptroot`
+  - `cryptsetup close cryptroot`
+- initramfs
+  - distro specific
+  - on arch,
+    - make sure keyboard and encrypt hooks are enabled
+    - `cryptdevice=UUID=<part-uuid>:cryptroot root=/dev/mapper/cryptroot`
+- LVM on LUKS
+  - `pvcreate /dev/mapper/cryptroot`
+  - `vgcreate foo /dev/mapper/cryptroot`
+  - `lvcreate -L 100%ORIGIN foo -n bar`
+  - `mkfs.btrfs /dev/foo/bar`
+  - for arch, make sure lvm2 hook is enabled in initramfs
+
 ## btrfs
 
 - butter fs (or better fs)
@@ -65,6 +89,7 @@ Distro Disk
 
 - lsblk
 - blkid
+- findmnt
 - sync
   - syscalls
     - `fsync(fd)` makes sure all changes have reached the permanent storage
