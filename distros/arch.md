@@ -47,6 +47,25 @@ ArchLinux
        - `grub-mkconfig -o /boot/grub/grub.cfg`
 - Reboot
 
+## Installation in crosvm
+
+- create disk image
+  - `crosvm create_qcow2 arch.qcow2 <size-in-bytes>`
+- prepare kernel and initramfs
+  - download iso
+  - extract kernel and initramfs
+    - under `arch/boot/x86_64` in iso
+    - use loop mount or 7z
+- start crosvm
+  - `--rwdisk arch.qcow2 --disk <path-to-iso> -p archisodevice=/dev/vdb`
+  - `--host_ip 192.168.0.1 --netmask 255.255.255.0 --mac 12:34:56:78:9a:bc`
+  - `--disable-sandbox`
+- installation
+  - `arch-qcow2` is `/dev/vda`
+  - for network,
+    - `ip addr add 192.168.0.2/24 dev enp0s5`
+    - `ip route add default via 192.168.0.1`
+
 ## Network
 
 - for temporary connection, see `Installation`
