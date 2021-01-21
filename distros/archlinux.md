@@ -3,113 +3,107 @@ ArchLinux
 
 ## Installation
 
-- Pre-installation
- - require an internet connection
-   - `ip link`
-   - wired: `dhcpcd <iface>`
-   - wireless: `iwctl station wlan0 connect <SSID>`
-     - no easy way if the wireless adapter is not supported by the live image
- - system clock
-   - `timedatectl set-ntp true`
- - partition disk with fdisk
-   - 260M for EFI system partition (type 1), esp
-     - format esp to vfat
-   - remainder for root partition
-     - format to btrfs
-     - `mkdir roots homes`
-     - `btrfs subvolume create roots/current` for real root
-     - `btrfs subvolume create homes/current` for real home
-     - `btrfs subvolume set-default roots/current`
- - mount partitions to /mnt, /mnt/home, and /mnt/boot
+- Preparation
+  - require an internet connection
+    - `ip link`
+    - wired: `dhcpcd <iface>`
+    - wireless: `iwctl station wlan0 connect <SSID>`
+      - no easy way if the wireless adapter is not supported by the live image
+  - system clock
+    - `timedatectl set-ntp true`
+  - partition disk with fdisk
+    - 260M for EFI system partition (type 1), esp
+      - `mkfs.vfat -F32`
+    - remainder for root partition
+      - `mkfs.btrfs`
+      - `mkdir roots homes`
+      - `btrfs subvolume create roots/current` for real root
+      - `mkdir roots/current/{boot,home}`
+      - `btrfs subvolume create homes/current` for real home
+      - `btrfs subvolume set-default roots/current`
+  - mount partitions to /mnt, /mnt/home, and /mnt/boot
 - Installation
-   - update `/etc/pacman.d/mirrorlist`
-   - `pacstrap /mnt base linux linux-firmware vim`
-     - and `iwd` or `dhcpcd` depending on wirelss or wired
-     - or `wpa_supplicant` if `iwd` does not work
-   - `genfstab -U /mnt >> /mnt/etc/fstab`
+  - update `/etc/pacman.d/mirrorlist`
+  - `pacstrap /mnt base linux linux-firmware vim btrfs-progs`
+    - and `iwd` or `dhcpcd` depending on wirelss or wired
+    - or `wpa_supplicant` if `iwd` does not work
+  - `genfstab -U /mnt >> /mnt/etc/fstab`
+    - and double-check
 - Enter chroot
-   - `arch-chroot /mnt`
-   - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
-   - `hwclock --systohc`
-   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
-   - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
-   - `echo <host-name> > /etc/hostname`
-   - `echo -e 127.0.0.1\tlocalhost >> /etc/hosts`
-   - `echo -e ::1\tlocalhost >> /etc/hosts`
-   - `echo -e 127.0.1.1\t<host-name> >> /etc/hosts`
-   - `passwd` to set a password for root
-   - `bootctl --path=/boot install` for EFI
-     - set up `/boot/loader/loader.conf` and `/boot/loader/entries/arch.conf`
-     - optionally configure to update the bootloader automatically
-     - on BIOS systems,
-       - `pacman -S grub`
-       - `grub-install /dev/$DISK`
-       - `grub-mkconfig -o /boot/grub/grub.cfg`
+  - `arch-chroot /mnt`
+  - `hwclock --systohc`
+    - this updates `/etc/adjtime` so must be done in chroot
+  - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
+  - `systemd-firstboot --prompt`, or
+    - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
+    - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
+    - `echo <host-name> > /etc/hostname`
+    - `passwd` to set a password for root
+  - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
+  - `bootctl --path=/boot install` for EFI
+    - create `/boot/loader/entries/arch.conf`
+      - `title	Arch Linux`
+      - `linux	/vmlinuz-linux`
+      - `initrd	/initramfs-linux.img`
+      - `options root=...`
+    - `echo 'default arch.conf' >> /boot/loader/loader.conf`
+    - on BIOS systems,
+      - `pacman -S grub`
+      - `grub-install /dev/$DISK`
+      - `grub-mkconfig -o /boot/grub/grub.cfg`
 - Reboot
+
+## Post-Installation
+
+- login as root
+- network
+  - for temporary connection, see `Installation`
+  - `/etc/iwd/main.conf`
+    - `[General]`
+    - `EnableNetworkConfiguration=true`
+  - `systemctl restart iwd`
+  - for wireless adapter that requiers out-of-tree driver,
+    - /etc/modules-load.d/
+    - /etc/modprobe.d/blacklist.conf
+- gui
+  - `pacman -S xorg xorg-xinit i3 xterm`
+    - or, `pacman -S sway xorg-server-xwayland`
+  - `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
+- devel
+  - `pacman -S base-devel git meson`
+- mesa
+  - `pacman -S mesa-demos vulkan-tools python-mako wayland-protocols`
+- 32-bit
+  - uncomment the `[multilib]` section in `/etc/pacman.conf`
+  - `pacman -S multilib-devel`
+  - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
+- create user
+  - `useradd -m -G wheel <user>`
+  - `passwd <user>`
+  - `visudo`
+- login as user
+  - `git clone https://github.com/olvaffe/olv-etc.git`
+  - ./olv-etc/create-links
 
 ## Installation in crosvm
 
 - create disk image
   - `crosvm create_qcow2 arch.qcow2 <size-in-bytes>`
-- prepare kernel and initramfs
+- prepare iso, kernel and initramfs
   - download iso
-  - extract kernel and initramfs
-    - under `arch/boot/x86_64` in iso
+  - extract kernel and initramfs under `arch/boot/x86_64` in iso
     - use loop mount or 7z
 - start crosvm
   - `--rwdisk arch.qcow2 --disk <path-to-iso> -p archisodevice=/dev/vdb`
   - `--host_ip 192.168.0.1 --netmask 255.255.255.0 --mac 12:34:56:78:9a:bc`
   - `--disable-sandbox`
 - installation
-  - `arch-qcow2` is `/dev/vda`
   - for network,
     - `ip addr add 192.168.0.2/24 dev enp0s5`
     - `ip route add default via 192.168.0.1`
-
-## Network
-
-- for temporary connection, see `Installation`
-  - `/etc/iwd/main.conf`
-    - `[General]`
-    - `EnableNetworkConfiguration=true`
-  - `systemctl restart iwd`
-- for wireless adapter that requiers out-of-tree driver,
-  - /etc/modules-load.d/
-  - /etc/modprobe.d/blacklist.conf
-
-## X11
-
-- `pacman -S xorg xorg-xinit xterm`
-- `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
-- `pacman -S i3`
-
-## Development
-
-- `pacman -S base-devel`
-- `pacman -S git meson cmake`
-- 32-bit
-  - uncomment the [multilib] section in /etc/pacman.conf
-  - `pacman -S multilib-devel`
-
-## Wayland
-
-## User
-
-- add user
-  - `useradd -m -G wheel <user>`
-  - `passwd <user>`
-  - `visudo`
-- login as user
-- `git clone https://github.com/olvaffe/olv-etc.git`
-- ./olv-etc/create-links
-- 
-
-## Mesa
-
-- `pacman -S mesa-demos vulkan-tools`
-- `pacman -S python-mako wayland-protocols`
-- 32-bit
-  - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
+  - `arch.qcow2` is `/dev/vda`
+    - partition, format, and bootstrap normally
+    - `linux-firmware` not needed
 
 ## Pacman
 
