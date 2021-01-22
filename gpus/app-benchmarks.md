@@ -16,3 +16,4 @@ GPU Benchmarks
         AssetPath ./resources/assets/pkg \
         StoragePath ./logs \
         SkipZPrepass true
+- `RenderPipeline` can be `simple`, `medium`, or `highend`
