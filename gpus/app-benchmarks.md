@@ -17,3 +17,22 @@ GPU Benchmarks
         StoragePath ./logs \
         SkipZPrepass true
 - `RenderPipeline` can be `simple`, `medium`, or `highend`
+
+## Unigine Heaven
+
+- `Unigine_Heaven-4.0`
+- run the benchmark and `ps -ef` shows
+    ./heaven_x64 \
+        -project_name Heaven \
+        -data_path ../ \
+        -engine_config ../data/heaven_4.0.cfg \
+        -system_script heaven/unigine.cpp \
+        -sound_app openal \
+        -video_app opengl \
+        -video_multisample 0 \
+        -video_fullscreen 0 \
+        -video_mode 3 \
+        -extern_define RELEASE,LANGUAGE_EN,QUALITY_HIGH,TESSELLATION_DISABLED \
+        -extern_plugin GPUMonitor
+  - `cat /proc/<pid>/environ | tr '\0' '\n'` shows
+    - `LD_LIBRARY_PATH=x64`
