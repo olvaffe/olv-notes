@@ -36,3 +36,4 @@ GPU Benchmarks
         -extern_plugin GPUMonitor
   - `cat /proc/<pid>/environ | tr '\0' '\n'` shows
     - `LD_LIBRARY_PATH=x64`
+- windows version works under wine
