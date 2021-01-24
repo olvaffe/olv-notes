@@ -1,6 +1,55 @@
 WINE
 ====
 
+## Releases
+
+- Wine 1.0
+  - 2008
+- Wine 1.2
+  - 2010
+  - most of D3D9 supported
+  - D3D10 started
+- Wine 1.4
+  - 2012
+  - more complete D3D9 support
+- Wine 1.6
+  - 2013
+  - native mac os x driver; x11 driver no longer used on mac
+  - improvements to D3D9 and D3D10
+- Wine 1.8
+  - 2015
+  - Direct2D support
+  - DXGI support
+  - early D3D10 and D3D11 support
+- Wine 2.0
+  - 2017
+  - more D3D10 and D3D11 features
+- Wine 3.0
+  - 2018
+  - more D3D10 and D3D11 features
+  - Direct3D multi-threaded command stream support
+  - native Android driver
+- Wine 4.0
+  - 2019
+  - initial D3D12 support, depending on vkd3d
+  - multi-threaded command stream enabled by default
+  - more D3D10 and D3D11 features
+  - vulkan backend for `winex11.drv` and `winemac.drv`
+- Wine 5.0
+  - 2020
+  - most builtin modules have been converted from `.dll.so` to `.dll`
+    - when MinGW-w64 cross-compiler is used
+    - ongoing process
+- Wine 6.0
+  - 2021
+  - core modules are converted to `.dll`
+    - NTDLL, KERNEL32, GDI32, USER32, etc
+  - an mechanism to call UNIX library from `.dll`
+    - `foo.dll` can have a UNIX `foo.so` counterpart
+  - `libwine.so` is deprecated
+  - experimental vulkan backend for wined3d
+    - i.e., `d3d->vk` instead of `d3d->gl`
+
 ## Initialization Process
 
 - <https://wiki.winehq.org/Wine_Developer%27s_Guide/Kernel_modules>
@@ -63,6 +112,22 @@ WINE
         - `argv[] = { "wine-preloader", "wine", "wineboot.exe" }`
   - `load_dll` to load `kernel32.dll`
   - `load_dll` again to load `foo.exe`
+
+## Direct3D
+
+- Built-in DLLs
+  - `ddraw.dll` for Direct3D 7 and below
+  - `d3d8.dll` for Direct3D 8
+  - `d3d9.dll` for Direct3D 9
+  - `d3d10.dll`, `d3d10core.dll`, and `d3d10_1.dll` for Direct3D 10
+  - `d3d11.dll` for Direct3D 11
+  - `d3d12.dll.so` for Direct3D 12
+    - `libvkd3d.so` is needed
+  - `dxgi.dll` is needed by Direct3D 10, 11, and 12
+  - `wined3d.dll` is needed by Direct3D 11 and below
+- Native DLLs
+  - dxvk provides native `d3d9.dll`, `d3d10.dll`, `d3d10core.dll`,
+    `d3d10_1.dll`, `d3d11.dll`, and `dxgi.dll`
 
 ## Proton Environment Variables
 
