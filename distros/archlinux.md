@@ -6,84 +6,104 @@ ArchLinux
 - Preparation
   - require an internet connection
     - `ip link`
-    - wired: `dhcpcd <iface>`
-    - wireless: `iwctl station wlan0 connect <SSID>`
+    - static
+      - `ip link set <iface> up`
+      - `ip addr add 192.168.0.1/24 dev <iface>`
+      - `ip route add default via 192.168.0.254`
+    - dynamic: `dhcpcd <iface>`
+    - wireless: `iwctl station <iface> connect <ssid>`
       - no easy way if the wireless adapter is not supported by the live image
   - system clock
     - `timedatectl set-ntp true`
   - partition disk with fdisk
+    - see <disk.md>
     - 260M for EFI system partition (type 1), esp
-      - `mkfs.vfat -F32`
+      - `mkfs.vfat -F32 <part>`
     - remainder for root partition
-      - `mkfs.btrfs`
+      - `mkfs.btrfs <part>`
       - `mkdir roots homes`
       - `btrfs subvolume create roots/current` for real root
       - `mkdir roots/current/{boot,home}`
       - `btrfs subvolume create homes/current` for real home
       - `btrfs subvolume set-default roots/current`
   - mount partitions to /mnt, /mnt/home, and /mnt/boot
-- Installation
+- Bootstrap
   - update `/etc/pacman.d/mirrorlist`
-  - `pacstrap /mnt base linux linux-firmware vim btrfs-progs`
-    - and `iwd` or `dhcpcd` depending on wirelss or wired
-    - or `wpa_supplicant` if `iwd` does not work
-  - `genfstab -U /mnt >> /mnt/etc/fstab`
-    - and double-check
+  - `pacstrap /mnt base`
+  - `genfstab -U /mnt >> /mnt/etc/fstab` and double-check
 - Enter chroot
   - `arch-chroot /mnt`
   - `hwclock --systohc`
-    - this updates `/etc/adjtime` so must be done in chroot
+    - this updates `/etc/adjtime` so should be done in chroot
+  - install more packages
+    - `pacman -S linux linux-firmware`
+    - `pacman -S btrfs-progs dosfstools`
+    - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
+    - `pacman -S sudo`
+    - `pacman -S vim`
+    - `pacman -S grub`, if using BIOS
+    - `pacman -S broadcom-wl-dkms`, or other out-of-tree drivers
   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
   - `systemd-firstboot --prompt`, or
     - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
     - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
     - `echo <host-name> > /etc/hostname`
     - `passwd` to set a password for root
-  - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
-  - `bootctl --path=/boot install` for EFI
+  - create user
+    - `useradd -m -G wheel <user>`
+    - `passwd <user>`
+    - `visudo`
+  - traditionally, also
+    - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
+      - replaced by `libnss_myhostname`
+  - install bootloader
+    - `bootctl --path=/boot install` for EFI
     - create `/boot/loader/entries/arch.conf`
       - `title	Arch Linux`
       - `linux	/vmlinuz-linux`
       - `initrd	/initramfs-linux.img`
       - `options root=...`
     - `echo 'default arch.conf' >> /boot/loader/loader.conf`
-    - on BIOS systems,
-      - `pacman -S grub`
-      - `grub-install /dev/$DISK`
+    - or, on a BIOS system,
+      - `grub-install <dev>`
       - `grub-mkconfig -o /boot/grub/grub.cfg`
 - Reboot
 
 ## Post-Installation
 
-- login as root
+- login as user
+  - `git clone https://github.com/olvaffe/olv-etc.git`
+  - ./olv-etc/create-links
 - network
-  - for temporary connection, see `Installation`
-  - `/etc/iwd/main.conf`
-    - `[General]`
-    - `EnableNetworkConfiguration=true`
-  - `systemctl restart iwd`
+  - for quick connection, see `Installation`
+  - for wired, <../networks/systemd-networkd.md>
+    - create `/etc/systemd/network/blah.network`
+    - `systemctl enable --now systemd-networkd systemd-resolved`
+  - for wireless,
+    - `/etc/iwd/main.conf`
+      - `[General]`
+      - `EnableNetworkConfiguration=true`
+    - `systemctl enable --now iwd systemd-resolved`
   - for wireless adapter that requiers out-of-tree driver,
-    - /etc/modules-load.d/
-    - /etc/modprobe.d/blacklist.conf
-- gui
-  - `pacman -S xorg xorg-xinit i3 xterm`
-    - or, `pacman -S sway xorg-server-xwayland`
-  - `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
+    - `dkms autoinstall`
+    - `/etc/modules-load.d`
+    - `/etc/modprobe.d/blacklist.conf`
 - devel
   - `pacman -S base-devel git meson`
+- gui
+  - X11: `pacman -S xorg xorg-xinit i3 xterm`
+  - wayland: `pacman -S sway xorg-server-xwayland`
+  - `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
 - mesa
-  - `pacman -S mesa-demos vulkan-tools python-mako wayland-protocols`
+  - `pacman -S python-mako wayland-protocols`
+  - `pacman -S mesa-demos vulkan-tools`
 - 32-bit
   - uncomment the `[multilib]` section in `/etc/pacman.conf`
   - `pacman -S multilib-devel`
   - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
-- create user
-  - `useradd -m -G wheel <user>`
-  - `passwd <user>`
-  - `visudo`
-- login as user
-  - `git clone https://github.com/olvaffe/olv-etc.git`
-  - ./olv-etc/create-links
+  - `pacman -S steam`
+    - `pacman -S ttf-liberation` if ui text is garbled
+    - `pacman -S lib32-systemd` if no network
 
 ## Installation in crosvm
 
@@ -102,8 +122,8 @@ ArchLinux
     - `ip addr add 192.168.0.2/24 dev enp0s5`
     - `ip route add default via 192.168.0.1`
   - `arch.qcow2` is `/dev/vda`
-    - partition, format, and bootstrap normally
-    - `linux-firmware` not needed
+    - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
+    - but can still partition, format, and bootstrap normally for qemu
 
 ## Pacman
 

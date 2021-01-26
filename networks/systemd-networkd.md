@@ -60,6 +60,8 @@ systemd-networkd
       [Network]
       # static
       Address=192.168.0.1/24 
+      Gateway=192.168.0.254
+      DNS=8.8.8.8
       # dynamic
       DHCP=yes
       # add to brdige
