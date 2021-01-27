@@ -25,6 +25,18 @@ Address Sanitizer
     runtime,
     - the executable must be linked to `libasan`, dynamically or statically
     - or, `LD_PRELOAD` must be used
+  - I got this with `-shared-libasan`
+
+    ==77925==ASan runtime does not come first in initial library list; you
+    should either link runtime to your application or manually preload it with
+    LD_PRELOAD.
+
+## Build Systems
+
+- Meson
+  - `meson configure -Db_sanitize=address`
+- CMake
+  - add `-fsanitize=address` to `CMAKE_C_FLAGS` and `CMAKE_EXE_LINKER_FLAGS`
 
 ## Rust
 
