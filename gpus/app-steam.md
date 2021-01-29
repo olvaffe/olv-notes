@@ -46,4 +46,33 @@ Steam
     - `-install`
     - `-console`
     - `-applaunch`
-  -
+
+## Run a Game
+
+- `appcache/appinfo.vdf` contains all app info
+  - VDF stands for Valve Data Format
+  - `pip install steam` to get a parser
+  - or, simply visit `https://steamdb.info/app/<appid>/config/`
+  - take appid 570 for example
+    'installdir': 'dota 2 beta'
+    'executable': 'game/dota.sh'
+    'arguments': '+engine_experimental_drop_frame_ticks 1 +@panorama_min_comp_layer_dimension 0 -prewarm_panorama'
+- `userdata/<userid>/config/localconfig.vdf` contains user configs
+  - e.g., launch options
+- BELOW IS UNVERIFIED
+- to run a game using steam runtime 1 (scout)
+    ~/.steam/steam/ubuntu12_32/steam-runtime/run.sh \
+      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
+- to run a game using steam runtime 2 (soldier)
+    ~/.steam/steam/stramapps/common/SteamLinuxRuntime_soldier/_v2-entry-point
+      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
+- to run a game using proton 5.0
+    STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/<appid> \
+    ~/.steam/steam/stramapps/common/Proton\ 5.0/proton waitforexitandrun \
+      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
+- to run a game using proton 5.13
+  - run the game under proton under soldier?
+
+## steamrt
+
+- <https://gitlab.steamos.cloud/steamrt>
