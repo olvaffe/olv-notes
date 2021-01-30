@@ -18,3 +18,5 @@ Audit
     `kauditd_hold_skb` where `kauditd_printk_skb` prints it to prink
     - auditd sends a `AUDIT_SET` message that is handled by `auditd_set` to
       register auditd
+- <https://github.com/systemd/systemd/issues/959>
+  - add `Audit=no` to `/etc/systemd/journald.conf`
