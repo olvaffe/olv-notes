@@ -71,3 +71,50 @@ systemd-logind
     - on VT switch, `manager_dispatch_console` is called.  It then calls
       `seat_read_active_vt` to update the active vt and active session for
       seat0
+
+## agetty
+
+- logind manages VTs
+  - by putting them in `VT_PROCESS` mode, logind is in charge of VT switches
+- when switching to a new VT, `manager_spawn_autovt` is called
+  - it asks systemd to start `autovt@ttyN.service`
+  - which is an alias of `agetty@.service`
+  - which executes `-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM`
+    - `%I` expands to `ttyN`
+    - `$TERM` expands to `linux`
+- agetty
+  - runs as root
+  - opens `/dev/ttyN`
+  - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
+    controlling terminal
+  - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
+  - calls `tcsetpgrp` to make itself foreground
+  - prompts `login: ` and reads login name
+  - `execv`s `login` wit the login name
+- login
+  - runs as root
+  - closes stdin/stdout/stderr
+  - calls `vhangup`
+  - reopens `/dev/ttyN` for stdin/stdout/stderr
+  - initializes pam
+  - calls `pam_authenticate` to authenticate the username
+  - calls `initgroups` to init the supplementary groups
+  - opens pam session
+  - calls `setgid`
+  - sets up environ (`TERM`, `HOME`, `USER`, `SHELL`, etc.)
+    - `TERM` is from `agetty`
+    - the others are from `/etc/passwd`
+  - displays motd
+  - calls `TIOCNOTTY` to detach the controlling tty
+  - forks
+    - the parent
+      - closes all fds
+      - calls `wait` repeatedly until there is no child
+      - closes pam session
+    - the child
+      - calls `setsid` to create a new session and becomes the leader
+      - reopens `/dev/ttyN` for stdin/stdout/stderr
+      - calls `TIOCSCTTY` to attach the controlling tty
+      - calls `setuid`
+      - calls `chdir` to home
+      - calls `execvp` to execute the shell
