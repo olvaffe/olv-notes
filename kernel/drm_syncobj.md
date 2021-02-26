@@ -191,6 +191,15 @@
   - if the node is added to an existing chain, the new node shares the fence
     context
   - but if the node is out-of-order, the new node starts a new fence context
+- in other words,
+  - when a `drm_syncobj` is created, depending on whether it is created
+    signaled, its `fence` points to a signaled dummy fence or is NULL
+  - when the first point is added to make `drm_syncobj` a timeline, a new
+    fence chain is initialized and a new fence context is created
+    - because `prev_chain` is NULL
+  - each timeline `drm_syncobj` has its own fence context
+  - the points in the timeline `drm_syncobj` are the seqnos of the fence
+    context
 - `dma_fence_chain_find_seqno` returns the first node past the specified seqno
 - `dma_fence_chain_walk` returns the next node, ignoring and GCing signaled
   nodes
