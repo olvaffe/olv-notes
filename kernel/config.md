@@ -181,14 +181,23 @@ Kernel Config
 - select `Processor type and features`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
-  - select `Intel Low Power Subsystem Support`
-  - select `Processor family (Core 2/newer Xeon)`
-  - deselect `AMD MCE features`
+  - if Intel
+    - select `Intel Low Power Subsystem Support`
+    - select `Processor family (Core 2/newer Xeon)`
+    - deselect `AMD MCE features`
+  - if AMD
+    - select `AMD ACPI2Platform devices support`
+    - select `Processor family (Opteron/Athlon64/Hammer/K8)`
+    - deselect `Intel MCE features`
+    - deselect `Intel microcode loading support`
+    - select `AMD microcode loading support`
   - select `EFI runtime service support`
     - select `EFI stub support`
   - select `Timer frequency (300 HZ)`
 - select `Power management and ACPI options`
-  - select `Cpuidle Driver for Intel Processors`
+  - select `CPU Frequency scaling`
+    - select `ACPI Processor P-States driver` if AMD
+  - select `Cpuidle Driver for Intel Processors` if Intel
 - select `Binary Emulations`
   - select `IA32 Emulation`
 - deselect `Virtualization`
@@ -229,16 +238,21 @@ Kernel Config
       - select `TPM 2.0 CRB Interface` if have one
   - select `I2C support`
     - select `I2C Hardware Bus support`
-      - select `Synopsys DesignWare Platform` for Intel CPUs
+      - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if AMD
+      - select `Synopsys DesignWare Platform` for Intel/AMD CPUs
+  - select `Pin controllers`
+    - select `AMD GPIO pin control` if AMD
   - select `Hardware Monitoring support`
-    - select `Intel Core/Core2/Atom temperature sensor`
+    - select `AMD Family 10h+ temperature sensor` if AMD
+    - select `Intel Core/Core2/Atom temperature sensor` if Intel
   - select `Thermal drivers`
     - select `Intel thermal drivers`
       - select `ACPI INT340X thermal drivers`
         - select `ACPI INT340X thermal drivers`
       - select `Intel PCH Thermal Reporting Driver`
   - select `Watchdog Timer Support`
-    - select `Intel TCO Timer/Watchdog`
+    - select `AMD/ATI SP5100 TCO Timer/Watchdog` if AMD
+    - select `Intel TCO Timer/Watchdog` if Intel
   - select `Multimedia support`
     - select `Media device types`
       - select `Cameras/video grabbers support`
@@ -252,8 +266,6 @@ Kernel Config
     - select `Frame buffer Devices`
       - select `Support for frame buffer devices`
         - select `EFI-based Framebuffer Support`
-    - select `Backlight & LCD device support`
-      - deselect `Generic (aka Sharp Corgi) Backlight Driver`
   - select `Sound card support`
     - select `Advanced Linux Sound Architecture`
       - deselect `Support old ALSA API`
@@ -261,17 +273,26 @@ Kernel Config
         - select `HD Audio PCI`
         - select `Build Realtek HD-audio codec support` if have one
         - select `Build HDMI/DisplayPort HD-audio codec support` if have one
+      - select `ALSA for SoC audio support`
+        - select `AMD Audio Coprocessor - Renoir support` if AMD
   - select `HID support`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
       - select `HID Multitouch panels`
+      - select `Wacom Intuos/Graphire tablet support (USB)`
+      - select `HID Sensors framework support` for sensors
     - select `I2C HID support`
-      - select `HID over I2C transport layer` for I2C Synaptics touchpads
+      - select `HID over I2C transport layer` for I2C touchpads
+    - select `AMD SFH HID Support`
+      - select `AMD Sensor Fusion Hub` if AMD
   - select `USB support`
     - select `xHCI HCD (USB 3.0) support`
     - select `EHCI HCD (USB 2.0) support`
     - select `USB Printer support`
     - select `USB Mass Storage support`
+    - select `USB Type-C Support`
+      - select `USB Type-C Connector System Software Interface driver`
+      - select `UCSI ACPI Interface Driver`
   - select `MMC/SD/SDIO card support`
     - select `Realtek PCI-E SD/MMC Card Interface Driver`
   - select `LED support`
@@ -285,9 +306,19 @@ Kernel Config
     - select `Dell Systems Management Base Driver` if Dell
     - select `Dell SMBIOS driver` if Dell
     - select `Dell Laptop Extras` if Dell
+    - select `Lenovo IdeaPad Laptop Extras` if Lenovo IdeaPad
   - deselect `IOMMU Hardware Support`
+  - select `Industrial I/O support`
+    - select `Accelerometers`
+      - select `HID Accelerometers 3D` if accelerometers (tablets, 2-in-1s)
   - select `Generic powercap sysfs driver`
-    - select `Intel RAPL Support via MSR Interface`
+    - select `Intel RAPL Support via MSR Interface` for both Intel and AMD
+- select `Cryptographic API`
+  - if iwd,
+    - select `User-space interface for hash algorithms`
+    - and many others as indicated by the log
+  - select `Hardware crypto devices`
+    - select `Support for AMD Secure Processor`
 
 ## Config: arm64
 
