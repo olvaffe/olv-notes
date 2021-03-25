@@ -37,3 +37,22 @@ GPU Benchmarks
   - `cat /proc/<pid>/environ | tr '\0' '\n'` shows
     - `LD_LIBRARY_PATH=x64`
 - windows version works under wine
+
+## Unigine Valley
+
+- `Unigine_Valley-1.0`
+- run the benchmark and `ps -ef` shows
+    ./valley_x64 \
+        -project_name Valley \
+        -data_path ../ \
+        -engine_config ../data/valley_1.0.cfg \
+        -system_script valley/unigine.cpp \
+        -sound_app openal \
+	-video_app opengl \
+	-video_multisample 0 \
+	-video_fullscreen 1 \
+	-video_mode -1 \
+	-video_height 720 \
+	-video_width 1280 \
+	-extern_define ,RELEASE,LANGUAGE_EN,QUALITY_HIGH \
+	-extern_plugin ,GPUMonitor
