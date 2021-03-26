@@ -209,3 +209,26 @@
   - `eb_submit` calls `eb_move_to_gpu`, where `i915_vma_move_to_active` calls
     `dma_resv_add_excl_fence` or `dma_resv_add_shared_fence` depending on
     whether `EXEC_OBJECT_WRITE` is set
+
+## ioctls of a simple vk frame
+
+- acquire the frame image
+  - `anv_AcquireNextImageKHR`
+    - no ioctl
+- make sure the frame is "idle" because we reuse frame objects
+  - `anv_WaitForFences`
+    - `DRM_IOCTL_SYNCOBJ_WAIT`
+  - `anv_ResetFences`
+    - `DRM_IOCTL_SYNCOBJ_RESET`
+- submit the command buffer
+  - `anv_QueueSubmit`
+    - `DRM_IOCTL_I915_GET_RESET_STATS` to make sure GPU is healthy
+    - `DRM_IOCTL_SYNCOBJ_RESET` to reset `pSignalSemaphores` and `fence`
+      - for reasons
+    - `DRM_IOCTL_I915_GEM_EXECBUFFER2`
+- present the frame
+  - `anv_QueuePresentKHR`, which calls `wsi_common_queue_present`
+    - `anv_WaitForFences` because common wsi reuses frame objects
+    - `anv_ResetFences`
+    - `anv_QueueSubmit` which is an empty submit with `pWaitSemaphores` from
+      `VkPresentInfoKHR` and fence from common wsi
