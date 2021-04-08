@@ -136,6 +136,14 @@ Kernel Config
     - select `Unix domain sockets`
     - select `TCP/IP networking`
     - select `Network packet filtering framework (Netfilter)`
+      - select `Core Netfilter Configuration`
+        - select `Netfilter connection tracking support`
+        - select `Network Address Translation support`
+        - select `Netfilter nf_tables support`
+        - select `Netfilter nf_tables masquerade support`
+        - select `Netfilter nf_tables nat module`
+      - select `IP: Netfilter Configuration`
+        - select `IPv4 nf_tables support`
   - select `Bluetooth subsystem support`
     - select `Bluetooth device drivers` and enable desired drivers
       - select `HCI USB driver`
