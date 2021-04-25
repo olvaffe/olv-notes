@@ -56,3 +56,8 @@ GBM
     - always a chained `pipe_resource` for ycbcr format
     - each plane has its own fd/stride/offset
       - different fds might refer to the same bo though
+
+## minigbm
+
+- to build,
+  - `VERBOSE=1 CFLAGS=-DDRV_I915 MODE=dbg OUT=out DESTDIR=out/install make install`

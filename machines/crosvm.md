@@ -255,6 +255,22 @@ crosvm
 
 ## virtio-gpu
 
+- `create_gpu_device`
+  - `cfg` is used for various config options
+  - `exit_evt` is an `Event` (i.e., `eventfd()`) that gpu uses to send an exit
+    event.  It is used when the display window is closed for example.
+  - `gpu_device_socket` is a socket that gpu uses to `RegisterMemory`,
+    `AllocateAndRegisterGpuMemory`, etc.  They request the main process to
+    manipulate the KVM memslots.
+  - `gpu_sockets` are resource bridges used for inter-device communications to
+    `GetBuffer` or `GetFence`
+  - `wayland_socket_path` is the path to the host wayland socket
+  - `x_display` is X11 display name
+  - `event_devices` is input event devices, using X window as the event source
+  - `map_request` is used for blob resource mapping.  When the guest kernel
+    requests a blob resource to be mapped, and the blob resource cannot be
+    exported, `map_request` is updated to point to an `ExternalMapping`
+    object.
 - the main thread waits inside `devices::proxy::child_proc`
 - the gpu thread is spawned from `activate`
   - `--gpu backend=3d` sets the backend kind to `BackendKind::Virtio3D`
