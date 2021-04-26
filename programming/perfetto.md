@@ -28,6 +28,43 @@ Perfetto
     - android systrace
     - chrome json
 
+## Running
+
+- Build
+  - `tools/install-build-deps`
+    - `BUILD_DEPS_TOOLCHAIN_HOST`
+      - `gn`
+      - `clang-format`
+      - `ninja`
+      - `clang`
+    - `BUILD_DEPS_HOST`
+      - `googletest`
+      - `protobuf`
+      - `libcxx`, `libcxxabi`
+      - `libunwind`
+      - `fuzzer`
+      - `benchmark`
+      - `libbacktrace`
+      - `sqlite`
+      - `jsoncpp`
+      - android core, unwind, logging, base, procinfo, bionic, etc.
+      - `lzma`
+      - `zlib`
+      - `linenoise`
+  - `tools/build_all_configs.py`
+    - `LINUX_BUILD_CONFIGS`
+      - `linux_gcc_debug`, `linux_gcc_release`
+      - `linux_clang_debug`, `linux_clang_release`
+      - various sanitizer builds
+  - `tools/ninja -C out/linux_clang_release traced traced_probes perfetto`
+- Run
+  - start `traced` as a regular user
+  - start `traced_probes` as root
+    - or, make `/sys/kernel/debug` accessible by user
+    - and `echo 0 > /sys/kernel/debug/tracing/tracing_on`
+  - use `perfetto` to start/stop tracing
+    - `perfetto -c configs/scheduling.cfg --txt --out aaa`
+
 ## Use
 
 - `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
