@@ -1,6 +1,56 @@
 Vulkan Loader
 =============
 
+## Build
+
+- loader
+  - `git clone https://github.com/KhronosGroup/Vulkan-Loader.git`
+  - `cd Vulkan-Loader; mkdir out; cd out`
+  - `../scripts/update_deps.py --generator Ninja`
+    - this clones and builds `Vulkan-Headers`
+  - `cmake -G Ninja -C helper.cmake ..`
+  - `ninja`
+- validation layers
+  - `git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers.git`
+  - `cd Vulkan-ValidationLayers; mkdir out; cd out`
+  - `../scripts/update_deps.py --generator Ninja`
+    - this clones and builds `glslang`, `Vulkan-Headers`, `SPIRV-Headers`, and
+      `robin-hood-hashing`
+  - `cmake -G Ninja -C helper.cmake ..`
+  - `ninja`
+
+## Call Chain
+
+- `vkCreateBuffer` in loader
+  - implemented in `loader/trampoline.c`
+  - get the dispatch table `VkLayerDispatchTable`
+  - `CreateBuffer` points to icd's implementation or the first layer's
+    implementation
+- `vulkan_layer_chassis::CreateBuffer` in validation layers
+  - implemented in `layers/generated/chassis.cpp`
+  - for each validation object, call its `PreCallValidateCreateBuffer`
+    - `ThreadSafety`, `StatelessValidation`, `ObjectLifetimes`, `CoreChecks`
+  - for each validation object, call its `PreCallRecordCreateBuffer`
+    - none
+  - `DispatchCreateBuffer` calls into the driver (next layer?)
+  - for each validation object, call its `PostCallRecordCreateBuffer`
+    - `ThreadSafety`, `ObjectLifetimes`, `ValidationStateTracker`
+
+## Validation Layers
+
+- `ValidationObject`s such as `StatelessValidation` are created in
+  `vulkan_layer_chassis::CreateInstance` and
+  `vulkan_layer_chassis::CreateDevice`
+- I guess `ValidationObject`s are set up in a way that the standard chassis
+  code can be in charge of interception, etc.
+- `StatelessValidation`
+  - validate command parameters without any internal state
+- `ObjectLifetimes`
+  - very simple object lifetime validation
+  - e.g., does not check if an in-flight VkFence is destroyed
+- `CoreChecks`
+  - all expensive stuff
+
 ## Four Classes of Functions
 
 - Non-Dispatchable Functions
