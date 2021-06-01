@@ -160,6 +160,54 @@ Mesa Vulkan WSI
     - call `vkAllocateCommandBuffers` for each queue family
       - and set up a `vkCmdCopyImageToBuffer` from the image to the buffer
 
+## X11 swapchain queue thread
+
+- X11 supports
+  - `VK_PRESENT_MODE_IMMEDIATE_KHR`
+  - `VK_PRESENT_MODE_MAILBOX_KHR`
+  - `VK_PRESENT_MODE_FIFO_KHR`
+  - `VK_PRESENT_MODE_FIFO_RELAXED_KHR`
+- when under Xwayland, or when the mode is not immediate,
+  - a present queue is used
+  - when the mode is fifo, an acquire queue is also used
+- in fifo mode, both an acquire queue and an present queue are used
+  - `vkAcquireNextImageKHR` calls `wsi_queue_pull` on the acquire queue
+  - `vkQueuePresentKHR` calls `wsi_queue_push` on the present queue
+  - life cycle of an image
+    - `wsi_queue_pull` waits until `XCB_PRESENT_EVENT_IDLE_NOTIFY`.  The event
+      clears image `busy`, decrements `sent_image_count`, and adds the image
+      to the acquire queue for pulling.
+    - app renders to the image
+    - `wsi_queue_push` adds the image to the present queue
+    - the present queue thread
+      - pulls the image from the present queue
+      - calls `x11_present_to_x11_dri3` to increment `sent_image_count`, sets
+      	image `present_queued`, and calls `xcb_present_pixmap`
+      - waits until `XCB_PRESENT_EVENT_COMPLETE_NOTIFY` which clears
+      	`present_queued`
+  - from perfetto
+    - app thread is blocked in `vkAcquireNextImageKHR`
+    - `wl_surface::frame` callback wakes up sommelier
+    - sommelier wakes up Xwayland
+    - Xwayland wakes up present queue thread with
+      `XCB_PRESENT_EVENT_IDLE_NOTIFY` followed by
+      `XCB_PRESENT_EVENT_COMPLETE_NOTIFY`
+    - present queue thread handles the idle event and wakes up app thread with
+      `wsi_queue_push`
+      - app thread renders and `vkQueuePresentKHR` to add the next frame to
+      	the present queue
+      - app thread calls `vkAcquireNextImageKHR` and is blocked
+    - present queue thread handles the complete event and exits the wait loop
+    - present queue thread pulls the last frame from the present queue and
+      wakes up Xwayland with `xcb_present_pixmap`
+      - Xwayland wakes up sommelier
+      - sommelier sends `wl_surface::attach`, `wl_surface::frame`,
+        `wl_surface::damage`, and `wl_surface::commit`
+      - `wl_buffer::release` wakes up sommelier
+      - sommelier wakes up X
+      - X???
+    - present queue thread blocks in `xcb_wait_for_special_event` again
+
 ## Drivers
 
 - `wsi_device_init`
