@@ -207,6 +207,14 @@ Mesa Vulkan WSI
       - sommelier wakes up X
       - X???
     - present queue thread blocks in `xcb_wait_for_special_event` again
+- in immediate mode on Xwayland, only the present queue is used
+  - immediate mode on xwayland is treated as mailbox mode
+  - app prepares for the next frame (doing all works not depending on the
+    image of the next frame)
+  - when app is ready to render, it calls `vkAcquireNextImageKHR`
+  - app renders to the acquired image and calls `vkQueuePresentKHR`
+  - present queue thread is woken up, wait for rendering to complete, handle
+    idle and complete events (from last frame), and presents the frame to X
 
 ## Drivers
 
