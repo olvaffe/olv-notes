@@ -22,6 +22,23 @@ Chrome OS Board
 
 ## amd64-generic
 
+- boot the image
+  - note that test or dev images are required
+  - `cros_vm --start --board amd64-generic`
+  - or,
+    $ qemu-system-x86_64 \
+        -cpu SandyBridge,-invpcid,-tsc-deadline,check,vmx=on \
+        -accel kvm -smp 4 -m 8G \
+        -device virtio-vga \
+        -device virtio-scsi-pci -device scsi-hd,drive=my-disk \
+        -drive if=none,id=my-disk,file=chromiumos_test_image.bin,cache=unsafe,format=raw \
+        -device virtio-net,netdev=my-net \
+        -netdev user,id=my-net,hostfwd=tcp::2222-:22 \
+        -device virtio-rng \
+        -usb -device usb-tablet
+   - or
+     - create a qcow2 first
+       `qemu-img create -f qcow2 -b chromiumos_test_image.bin -F raw cros.qcow2`
 - profile inheritance tree
   - ordering is depth-first, left-to-right
   - `overlays/overlay-amd64-generic/profiles/base/parent`
