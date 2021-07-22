@@ -56,3 +56,37 @@ GPU Benchmarks
 	-video_width 1280 \
 	-extern_define ,RELEASE,LANGUAGE_EN,QUALITY_HIGH \
 	-extern_plugin ,GPUMonitor
+
+## Vulkan Samples
+
+- build
+  - `git clone --recurse-submodules https://github.com/KhronosGroup/Vulkan-Samples.git`
+  - `cd Vulkan-Samples`
+  - `cmake -H. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
+  - `ninja -C out`
+  - `ln -sf out/app/bin/Debug/x86_64/vulkan_samples`
+- main loop
+  - stack
+    - `DescriptorManagement::update`
+    - `vkb::Application::step`
+      - app here is a `DescriptorManagement`
+    - `vkb::VulkanSamples::update`
+    - `vkb::Application::step`
+      - app here is a `VulkanSamples` (not `VulkanSample`)
+    - `vkb::Platform::run`
+    - `vkb::Platform::main_loop`
+  - when the window is out of focus and is not in benchmark mode,
+    `vkb::Platform::run` returns immediately and the test will be in a busy
+    loop
+- swapchain
+  - stack of image acquire
+    - `vkb::Swapchain::acquire_next_image`
+    - `vkb::RenderContext::begin_frame`
+    - `vkb::RenderContext::begin`
+    - `DescriptorManagement::update`
+  - stack of image present
+    - `vkb::Queue::present`
+    - `vkb::RenderContext::end_frame`
+    - `vkb::RenderContext::submit`
+    - `vkb::RenderContext::submit`
+    - `DescriptorManagement::update`
