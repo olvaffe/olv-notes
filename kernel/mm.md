@@ -477,3 +477,122 @@ Kernel Memory Management
     or it allocates.  The page is added to both the page cache and the swap
     lru
 - `shmem_read_mapping_page` also calls `shmem_getpage_gfp`
+
+## stats
+
+- `malloc(512MB)` without touching it
+  - `ps`: VSZ increased by 512MB
+  - `free`: no change
+  - `smaps_rollup`: no change
+  - `/proc/meminfo`: no change
+- `memfd(512MB)` without touching it
+  - `ps`: no change
+  - `free`: no change
+  - `smaps_rollup`: no change
+  - `/proc/meminfo`: no change
+- `vkAllocateMemory(512MB) on i915` without touching it
+  - `ps`: no change
+  - `free`: no change
+  - `smaps_rollup`: no change
+  - `/proc/meminfo`: no change
+- `vkAllocateMemory(512MB) on amdgpu` without touching it
+  - `ps`: no change
+  - `free`: no change
+  - `smaps_rollup`: no change
+  - `/proc/meminfo`: no change
+- `malloc(512MB)` followed by memset
+  - `ps`: VSZ and RSS increased by 512MB
+  - `free`
+    - free and available decreased by 512MB
+    - used increased by 512MB
+  - `smaps_rollup`
+    - these increased by 512MB
+      - `Rss`
+      - `Pss`
+      - `Pss_Anon`
+      - `Private_Dirty`
+      - `References`
+      - `Anonymous`
+    - `AnonHugePages` increased by 330MB
+    - in `smaps`, there is a mapping with inode 0
+  - `/proc/meminfo`
+    - these decreased by 512MB
+      - MemFree
+      - MemAvailable
+    - these increased by 512MB
+      - Inactive
+      - Inactive(anon)
+      - AnonPages
+      - Committed_AS
+    - AnonHugePages increased by 330MB
+- `memfd(512MB)` followed by memset
+  - `ps`: VSZ (after mmap) and RSS increased by 512MB
+  - `free`
+    - free and available decreased by 512MB
+    - shared and buff/cache increased by 512MB
+  - `smaps_rollup`
+    - these increased by 512MB
+      - `Rss`
+      - `Pss`
+      - `Pss_Shmem`
+      - `Private_Dirty`
+      - `References`
+    - in `smaps`,
+      - there is `/memfd:test (deleted)` with Size 512MB after mmap
+      - after memset, these increased: `Rss` `Pss` `Private_Dirty` `References`
+  - `/proc/meminfo`
+    - these decreased by 512MB
+      - MemFree
+      - MemAvailable
+    - these increased by 512MB
+      - Cached
+      - Inactive
+      - Inactive(anon)
+      - Mapped
+      - Shmem
+      - Committed_AS
+    - AnonHugePages did not change
+- `vkAllocateMemory(512MB) on i915` followed by memset
+  - `ps`
+    - VSZ (after vkMapMemory) increased by 512MB
+    - RSS did not change
+  - `free`
+    - free and available decreased by 512MB
+    - shared and buff/cache increased by 512MB
+  - `smaps_rollup`: no change
+    - in `smaps`, there is `anon_inode:i915.gem` with Size 512MB after
+      vkMapMemory; pages are not accounted for
+  - `/proc/meminfo`
+    - these decreased by 512MB
+      - MemFree
+      - MemAvailable
+    - these increased by 512MB
+      - Cached
+      - Unevictable
+      - Shmem
+      - Committed_AS
+    - AnonHugePages did not change
+  - `/sys/kernel/debug/dri/0/i915_gem_objects`
+    - total (on first line) increased by 512MB
+    - the client increased by 512MB
+- `vkAllocateMemory(512MB) on amdgpu` followed by memset
+  - `ps`
+    - VSZ (after vkMapMemory) increased by 512MB
+    - RSS did not change
+  - `free`: no change
+  - `smaps_rollup`: no change
+    - in `smaps`, there is `/dev/dri/renderD128` with Size 512MB after
+      vkMapMemory; pages are not accounted for
+  - `/proc/meminfo`: no change
+  - `/sys/class/drm/card0/device`
+    - `mem_info_gtt_used` increased by 512MB
+    - `mem_info_vram_used`: no change
+  - `/sys/kernel/debug/dri/0/`
+    - `amdgpu_gem_info` got a 512MB GTT alloc for the client
+    - `amdgpu_gtt_mm`'s gtt available decreased by 512MB and usage increased
+      by 512MB
+    - `amdgpu_vram_mm`: no change
+    - `ttm_page_pool`: unused
+  - this is because the test picks a GTT heap
+    - when it picks a VRAM heap, `mem_info_vram_used` and `amdgpu_vram_mm`
+      changed rather than the gtt counterparts
