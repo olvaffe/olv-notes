@@ -232,3 +232,25 @@
     - `anv_ResetFences`
     - `anv_QueueSubmit` which is an empty submit with `pWaitSemaphores` from
       `VkPresentInfoKHR` and fence from common wsi
+
+## Images
+
+- `isl_drm_modifier_info`
+  - describes relations between `I915_FORMAT_MOD_*`, `ISL_TILING_*`,
+    `ISL_AUX_USAGE_*`
+- `anv_format`
+  - describes relations between `VK_FORMAT_*`, `ISL_FORMAT_` and isl planes
+  - most vk formats have 1 isl plane
+  - `VK_FORMAT_D24_UNORM_S8_UINT` has `ISL_FORMAT_R24_UNORM_X8_TYPELESS` and
+    `ISL_FORMAT_R8_UINT` planes
+  - `VK_FORMAT_*_nPLANE_*` has `n` isl planes
+- `add_all_surfaces_implicit_layout` loops through all aspects
+  - `VK_IMAGE_ASPECT_*` decides the isl plane index and `anv_format_plane`
+  - `VK_IMAGE_ASPECT_*` and `VK_IMAGE_USAGE_*` decide `ISL_SURF_USAGE_*`
+  - `add_primary_surface`
+    - this initializes `isl_surf` for the main surface state(s)
+    - `image_binding_grow` calculates the offset/size of the data in the bo
+  - `add_aux_surface_if_supported`
+  - after this function, we know the surface states of the image and the
+    (offset, size) of each surface which can be used to calculate the memory
+    requirements
