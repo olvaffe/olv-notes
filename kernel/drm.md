@@ -182,6 +182,22 @@ Kernel DRM
   - we do not want to synchronize CPU and GPU (performance hit!)
   - the contents of the buffer may be tiled
 
+## dma-buf
+
+- `drm_prime_handle_to_fd_ioctl`
+  - `drm_gem_prime_handle_to_fd` (generic helper)
+    - `drm_gem_prime_export` (generic helper)
+      - `dma_buf_ops` is `drm_gem_prime_dmabuf_ops`, which uses
+      	`drm_gem_object_funcs` of the bo and `drm_driver` of the dev
+      - userspace mmap calls driver's `gem_prime_mmap`
+    - `i915_gem_prime_export`
+      - `i915_dmabuf_ops`
+      - userspace mmap calls mmap on the shmem
+    - `amdgpu_gem_prime_export`
+      - `amdgpu_dmabuf_ops`
+      - userspace mmap calls driver's `gem_prime_mmap`, which calls
+      	`drm_gem_ttm_mmap`
+
 ## Radeon and DMA
 
 - <http://www.botchco.com/agd5f/?p=50>
