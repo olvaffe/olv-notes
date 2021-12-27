@@ -25,6 +25,7 @@ Chrome OS Development
   - EC firmware: `ectool version`
   - AP firmware: `crossystem fwid`
   - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
+  - `chromeos-firmwareupdate -t` to flash
 
 ## Flash Images
 

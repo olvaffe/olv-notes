@@ -38,6 +38,33 @@ dEQP
   - all arguments required becaues of surfaceless?
   - replace gles2 by gles3 and gles31
 
+## Android
+
+- Download SDK and NDK
+  - Bootstrap to `~/android-sdk`
+    - <https://developer.android.com/studio>
+    - choose "Command line tools only"
+    - `unzip commandlinetools-linux-*_latest.zip`
+    - `./cmdline-tools/bin/sdkmanager --sdk_root=~/android-sdk cmdline-tools\;latest`
+    - `rm -rf commandlinetools-linux-*_latest.zip cmdline-tools`
+  - Install packages
+    - `cd ~/android-sdk`
+    - `./cmdline-tools/latest/bin/sdkmanager --list`
+    - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-22"`
+- Build
+  - `git remote add aosp https://android.googlesource.com/platform/external/deqp`
+  - `git fetch aosp`
+  - `git checkout -b android-11r6 android-cts-11.0_r6`
+  - `python external/fetch_sources.py`
+  - `python scripts/android/build_apk.py --abis x86_64 --sdk ~/android-sdk/ --ndk ~/android-sdk/ndk/23.1.7779620/`
+    - this checks for `aapt`, `zipalign`, and `dx`, where `dx` is removed
+      after `build-tools;29.0.3`
+  - `python scripts/android/install_apk.py`
+- Run
+  - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
+    --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
+    --deqp-log-filename=/sdcard/dEQP-Log.qpa"'`
+
 ## Overview
 
 - CMakeLists.txt `add_subdirectory`
