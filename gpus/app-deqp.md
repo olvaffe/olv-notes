@@ -64,6 +64,11 @@ dEQP
   - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
     --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
     --deqp-log-filename=/sdcard/dEQP-Log.qpa"'`
+- CTS
+  - download and unzip CTS
+  - `./android-cts/tools/cts-tradefed`
+  - `run cts -m CtsDeqpTestCases -t dEQP-VK.ubo.random.scalar#62 -a x86_64`
+  - logcat says `Writing test log into /sdcard/TestLog.qpa`
 
 ## Overview
 
