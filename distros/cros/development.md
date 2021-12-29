@@ -86,6 +86,18 @@ Chrome OS Development
     - it builds images under ~/trunc/src/build/$BOARD
     - it always wipes the build directory clean, install packages, and done
 
+## Manual Building
+
+- `FEATURES="noclean" emerge-$BOARD $PACKAGE`
+  - this leaves `/build/$BOARD/tmp/portage/*/$PACKAGE-*` on disk
+  - `temp/environment` gives how the package is built
+- Meson-based packages
+  - get cross file from `temp/meson.x86_64-cros-linux-gnu.amd64.ini`
+- Rust-based packages
+  - get cargo config file from `work/cargo_home/config` and save it to
+    `.cargo/config.toml`
+  - might additionally need `RUSTFLAGS` and `PKG_CONFIG`
+
 ## Portage
 
 - man 5 portage
