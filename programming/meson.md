@@ -110,3 +110,5 @@ Meson
     cpu_family = 'arm'
     cpu = 'armv7a'
     endian = 'little'
+- there seems to be cases where `SYSROOT=<sysroot>` env var works better than
+  `--sysroot` flag
