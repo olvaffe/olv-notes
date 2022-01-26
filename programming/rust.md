@@ -23,6 +23,14 @@ Rust
   - edit `.profile` to source `$CARGO_HOME/env`
     - `$CARGO_HOME/env` adds `$CARGO_HOME/bin` to `$PATH`
 
+## Cross-Compiler
+
+- `rustup target add aarch64-unknown-linux-gnu`
+- `cargo build --target aarch64-unknown-linux-gnu`
+- edit `~/.cargo/config` to add
+    [target.aarch64-unknown-linux-gnu]
+    linker = "aarch64-linux-gnu-gcc"
+
 ## cargo
 
 - `~/.cargo` or `$CARGO_HOME`
