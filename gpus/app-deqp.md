@@ -50,7 +50,7 @@ dEQP
   - Install packages
     - `cd ~/android-sdk`
     - `./cmdline-tools/latest/bin/sdkmanager --list`
-    - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-22"`
+    - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-28"`
 - Build
   - `git remote add aosp https://android.googlesource.com/platform/external/deqp`
   - `git fetch aosp`
@@ -60,6 +60,8 @@ dEQP
     - this checks for `aapt`, `zipalign`, and `dx`, where `dx` is removed
       after `build-tools;29.0.3`
   - `python scripts/android/install_apk.py`
+    - might need to disable
+      `Settings -> System -> Developer options -> Verify apps over ADB`
 - Run
   - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
     --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
