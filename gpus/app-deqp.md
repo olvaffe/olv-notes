@@ -54,7 +54,8 @@ dEQP
 - Build
   - `git remote add aosp https://android.googlesource.com/platform/external/deqp`
   - `git fetch aosp`
-  - `git checkout -b android-11r6 android-cts-11.0_r6`
+  - `git checkout -t aosp/android11-tests-dev`
+    - Android 11 CTS cut releases from `android11-tests-dev`
   - `python external/fetch_sources.py`
   - `python scripts/android/build_apk.py --abis x86_64 --sdk ~/android-sdk/ --ndk ~/android-sdk/ndk/23.1.7779620/`
     - this checks for `aapt`, `zipalign`, and `dx`, where `dx` is removed
