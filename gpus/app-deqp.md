@@ -72,6 +72,10 @@ dEQP
   - `./android-cts/tools/cts-tradefed`
   - `run cts -m CtsDeqpTestCases -t dEQP-VK.ubo.random.scalar#62 -a x86_64`
   - logcat says `Writing test log into /sdcard/TestLog.qpa`
+- SkQP
+  - `./android-cts/tools/cts-tradefed run commandAndExit cts --skip-device-info
+    --skip-preconditions --skip-all-system-status-check -m CtsSkQPTestCases -t
+    org.skia.skqp.SkQPRunner#vk_arithmode --abi arm64-v8a`
 
 ## Overview
 
