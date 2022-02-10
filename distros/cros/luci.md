@@ -66,8 +66,11 @@ Chrome OS CI
   - <https://chromium.googlesource.com/chromiumos/platform/tast/>
   - <https://chromium.googlesource.com/chromiumos/platform/tast-tests>
 - tast tests
-  - `graphics.DEQP` runs a very small dEQP subset
-  - `graphics.DRM` runs various `drm_tests`
-  - `graphics.*`
-  - `crostini.*`
-  - `arc.Boot.vm`
+  - `tast list <dut>`
+    - `graphics.DEQP` runs a very small dEQP subset
+    - `graphics.DRM` runs various `drm_tests`
+    - `graphics.*`
+    - `crostini.*`
+    - `arc.Boot.vm`
+    - `arc.DEQP.vm`
+  - `tast list -buildbundle crosint <dut>`

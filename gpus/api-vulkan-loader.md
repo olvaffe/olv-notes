@@ -18,6 +18,16 @@ Vulkan Loader
       `robin-hood-hashing`
   - `cmake -G Ninja -C helper.cmake ..`
   - `ninja`
+- LunarG layers
+  - `git clone --recurse-submodules https://github.com/LunarG/VulkanTools.git`
+  - `cd VulkanTools`
+  - `./update_external_sources.sh`
+  - `mkdir out; cd out`
+  - `../scripts/update_deps.py --generator Ninja`
+    - this clones and builds `Vulkan-Headers`, `Vulkan-Loader`,
+      `Vulkan-Tools`, and `Vulkan-ValidationLayers`
+  - `cmake -G Ninja -C helper.cmake ..`
+  - `ninja`
 
 ## Call Chain
 
