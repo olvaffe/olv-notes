@@ -1,6 +1,72 @@
 CMake
 =====
 
+## Use
+
+- Basics
+  - generate
+    - `cmake -S. -Bout -GNinja`
+  - variables
+    - `cmake -Bout -LH` to list variables
+    - `CMAKE_BUILD_TYPE`
+  - build
+    - `ninja -Cout -v`
+    - `make -Cout VERBOSE=1`
+  - debug
+    - `cmake -Bout --trace`
+- `cmake-commands`
+  - these are more global and should be used with care
+    - `add_compile_definitions`
+    - `add_compile_options`
+    - `add_link_options` 
+    - these should not be used
+      - `add_definitions`
+      - `include_directories`
+      - `link_directories`
+      - `link_libraries`
+  - use these instead
+    - `target_compile_definitions`
+    - `target_compile_features`
+    - `target_compile_options`
+    - `target_include_directories`
+    - `target_link_libraries`
+    - `target_link_options`
+    - these should not be used
+      - `target_link_directories`
+  - find
+    - `find_file`
+    - `find_library`
+    - `find_package`
+    - `find_path`
+    - `find_program`
+- `cmake-variables` for user customizations
+  - `CMAKE_BUILD_TYPE`
+  - `CMAKE_<LANG>_COMPILER`
+  - `CMAKE_<LANG>_FLAGS`
+- `cmake-env-variables` for user customizations
+  - `DESTDIR`
+  - `LDFLAGS`
+  - `VERBOSE`
+  - `CC`
+  - `CFLAGS`
+  - `CXX`
+  - `CXXFLAGS`
+- `cmake-toolchains`
+  - `--toolchain <path>` or `-DCMAKE_TOOLCHAIN_FILE=<path>`
+  - `CMAKE_SYSTEM_NAME`
+    - `Linux` or `Android`
+    - `uname -s`
+  - `CMAKE_SYSTEM_PROCESSOR`
+    - `x86_64` or `i386` or `aarch64` or `arm`
+    - `uname -m`
+  - `CMAKE_SYSROOT`
+  - `CMAKE_C_COMPILER`
+  - `CMAKE_CXX_COMPILER`
+  - `CMAKE_CXX_COMPILER`
+  - `CMAKE_FIND_ROOT_PATH_MODE_*`
+    - cmake finds under `CMAKE_SYSROOT`, `CMAKE_FIND_ROOT_PATH`, and host
+      system root
+
 ## cross-compile
 
 - `32bit.cmake`
