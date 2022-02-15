@@ -4,37 +4,24 @@ Linux perf
 ## Event Counting
 
 - test configuration
-  - 3GHz CPU
-  - compare idling (sleep 1) and busy looping for 1s
-- HW
-  - `perf stat -e branches <cmd>`
-    - idling reports ~230K branches
-    - busy looping reports ~465M branches
-  - `perf stat -e branch-misses <cmd>`
-    - idling reports ~7K branch misses
-    - busy looping reports ~10K branch misses
-  - `perf stat -e cache-misses <cmd>`
-    - idling reports ~700
-    - busy looping reports ~5K
-  - `perf stat -e cycles <cmd>`
-    - idling reports ~1M
-    - busy looping reports ~3G
-  - `perf stat -e instructions <cmd>`
-    - idling reports ~764K
-    - busy looping reports ~2.3G
-- SW
-  - `perf stat -e context-switches <cmd>`
-    - idling reports ~1
-    - busy looping reports ~2
-  - `perf stat -e cpu-clock <cmd>`
-    - idling reports ~1ms
-    - busy looping reports ~1s
-  - `perf stat -e page-faults <cmd>`
-    - idling reports ~58
-    - busy looping reports ~43
-  - `perf stat -e task-clock <cmd>`
-    - idling reports ~1ms
-    - busy looping reports ~1s
+  - `i7-7820HQ`
+    - `cat /sys/devices/system/cpu/cpu0/cpufreq/base_frequency`
+      - 2900000
+    - `cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq`
+      - `3900000`
+  - compare idling and busy looping for 1s
+    - `perf stat --timeout 1000 blah`
+- HW events
+  - branches: 211k vs. 3825M
+  - branch-misses: 7k vs. 11k
+  - cache-misses: 28k vs. 28k
+  - cycles: 1M vs. 3834M
+  - instructions: 1M vs. 3827M
+- SW events
+  - context-switches: 1 vs. 3
+  - cpu-clock: 1.3ms vs. 1000ms
+  - page-faults: 63 vs. 45
+  - task-clock: 1.3ms vs. 1000ms
 - Tracepoint
   - `perf stat -e dma_fence:* <cmd>`
   - `perf stat -e drm:* <cmd>`
@@ -43,7 +30,15 @@ Linux perf
   - `perf stat -e sched:* <cmd>`
   - `perf stat -e syscalls:* <cmd>`
 
-# Tracepoints
+## Event Sampling
+
+- `perf record -e cycles -c 1000 <cmd>`
+  - generate an interrupt and collect a sample for every 1000 cycles
+  - every 1000000 cycles is more appropriate for cycles
+- `perf record -e cycles -F 1000 <cmd>`
+  - generate 1000 interrupts and colloect 1000 samples every second
+
+## Tracepoints
 
 - `cd /sys/kernel/debug/tracing`
   - for help, `cat README`
