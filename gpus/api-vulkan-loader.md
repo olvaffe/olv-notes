@@ -28,6 +28,43 @@ Vulkan Loader
       `Vulkan-Tools`, and `Vulkan-ValidationLayers`
   - `cmake -G Ninja -C helper.cmake ..`
   - `ninja`
+- cross-compile hell
+  - general
+    - use `scripts/update_deps.py --no-build` to check out the right versions
+    - `cmake -S. -Bout -DCMAKE_TOOLCHAIN_FILE=toolchain.mk`
+      - `set(CMAKE_STAGING_PREFIX /tmp/hell)`
+    - `make -C out install`
+  - build `Vulkan-Headers`
+    - nothing special
+  - build `Vulkan-Loader`
+    - `-DVULKAN_HEADERS_INSTALL_DIR=/tmp/hell`
+    - `-DBUILD_WSI_XCB_SUPPORT=no`
+    - `-DBUILD_WSI_XLIB_SUPPORT=no`
+  - build `SPIRV-Headers`
+    - nothing special
+  - build `SPIRV-Tools`
+    - `python utils/git-sync-deps`
+  - build `robin-hood-hashing`
+    - `-DRH_STANDALONE_PROJECT=off`
+  - build `Vulkan-ValidationLayers`
+    - `-DVULKAN_HEADERS_INSTALL_DIR=/tmp/hell`
+    - `-DSPIRV_HEADERS_INSTALL_DIR=/tmp/hell`
+    - `-DSPIRV_TOOLS_INSTALL_DIR=/tmp/hell`
+    - `-DCMAKE_PREFIX_PATH=/tmp/hell/lib/cmake`
+      - to find robin-hood-hasing
+    - `-DBUILD_WSI_XCB_SUPPORT=off`
+    - `-DBUILD_WSI_XLIB_SUPPORT=off`
+    - `-DBUILD_LAYER_SUPPORT_FILES=on`
+  - build `VulkanTools`
+    - `set(CMAKE_FIND_ROOT_PATH ${CMAKE_SOURCE_DIR}/submodules)`
+      - for jsoncpp
+    - `set(CMAKE_CXX_FLAGS -Wno-shift-op-parentheses)`
+    - comment out monitor layer in `layersvt/CMakeLists.txt`
+    - `-DVULKAN_HEADERS_INSTALL_DIR=/tmp/hell`
+    - `-DVULKAN_LOADER_INSTALL_DIR=/tmp/hell`
+    - `-DVULKAN_VALIDATIONLAYERS_INSTALL_DIR=/tmp/hell`
+    - `-DBUILD_WSI_XCB_SUPPORT=off`
+    - `-DBUILD_WSI_XLIB_SUPPORT=off`
 
 ## Call Chain
 
