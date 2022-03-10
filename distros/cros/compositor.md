@@ -1,6 +1,28 @@
 Chrome OS Compositor
 ====================
 
+## Compositor
+
+- compositor with a running vkcube in crosvm
+  - some time after vsync, viz's `DelayBasedBeginFrameSource::OnTimerTick` is
+    called.  The function calls `OnBeginFrame` on all observers
+    - ash?'s `ExternalBeginFrameSource::OnBeginFrame` is called.  This
+      prepares a frame for the compositor and ends with `Surface::Commit`
+      which does `SubmitCompositorFrame`
+  - after a bit of wait, viz calls `DisplayScheduler::OnBeginFrameDeadline`
+    - this calls `DisplayScheduler::DrawAndSwap` which ultimately calls
+      `DirectRenderer::DrawFrame` and `SkiaRenderer::SwapBuffers` using the
+      frames submitted by the clients (I think it uses frames submitted by
+      clients in the last vsync; clients need a bit time until they
+      `SubmitCompositorFrame`)
+    - `SkiaRenderer::SwapBuffers` wakes up the gpu process main thread.  The
+      gpu proces main thread, among other things, calls
+      `SkiaOutputSurfaceImplOnGpu::SwapBuffers` which calls
+      `GbmSurfaceless::SwapBuffersAsync`
+    - `GbmSurfaceless::SwapBuffersAsync` wakes up `DrmThread`.  `DrmThread`
+      calls `DrmThread::SchedulePageFlip` and `DrmThread::OnPlanesReadyForPageFlip`
+- EXO and the wayland server is a part of ash
+
 ## Overview
 
 - Front buffers
