@@ -37,10 +37,12 @@ Chrome OS GSC and EC
     - the 512KB flash is divided into two (16 KB RO, 228KB RW, 12KB NVMEM)
   - Cr50, the name of the firmware, is built from
     <ttps://chromium.googlesource.com/chromiumos/platform/ec>
+    - ebuild is `chromeos-base/chromeos-cr50` 
+    - already installed to dut
   - flash from dut
-    - `gsctool -a -f` to get the RW version
-      - 0.3.x for MP
-      - 0.4.x for PrePVT
+    - `gsctool -a -f` to get the running version
+    - `gsctool -a -b /opt/google/cr50/firmware/cr50.bin.prod` to get the image
+      version
     - `gsctool -a /opt/google/cr50/firmware/cr50.bin.prod` to flash
   - flash from host
     - `gsctool` to flash over usb
@@ -49,6 +51,8 @@ Chrome OS GSC and EC
   - some EC has built-in flash and some has external flash
   - the firmware is also built from
     <ttps://chromium.googlesource.com/chromiumos/platform/ec>
+    - ebuild is `chromeos-base/chromeos-ec`
+    - already packed into `chromeos-firmwareupdate`
   - flash from dut
     - `ectool version` to get current version
     - `flashrom -p ec -w <ec.bin>` to flash
@@ -57,6 +61,8 @@ Chrome OS GSC and EC
     - `flash_ec`
 - AP firmware
   - <bootloader.md>
+    - ebuild is `sys-boot/chromeos-bootimage`
+    - already packed into `chromeos-firmwareupdate`
   - flash from dut
     - `crossystem fwid` to get current version
     - `flashrom -p host -w <image>` to flash
