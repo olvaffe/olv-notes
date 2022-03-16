@@ -690,3 +690,37 @@ Vulkan
     - thus multiple `VkDeviceMemory` need to be bound
   - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
     which respectively point to different BOs
+
+## Point and Line Rasterization
+
+- `VkPhysicalDeviceFeatures`
+  - `largePoints` is true if point size greather than 1.0 is supported
+  - `wideLines` is true if line width greather than 1.0 is supported
+- `VkPhysicalDeviceLimits`
+  - `pointSizeRange` and `pointSizeGranularity`
+    - point size written to `PointSize` is clamped to the range
+  - `lineWidthRange` and `lineWidthGranularity`
+    - line width specified by `VkPipelineRasterizationStateCreateInfo` is
+      clamped to the range
+  - `strictLines`
+    - line rasterization follows the strict rules or not
+- point rasterization
+  - same as a square centered at the point position, where the square width is
+    the point size
+- line rasterization
+  - when `strictLines` is true, it is the same as a rectangle centered at the
+    line, where two sides have length the same as line width and two sides
+    have length the same as the line length
+  - when `strictLines` is false, it is the same as a parallelogram centered at
+    the line, with two exceptions
+    - interpolations can follow either strict or non-strict rules
+    - non-antialiased lines can follow the Bresenham rule instead
+- `VK_EXT_line_rasterization`
+  - all modes are optional, and support status is specified by
+    `VkPhysicalDeviceLineRasterizationFeaturesEXT`
+  - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT` forces the strict rule
+  - `VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT` forces the Bresenham rule
+  - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT` is similar to the
+    strict rule, except implementations can include pixels that are not
+    covered and can compute coverage values freely
+  - also support stippled line rasterization
