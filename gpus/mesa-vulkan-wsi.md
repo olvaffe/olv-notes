@@ -159,17 +159,75 @@ Mesa Vulkan WSI
     - call `vkGetMemoryFdKHR` to get the dmabuf of the buffer memory
     - call `vkAllocateCommandBuffers` for each queue family
       - and set up a `vkCmdCopyImageToBuffer` from the image to the buffer
+  - `wsi_common_queue_present` always throttles present by waiting on the
+    fence associated with the previous present of the same image
+    - in immediate mode, apps might acquires/presents crazily igoring what the
+      spec says about throttling
+    - if presenting is just blitting with GPU, the server may return the
+      presented pixmap immediately
+    - apps can be many frames (unbounded actually) ahead of what is presented
 
 ## X11 swapchain queue thread
 
-- X11 supports
+- Present extension supports
+  - present a pixmap at a `target_msc`, a specific vsync
+  - if `XCB_PRESENT_OPTION_ASYNC` is set, and `target_msc` is in the past,
+    present immediately
+  - can have at most 1 in-flight non-async present at each `target_msc`
+    - a second non-async present at the same `target_msc` replaces the first
+      one, like mailbox mode
+  - `XCB_PRESENT_EVENT_COMPLETE_NOTIFY` indicates that a present has completed
+    (pixmap becomes on-screen)
+  - `XCB_PRESENT_EVENT_IDLE_NOTIFY` indicates that a pixmap is no longer
+    accessed by the server
+- X11 WSI supports
   - `VK_PRESENT_MODE_IMMEDIATE_KHR`
+    - no acquire/present queue (unless xwayland)
+    - `x11_acquire_next_image` picks the first idle image
+      - if all images are busy, it blocks for `XCB_PRESENT_EVENT_IDLE_NOTIFY`
+    - `x11_queue_present` presents to server immediately
+      - `target_msc` is set to 0
+      - `XCB_PRESENT_OPTION_ASYNC` is set
   - `VK_PRESENT_MODE_MAILBOX_KHR`
-  - `VK_PRESENT_MODE_FIFO_KHR`
-  - `VK_PRESENT_MODE_FIFO_RELAXED_KHR`
-- when under Xwayland, or when the mode is not immediate,
-  - a present queue is used
-  - when the mode is fifo, an acquire queue is also used
+    - a present queue is needed, such that kernel driver page flip is not
+      blocked by implicit fence
+    - `x11_acquire_next_image` picks the first idle image
+      - if all images are busy, it blocks for `XCB_PRESENT_EVENT_IDLE_NOTIFY`
+    - `x11_queue_present` adds the image to the present queue
+    - the wsi thread pulls the first image in the present queue, wait until
+      the associated fence is idle, and present
+      - `target_msc` is set to 0
+      - `XCB_PRESENT_OPTION_ASYNC` is not set (unless xwayland)
+      - this gives mailbox mode
+      - the fence wait makes sure the image can be flipped without being
+      	blocked by implicit fencing in the kernel driver
+  - `VK_PRESENT_MODE_FIFO_KHR` and `VK_PRESENT_MODE_FIFO_RELAXED_KHR`
+    - require both acqure/present queues
+    - `x11_acquire_next_image` pulls from the acquire queue
+      - if empty, it blocks until the wsi thread pushes a new image to the
+      	acquire queue after `XCB_PRESENT_EVENT_IDLE_NOTIFY`
+    - `x11_queue_present` adds the image to the present queue
+    - the wsi thread pulls the first image in the present queue and presents
+      - `target_msc` is set to next vsync
+      - `XCB_PRESENT_OPTION_ASYNC` is set only when relaxed
+      - it then blocks waiting for `XCB_PRESENT_EVENT_COMPLETE_NOTIFY`
+        - i.e., until next vsync, or later if implicit fencing gets in the way
+- under xwayland, there are a few changes
+  - there are two limits of wayland
+    - wayland protocol does not support async present
+    - wayland compositors usually compose without checking the implicit fence,
+      which can lead to missed vsyncs just because an app's buffer is
+      GPU-heavy; some compositors check and latch an app's buffer only when it
+      is ready
+  - due to the limits, the first change is that mailbox presents set
+    `XCB_PRESENT_OPTION_ASYNC`
+    - the wsi thread waits for fences before present
+    - this gets the buffer from xwayland to the wayland compositor asap
+    - the wayland protocol ignores async
+  - the second change is that immediate present uses the present queue and
+    waits for fences first
+    - this is because wayland compositors usually compose without checking the
+      implicit fence, causing missed vsyncs
 - in fifo mode, both an acquire queue and an present queue are used
   - `vkAcquireNextImageKHR` calls `wsi_queue_pull` on the acquire queue
   - `vkQueuePresentKHR` calls `wsi_queue_push` on the present queue
