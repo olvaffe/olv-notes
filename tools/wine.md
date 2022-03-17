@@ -150,3 +150,14 @@ WINE
     - `WINE_MONO_TRACE=E:System.NotImplementedException`
   - gstreamer
     - `GST_DEBUG=4`
+
+## DXVK
+
+- `DxvkSubmissionQueue`
+  - `submit` or `present` adds a gpu job to `m_submitQueue`
+  - there is a `dxvk-submit` thread
+    - it retrieves gpu jobs from `m_submitQueue`, submit them to `VkQueue`,
+      and moves them to `m_finishQueue`
+  - there is also a `dxvk-queue` thread
+    - it waits on the gpu jobs to complete, free the associated resources, and
+      recycles the jobs for reuse
