@@ -62,7 +62,7 @@ ARC
 - `adb connect 100.115.92.2:5555`
 - public key auth
   - `adb keygen adbkey`
-  - `cat ~/.android/adbkey.pub | android-sh -c "cat > /data/misc/adb/adb_keys"
+  - `cat ~/.android/adbkey.pub | android-sh -c "cat > /data/misc/adb/adb_keys"`
   - `android-sh -c "restorecon /data/misc/adb/adb_keys"`
 - DUT with test image runs `sslh` to redirect adb packets to DUT:22 to 100.115.92.2:5555
   - host can `adb connect <DUT-IP>:22`
@@ -73,3 +73,16 @@ ARC
 - Download Android Studio to get adb and aapt
 - PATH=$PATH:~/Android/Sdk/build-tools/28.0.3 ./cts-tradefed run commandAndExit cts \
     --skip-device-info -m CtsGraphicsTestCases -t <CLASS>#<METHOD>
+
+## Cross-Compile for ARC++ P
+
+- `FEATURES="noclean" emerge arc-foo` and find the generated meson cross files
+  from under `/build/$board/tmp/portage` as usual
+  - requires `SYSROOT=/build/$board` as usual
+  - the pkg-config wrapper additionally requires `ARC_SYSROOT` and `ABI`
+- links
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-devel/arc-toolchain-p/>
+    - tarball has toolchains and sysroots for x86 and arm, both 32-bit and 64-bit
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-devel/arc-build/>
+    - .pc files for use with mesa
+  - <https://mesonbuild.com/Cross-compilation.html>
