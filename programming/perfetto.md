@@ -65,6 +65,80 @@ Perfetto
   - use `perfetto` to start/stop tracing
     - `perfetto -c configs/scheduling.cfg --txt --out aaa`
 
+## Data Sources and Configs
+
+- `data_sources { config { name: <...> <...>_config { ... }}}`
+- most data sources are provided by `traced_probes`
+  - `find -name '*_data_source.h'`
+  - `InodeFileDataSource`
+    - name: `linux.inode_file_map`
+    - for io tracing
+    - `inode_file_config`
+  - `LinuxPowerSysfsDataSource`
+    - name: `linux.sysfs_power`
+    - probe `/sys/class/power_supply` for battery status
+  - `ProcessStatsDataSource`
+    - name: `linux.process_stats`
+    - probe `/proc/<pid>` for process stats
+    - `process_stats_config`
+      - `proc_stats_poll_ms`
+  - `SysStatsDataSource`
+    - name: `linux.sys_stats`
+    - probe `/proc/meminfo`, `/proc/vmstat`, `/proc/stat`,
+      `/sys/class/devfreq`, `/sys/devices/system/cpu`, etc.
+    - `sys_stats_config`
+      - `meminfo_period_ms
+      - `vmstat_period_ms`
+      - `stat_period_ms`
+      - `devfreq_period_ms`
+      - `cpufreq_period_ms`
+  - `SystemInfoDataSource`
+    - name: `linux.system_info`
+    - probe `/proc/cpuinfo`
+  - `FtraceDataSource`
+    - name: `linux.ftrace`
+    - probe any ftrace event
+    - `ftrace_config`
+      - `ftrace_events`
+  - `MetatraceDataSource`
+    - name: `perfetto.metatrace`
+    - to trace perfetto itself
+  - `AndroidLogDataSource`
+    - name: `android.log`
+    - The "android.log" data source records log events from the Android log
+      daemon (`logd`). These are the same log messages that are available via
+      `adb logcat`.
+    - `android_log_config`
+  - `AndroidPowerDataSource`
+    - name: `android.power`
+    - This data source has been introduced in Android 10 (Q) and requires the
+      presence of power-management hardware on the device. This is available
+      on most Google Pixel smartphones.
+    - `android_power_config`
+  - `InitialDisplayStateDataSource`
+    - name: `android.polled_state`
+    - read the display state at the start of a trace (in case it does not
+      change during the trace) and poll the display state periodically
+    - `android_polled_state_config`
+  - `PackagesListDataSource`
+    - name: `android.packages_list`
+    - read the Android package list for later deobfuscation
+  - builtin data sources
+    - `linux.perf` and `perf_event_config`
+- a significant exception is `TrackEventDataSource`
+  - name: `track_event`
+  - `track_event_config`
+    - `disabled_categories`
+    - `enabled_categories`
+    - `disabled_tags`
+    - `enabled_tags`
+- external data sources
+  - `gpu.counters.*` and `gpu_counter_config`
+  - `android.heapprofd` and `heapprofd_config`
+  - `android.java_hprof` and `java_hprof_config`
+  - `vulkan.memory_tracker` and `vulkan_memory_config`
+  - `org.chromium.*` and `chrome_config`
+
 ## Use
 
 - `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
