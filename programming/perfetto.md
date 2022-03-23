@@ -80,6 +80,8 @@ Perfetto
   - `ProcessStatsDataSource`
     - name: `linux.process_stats`
     - probe `/proc/<pid>` for process stats
+      - also get process full names and which threads belong to which
+        processes
     - `process_stats_config`
       - `proc_stats_poll_ms`
   - `SysStatsDataSource`

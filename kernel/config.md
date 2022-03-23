@@ -79,6 +79,11 @@ Kernel Config
   - select `PCI support`
   - select `USB support`
     - select `Support for Host-side USB`
+  - select `MMC/SD/SDIO card support`
+  - select `LED Support`
+    - select `LED Class Support`
+  - select `Platform support for Chrome hardware`
+    - select `ChromeOS Embedded Controller` if chromebook
 - select `Kernel hacking`
   - select `Kernel debugging`
 - for x86
@@ -103,6 +108,33 @@ Kernel Config
         - select `ALSA for SoC audio support`
     - select `Common Clock Framework`
       - select `Raspberry Pi firmware based clock support`
+- for QCOM
+  - select `Platform selection`
+    - select `Qualcomm Platforms`
+  - select `Device Drivers`
+    - select `I2C support`
+      - select `I2C support`
+      - select `I2C bus multiplexing support`
+    - select `SPI support`
+    - select `Multifunction device drivers`
+      - select `Qualcomm Resource Power Manager (RPM)`
+      - select `Qualcomm SPMI PMICs`
+    - select `Hardware Spinlock drivers`
+      - select `Qualcomm Hardware Spinlock device`
+    - select `Mailbox Hardware Support`
+      - select `Qualcomm APCS IPC driver`
+      - select `Qualcomm Technologies, Inc. IPCC driver`
+    - select `Remoteproc drivers`
+      - select all
+    - select `Rpmsg drivers`
+      - select all
+    - select `SOC (System On Chip) specific Drivers`
+      - select `Qualcomm SoC drivers`
+        - select all
+    - select `Industrial I/O support`
+    - select `Pulse-Width Modulation (PWM) Support`
+    - select `On-Chip Interconnect management support`
+      - select `Qualcomm Network-on-Chip interconnect drivers`
 
 ## Config: General Setup
 
@@ -113,6 +145,9 @@ Kernel Config
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
+  - select `BPF subsystem`
+    - select `Enable bpf() system call`
+    - select `Enable BPF Just In Time compiler`
   - select `Preemption Model (Voluntary Kernel Preemption (Desktop))`
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
@@ -144,10 +179,14 @@ Kernel Config
         - select `Netfilter nf_tables nat module`
       - select `IP: Netfilter Configuration`
         - select `IPv4 nf_tables support`
+    - select `Qualcomm IPC Router support` if QCOM
+    - select `SMD IPC Router channels` if QCOM
+    - select `TUN device for Qualcomm IPC Router` if QCOM
   - select `Bluetooth subsystem support`
     - select `Bluetooth device drivers` and enable desired drivers
       - select `HCI USB driver`
-      - select `HCI UART driver` and `Broadcom protocol support`
+      - select `HCI UART driver` and `Broadcom protocol support` if rpi
+      - select `Qualcomm SMD based HCI support` if qcom
   - select `Wireless`
     - select `cfg80211 - wireless configuration API`
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
@@ -244,6 +283,7 @@ Kernel Config
       - deselect all but the desired drivers
     - select `TPM Hardware Support`
       - select `TPM 2.0 CRB Interface` if have one
+      - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if chromebook
   - select `I2C support`
     - select `I2C Hardware Bus support`
       - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if AMD
@@ -331,10 +371,14 @@ Kernel Config
 ## Config: arm64
 
 - select `Kernel Features`
+  - select ` Multi-core scheduler support`
   - select `Timer frequency (300 HZ)`
   - select `Kernel support for 32-bit EL0`
     - select `Emulate deprecated/obsolete ARMv8 instructions`
       - select all
+  - select `ARMv8.2 architectural features`
+    - select `Enable support for persistent memory`
+  - select `Support for NMI-like interrupts`
 - select `Boot options`
   - deselect `UEFI runtime support`
 - select `CPU Power Management`
@@ -342,10 +386,12 @@ Kernel Config
     - select `CPU idle PM support`
     - select `ARM CPU Idle Drivers`
       - select `Generic ARM/ARM64 CPU idle Driver`
+      - select `PSCI CPU idle Driver`
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
     - select `Generic DT based cpufreq driver`
     - select `Raspberry Pi cpufreq support` if needed
+    - select `QCOM CPUFreq HW driver` if needed
 - select `Device Drivers` for Raspberry Pi
   - select `PCI support`
     - select `PCI controller drivers`
@@ -405,6 +451,173 @@ Kernel Config
     - select `BCM2835 PWM support`
   - select `Reset Controller Support`
     - select `Raspberry Pi 4 Firmware Reset Driver`
+- select `Device Drivers` for qcom
+  - select `PCI support`
+    - select `PCI Express Port Bus support`
+    - select `PCI controller drivers`
+      - select `Generic PCI host controller`
+  - select `Generic Driver Options`
+    - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
+    - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
+  - select `Firmware Drivers`
+    - select `ARM System Control and Management Interface Protocol`
+      - select `ARM System Control and Management Interface (SCMI) Message Protocol`
+    - select `ARM System Control and Power Interface (SCPI) Message Protocol`
+    - select `Google Firmware Drivers` if chromebook
+      - select all
+  - select `Memory Technology Device (MTD) support`
+    - select `SPI NOR device support`
+  - select `Network device support`
+    - select `Qualcomm IPA support`
+    - select `Wireless LAN`
+      - select `Atheros 802.11ac wireless cards support`
+      - select `Atheros ath10k SDIO support`
+      - select `Qualcomm ath10k SNOC support`
+  - select `Input device support`
+    - select `Event interface`
+    - select `Keyboards`
+      - select `GPIO Buttons`
+      - select `ChromeOS EC keyboard`
+  - select `Character devices`
+    - select `Serial drivers`
+      - select `MSM on-chip serial port support`
+      - select `MSM serial console support`
+      - select `QCOM on-chip GENI based serial port support`
+      - select `QCOM GENI Serial Console support`
+    - select `RPMSG tty driver`
+    - select `Trust the bootloader to initialize Linux's CRNG`
+  - select `I2C support`
+    - select `I2C Hardware Bus support`
+      - select `I2C Hardware Bus support`
+        - select `Qualcomm Camera Control Interface`
+        - select `Qualcomm Technologies Inc.'s GENI based I2C controller`
+        - select `Qualcomm QUP based I2C controller`
+        - select `ChromeOS EC tunnel I2C bus`
+    - select `SPI support`
+      - select `QTI QSPI controller`
+      - select `Qualcomm SPI controller with QUP interface`
+      - select `Qualcomm GENI based SPI controller`
+    - select `SPMI support`
+    - select `Pin controllers`
+      - select `Qualcomm core pin controller driver`
+      - select `Qualcomm SPMI PMIC pin controller driver`
+      - select `Qualcomm SSBI PMIC pin controller driver`
+      - select `Qualcomm Technologies Inc SC7180 pin controller driver`
+      - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
+  - select `Board level reset or power off`
+    - select `Qualcomm MSM power-off driver`
+    - select `Qualcomm power-on driver`
+  - select `Power supply class support`
+    - select `SBS Compliant gas gauge`
+    - select `SBS Compliant charger`
+    - select `Smart Battery System Manager`
+    - select `ChromeOS EC based USBPD charger`
+  - select `Thermal drivers`
+    - select `Generic cpu cooling support`
+    - select `Qualcomm thermal drivers`
+      - select all
+  - select `Watchdog Timer Support`
+    - select `QCOM watchdog`
+  - select `Voltage and Current Regulator Support`
+    - select `Fixed voltage regulator support`
+    - select `ChromeOS EC regulators`
+    - select `PWM voltage regulator`
+    - select all qcom
+    - select `Voltage controlled regulators`
+  - select `Graphics support`
+    - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
+    - select `MSM DRM`
+    - select `Display Panels`
+      - select `BOE TV101WUM and AUO KD101N80 45NA 1200x1920 panel`
+      - select `support for simple panels`
+      - select `support for simple Embedded DisplayPort panels`
+      - select `Samsung ATNA33XC20 eDP panel`
+    - select `Display Interface Bridges`
+      - select `Display connector support`
+      - select `Simple DRM bridge support`
+      - select `TI SN65DSI86 DSI to eDP bridge`
+      - select `Analogix Anx7625 MIPI to DP interface support`
+    - select `Frame buffer Devices`
+      - select `Support for frame buffer devices`
+    - select `Backlight & LCD device support`
+      - select `Lowlevel Backlight controls`
+      - select `Generic PWM based Backlight Driver`
+  - select `HID support`
+    - select `Battery level reporting for HID devices`
+    - select `/dev/hidraw raw HID device support`
+    - select `User-space I/O driver support for HID subsystem`
+    - select `Special HID drivers`
+      - deselect all but the desired drivers, such as
+      - select `Google Hammer Keyboard`
+      - select `HID Multitouch panels`
+    - select `I2C HID support`
+      - select `HID over I2C transport layer Open Firmware driver`
+      - select `Driver for Goodix hid-i2c based devices on OF systems`
+  - select `USB support`
+    - select `USB ULPI PHY interface support``
+    - select `USB GPIO Based Connection Detection Driver`
+    - select `xHCI HCD (USB 3.0) support`
+    - select `EHCI HCD (USB 2.0) support`
+    - select `Generic EHCI driver for a platform device`
+    - select `OHCI HCD (USB 1.1) support`
+    - select `Generic OHCI driver for a platform device`
+    - select `USB Type-C Support`
+      - select `USB Type-C Port Controller Manager`
+      - select `USB Type-C Connector System Software Interface driver`
+  - select `MMC/SD/SDIO card support`
+    - select `SDIO UART/GPS class support`
+    - select `Secure Digital Host Controller Interface support`
+    - select `SDHCI platform and OF driver helper`
+    - select `Qualcomm SDHCI Controller Support`
+    - select `MMC Host Software Queue support`
+  - select `Real Time Clock`
+    - select `Chrome OS EC RTC driver`
+  - select `DMA Engine support`
+    - select all qcom
+  - select `Platform support for Chrome hardware`
+    - select all
+  - select `Common Clock Framework`
+    - select `Support for Qualcomm's clock controllers`
+      - select RPM*
+      - select SC7180*
+      - select `SPMI PMIC clkdiv Support`
+      - select `High-Frequency PLL (HFPLL) Clock Controller`
+      - select `KPSS Clock Controller`
+  - select `IOMMU Hardware Support`
+    - select `ARM Ltd. System MMU (SMMU) Support`
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support`
+    - select `Qualcomm IOMMU Support`
+  - select `Industrial I/O support`
+    - select `ChromeOS EC Sensors Core`
+    - select `ChromeOS EC Contiguous Sensors`
+    - select `ChromeOS EC Sensor for lid angle`
+    - select `Proximity and distance sensors`
+      - select `SX9310/SX9311 Semtech proximity sensor`
+    - select `Pulse-Width Modulation (PWM) Support`
+      - select `ChromeOS EC PWM driver`
+    - select `IRQ chip support`
+      - select `QCOM PDC`
+    - select `Reset Controller Support`
+      - select `Qcom AOSS Reset Driver`
+      - select `Qualcomm PDC Reset Driver`
+    - select `PHY Subsystem`
+      - select `Qualcomm QMP PHY Driver`
+      - select `Qualcomm QUSB2 PHY Driver`
+      - select `Qualcomm USB HS PHY module`
+      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
+      - select `Qualcomm USB HSIC ULPI PHY module`
+    - select `Performance monitor support`
+      - select `ARM CCI PMU driver`
+      - select `ARM CCN driver support`
+      - select `Enable support for the ARMv8.2 Statistical Profiling Extension`
+    - select `NVME Support`
+      - select `QCOM QFPROM Support`
+    - select `Trusted Execution Environment support`
+    - select `TEE drivers`
+      - select `OP-TEE`
+    - select `On-Chip Interconnect management support`
+      - select `Qualcomm OSM L3 interconnect driver`
+      - select `Qualcomm SC7180 interconnect driver`
 
 ## Config: Containers
 
