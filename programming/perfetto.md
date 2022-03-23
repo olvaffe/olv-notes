@@ -139,6 +139,67 @@ Perfetto
   - `vulkan.memory_tracker` and `vulkan_memory_config`
   - `org.chromium.*` and `chrome_config`
 
+## ftrace events
+
+- `tools/ftrace_proto_gen/event_list`
+  - process
+    - `sched`
+    - `task`
+  - ipc
+    - `binder`
+    - `fastrpc`
+    - `signal`
+  - system
+    - `cgroup`
+    - `ftrace`
+    - `kvm`
+    - `synthetic`
+    - `systrace`
+    - `raw_syscalls`
+    - `workqueue`
+  - power
+    - `power`
+    - `regulator`
+    - `thermal`
+  - cpu
+    - `cpuhp`
+    - `ipi`
+    - `irq`
+  - mem
+    - `compaction`
+    - `kmem`
+    - `lowmemorykiller`
+    - `mm_event`
+    - `oom`
+    - `vmscan`
+  - io
+    - `block`
+    - `ext4`
+    - `f2fs`
+    - `filemap`
+    - `ufs`
+  - net
+    - `net`
+    - `skb`
+    - `sock`
+    - `tcp`
+  - gpu
+    - `dmabuf_heap`
+    - `dpu`
+    - `fence`
+    - `g2d`
+    - `gpu_mem`
+    - `ion`
+    - `mali`
+    - `mdss`
+    - `sde`
+    - `sync`
+  - misc
+    - `clk`
+    - `cros_ec`
+    - `i2c`
+    - `scm`
+
 ## Use
 
 - `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
