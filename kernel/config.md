@@ -561,6 +561,8 @@ Kernel Config
     - select `Generic EHCI driver for a platform device`
     - select `OHCI HCD (USB 1.1) support`
     - select `Generic OHCI driver for a platform device`
+    - select `DesignWare USB3 DRD Core Support`
+    - select `Register ULPI PHY Interface`
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
@@ -588,6 +590,10 @@ Kernel Config
     - select `ARM Ltd. System MMU (SMMU) Support`
     - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support`
     - select `Qualcomm IOMMU Support`
+  - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support`
+    - select `Simple Ondemand`
+    - select `Performance`
+    - select `DEVFREQ-Event device Support`
   - select `Industrial I/O support`
     - select `ChromeOS EC Sensors Core`
     - select `ChromeOS EC Contiguous Sensors`
