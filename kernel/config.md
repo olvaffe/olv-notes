@@ -577,6 +577,7 @@ Kernel Config
   - select `Platform support for Chrome hardware`
     - select all
   - select `Common Clock Framework`
+    - select `Clock driver for Memory Mapped Fixed values`
     - select `Support for Qualcomm's clock controllers`
       - select RPM*
       - select SC7180*
@@ -593,31 +594,31 @@ Kernel Config
     - select `ChromeOS EC Sensor for lid angle`
     - select `Proximity and distance sensors`
       - select `SX9310/SX9311 Semtech proximity sensor`
-    - select `Pulse-Width Modulation (PWM) Support`
-      - select `ChromeOS EC PWM driver`
-    - select `IRQ chip support`
-      - select `QCOM PDC`
-    - select `Reset Controller Support`
-      - select `Qcom AOSS Reset Driver`
-      - select `Qualcomm PDC Reset Driver`
-    - select `PHY Subsystem`
-      - select `Qualcomm QMP PHY Driver`
-      - select `Qualcomm QUSB2 PHY Driver`
-      - select `Qualcomm USB HS PHY module`
-      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
-      - select `Qualcomm USB HSIC ULPI PHY module`
-    - select `Performance monitor support`
-      - select `ARM CCI PMU driver`
-      - select `ARM CCN driver support`
-      - select `Enable support for the ARMv8.2 Statistical Profiling Extension`
-    - select `NVME Support`
-      - select `QCOM QFPROM Support`
-    - select `Trusted Execution Environment support`
-    - select `TEE drivers`
-      - select `OP-TEE`
-    - select `On-Chip Interconnect management support`
-      - select `Qualcomm OSM L3 interconnect driver`
-      - select `Qualcomm SC7180 interconnect driver`
+  - select `Pulse-Width Modulation (PWM) Support`
+    - select `ChromeOS EC PWM driver`
+  - select `IRQ chip support`
+    - select `QCOM PDC`
+  - select `Reset Controller Support`
+    - select `Qcom AOSS Reset Driver`
+    - select `Qualcomm PDC Reset Driver`
+  - select `PHY Subsystem`
+    - select `Qualcomm QMP PHY Driver`
+    - select `Qualcomm QUSB2 PHY Driver`
+    - select `Qualcomm USB HS PHY module`
+    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
+    - select `Qualcomm USB HSIC ULPI PHY module`
+  - select `Performance monitor support`
+    - select `ARM CCI PMU driver`
+    - select `ARM CCN driver support`
+    - select `Enable support for the ARMv8.2 Statistical Profiling Extension`
+  - select `NVME Support`
+    - select `QCOM QFPROM Support`
+  - select `Trusted Execution Environment support`
+  - select `TEE drivers`
+    - select `OP-TEE`
+  - select `On-Chip Interconnect management support`
+    - select `Qualcomm OSM L3 interconnect driver`
+    - select `Qualcomm SC7180 interconnect driver`
 
 ## Config: Containers
 
