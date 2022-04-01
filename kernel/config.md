@@ -478,6 +478,9 @@ Kernel Config
     - select `Keyboards`
       - select `GPIO Buttons`
       - select `ChromeOS EC keyboard`
+    - select `Mice`
+      - deselect `PS/2 mouse`
+      - select `ELAN I2C Touchpad support`
   - select `Character devices`
     - select `Serial drivers`
       - select `MSM on-chip serial port support`
@@ -509,8 +512,6 @@ Kernel Config
     - select `Qualcomm power-on driver`
   - select `Power supply class support`
     - select `SBS Compliant gas gauge`
-    - select `SBS Compliant charger`
-    - select `Smart Battery System Manager`
     - select `ChromeOS EC based USBPD charger`
   - select `Thermal drivers`
     - select `Generic cpu cooling support`
@@ -524,24 +525,31 @@ Kernel Config
     - select `PWM voltage regulator`
     - select all qcom
     - select `Voltage controlled regulators`
+  - select `Multimedia support`
+    - select `Media device types`
+      - select `Platform-specific devices`
+    - select `Media drivers`
+      - select `Memory-to-memory multimedia devices`
+        - select `Qualcomm Venus V4L2 encoder/decoder driver`
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
     - select `MSM DRM`
     - select `Display Panels`
-      - select `BOE TV101WUM and AUO KD101N80 45NA 1200x1920 panel`
-      - select `support for simple panels`
+      - select `support for simple panels (other than eDP ones)`
       - select `support for simple Embedded DisplayPort panels`
-      - select `Samsung ATNA33XC20 eDP panel`
     - select `Display Interface Bridges`
       - select `Display connector support`
-      - select `Simple DRM bridge support`
       - select `TI SN65DSI86 DSI to eDP bridge`
-      - select `Analogix Anx7625 MIPI to DP interface support`
     - select `Frame buffer Devices`
       - select `Support for frame buffer devices`
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
       - select `Generic PWM based Backlight Driver`
+  - select `Sound card support`
+    - select `Advanced Linux Sound Architecture`
+      - select `ALSA for SoC audio support`
+        - select `ASoC support for QCOM platforms`
+          - select `SoC Machine driver for SC7180 boards`
   - select `HID support`
     - select `Battery level reporting for HID devices`
     - select `/dev/hidraw raw HID device support`
@@ -599,6 +607,7 @@ Kernel Config
     - select `ChromeOS EC Contiguous Sensors`
     - select `ChromeOS EC Sensor for lid angle`
     - select `Proximity and distance sensors`
+      - select `ChromeOS EC MKBP Proximity sensor`
       - select `SX9310/SX9311 Semtech proximity sensor`
   - select `Pulse-Width Modulation (PWM) Support`
     - select `ChromeOS EC PWM driver`
