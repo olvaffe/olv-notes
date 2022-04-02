@@ -73,68 +73,48 @@ Kernel Config
 ## Config: First Pass
 
 - quick first pass to reveal more options
+- select `Processor type and features` if x86
+  - select `Symmetric multi-processing support`
+- select `Platform selection` if arm
+  - select `Qualcomm Platforms` if qcom
+  - select `Broadcom BCM2835 family` if rpi
 - select `Enable loadable module support`
 - select `Networking support`
 - select `Device Drivers`
-  - select `PCI support`
+  - select `PCI support` if pci
+  - select `Firmware Drivers` if rpi
+    - select `Raspberry Pi Firmware Driver`
+  - select `I2C support`
+    - select `I2C support`
+  - select `SPI support`
+  - select `Multifunction device drivers`
   - select `USB support`
     - select `Support for Host-side USB`
   - select `MMC/SD/SDIO card support`
   - select `LED Support`
     - select `LED Class Support`
-  - select `Platform support for Chrome hardware`
-    - select `ChromeOS Embedded Controller` if chromebook
+  - select `Platform support for Chrome hardware` if cros
+    - select `ChromeOS Embedded Controller`
+  - select `Mailbox Hardware Support` if arm
+    - select `BCM2835 Mailbox` if rpi
+    - select `Qualcomm APCS IPC driver` if msm
+  - select `Remoteproc drivers`
+    - select all
+  - select `Rpmsg drivers`
+    - select all
+  - select `SOC (System On Chip) specific Drivers`
+    - select `Qualcomm SoC drivers` if msm
+      - select all
+    - select `Broadcom SoC drivers` if rpi
+      - select `Raspberry Pi power domain driver`
+  - select `Industrial I/O support`
+  - select `Pulse-Width Modulation (PWM) Support`
+  - select `On-Chip Interconnect management support` if msm
+    - select `Qualcomm Network-on-Chip interconnect drivers`
+    - select `Qualcomm OSM L3 interconnect driver`
+    - select `Qualcomm SC7180 interconnect driver`
 - select `Kernel hacking`
   - select `Kernel debugging`
-- for x86
-  - select `Processor type and features`
-    - select `Symmetric multi-processing support`
-- for Raspberry Pi
-  - select `Platform selection`
-    - select `Broadcom BCM2835 family`
-  - select `Device Drivers`
-    - select `Mailbox Hardware Support`
-      - select `BCM2835 Mailbox`
-  - select `Firmware Drivers`
-    - select `Raspberry Pi Firmware Driver`
-  - select `Device Drivers`
-    - select `Character devices`
-      - select `Serial device bus` (for bluetooth)
-    - select `I2C support`
-      - select `I2C support`
-    - select `SPI support`
-    - select `Sound card support`
-      - select `Advanced Linux Sound Architecture`
-        - select `ALSA for SoC audio support`
-    - select `Common Clock Framework`
-      - select `Raspberry Pi firmware based clock support`
-- for QCOM
-  - select `Platform selection`
-    - select `Qualcomm Platforms`
-  - select `Device Drivers`
-    - select `I2C support`
-      - select `I2C support`
-      - select `I2C bus multiplexing support`
-    - select `SPI support`
-    - select `Multifunction device drivers`
-      - select `Qualcomm Resource Power Manager (RPM)`
-      - select `Qualcomm SPMI PMICs`
-    - select `Hardware Spinlock drivers`
-      - select `Qualcomm Hardware Spinlock device`
-    - select `Mailbox Hardware Support`
-      - select `Qualcomm APCS IPC driver`
-      - select `Qualcomm Technologies, Inc. IPCC driver`
-    - select `Remoteproc drivers`
-      - select all
-    - select `Rpmsg drivers`
-      - select all
-    - select `SOC (System On Chip) specific Drivers`
-      - select `Qualcomm SoC drivers`
-        - select all
-    - select `Industrial I/O support`
-    - select `Pulse-Width Modulation (PWM) Support`
-    - select `On-Chip Interconnect management support`
-      - select `Qualcomm Network-on-Chip interconnect drivers`
 
 ## Config: General Setup
 
@@ -211,6 +191,12 @@ Kernel Config
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
+- select `Cryptographic API`
+  - if iwd,
+    - select `User-space interface for hash algorithms`
+    - and many others as indicated by the log
+  - select `Hardware crypto devices`
+    - select `Support for AMD Secure Processor`
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed
     - needed by some DRM drivers such as vc4
@@ -250,123 +236,6 @@ Kernel Config
 - deselect `Virtualization`
 - select `General architecture-dependent options`
   - select `Provide system calls for 32-bit time_t`
-- select `Device Drivers`
-  - select `PCI support`
-    - select `PCI Express Port Bus support`
-    - select `Message Signaled Interrupts (MSI and MSI-X)`
-  - select `Generic Driver Options`
-    - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
-    - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
-  - select `Block devices`
-    - select `Loopback device support`
-  - select `NVME Support` if have one
-    - select `NVM Express block device`
-  - select `Misc devices`
-    - select `Realtek PCI-E card reader` if have one
-  - select `SCSI device support` if have SATA or USB drives
-    - deselect `legacy /proc/scsi/ support`
-    - select `SCSI device support`
-    - select `SCSI disk support`
-    - deselect `SCSI low-level drivers`
-  - select `Serial ATA and Parallel ATA drivers (libata)` if have one
-    - select `AHCI SATA support`
-    - deselect `ATA SFF support (for legacy IDE and PATA)`
-  - select `Network device support`
-    - select `Ethernet driver support` if have one
-    - select `USB Network Adapters` if have one
-    - select `Wireless LAN` if have one
-  - select `Input device support`
-    - select `Event interface`
-  - select `Character devices`
-    - deselect `Legacy (BSD) PTY support`
-    - select `Hardware Random Number Generator Core support`
-      - deselect all but the desired drivers
-    - select `TPM Hardware Support`
-      - select `TPM 2.0 CRB Interface` if have one
-      - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if chromebook
-  - select `I2C support`
-    - select `I2C Hardware Bus support`
-      - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if AMD
-      - select `Synopsys DesignWare Platform` for Intel/AMD CPUs
-  - select `Pin controllers`
-    - select `AMD GPIO pin control` if AMD
-  - select `Hardware Monitoring support`
-    - select `AMD Family 10h+ temperature sensor` if AMD
-    - select `Intel Core/Core2/Atom temperature sensor` if Intel
-  - select `Thermal drivers`
-    - select `Intel thermal drivers`
-      - select `ACPI INT340X thermal drivers`
-        - select `ACPI INT340X thermal drivers`
-      - select `Intel PCH Thermal Reporting Driver`
-  - select `Watchdog Timer Support`
-    - select `AMD/ATI SP5100 TCO Timer/Watchdog` if AMD
-    - select `Intel TCO Timer/Watchdog` if Intel
-  - select `Multimedia support`
-    - select `Media device types`
-      - select `Cameras/video grabbers support`
-    - select `Media drivers`
-      - select `Media USB Adapters`
-        - select `USB Video Class (UVC)`
-        - deselect `GSPCA based webcams`
-  - select `Graphics support`
-    - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
-    - select `Intel 8xx/9xx/G3x/G4x/HD Graphics`
-    - select `Frame buffer Devices`
-      - select `Support for frame buffer devices`
-        - select `EFI-based Framebuffer Support`
-  - select `Sound card support`
-    - select `Advanced Linux Sound Architecture`
-      - deselect `Support old ALSA API`
-      - select `HD-Audio`
-        - select `HD Audio PCI`
-        - select `Build Realtek HD-audio codec support` if have one
-        - select `Build HDMI/DisplayPort HD-audio codec support` if have one
-      - select `ALSA for SoC audio support`
-        - select `AMD Audio Coprocessor - Renoir support` if AMD
-  - select `HID support`
-    - select `Special HID drivers`
-      - deselect all but the desired drivers, such as
-      - select `HID Multitouch panels`
-      - select `Wacom Intuos/Graphire tablet support (USB)`
-      - select `HID Sensors framework support` for sensors
-    - select `I2C HID support`
-      - select `HID over I2C transport layer` for I2C touchpads
-    - select `AMD SFH HID Support`
-      - select `AMD Sensor Fusion Hub` if AMD
-  - select `USB support`
-    - select `xHCI HCD (USB 3.0) support`
-    - select `EHCI HCD (USB 2.0) support`
-    - select `USB Printer support`
-    - select `USB Mass Storage support`
-    - select `USB Type-C Support`
-      - select `USB Type-C Connector System Software Interface driver`
-      - select `UCSI ACPI Interface Driver`
-  - select `MMC/SD/SDIO card support`
-    - select `Realtek PCI-E SD/MMC Card Interface Driver`
-  - select `LED support`
-    - select `LED Class Support`
-  - select `Real Time Clock`
-  - select `DMA Engine support`
-    - select `Synopsys DesignWare AHB DMA platform driver` for Intel LPSS
-  - deselect `Virtio drivers`
-  - deselect `VHOST drivers`
-  - select `X86 Platform Specific Device Drivers`
-    - select `Dell Systems Management Base Driver` if Dell
-    - select `Dell SMBIOS driver` if Dell
-    - select `Dell Laptop Extras` if Dell
-    - select `Lenovo IdeaPad Laptop Extras` if Lenovo IdeaPad
-  - deselect `IOMMU Hardware Support`
-  - select `Industrial I/O support`
-    - select `Accelerometers`
-      - select `HID Accelerometers 3D` if accelerometers (tablets, 2-in-1s)
-  - select `Generic powercap sysfs driver`
-    - select `Intel RAPL Support via MSR Interface` for both Intel and AMD
-- select `Cryptographic API`
-  - if iwd,
-    - select `User-space interface for hash algorithms`
-    - and many others as indicated by the log
-  - select `Hardware crypto devices`
-    - select `Support for AMD Secure Processor`
 
 ## Config: arm64
 
@@ -390,250 +259,261 @@ Kernel Config
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
     - select `Generic DT based cpufreq driver`
-    - select `Raspberry Pi cpufreq support` if needed
-    - select `QCOM CPUFreq HW driver` if needed
-- select `Device Drivers` for Raspberry Pi
-  - select `PCI support`
-    - select `PCI controller drivers`
+    - select `Raspberry Pi cpufreq support` if rpi
+    - select `QCOM CPUFreq HW driver` if msm
+
+## Config: Device Drivers
+
+- select `Device Drivers`
+  - select `PCI support` if pci
+    - select `PCI Express Port Bus support` if pcie
+    - select `Message Signaled Interrupts (MSI and MSI-X)`
+    - select `PCI controller drivers` if rpi
       - select `Broadcom Brcmstb PCIe host controller`
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
-  - select `Network device support`
-    - select `Ethernet driver support`
-      - select `Broadcom GENET internal MAC support`
-    - select `Wireless LAN`
-      - select `Broadcom FullMAC WLAN driver`
-  - select `Input device support`
-    - select `Event interface`
-    - deselect `Keyboards`
-    - deselect `Mice`
-  - select `I2C support`
-    - select `I2C Hardware Bus support`
-      - select `Broadcom BCM2835 I2C controller`
-  - select `SPI support`
-    - select `BCM2835 SPI controller`
-    - select `BCM2835 SPI auxiliary controller`
-  - select `Hardware Monitoring support`
-    - select `Raspberry Pi voltage monitor`
-  - select `Thermal drivers`
-    - select `Broadcom thermal drivers`
-      - select `Thermal sensors on bcm2835 SoC`
-  - select `Watchdog Timer Support`
-    - select `Broadcom BCM2835 hardware watchdog`
-  - select `Voltage and Current Regulator Support`
-    - select `Fixed voltage regulator support`
-    - select `GPIO regulator support`
-  - select `Graphics support`
-    - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
-    - select `Broadcom VC4 Graphics`
-    - select `Frame buffer Devices`
-      - select `Support for frame buffer devices`
-        - select `Simple framebuffer support`
-  - select `USB support`
-    - select `xHCI HCD (USB 3.0) support`
-  - select `MMC/SD/SDIO card support`
-    - select `Secure Digital Host Controller Interface support`
-    - select `SDHCI platform and OF driver helper`
-    - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller`
-  - select `LED support`
-    - select `LED Class Support`
-  - select `Real Time Clock`
-  - select `DMA Engine support`
-    - select `BCM2835 DMA engine support`
-  - select `Staging drivers`
-    - select `Broadcom VideoCore support`
-      - select all
-  - select `SOC (System On Chip) specific Drivers`
-    - select `Broadcom SoC drivers`
-      - select `Raspberry Pi power domain driver`
-  - select `Pulse-Width Modulation (PWM) Support`
-    - select `BCM2835 PWM support`
-  - select `Reset Controller Support`
-    - select `Raspberry Pi 4 Firmware Reset Driver`
-- select `Device Drivers` for qcom
-  - select `PCI support`
-    - select `PCI Express Port Bus support`
-    - select `PCI controller drivers`
-      - select `Generic PCI host controller`
-  - select `Generic Driver Options`
-    - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
-    - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
-  - select `Firmware Drivers`
+  - select `Firmware Drivers` if arm
     - select `ARM System Control and Management Interface Protocol`
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `ARM System Control and Power Interface (SCPI) Message Protocol`
-    - select `Google Firmware Drivers` if chromebook
+    - select `Google Firmware Drivers` if cros
       - select all
-  - select `Memory Technology Device (MTD) support`
+  - select `Memory Technology Device (MTD) support` if cros
     - select `SPI NOR device support`
+  - select `Block devices`
+    - select `Loopback device support`
+  - select `NVME Support` if have one
+    - select `NVM Express block device`
+  - select `Misc devices`
+    - select `Realtek PCI-E card reader` if have one
+  - select `SCSI device support` if have SATA or USB drives
+    - deselect `legacy /proc/scsi/ support`
+    - select `SCSI device support`
+    - select `SCSI disk support`
+    - deselect `SCSI low-level drivers`
+  - select `Serial ATA and Parallel ATA drivers (libata)` if have one
+    - select `AHCI SATA support`
+    - deselect `ATA SFF support (for legacy IDE and PATA)`
   - select `Network device support`
-    - select `Qualcomm IPA support`
-    - select `Wireless LAN`
-      - select `Atheros 802.11ac wireless cards support`
-      - select `Atheros ath10k SDIO support`
-      - select `Qualcomm ath10k SNOC support`
+    - select `Ethernet driver support` if have one
+      - select `Broadcom GENET internal MAC support` if rpi
+    - select `Qualcomm IPA support` if msm modem
+    - select `USB Network Adapters` if have one
+    - select `Wireless LAN` if have one
+      - select `Broadcom FullMAC WLAN driver` if rpi
+      - select `Atheros/Qualcomm devices` if msm
+      - select `Atheros 802.11ac wireless cards support` if msm
+      - select `Qualcomm ath10k SNOC support` if msm
   - select `Input device support`
     - select `Event interface`
-    - select `Keyboards`
+    - select `Keyboards` if cros
       - select `GPIO Buttons`
       - select `ChromeOS EC keyboard`
-    - select `Mice`
+    - select `Mice` if cros
       - deselect `PS/2 mouse`
       - select `ELAN I2C Touchpad support`
   - select `Character devices`
-    - select `Serial drivers`
-      - select `MSM on-chip serial port support`
-      - select `MSM serial console support`
+    - deselect `Legacy (BSD) PTY support`
+    - select `Serial drivers` if msm
       - select `QCOM on-chip GENI based serial port support`
       - select `QCOM GENI Serial Console support`
-    - select `RPMSG tty driver`
-    - select `Trust the bootloader to initialize Linux's CRNG`
+    - select `Serial device bus` if rpi (for bluetooth)
+    - select `Hardware Random Number Generator Core support`
+      - deselect all but the desired drivers
+    - select `TPM Hardware Support`
+      - select `TPM 2.0 CRB Interface` if have one
+      - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if cros
   - select `I2C support`
     - select `I2C Hardware Bus support`
-      - select `I2C Hardware Bus support`
-        - select `Qualcomm Camera Control Interface`
-        - select `Qualcomm Technologies Inc.'s GENI based I2C controller`
-        - select `Qualcomm QUP based I2C controller`
-        - select `ChromeOS EC tunnel I2C bus`
-    - select `SPI support`
+      - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if AMD
+      - select `Synopsys DesignWare Platform` for Intel/AMD CPUs
+      - select `Broadcom BCM2835 I2C controller` if rpi
+      - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm
+      - select `ChromeOS EC tunnel I2C bus` if cros
+  - select `SPI support` if arm
+    - if msm
       - select `QTI QSPI controller`
-      - select `Qualcomm SPI controller with QUP interface`
       - select `Qualcomm GENI based SPI controller`
-    - select `SPMI support`
-    - select `Pin controllers`
+    - if rpi
+      - select `BCM2835 SPI controller`
+      - select `BCM2835 SPI auxiliary controller`
+  - select `SPMI support` if msm
+  - select `Pin controllers`
+    - select `AMD GPIO pin control` if AMD
+    - if msm
       - select `Qualcomm core pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
-      - select `Qualcomm SSBI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc SC7180 pin controller driver`
-      - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
-  - select `Board level reset or power off`
+  - select `Board level reset or power off` if msm
     - select `Qualcomm MSM power-off driver`
     - select `Qualcomm power-on driver`
-  - select `Power supply class support`
+  - select `Power supply class support` if msm/cros
     - select `SBS Compliant gas gauge`
     - select `ChromeOS EC based USBPD charger`
+  - select `Hardware Monitoring support`
+    - select `AMD Family 10h+ temperature sensor` if AMD
+    - select `Intel Core/Core2/Atom temperature sensor` if Intel
+    - select `Raspberry Pi voltage monitor` if rpi
   - select `Thermal drivers`
-    - select `Generic cpu cooling support`
-    - select `Qualcomm thermal drivers`
+    - select `Generic cpu cooling support` if arm
+    - select `Qualcomm thermal drivers` if msm
       - select all
+    - select `Intel thermal drivers`
+      - select `ACPI INT340X thermal drivers`
+        - select `ACPI INT340X thermal drivers`
+      - select `Intel PCH Thermal Reporting Driver`
+    - select `Broadcom thermal drivers` if rpi
+      - select `Thermal sensors on bcm2835 SoC`
   - select `Watchdog Timer Support`
-    - select `QCOM watchdog`
-  - select `Voltage and Current Regulator Support`
+    - select `AMD/ATI SP5100 TCO Timer/Watchdog` if AMD
+    - select `Intel TCO Timer/Watchdog` if Intel
+    - select `QCOM watchdog` if msm
+    - select `Broadcom BCM2835 hardware watchdog` if rpi
+  - select `Multifunction device drivers` if msm
+    - select `Qualcomm Resource Power Manager (RPM)`
+    - select `Qualcomm SPMI PMICs`
+  - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
-    - select `ChromeOS EC regulators`
+    - select `ChromeOS EC regulators` if cros
     - select `PWM voltage regulator`
-    - select all qcom
+    - select all qcom if msm
     - select `Voltage controlled regulators`
+    - select `GPIO regulator support` if rpi
   - select `Multimedia support`
     - select `Media device types`
-      - select `Platform-specific devices`
+      - select `Cameras/video grabbers support`
+      - select `Platform-specific devices` if arm
     - select `Media drivers`
-      - select `Memory-to-memory multimedia devices`
+      - select `Media USB Adapters`
+        - select `USB Video Class (UVC)`
+        - deselect `GSPCA based webcams`
+      - select `Memory-to-memory multimedia devices` if arm
         - select `Qualcomm Venus V4L2 encoder/decoder driver`
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
-    - select `MSM DRM`
-    - select `Display Panels`
+    - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
+    - select `MSM DRM` if msm
+    - select `Broadcom VC4 Graphics` if rpi
+    - select `Display Panels` if arm
       - select `support for simple panels (other than eDP ones)`
       - select `support for simple Embedded DisplayPort panels`
-    - select `Display Interface Bridges`
+    - select `Display Interface Bridges` if arm
       - select `Display connector support`
       - select `TI SN65DSI86 DSI to eDP bridge`
     - select `Frame buffer Devices`
       - select `Support for frame buffer devices`
-    - select `Backlight & LCD device support`
+        - select `EFI-based Framebuffer Support` if x86
+        - select `Simple framebuffer support` if rpi
+    - select `Backlight & LCD device support` if arm
       - select `Lowlevel Backlight controls`
       - select `Generic PWM based Backlight Driver`
   - select `Sound card support`
     - select `Advanced Linux Sound Architecture`
+      - deselect `Support old ALSA API`
+      - select `HD-Audio`
+        - select `HD Audio PCI`
+        - select `Build Realtek HD-audio codec support` if have one
+        - select `Build HDMI/DisplayPort HD-audio codec support` if have one
       - select `ALSA for SoC audio support`
-        - select `ASoC support for QCOM platforms`
+        - select `AMD Audio Coprocessor - Renoir support` if AMD
+        - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
   - select `HID support`
-    - select `Battery level reporting for HID devices`
-    - select `/dev/hidraw raw HID device support`
-    - select `User-space I/O driver support for HID subsystem`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
-      - select `Google Hammer Keyboard`
       - select `HID Multitouch panels`
+      - select `Google Hammer Keyboard`
+      - select `Wacom Intuos/Graphire tablet support (USB)`
+      - select `HID Sensors framework support` for sensors
     - select `I2C HID support`
-      - select `HID over I2C transport layer Open Firmware driver`
-      - select `Driver for Goodix hid-i2c based devices on OF systems`
+      - select `HID over I2C transport layer` for I2C touchpads
+      - select `HID over I2C transport layer Open Firmware driver` if arm
+      - select `Driver for Goodix hid-i2c based devices on OF systems` if have one
+    - select `AMD SFH HID Support`
+      - select `AMD Sensor Fusion Hub` if AMD
   - select `USB support`
-    - select `USB ULPI PHY interface support``
-    - select `USB GPIO Based Connection Detection Driver`
     - select `xHCI HCD (USB 3.0) support`
     - select `EHCI HCD (USB 2.0) support`
-    - select `Generic EHCI driver for a platform device`
-    - select `OHCI HCD (USB 1.1) support`
-    - select `Generic OHCI driver for a platform device`
+    - select `USB Printer support`
+    - select `USB Mass Storage support`
     - select `DesignWare USB3 DRD Core Support`
-    - select `Register ULPI PHY Interface`
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
+      - select `UCSI ACPI Interface Driver` if x86
   - select `MMC/SD/SDIO card support`
-    - select `SDIO UART/GPS class support`
     - select `Secure Digital Host Controller Interface support`
-    - select `SDHCI platform and OF driver helper`
-    - select `Qualcomm SDHCI Controller Support`
-    - select `MMC Host Software Queue support`
+    - select `Realtek PCI-E SD/MMC Card Interface Driver` if have one
+    - if arm
+      - select `SDHCI platform and OF driver helper`
+      - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
+      - select `Qualcomm SDHCI Controller Support` if msm
+      - select `MMC Host Software Queue support`
   - select `Real Time Clock`
-    - select `Chrome OS EC RTC driver`
+    - select `Chrome OS EC RTC driver` if cros
   - select `DMA Engine support`
-    - select all qcom
-  - select `Platform support for Chrome hardware`
+    - select `Synopsys DesignWare AHB DMA platform driver` for Intel LPSS
+    - select all qcom if msm
+    - select `BCM2835 DMA engine support` if rpi
+  - deselect `Virtio drivers`
+  - deselect `VHOST drivers`
+  - select `Staging drivers`
+    - select `Broadcom VideoCore support` if rpi
+      - select all
+  - select `X86 Platform Specific Device Drivers` if x86
+    - select `Dell Systems Management Base Driver` if Dell
+    - select `Dell SMBIOS driver` if Dell
+    - select `Dell Laptop Extras` if Dell
+    - select `Lenovo IdeaPad Laptop Extras` if Lenovo IdeaPad
+  - select `Platform support for Chrome hardware` if cros
     - select all
-  - select `Common Clock Framework`
-    - select `Clock driver for Memory Mapped Fixed values`
-    - select `Support for Qualcomm's clock controllers`
-      - select RPM*
+  - select `Common Clock Framework` if arm
+    - select `Support for Qualcomm's clock controllers` if msm
+      - select `RPMh Clock Driver`
       - select SC7180*
-      - select `SPMI PMIC clkdiv Support`
-      - select `High-Frequency PLL (HFPLL) Clock Controller`
-      - select `KPSS Clock Controller`
-  - select `IOMMU Hardware Support`
+    - select `Raspberry Pi firmware based clock support` if rpi
+  - select `Hardware Spinlock drivers` if msm
+    - select `Qualcomm Hardware Spinlock device`
+  - select `IOMMU Hardware Support` if msm
     - select `ARM Ltd. System MMU (SMMU) Support`
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support`
-    - select `Qualcomm IOMMU Support`
-  - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support`
+  - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
     - select `DEVFREQ-Event device Support`
   - select `Industrial I/O support`
-    - select `ChromeOS EC Sensors Core`
-    - select `ChromeOS EC Contiguous Sensors`
-    - select `ChromeOS EC Sensor for lid angle`
-    - select `Proximity and distance sensors`
-      - select `ChromeOS EC MKBP Proximity sensor`
-      - select `SX9310/SX9311 Semtech proximity sensor`
-  - select `Pulse-Width Modulation (PWM) Support`
-    - select `ChromeOS EC PWM driver`
-  - select `IRQ chip support`
+    - select `Accelerometers`
+      - select `HID Accelerometers 3D` if accelerometers (tablets, 2-in-1s)
+    - if cros
+      - select `ChromeOS EC Sensors Core`
+      - select `ChromeOS EC Contiguous Sensors`
+      - select `ChromeOS EC Sensor for lid angle`
+      - select `Proximity and distance sensors`
+        - select `ChromeOS EC MKBP Proximity sensor`
+        - select `SX9310/SX9311 Semtech proximity sensor`
+  - select `Pulse-Width Modulation (PWM) Support` if arm
+    - select `ChromeOS EC PWM driver` if cros
+    - select `BCM2835 PWM support` if rpi
+  - select `IRQ chip support` if msm
     - select `QCOM PDC`
-  - select `Reset Controller Support`
-    - select `Qcom AOSS Reset Driver`
-    - select `Qualcomm PDC Reset Driver`
-  - select `PHY Subsystem`
+  - select `Reset Controller Support` if arm
+    - select `Qcom AOSS Reset Driver` if msm
+    - select `Qualcomm PDC Reset Driver` if msm
+    - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
+  - select `PHY Subsystem` if msm
     - select `Qualcomm QMP PHY Driver`
     - select `Qualcomm QUSB2 PHY Driver`
-    - select `Qualcomm USB HS PHY module`
-    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
-    - select `Qualcomm USB HSIC ULPI PHY module`
-  - select `Performance monitor support`
+  - select `Generic powercap sysfs driver` if x86
+    - select `Intel RAPL Support via MSR Interface` for both Intel and AMD
+  - select `Performance monitor support` if arm
     - select `ARM CCI PMU driver`
     - select `ARM CCN driver support`
     - select `Enable support for the ARMv8.2 Statistical Profiling Extension`
-  - select `NVME Support`
+  - select `NVME Support` if msm
     - select `QCOM QFPROM Support`
-  - select `Trusted Execution Environment support`
-  - select `TEE drivers`
+  - select `Trusted Execution Environment support` if arm
+  - select `TEE drivers` if arm
     - select `OP-TEE`
-  - select `On-Chip Interconnect management support`
-    - select `Qualcomm OSM L3 interconnect driver`
-    - select `Qualcomm SC7180 interconnect driver`
 
 ## Config: Containers
 
