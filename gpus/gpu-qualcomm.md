@@ -259,28 +259,49 @@ Qualcomm Adreno
 
 ## Overview
 
-- "msm_drm_register" registers these drivers in order
-  - "mdp5_driver" named "msm_mdp" for "qcom,mdp5" and more
-    - this has been replaced by DPU since SDM845
-  - "dpu_driver" named "msm_dpu" for "qcom,sdm845-dpu" and more
-  - "dsi_phy_platform_driver" named "msm_dsi_phy" for "qcom,dsi-phy-10nm" and more
-  - "dsi_driver" named "msm_dsi" for "qcom,mdss-dsi-ctrl" and more
-  - "edp_driver" named "msm_edp" for "qcom,mdss-edp" and more
-  - "msm_hdmi_phy_platform_driver" named "msm_hdmi_phy" for "qcom,hdmi-phy-8996" and more
-  - "msm_hdmi_driver" named "hdmi_msm" for "qcom,hdmi-tx-8996" and more
-  - "adreno_driver" named "adreno" for "qcom,adreno" and more
-  - "msm_platform_driver" named "msm" for "qcom,sdm845-mdss" and more
-- Device Tree sdm845.dtsi
-  - "mdss: mdss@ae00000" compat "qcom,sdm845-mdss"
-    - "mdss_mdp: mdp@ae01000" compat "qcom,sdm845-dpu"
-    - "dsi0: dsi@ae94000" compat "qcom,mdss-dsi-ctrl"
-    - "dsi0_phy: dsi-phy@ae94400" compat "qcom,dsi-phy-10nm"
-    - "dsi1: dsi@ae96000" compat "qcom,mdss-dsi-ctrl"
-    - "dsi1_phy: dsi-phy@ae96400" compat "qcom,dsi-phy-10nm"
-  - "gpu@5000000" compat "qcom,adreno"
-- Device Tree sdm845-cheza.dtsi
-  - "edp_brij_i2c: &i2c3" compat "ti,sn65dsi86"
-    - DSI-to-eDP bridge
+- relevant nodes in `sc7180-trogdor-coachz-r3.dts`
+  - `simple-bus`
+    - `qcom,sc7180-mdss`
+      - MSM Mobile Display Subsystem (MDSS) that encapsulates sub-blocks like
+        DPU display controller, DSI and DP interfaces etc.
+      - `qcom,dsi-phy-10nm`
+      - `qcom,sc7180-dpu`
+      - `qcom,mdss-dsi-ctrl`
+      - `qcom,sc7180-dp`
+    - `qcom,adreno`
+    - `qcom,geni-se-qup`
+      - Generic Interface (GENI) Serial Engine (SE) Wrapper driver for Qualcomm
+        Universal Peripheral (QUP) Wrapper controller, designed to support
+        various serial bus protocols like UART, SPI, I2C, I3C, etc.
+      - `qcom,geni-i2c`
+        - `ti,sn65dsi86`
+          - DSI-to-eDP bridge
+          - `boe,nv110wtm-n61`
+  - `pwm-backlight`
+- `msm_drm_register` registers these platform drivers in order
+  - unused `mdp5_driver` named `msm_mdp` for `qcom,mdp5` and more
+  - `dpu_driver` named `msm_dpu` for `qcom,sc7180-dpu` and more
+  - `dsi_phy_platform_driver` named `msm_dsi_phy` for `qcom,dsi-phy-10nm` and
+    more
+  - `dsi_driver` named `msm_dsi` for `qcom,mdss-dsi-ctrl` and more
+  - unused `msm_hdmi_phy_platform_driver` named `msm_hdmi_phy` for
+    `qcom,hdmi-phy-8996` and more
+  - unused `msm_hdmi_driver` named `hdmi_msm` for `qcom,hdmi-tx-8996` and more
+  - `dp_display_driver` named `msm-dp-display` for `qcom,sc7180-dp` and more
+  - `adreno_driver` named `adreno` for `qcom,adreno` and more
+  - `msm_platform_driver` named `msm` for `qcom,sc7180-mdss` and more
+- `adreno_probe` probes `qcom,adreno`
+  - this only calls `component_add`
+- `msm_pdev_probe` probes `qcom,sc7180-mdss`
+  - this calls `component_match_add` to match all relevant subdevices
+  - this calls `component_master_add_with_match` to register the aggregate
+    driver
+- `msm_drm_bind`
+  - this is called after all components have been successfully bound
+    - `adreno_bind`
+    - `dpu_bind`
+    - `dp_display_bind`
+    - `dsi_bind`
  
 ## MDSS
 

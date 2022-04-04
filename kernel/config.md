@@ -479,6 +479,8 @@ Kernel Config
   - select `Industrial I/O support`
     - select `Accelerometers`
       - select `HID Accelerometers 3D` if accelerometers (tablets, 2-in-1s)
+    - select `Analog to digital converters`
+      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if msm
     - if cros
       - select `ChromeOS EC Sensors Core`
       - select `ChromeOS EC Contiguous Sensors`
