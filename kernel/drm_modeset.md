@@ -298,3 +298,43 @@ DRM Modesetting
   - internally, `drm_mode_legacy_fb_format` translates bpp/depth to format and
     `DRM_IOCTL_MODE_ADDFB` can take the same path as addfb2 does
 - modifiers must be explicitly enabled by setting `DRM_MODE_FB_MODIFIERS` flag
+
+## vblank
+
+- HW
+  - vblank signal, sent after hw has latched the registers and new values can
+    be programmed
+  - flip signal, sent after a flip completes, usually some time (hundreds of
+    microseconds) after the vblank signal
+  - vblank counter, incremented every vsync (even when the interrup is
+    disabled)
+  - scanout position, which x/y position is being scanned out
+- driver
+  - `get_vblank_counter` returns the raw hw vblank counter
+  - `get_scanout_position` returns the x/y scanout position as well as
+    cpu timestamps before and after the reading position
+    - x/y are adjusted to be negative if inside vblank
+  - `get_vblank_timestamp` returns the timestamp at (0, 0).  If called during
+    vblank, the timestamp is in the future.
+    - `drm_crtc_vblank_helper_get_vblank_timestamp` implements the callback
+      generically
+    - it subtracts "(x, y) / crtc clock rate" from the current time
+    - because x/y are negative in vblank, the returned time can be in the
+      future
+  - on vblank signal, `drm_crtc_handle_vblank` or `drm_handle_vblank` must be
+    called
+  - on flip signal, `drm_crtc_send_vblank_event` should be called if there is
+    an event to send
+    - or call `drm_crtc_arm_vblank_event` during register update, which will
+      send the event on vblank signal
+- vblank core
+  - `drm_update_vblank_count` uses the driver callbacks to update the cooked
+    counter / timestamp
+    - this is normally called once per vblank from `drm_crtc_handle_vblank`
+  - all the other functions use the cooked values
+- event
+  - when `DRM_MODE_PAGE_FLIP_EVENT` is set in atomic or flip ioctl, atomic
+    core creates a `drm_pending_vblank_event` and the driver takes the event
+  - on flip signal, the driver calls `drm_crtc_send_vblank_event`
+  - the driver can also make use of `drm_crtc_arm_vblank_event`, to send the
+    event automatically on vblank signal
