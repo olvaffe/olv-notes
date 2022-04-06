@@ -18,8 +18,8 @@ Debian
 - `debootstrap --arch arm64 --foreign stable stable-chroot`
   - `--foreign` skips the last two steps
 - `apt install qemu-user-static`
-- `cp /usr/bin/qemu-aarch64-static stable-chroot/debootstrap`
-- `sudo chroot stable-chroot /debootstrap/qemu-aarch64-static /bin/sh -i`
+- `cp /usr/bin/qemu-aarch64-static stable-chroot`
+- `sudo chroot stable-chroot /qemu-aarch64-static /bin/bash -i`
 - `/debootstrap/debootstrap --second-stage`
 
 ## cross-compile
