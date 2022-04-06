@@ -28,6 +28,17 @@ Vulkan Loader
       `Vulkan-Tools`, and `Vulkan-ValidationLayers`
   - `cmake -G Ninja -C helper.cmake ..`
   - `ninja`
+- gfxreconstruct
+  - `git clone --recurse-submodules https://github.com/LunarG/gfxreconstruct.git`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
+  - `ninja -C out`
+  - `ninja -C out install`, or
+    - edit `VkLayer_gfxreconstruct.json` to point to local
+      `libVkLayer_gfxreconstruct.so`
+    - set `VK_LAYER_PATH` to where `VkLayer_gfxreconstruct.json` lives
+    - `gfxrecon-capture.py -o <name.gfxr> <executable> ...` to capture
+    - `gfxrecon-replay <name.gfxr>` to replay
+      - might need `--wsi xlib` on xwayland
 - cross-compile hell
   - general
     - use `scripts/update_deps.py --no-build` to check out the right versions
