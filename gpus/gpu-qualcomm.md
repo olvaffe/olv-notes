@@ -303,6 +303,29 @@ Qualcomm Adreno
     - `dp_display_bind`
     - `dsi_bind`
  
+## devfreq
+
+- msm internally has
+  - `msm_gpu_devfreq::boost_freq` and `msm_gpu_devfreq::idle_freq`
+    - `boost_freq` is a `DEV_PM_QOS_MIN_FREQUENCY` request
+      - initialized to 0
+    - `idle_freq` is a `DEV_PM_QOS_MAX_FREQUENCY` request
+      - initialized to default, which is `S32_MAX`
+  - `msm_devfreq_active` is called when the device is idle and a new submit
+    is scheduled
+    - if we've been in idle for a while (50ms)
+      - update `boost_freq` to double the current freq
+      - schedule `msm_devfreq_boost_work` to reset `boost_freq` to 0
+    - update `idle_freq` to default
+  - `msm_devfreq_idle` is called when all scheduled submits complete
+    - schedule `msm_devfreq_idle_work`, which update idle timestamp
+      - on supported devices (618 only for now), it also sets `idle_freq` to 0
+- msm adds a devfreq device with `simple_ondemand`
+  - the governor calls `devfreq_monitor_start` to start polling
+  - every 50ms, `devfreq_update_target` asks the governor for the target freq,
+    clamp it to `[DEV_PM_QOS_MIN_FREQUENCY, DEV_PM_QOS_MAX_FREQUENCY]`
+  - `devfreq_set_target` sets and returns the effective freq
+
 ## MDSS
 
 - componentized device
