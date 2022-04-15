@@ -249,3 +249,28 @@ Perfetto
   - `ProducerIPCClientImpl::OnServiceRequest` is called for requests from the
     service.  It calls back to `TracingMuxerImpl::ProducerImpl` for things
     such as `SetupDataSource`, `StartDataSource`, or `StopDataSource`
+
+## SQL
+
+- <https://perfetto.dev/docs/analysis/sql-tables>
+- object-oriented tables
+- `track` table
+  - columns: `id`, `type`, `name`, ...
+  - `thread_track` table
+    - additional columns: `utid`
+  - `process_track` table
+    - additional columns: `utid`
+  - `gpu_track` table
+    - additional columns: `context_id`, ...
+  - `counter_track` table
+  - ...
+- `slice` table
+  - columns: `id`, `type`, `ts`, `dur`, `name`, `track_id`, `arg_set_id`,
+    `slice_id`, ...
+- `thread` table
+  - columns: `utid`, `id`, `type`, `tid`, `name`, `start_ts`, `end_ts`,
+    `upid`, `is_main_thread`, ...
+- `process` table
+- `args` table
+  - columns: `id`, `type`, `arg_set_id`, `flat_key`, `key`, `int_value`,
+    `string_value`, ...
