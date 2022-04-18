@@ -211,9 +211,9 @@ Kernel Config
 - select `Kernel hacking`
   - select `printk and dmesg options`
     - select `Show timing information on printks`
+  - select `Kernel debugging`
   - select `Generic Kernel Debugging Instruments`
     - select `Debug Filesystem`
-  - select `Kernel debugging`
   - select `Tracers`
     - select `Kernel Function Tracer`
     - select `Trace syscalls`
@@ -223,11 +223,11 @@ Kernel Config
 - select `Processor type and features`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
-  - if Intel
+  - if intel
     - select `Intel Low Power Subsystem Support`
     - select `Processor family (Core 2/newer Xeon)`
     - deselect `AMD MCE features`
-  - if AMD
+  - if amd
     - select `AMD ACPI2Platform devices support`
     - select `Processor family (Opteron/Athlon64/Hammer/K8)`
     - deselect `Intel MCE features`
@@ -238,8 +238,8 @@ Kernel Config
   - select `Timer frequency (300 HZ)`
 - select `Power management and ACPI options`
   - select `CPU Frequency scaling`
-    - select `ACPI Processor P-States driver` if AMD
-  - select `Cpuidle Driver for Intel Processors` if Intel
+    - select `ACPI Processor P-States driver` if amd
+  - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations`
   - select `IA32 Emulation`
 - deselect `Virtualization`
@@ -282,6 +282,10 @@ Kernel Config
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
+    - select `Firmware loader`
+      - select `Enable compressed firmware support`
+  - select `Firmware Drivers` if x86
+    - select `Mark VGA/VBE/EFI FB as generic system framebuffer`
   - select `Memory Technology Device (MTD) support` if cros
     - select `SPI NOR device support`
   - select `Block devices`
@@ -331,8 +335,8 @@ Kernel Config
       - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if cros
   - select `I2C support`
     - select `I2C Hardware Bus support`
-      - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if AMD
-      - select `Synopsys DesignWare Platform` for Intel/AMD CPUs
+      - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if amd
+      - select `Synopsys DesignWare Platform` if intel/amd
       - select `Broadcom BCM2835 I2C controller` if rpi
       - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm
       - select `ChromeOS EC tunnel I2C bus` if cros
@@ -345,19 +349,19 @@ Kernel Config
       - select `BCM2835 SPI auxiliary controller`
   - select `SPMI support` if msm
   - select `Pin controllers`
-    - select `AMD GPIO pin control` if AMD
+    - select `AMD GPIO pin control` if amd
     - if msm
       - select `Qualcomm core pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc SC7180 pin controller driver`
-  - select `Board level reset or power off`
-    - select `Qualcomm power-on driver` if msm
+  - select `Board level reset or power off` if msm
+    - select `Qualcomm power-on driver`
   - select `Power supply class support` if msm/cros
     - select `SBS Compliant gas gauge`
     - select `ChromeOS EC based USBPD charger`
   - select `Hardware Monitoring support`
-    - select `AMD Family 10h+ temperature sensor` if AMD
-    - select `Intel Core/Core2/Atom temperature sensor` if Intel
+    - select `AMD Family 10h+ temperature sensor` if amd
+    - select `Intel Core/Core2/Atom temperature sensor` if intel
     - select `Raspberry Pi voltage monitor` if rpi
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
@@ -372,8 +376,8 @@ Kernel Config
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
   - select `Watchdog Timer Support`
-    - select `AMD/ATI SP5100 TCO Timer/Watchdog` if AMD
-    - select `Intel TCO Timer/Watchdog` if Intel
+    - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
+    - select `Intel TCO Timer/Watchdog` if intel
     - select `QCOM watchdog` if msm
     - select `Broadcom BCM2835 hardware watchdog` if rpi
   - select `Voltage and Current Regulator Support` if arm
@@ -393,6 +397,7 @@ Kernel Config
         - select `Qualcomm Venus V4L2 encoder/decoder driver`
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
+    - select `AMD GPU` if amd
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
     - select `MSM DRM` if msm
     - select `Broadcom VC4 Graphics` if rpi
@@ -402,10 +407,11 @@ Kernel Config
     - select `Display Interface Bridges` if arm
       - select `Display connector support`
       - select `TI SN65DSI86 DSI to eDP bridge`
+    - select `Simple framebuffer driver`
     - select `Frame buffer Devices`
       - select `Support for frame buffer devices`
-        - select `EFI-based Framebuffer Support` if x86
-        - select `Simple framebuffer support` if rpi
+	- select `Simple framebuffer support` if want legacy fbdev driver
+	  rather than simple drm driver (for debug)
     - select `Backlight & LCD device support` if arm
       - select `Lowlevel Backlight controls`
       - select `Generic PWM based Backlight Driver`
@@ -417,22 +423,22 @@ Kernel Config
         - select `Build Realtek HD-audio codec support` if any
         - select `Build HDMI/DisplayPort HD-audio codec support` if any
       - select `ALSA for SoC audio support`
-        - select `AMD Audio Coprocessor - Renoir support` if AMD
+        - select `AMD Audio Coprocessor - Renoir support` if amd
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
   - select `HID support`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
       - select `HID Multitouch panels`
-      - select `HID Sensors framework support` for sensors
       - select `Google Hammer Keyboard` if cros
       - select `Wacom Intuos/Graphire tablet support (USB)`
+      - select `HID Sensors framework support` for sensors
     - select `I2C HID support`
-      - select `HID over I2C transport layer` if x86 for I2C touchpads
+      - select `HID over I2C transport layer ACPI driver` if x86 for I2C touchpads
       - select `HID over I2C transport layer Open Firmware driver` if arm
       - select `Driver for Goodix hid-i2c based devices on OF systems` if any
-    - select `AMD SFH HID Support`
-      - select `AMD Sensor Fusion Hub` if AMD
+    - select `AMD SFH HID Support` if amd
+      - select `AMD Sensor Fusion Hub`
   - select `USB support`
     - select `xHCI HCD (USB 3.0) support`
     - select `EHCI HCD (USB 2.0) support`
@@ -453,7 +459,7 @@ Kernel Config
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros
   - select `DMA Engine support`
-    - select `Synopsys DesignWare AHB DMA platform driver` for Intel LPSS
+    - select `Synopsys DesignWare AHB DMA platform driver` if intel LPSS
     - select `BCM2835 DMA engine support` if rpi
   - deselect `Virtio drivers`
   - deselect `VHOST drivers`
@@ -461,9 +467,11 @@ Kernel Config
     - select `Broadcom VideoCore support` if rpi
       - select all
   - select `X86 Platform Specific Device Drivers` if x86
-    - select `Dell Systems Management Base Driver` if Dell
-    - select `Dell SMBIOS driver` if Dell
-    - select `Dell Laptop Extras` if Dell
+    - select `WMI`
+    - if dell
+      - select `Dell Systems Management Base Driver`
+      - select `Dell SMBIOS driver`
+      - select `Dell Laptop Extras`
     - select `Lenovo IdeaPad Laptop Extras` if Lenovo IdeaPad
   - select `Common Clock Framework` if arm
     - select `Support for Qualcomm's clock controllers` if msm
@@ -501,7 +509,7 @@ Kernel Config
     - select `Qualcomm QMP PHY Driver`
     - select `Qualcomm QUSB2 PHY Driver`
   - select `Generic powercap sysfs driver` if x86
-    - select `Intel RAPL Support via MSR Interface` for both Intel and AMD
+    - select `Intel RAPL Support via MSR Interface` if intel/amd
   - select `Trusted Execution Environment support` if arm
   - select `TEE drivers` if arm
     - select `OP-TEE`
