@@ -237,6 +237,8 @@ Kernel Config
     - select `EFI stub support`
   - select `Timer frequency (300 HZ)`
 - select `Power management and ACPI options`
+  - select `ACPI (Advanced Configuration and Power Interface) Support`
+    - select `Processor Aggregator`
   - select `CPU Frequency scaling`
     - select `ACPI Processor P-States driver` if amd
   - select `Cpuidle Driver for Intel Processors` if intel
@@ -286,7 +288,7 @@ Kernel Config
       - select `Enable compressed firmware support`
   - select `Firmware Drivers` if x86
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer`
-  - select `Memory Technology Device (MTD) support` if cros
+  - select `Memory Technology Device (MTD) support` if intel/cros
     - select `SPI NOR device support`
   - select `Block devices`
     - select `Loopback device support`
@@ -361,6 +363,7 @@ Kernel Config
     - select `ChromeOS EC based USBPD charger`
   - select `Hardware Monitoring support`
     - select `AMD Family 10h+ temperature sensor` if amd
+    - select `Dell laptop SMM BIOS hwmon driver` if dell
     - select `Intel Core/Core2/Atom temperature sensor` if intel
     - select `Raspberry Pi voltage monitor` if rpi
   - select `Thermal drivers`
@@ -444,7 +447,7 @@ Kernel Config
     - select `EHCI HCD (USB 2.0) support`
     - select `USB Printer support`
     - select `USB Mass Storage support`
-    - select `DesignWare USB3 DRD Core Support`
+    - select `DesignWare USB3 DRD Core Support` if msm
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
@@ -468,11 +471,8 @@ Kernel Config
       - select all
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
-    - if dell
-      - select `Dell Systems Management Base Driver`
-      - select `Dell SMBIOS driver`
-      - select `Dell Laptop Extras`
-    - select `Lenovo IdeaPad Laptop Extras` if Lenovo IdeaPad
+    - select `Dell X86 Platform Specific Device Drivers` if dell
+    - select `Lenovo IdeaPad Laptop Extras` if lenovo ideapad
   - select `Common Clock Framework` if arm
     - select `Support for Qualcomm's clock controllers` if msm
       - select `RPMh Clock Driver`
