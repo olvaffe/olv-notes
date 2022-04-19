@@ -59,11 +59,25 @@ Perfetto
   - `tools/ninja -C out/linux_clang_release traced traced_probes perfetto`
 - Run
   - start `traced` as a regular user
-  - start `traced_probes` as root
+  - start `traced_probes --reset-ftrace` as root
     - or, make `/sys/kernel/debug` accessible by user
-    - and `echo 0 > /sys/kernel/debug/tracing/tracing_on`
   - use `perfetto` to start/stop tracing
     - `perfetto -c configs/scheduling.cfg --txt --out aaa`
+- to convert txt config to binary config,
+  - install `protobuf-compiler` to get `protoc`
+  - the config proto file is `protos/perfetto/config/perfetto_config.proto`
+    - <https://raw.githubusercontent.com/google/perfetto/master/protos/perfetto/config/perfetto_config.proto>
+  - `protoc --encode=perfetto.protos.TraceConfig perfetto_config.proto < config.txt > config.bin`
+- Android
+  - <https://perfetto.dev/docs/quickstart/android-tracing>
+  - use <https://raw.githubusercontent.com/google/perfetto/master/tools/record_android_trace>
+  - or, `cat config.txt | adb shell perfetto --txt -c - -o /data/misc/perfetto-traces/trace`
+  - or, on older devices,
+    - `adb shell setprop persist.traced.enable 1`
+    - convert `config.txt` to `config.bin`
+    - `cat config.bin | adb shell perfetto -c - -o /data/misc/perfetto-traces/trace`
+    - categories to enable
+      - `am binder_driver dalvik freq gfx hal idle input res view sched wm`
 
 ## Data Sources and Configs
 
