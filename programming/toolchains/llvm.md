@@ -1,6 +1,58 @@
 LLVM
 ====
 
+## Build LLVM
+
+- build just llvm
+  - `git clone https://github.com/llvm/llvm-project.git`
+  - `cmake -Sllvm -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
+  - this builds just LLVM
+    - `bin`: `llvm-*`, `llc`, `lli`, `opt`
+    - `include`: `llvm`, `llvm-c`
+    - `lib`
+      - `cmake`
+      - `libLLVM*.a`
+      - `libLTO.so`, for use by linkers as a plugin
+      - `libRemarks.so`, for parsing diagnostics emitted by llvm in object
+        files
+    - `share`: `opt-viewer`
+- build stage1 compiler
+  - `-DCMAKE_BUILD_TYPE=Release`
+  - `-DLLVM_TARGETS_TO_BUILD="X86;ARM;AArch64"`
+  - `-DLLVM_ENABLE_PROJECTS="clang;lld"`
+  - `-DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi"`
+    - runtimes are just projects that can be listed in `LLVM_ENABLE_PROJECTS`
+    - the difference is runtimes are built with the newly built compiler while
+      projects are built with the host compiler
+  - this builds llvm plus
+    - `bin`
+      - `clang*`, `scan-*`, etc from `clang`
+      - `lld` from `lld`
+    - `include`
+      - `c++` from `libcxx`
+      - `clang` and `clang-c` from `clang`
+      - `lld` from `lld`
+      - `x86_64-unknown-linux-gnu/cxx` from `libcxx`
+    - `lib`
+      - `libclang*.a` from `clang`
+      - `libclang.so` and `libclang-cpp.so` from `clang`
+      - `liblld*.a` from `lld`
+      - `clang/` from `clang` and `compiler-rt`
+      - `libear/` from `clang`
+      - `libscanbuild/` from `clang`
+      - `x86_64-unknown-linux-gnu/`
+        - `libc++.a` and `libc++.so*` from `libcxx`
+        - `libc++abi.a` and `libc++abi.so*` from `libcxxabi`
+    - `libexec`
+        - `{analyze,intercept}-{cc,c++}` from `clang`
+        - `{ccc,c++}-analyzer` from `clang`
+  - the compiler supports
+    - `x86_64-unknown-linux-gnu`
+    - `i686-unknown-linux-gnu`
+    - `aarch64-unknown-linux-gnu`
+- build stage2 compiler
+  - to build the same stuff using the stage1 compiler
+
 ## Compiler Steps
 
 - source to AST
