@@ -19,7 +19,43 @@ ANGLE
   - `es2gears`
   - `ANGLE_DEFAULT_PLATFORM=vulkan es2gears`
     - this does not work because the native window is considered invalid
+      - iirc, `xcb_create_window` != `XCreateWindow` and angle expects xcb
     - glmark2 with `-Dflavors=x11-glesv2` works
+- Android
+  - <https://chromium.googlesource.com/angle/angle/+/HEAD/doc/DevSetupAndroid.md>
+  - `echo "target_os = ['android']" >> .gclient`
+  - `gclient sync`
+  - `gn args out/Android`
+    - `target_os = "android"`
+    - `target_cpu = "arm64"`
+    - `is_component_build = false`
+    - `is_debug = false`
+    - `use_goma = true`
+  - `autoninja -C out/Android`
+  - `adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk`
+    - verify installation with `adb shell pm path org.chromium.angle`
+  - enable angle
+    - `adb shell settings put global angle_debug_package org.chromium.angle`
+    - `adb shell settings put global angle_gl_driver_all_angle 1`
+  - disable
+    - `adb shell settings delete global angle_gl_driver_all_angle`
+    - `adb shell settings delete global angle_debug_package`
+  - to verify, `adb logcat -d | grep ANGLE`
+- cross compile
+  - `./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64`
+  - `gn args out/AArch64`
+    - `target_os = "linux"`
+    - `target_cpu = "arm64"`
+    - `is_component_build = false`
+    - `is_debug = false`
+    - `use_goma = true`
+  - `autoninja -C out/AArch64`
+  - package
+    - `mkdir angle; cd angle`
+    - `cp ../out/AArch64/lib{EGL,GLESv2}.so .`
+    - `cp ../out/AArch64/libvulkan.so.1 .`
+    - `ln -sf libEGL.so libEGL.so.1; ln -sf libGLESv2.so libGLESv2.so.2`
+    - `cd ..; tar zchf angle.tar.gz angle`
 
 ## `eglGetDisplay`
 
