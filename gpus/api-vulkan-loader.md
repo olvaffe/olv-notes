@@ -128,6 +128,8 @@ Vulkan Loader
     - to debug,
       - look for `vulkan` or `gfxrecon` in logcat
   - to replay,
+    - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
+    - remember to unset `debug.vulkan.layers`
 
 ## Call Chain
 
