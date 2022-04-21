@@ -114,7 +114,7 @@ Vulkan Loader
   - to install,
     - `adb install -g -t -r
       ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
-    - `adb shell mkdir /data/local/debug/vulkan`
+    - `adb shell mkdir -p /data/local/debug/vulkan`
     - `adb push <path-to>/libVkLayer_gfxreconstruct.so /data/local/debug/vulkan`
   - to trace,
     - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_gfxreconstruct`
@@ -122,9 +122,13 @@ Vulkan Loader
     - permissions
       - `adb shell pm grant com.name.app android.permission.READ_EXTERNAL_STORAGE`
       - `adb shell pm grant com.name.app android.permission.WRITE_EXTERNAL_STORAGE`
+      - this does NOT work
+        - i have to use `/data/local/debug/blah.gfxr` I created
     - settings
       - `adb push vk_layer_settings.txt /sdcard`
       - `adb shell setprop debug.gfxrecon.settings_path /sdcard/vk_layer_settings.txt`
+      - or, specify them using props
+        - `adb shell setprop debug.gfxrecon.capture_file /sdcard/blah.gfxr`
     - to debug,
       - look for `vulkan` or `gfxrecon` in logcat
   - to replay,
