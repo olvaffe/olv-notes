@@ -77,6 +77,58 @@ Vulkan Loader
     - `-DBUILD_WSI_XCB_SUPPORT=off`
     - `-DBUILD_WSI_XLIB_SUPPORT=off`
 
+## Android
+
+- <https://developer.android.com/ndk/guides/graphics/validation-layer>
+  - apps can include the validation layer in their apks
+  - On Android 9+, if an app is debuggable or if the system is userdebug with
+    root, it can load an external layer
+    - `adb push <layer.so> /data/local/tmp`
+    - `adb shell run-as <com.example.app> cp /data/local/tmp/<layer.so> .`
+    - `adb shell run-as <com.example.app> ls <layer.so>`
+    - `adb shell setprop debug.vulkan.layers <layer>`
+    - note, this does NOT work for me.  The loader does not search under
+      `/data/data/com.example.app`
+  - On Android 10+, the app can additionally load an external layer from
+    another apk
+    - `adb shell settings put global enable_gpu_debug_layers 1`
+    - `adb shell settings put global gpu_debug_app <com.example.app>`
+    - `adb shell settings put global gpu_debug_layers <layer>`
+    - `adb shell settings put global gpu_debug_layer_app <package>`
+    - these settings persist reboots until explicitly deleted
+    - `GraphicsEnvironment.java`
+      - `setupGpuLayers`
+        - it calls `debugLayerEnabled` to check both `ENABLE_GPU_DEBUG_LAYERS`
+          and `GPU_DEBUG_APP`
+        - if enabled for the app, it calls `setupGpuLayers` with
+          `GPU_DEBUG_LAYERS`
+      - `getDebugLayerPathsFromSettings`
+        - if `debugLayerEnabled` returns true, return the library path from
+          `GPU_DEBUG_LAYER_APP`
+  - looking at the source code, the loader also searches
+    `/data/local/debug/vulkan`
+- gfxreconstruct android
+  - to build,
+    - `cd android`
+    - `ANDROID_SDK_ROOT=<path-to-sdk-top-dir> sh gradlew assembleDebug`
+  - to install,
+    - `adb install -g -t -r
+      ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
+    - `adb shell mkdir /data/local/debug/vulkan`
+    - `adb push <path-to>/libVkLayer_gfxreconstruct.so /data/local/debug/vulkan`
+  - to trace,
+    - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_gfxreconstruct`
+      - the loader will always implicitly load the layer
+    - permissions
+      - `adb shell pm grant com.name.app android.permission.READ_EXTERNAL_STORAGE`
+      - `adb shell pm grant com.name.app android.permission.WRITE_EXTERNAL_STORAGE`
+    - settings
+      - `adb push vk_layer_settings.txt /sdcard`
+      - `adb shell setprop debug.gfxrecon.settings_path /sdcard/vk_layer_settings.txt`
+    - to debug,
+      - look for `vulkan` or `gfxrecon` in logcat
+  - to replay,
+
 ## Call Chain
 
 - `vkCreateBuffer` in loader

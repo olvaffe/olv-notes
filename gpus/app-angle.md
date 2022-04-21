@@ -97,3 +97,14 @@ ANGLE
     #4  egl::Initialize
     #5  EGL_Initialize
     #6  eglInitialize
+
+## Android
+
+- `GraphicsEnvironment.java`
+  - `getDriverForPackage`
+    - if `ANGLE_GL_DRIVER_ALL_ANGLE`, return `angle`
+    - else check `ANGLE_GL_DRIVER_SELECTION_PKGS` and
+      `ANGLE_GL_DRIVER_SELECTION_VALUES`
+  - `shouldUseAngle` returns true when `getDriverForPackage` returns `angle`
+  - `getAngleDebugPackage` returns `ANGLE_DEBUG_PACKAGE`
+  - `setAngleInfo` passes angle info to native code
