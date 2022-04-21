@@ -18,6 +18,13 @@ Vulkan Loader
       `robin-hood-hashing`
   - `cmake -G Ninja -C helper.cmake ..`
   - `ninja`
+- tools
+  - `git clone https://github.com/KhronosGroup/Vulkan-Tools.git`
+  - `cd Vulkan-Tools; mkdir out; cd out`
+  - `../scripts/update_deps.py --generator Ninja`
+    - this clones and builds `Vulkan-Headers` and `Vulkan-Loader`
+  - `cmake -G Ninja -C helper.cmake ..`
+  - `ninja`
 - LunarG layers
   - `git clone --recurse-submodules https://github.com/LunarG/VulkanTools.git`
   - `cd VulkanTools`
@@ -134,6 +141,16 @@ Vulkan Loader
   - to replay,
     - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
     - remember to unset `debug.vulkan.layers`
+- `Vulkan-Tools`
+  - `cd build-android`
+  - `ANDROID_SDK_HOME=<sdk-top> ANDROID_NDK_HOME=<ndk-top>
+    PATH=$PATH:<ndk-top> ./build_all.sh`
+  - `adb install ../cube/android/cube/bin/vkcube.apk`
+  - `adb shell am start -W -S \
+     -n com.example.VkCube/android.app.NativeActivity \
+     -a android.intent.action.MAIN \
+     -c android.intent.category.LAUNCHER \
+     --es args '"--present_mode 2"'`
 
 ## Call Chain
 
