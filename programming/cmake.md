@@ -80,6 +80,7 @@ CMake
     set(toolchain_prefix "/usr/bin/aarch64-linux-gnu-")
     set(sysroot "...")
     
+    set(ENV{PKG_CONFIG_SYSROOT_DIR} "${sysroot}")
     set(ENV{PKG_CONFIG_LIBDIR} "${sysroot}/usr/lib/pkgconfig:${sysroot}/usr/share/pkgconfig")
     
     set(CMAKE_SYSTEM_NAME "Linux")
