@@ -88,6 +88,10 @@ ARC
   from under `/build/$board/tmp/portage` as usual
   - requires `SYSROOT=/build/$board` as usual
   - the pkg-config wrapper additionally requires `ARC_SYSROOT` and `ABI`
+    - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/eclass/arc-build-constants.eclass>
+    - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/master/eclass/arc-build.eclass>
+    - `ARC_SYSROOT=/build/$BOARD/opt/google/containers/android`
+    - `ABI=arm64`
 - links
   - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-devel/arc-toolchain-p/>
     - tarball has toolchains and sysroots for x86 and arm, both 32-bit and 64-bit
