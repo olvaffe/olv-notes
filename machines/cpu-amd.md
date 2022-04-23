@@ -11,6 +11,7 @@ AMD CPUs
 - Zen+        - 2018 - 12nm
 - Zen 2       - 2019 - 7nm
 - Zen 3       - 2020 - 7nm
+- Zen 3+      - 2022 - 6nm
 
 ## CPUs
 
@@ -70,3 +71,17 @@ AMD CPUs
   - Vega GPU
   - Ryzen 3/5/7
     - Cezanne
+    - Barcelo (2022 refresh)
+- Ryzen 6000 series APUs
+  - 2022
+  - Zen 3+ uArch (6nm)
+  - RDNA2 GPU
+  - Ryzen 5/7/9
+    - Rembrandt
+- Ultra Mobile
+  - Stoney Ridge
+    - 2016
+    - GCN3
+  - Dali
+    - 2020
+    - Vega (GCN5)

@@ -51,10 +51,14 @@ AMD
   - Direct3D 12.0 w/ `12_1` feature level
   - `radeonsi_dri.so` GFX9
   - GCN5
-- Navi released in 2019
+- Navi 1x released in 2019
   - Direct3D 12.0 w/ `12_1` feature level
   - `radeonsi_dri.so` GFX10
   - RDNA
+- Navi 2x released in 2020
+  - Direct3D 12.0 w/ `12_2` feature level
+  - `radeonsi_dri.so` `GFX10_3`
+  - RDNA 2
 
 ## RDNA
 

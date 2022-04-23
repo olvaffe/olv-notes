@@ -200,7 +200,7 @@ Qualcomm Adreno
     - 2021
     - SC7280?
     - 6nm
-    - Adreno 7c+ Gen3
+    - Adreno 7c+ Gen3 (Adreno 635)
 - Snapdragon 8 Compute Platforms
   - 835, 850
     - 2018
@@ -217,6 +217,50 @@ Qualcomm Adreno
     - SC8???
     - 5nm
     - Adreno 8cx Gen3
+
+## Device Identification
+
+- device tree specifies `qcom,adreno-635.0`
+  - msm parses `635.0` into `core`, `major`, `minor`, and `patch`
+  - msm then uses the four numbers to look up the `adreno_info`
+  - `MSM_PARAM_CHIP_ID` returns the 4 versions plus "speed bin" packed into
+    64-bit
+    - speed bin determines the max frequency
+  - `MSM_PARAM_GPU_ID` returns 0
+    - it is deprecated and can return numbers such as `618` on older gpus
+- userspace uses chip id to look up the `fd_dev_info`
+  - 635 vs 618
+    - `fibers_per_sp` is `128 * 2 * 16`, not `128 * 16`
+    - `reg_size_vec4` is 64, not 96
+    - `instr_cache_size` is 127, not 64
+    - `TPL1_DBG_ECO_CNTL` is `0x5008000`, not `0x100000`
+    - these flags are set on 635
+      - `supports_multiview_mask`
+      - `has_z24uint_s8uint`
+      - `tess_use_shared`
+      - `storage_16bit`
+        - `VK_KHR_16bit_storage`
+      - `has_tex_filter_cubic`
+        - `VK_EXT_filter_cubic`
+      - `has_sample_locations`
+        - `VK_EXT_sample_locations`
+      - `has_lpac`
+      - `has_shading_rate`
+      - `has_getfiberid`
+        - more `subgroupSupportedStages`
+      - `has_dp2acc`
+        - `integerDotProduct4x8BitPackedUnsignedAccelerated` and more
+      - `has_dp4acc`
+    - these flags are NOT set on 635
+      - `has_cp_reg_write`
+      - `has_8bpp_ubwc`
+      - `ccu_cntl_gmem_unk2`
+      - `indirect_draw_wfm_quirk`
+      - `depth_bounds_require_depth_test_quirk`
+    - `num_sp_cores` is 2, not 1
+    - `num_ccu` is 2, not 1
+    - `RB_UNKNOWN_8E04_blit` is both `0x00100000`
+    - `PC_POWER_CNTL` is 1, not 0
 
 ## Architecture
 

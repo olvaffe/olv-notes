@@ -19,7 +19,12 @@
   - Comet Lake, 2019, 14nm, 10th gen, Gen9.5
 - Ice Lake
   - Ice Lake, 2019, 10nm, 10th gen, Gen11
-  - Tiger Lake?, 2020, 10nm, 11th gen, Gen12
+- Xe
+  - Tiger Lake, 2020, Intel 7 (10nm), 11th gen, Gen12
+  - Alder Lake, 2021, Intel 7 (10nm), 12th gen, Gen12.5
+  - Raptor Lake, 2022, Intel 7 (10nm), 13th gen, Gen12.5?
+  - DG1, 2020
+  - DG2, 2022
 
 ## Ice Lake
 
