@@ -120,3 +120,26 @@ Distro Disk
 - lsblk
 - blkid
 - findmnt
+
+## mkosi
+
+- create chroot
+  - `mkdir mkosi; cd mkosi`
+  - `mkdir workspace cache`
+  - `sudo mkosi -d debian -r testing -t directory -o chroot --cache cache \
+     --workspace-dir $PWD/workspace`
+  - unfortunately, must be in the same architecture
+- create disk image
+  - `-t gpt_btrfs` creates a disk image which has one gpt partition which is
+    the rootfs in btrfs
+  - `--root-size 10G` to set the rootfs size to 10G
+- `systemd-nspawn`
+  - `systemd-nspawn -D <chroot>` or `systemd-nspawn -i <image>` to get root
+    shell
+  - `systemd-nspawn -b ...` to run `init` as pid 1
+    - to login, the image should have been created with `--password` or
+      `--autologin`; or use the root shell to set a password
+- create bootable disk image
+  - `--bootable` adds another gpt partition for efi, and installs bootloader
+    and kernel
+  - bootable with `system-nspawn -bi <image>`, VMs, or real machines

@@ -11,7 +11,9 @@ AMD CPUs
 - Zen+        - 2018 - 12nm
 - Zen 2       - 2019 - 7nm
 - Zen 3       - 2020 - 7nm
-- Zen 3+      - 2022 - 6nm
+- Zen 3+      - 2022 - 6nm (APU only)
+- Zen 4       - 2022 - 5nm??
+- Zen 5       - 2024 - 3nm??
 
 ## CPUs
 
@@ -43,45 +45,60 @@ AMD CPUs
     - Vermeer
   - Ryzen 9/Threadripper
     - Genesis
+- Ryzen 7000 series?
+  - 2022?
+  - Zen 4 uArch
+  - Raphael
+- Ryzen 8000 series?
+  - 2024?
+  - Zen 5 uArch
+  - Granite Ridge
 
 ## APUs
 
+- A 9000 series APUs
+  - 2016
+  - Excavator+ uArch
+  - GCN3
+  - desktop/mobile: Bristol Ridge
+  - ultra mobile: Stoney Ridge
 - Ryzen 2000 series APUs
   - 2018
   - Zen uArch
-  - Vega GPU
+  - GCN5
   - Ryzen 3/5/7
-    - Raven Ridge
+    - desktop/mobile: Raven Ridge
 - Ryzen 3000 series APUs
   - 2019
   - Zen+ uArch
-  - Vega GPU
+  - GCN5
   - Ryzen 3/5/7
-    - Picasso (quad core)
-    - Dali (dual core)
+    - desktop/mobile: Picasso
+    - ultra mobile: Dali, Pollock (2020)
 - Ryzen 4000 series APUs
   - 2020
   - Zen 2 uArch
-  - Vega GPU
+  - GCN5
   - Ryzen 3/5/7
-    - Renoir
+    - desktop/mobile: Renoir
 - Ryzen 5000 series APUs
   - 2021
   - Zen 3 uArch
-  - Vega GPU
+  - GCN5
   - Ryzen 3/5/7
-    - Cezanne
-    - Barcelo (2022 refresh)
+    - desktop/mobile: Cezanne
+    - desktop/mobile: Barcelo (2022 refresh)
 - Ryzen 6000 series APUs
   - 2022
   - Zen 3+ uArch (6nm)
   - RDNA2 GPU
   - Ryzen 5/7/9
-    - Rembrandt
-- Ultra Mobile
-  - Stoney Ridge
-    - 2016
-    - GCN3
-  - Dali
-    - 2020
-    - Vega (GCN5)
+    - desktop/mobile: Rembrandt
+- Ryzen 7000 series APUs?
+  - 2023?
+  - Zen 4 uArch
+  - desktop/mobile: Phoenix
+- Ryzen 8000 series APUs?
+  - 2025?
+  - Zen 5 uArch
+  - desktop/mobile: Strix Point

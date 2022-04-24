@@ -23,6 +23,15 @@ Intel CPUs
 
 ## Platforms
 
+- Hybrid Platforms
+  - Alder Lake
+    - 2021
+    - Golden Cove / Gracemont uArch
+    - Gen12.5 GPU
+  - Raptor Lake
+  - Meteor Lake
+  - Arrow Lake
+  - Lunar Lake
 - Big Platforms
   - Sandy Bridge
     - Gen6 GPU
@@ -74,12 +83,51 @@ Intel CPUs
   - Jasper Lake
     - 2020
     - Tremont uArch
-- Hybrid Platforms
-  - Alder Lake
-    - 2021
-    - Golden Cove / Gracemont uArch
-    - Gen12.5 GPU
-  - Raptor Lake
-  - Meteor Lake
-  - Arrow Lake
-  - Lunar Lake
+
+## Intel SoC design
+
+- Long time ago, there were CPU, northbridge, and southbridge
+  - northbrdige is connected to CPU via FSB and has
+    - memory controller
+    - PCIe controller (or AGP)
+    - CPU frequency is FSB frequency times multiplier
+  - southbridge is connected to northbridge via DMI and has
+    - pci controller
+    - lpc controller (replaces ISA)
+    - spi controller (for BIOS flash)
+    - smbus (for thermal sensors and fans)
+    - dma controller (for pci and lpc devices)
+    - i/o apic (for device interrupts)
+    - SATA controller
+    - RTC
+    - HDA controller
+    - USB controller
+    - super io (keyboard, mouse, serial ports)
+- Then there were CPU and PCH
+  - northbridge is integrated into CPU die and is called uncore or system
+    agent
+  - southbridge is replaced by PCH
+  - CPU uncore is connected to CPU core via QPI and has
+    - LLC
+    - memory controller
+    - snoop agent
+    - thunderbolt controller
+  - PCH is connected to CPU via DMI and has
+    - everything that southbridge has
+- there are still CPU and PCH for desktop; but there is only CPU for mobile
+  - system-in-package design
+  - CPU die contains CPU core and system agent
+  - PCH is integrated into the CPU package as a PCH die
+  - PCH die is connected to the CPU die via OPI
+
+## PCI devices
+
+- CPU die
+  - PCI host bridge (connecting system bus and PCI bus)
+  - Gen GPU
+  - HDA controller (for HDMI)
+  - processor thermal subsystem
+- PCH die
+  - USB xHCI controller
+  - USB EHCI controller
+  - MEI controller
