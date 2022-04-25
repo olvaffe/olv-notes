@@ -79,6 +79,26 @@ Perfetto
     - categories to enable
       - `am binder_driver dalvik freq gfx hal idle input res view sched wm`
 
+## Release Process
+
+- `master` is the development branch
+- `ui.perfetto.dev` uses `ui/release/channels.json`
+  - user can pick from `stable`, `canary`, or `autopush` channels
+  - `autopush` channel uses master tot
+  - `canary` uses `ui-canary` branch
+    - every 1-2 weeks, `master` is merged to `ui-canary` and the json file is
+      updated
+    - there can also be cherry-picks to fix issues
+  - `stable` uses `ui-stable` branch
+    - every 4 weeks, `ui-canary` is merged to `ui-stable` and the json file is
+      updated
+    - there can also be cherry-picks to fix issues
+- SDK releases
+  - once in a while, `releases/v<VER>.x` is branched from master
+  - `tools/gen_amalgamated --output sdk/perfetto`
+  - `git add sdk/perfetto.{cc,h}`
+  - `git commit -m "Amalgamated source for vX.Y"`
+
 ## Data Sources and Configs
 
 - `data_sources { config { name: <...> <...>_config { ... }}}`
