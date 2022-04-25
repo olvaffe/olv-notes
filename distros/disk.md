@@ -129,6 +129,7 @@ Distro Disk
   - `sudo mkosi -d debian -r testing -t directory -o chroot --cache cache \
      --workspace-dir $PWD/workspace`
   - unfortunately, must be in the same architecture
+    - it should be better to just use the distro boostrapping tools directly
 - create disk image
   - `-t gpt_btrfs` creates a disk image which has one gpt partition which is
     the rootfs in btrfs
@@ -143,3 +144,7 @@ Distro Disk
   - `--bootable` adds another gpt partition for efi, and installs bootloader
     and kernel
   - bootable with `system-nspawn -bi <image>`, VMs, or real machines
+- manually mount a disk image
+  - `losetup -fP <image>` to attach
+  - mount normally
+  - `losetup -D` to detach

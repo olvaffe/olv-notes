@@ -9,18 +9,25 @@ Debian
   - chroot into the target directory
     - this requires root
   - run the installation and configuration scripts from the packages
-    - this forbids cross-compiling
+    - this forbids bootstrapping another architecture
 - `sudo debootstrap stable stable-chroot`
   - or replace `sudo` by `fakechroot fakeroot`
 
 ## cross-`debootstrap`
 
-- `debootstrap --arch arm64 --foreign stable stable-chroot`
-  - `--foreign` skips the last two steps
 - `apt install qemu-user-static`
-- `cp /usr/bin/qemu-aarch64-static stable-chroot`
-- `sudo chroot stable-chroot /qemu-aarch64-static /bin/bash -i`
-- `/debootstrap/debootstrap --second-stage`
+- `debootstrap --arch arm64 stable stable-arm64-chroot`
+- `chroot stable-arm64-chroot /bin/bash -i`
+  - or, to run it as a container,
+    - `chown -R 65536.65536 stable-arm64-chroot`
+    - `systemd-nspawn -UD stable-arm64-chroot`
+- old way
+  - `apt install qemu-user-static`
+  - `debootstrap --arch arm64 --foreign stable stable-arm64-chroot`
+    - `--foreign` skips the last two steps of `debootstrap`
+  - `cp /usr/bin/qemu-aarch64-static stable-arm64-chroot`
+  - `chroot stable-chroot /qemu-aarch64-static /bin/bash -i`
+  - `/debootstrap/debootstrap --second-stage`
 
 ## cross-compile
 
