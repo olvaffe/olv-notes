@@ -98,3 +98,13 @@ ARC
   - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-devel/arc-build/>
     - .pc files for use with mesa
   - <https://mesonbuild.com/Cross-compilation.html>
+
+## Cross-Compile for ARCVM R
+
+- mesa
+  - `SYSROOT=/build/$BOARD \
+     ARC_SYSROOT=/build/$BOARD/opt/google/vms/android \
+     ABI=arm64 \
+     meson --cross-file meson.aarch64-linux-android.arm64.ini out-$BOARD \
+     -Dgallium-drivers= -Dvulkan-drivers=virtio-experimental \
+     -Dbuildtype=debug -Dplatforms=android -Dplatform-sdk-version=30`
