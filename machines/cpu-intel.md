@@ -21,6 +21,27 @@ Intel CPUs
   - Tremont       - 2020 - 10nm
   - Gracemont     - 2021 - Intel 7
 
+## Product Lines
+
+- Desktop
+  - TDP 35W-150W
+- Mobile
+  - H
+    - high-performance mobile workstations
+    - TDP >=45W
+  - P
+    - perfomrance laptop
+    - TDP <=28W
+  - U (UP3)
+    - ultra-thin laptop
+    - TDP <=15W
+  - U (UP4)
+    - fanless
+    - TDP >=9W
+  - N
+    - ultra-mobile
+    - TDP >=6W
+
 ## Platforms
 
 - Hybrid Platforms
@@ -47,10 +68,13 @@ Intel CPUs
     - 2016
     - Skylake uArch
     - Gen9.5 GPU
+    - Kaby Lake R (2017 refresh)
+    - Amber Lake (2018 refresh)
   - Coffee Lake
     - 2017
     - Skylake uArch
     - Gen9.5 GPU
+    - Whiskey Lake (2018 refresh?)
   - Cannon Lake (skipped)
     - 2018
     - Palm Cove
@@ -63,10 +87,14 @@ Intel CPUs
     - 2019
     - Sunny Cove uArch
     - Gen11 GPU
+    - this is for mobile
+      - there is Rocket Lake for desktops
   - Tiger Lake
     - 2020
     - Willow Cove uArch
     - Gen12 GPU
+    - this is also for mobile
+      - there is Rocket Lake for desktops
 - Little Platforms
   - Bay Trail (Valleyview)
     - 2013

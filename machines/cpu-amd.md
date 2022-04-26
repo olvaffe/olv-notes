@@ -15,6 +15,27 @@ AMD CPUs
 - Zen 4       - 2022 - 5nm??
 - Zen 5       - 2024 - 3nm??
 
+## Product Lines
+
+- Ryzen 7 PRO 5850U 
+- product family (Ryzen 7)
+  - 3 entry level
+  - 5 mid-range
+  - 7 high end
+  - 9 ehthusiast
+- modifier (PRO)
+  - PRO business
+  - (none) consumer
+- generation (5)
+- perfomrance level (8)
+- model (50)
+- product line (U)
+  - U ultra-thin mobile (TDP 15W)
+  - H high-performance slim mobile (TDP 35W)
+  - H high-performance mobile (TDP 45W)
+  - GE energy-efficient deskop (TDP 35W)
+  - G deskop (TDP 65W)
+
 ## CPUs
 
 - Ryzen 1000 series
@@ -66,34 +87,29 @@ AMD CPUs
   - 2018
   - Zen uArch
   - GCN5
-  - Ryzen 3/5/7
-    - desktop/mobile: Raven Ridge
+  - desktop/mobile: Raven Ridge
 - Ryzen 3000 series APUs
   - 2019
   - Zen+ uArch
   - GCN5
-  - Ryzen 3/5/7
-    - desktop/mobile: Picasso
-    - ultra mobile: Dali, Pollock (2020)
+  - desktop/mobile: Picasso
+  - ultra mobile: Dali, Pollock (2020)
 - Ryzen 4000 series APUs
   - 2020
   - Zen 2 uArch
   - GCN5
-  - Ryzen 3/5/7
-    - desktop/mobile: Renoir
+  - desktop/mobile: Renoir
 - Ryzen 5000 series APUs
   - 2021
   - Zen 3 uArch
   - GCN5
-  - Ryzen 3/5/7
-    - desktop/mobile: Cezanne
-    - desktop/mobile: Barcelo (2022 refresh)
+  - desktop/mobile: Cezanne
+  - desktop/mobile: Barcelo (2022 refresh)
 - Ryzen 6000 series APUs
   - 2022
   - Zen 3+ uArch (6nm)
   - RDNA2 GPU
-  - Ryzen 5/7/9
-    - desktop/mobile: Rembrandt
+  - desktop/mobile: Rembrandt
 - Ryzen 7000 series APUs?
   - 2023?
   - Zen 4 uArch
