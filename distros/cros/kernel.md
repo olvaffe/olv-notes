@@ -61,6 +61,7 @@ Chrome OS Kernel
     - `root=PARTUUID=%U/PARTNROFF=1`, to use the next partition after the
       kernel partition.  depthcharge replaces `%U` by the UUID of the kernel
       partition
+    - `rootwait root=/dev/mmcblc1p3`
     - `console=ttyMSM0,115200 console=tty1`
   - `futility vbutil_kernel --pack Image.vboot \
        --vmlinuz Image.fit \
