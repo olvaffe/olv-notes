@@ -274,9 +274,9 @@ the sizeof(long) actually varies between the targets we care about.
         - sign decides positive/negative infinity
       - mantissa non-zero means NaN
         - ieee does not define what different values of sign or mantissa mean
-        - on x86 and arm, sign bit is ignored.  The highest bit of stored
-          mantissa decidies whether the NaN is quiet (when set) or signaling
-          (when unset)
+        - on x86 and arm,
+          - `__builtin_nanf()` says mantissa is 0x400000
+          - `__builtin_nansf()` says matissa is 0x200000
 - binary16 memory format
   - bits
     - 1 sign bit
