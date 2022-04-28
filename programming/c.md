@@ -9,11 +9,17 @@
 
 ## C99
 
+- <https://en.wikipedia.org/wiki/C99>
 - `inline`
+- mixed declarations and code
+- `long long int`, `_Bool`
+- variable-length arrays, VLA
 - flexible array members
   - array with no size (`[]`) as the last member
-- `stdbool.h`
-- `stdint.h`
+- `//`-style comments
+- `snprintf`
+- `stdbool.h` `stdint.h`, `inttypes.h`
+- improved support for IEEE floating point
 - designated initializers
 - compound literals
   - 3 or 3.14 are called integer constants; unchangeable.
@@ -21,6 +27,7 @@
   - literals are unchangeable in C++ spec
 - variadic macros
 - `restrict` qual
+- `void foo(int array[static 10])`
 
 ## Integer Promotion
 
@@ -208,3 +215,80 @@ the sizeof(long) actually varies between the targets we care about.
   - `memory_order_seq_cst`: the load/store/read-modify also performs an
     acquire/release/both operation, plus a single total order exists in which
     all threads observe all modifications in the same order
+
+## IEEE 754
+
+- mathematically, not representations in memory,
+  - a floating-point format is specified by
+    - a base, `b`, which is either 2 or 10
+    - a precision, `p`, which is the number of digits
+    - an exponent range from `emin` to `emax`, where `emin = 1 - emax` 
+  - a positive number is `D.DDDD * 10^e`
+    - `D.DDDD` is called significand, coefficient, mantissa, fraction, etc.
+    - `e` is called exponent
+    - each D is between `[0, b-1]`
+    - there is a total of `p` D's
+      - in the example shown here, `p` is 5
+    - e is between `[emin, emax]`
+  - a negative number is `-D.DDDD * 10^e`
+  - there are also infinity and NaN
+  - numbers with leading zeros have multiple representations
+    - `0.1234 * 10^0` and `1.2340 * 10^-1` are the same
+    - `0.0000 * 10^e` are the same for any e
+  - with b = 10, p = 5, emax = 8
+    - emin is -7
+    - the largest positive number is `9.9999 * 10^8`
+    - the smallest positive number is `0.0001 * 10^-7`
+    - the smallest negative number is `-9.9999 * 10^8`
+    - the largest negative number is `-0.0001 * 10^-7`
+  - non-zero numbers between `(-1^emin, 1^emin)` are called subnormal numbers
+    - `0.0001 * 10^-7` is the smallest positive number but is subnormal
+    - `1.0000 * 10^-7` is the smallest positive number that is normal
+    - this is likely because numbers with leading zeros have multiple
+      representations.  When we define a canonical representation for them
+      (e.g., the first digit must be 1), a subnormal number has no canonical
+      representation
+- binary32 memory format
+  - bits
+    - 1 sign bit
+    - 8 exponent bits
+    - 23 significand bits
+  - mathematically,
+    - base is 2
+    - precision is 23+1
+      - the leading digit is always 1 and is not stored
+    - emax is 127
+      - the exponent bits can store [0, 255], biased
+      - the effective range is [-127, 128]
+      - but 128 and -127 are reserved for special numbers
+      - `[emin, emax]` is thus `[-126, 127]`
+  - special numbers
+    - when exponent bits are 0x00
+      - mantissa 0 means zero
+        - sign decides positive/negative zero
+      - mantissa non-zero means subnormal numbers
+        - the leading digit of mantissa that is not stored is considered 0
+        - exponent bits are treated the same as 0x01 (-126)
+    - when exponent bits are 0xff
+      - mantissa 0 means infinity
+        - sign decides positive/negative infinity
+      - mantissa non-zero means NaN
+        - ieee does not define what different values of sign or mantissa mean
+        - on x86 and arm, sign bit is ignored.  The highest bit of stored
+          mantissa decidies whether the NaN is quiet (when set) or signaling
+          (when unset)
+- binary16 memory format
+  - bits
+    - 1 sign bit
+    - 5 exponent bits
+    - 10 significand bits
+  - mathematically,
+    - base is 2
+    - precision is 10+1
+    - emax is 15
+      - [0, 31] biased
+      - [-15, 16] effective
+      - 16 and -15 are reserved
+  - special numbers follow the same rules
+    - arm supports "alternative half-precision" format where 0x1f exponent
+      bits are treated normally and does not represent infinity/nan
