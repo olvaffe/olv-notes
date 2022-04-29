@@ -37,6 +37,7 @@ nftables
     - `192.168.0.0/24` is the private network
 - nftables
 
+    flush ruleset
     table ip nat {
         chain POSTROUTING {
             type nat hook postrouting priority srcnat; policy accept;

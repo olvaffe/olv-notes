@@ -253,3 +253,26 @@ GPU Benchmarks
     - `vulkan_5_high_off`, 1440p Aztec Ruins Vulkan (High Tier) Offscreen
     - `vulkan_5_normal`, Aztec Ruins Vulkan (Normal Tier)
     - `vulkan_5_normal_off`, 1080p Aztec Ruins Vulkan (Normal Tier) Offscreen
+
+## Dota 2
+
+    STEAM="$HOME/.steam/steam"
+    RT="$STEAM/ubuntu12_32/steam-runtime/run.sh"
+    DOTA="$STEAM/steamapps/common/dota 2 beta"
+    
+    "$RT" "$DOTA"/game/dota.sh \
+	+engine_experimental_drop_frame_ticks 1 \
+	+@panorama_min_comp_layer_dimension 0 \
+	-prewarm_panorama \
+	-vulkan \
+	-fullscreen \
+	-nosound \
+	-autoconfig_level 3 \
+	-h 900 \
+	-w 1440 \
+	-high \
+	+timedemo_start 50000 \
+	+timedemo_end 50500 \
+	+timedemo dota2-pts-1971360796.dem \
+	+demo_quitafterplayback 1 \
+	+fps_max 0

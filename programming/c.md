@@ -1,11 +1,39 @@
+C
+=
+
+## C2x
+
+- single-argument `_Static_assert`
+- C++-style function attributes: `nodiscard`, `maybe_unused`, `deprecated`,
+  and `fallthrough`
+- two's complement sign representation is required
+- labels before declarations and at the end of compound statements
+- unnamed parameters in function definitions
+- binary liberals: 0b10101101 and `%b`
+- `#elifdef` and `#elifndef`
+- digit separators: 0xFF'FF'FF'FF
+- `typeof`
+- zero initialization with `{}`
+- `alignas`, `alignof`, `bool`, `true`, `false`, `static_assert`,
+  `thread_local` become keywords
+- no `__VA_OPT__`??
+
+## C17
+
+- a bug-fix release
+- `ATOMIC_VAR_INIT` is not needed and obsoleted
+
 ## C11
 
-- `aligned_alloc`
-- `threads.h`
-- `stdatomic.h`
+- `stdalign.h`: `aligned_alloc`, `alignof`, etc.
+- `stdnoreturn.h`: `noreturn` function specifier to disable some warnings
+- `_Generic`
+- `threads.h`, optional
+- `stdatomic.h`, optional
 - anonymous structures and unions
-  - anonymous structures are not available in C++
-- `static_assert`
+- `assert.h`: `static_assert`
+- `time.h`: `timespec`
+- VLA becomes optional
 
 ## C99
 
@@ -28,6 +56,12 @@
 - variadic macros
 - `restrict` qual
 - `void foo(int array[static 10])`
+- `__func__`
+  - there are some that exist before c99
+    - `__FILE__`
+    - `__LINE__`
+    - `__DATE__`
+    - `__TIME__`
 
 ## Integer Promotion
 
