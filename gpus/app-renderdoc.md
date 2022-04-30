@@ -38,3 +38,4 @@ RenderDoc
   - might want `-d` to specify the working dir
 - replay
   - `renderdoccmd replay <capture.rdc>` just works
+  - `renderdoccmd remoteserver` just works for remote replay
