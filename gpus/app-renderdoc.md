@@ -4,8 +4,10 @@ RenderDoc
 ## Build
 
 - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DENABLE_QRENDERDOC=off -DENABLE_PYRENDERDOC=off`
-- to enable `qrenderdoc`,
-  - `apt install python3-dev qtbase5-dev libqt5svg5-dev libqt5x11extras5-dev`
+  - to enable `qrenderdoc`,
+    - `apt install python3-dev qtbase5-dev libqt5svg5-dev libqt5x11extras5-dev`
+  - to disable GL/GLES,
+    - `-DENABLE_GL=OFF`, `-DENABLE_GLES=OFF`, and `-DENABLE_EGL=OFF`
 - `ninja install`, or
   - edit `renderdoc_capture.json` to point to local `librenderdoc.so`
   - copy `renderdoc_capture.json` to `~/.local/share/vulkan/implicit_layer.d`

@@ -16,6 +16,9 @@ Debian
 ## cross-`debootstrap`
 
 - `apt install qemu-user-static`
+  - if you mess up somewhat, re-enable binfmts
+    - `sudo update-binfmts --disable`
+    - `sudo update-binfmts --enable`
 - `debootstrap --arch arm64 stable stable-arm64-chroot`
 - `chroot stable-arm64-chroot /bin/bash -i`
   - or, to run it as a container,
@@ -33,6 +36,10 @@ Debian
 
 - `apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
 - in chroot, install whatever dependent -dev packages
+- note that some -dev packages in chroot use absolute links
+  - `ls -l /usr/lib/aarch64-linux-gnu | grep ' -> /lib'`
+  - they need to be fixed otherwise the linker can unexpectedly fall back to
+    the static libraries
 
 ## Toolchain Packages
 

@@ -77,6 +77,26 @@ dEQP
     --skip-preconditions --skip-all-system-status-check -m CtsSkQPTestCases -t
     org.skia.skqp.SkQPRunner#vk_arithmode --abi arm64-v8a`
 
+## EGL/GLES
+
+- set `DEQP_TARGET` to one of the desired targets under `targets/`
+  - e.g., `x11_egl`
+- force disable GLESv1
+  - edit `targets/x11_egl/x11_egl.cmake`
+  - I have to do this because my cross-compile sysroot has GLESv1 but my
+    target machine does not
+
+## qpa
+
+- browse to `scripts/qpa_image_viewer.html` and open the qpa file
+- or, <https://android.googlesource.com/platform/external/cherry/+/master>
+  - `mkdir data`
+  - `python ../VK-GL-CTS/scripts/build_caselists.py data`
+    - or manually `./deqp-vk --deqp-runmode=xml-caselist` and copy
+      `dEQP-VK-cases.xml` to `data`
+  - `GO111MODULE=off go run server.go`
+  - browse to `http://127.0.0.1:8080`
+
 ## Overview
 
 - CMakeLists.txt `add_subdirectory`
