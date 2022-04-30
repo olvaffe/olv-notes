@@ -1,6 +1,34 @@
 Enlightenment
 =============
 
+## EFL
+
+- <https://www.enlightenment.org/about-efl.md>
+- current module-based apis
+  - `Evas`: Core scene graph and rendering
+  - `Eina`: Data structures and low level helpers
+  - `Edje`: UI layout & animation data files for themes
+  - `Eet`: Data (de)serialization and storage
+  - `Ecore`: Core loop and system abstractions like X11
+  - `Efreet`: Freedesktop.org standards handling
+  - `Eldbus`: D-Bus glue and handling
+  - `Embryo`: Tiny VM and compiler based on Pawn
+  - `Eeze`: Device enumeration and access library
+  - `Emotion`: Video decode wrapping, glue and abstraction
+  - `Ethumb`: Thumbnailing handler
+  - `Ephysics`: Physics (bullet) wrapper and Evas glue
+  - `EIO`: Asynchronous I/O handling
+  - `Evas Generic Loaders`: Extra image loaders for complex image types
+  - `Emotion Generic Players`: Extra video decoders (for VLC)
+  - `Elementary`: Widgets and high level abstractions
+- future Unified EFL
+  - `Efl_Core`: Structures and functions for application runtime and object
+    lifecycle including mainloop, I/O and events
+  - `Efl_Net`: Network access and session management including helpers for
+    HTTP etc
+  - `Efl_Ui`: Full graphical features including scene graph rendering, 3D and
+    widget toolkit
+
 ## ecore
 
 - Every top-level visible window is an `Evas`.

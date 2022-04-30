@@ -1,6 +1,0 @@
-Fontconfig
-==========
-
-## pattern
-
-- Xft.dpi

@@ -3,6 +3,8 @@ GObject Introspection
 
 ## Overview
 
+- <https://gitlab.gnome.org/GNOME/gobject-introspection>
+- to ease creations of language bindings
 - `g-ir-scanner` scans the source files to create GIR XML format
   - other than scanning the source files, it also build an executable to dump
     GTypes of the library.  The binary can dump the properties and signals of

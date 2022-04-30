@@ -1,8 +1,9 @@
-GDM3
-====
+GDM
+===
 
 ## Overview
 
+- <https://gitlab.gnome.org/GNOME/gdm>
 - see `daemon/INTERNALS` for internal working
 - gdm
   - it has objects of these classes

@@ -10,3 +10,7 @@ Font
   - `FC_DEBUG=1 fc-match monospace`
 - `FC_DEBUG=2` shows all fonts and their scores
   - `FC_DEBUG=2 fc-match monospace`
+
+## pattern
+
+- Xft.dpi

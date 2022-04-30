@@ -1,6 +1,15 @@
 Gjs
 ===
 
+## Overview
+
+- <https://gitlab.gnome.org/GNOME/gjs>
+- JavaScript bindingds for GNOME
+- soon adopted as the basis of gnome shell's ui code
+  - gnome shell is a plugin of mutter
+  - mutter was metacity + clutter
+  - clutter is deprecated
+
 ## `imports`
 
 - gjs defines `imports` for its modules

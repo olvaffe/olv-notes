@@ -1,6 +1,25 @@
 GTK+
 ====
 
+## Overview
+
+- <https://gitlab.gnome.org/GNOME/gtk>
+
+## GDK
+
+- GDK has several backends
+  - broadway, for html5
+  - macos
+  - wayland
+  - win32
+  - x11
+- it also supports several renderers
+  - opengl
+  - vulkan
+  - cairo
+    - accurate, high-quality, but no gpu acceleration
+    - kind of in maintenance mode
+
 ## GtkSettings in 2.0
 
 - `gtk_init()` calls `_gtk_rc_init()` to add `/etc/gtk-2.0/gtkrc` and
@@ -30,3 +49,16 @@ GTK+
   replaced by `GtkCssProvider`
 - Both `GtkSettings` and `GtkCssProvider` implement `GtkStyleProvider`.  They
   provide style information to `GtkStyleContext`
+
+## IM
+
+GDK: don't XFilterEvent key press/release
+
+gtk_im_context --- gtk_im_context_simple
+               \-- gtk_im_multicontext -- gtk_im_context_XXX in module form
+
+gtk_im_context_simple: simple input method for Europe
+gtk_im_multicontext: proxy for other im context
+XIM im module: XFilterEvent
+
+gtk_im_multicontext_{new,set_client_window,filter_keypress,focus_in,get_preedit_string,set_cursor_position}
