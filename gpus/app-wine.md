@@ -1,4 +1,4 @@
-WINE
+Wine
 ====
 
 ## Releases

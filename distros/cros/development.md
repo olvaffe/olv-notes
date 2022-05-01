@@ -100,20 +100,7 @@ Chrome OS Development
 
 ## Portage
 
-- man 5 portage
-  - /etc/make.conf and /etc/portage/make.conf
-  - PORTDIR="/usr/local/portage/stable" for path to the main repository
-  - `PORTDIR_OVERLAY` for additional repositories
-  - DISTDIR="/var/lib/portage/distfiles" for path to store downloaded sources
-  - `PORT_LOGDIR="/var/log/portage` for log files
-  - PKGDIR="/var/lib/portage/pkgs" where to store built packages
 - check out board-specific /build/$BOARD/etc/make.conf
-- an overlay is an ebuild repo
-  - the main repo specified by PORTDIR is also an overlay
-  - metadata/layout.conf
-    - masters specifies other repos that this overlay can use and depend on
-  - profiles/base/make.defaults
-    - make.conf-like configs for the overlay
 - src/overlays/chipset-qc845/profiles/base/make.defaults
   - `toolchain.conf` for toolchain
   - `CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-qualcomm"`

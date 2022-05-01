@@ -50,17 +50,21 @@ Compressions
   - MPEG-H Part 2 HEVC / H.265
     - 2013
     - used by UHD Blu-ray, UHDTV
+  - MPEG-I Part 3 VVC / H.266
+    - 2020
+    - used by ???
 - Microsoft
   - VC-1
     - 2006
     - used by some Blu-ray, WMV, streaming
-- Google / Open
+- Google
   - VP8
     - 2008
     - used by streaming
   - VP9
     - 2013
     - used by streaming
+- AOMedia
   - AV1
     - 2018
     - used by streaming
@@ -110,8 +114,16 @@ Compressions
 - AVC in HEIF
   - 2003
   - no user?
+- WebP
+  - 2011
+  - used for web
 - HEVC in HEIF
   - 2013
   - used by Apple
 - AV1 in HEIF
   - 2019
+  - no user?
+- JPEG-XL
+  - 2021
+  - lossy outperforms AV1 / HEVC / WebP
+  - lossless outperforms WebP / PNG

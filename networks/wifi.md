@@ -4,42 +4,45 @@ WiFi
 ## Standards
 
 - due to demands, products tend to ship before standardization
-- 802.11a
-  - 1999
-  - Frequency: 5 GHz
-  - Bandwidth: 5/10/20 MHz
-  - Stream data rate: 6/9/12/18/24/36/48/54 MBit/s
-  - MIMO: no
 - 802.11b
-  - 1999
+  - 1999, unofficially Wi-Fi 1
   - Frequency: 2.4 GHz
   - Bandwidth: 22 MHz
   - Stream data rate: 1/2/5.5/11 MBits/s
   - MIMO: no
+- 802.11a
+  - 1999, unofficially Wi-Fi 2
+  - Frequency: 5 GHz
+  - Bandwidth: 5/10/20 MHz
+  - Stream data rate: 6/9/12/18/24/36/48/54 MBit/s
+  - MIMO: no
 - 802.11g
-  - 2003
+  - 2003, unofficially Wi-Fi 3
   - Frequency: 2.4 GHz
   - Bandwidth: 5/10/20 MHz
   - Stream data rate: up to 13.5/27/54 MBit/s
   - MIMO: no
 - 802.11n
-  - 2009, Wi-Fi 4
+  - 2008, Wi-Fi 4
   - Frequency: 2.4/5 GHz
   - Bandwidth: 20/40 MHz
   - Stream data rate: up to 288.8/600 MBit/s
   - MIMO: 4
 - 802.11ac
-  - 2013, Wi-Fi 5
+  - 2014, Wi-Fi 5
   - Frequency: 5 GHz
   - Bandwidth: 20/40/80/160 MHz
   - Stream data rate: up to 346.8/800/1733.2/3466.8 MBit/s
   - MIMO: 8
 - 802.11ax
-  - 2021, Wi-Fi 6
+  - 2020, Wi-Fi 6
+  - 2021, Wi-Fi 6E (6 GHz)
   - Frequency: 2.4/5/6 GHz
   - Bandwidth: 20/40/80/80+80 MHz
   - Stream data rate: up to 1147/2294/4804/9608 MBit/s
   - MIMO: 8
+- 802.11be
+  - 2024, Wi-Fi 7???
 
 ## Bitrate Calculation
 

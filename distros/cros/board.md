@@ -1,25 +1,6 @@
 Chrome OS Board
 ===============
 
-## General
-
-- <https://dev.gentoo.org/~zmedico/portage/doc/man/make.conf.5.html>
-  - `FEATURES`
-    - for features of portage itself
-  - `USE`
-    - for optional features of packages and their dependencies
-- <https://dev.gentoo.org/~zmedico/portage/doc/man/portage.5.html>
-  - `package.mask`
-    - mask out packages from being installed
-  - `package.unmask`
-    - unmask packages
-  - `package.use`
-    - set/unset USE flags for packages
-  - `package.use.mask`
-    - mask out or unmask USE flags for packages
-  - `use.mask`
-    - mask out or unmask USE flags globally
-
 ## amd64-generic
 
 - boot the image
