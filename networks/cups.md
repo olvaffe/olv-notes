@@ -1,3 +1,13 @@
+CUPS
+====
+
+## Overview
+
+- <https://openprinting.github.io/cups/>
+  - a fork of apple cups for all operating systems
+
+## old
+
 cups:
 * drivers come from ppds and /usr/lib/cups/driver/*
 * to enum devices, lpinfo -v

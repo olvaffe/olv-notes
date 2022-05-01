@@ -1,3 +1,17 @@
+Samba
+=====
+
+## Overview
+
+- an implementation of SMB protocol
+- windows and macs both use SMB
+  - macs used to use AFP, Apple Filing Protocol
+  - there is also netatalk, <https://netatalk.sourceforge.io/>, to implement
+    AFP
+  - but macs use smb now
+
+## old
+
 smbclient -U olv.wu -W azwave //tpfs01/data
 
 Vista sees:
