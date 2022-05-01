@@ -1,5 +1,9 @@
-x86
-===
+ACPI Namespace
+==============
+
+## Overview
+
+- <https://www.kernel.org/doc/html/latest/firmware-guide/acpi/namespace.html>
 
 ## `/sys/devices/LNXSYSTM` on Dell Precision 5520
 
