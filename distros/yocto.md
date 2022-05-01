@@ -1,3 +1,17 @@
+Yocto Project
+=============
+
+## Overview
+
+- tools to create embedded linux distributions
+- poky
+  - a reference distribution
+  - can be used to create other distributions
+- I guess it is like how cros uses gentoo to create a chroot to create other
+  gentoo-based images
+
+## BitBake
+
 * http://olvaffe.blogspot.com/2008/12/bitbake-data-class.html
 
 handle and feeder functions of bb/parse/parse_py/BBHandler.py:
