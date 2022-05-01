@@ -49,6 +49,10 @@ WINE
   - `libwine.so` is deprecated
   - experimental vulkan backend for wined3d
     - i.e., `d3d->vk` instead of `d3d->gl`
+- Wine 7.0
+  - 2022
+  - most modules are converted to `.dll`
+  - new WoW64 architecture
 
 ## Initialization Process
 
