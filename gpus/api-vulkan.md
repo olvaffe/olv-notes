@@ -1,6 +1,27 @@
 Vulkan
 ======
 
+## History
+
+- 1.0 was released in 2016
+  - HW features are about GL 4.3 or GLES 3.1
+  - plus persistent and coherent memory
+- 1.1 was released in 2018
+  - protected content
+  - subgroup operations
+  - multi-view
+  - device groups
+  - external memory/fence/semaphore
+  - advanced compute
+  - HLSL
+  - YCbCr
+- 1.2 was released in 2020
+  - no new HW feature
+  - timeline semaphore
+  - (optional) descriptor indexing
+- 1.3 was released in 2022
+  - no new HW feature
+
 ## Spec (1.2.149)
 
 - 2. Fundamentals

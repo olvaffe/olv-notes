@@ -1,6 +1,192 @@
 OpenGL
 ======
 
+## History
+
+- for modern versions
+  - <https://gitlab.freedesktop.org/mesa/mesa/-/blob/master/docs/features.txt>
+- 1.0 was released in 1992
+- 1.1 was released in 1997
+  - vertex arrays
+  - texture objects
+- 1.2 was released in 1998
+  - 3D textures
+- 1.3 was released in 2001
+  - multitexturing
+  - multitsampling
+  - cube maps
+  - compressed textures
+- 1.4 was released in 2002
+  - multi draw arrays
+  - depth texture
+  - more fixed functions
+- 1.5 was released in 2003
+  - VBOs
+  - occlusion queries
+- 2.0 was released in 2004
+  - GLSL 1.0 and 1.1
+  - MRT
+  - npot
+- 2.1 was released in 2006
+  - GLSL 1.2
+  - PBOs
+  - sRGB
+- 3.0 was released in 2008
+  - GLSL 1.3
+  - profiles
+  - VAOs
+  - FBOs
+  - conditional rendering
+  - floating-point and depth texture formats
+  - half-float
+  - integer formats
+  - texture arrays
+  - transform feedback
+- 3.1 was released in 2009
+  - GLSL 1.4
+  - UBOs
+  - TBOs
+  - instanced rendering
+  - buffer textures
+  - rectangle textures
+- 3.2 was released in 2009
+  - GLSL 1.5
+  - core and compat profiles
+  - geometry shader
+  - multisample textures
+  - fence sync objects
+- 3.3 was released in 2010
+  - backport certain 4.0 features
+  - GLSL 3.3
+  - dual-source blending
+  - sampler objects
+  - sampler swizzle
+  - 1010102
+  - instanced arrays
+- 4.0 was released in 2010
+  - GLSL 4.0
+  - tessellation
+  - 64-bit
+  - indirect draw
+  - buffer textures
+  - cube map arrays
+  - multiple transform feedback
+- 4.1 was released in 2010
+  - ES2 compat
+  - separate shader objects
+  - 64-bit vertex attributes
+  - viewport array
+- 4.2 was released in 2011
+  - atomics
+  - shader images
+  - more formats
+- 4.3 was released in 2012
+  - ES3 compat
+  - compute shader
+  - SSBOs
+  - array-of-arrays in GLSL
+  - multi draw indirect
+  - stencil texturing
+  - texture views
+- 4.4 was released in 2013
+  - more immutable storage (`GL_ARB_buffer_storage` and coherent mapping)
+  - multi bind
+  - bindless texture ext
+  - sparse texture ext
+- 4.5 was released in 2014
+  - ES3.1 compat
+  - DSA (direct state access)
+  - texture barrier
+- 4.6 was released in 2017
+  - SPIR-V
+  - anisotropic
+  - more atomics
+  - shader group vote
+
+## OpenGL ES
+
+- 1.0 was released in 2003
+  - based on GL 1.3
+- 1.1 was released in 2003?
+  - based on GL 1.5
+- 2.0 was released in 2007
+  - based on GL 2.0 without fixed-function
+- 3.0 was released in 2012
+  - occolusion queries
+  - transform feedback
+  - instanced rendering
+  - MRT >=4
+  - ETC2/EAC
+  - texturing
+    - floating-point textures
+    - 3D textures
+    - depth textures
+    - vertex textures
+    - npot textures
+    - R/RG textures
+    - array textures
+    - swizzles
+    - seamless cube maps
+  - more guaranteed render/texture formats
+  - GLSL
+- 3.1 was released in 2014
+  - compute
+  - indirect draws
+  - shader images and ssbo
+  - texture gather, multisample textures, stencil textures
+  - separate shader object
+  - GLSL
+- 3.2 was released in 2015
+  - Android Extension Pack (AEP)
+    - ASTC
+    - geometry and tessellation shaders
+    - per-sample interpolation and shading
+    - different blend modes for each RT
+    - guaranteed ssbo, images, atomics in FS
+  - floating-pint RT
+  - TBOs, multisample 2D array, cubemap arrays
+
+## Core Profile
+
+- Deprecation Model
+  - some features are marked for deprecation in OpenGL 3.0
+  - most of them are removed from OpenGL 3.1 and are added back through `GL_ARB_compatibility`
+  - In OpenGL 3.2, removed features are only available in compatibility profile
+  - A forward-compatible context removes deprecated features, in addtion to removed features
+- Removed Features
+  - all objects must be pre-generated with `glGen*`
+  - no more color index mode
+  - GLSL 1.1 and 1.2
+  - glBegin and glEnd
+  - edge flags and fixed-function vertex processing
+    (`gl*Pointer`, `gl*ClientState`, matrix, frustum/ortho, lighting)
+  - client vertex and index arrays (must use buffer object)
+  - `glRect*`
+  - glRasterPos
+  - non-sprite point
+  - POLYGON, QUADS, `QUAD_STRIP`
+  - PolygonMode and PolygonStipple
+  - pixel transfer modes and operations
+  - pixel drawing
+  - bitmap
+  - legacy pixel formats - alpha, luminance, intensity
+  - depth texture mode
+  - texture CLAMP mode
+  - texture border
+  - automatic mipmap generation
+  - fixed-function fragment processing (TexEnv, Fog)
+  - alpha test
+  - accumulation buffers
+  - glCopyPixels
+  - auxiliary buffers
+  - evaluators
+  - selection and feedback modes
+  - display lists
+  - glHints
+  - attribute stack
+  - unified extension string
+  - (Deprecated only) glLineWidth
+
 ## Programmer's View
 
 * opengl expects hw framebuffer

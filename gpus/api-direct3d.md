@@ -1,6 +1,86 @@
 Direct3D
 ========
 
+## History
+
+- for modern feature levels
+  - <https://en.wikipedia.org/wiki/Feature_levels_in_Direct3D>
+- 5.0 was released in 1997
+- 6.0 was released in 1998
+  - multitexturing
+- 7.0 was released in 1999
+  - HW TCL (transformation, clipping, and lighting)
+- 8.0 was released in 2000
+  - shader model 1.1
+- 9.0 was released in 2002
+  - shader model 2 and 3
+  - floating-point formats
+  - MRT
+  - texturing in VS
+- 10.0 was released in 2007
+  - shader model 4
+  - feature levels instead of caps
+  - common shader core
+  - geometry shader
+  - stream output
+  - integer ops in shaders
+  - texture arrays
+  - instancing
+- 11.0 was released in 2009
+  - shader model 5
+  - tessellation
+  - compute
+  - `9_1`
+    - shader model 2.0
+    - 2K textures
+    - volume textures
+    - event queries
+    - BC1-3 compressions
+  - `9_2`
+    - occlusion queries
+    - floating point formats
+  - `9_3`
+    - shader model 2.x
+    - instancing
+    - 4K textures
+    - 4 MRTs
+    - floating point blending
+  - `10_0`
+    - shader model 4.0
+    - geometry shader
+    - stream out
+    - alpha-to-coverage
+    - 8K textures
+    - MSAA textures
+    - 2-sided stencil
+    - general render target view
+    - texture arrays
+    - BC4-5
+    - full floating point support
+  - `10_1`
+    - shader model 4.1
+    - cubemap arrays
+    - extended MSAA
+  - `11_0`
+    - shader model 5.0
+    - hull and domain shaders
+    - DirectCompute (CS 4.1)
+    - 16K textures
+    - BC6H/7
+    - more formats
+  - `11_1`
+    - logical blend operations
+    - target-independent rasterization
+    - UAV at every stage
+    - UAV-only rendering
+    - constant buffer offsetting and partial updates
+  - `12_0`
+  - `12_1`
+- 11.1 was released in 2012
+  - UAVs
+- 11.2 was released in 2013
+- 12.0 was released in 2015
+
 ## Links
 
 * direct3d Pipeline stages
