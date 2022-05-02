@@ -77,6 +77,51 @@ Meson
 - `ninja install` to install
   - `DESTDIR` is supported
 
+## Machine Files
+
+- machine files are used with `--native-file` or `--cross-file` to describe
+  native or cross machines
+  - there can be multiple machine files and they are concatenated together
+- data types
+  - integers (e.g., 42)
+  - booleans (`true` or `false`)
+  - strings (e.g., `'abc'`)
+  - arrays of strings or booleans (e.g., `['abx', 'xyz']`)
+- `[constants]` section
+  - values defined in this section can be used in other sections
+  - string concatenation with `+`
+  - path concatenation with `/`
+- `[binaries]` section
+  - programs used by meson internally or returned by `find_program`
+  - `c`, `c_ld`, `cpp`, `cpp_ld`, `ar`, `strip`, etc.
+  - `pkgconfig`, `llvm-config`, etc.
+- `[paths]` section
+  - deprecated by `[built-in options]`
+- `[properties]` section
+  - `cmake_toolchain_file`
+  - `java_home`
+  - `<lang>_args` and `<lang>_link_args` are deprecated in favor of
+    `[built-in options]`
+- `[built-in options]` section
+  - set built-in options such as `prefix`, `c_flags`, or `pkg_config_path`
+  - use `[<subject>: built-in options]` for subproject options
+- `[project options]` section
+  - set project options
+  - use `[<subject>: project options]` for subproject options
+- `[cmake]` section
+- cross machine specifics
+  - `[binaries]` section
+    - `exec_wrapper`
+  - `[properties]` section
+    - `sizeof_int`
+    - `sys_root`, used to set `PKG_CONFIG_SYSROOT_DIR`
+    - `pkg_config_libdir`, used to set `PKG_CONFIG_LIBDIR`
+  - `[host_machine]` section
+    - `system`
+    - `cpu_family`
+    - `cpu`
+    - `endian`
+
 ## Meson Cross-Compilation
 
 - `meson --cross-file <cross_file.txt>`
