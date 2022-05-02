@@ -33,3 +33,15 @@ Android ADB
 * Rooting is done by flashing a kernel with debuggable initramfs
   * `ro.debuggable=1` in `default.prop`
   * this makes `adb root` work
+
+## internals
+
+* adb can be run on host and device
+  * it is called `adbd` when on the device
+* It calls `usb_init`
+  * on device, it opens `/dev/android_adb`, which waits for connection.
+  * on host, it scans `/dev/bus/usb` for usb devices supporting adb
+    * the device might be both readable and writable.
+* It calls `local_init`
+  * on device, it listens on 5555 port.
+  * on host, it connects to 5555 port of `ADBHOST`.

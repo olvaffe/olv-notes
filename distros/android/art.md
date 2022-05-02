@@ -1,5 +1,5 @@
-Dalvik
-======
+Android Runtime
+===============
 
 ## Using NDK for JNI
 
