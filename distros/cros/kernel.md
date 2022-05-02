@@ -1,6 +1,20 @@
 Chrome OS Kernel
 ================
 
+## Kernel
+
+- "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
+- make changes to src/third_party/kernel/v4.19
+  - or fetch a WIP branch, "git fetch cros <branch>"
+    - https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>
+- to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
+- to deploy, "./update_kernel.sh --remote=<DUT IP address>"
+- change kernel config
+  - chromeos/config/*/*.config
+- update kernel cmdline
+  - on DUT: /usr/share/vboot/bin/make_dev_ssd.sh --edit_config
+  - update_kernel.sh: edit src/build/images/<BOARD>/latest/config.txt
+
 ## Build Kernel
 
 - kernel config

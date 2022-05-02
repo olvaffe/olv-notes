@@ -143,3 +143,59 @@ Chrome OS Overview
   - ControlPath ~/.ssh/control-%r@%h:%p
   - ControlPersist yes
   - LocalForward 1234 localhost:1234 # for gdbserver
+
+## New Device
+
+- enable developer mode
+  - hold ESC and F3/Refresh, then press power button to boot into recovery
+    mode
+  - while in recovery mode, press Ctrl-D to enter developer mode
+- select boot device
+  - at developer mode warning, press Ctrl-D or Ctrl-U to boot from disk or usb
+    - for USB boot, need to run `enable_dev_usb_boot` from console first
+- console
+  - while in developer mode, Ctrl-Alt-F2 to enter console
+- rw rootfs
+  - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
+  - `reboot`
+- sshd
+  - `/usr/libexec/debugd/helpers/dev_features_ssh`
+  - `passwd`
+- flash latest test image
+  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
+- confirm versions
+  - H1 firmware: `gsctool -a -f`
+  - EC firmware: `ectool version`
+  - AP firmware: `crossystem fwid`
+  - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
+  - `chromeos-firmwareupdate -t` to flash
+
+## Flash Images
+
+- <https://www.chromium.org/chromium-os/build/cros-flash>
+- `cros flash <device> <image>`
+  - `<device>` can be `usb://` or `ssh://<DUT-IP>` or `file://<local-dir>`
+  - `<image>` is `latest` by default
+  - for prod images, specify `--disable-rootfs-verification` to remove rootfs verification
+- flash a locally built image
+  - `cros flash ssh://<DUT-IP>`
+    - or, `cros flash ssh://<DUT-IP> latest`
+    - or, `cros flash ssh://<DUT-IP> ${BOARD}/latest`
+  - these flash `~/trunk/src/build/images/$BOARD/latest`
+- flash using a devserver
+  - `cros flash ssh://<DUT-IP> xbuddy://remote/<<BOARD>/<VERSION>/<TYPE>`
+- flash using a usb disk
+  - after flashing the image to a usb disk, boot from usb and run
+  - `chromeos-install`
+- download image and flash
+  - `cros flash file://<path/to/file> xbuddy://remote/...`
+  - `cros flash ssh://<DUT-IP> path/to/file`
+- `cros flash -v ssh://<DUT-IP> xbuddy://remote/...`
+  - gsutil cp `chromeos_*_full_dev.bin`, which is rootfs
+  - scp to dut and flash
+  - gsutil cp `stateful.tgz`, which is stateful partition
+  - scp to dut, touch `/mnt/stateful_partition/.update_available`, and reboot
+- disable rootfs verification afterwards
+  - untested
+  - `crossystem dev_boot_signed_only=0`
+  - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`

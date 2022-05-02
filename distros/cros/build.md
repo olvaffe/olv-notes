@@ -1,5 +1,97 @@
-Chrome OS Board
+Chrome OS Build
 ===============
+
+## Build image
+
+- Relax sudo
+  - /etc/sudoers.d/relax_requirements
+      Defaults !tty_tickets
+      Defaults timestamp_timeout=180
+- `cros_sdk` to enter chroot
+- "export BOARD=<BOARD-NAME>"
+- switch kernel branch, if needed
+- `USE="kgdb vtconsole" ./build_packages --board=${BOARD}`
+- `./build_image \
+    --boot_args="noinitrd slub_debug=FZPUA panic=0" \
+    --board=${BOARD} \
+    --noenable_rootfs_verification \
+    test`
+- internals
+  - `build_packages`
+    - it builds and emerges these packages by default to /build/$BOARD
+      - virtual/target-os, base OS image
+      - virtual/target-os-dev, developer tools (shell, ssh, vim, tcpdump, etc)
+      - virtual/target-os-factory, factory tools
+      - virtual/target-os-factory-shim, factory installer (flashrom, etc)
+      - virtual/target-os-test, deqp, etc.
+      - chromeos-base/autotest-all
+    - binary packages can be found under /build/$BOARD/packages
+  - `build_image`
+    - it builds images under ~/trunc/src/build/$BOARD
+    - it always wipes the build directory clean, install packages, and done
+
+## Manual Building
+
+- `FEATURES="noclean" emerge-$BOARD $PACKAGE`
+  - this leaves `/build/$BOARD/tmp/portage/*/$PACKAGE-*` on disk
+  - `temp/environment` gives how the package is built
+- Meson-based packages
+  - get cross file from `temp/meson.x86_64-cros-linux-gnu.amd64.ini`
+- Rust-based packages
+  - get cargo config file from `work/cargo_home/config` and save it to
+    `.cargo/config.toml`
+  - might additionally need `RUSTFLAGS` and `PKG_CONFIG`
+- autotools
+  - SYSROOT="/build/$BOARD"
+  - "autoreconf -f -v -i -I $SYSROOT/usr/share/aclocal"
+  - TARGET="arch-vendor-sys-abi"
+  - PATH adds "$SYSROOT/build/bin"
+  - PKG_CONFIG points to "$SYSROOT/build/bin/pkg-config"
+  - CC="$TARGET-clang"
+  - CXX="$TARGET-clang"
+  - CPPFLAGS="--sysroot=$SYSROOT"
+  - LDFLAGS="--sysroot=$SYSROOT"
+  - CFLAGS and CXXFLAGS add "-march=... -mtune=... ..."
+
+## Portage
+
+- check out board-specific /build/$BOARD/etc/make.conf
+- src/overlays/chipset-qc845/profiles/base/make.defaults
+  - `toolchain.conf` for toolchain
+  - `CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-qualcomm"`
+  - `CHROMEOS_KERNEL_ARCH="arm64"`
+  - `BOARD_COMPILER_FLAGS="-march=armv8-a+crc -mtune=cortex-a57.cortex-a53 -mfpu=crypto-neon-fp-armv8 -mfloat-abi=hard"`
+- update package
+  - `cros_portage_upgrade --upgrade --board=amd64-generic:arm-generic <package-name>`
+  - manual
+    - add new ebuild
+    - change KEYWORDS to "*"
+    - ebuild <package-name>.ebuild
+    - egencache --update --repo <chromiumos|portage-stable> <package-name>
+
+## Debug
+
+- On DUT
+  - PORT=1234
+  - use ssh forwarding
+    - ssh -L $PORT:localhost:$PORT
+    - or allow debug port if blocked
+      - iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
+      - iptables -L INPUT
+  - gdbserver :$PORT <program>
+- On host
+  - $TARGET-gdb \
+       -ex "set sysroot /build/$BOARD" \
+       -ex "set solib-absolute-prefix /build/$BOARD" \
+       -ex "set debug-file-directory /build/$BOARD/usr/lib/debug" \
+       -ex "set directories $SRC_DIRS" \
+       -ex "target remote :$PORT"
+  - libs being developed needs to be copied to /build/$BOARD for $TARGET-gdb to pick them up?
+    - $TARGET-objcopy --only-keep-debug $lib /build/$BOARD/usr/lib/debug/usr/lib/$lib.debug
+    - $TARGET-objcopy --strip-debug \
+        --add-gnu-debuglink=/build/$BOARD/usr/lib/debug/usr/lib/$lib.debug \
+        $lib /build/$BOARD/usr/lib/$lib
+    - scp /build/$BOARD/usr/lib/$lib $DUT:/usr/lib/$lib
 
 ## amd64-generic
 
