@@ -51,11 +51,14 @@ ANGLE
     - `use_goma = true`
   - `autoninja -C out/AArch64`
   - package
-    - `mkdir angle; cd angle`
-    - `cp ../out/AArch64/lib{EGL,GLESv2}.so .`
-    - `cp ../out/AArch64/libvulkan.so.1 .`
-    - `ln -sf libEGL.so libEGL.so.1; ln -sf libGLESv2.so libGLESv2.so.2`
-    - `cd ..; tar zchf angle.tar.gz angle`
+    - `cd out`
+    - `angledir=angle-aarch64-$(date +%Y%m%d)`
+    - `ln -sf AArch64 $angledir`
+    - `find -H $angledir -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
+    - `find -H $angledir -maxdepth 1 -type f -executable | xargs tar zcf $angledir.tar.gz $angledir/gen`
+    - after unpack,
+      - `ln -sf libEGL.so libEGL.so.1`
+      - `ln -sf libGLESv2.so libGLESv2.so.2`
 
 ## `eglGetDisplay`
 
