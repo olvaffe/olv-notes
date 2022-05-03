@@ -417,8 +417,25 @@ Qualcomm Adreno
   - they must obey hw limits that are already computed and saved in render
     pass
 - Mesa `tu_tiling_config_update_pipe_layout`
-  - compute `fb->tile_count`, number of tiles in each direction per pipe
+  - compute `fb->pipe_count`, number of pipes in each direction
+  - compute `fb->pipe0`, number of tiles of a pipe covers in each direction
   - there is a total of 32 pipes; we want to use as many pipes as possible
+- Mesa `tu_tiling_config_update_pipes`
+  - compute pipe register values in `fb->pipe_config` and `fb->pipe_sizes`
+- Mesa `tu_graphics_pipeline_create`
+  - `tu_pipeline_builder_init_graphics` does a quick pass to parse info needed
+    by the compiler
+  - `tu_pipeline_builder_compile_shaders` compiles all shaders, including
+    binning one
+  - `builder->shader_iova` is initialzed with offsets of shaders in bo
+  - `tu_pipeline_builder_parse_dynamic` updates `pipeline->foo_masks`, to
+    indicate which states are baked and which states are dynamic
+  - `tu_pipeline_builder_parse_shader_stages` emits hw cmds related to shaders
+  - `tu_pipeline_builder_parse_vertex_input` emits hw cmds related to VFD
+    (vertex fetch and decode)
+  - `tu_pipeline_builder_parse_viewport` emits viewports and scissors, if not
+    dynamic
+  - and more
 
 ## MDSS
 
