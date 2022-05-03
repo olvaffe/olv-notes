@@ -59,6 +59,15 @@ ANGLE
     - after unpack,
       - `ln -sf libEGL.so libEGL.so.1`
       - `ln -sf libGLESv2.so libGLESv2.so.2`
+  - `angle_deqp_egl_tests`
+    - use `strace -e trace=file` to figure out what files are missing
+    - `ls third_party/VK-GL-CTS/src/android/cts/main/*-master.txt \
+       src/tests/deqp_support/*_test_expectations.txt | \
+       xargs tar zcf deqp-data.tar.gz`
+    - `--deqp-egl-display-type=angle-vulkan` selects the vulkan config, which
+      is used to select test expectation file?
+    - `--deqp-case` converts deqp-style test names to `--gtest_filter`
+    - `--renderdoc` eanbles renderdoc frame captures
 
 ## `eglGetDisplay`
 
