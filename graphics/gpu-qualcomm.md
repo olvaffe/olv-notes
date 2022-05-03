@@ -218,6 +218,52 @@ Qualcomm Adreno
     - 5nm
     - Adreno 8cx Gen3
 
+## Architecture
+
+- `Qualcomm® Snapdragon™ Mobile Platform OpenCL General Programming and Optimization`
+- Adreno
+  - a big L2 sitting in from of system memory
+    - all memory accesses from SP are via L2
+  - a Texture Processor / L1 for Sampling and Image Read
+  - multiple Shader Processors
+- a Shader Processor (SP) is
+  - core block of Adreno GPUs with many moudles including ALU, load/store
+    unit, control flow unit, register files, etc.
+  - each SP corresponds to a OpenCL compute unit
+  - load/store through L2 for buffer objects and (r/w) image objects
+  - load/sample through  texture processor / L1 for read-ony image objects
+- a Texture Processor (TP) is
+  - texture fetching and filtering
+  - coupled with L1 which fetches data from L2
+- A unified L2 cache (UCHE)
+  - respond to SP's load/store and L1's load requests
+- Waves and fibers
+  - the smallest unit of execution is a fiber (thread...)
+  - a collection of fibers execute in lock-step is a wave
+  - wave size can be 8, 16, 32, 64, 128, etc.
+  - a SP can have multiple active waves, for latency hiding
+    - maximum number of active waves depend on register file size and register
+      footprint of the waves
+  - an OpenCL kernel launches multiple workgroups
+    - each workgroup is assigned to an SP
+    - each SP processes one (or multiple on highend) workgroup at a time
+    - the remaining SPs are queued in GPU for execution
+  - an OpenCL workgroup is processed by multiple waves
+    - the larger the better, but not always
+    - larger workgroups means more waves and better latency hiding
+- OpenCL Memory Model
+  - global memory is system memory
+  - local memory is on-chip GMEM in SP
+  - private memory is registers, on-chip GMEM, or system memory decided by
+    compiler
+  - constant memory is on-chip if can fit; system memory otherwise
+  - not coherent between CPU/GPU on A5xx
+- Graphics Fixed-Function Pipeline
+  - Command Processor (CP)
+    - uncached
+  - Color Cache Unit (CCU)
+    - draws and blits hit CCU
+
 ## Device Identification
 
 - device tree specifies `qcom,adreno-635.0`
@@ -261,45 +307,6 @@ Qualcomm Adreno
     - `num_ccu` is 2, not 1
     - `RB_UNKNOWN_8E04_blit` is both `0x00100000`
     - `PC_POWER_CNTL` is 1, not 0
-
-## Architecture
-
-- Adreno
-  - a big L2 sitting in from of system memory
-  - all memory accesses are via L2
-  - a Texture Processor / L1 for Sampling and Image Read
-  - multiple Shader Processors
-- a Shader Processor (SP) is
-  - core block of Adreno GPUs with many moudles including ALU, load/store
-    unit, control flow unit, register files, etc.
-  - each SP corresponds to a OpenCL compute unit
-  - load/store through L2 for buffer objects and (r/w) image objects
-  - load/sample through  texture processor / L1 for read-ony image objects
-- a Texture Processor (TP) is
-  - texture fetching and filtering
-- A unified L2 cache (UCHE)
-  - respond to SP's load/store and L1's load requests
-- Waves and fibers
-  - the smallest unit of execution is a fiber (thread...)
-  - a collection of fibers execute in lock-step is a wave
-  - wave size can be 8, 16, 32, 64, 128, etc.
-  - a SP can have multiple active waves, for latency hiding
-    - maximum number of active waves depend on register file size and register
-      footprint of the waves
-  - an OpenCL kernel launches multiple workgroups
-    - each workgroup is assigned to an SP
-    - each SP processes one (or multiple on highend) workgroup at a time
-    - the remaining SPs are queued in GPU for execution
-  - an OpenCL workgroup is processed by multiple waves
-    - the larger the better, but not always
-    - larger workgroups means more waves and better latency hiding
-- OpenCL Memory Model
-  - global memory is system memory
-  - local memory is on-chip GMEM in SP
-  - private memory is registers, on-chip GMEM, or system memory decided by
-    compiler
-  - constant memory is on-chip if can fit; system memory otherwise
-  - not coherent between CPU/GPU on A5xx
 
 ## Overview
 
@@ -369,6 +376,49 @@ Qualcomm Adreno
   - every 50ms, `devfreq_update_target` asks the governor for the target freq,
     clamp it to `[DEV_PM_QOS_MIN_FREQUENCY, DEV_PM_QOS_MAX_FREQUENCY]`
   - `devfreq_set_target` sets and returns the effective freq
+
+## GMEM
+
+- kernel
+  - `MSM_PARAM_GMEM_BASE` is `0x100000` mostly
+  - `MSM_PARAM_GMEM_SIZE` is `SZ_512K` on a618/a635
+- Mesa `struct fd_dev_info`
+  - `tile_align_w` and `tile_align_h`
+    - alignments of the dimensions of a tile
+    - 32x32 mostly
+  - `gmem_align_w` and `gmem_align_h`
+    - what `vkGetRenderAreaGranularity` returns
+    - and what?
+    - 16x4 mostly
+  - `tile_max_w` and `tile_max_h`
+    - max size of a tile
+    - 1024x1008 mostly
+  - `num_ccu` is 1 on a618 and 2 on a635
+- Mesa `tu_physical_device`
+  - `ccu_offset_bypass` reserves 64KB per CCU from gmem as depth cache, used
+    in sysmem mode
+  - `ccu_offset_gmem` reserves 16KB per CCU from gmem for msaa resolves, used
+    in gmem mode
+- Mesa `tu_render_pass_gmem_config`
+  - `gmem_align` is 8KB mostly
+  - the goal is to decide the number of gmem blocks allocated for each
+    attachment
+    - `ccu_offset_gmem` is 496KB mostly, thus `gmem_blocks` is 62
+    - let's say att 1 has cpp 4 and att 2 has cpp 2
+    - it allocates `62*4/6` to att 1 and `62*2/6` to att 2
+      - that is, it allocates 41 blocks to att 1 and 21 blocks to att 2
+      - ot, it allocates `41*8192/4` and `21*8192/2` pixels for att 1 and 2
+      	respectively
+    - `pass->gmem_pixels` is set to the max numbers of pixels that can fit
+      gmem for this render pass
+- Mesa `tu_tiling_config_update_tile_layout`
+  - compute `fb->tile_count`, number of tiles in each direction
+  - compute `fb->tile0`, dimensions of a tile
+  - they must obey hw limits that are already computed and saved in render
+    pass
+- Mesa `tu_tiling_config_update_pipe_layout`
+  - compute `fb->tile_count`, number of tiles in each direction per pipe
+  - there is a total of 32 pipes; we want to use as many pipes as possible
 
 ## MDSS
 
