@@ -369,7 +369,7 @@ Qualcomm Adreno
   - `BLIT`
   - `CACHE_FLUSH_TS` flushes UCHE
   - `CACHE_INVALIDATE` invalidates UCHE
-  - `FLUSH_SO_0(i)` writes SO results to `REG_A6XX_VPC_SO_FLUSH_BASE(i)`
+  - `FLUSH_SO_0(i)` writes SO results to `VPC_SO_FLUSH_BASE(i)`
   - `LRZ_FLUSH` is generated at tile render begin/end and sysmem begin/end
   - `PC_CCU_FLUSH_COLOR_TS` flushes CCU color cache
   - `PC_CCU_FLUSH_DEPTH_TS` flushes CCU depth cache
@@ -386,6 +386,44 @@ Qualcomm Adreno
   - `UNK_2C`
   - `UNK_2D`
   - `WRITE_PRIMITIVE_COUNTS` writes primitive counts to addr specified in
-    `REG_A6XX_VPC_SO_STREAM_COUNTS` for xfb
+    `VPC_SO_STREAM_COUNTS` for xfb
   - `ZPASS_DONE` writes zpass fragment count to addr specified in
     `A6XX_RB_SAMPLE_COUNT_ADDR`
+
+## VFD, vertex fetch and decode
+
+- `VFD_CONTROL_[0-6]`
+  - how many attrs to fetch/decode
+  - which sysvals such as vertex ids to generate
+- `VFD_MODE_CNTL`: normal or binning pass
+- `VFD_MULTIVIEW_CNTL`: multiview
+- `VFD_ADD_OFFSET`: offsets added to sysvals
+- `VFD_INDEX_OFFSET`: ofsset to draw firstVertex
+- `VFD_INSTANCE_START_OFFSET`: ofsset to draw firstInstance
+- `VFD_FETCH_BASE(i)`: vb addr
+- `VFD_FETCH_SIZE(i)`: vb size
+- `VFD_FETCH_STRIDE(i)`: vert stride
+- `VFD_DECODE_INSTR(i)`: vert format, etc.
+- `VFD_DECODE_STEP_RATE(i)`: instancing step rate
+- `VFD_DEST_CNTL_INSTR(i)`: maps attrs to regs
+- `VFD_POWER_CNTL`: magic value
+
+## VSC, visibility stream compressor?
+
+- <https://github.com/freedreno/freedreno/wiki/Visibility-Stream-Format>
+  - the draw stream consists of bitmasks, where each bitmask indicates which
+    bins are covered by a draw command
+    - CP uses it to skip empty draws
+  - each primitive stream consists of bitmasks, where each bitmask indicates
+    which bins are covered by a primitive
+- `VSC_DRAW_STRM_ADDRESS`: draw stream addr
+- `VSC_DRAW_STRM_PITCH`: draw stream pitch
+- `VSC_DRAW_STRM_LIMIT`: draw stream limit
+- `VSC_DRAW_STRM_SIZE_ADDRESS`: draw steam what?
+- `VSC_PRIM_STRM_ADDRESS`: prim stream addr
+- `VSC_PRIM_STRM_PITCH`: prim stream pitch
+- `VSC_PRIM_STRM_LIMIT`: prim stream limit
+- `VSC_BIN_SIZE`: tile width and tile height
+- `VSC_BIN_COUNT`: tile count in both dims
+- `VSC_PIPE_CONFIG(i)`: which pipes handles which tiles
+- `CP_SET_BIN_DATA5_*`: slot of the selected tile
