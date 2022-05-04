@@ -475,55 +475,50 @@ Qualcomm Adreno
 - `VPC_SO_STREAM_CNTL`: stream-to-buffer mapping
 - `VPC_SO_DISABLE`: disable SO (e.g., was enabled for binning pass already)
 
-## GRAS
+## GRAS, graphics rasterizer?
 
-- `GRAS_2D_BLIT_CNTL`:
-- `GRAS_2D_DST_BR`:
-- `GRAS_2D_DST_TL`:
-- `GRAS_2D_RESOLVE_CNTL_1`:
-- `GRAS_2D_RESOLVE_CNTL_2`:
-- `GRAS_2D_SRC_BR_X`:
-- `GRAS_2D_SRC_BR_Y`:
-- `GRAS_2D_SRC_TL_X`:
-- `GRAS_2D_SRC_TL_Y`:
-- `GRAS_BIN_CONTROL`:
-- `GRAS_CL_CNTL`:
-- `GRAS_CL_GUARDBAND_CLIP_ADJ`:
-- `GRAS_CL_VPORT_*`:
-- `GRAS_CL_Z_CLAMP_*`:
-- `GRAS_CNTL`:
-- `GRAS_DBG_ECO_CNTL`:
-- `GRAS_DEST_MSAA_CNTL`:
-- `GRAS_DS_CL_CNTL`:
-- `GRAS_DS_LAYER_CNTL`:
-- `GRAS_GS_CL_CNTL`:
-- `GRAS_GS_LAYER_CNTL`:
-- `GRAS_LRZ_BUFFER_BASE`:
-- `GRAS_LRZ_BUFFER_PITCH`:
-- `GRAS_LRZ_CNTL`:
-- `GRAS_LRZ_FAST_CLEAR_BUFFER_BASE`:
-- `GRAS_LRZ_MRT_BUF_INFO_0`:
-- `GRAS_LRZ_PS_INPUT_CNTL`:
-- `GRAS_MAX_LAYER_INDEX`:
-- `GRAS_RAS_MSAA_CNTL`:
-- `GRAS_SAMPLE_CNTL`:
-- `GRAS_SAMPLE_CONFIG`:
-- `GRAS_SC_CNTL`:
-- `GRAS_SC_SCREEN_SCISSOR_*`:
-- `GRAS_SC_VIEWPORT_SCISSOR_*`:
-- `GRAS_SC_WINDOW_SCISSOR_BR`:
-- `GRAS_SC_WINDOW_SCISSOR_TL`:
-- `GRAS_SU_CNTL`:
-- `GRAS_SU_CONSERVATIVE_RAS_CNTL`:
-- `GRAS_SU_DEPTH_BUFFER_INFO`:
-- `GRAS_SU_DEPTH_PLANE_CNTL`:
-- `GRAS_SU_POINT_MINMAX`:
-- `GRAS_SU_POINT_SIZE`:
-- `GRAS_SU_POLY_OFFSET_OFFSET`:
-- `GRAS_SU_POLY_OFFSET_OFFSET_CLAMP`:
-- `GRAS_SU_POLY_OFFSET_SCALE`:
-- `GRAS_VS_CL_CNTL`:
-- `GRAS_VS_LAYER_CNTL`:
+- `GRAS_BIN_CONTROL`: bin w/h and flags
+- `GRAS_VS_CL_CNTL`: clip masks
+- `GRAS_VS_LAYER_CNTL`: writes layer/view 
+- `GRAS_DS_CL_CNTL`: same but for ds
+- `GRAS_DS_LAYER_CNTL`: same but for ds
+- `GRAS_GS_CL_CNTL`: same but for gs
+- `GRAS_GS_LAYER_CNTL`: same but for gs
+- `GRAS_CL_CNTL`: depth clip
+- `GRAS_CL_GUARDBAND_CLIP_ADJ`: viewport guardband
+- `GRAS_CL_VPORT_*`: viewports
+- `GRAS_CL_Z_CLAMP_*`: depth clamp
+- `GRAS_SC_CNTL`: rasterization order
+- `GRAS_SC_SCREEN_SCISSOR_*`: scissors
+- `GRAS_SC_VIEWPORT_SCISSOR_*`: viewports
+- `GRAS_SC_WINDOW_SCISSOR_*`: cur tile coords
+- `GRAS_MAX_LAYER_INDEX`: max fb layer
+- `GRAS_DBG_ECO_CNTL`: magic
+- `GRAS_SU_CNTL`: cull, ccw, line width, smooth line, etc.
+- `GRAS_SU_CONSERVATIVE_RAS_CNTL`: conservative rast
+- `GRAS_SU_DEPTH_BUFFER_INFO`: depth buffer fmt
+- `GRAS_SU_DEPTH_PLANE_CNTL`: early-z, lrz, or late-z
+- `GRAS_SU_POINT_MINMAX`: point min/max
+- `GRAS_SU_POINT_SIZE`: point size
+- `GRAS_SU_POLY_OFFSET_OFFSET`: depth bias
+- `GRAS_SU_POLY_OFFSET_OFFSET_CLAMP`: depth bias
+- `GRAS_SU_POLY_OFFSET_SCALE`: depth bias
+- `GRAS_LRZ_BUFFER_BASE`: lrz bo addr
+- `GRAS_LRZ_BUFFER_PITCH`: lrz pitch
+- `GRAS_LRZ_FAST_CLEAR_BUFFER_BASE`: lrz fast clear addr
+- `GRAS_LRZ_CNTL`: enable, write enable, test enable, depth bounds
+- `GRAS_LRZ_MRT_BUF_INFO_0`: MRT0 format
+- `GRAS_LRZ_PS_INPUT_CNTL`: generates sampleid
+- `GRAS_RAS_MSAA_CNTL`: msaa
+- `GRAS_DEST_MSAA_CNTL`: msaa
+- `GRAS_SAMPLE_CNTL`: per sample mode
+- `GRAS_SAMPLE_CONFIG`: sample locs
+- `GRAS_CNTL`: barycentric interps
+- `GRAS_2D_BLIT_CNTL`: format, scissor, rotate, etc.
+- `GRAS_2D_SRC_BR_X`: blit src coords
+- `GRAS_2D_DST_*`: blit dst coords
+- `GRAS_2D_RESOLVE_CNTL_1`: cur tile origin
+- `GRAS_2D_RESOLVE_CNTL_2`: cur tile size
 
 ## RB
 
@@ -674,8 +669,8 @@ Qualcomm Adreno
 - `SP_TP_RAS_MSAA_CNTL`: msaa
 - `SP_TP_DEST_MSAA_CNTL`: msaa
 - `SP_TP_SAMPLE_CONFIG`: sample locations
-- `SP_TP_WINDOW_OFFSET`: tile origin
-- `SP_WINDOW_OFFSET`: tile origin
+- `SP_TP_WINDOW_OFFSET`: cur tile origin
+- `SP_WINDOW_OFFSET`: cur tile origin
 
 ## HLSQ
 
