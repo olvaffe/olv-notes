@@ -427,3 +427,50 @@ Qualcomm Adreno
 - `VSC_BIN_COUNT`: tile count in both dims
 - `VSC_PIPE_CONFIG(i)`: which pipes handles which tiles
 - `CP_SET_BIN_DATA5_*`: slot of the selected tile
+
+## PC, primitive control?
+
+- `PC_TESS_NUM_VERTEX`: for hs
+- `PC_HS_INPUT_SIZE`: for hs
+- `PC_TESS_CNTL`: for hs
+- `PC_RESTART_INDEX`: prim restart index
+- `PC_MODE_CNTL`: magic
+- `PC_POWER_CNTL`: magic
+- `PC_PRIMID_PASSTHRU`: passes through primid
+- `PC_POLYGON_MODE`: polygon mode
+- `PC_RASTER_CNTL`: rasterizer discard
+- `PC_PRIMITIVE_CNTL_0`: prim restart, provoking vertex
+- `PC_VS_OUT_CNTL`: regids of pointsize, view, layer, primid, etc.
+- `PC_GS_OUT_CNTL`: same but for gs
+- `PC_HS_OUT_CNTL`: same but for hs
+- `PC_DS_OUT_CNTL`: same but for ds
+- `PC_PRIMITIVE_CNTL_5`: for gs
+- `PC_PRIMITIVE_CNTL_6`: for gs
+- `PC_MULTIVIEW_CNTL`: multiview enable and count
+- `PC_MULTIVIEW_MASK`: multiview mask
+- `PC_TESSFACTOR_ADDR`: addr of tess factor bo
+
+## VPC, vertex/primitive clip?
+
+- `VPC_GS_PARAM`: where are line length written to
+- `VPC_VS_CLIP_CNTL`: where are clip distances written to
+- `VPC_GS_CLIP_CNTL`: same but for gs
+- `VPC_DS_CLIP_CNTL`: same but for ds
+- `VPC_VS_LAYER_CNTL` where are layer and view written to
+- `VPC_GS_LAYER_CNTL`: same but for gs
+- `VPC_DS_LAYER_CNTL`: same but for ds
+- `VPC_VS_PACK`: where are pos and pointsize written to, total outs
+- `VPC_GS_PACK`: same but for gs
+- `VPC_DS_PACK`: same but for ds
+- `VPC_CNTL_0`: where are primid and viewid written to, fs input counts
+- `VPC_POLYGON_MODE`: polygon mode (fill/line/point)
+- `VPC_VARYING_INTERP(i)`: how outs are interpolated for fs
+- `VPC_VARYING_PS_REPL(i)`: for point sprites
+- `VPC_POINT_COORD_INVERT`: invert point coord
+- `VPC_VAR_DISABLE(i)`: which outs can be disabled
+- `VPC_SO_CNTL`
+- `VPC_SO_PROG`
+- `VPC_SO_STREAM_COUNTS`: addrs to write counts to
+- `VPC_SO_*(i)`: num of components
+- `VPC_SO_STREAM_CNTL`: stream-to-buffer mapping
+- `VPC_SO_DISABLE`: disable SO (e.g., was enabled for binning pass already)
