@@ -520,75 +520,62 @@ Qualcomm Adreno
 - `GRAS_2D_RESOLVE_CNTL_1`: cur tile origin
 - `GRAS_2D_RESOLVE_CNTL_2`: cur tile size
 
-## RB
+## RB, render buffer?
 
-- `RB_2D_BLIT_CNTL`:
-- `RB_2D_DST`:
-- `RB_2D_DST_FLAGS`:
-- `RB_2D_DST_INFO`:
-- `RB_2D_DST_PITCH`:
-- `RB_2D_SRC_SOLID_C0`:
-- `RB_2D_UNKNOWN_8C01`:
-- `RB_ALPHA_CONTROL`:
-- `RB_BIN_CONTROL`:
-- `RB_BIN_CONTROL2`:
-- `RB_BLEND_CNTL`:
-- `RB_BLEND_RED_F32`:
-- `RB_BLEND_GREEN_F32`:
-- `RB_BLEND_BLUE_F32`:
-- `RB_BLEND_ALPHA_F32`:
-- `RB_BLIT_BASE_GMEM`:
-- `RB_BLIT_CLEAR_COLOR_DW0`:
-- `RB_BLIT_CLEAR_COLOR_DW1`:
-- `RB_BLIT_CLEAR_COLOR_DW2`:
-- `RB_BLIT_CLEAR_COLOR_DW3`:
-- `RB_BLIT_DST`:
-- `RB_BLIT_DST_INFO`:
-- `RB_BLIT_FLAG_DST`:
-- `RB_BLIT_INFO`:
-- `RB_BLIT_SCISSOR_BR`:
-- `RB_BLIT_SCISSOR_TL`:
-- `RB_CCU_CNTL`:
-- `RB_DEPTH_BUFFER_ARRAY_PITCH`:
-- `RB_DEPTH_BUFFER_BASE`:
-- `RB_DEPTH_BUFFER_BASE_GMEM`:
-- `RB_DEPTH_BUFFER_INFO`:
-- `RB_DEPTH_BUFFER_PITCH`:
-- `RB_DEPTH_CNTL`:
-- `RB_DEPTH_FLAG_BUFFER_BASE`:
-- `RB_DEPTH_PLANE_CNTL`:
-- `RB_DEST_MSAA_CNTL`:
-- `RB_DITHER_CNTL`:
-- `RB_FS_OUTPUT_CNTL0`:
-- `RB_FS_OUTPUT_CNTL1`:
-- `RB_LRZ_CNTL`:
-- `RB_MRT_*`:
-- `RB_MRT_FLAG_BUFFER_*`:
-- `RB_MSAA_CNTL`:
-- `RB_RAS_MSAA_CNTL`:
-- `RB_RENDER_CNTL`:
-- `RB_RENDER_COMPONENTS`:
-- `RB_RENDER_CONTROL0`:
-- `RB_RENDER_CONTROL1`:
-- `RB_SAMPLE_CNTL`:
-- `RB_SAMPLE_CONFIG`:
-- `RB_SAMPLE_COUNT_ADDR`:
-- `RB_SAMPLE_COUNT_CONTROL`:
-- `RB_SAMPLE_LOCATION_0`:
-- `RB_SAMPLE_LOCATION_1`:
-- `RB_SRGB_CNTL`:
-- `RB_STENCIL_BUFFER_PITCH`:
-- `RB_STENCIL_CONTROL`:
-- `RB_STENCIL_INFO`:
-- `RB_STENCILMASK`:
-- `RB_STENCILREF`:
-- `RB_STENCILWRMASK`:
-- `RB_WINDOW_OFFSET`:
-- `RB_WINDOW_OFFSET2`:
-- `RB_Z_BOUNDS_MAX`:
-- `RB_Z_BOUNDS_MIN`:
-- `RB_Z_CLAMP_MAX`:
-- `RB_Z_CLAMP_MIN`:
+- `RB_BIN_CONTROL`: bin w/h and flags
+- `RB_BIN_CONTROL2`: bin w/h
+- `RB_CCU_CNTL`: set gmem offset for CCU cache
+- `RB_FS_OUTPUT_CNTL0`: fs outputs pos, samplemask, stencilref
+- `RB_FS_OUTPUT_CNTL1`: mrt count
+- `RB_ALPHA_CONTROL`: alpha test
+- `RB_STENCIL_*`: stencil format, pitch, layer, bo addr, gmem offset
+- `RB_STENCIL_CONTROL`: stencil enable/funcs
+- `RB_STENCILMASK`: stencil mask
+- `RB_STENCILREF`: stencil ref
+- `RB_STENCILWRMASK`: stencil writemask
+- `RB_DEPTH_BUFFER_*`: format, pitch, layer, bo addr, gmem offset 
+- `RB_DEPTH_CNTL`: depth test enable, compare op, depth write/clamp/bounds
+- `RB_DEPTH_FLAG_BUFFER_BASE`: addr of ubwc metadata
+- `RB_DEPTH_PLANE_CNTL`: early-z, lrz, or late-z
+- `RB_LRZ_CNTL`: lrz enable
+- `RB_Z_BOUNDS_MAX`: depth bounds
+- `RB_Z_BOUNDS_MIN`: depth bounds
+- `RB_Z_CLAMP_MAX`: depth clamp
+- `RB_Z_CLAMP_MIN`: depth clamp
+- `RB_SAMPLE_COUNT_ADDR`: where to write zpass count, for queries
+- `RB_SAMPLE_COUNT_CONTROL`: how to write zpass count, for queries
+- `RB_MRT_*`: mrt format, pitch, layer, bo addr, gmem offset
+- `RB_MRT_FLAG_BUFFER_*`: addr of ubwc metadata
+- `RB_RENDER_COMPONENTS`: bitmask of which compoents of which mrts are written
+- `RB_RENDER_CONTROL0`: barycentric interps
+- `RB_RENDER_CONTROL1`: samplemask, sampleid, faceness
+- `RB_BLEND_CNTL`: blend enable mask, dual color, alpha-to-coverage, etc.
+- `RB_BLEND_RED_F32`: blend const color
+- `RB_BLEND_GREEN_F32`: blend const color
+- `RB_BLEND_BLUE_F32`: blend const color
+- `RB_BLEND_ALPHA_F32`: blend const color
+- `RB_RAS_MSAA_CNTL`: msaa
+- `RB_DEST_MSAA_CNTL`: msaa
+- `RB_MSAA_CNTL`: msaa
+- `RB_DITHER_CNTL`: enable dither
+- `RB_RENDER_CNTL`: enable ubwc writes
+- `RB_SAMPLE_CNTL`: per sample mode
+- `RB_SAMPLE_CONFIG`: sample locs
+- `RB_SRGB_CNTL`: which MRTs have sRGB
+- `RB_WINDOW_OFFSET`: cur tile origin
+- `RB_WINDOW_OFFSET2`: cur tile origin
+- `RB_2D_BLIT_CNTL`: format, scissor, rotate, etc.
+- `RB_2D_DST_*`: blit dst coords
+- `RB_2D_DST_INFO`: dst format, bo addr, pitch
+- `RB_2D_DST_FLAGS`: dst ubwc metadata addr
+- `RB_2D_SRC_SOLID_C0`: clear value
+- `RB_2D_UNKNOWN_8C01`: preserve depth or stencil values
+- `RB_BLIT_BASE_GMEM`: dst gmem offset
+- `RB_BLIT_CLEAR_COLOR_DW*`: clear value
+- `RB_BLIT_DST_INFO`: dst format, bo addr, pitch
+- `RB_BLIT_FLAG_DST`: dst ubwc metadata addr
+- `RB_BLIT_INFO`: src or dst is gmem, clear mask
+- `RB_BLIT_SCISSOR_*`: scissor
 
 ## SP, streaming processor
 
@@ -674,11 +661,12 @@ Qualcomm Adreno
 
 ## HLSQ
 
-- `HLSQ_CONTROL_1_REG`:
-- `HLSQ_CONTROL_2_REG`:
-- `HLSQ_CONTROL_3_REG`:
-- `HLSQ_CONTROL_4_REG`:
-- `HLSQ_CONTROL_5_REG`:
+- `HLSQ_VS_CNTL`:
+- `HLSQ_HS_CNTL`:
+- `HLSQ_DS_CNTL`:
+- `HLSQ_GS_CNTL`:
+- `HLSQ_FS_CNTL`:
+- `HLSQ_FS_CNTL_0`:
 - `HLSQ_CS_CNTL`:
 - `HLSQ_CS_CNTL_0`:
 - `HLSQ_CS_CNTL_1`:
@@ -693,14 +681,13 @@ Qualcomm Adreno
 - `HLSQ_CS_NDRANGE_5`:
 - `HLSQ_CS_NDRANGE_6`:
 - `HLSQ_CS_UNKNOWN_B9D0`:
-- `HLSQ_DS_CNTL`:
-- `HLSQ_FS_CNTL`:
-- `HLSQ_FS_CNTL_0`:
-- `HLSQ_GS_CNTL`:
-- `HLSQ_HS_CNTL`:
+- `HLSQ_CONTROL_1_REG`:
+- `HLSQ_CONTROL_2_REG`:
+- `HLSQ_CONTROL_3_REG`:
+- `HLSQ_CONTROL_4_REG`:
+- `HLSQ_CONTROL_5_REG`:
 - `HLSQ_INVALIDATE_CMD`:
 - `HLSQ_SHARED_CONSTS`:
-- `HLSQ_VS_CNTL`:
 
 ## Misc Blocks
 
