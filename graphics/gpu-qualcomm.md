@@ -292,3 +292,100 @@ Qualcomm Adreno
 - From freedreno
   - type 7 works similar to type 3
   - type 4 works similar to type 0
+
+## CP, Command Processor
+
+- CP has ME (microengine) and PFP (prefetch parser)
+  - PFP adds commands to a FIFO named MEQ
+  - ME processes commands from MEQ
+  - since a6xx, they are replaced by SQE
+  - see also
+    - `afuc/README.rst`
+    - `registers/adreno/adreno_pm4.xml`
+- command processing
+  - `CP_INDIRECT_BUFFER` calls an indirect buffer (IB)
+    - actually, CP executes commands from a ring buffer (RB) controlled by
+      kernel
+    - userspace submissions are IB1 added to RB
+    - userspace indrect buffers are IB2 added to IB1
+  - `CP_COND_EXEC` conditionally execs the following N dwoard based on values
+    at addrs
+    - `addr1 != 0`
+    - `addr1 < ref`
+  - `CP_COND_REG_EXEC` conditionally execs the following N dwords based on reg
+    - can be used with `CP_REG_TEST`
+    - can check reg1==reg2
+    - can test the operation mode (binning, sysmem, or gmem) set by
+      `CP_SET_MARKER`
+  - `CP_SET_MARKER` tells CP the current operation mode
+  - `CP_REG_TEST` tests a reg, as cond exec predicate
+- synchronization
+  - `CP_WAIT_FOR_ME` tells PFP to wait for ME
+  - `CP_WAIT_FOR_IDLE` tells ME to wait for the pipeline to be idle?
+  - `CP_WAIT_MEM_WRITES` waits mem writes from ME?
+- memory access
+  - CP memory access is uncached
+  - `CP_MEM_WRITE` writes a dword or qword to addr
+  - `CP_MEM_TO_MEM` copies a qword with alu
+  - `CP_MEMCPY` copies N dwords
+  - `CP_COND_WRITE5` writes addr if val at another addr meets the condition
+  - `CP_REG_TO_MEM` copies a reg to addr
+  - `CP_WAIT_REG_MEM` waits for addr to meet a condition
+- register access
+  - `CP_REG_WRITE` writes a reg
+    - removed on latest gens
+  - `CP_CONTEXT_REG_BUNCH` writes regs
+  - `CP_REG_RMW` increments/decrements/rmw a reg
+  - `CP_MEM_TO_REG` copies addr to reg
+- 2d blit
+  - `CP_BLIT` works great for clears, copies, and blits
+    - when its restrictions are satisfied
+    - non-msaa, supported formats, etc.
+- compute dispatch
+  - `CP_EXEC_CS` dispaches
+  - `CP_EXEC_CS_INDIRECT` dispaches with params on a buffer
+- draw / dispatch
+  - `CP_SET_MODE` executes `CP_SET_DRAW_STATE` immediately when 0x1
+  - `CP_SET_BIN_DATA5_OFFSET` sets binning configuration
+  - `CP_SET_VISIBILITY_OVERRIDE` ignores visibility stream when 0x1
+  - `CP_SKIP_IB2_ENABLE_GLOBAL` ignores `CP_INDIRECT_BUFFER`
+    - can be useful in binning pass
+  - `CP_LOAD_STATE6_GEOM` preloads consts, ubos for VS/HS/DS/GS
+  - `CP_LOAD_STATE6_FRAG` preloads consts, ubos for FS/CS
+  - `CP_SET_DRAW_STATE` is `CP_INDIRECT_BUFFER` on steroids
+    - it allows drivers to construct stateobjs (IBs)
+    - it can conditionally exec stateobjs depending on the operation mode and
+      whether the stateobjs have changed
+  - `CP_SET_SUBDRAW_SIZE` sets the tess factor/param buffer size for HS
+  - `CP_DRAW_INDX_OFFSET` draws
+  - `CP_DRAW_INDIRECT_MULTI` draws indirectly
+  - `CP_DRAW_AUTO` draws using transform feedback data
+  - `CP_DRAW_PRED_ENABLE_GLOBAL` enables/disables conditional rendering
+  - `CP_DRAW_PRED_ENABLE_LOCAL` enables/disables conditional rendering
+    internally for internal draws
+  - `CP_DRAW_PRED_SET` sets the predicate bit for conditional rendering
+- `CP_EVENT_WRITE` generates an "event" and optionally writes to an addr when
+  the event completes
+  - `BLIT`
+  - `CACHE_FLUSH_TS` flushes UCHE
+  - `CACHE_INVALIDATE` invalidates UCHE
+  - `FLUSH_SO_0(i)` writes SO results to `REG_A6XX_VPC_SO_FLUSH_BASE(i)`
+  - `LRZ_FLUSH` is generated at tile render begin/end and sysmem begin/end
+  - `PC_CCU_FLUSH_COLOR_TS` flushes CCU color cache
+  - `PC_CCU_FLUSH_DEPTH_TS` flushes CCU depth cache
+  - `PC_CCU_INVALIDATE_COLOR` invalidates CCU color cache
+  - `PC_CCU_INVALIDATE_DEPTH` invalidates CCU depth cache
+  - `PC_CCU_RESOLVE_TS` is generated at tile render end
+  - `RB_DONE_TS` waits for end-of-pipe to complete
+  - `RST_PIX_CNT` resets pixel count?
+  - `RST_VTX_CNT` resets vertex count?
+  - `START_PRIMITIVE_CTRS` starts primitive counters
+  - `STOP_PRIMITIVE_CTRS` stops primitive counters
+  - `STAT_EVENT` for queries
+  - `TILE_FLUSH` for queries
+  - `UNK_2C`
+  - `UNK_2D`
+  - `WRITE_PRIMITIVE_COUNTS` writes primitive counts to addr specified in
+    `REG_A6XX_VPC_SO_STREAM_COUNTS` for xfb
+  - `ZPASS_DONE` writes zpass fragment count to addr specified in
+    `A6XX_RB_SAMPLE_COUNT_ADDR`
