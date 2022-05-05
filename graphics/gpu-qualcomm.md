@@ -683,6 +683,50 @@ Qualcomm Adreno
 - `HLSQ_INVALIDATE_CMD`: invalidate vs/hs/ds/gs/fs/cs states
 - `HLSQ_SHARED_CONSTS`: always 0
 
+## 2D Clear and Blit
+
+- `CP_BLIT` with `BLIT_OP_SCALE`
+  - support memory clear or memory-to-memory blit
+  - support rotation and scaling
+  - support format conversion, tiles, and UBWC
+    - there seems to be troubles with Y8 or S8 aspects of multi-aspect formats
+    - format conversion is limited to compatible formats?
+      - i doubt this
+    - tiling and UBWC can be format-dependent.  We can't always reinterpret
+      between compatible formats
+  - ALWAYS resolve samples 
+    - I guess its shader does not use txf
+    - cannot be used when want to copy samples
+- it uses these GRAS states
+  - `GRAS_2D_BLIT_CNTL`
+  - `GRAS_2D_DST_TL`
+  - `GRAS_2D_DST_BR`
+  - when `GRAS_2D_BLIT_CNTL::SOLID_COLOR` is not set,
+    - `GRAS_2D_SRC_TL_X`
+    - `GRAS_2D_SRC_TL_Y`
+    - `GRAS_2D_SRC_BR_X`
+    - `GRAS_2D_SRC_BR_Y`
+  - GRAS is the rasterizer.  I guess it uses these 2D states to generate
+    fragments and texcords
+- it uses these SP states
+  - `SP_2D_DST_FORMAT`
+  - when `GRAS_2D_BLIT_CNTL::SOLID_COLOR` is not set
+    - `SP_PS_2D_SRC_INFO`
+    - `SP_PS_2D_SRC_SIZE`
+    - `SP_PS_2D_SRC`
+    - `SP_PS_2D_SRC_PITCH`
+    - `SP_PS_2D_SRC_FLAGS`, if ubwc
+    - `SP_PS_2D_SRC_FLAGS_PITCH`
+    - I guess it uses a "PS" stage and executes texturing on the shader cores
+- it uses these RB states
+  - `RB_2D_BLIT_CNTL`, same as `GRAS_2D_BLIT_CNTL`
+  - `RB_2D_SRC_SOLID_C0`, when `RB_2D_BLIT_CNTL::SOLID_COLOR` is set
+  - `RB_2D_DST_INFO`
+  - `RB_2D_DST`
+  - `RB_2D_DST_PITCH`
+  - `RB_2D_DST_FLAGS`, if ubwc
+  - `RB_2D_DST_FLAGS_PITCH`
+
 ## Misc Blocks
 
 - RBBM: ring buffer status?
