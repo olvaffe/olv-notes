@@ -644,12 +644,9 @@ Qualcomm Adreno
 - `SP_IBO_COUNT`: 0
 - `SP_MODE_CONTROL`: how float consts are converted to half
 - `SP_PERFCTR_ENABLE`: magic
-- `SP_PS_2D_SRC`:
-- `SP_PS_2D_SRC_FLAGS`:
-- `SP_PS_2D_SRC_INFO`:
-- `SP_PS_2D_SRC_PITCH`:
-- `SP_PS_2D_SRC_SIZE`:
-- `SP_PS_TP_BORDER_COLOR_BASE_ADDR`:
+- `SP_PS_2D_SRC_INFO`: src format, bo addr, pitch
+- `SP_PS_2D_SRC_FLAGS`: src ubwc
+- `SP_PS_TP_BORDER_COLOR_BASE_ADDR`: border color
 - `SP_SRGB_CNTL`: which MRTs are srgb
 - `SP_TP_BORDER_COLOR_BASE_ADDR`: border color
 - `SP_TP_MODE_CNTL`: gl/d3d mode
@@ -661,12 +658,12 @@ Qualcomm Adreno
 
 ## HLSQ
 
-- `HLSQ_VS_CNTL`:
-- `HLSQ_HS_CNTL`:
-- `HLSQ_DS_CNTL`:
-- `HLSQ_GS_CNTL`:
-- `HLSQ_FS_CNTL`:
-- `HLSQ_FS_CNTL_0`:
+- `HLSQ_VS_CNTL`: enabled and const len
+- `HLSQ_HS_CNTL`: same but for hs
+- `HLSQ_DS_CNTL`: same but for ds
+- `HLSQ_GS_CNTL`: same but for gs
+- `HLSQ_FS_CNTL`: same but for fs
+- `HLSQ_FS_CNTL_0`: threadsize, fs has inputs
 - `HLSQ_CS_CNTL`:
 - `HLSQ_CS_CNTL_0`:
 - `HLSQ_CS_CNTL_1`:
@@ -681,17 +678,15 @@ Qualcomm Adreno
 - `HLSQ_CS_NDRANGE_5`:
 - `HLSQ_CS_NDRANGE_6`:
 - `HLSQ_CS_UNKNOWN_B9D0`:
-- `HLSQ_CONTROL_1_REG`:
-- `HLSQ_CONTROL_2_REG`:
-- `HLSQ_CONTROL_3_REG`:
-- `HLSQ_CONTROL_4_REG`:
-- `HLSQ_CONTROL_5_REG`:
-- `HLSQ_INVALIDATE_CMD`:
-- `HLSQ_SHARED_CONSTS`:
+- `HLSQ_CONTROL_[1-5]_REG`: regids of special fs inputs (face, sampleid, bary coeff)
+- `HLSQ_BINDLESS_BASE`: for bindless
+- `HLSQ_INVALIDATE_CMD`: invalidate vs/hs/ds/gs/fs/cs states
+- `HLSQ_SHARED_CONSTS`: always 0
 
 ## Misc Blocks
 
 - RBBM: ring buffer status?
 - DBGC: gpu status for debug?
-- UCHE: unified cache / L2
-- TPL1: texture process / L1
+- UCHE: unified cache / L2 (read-write)
+- TPL1: texture process / L1 (read-only)
+- CCU: color cache unit (read-write L1?)
