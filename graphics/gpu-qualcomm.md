@@ -748,6 +748,55 @@ Qualcomm Adreno
   - `RB_BLIT_CLEAR_COLOR_DW0`
   - `RB_BLIT_INFO`, control blit direction
 
+## 3D Viewports and Scissors
+
+- relevant GRAS states
+  - `GRAS_CL_VPORT_*` are app viewports
+    - hw follows vk rules
+    - `XOFFSET` and `YOFFSET` are viewport center
+    - `XSCALE` and `YSCALE` are half width/height
+    - `ZOFFSET` is min depth
+    - `ZSCALE` is full depth range
+  - `GRAS_CL_GUARDBAND_CLIP_ADJ_*` are guardband
+    - Clipping in 3d is expensive.  We would rather let the primitives travel
+      down the pipeline a bit more and let the rasterizer clip in 2d.
+      Guardband decides if a primitive can travel down and bypasses 3d
+      clipping.
+    - see intel prm
+  - `GRAS_CL_Z_CLAMP_*` clamps transformed z to the range if enabled
+  - `GRAS_SC_VIEWPORT_SCISSOR_*` are set to the same values of viewports
+    - used by the rasterizer to clip in 2d?
+  - `GRAS_SC_SCREEN_SCISSOR_*` are app scissors
+- relevant RB states
+  - `RB_Z_CLAMP_*` clamps z to the range before... depth write?
+- interaction with tiles
+  - `GRAS_BIN_CONTROL` is set to tile w/h and flags, before tile rendering
+  - `GRAS_SC_WINDOW_SCISSOR_*` are set to tile coords for each tile
+  - `RB_BIN_CONTROL` is set to the same as `GRAS_BIN_CONTROL`
+  - `RB_WINDOW_OFFSET` is set to tile origins for each tile
+  - `SP_WINDOW_OFFSET` is set to the same as `RB_WINDOW_OFFSET`
+  - `SP_TP_WINDOW_OFFSET` is set to the same as `RB_WINDOW_OFFSET`
+- these are set, but I think they are irrelevant
+  - `GRAS_2D_RESOLVE_CNTL_1` is for 2D
+  - `GRAS_2D_RESOLVE_CNTL_2` is for 2D
+  - `RB_BIN_CONTROL2` is for `RB_BLIT`
+  - `RB_WINDOW_OFFSET2` is for `RB_BLIT`
+  - `RB_BLIT_SCISSOR_*` is for `RB_BLIT`
+
+## Formats
+
+- Tiling
+  - `TILE6_LINEAR` is linear
+  - `TILE6_2` is what gmem uses
+  - `TILE6_3` is tiled
+- UBWC
+  - it is called flags in register definitions
+- when linear and no ubwc, compatible formats can be reinterpreted
+- otherwise, tiling and ubwc can change their behaviors depending on formats
+- in gmem, images are tiled and non-ubwc
+- in memory, images can be linear+non-ubwc, tiled+non-ubwc, or tiled+ubwc
+  - but freedreno does not use tiled+non-ubwc
+
 ## Misc Blocks
 
 - RBBM: ring buffer status?
