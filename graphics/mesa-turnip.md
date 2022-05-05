@@ -150,3 +150,57 @@ Mesa Turnip
   - in `msm_gpu_submit`, the kernel sets up implcit fencing
     - because `MSM_SUBMIT_BO_WRITE` is always set, it calls
       `dma_resv_add_excl_fence` on all bos
+
+## Clear & Blit
+
+- `r2d_ops` uses `CP_BLIT` with `BLIT_OP_SCALE`
+  - it uses these GRAS states
+    - `GRAS_2D_BLIT_CNTL`, in `r2d_setup`
+    - `GRAS_2D_DST_TL`, in `r2d_coords`
+    - `GRAS_2D_DST_BR`, in `r2d_coords`
+    - `GRAS_2D_SRC_TL_X`, optionally in `r2d_coords`
+    - `GRAS_2D_SRC_TL_Y`, optionally in `r2d_coords`
+    - `GRAS_2D_SRC_BR_X`, optionally in `r2d_coords`
+    - `GRAS_2D_SRC_BR_Y`, optionally in `r2d_coords`
+    - GRAS is the rasterizer.  I guess it uses the 2D states to generate
+      fragments and texcords
+  - it uses these SP states (if there is an src buffer)
+    - `SP_2D_DST_FORMAT`, in `r2d_setup`
+    - `SP_PS_2D_SRC_INFO`, in `r2d_src_buffer`
+    - `SP_PS_2D_SRC_SIZE`, in `r2d_src_buffer`
+    - `SP_PS_2D_SRC`, in `r2d_src_buffer`
+    - `SP_PS_2D_SRC_PITCH`, in `r2d_src_buffer`
+  - it uses these RB states
+    - `RB_2D_BLIT_CNTL`, in `r2d_setup`
+    - `RB_2D_SRC_SOLID_C0`, in `r2d_clear_value`
+    - `RB_2D_DST_INFO`, in `r2d_dst_buffer`
+    - `RB_2D_DST`, in `r2d_dst_buffer`
+    - `RB_2D_DST_PITCH`, in `r2d_dst_buffer`
+    - `RB_2D_DST_FLAGS`, in `r2d_dst` and `r2d_dst_depth` (for ubwc)
+    - `RB_2D_DST_FLAGS_PITCH`, in `r2d_dst` and `r2d_dst_depth`
+- `tu_CmdFillBuffer` uses `r2d_ops` with `r2d_clear_value`
+- `tu_CmdUpdateBuffer` uploads the data to a temp buf and does a copy buffer
+- `tu_CmdCopyBuffer2KHR` uses `r2d_ops` with `r2d_src_buffer`
+- `tu_CmdClearColorImage` uses `r2d_ops` unless msaa
+- `tu_CmdClearDepthStencilImage` is the same as above
+- `tu_CmdResolveImage2KHR` uses `r2d_ops`
+  - I guess `SP_PS_2D_*` uses a shader that resolves, and we do not need to
+    use `r3d_ops`
+- `tu_CmdCopyImage2KHR` uses `r2d_ops` unless msaa or Y8
+  - not sure what's special about Y8
+- `tu_CmdCopyImageToBuffer2KHR` uses `r2d_ops` unless Z24S8 or Y8
+  - spec guarantees image to have 1 sample
+  - not sure what's special about Z24S8
+- `tu_CmdCopyBufferToImage2KHR` uses `r2d_ops` unless Z24S8 or Y8
+- `tu_CmdBlitImage2KHR` uses `r2d_ops` unless...
+  - msaa
+  - BC1
+  - cubic filter
+  - z extents are different
+- `tu_CmdClearAttachments`
+- `tu6_clear_lrz`
+- `tu_resolve_sysmem`
+- `tu_clear_sysmem_attachment`
+- `tu_clear_gmem_attachment`
+- `tu_load_gmem_attachment`
+- `tu_store_gmem_attachment`
