@@ -171,10 +171,21 @@ Mesa Turnip
   - BC1
   - cubic filter
   - z extents are different
-- `tu_CmdClearAttachments`
-- `tu6_clear_lrz`
-- `tu_resolve_sysmem`
-- `tu_clear_sysmem_attachment`
-- `tu_clear_gmem_attachment`
-- `tu_load_gmem_attachment`
-- `tu_store_gmem_attachment`
+- `tu6_clear_lrz` uses `r2d_ops` to clear lrz on `tu_CmdBeginRenderPass2`
+- `tu_resolve_sysmem` uses `r2d_ops` to resolve msaa on `tu_CmdEndRenderPass2`
+  and `tu_CmdNextSubpass2`
+- all functions above use `cmd->cs`
+- these below use `cmd->draw_cs`
+  - `tu_CmdClearAttachments` can use `RB_BLIT` or 3D draw depending on whether
+    we are in gmem or sysmem mode
+  - `tu_clear_sysmem_attachment` uses `r2d_ops` to clear attachments, unless
+    msaa
+  - `tu_clear_gmem_attachment` uses `RB_BLIT` to clear GMEM on tile load
+  - `tu_load_gmem_attachment` uses `RB_BLIT` to load GMEM on tile load
+  - `tu_store_gmem_attachment` can use `RB_BLIT`, `r2d_ops`, or `r3d_ops` to
+    blit GMEM to attachment on tile store
+    - `RB_BLIT` is preferred but requires 16x4 alignment
+    - `r2d_ops` is used unless msaa
+      - `SP_PS_2D_SRC` needs iova of the source; apparently gmem is mapped and
+      	has iova as well
+    - `r3d_ops` appears to have bugs..

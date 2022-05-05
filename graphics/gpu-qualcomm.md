@@ -727,6 +727,27 @@ Qualcomm Adreno
   - `RB_2D_DST_FLAGS`, if ubwc
   - `RB_2D_DST_FLAGS_PITCH`
 
+## GMEM Clear and Blit
+
+- `CP_EVENT_WRITE` with `BLIT`
+  - support gmem clear
+  - support mem-to-gmem and gmem-to-mem blit
+- it uses these RB states
+  - `RB_UNKNOWN_88D0`
+  - `RB_BLIT_SCISSOR_TL`
+  - `RB_BLIT_SCISSOR_BR`
+  - `RB_BIN_CONTROL2`, I guess
+  - `RB_WINDOW_OFFSET2`, I guess
+  - `RB_MSAA_CNTL`
+  - `RB_BLIT_BASE_GMEM`
+  - `RB_BLIT_DST_INFO`
+  - `RB_BLIT_DST`
+  - `RB_BLIT_DST_PITCH`
+  - `RB_BLIT_FLAG_DST`
+  - `RB_BLIT_FLAG_DST_PITCH`
+  - `RB_BLIT_CLEAR_COLOR_DW0`
+  - `RB_BLIT_INFO`, control blit direction
+
 ## Misc Blocks
 
 - RBBM: ring buffer status?
