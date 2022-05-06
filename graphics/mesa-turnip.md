@@ -176,19 +176,34 @@ Mesa Turnip
   and `tu_CmdNextSubpass2`
 - all functions above use `cmd->cs`
 - these below use `cmd->draw_cs`
-  - `tu_CmdClearAttachments` can use `RB_BLIT` or 3D draw depending on whether
+  - `tu_CmdClearAttachments` can use `BLIT` event or 3D draw depending on whether
     we are in gmem or sysmem mode
   - `tu_clear_sysmem_attachment` uses `r2d_ops` to clear attachments, unless
     msaa
-  - `tu_clear_gmem_attachment` uses `RB_BLIT` to clear GMEM on tile load
-  - `tu_load_gmem_attachment` uses `RB_BLIT` to load GMEM on tile load
-  - `tu_store_gmem_attachment` can use `RB_BLIT`, `r2d_ops`, or `r3d_ops` to
-    blit GMEM to attachment on tile store
-    - `RB_BLIT` is preferred but requires 16x4 alignment
+  - `tu_clear_gmem_attachment` uses `BLIT` event to clear GMEM on tile load
+  - `tu_load_gmem_attachment` uses `BLIT` event to load GMEM on tile load
+  - `tu_store_gmem_attachment` can use `BLIT` event, `r2d_ops`, or `r3d_ops`
+    to blit GMEM to attachment on tile store
+    - `BLIT` event is preferred but requires 16x4 alignment
     - `r2d_ops` is used unless msaa
       - `SP_PS_2D_SRC` needs iova of the source; apparently gmem is mapped and
       	has iova as well
     - `r3d_ops` appears to have bugs..
+
+## sysmem and gmem rendering
+
+- sysmem rendering
+  - `tu6_emit_bin_size` is 0 and `BUFFERS_IN_SYSMEM`
+  - `CP_SET_MARKER(RM6_BYPASS)`
+  - `tu6_emit_window_scissor` is full fb
+  - `tu6_emit_window_offset` is fb top-left
+- gmem rendering
+  - `tu6_emit_bin_size` is tile size and `BUFFERS_IN_GMEM`
+  - for each tile,
+    - `CP_SET_MARKER(RM6_GMEM)`
+    - `tu6_emit_window_scissor` is current tile
+    - `tu6_emit_window_offset` is current tile top-left
+    - there is tile load and tile store
 
 ## HW binning
 

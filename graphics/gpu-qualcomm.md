@@ -264,22 +264,6 @@ Qualcomm Adreno
   - Color Cache Unit (CCU)
     - draws and blits hit CCU
 
-## Cache Domains
-
-- caches
-  - L1 texture cache, coupled with TP
-  - CCU color and depth caches, coupled with RB
-  - UCHE that is used by all blocks, including TP and RB where UCHE acts as L2
-- domains
-  - 3D color/depth access, `RB_BLIT` src/dst, and `CP_BLIT` dst are in CCU color
-    and/or depth domains
-    - they all use RB after all
-  - shader texture reads and `CP_BLIT` src are in L1 domain
-    - not so sure about `CP_BLIT` src, but I think it uses shader core
-  - CP memory accesses are uncached
-  - the rest are in UCHE domain
--
-
 ## PM4 Command Packets
 
 - From Radeon South Island Programming Guide
@@ -406,6 +390,59 @@ Qualcomm Adreno
     `VPC_SO_STREAM_COUNTS` for xfb
   - `ZPASS_DONE` writes zpass fragment count to addr specified in
     `A6XX_RB_SAMPLE_COUNT_ADDR`
+
+## Caches
+
+- L1 ro texture cache, coupled with TP
+  - event `CACHE_INVALIDATE` invalidates both UCHE and L1
+  - there is no control over L1 otherwise
+- CCU rw color/depth caches, coupled with RB
+  - some socs have multiple CCUs
+  - CCUs use GMEM as its storage
+    - each CCU color cache needs 16KB, `A6XX_CCU_GMEM_COLOR_SIZE`
+    - each CCU depth cache needs 64KB, `A6XX_CCU_DEPTH_SIZE`
+  - `RB_CCU_CNTL`
+    - `GMEM` is set when gmem rendering; otherwise, sysmem rendering
+      - it might sound pointless to use GMEM as caches when doing gmem
+        rendering.  But CCUs use the color caches for a different purpose.
+    - `DEPTH_OFFSET` is set to 0, and is not used when gmem rendering
+    - `COLOR_OFFSET` is always used
+  - for sysmem rendering,
+    - event `PC_CCU_FLUSH_COLOR_TS` flushes CCU color caches
+    - event `PC_CCU_FLUSH_DEPTH_TS` flushes CCU depth caches
+    - event `PC_CCU_INVALIDATE_COLOR` invalidates CCU color caches
+    - event `PC_CCU_INVALIDATE_DEPTH` invalidates CCU depth caches
+  - for gmem rendering
+    - event `PC_CCU_RESOLVE_TS` flushes CCU color caches (after tile stores)
+- UCHE rw cache
+  - UCHE is L2 and is used by the entire GPU pipeline
+    - it is skipped by CP
+  - event `CACHE_FLUSH_TS` flushes UCHE
+  - event `CACHE_INVALIDATE` invalidates both UCHE and L1
+- in other words,
+  - shader core texturing uses L1
+  - RB uses CCU caches
+    - there are several ways to use RB though
+    - in sysmem rendering, CCU caches are color/depth caches
+    - in gmem rendering, CCU caches are resolve (tile store) caches
+  - `CP_BLIT` uses a part of gpu pipeline, from GRAS to RB
+    - it textures from src and uses L1 cache
+    - it sysmem renders to dst and uses CCU caches
+  - event `BLIT` uses a part of gpu pipeline, only RB to be exact
+    - tile load reads from src and uses UCHE (I think)
+    - tile store writes to dst and uses CCU color caches (for other purposes)
+  - all other gpu memory access uses UCHE
+  - L1 and CCU themselves also use UCHE because UCHE is L2
+    - at least that is what i think
+  - CP memory accuess is uncached
+- `GRAS_SC_CNTL` has a field for overlapping primitives
+  - `NO_FLUSH` takes no action for overlapping primitives
+  - `FLUSH_PER_OVERLAP` stalls and invalidates UCHE for overlapping primitives
+    - this is needed when there is a feedback loop
+    - sample from a MRT for advanced blending, etc.
+  - `FLUSH_PER_OVERLAP_AND_OVERWRITE` addtionally keeps CCU and UCHE in sync
+    - this is needed when there is a feedback loop and we are doing sysmem
+      rendering
 
 ## VFD, vertex fetch and decode
 
@@ -794,11 +831,57 @@ Qualcomm Adreno
   - `SP_WINDOW_OFFSET` is set to the same as `RB_WINDOW_OFFSET`
   - `SP_TP_WINDOW_OFFSET` is set to the same as `RB_WINDOW_OFFSET`
 - these are set, but I think they are irrelevant
-  - `GRAS_2D_RESOLVE_CNTL_1` is for 2D
-  - `GRAS_2D_RESOLVE_CNTL_2` is for 2D
-  - `RB_BIN_CONTROL2` is for `RB_BLIT`
-  - `RB_WINDOW_OFFSET2` is for `RB_BLIT`
-  - `RB_BLIT_SCISSOR_*` is for `RB_BLIT`
+  - `GRAS_2D_RESOLVE_CNTL_1` is for `CP_BLIT`
+  - `GRAS_2D_RESOLVE_CNTL_2` is for `CP_BLIT`
+  - `RB_BIN_CONTROL2` is for `BLIT` event
+  - `RB_WINDOW_OFFSET2` is for `BLIT` event
+  - `RB_BLIT_SCISSOR_*` is for `BLIT` event
+
+## `CP_LOAD_STATE6_*`
+
+- `STATE_BLOCK`
+  - `SB6_xS_TEX` is for
+    - sampler descriptors
+    - texture descriptors
+    - I guess these are accessed by TP (texture processor)
+  - `SB6_xS_SHADER`
+    - UBO descriptors
+    - shader binaries
+    - shader immediates
+    - UBO data
+    - push constants
+    - driver-generated params
+    - if CS, SSBO/IBO descriptors
+    - I guess these are accessed by SP (streaming processor)
+  - `SB6_IBO` is for SSBO/IBO descriptors
+    - I guess these are accessed by SP too, and they are shared by all
+      graphics stages
+  - `SB6_CS_IBO` not currently used; `SB6_CS_SHADER` is used instead
+- `STATE_TYPE`
+  - `ST6_SHADER`: the data is
+    - SSBO/IBO descriptors for graphics stages
+    - sampler descriptors
+    - shader binaries
+  - `ST6_CONSTANTS`: the data is
+    - texture descriptors
+    - shader immediates
+    - UBO data
+    - push constants
+    - driver-generated params
+  - `ST6_UBO`: the data is UBO descriptors
+  - `ST6_IBO`: the data is SSBO/IBO descriptors for CS stage
+- `STATE_SRC`
+  - `SS6_DIRECT`: the payload contains the data to be loaded
+  - `SS6_INDIRECT`: the payload has iova of the data; load does not happen
+    until `CP_DRAW` and can be canceled by `HLSQ_INVALIDATE_CMD`
+  - `SS6_BINDLESS`: the payload has bindless register id and an offset; load
+    does not happen until `CP_DRAW` and can be canceled
+  - `SS6_UBO`: not currently used
+- bindless
+  - there are 5 registers that can point to the base addresses of 5 descriptor
+    sets.
+  - the shader find a descriptor in a set by calculating base plus offset
+  - the descriptors can be preloaded too
 
 ## Formats
 
