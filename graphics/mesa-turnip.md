@@ -246,6 +246,81 @@ Mesa Turnip
   - `tu6_emit_tile_store` has slightly different commands, mainly to skip
     storing when the tile is not covered
 
+## `VkAccessFlagBits`
+
+- these are from CP and are uncached
+  - `VK_ACCESS_INDEX_READ_BIT`
+  - `VK_ACCESS_INDIRECT_COMMAND_READ_BIT`
+  - `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT`
+  - `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
+  - `VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT`
+- these are from VFD and are UCHE cached
+  - `VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT`
+- these are from VPC and are UCHE cached
+  - `VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT`
+- these are from SP and are UCHE (or L1) cached
+  - `VK_ACCESS_UNIFORM_READ_BIT`
+  - `VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_SHADER_READ_BIT`
+  - `VK_ACCESS_SHADER_WRITE_BIT`
+  - `VK_ACCESS_TRANSFER_READ_BIT`
+    - `CP_BLIT` is how we transfer in most cases, and is equivalent to sysmem
+      rendering
+    - `CP_DRAW` is a fallback, and is also equivalent to sysmem rendering
+    - it is thus L1 cached for `TRANSFER_READ`
+- these are from RB and can be CCU cached or uncached
+  - `VK_ACCESS_COLOR_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
+  - `VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT`
+  - `VK_ACCESS_TRANSFER_WRITE_BIT`
+    - this is equivalent to sysmem rendering and is CCU cached
+    - see `VK_ACCESS_TRANSFER_READ_BIT` above for details
+  - in sysmem rendering, they are CCU cached
+  - in gmem rendering, there are tile load (READ) and tile store (WRITE)
+    - tile load uses event `BLIT` and is uncached
+      - not UCHE or L1 cached?
+    - tile store can use
+      - event `BLIT` and is CCU cached
+        - we always `PC_CCU_RESOLVE_TS` implicitly so it can be considered
+          uncached
+      - `CP_BLIT` or `CP_DRAW`, and is CCU cached
+        - we always `PC_CCU_FLUSH_COLOR_TS` implicitly so it can be considered
+          uncached
+        - note in these cases, we texture from gmem.  We always
+          `CACHE_INVALIDATE` implicitly first.
+  - when we are inside of a render pass, we know whehter it is gmem or sysmem
+    rendering
+  - when we are outside of a render pass, we assume sysmem rendering
+    - we might unnecessarily flush/invalidate CCU, but the result will be
+      correct
+    - is that what `pending_flush_bits` is for, to avoid the unnecessary
+      CCU flush/invalidate?
+- these are from host and may or may not be coherent
+  - `VK_ACCESS_HOST_READ_BIT`
+  - `VK_ACCESS_HOST_WRITE_BIT`
+  - it can be uncached and thus coherent
+  - it can also be CPU cached and not coherent
+  - or it can be CPU cached but coherent
+    - when GPU snoops or the cache is an LLC
+- these map to other access flags
+  - `VK_ACCESS_MEMORY_READ_BIT`
+  - `VK_ACCESS_MEMORY_WRITE_BIT`
+- `vk2tu_access`
+  - `TU_ACCESS_UCHE_READ` if UCHE (or L1) cached reads
+  - `TU_ACCESS_UCHE_WRITE` if UCHE cached writes
+  - `TU_ACCESS_CCU_COLOR_INCOHERENT_READ` if CCU color cached reads
+    - `TU_ACCESS_CCU_COLOR_READ` is unused
+  - `TU_ACCESS_CCU_COLOR_INCOHERENT_WRITE` if CCU color cached writes
+    - `TU_ACCESS_CCU_COLOR_WRITE` if transfer writes
+  - `TU_ACCESS_CCU_DEPTH_INCOHERENT_READ` if CCU depth cached reads
+  - `TU_ACCESS_CCU_DEPTH_INCOHERENT_WRITE` if CCU depth cached writes
+  - `TU_ACCESS_CCU_DEPTH_READ`
+  - `TU_ACCESS_CCU_DEPTH_WRITE`
+  - `TU_ACCESS_SYSMEM_READ`
+  - `TU_ACCESS_SYSMEM_WRITE`
+    - except for CP writes, where we use `TU_ACCESS_CP_WRITE` instead
+
 ## Cache Management
 
 - `tu_emit_cache_flush_*` emits cache flush/invalidate commands

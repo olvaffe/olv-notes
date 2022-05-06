@@ -417,6 +417,8 @@ Qualcomm Adreno
 - UCHE rw cache
   - UCHE is L2 and is used by the entire GPU pipeline
     - it is skipped by CP
+    - CCU likely skips UCHE
+      - turnip says so
   - event `CACHE_FLUSH_TS` flushes UCHE
   - event `CACHE_INVALIDATE` invalidates both UCHE and L1
 - in other words,
@@ -429,12 +431,14 @@ Qualcomm Adreno
     - it textures from src and uses L1 cache
     - it sysmem renders to dst and uses CCU caches
   - event `BLIT` uses a part of gpu pipeline, only RB to be exact
-    - tile load reads from src and uses UCHE (I think)
+    - tile load reads from src and likely is uncached
+      - turnip says so, instead of uisng UCHE (or TP)
     - tile store writes to dst and uses CCU color caches (for other purposes)
   - all other gpu memory access uses UCHE
-  - L1 and CCU themselves also use UCHE because UCHE is L2
-    - at least that is what i think
-  - CP memory accuess is uncached
+  - L1 also use UCHE because UCHE is L2
+  - CCU likely skips UCHE
+    - turnip says so
+  - CP memory access is uncached
 - `GRAS_SC_CNTL` has a field for overlapping primitives
   - `NO_FLUSH` takes no action for overlapping primitives
   - `FLUSH_PER_OVERLAP` stalls and invalidates UCHE for overlapping primitives
