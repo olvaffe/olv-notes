@@ -189,3 +189,116 @@ Mesa Turnip
       - `SP_PS_2D_SRC` needs iova of the source; apparently gmem is mapped and
       	has iova as well
     - `r3d_ops` appears to have bugs..
+
+## HW binning
+
+- `use_hw_binning` depends on the render pass
+  - if the render pass exceeds hw limit, decided by `is_hw_binning_possible`,
+    we have to disable hw binning
+  - xfb requires hw binning if using gmem
+    - sysmem always supports xfb
+  - `use_hw_binning` affects `tu6_emit_tile_load`, `tu_cmd_render_tiles`, and
+    `tu6_emit_tile_store`
+- `tu6_emit_binning_pass` called from `tu6_tile_render_begin` starts the hw
+  binning pass
+  - window scissor is set to fb size
+  - `CP_SET_MARKER(RM6_BINNING)` to mark hw binning mode
+  - `CP_SET_VISIBILITY_OVERRIDE(1)` to ignore the vsc data
+  - `CP_SET_MODE(1)` causes draw states marked `CP_SET_DRAW_STATE__0_BINNING`
+    to be applied immediately?
+  - `CP_WAIT_FOR_IDLE` waits for draw states to be applied?
+  - `VFD_MODE_CNTL(BINNING_PASS)` to tell VFD
+  - various VSC states are set
+  - `PC_POWER_CNTL` is set to magic
+  - `VFD_POWER_CNTL` is set to magic
+  - `CP_EVENT_WRITE(UNK_2C)`
+  - `RB_WINDOW_OFFSET(0, 0)`
+  - `SP_TP_WINDOW_OFFSET(0, 0)`
+  - finally, call `draw_cs` to start binning
+  - `CP_EVENT_WRITE(UNK_2D)`
+  - `CACHE_FLUSH_TS` to flush vsc data sysmem for readback by CP
+  - `CP_WAIT_FOR_IDLE`
+  - `CP_WAIT_FOR_ME`
+  - test vsc overflow
+  - `CP_SET_VISIBILITY_OVERRIDE(0)`
+  - `CP_SET_MODE(0)`
+- then we emit slightly different per-tile commands to use vsc data
+  - `CP_SET_BIN_DATA5_*` to point to the vsc data
+  - `CP_SET_VISIBILITY_OVERRIDE(0)` to use the vsc data
+  - `tu6_emit_tile_load` has slightly different commands, mainly to skip
+    loading when the tile is not covered
+  - `CP_SET_MARKER(RM6_ENDVIS)` after `draw_cs`
+  - `tu6_emit_tile_store` has slightly different commands, mainly to skip
+    storing when the tile is not covered
+
+## Cache Management
+
+- `tu_emit_cache_flush_*` emits cache flush/invalidate commands
+  - `tu_emit_cache_flush_ccu` is called with `cmd->cs` in
+    - `tu6_sysmem_render_begin`
+    - `tu6_tile_render_begin`
+    - various clear/blit vk commands that are outside of render pass
+  - `tu_emit_cache_flush` is called with `cmd->cs`, or
+    `tu_emit_cache_flush_renderpass` is called with `cmd->draw_cs`,
+    depending on whether outside or inside of render pass, in
+    - `tu_EndCommandBuffer`
+    - `tu_CmdExecuteCommands`
+    - `tu_CmdBeginConditionalRenderingEXT`
+    - `tu_CmdWriteBufferMarkerAMD`
+  - `tu_emit_cache_flush` is called with `cmd->cs` in
+    - `tu_dispatch`
+    - `write_event`
+  - `tu_emit_cache_flush_renderpass` is called with `cmd->draw_cs` in
+    - `tu6_draw_common`
+    - `tu_CmdClearAttachments`
+- in other words, in a simple cmdbuf with a simple render pass and a simple
+  draw, we have these
+  - `tu_cache_init` sets `flush_bits` to 0 and `pending_flush_bits` to all
+    invalidates
+  - `tu6_init_hw` removes `TU_CMD_FLAG_CACHE_INVALIDATE` from
+    `pending_flush_bit`
+  - `tu_CmdBeginRenderPass2`
+    - calls `tu_subpass_barrier` with the default dep defined by the spec
+      - `src_flags` is 0
+      - `dst_flags` is `TU_ACCESS_UCHE_READ` and
+        `TU_ACCESS_CCU_{COLOR,DEPTH}_INCOHERENT_{READ,WRITE}`
+      - `tu_flush_for_access`
+	- moves the two invalidate bits from `pending_flush_bits` to
+	  `flush_bits`
+      - `src_stage` is `TU_STAGE_CP`
+      - `dst_stage` is `TU_STAGE_CP`
+      - `tu_flush_for_stage`
+	- adds `TU_CMD_FLAG_WAIT_FOR_IDLE` to `flush_bits`
+	- adds `TU_CMD_FLAG_WAIT_FOR_ME` to `pending_flush_bits`
+    - propagates down `pending_flush_bit` to render pass
+  - `tu_Draw` calls `tu_emit_cache_flush_renderpass`
+    - no-op because render pass's `flush_bits` is 0
+  - `tu_CmdEndRenderPass2`
+    - `tu_emit_cache_flush_ccu` called by render begin
+      - because switching from sysmem to gmem, CCU is entire
+      	flushed/invalidated 
+      - `flush_bits` is 0
+      - `pending_flush_bits` still has `TU_CMD_FLAG_WAIT_FOR_ME`
+    - propogates render pass `pending_flush_bit` back
+      - no change
+    - `tu_subpass_barrier`
+      - `src_flags` is `TU_ACCESS_UCHE_READ` and
+        `TU_ACCESS_CCU_{COLOR,DEPTH}_INCOHERENT_{READ,WRITE}`
+      - `dst_flags` is 0
+      - `tu_flush_for_access`
+	- sets both CCU flushes in `flush_bits`
+      - `src_stage` is `TU_STAGE_PS`
+      - `dst_stage` is `TU_STAGE_PS`
+      - `tu_flush_for_stage` is no-op
+  - `tu_EndCommandBuffer`
+    - `tu_flush_all_pending` is no-op
+    - `tu_emit_cache_flush` flushes CCU entirely
+- walking through the example above was so boring
+- I guess
+  - `pending_flush_bits` are what need to happen
+  - `flush_bits` defers command emissions
+  - when we see a barrier, explicit or implicit, we calculate the flush bits
+    from the barrier first.  We then AND them with `pending_flush_bits` and
+    move the resulting bits to `flush_bits`
+  - only when `tu_emit_cache_flush_*`, we emits the commands and clears
+    `flush_bits`

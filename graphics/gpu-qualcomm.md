@@ -264,6 +264,22 @@ Qualcomm Adreno
   - Color Cache Unit (CCU)
     - draws and blits hit CCU
 
+## Cache Domains
+
+- caches
+  - L1 texture cache, coupled with TP
+  - CCU color and depth caches, coupled with RB
+  - UCHE that is used by all blocks, including TP and RB where UCHE acts as L2
+- domains
+  - 3D color/depth access, `RB_BLIT` src/dst, and `CP_BLIT` dst are in CCU color
+    and/or depth domains
+    - they all use RB after all
+  - shader texture reads and `CP_BLIT` src are in L1 domain
+    - not so sure about `CP_BLIT` src, but I think it uses shader core
+  - CP memory accesses are uncached
+  - the rest are in UCHE domain
+-
+
 ## PM4 Command Packets
 
 - From Radeon South Island Programming Guide
@@ -321,7 +337,8 @@ Qualcomm Adreno
   - `CP_REG_TEST` tests a reg, as cond exec predicate
 - synchronization
   - `CP_WAIT_FOR_ME` tells PFP to wait for ME
-  - `CP_WAIT_FOR_IDLE` tells ME to wait for the pipeline to be idle?
+  - `CP_WAIT_FOR_IDLE` tells ME to stall `CP_DRAW_*` until the pipeline is
+    idle; other commands can go on
   - `CP_WAIT_MEM_WRITES` waits mem writes from ME?
 - memory access
   - CP memory access is uncached
