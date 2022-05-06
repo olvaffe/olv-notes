@@ -309,17 +309,25 @@ Mesa Turnip
 - `vk2tu_access`
   - `TU_ACCESS_UCHE_READ` if UCHE (or L1) cached reads
   - `TU_ACCESS_UCHE_WRITE` if UCHE cached writes
-  - `TU_ACCESS_CCU_COLOR_INCOHERENT_READ` if CCU color cached reads
-    - `TU_ACCESS_CCU_COLOR_READ` is unused
-  - `TU_ACCESS_CCU_COLOR_INCOHERENT_WRITE` if CCU color cached writes
-    - `TU_ACCESS_CCU_COLOR_WRITE` if transfer writes
-  - `TU_ACCESS_CCU_DEPTH_INCOHERENT_READ` if CCU depth cached reads
-  - `TU_ACCESS_CCU_DEPTH_INCOHERENT_WRITE` if CCU depth cached writes
-  - `TU_ACCESS_CCU_DEPTH_READ`
-  - `TU_ACCESS_CCU_DEPTH_WRITE`
-  - `TU_ACCESS_SYSMEM_READ`
-  - `TU_ACCESS_SYSMEM_WRITE`
-    - except for CP writes, where we use `TU_ACCESS_CP_WRITE` instead
+  - `TU_ACCESS_CCU_COLOR_READ` is unused
+    - `TU_ACCESS_CCU_COLOR_INCOHERENT_READ` is used instead for CCU color
+      cached reads
+  - `TU_ACCESS_CCU_COLOR_WRITE` if CCU color cached writes
+    - well, only when `VK_ACCESS_TRANSFER_WRITE_BIT`
+    - `TU_ACCESS_CCU_COLOR_INCOHERENT_WRITE` is used instead for the rest
+    - see `tu_cmd_access_mask` for the reason
+  - `TU_ACCESS_CCU_DEPTH_READ` is unsued
+    - `TU_ACCESS_CCU_DEPTH_INCOHERENT_READ` is used instead for CCU depth
+      cached reads
+  - `TU_ACCESS_CCU_DEPTH_WRITE` is unused
+    - `TU_ACCESS_CCU_DEPTH_INCOHERENT_WRITE` is used instead for CCU depth
+      cached writes
+  - `TU_ACCESS_SYSMEM_READ` is used for uncached reads
+    - note that this includes tile load and host reads
+  - `TU_ACCESS_SYSMEM_WRITE` is used for uncached writes
+    - note that this includes tile store and host writes
+    - except `TU_ACCESS_CP_WRITE` is used instead for
+      `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
 
 ## Cache Management
 
