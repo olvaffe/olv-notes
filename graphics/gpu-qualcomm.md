@@ -323,7 +323,8 @@ Qualcomm Adreno
   - `CP_WAIT_FOR_ME` tells PFP to wait for ME
   - `CP_WAIT_FOR_IDLE` tells ME to stall `CP_DRAW_*` until the pipeline is
     idle; other commands can go on
-  - `CP_WAIT_MEM_WRITES` waits mem writes from ME?
+  - `CP_WAIT_MEM_WRITES` tells ME to stall `CP_DRAW_*` until mem writes from
+    ME have completed; other commands can go on
 - memory access
   - CP memory access is uncached
   - `CP_MEM_WRITE` writes a dword or qword to addr
@@ -439,6 +440,9 @@ Qualcomm Adreno
   - CCU likely skips UCHE
     - turnip says so
   - CP memory access is uncached
+- all the FLUSH or INVALIDATE events travel down the gpu pipeline and takes
+  place at the end of the gpu pipeline
+  - this avoids using `CP_WAIT_FOR_IDLE`
 - `GRAS_SC_CNTL` has a field for overlapping primitives
   - `NO_FLUSH` takes no action for overlapping primitives
   - `FLUSH_PER_OVERLAP` stalls and invalidates UCHE for overlapping primitives

@@ -246,34 +246,108 @@ Mesa Turnip
   - `tu6_emit_tile_store` has slightly different commands, mainly to skip
     storing when the tile is not covered
 
-## `VkAccessFlagBits`
+## `VkPipelineStageFlagBits2`
+
+- these are CP
+  - `VK_PIPELINE_STAGE_2_CONDITIONAL_RENDERING_BIT_EXT`
+  - `VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT`
+  - `VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT`
+- these are VFD
+  - `VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT`
+- these are `SP_{VS,HD,DS,GS}` respectively
+  - `VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT`
+  - `VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT`
+  - `VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT`
+  - `VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT`
+- these are PC
+  - NA
+- these are VPC
+  - `VK_PIPELINE_STAGE_2_TRANSFORM_FEEDBACK_BIT_EXT`
+- these are GRAS
+  - `VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT`
+- these are `SP_FS`
+  - `VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT`
+- these are RB
+  - `VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT`
+  - `VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT`
+- these are `SP_CS`
+  - `VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT`
+- these are transfers
+  - `VK_PIPELINE_STAGE_2_COPY_BIT`
+  - `VK_PIPELINE_STAGE_2_RESOLVE_BIT`
+  - `VK_PIPELINE_STAGE_2_BLIT_BIT`
+  - `VK_PIPELINE_STAGE_2_CLEAR_BIT`
+  - when `CP_BLIT`, they use GRAS, `SP_FS`, and RB
+  - when falling back to `CP_DRAW`, they use the entire graphipcs pipeline
+- these are host
+  - `VK_PIPELINE_STAGE_2_HOST_BIT`
+- these map to other stages
+  - `VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT`
+  - `VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT`
+  - `VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT`
+  - `VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT`
+  - `VK_PIPELINE_STAGE_2_NONE`
+  - `VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT` is deprecated
+    - is `VK_PIPELINE_STAGE_2_NONE` in the first scope
+    - is `VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT` with no access flag in the
+      second scope
+  - `VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT` is deprecated
+    - is `VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT` with no access flag in the
+      first scope
+    - is `VK_PIPELINE_STAGE_2_NONE` in the second scope
+- `vk2tu_single_stage`
+  - when in the first scope, we can pick the correct stage, the latest of
+    multiple correct stages, or any later stage
+  - when in the second scope, we can pick the correct stage, the earliest of
+    multiple correct stages, or any earlier stage
+  - `TU_STAGE_CP` if CP
+    - except for `VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT`
+  - `TU_STAGE_FE` if VFD
+  - `TU_STAGE_SP_VS` if `SP_{V,H,D,G}S`
+  - `TU_STAGE_SP_PS` if `SP_FS`
+    - also includes compute
+  - `TU_STAGE_PS` if VPS, GRAS or RB
+  - transfers use
+    - `TU_STAGE_PS` if first scope
+    - `TU_STAGE_SP_PS` if second scope
+  - host uses
+    - `TU_STAGE_CP` if first scope
+    - `TU_STAGE_PS` if second scope
+- `tu_flush_for_stage`
+  - because flushes/invalidates happen at end of pipe, when there are pending
+    flushes/invalidates, we have to move the first scope to end of pipe
+  - `TU_CMD_FLAG_WAIT_FOR_IDLE`
+  - `TU_CMD_FLAG_WAIT_FOR_ME`
+
+## `VkAccessFlagBits2`
 
 - these are from CP and are uncached
-  - `VK_ACCESS_INDEX_READ_BIT`
-  - `VK_ACCESS_INDIRECT_COMMAND_READ_BIT`
-  - `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT`
-  - `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
-  - `VK_ACCESS_CONDITIONAL_RENDERING_READ_BIT_EXT`
+  - `VK_ACCESS_2_INDEX_READ_BIT`
+  - `VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT`
+  - `VK_ACCESS_2_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT`
+  - `VK_ACCESS_2_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
+  - `VK_ACCESS_2_CONDITIONAL_RENDERING_READ_BIT_EXT`
 - these are from VFD and are UCHE cached
-  - `VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT`
+  - `VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT`
 - these are from VPC and are UCHE cached
-  - `VK_ACCESS_TRANSFORM_FEEDBACK_WRITE_BIT_EXT`
+  - `VK_ACCESS_2_TRANSFORM_FEEDBACK_WRITE_BIT_EXT`
 - these are from SP and are UCHE (or L1) cached
-  - `VK_ACCESS_UNIFORM_READ_BIT`
-  - `VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
-  - `VK_ACCESS_SHADER_READ_BIT`
-  - `VK_ACCESS_SHADER_WRITE_BIT`
-  - `VK_ACCESS_TRANSFER_READ_BIT`
+  - `VK_ACCESS_2_UNIFORM_READ_BIT`
+  - `VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_2_SHADER_SAMPLED_READ_BIT`
+  - `VK_ACCESS_2_SHADER_STORAGE_READ_BIT`
+  - `VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT`
+  - `VK_ACCESS_2_TRANSFER_READ_BIT`
     - `CP_BLIT` is how we transfer in most cases, and is equivalent to sysmem
       rendering
     - `CP_DRAW` is a fallback, and is also equivalent to sysmem rendering
     - it is thus L1 cached for `TRANSFER_READ`
 - these are from RB and can be CCU cached or uncached
-  - `VK_ACCESS_COLOR_ATTACHMENT_READ_BIT`
-  - `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
-  - `VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT`
-  - `VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT`
-  - `VK_ACCESS_TRANSFER_WRITE_BIT`
+  - `VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT`
+  - `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT`
+  - `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT`
+  - `VK_ACCESS_2_TRANSFER_WRITE_BIT`
     - this is equivalent to sysmem rendering and is CCU cached
     - see `VK_ACCESS_TRANSFER_READ_BIT` above for details
   - in sysmem rendering, they are CCU cached
@@ -297,15 +371,17 @@ Mesa Turnip
     - is that what `pending_flush_bits` is for, to avoid the unnecessary
       CCU flush/invalidate?
 - these are from host and may or may not be coherent
-  - `VK_ACCESS_HOST_READ_BIT`
-  - `VK_ACCESS_HOST_WRITE_BIT`
+  - `VK_ACCESS_2_HOST_READ_BIT`
+  - `VK_ACCESS_2_HOST_WRITE_BIT`
   - it can be uncached and thus coherent
   - it can also be CPU cached and not coherent
   - or it can be CPU cached but coherent
     - when GPU snoops or the cache is an LLC
 - these map to other access flags
-  - `VK_ACCESS_MEMORY_READ_BIT`
-  - `VK_ACCESS_MEMORY_WRITE_BIT`
+  - `VK_ACCESS_2_MEMORY_READ_BIT`
+  - `VK_ACCESS_2_MEMORY_WRITE_BIT`
+  - `VK_ACCESS_2_SHADER_READ_BIT`
+  - `VK_ACCESS_2_SHADER_WRITE_BIT`
 - `vk2tu_access`
   - `TU_ACCESS_UCHE_READ` if UCHE (or L1) cached reads
   - `TU_ACCESS_UCHE_WRITE` if UCHE cached writes
@@ -313,7 +389,7 @@ Mesa Turnip
     - `TU_ACCESS_CCU_COLOR_INCOHERENT_READ` is used instead for CCU color
       cached reads
   - `TU_ACCESS_CCU_COLOR_WRITE` if CCU color cached writes
-    - well, only when `VK_ACCESS_TRANSFER_WRITE_BIT`
+    - well, only when `VK_ACCESS_2_TRANSFER_WRITE_BIT`
     - `TU_ACCESS_CCU_COLOR_INCOHERENT_WRITE` is used instead for the rest
     - see `tu_cmd_access_mask` for the reason
   - `TU_ACCESS_CCU_DEPTH_READ` is unsued
@@ -327,7 +403,25 @@ Mesa Turnip
   - `TU_ACCESS_SYSMEM_WRITE` is used for uncached writes
     - note that this includes tile store and host writes
     - except `TU_ACCESS_CP_WRITE` is used instead for
-      `VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
+      `VK_ACCESS_2_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT`
+- `tu_flush_for_access`
+  - for the first scope, we only care about writes
+    - `pending_flush_bits` are what need to happen for the first scope writes
+      to be available to host and visible to device
+    - they do not necessarily happen if there is no second scope
+    - only `pending_flush_bits` is updated when inspecting the first scope
+  - for the second scope, we treat reads and writes the same, because reads
+    can have RAW data hazard and writes can have WAW data hazard
+    - `flush_bits` are what must happen before the next draw or blit or end of
+      command buffer
+    - only `flush_bits` is updated when inspecting the second scope
+  - once we work out `pending_flush_bits` and `flush_bits`, we can remove the
+    duplicated bits from `pending_flush_bits`.  We do not emit commands right
+    away because we like to defer until we must emit 
+    - this is good because we have to assume the worst (sysmem rendering) when
+      outside of the render pass.  We can skip flushes if the second scope
+      ends up using gmem rendering?
+    - apps might generate unnecessary barriers?
 
 ## Cache Management
 
@@ -349,54 +443,3 @@ Mesa Turnip
   - `tu_emit_cache_flush_renderpass` is called with `cmd->draw_cs` in
     - `tu6_draw_common`
     - `tu_CmdClearAttachments`
-- in other words, in a simple cmdbuf with a simple render pass and a simple
-  draw, we have these
-  - `tu_cache_init` sets `flush_bits` to 0 and `pending_flush_bits` to all
-    invalidates
-  - `tu6_init_hw` removes `TU_CMD_FLAG_CACHE_INVALIDATE` from
-    `pending_flush_bit`
-  - `tu_CmdBeginRenderPass2`
-    - calls `tu_subpass_barrier` with the default dep defined by the spec
-      - `src_flags` is 0
-      - `dst_flags` is `TU_ACCESS_UCHE_READ` and
-        `TU_ACCESS_CCU_{COLOR,DEPTH}_INCOHERENT_{READ,WRITE}`
-      - `tu_flush_for_access`
-	- moves the two invalidate bits from `pending_flush_bits` to
-	  `flush_bits`
-      - `src_stage` is `TU_STAGE_CP`
-      - `dst_stage` is `TU_STAGE_CP`
-      - `tu_flush_for_stage`
-	- adds `TU_CMD_FLAG_WAIT_FOR_IDLE` to `flush_bits`
-	- adds `TU_CMD_FLAG_WAIT_FOR_ME` to `pending_flush_bits`
-    - propagates down `pending_flush_bit` to render pass
-  - `tu_Draw` calls `tu_emit_cache_flush_renderpass`
-    - no-op because render pass's `flush_bits` is 0
-  - `tu_CmdEndRenderPass2`
-    - `tu_emit_cache_flush_ccu` called by render begin
-      - because switching from sysmem to gmem, CCU is entire
-      	flushed/invalidated 
-      - `flush_bits` is 0
-      - `pending_flush_bits` still has `TU_CMD_FLAG_WAIT_FOR_ME`
-    - propogates render pass `pending_flush_bit` back
-      - no change
-    - `tu_subpass_barrier`
-      - `src_flags` is `TU_ACCESS_UCHE_READ` and
-        `TU_ACCESS_CCU_{COLOR,DEPTH}_INCOHERENT_{READ,WRITE}`
-      - `dst_flags` is 0
-      - `tu_flush_for_access`
-	- sets both CCU flushes in `flush_bits`
-      - `src_stage` is `TU_STAGE_PS`
-      - `dst_stage` is `TU_STAGE_PS`
-      - `tu_flush_for_stage` is no-op
-  - `tu_EndCommandBuffer`
-    - `tu_flush_all_pending` is no-op
-    - `tu_emit_cache_flush` flushes CCU entirely
-- walking through the example above was so boring
-- I guess
-  - `pending_flush_bits` are what need to happen
-  - `flush_bits` defers command emissions
-  - when we see a barrier, explicit or implicit, we calculate the flush bits
-    from the barrier first.  We then AND them with `pending_flush_bits` and
-    move the resulting bits to `flush_bits`
-  - only when `tu_emit_cache_flush_*`, we emits the commands and clears
-    `flush_bits`
