@@ -7,6 +7,11 @@ iproute2
 - `ip route add 192.168.0.0/24 dev eth0`
 - `ip route add default via <gateway>`
 
+## Socket Statistics
+
+- to show all listenting tcp sockets and the processes,
+  - `sudo ss -l -t -p`
+
 ## TAP
 
 - to add a TAP device, tap0,
