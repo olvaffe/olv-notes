@@ -63,6 +63,8 @@ IPv6
     not
   - `mngtmpaddr` uses the address as a template for temporary addresses
   - `temporary` uses a randomly generated interface id, for better privacy
+- to see only the primary IPv6 addresses,
+  - `ip -6 address show dev eth0 primary`
 
 ## internal network
 
