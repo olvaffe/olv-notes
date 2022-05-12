@@ -490,28 +490,6 @@ Qualcomm Adreno
 - `VSC_PIPE_CONFIG(i)`: which pipes handles which tiles
 - `CP_SET_BIN_DATA5_*`: slot of the selected tile
 
-## PC, primitive control?
-
-- `PC_TESS_NUM_VERTEX`: for hs
-- `PC_HS_INPUT_SIZE`: for hs
-- `PC_TESS_CNTL`: for hs
-- `PC_RESTART_INDEX`: prim restart index
-- `PC_MODE_CNTL`: magic
-- `PC_POWER_CNTL`: magic
-- `PC_PRIMID_PASSTHRU`: passes through primid
-- `PC_POLYGON_MODE`: polygon mode
-- `PC_RASTER_CNTL`: rasterizer discard
-- `PC_PRIMITIVE_CNTL_0`: prim restart, provoking vertex
-- `PC_VS_OUT_CNTL`: regids of pointsize, view, layer, primid, etc.
-- `PC_GS_OUT_CNTL`: same but for gs
-- `PC_HS_OUT_CNTL`: same but for hs
-- `PC_DS_OUT_CNTL`: same but for ds
-- `PC_PRIMITIVE_CNTL_5`: for gs
-- `PC_PRIMITIVE_CNTL_6`: for gs
-- `PC_MULTIVIEW_CNTL`: multiview enable and count
-- `PC_MULTIVIEW_MASK`: multiview mask
-- `PC_TESSFACTOR_ADDR`: addr of tess factor bo
-
 ## VPC, vertex/primitive clip?
 
 - `VPC_GS_PARAM`: where are line length written to
@@ -536,6 +514,28 @@ Qualcomm Adreno
 - `VPC_SO_*(i)`: num of components
 - `VPC_SO_STREAM_CNTL`: stream-to-buffer mapping
 - `VPC_SO_DISABLE`: disable SO (e.g., was enabled for binning pass already)
+
+## PC, primitive control?
+
+- `PC_TESS_NUM_VERTEX`: for hs
+- `PC_HS_INPUT_SIZE`: for hs
+- `PC_TESS_CNTL`: for hs
+- `PC_RESTART_INDEX`: prim restart index
+- `PC_MODE_CNTL`: magic
+- `PC_POWER_CNTL`: magic
+- `PC_PRIMID_PASSTHRU`: passes through primid
+- `PC_POLYGON_MODE`: polygon mode
+- `PC_RASTER_CNTL`: rasterizer discard
+- `PC_PRIMITIVE_CNTL_0`: prim restart, provoking vertex
+- `PC_VS_OUT_CNTL`: regids of pointsize, view, layer, primid, etc.
+- `PC_GS_OUT_CNTL`: same but for gs
+- `PC_HS_OUT_CNTL`: same but for hs
+- `PC_DS_OUT_CNTL`: same but for ds
+- `PC_PRIMITIVE_CNTL_5`: for gs
+- `PC_PRIMITIVE_CNTL_6`: for gs
+- `PC_MULTIVIEW_CNTL`: multiview enable and count
+- `PC_MULTIVIEW_MASK`: multiview mask
+- `PC_TESSFACTOR_ADDR`: addr of tess factor bo
 
 ## GRAS, graphics rasterizer?
 
@@ -912,3 +912,157 @@ Qualcomm Adreno
 - UCHE: unified cache / L2 (read-write)
 - TPL1: texture process / L1 (read-only)
 - CCU: color cache unit (read-write L1?)
+
+## Performance Counters
+
+- how does it work
+  - there appears to be a GMU that runs at 19.2MHz
+  - at each cycle, GMU samples the selected events and increments the
+    corresponding counter registers
+  - `VFD_PERFCTR_VFD_SEL(i)`, `SP_PERFCTR_SP_SEL(i)`, `RB_PERFCTR_RB_SEL(i)`,
+    etc are used to select the events to sample
+    - for each block, there are N events and M select registers, with N >= M
+  - `RBBM_PERFCTR_VFD(i)`, `RBBM_PERFCTR_SP(i)`, `RBBM_PERFCTR_RB(i)`, etc.
+    are free-running counters
+    - GMU increments these counter registers after sampling the events
+      selected by the select registers
+    - for each block, there are M select registers and M counter registers in
+      RBBM
+- `fdperf`
+  - some counters are reserved for the kernel and cannot be used
+  - `fdperf` also reserves a CP counter internally for `PERF_CP_ALWAYS_COUNT`,
+    to display the GPU frequency
+  - it resamples every 500ms, `REFRESH_MS`
+  - it always takes the delta of the counter values between the last two
+    samples and normalize them to be over 1 second
+  - if a selected event has `CYCLE`, `BUSY`, or `IDLE` in its name, it divides
+    the normalized delta by max freq and displays as percentage
+  - otherwise, it displays the normalized delta
+- CP
+  - `PERF_CP_BUSY_GFX_CORE_IDLE`
+  - `PERF_CP_BUSY_CYCLES`
+  - `PERF_CP_NUM_PREEMPTIONS`
+  - `PERF_CP_PREEMPTION_REACTION_DELAY`
+  - `PERF_CP_PREEMPTION_SWITCH_OUT_TIME`
+  - `PERF_CP_PREEMPTION_SWITCH_IN_TIME`
+  - `PERF_CP_DEAD_DRAWS_IN_BIN_RENDER`
+  - `PERF_CP_PREDICATED_DRAWS_KILLED`
+  - `PERF_CP_MODE_SWITCH`
+  - `PERF_CP_ZPASS_DONE`
+  - `PERF_CP_CONTEXT_DONE`
+  - `PERF_CP_CACHE_FLUSH`
+- VFD
+  - `PERF_VFD_BUSY_CYCLES`
+  - `PERF_VFD_STALL_CYCLES_UCHE`
+  - `PERF_VFD_STALL_CYCLES_VPC_ALLOC`
+  - `PERF_VFD_STALL_CYCLES_SP_INFO`
+  - `PERF_VFD_STALL_CYCLES_SP_ATTR`
+  - `PERF_VFD_STARVE_CYCLES_UCHE`
+  - `PERF_VFD_RBUFFER_FULL`
+  - `PERF_VFD_ATTR_INFO_FIFO_FULL`
+- VPC
+  - `PERF_VPC_BUSY_CYCLES`
+  - `PERF_VPC_WORKING_CYCLES`
+  - `PERF_VPC_STALL_CYCLES_UCHE`
+  - `PERF_VPC_STALL_CYCLES_VFD_WACK`
+  - `PERF_VPC_STALL_CYCLES_HLSQ_PRIM_ALLOC`
+  - `PERF_VPC_STALL_CYCLES_PC`
+- PC
+  - `PERF_PC_BUSY_CYCLES`
+  - `PERF_PC_WORKING_CYCLES`
+  - `PERF_PC_STALL_CYCLES_VFD`
+  - `PERF_PC_STALL_CYCLES_TSE`
+  - `PERF_PC_STALL_CYCLES_VPC`
+  - `PERF_PC_STALL_CYCLES_UCHE`
+  - `PERF_PC_STALL_CYCLES_TESS`
+  - `PERF_PC_STALL_CYCLES_TSE_ONLY`
+- TSE
+  - `PERF_TSE_BUSY_CYCLES`
+  - `PERF_TSE_CLIPPING_CYCLES`
+  - `PERF_TSE_STALL_CYCLES_RAS`
+  - `PERF_TSE_STALL_CYCLES_LRZ_BARYPLANE`
+- VSC
+  - `PERF_VSC_BUSY_CYCLES`
+  - `PERF_VSC_WORKING_CYCLES`
+- RAS
+  - `PERF_RAS_BUSY_CYCLES`
+  - `PERF_RAS_SUPERTILE_ACTIVE_CYCLES`
+  - `PERF_RAS_STALL_CYCLES_LRZ`
+  - `PERF_RAS_STARVE_CYCLES_TSE`
+- LRZ
+  - `PERF_LRZ_BUSY_CYCLES`
+  - `PERF_LRZ_STARVE_CYCLES_RAS`
+  - `PERF_LRZ_STALL_CYCLES_RB`
+  - `PERF_LRZ_STALL_CYCLES_VSC`
+- RB
+  - `PERF_RB_BUSY_CYCLES`
+  - `PERF_RB_STALL_CYCLES_HLSQ`
+  - `PERF_RB_STALL_CYCLES_FIFO0_FULL`
+  - `PERF_RB_STALL_CYCLES_FIFO1_FULL`
+  - `PERF_RB_STALL_CYCLES_FIFO2_FULL`
+  - `PERF_RB_STARVE_CYCLES_SP`
+  - `PERF_RB_STARVE_CYCLES_LRZ_TILE`
+  - `PERF_RB_STARVE_CYCLES_CCU`
+- CCU
+  - `PERF_CCU_BUSY_CYCLES`
+  - `PERF_CCU_STALL_CYCLES_RB_DEPTH_RETURN`
+  - `PERF_CCU_STALL_CYCLES_RB_COLOR_RETURN`
+  - `PERF_CCU_STARVE_CYCLES_FLAG_RETURN`
+  - `PERF_CCU_DEPTH_BLOCKS`
+- SP
+  - `PERF_SP_BUSY_CYCLES`
+  - `PERF_SP_ALU_WORKING_CYCLES`
+  - `PERF_SP_EFU_WORKING_CYCLES`
+  - `PERF_SP_STALL_CYCLES_VPC`
+  - `PERF_SP_STALL_CYCLES_TP`
+  - `PERF_SP_STALL_CYCLES_UCHE`
+  - `PERF_SP_STALL_CYCLES_RB`
+  - `PERF_SP_NON_EXECUTION_CYCLES`
+  - `PERF_SP_WAVE_CONTEXTS`
+  - `PERF_SP_WAVE_CONTEXT_CYCLES`
+  - `PERF_SP_FS_STAGE_WAVE_CYCLES`
+  - `PERF_SP_FS_STAGE_WAVE_SAMPLES`
+  - `PERF_SP_VS_STAGE_WAVE_CYCLES`
+  - `PERF_SP_VS_STAGE_WAVE_SAMPLES`
+  - `PERF_SP_FS_STAGE_DURATION_CYCLES`
+  - `PERF_SP_VS_STAGE_DURATION_CYCLES`
+  - `PERF_SP_WAVE_CTRL_CYCLES`
+  - `PERF_SP_WAVE_LOAD_CYCLES`
+  - `PERF_SP_WAVE_EMIT_CYCLES`
+  - `PERF_SP_WAVE_NOP_CYCLES`
+  - `PERF_SP_WAVE_WAIT_CYCLES`
+  - `PERF_SP_WAVE_FETCH_CYCLES`
+  - `PERF_SP_WAVE_IDLE_CYCLES`
+- HLSQ
+  - `PERF_HLSQ_BUSY_CYCLES`
+  - `PERF_HLSQ_STALL_CYCLES_UCHE`
+  - `PERF_HLSQ_STALL_CYCLES_SP_STATE`
+  - `PERF_HLSQ_STALL_CYCLES_SP_FS_STAGE`
+  - `PERF_HLSQ_UCHE_LATENCY_CYCLES`
+  - `PERF_HLSQ_UCHE_LATENCY_COUNT`
+- TP
+  - `PERF_TP_BUSY_CYCLES`
+  - `PERF_TP_STALL_CYCLES_UCHE`
+  - `PERF_TP_LATENCY_CYCLES`
+  - `PERF_TP_LATENCY_TRANS`
+  - `PERF_TP_FLAG_CACHE_REQUEST_SAMPLES`
+  - `PERF_TP_FLAG_CACHE_REQUEST_LATENCY`
+  - `PERF_TP_L1_CACHELINE_REQUESTS`
+  - `PERF_TP_L1_CACHELINE_MISSES`
+  - `PERF_TP_SP_TP_TRANS`
+  - `PERF_TP_TP_SP_TRANS`
+  - `PERF_TP_OUTPUT_PIXELS`
+  - `PERF_TP_FILTER_WORKLOAD_16BIT`
+- UCHE
+  - `PERF_UCHE_BUSY_CYCLES`
+  - `PERF_UCHE_STALL_CYCLES_ARBITER`
+  - `PERF_UCHE_VBIF_LATENCY_CYCLES`
+  - `PERF_UCHE_VBIF_LATENCY_SAMPLES`
+  - `PERF_UCHE_VBIF_READ_BEATS_TP`
+  - `PERF_UCHE_VBIF_READ_BEATS_VFD`
+  - `PERF_UCHE_VBIF_READ_BEATS_HLSQ`
+  - `PERF_UCHE_VBIF_READ_BEATS_LRZ`
+  - `PERF_UCHE_VBIF_READ_BEATS_SP`
+  - `PERF_UCHE_READ_REQUESTS_TP`
+  - `PERF_UCHE_READ_REQUESTS_VFD`
+  - `PERF_UCHE_READ_REQUESTS_HLSQ`
