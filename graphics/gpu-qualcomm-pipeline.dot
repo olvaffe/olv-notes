@@ -1,0 +1,119 @@
+// generated from stall cycle and starve cycle performance counters
+digraph pipeline {
+	subgraph cluster_vi {
+		VFDP -> VFD;
+		VFDP -> VFD_INDEX;
+		VFDP -> VFD_PROG;
+
+		VFD -> SP_INFO;
+		VFD -> SP_ATTR;
+		VFD -> VPC_ALLOC;
+	}
+
+	subgraph cluster_rast {
+		TESS -> PC;
+
+		VPC -> PC;
+		VPC -> VFD_WACK;
+		VPC -> HLSQ_PRIM_ALLOC;
+		VPC -> SP_LM;
+		VPC -> VPCRAM_POS;
+
+		PC -> TESS;
+		PC -> VPC;
+		PC -> TSE;
+
+		TSE -> RAS;
+		TSE -> LRZ_BARYPLANE;
+		TSE -> LRZ_ZPLANE;
+
+		RAS -> LRZ;
+
+		LRZ -> VSC;
+		LRZ -> VPC;
+		LRZ -> FLAG_PREFETCH;
+		LRZ -> RB_ZPLANE;
+		LRZ -> RB_BPLANE;
+		LRZ -> VC;
+
+		// starve cycles
+		edge [color=red, style=dashed];
+		TSE -> RAS;
+		RAS -> LRZ;
+		LRZ -> VPC;
+		INDEX -> PC;
+		TESS_FACTOR -> PC;
+		VIZ_STREAM -> PC;
+		POSITION -> PC;
+		DI -> PC;
+		PC -> TESS;
+		PC -> TSE;
+	}
+
+	subgraph cluster_color {
+		RB -> FIFO0_FULL;
+		RB -> FIFO1_FULL;
+		RB -> FIFO2_FULL;
+		RB -> CCU_COLOR_READ;
+		RB -> CCU_COLOR_WRITE;
+		RB -> CCU_DEPTH_READ;
+		RB -> CCU_DEPTH_WRITE;
+		RB -> CCU;
+
+		CCU -> RB_DEPTH_RETURN;
+		CCU -> RB_COLOR_RETURN;
+
+		RB_2D -> A2D;
+
+		// starve cycles
+		edge [color=red, style=dashed];
+		FLAG_RETURN -> CCU;
+		LRZ_TILE -> RB;
+		CCU -> RB;
+		SRC -> RB_2D;
+		DST -> RB_2D;
+		Z_PLANE -> RB;
+		BARY_PLANE -> RB;
+	}
+
+	subgraph cluster_shader {
+		SP -> TP;
+		HLSQ -> SP_STATE;
+		HLSQ -> SP_FS_STAGE;
+
+		// starve cycles
+		edge [color=red, style=dashed];
+		HLSQ -> SP;
+	}
+
+	PC -> VFD;
+
+	LRZ -> RB;
+	RB -> VPC;
+
+	RB -> HLSQ;
+	SP -> VPC;
+	SP -> RB;
+	HLSQ -> VPC;
+
+	VFD -> UCHE;
+	VPC -> UCHE;
+	LRZ -> UCHE;
+	VSC -> UCHE;
+	PC -> UCHE;
+	SP -> UCHE;
+	HLSQ -> UCHE;
+	TP -> UCHE;
+
+	UCHE -> ARBITER;
+
+	// starve cycles
+	edge [color=red, style=dashed];
+	PC -> VFDP;
+	SP -> RB;
+	SP -> TP;
+	UCHE -> TP;
+	UCHE -> VFD;
+	SP -> VPC;
+	SP -> RB_2D;
+}
