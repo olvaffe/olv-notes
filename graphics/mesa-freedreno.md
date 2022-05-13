@@ -1,6 +1,30 @@
 Mesa Freedreno
 ==============
 
+## `fd_ringbuffer`
+
+- `fd_submit_new_ringbuffer` creates a ringbuffer for short-lived cmdstream
+  - it calls `fd_submit_sp_new_ringbuffer` on newer kernel
+  - it can allocates a new bo (`fd_bo_new_ring`) or it can suballocate from
+    `submit->suballoc_ring` (`fd_submit_suballoc_ring_bo`)
+- `fd_ringbuffer_new_object` creates a ringbuffer for long-lived stateobj
+  - it calls `fd_ringbuffer_sp_new_object` on newer kernel
+  - internally, it suballocates from a 32K (`SUBALLOC_SIZE`)
+    `dev->suballoc_bo`
+  - `fd_ringbuffer_sp` has a dynamic array of `fd_cmd_sp` and can suballocate
+    more when it runs out of space
+
+## `fd_batch`
+
+- a `fd_batch` has several `fd_ringbuffer`s
+  - `gmem`: IB1
+  - `prologue`: IB2
+  - `epilogue`: IB2
+  - `draw`: IB2
+- most commands are recorded into `draw`
+- when the time comes to flush, `fd_gmem_render_tiles` emits to `gmem` and
+  submits
+
 ## Freedreno
 
 - `fd_draw_vbo` emits into `batch->draw` using `fd6_draw_vbo`

@@ -135,6 +135,35 @@ Mesa Turnip
   - when format has 2 components, WZ is at the leading positions
   - when format has 1 components, WZY is at the leading positions
 
+## Image Layout
+
+- msaa
+  - samples of a pixel are packed together in memory
+- 1D and 2D images
+  - a non-array image has its miplevels arranged one after another in memory
+  - an array image is an array of non-array images in memory
+  - this is called "layer first"
+- 3D images
+  - all slices of a miplevel are arranged one after another in memory
+  - then miplevels are arranged one after another in memory
+- UBWC
+  - block size
+    - 16x8 for R8G8
+    - 32x8 for Y8
+    - 16x4 for cpp 1, 2, and 4
+    - 8x4 for cpp 8
+    - 4x4 for cpp 16
+    - 4x2 for cpp 32
+  - one byte per block
+  - "layer first"
+  - we also put UBWC data before image data
+- `fdl_pitch` returns the row pitch for a miplevel
+- `fdl_layer_stride` returns the layer pitch for an 1D/2D array or a 3D image
+- `fdl_tile_mode` returns whether a miplevel is tiled
+  - if ubwc or depth/stencil, all miplevels are tiled
+  - otherwise, miplevels become linear when their widths are less than 16,
+    `FDL_MIN_UBWC_WIDTH`
+
 ## turnip
 
 - implicit fencing
