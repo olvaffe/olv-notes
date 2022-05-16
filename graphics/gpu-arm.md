@@ -47,6 +47,27 @@ ARM Mali
   - Mali-G76
 - 2019 Valhall
   - Mali-G{57,77}
+- 2020 Valhall
+  - Mali-G{68,78}
+- 2021 Valhall
+  - Mali-G{310,510,610,710}
+  - CSF, Command Stream Frontend
+
+## Identification
+
+- `GPU_ID` register
+  - higher 16 bits: id
+  - lower 16 bits: revision
+    - bit 0..3: status
+    - bit 4..7: minor
+    - bit 8..11: major
+- `pan_arch()`
+  - midgard: v4 and v5
+    - the 16-bit id is less than `0x1000`
+    - a table is used to look up the arch versions
+  - bifrost: v6 and v7
+    - `id >> 12` is the arch versions
+  - valhall: v9
 
 ## Utgard
 
