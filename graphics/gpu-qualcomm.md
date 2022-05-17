@@ -904,6 +904,15 @@ Qualcomm Adreno
 - in gmem, images are tiled and non-ubwc
 - in memory, images can be linear+non-ubwc, tiled+non-ubwc, or tiled+ubwc
   - but freedreno does not use tiled+non-ubwc
+- `TILE6_3`
+  - a macrotile is always 256 bytes
+    - at cpp 16, it covers 4x4 pixels where each 2x2 pixels are packed
+      together
+      - in z-order space filling curve
+    - at cpp 8, it covers 8x4 pixels in z-order
+    - at cpp 4, it covers 16x4 pixels in z-order
+  - images are covered by macrotiles in a very unique order
+    - it is a strange-looking space filling curve
 
 ## Misc Blocks
 
