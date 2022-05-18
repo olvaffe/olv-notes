@@ -659,20 +659,6 @@ Vulkan
 
 ## `VkFormat`
 
-- `VkImageAspectFlagBits`
-  - `VK_IMAGE_ASPECT_COLOR_BIT`
-  - `VK_IMAGE_ASPECT_DEPTH_BIT`
-  - `VK_IMAGE_ASPECT_STENCIL_BIT`
-  - `VK_IMAGE_ASPECT_METADATA_BIT`
-  - multi-planar
-    - `VK_IMAGE_ASPECT_PLANE_0_BIT`
-    - `VK_IMAGE_ASPECT_PLANE_1_BIT`
-    - `VK_IMAGE_ASPECT_PLANE_2_BIT`
-  - DRM modifier
-    - `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT`
-    - `VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT`
-    - `VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT`
-    - `VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT`
 - core formats
   - most core formats have one plane
   - compressed formats have one plane
@@ -711,6 +697,65 @@ Vulkan
     - thus multiple `VkDeviceMemory` need to be bound
   - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
     which respectively point to different BOs
+
+## `VkImageAspectFlagBits`
+
+- basic
+  - `VK_IMAGE_ASPECT_COLOR_BIT`
+  - `VK_IMAGE_ASPECT_DEPTH_BIT`
+  - `VK_IMAGE_ASPECT_STENCIL_BIT`
+  - `VK_IMAGE_ASPECT_METADATA_BIT`
+- multi-planar
+  - `VK_IMAGE_ASPECT_PLANE_0_BIT`
+  - `VK_IMAGE_ASPECT_PLANE_1_BIT`
+  - `VK_IMAGE_ASPECT_PLANE_2_BIT`
+- DRM modifier
+  - `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT`
+  - `VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT`
+  - `VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT`
+  - `VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT`
+- `vkGetImageMemoryRequirements2` and `vkGetDeviceImageMemoryRequirements`
+  - aspect bit can be specified with `VkImagePlaneMemoryRequirementsInfo` or
+    `VkDeviceImageMemoryRequirements`
+  - only plane and memory plane aspects are valid
+  - only when `VK_IMAGE_CREATE_DISJOINT_BIT` is set
+  - only for drm modifiers or multi-plane formats
+    - if drm modifiers, must be one of
+      `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT` and etc.
+    - otherwise, if multi-plane formats, must be one of
+      `VK_IMAGE_ASPECT_PLANE_0_BIT` and etc.
+- `vkBindImageMemory2`
+  - aspect bit can be specified with `VkBindImagePlaneMemoryInfo`
+  - only plane and memory plane aspects are valid
+- `vkGetImageSubresourceLayout` or `vkQueueBindSparse`
+  - aspect mask can be specified with `VkImageSubresource`
+  - must be a single bit
+    - meaning depth/stencil formats have no well-defined linear layout
+- `vkCmdCopyImage2`, `vkCmdCopyBufferToImage2`, `vkCmdCopyImageToBuffer2`,
+  `vkCmdBlitImage2`, `vkCmdResolveImage2`
+  - aspect mask can be specified with `VkImageSubresourceLayers`
+  - only color, depth, stencil, and plane aspects are valid
+- `vkCreateImageView`
+  - aspect mask can be specified in `VkImageSubresourceRange`
+  - valid aspects depend on formats
+    - can only be `VK_IMAGE_ASPECT_COLOR_BIT` if color formats
+    - can only be `VK_IMAGE_ASPECT_DEPTH_BIT` if depth-only formats
+    - can only be `VK_IMAGE_ASPECT_STENCIL_BIT` if stencil-only formats
+    - can only be depth, stencil, or both aspects if depth/stencil formats
+      - must be a single bit when used in a descriptor set
+      - is ignored and assume to be both aspects when used as a framebuffer
+      	attachment
+- `vkCmdClearColorImage`, `vkCmdClearDepthStencilImage`, `vkCmdSetEvent2`,
+  `vkCmdWaitEvents2`, `vkCmdPipelineBarrier2`, `vkCmdWaitEvents`, and
+  `vkCmdPipelineBarrier`
+  - aspect mask can be specified in `VkImageSubresourceRange`
+- `vkCreateRenderPass2` or `vkCreateRenderPass`
+  - aspect mask can be specified in `VkAttachmentReference2` or
+    `VkInputAttachmentAspectReference`
+  - only for input attachments
+- `vkCmdClearAttachments`
+  - aspect mask can be specified in `VkClearAttachment`
+  - valid aspect masks are color, depth, stencil, or depth+stencil
 
 ## Point and Line Rasterization
 
