@@ -120,3 +120,58 @@ ANGLE
   - `shouldUseAngle` returns true when `getDriverForPackage` returns `angle`
   - `getAngleDebugPackage` returns `ANGLE_DEBUG_PACKAGE`
   - `setAngleInfo` passes angle info to native code
+
+## Dispatch
+
+- EGL
+  - public symbols, such as `eglFoo`, are defined in
+    `libEGL/libEGL_autogen.cpp`
+  - `eglFoo` calls into `EGL_Foo` defined in
+    `libGLESv2/entry_points_egl_autogen.cpp`
+  - most `EGL_Foo` call into `egl::Foo` defined in `libGLESv2/egl_stubs.cpp`
+- GLESv1
+  - public symbols, such as `glFoo`, are defined in
+    `libGLESv1_CM/libGLESv1_CM.cpp`
+  - `glFoo` calls into `GL_Foo` defined in
+    `libGLESv2/entry_points_gles_1_0_autogen.cpp`
+  - `GL_Foo` calls into `Context::foo` defined in
+    `libANGLE/Context_gles_1_0.cpp`
+- GLESv2
+  - public symbols, such as `glFoo`, are defined in
+    `libGLESv2/libGLESv2_autogen.cpp`
+  - `glFoo` calls into `GL_Foo` defined in
+    `libGLESv2/entry_points_gles_2_0_autogen.cpp`
+  - `GL_Foo` calls into `Context::foo` defined in
+    `libANGLE/Context.cpp`
+
+## Command Recording
+
+- `glClear` call sequence
+  - `GL_Clear`
+  - `gl::Context::clear`
+  - `rx::FramebufferVk::clear`
+  - `rx::FramebufferVk::clearImpl`
+- `glDrawElements` call sequence
+  - `GL_DrawElements`
+  - `gl::Context::drawElements`
+  - `rx::ContextVk::drawElements`
+- `glFlush` call sequence
+  - `GL_Flush`
+  - `gl::Context::flush`
+  - `rx::ContextVk::flush`
+  - `rx::ContextVk::flushImpl`
+  - `rx::ContextVk::flushAndGetSerial`
+- commands are recorded to `mOutsideRenderPassCommands` or
+  `mRenderPassCommands`
+  - they are only recorded
+  - they are executed (i.e., call into the vk driver) on flush
+- on first draw
+  - `rx::ContextVk::setupDraw`
+  - `rx::ContextVk::handleDirtyGraphicsRenderPass`
+  - `rx::ContextVk::startRenderPass`
+  - `rx::FramebufferVk::startNewRenderPass`
+  - `rx::ContextVk::beginNewRenderPass`
+  - `rx::vk::RenderPassCommandBufferHelper::beginRenderPass`
+- on flush
+  - `rx::ContextVk::flushCommandsAndEndRenderPassImpl`
+  - `rx::vk::RenderPassCommandBufferHelper::endRenderPass`
