@@ -10,6 +10,15 @@ dEQP
   - `cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDEQP_TARGET=surfaceless`
     - `DEQP_TARGET` is mostly for GL/GLES
   - `ninja`
+- Package
+  - `mkdir deqp-dist`
+  - `cd deqp-dist`
+  - `for i in vulkan/deqp-vk vulkan/vulkan; do ln -sf ../external/vulkancts/modules/$i; done`
+  - `for i in egl/deqp-egl gles2/deqp-gles2 gles2/gles2 gles3/deqp-gles3 gles3/gles3 gles31/deqp-gles31 gles31/gles31; do ln -sf ../modules/$i; done`
+  - `for i in vk-master.txt vk-master egl-master.txt gles2-master.txt gles3-master.txt gles31-master.txt; do ln -sf ../../android/cts/main/$i; done`
+  - `strip deqp-*`
+  - `cd ..`
+  - `tar zchf deqp-dist.tar.gz deqp-dist`
 - Run Vulkan
   - `external/vulkancts/modules/vulkan/deqp-vk \
        --deqp-caselist-file=../external/vulkancts/mustpass/master/vk-default.txt \
