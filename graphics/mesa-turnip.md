@@ -472,3 +472,48 @@ Mesa Turnip
   - `tu_emit_cache_flush_renderpass` is called with `cmd->draw_cs` in
     - `tu6_draw_common`
     - `tu_CmdClearAttachments`
+
+## Shaders
+
+- debug environment variables
+  - `TU_DEBUG=nir` prints the result of `vk_spirv_to_nir`
+    - useful for spirv-to-nir issues
+  - `NIR_DEBUG=print` or `NIR_DEBUG=print_vs` to print the result after each
+    lowering/optimization
+    - useful for nir issues
+  - `IR3_SHADER_DEBUG=disasm` prints finalized nir and disassembled binary
+    code
+- `vk_common_CreateShaderModule` is used
+  - the common entrypoint just saves and hashes SPIR-V for later use
+  - the common `vk_shader_module` has `nir`, which is only used by radv to
+    wrap internally-created nir shaders using
+    `vk_shader_module_handle_from_nir`
+- `vkCreate*Pipelines`, more specifically
+  `tu_pipeline_builder_compile_shaders`, is where everything happens
+- `tu_pipeline_builder_compile_shaders`
+  - it collects `VkPipelineShaderStageCreateInfo` into `stage_infos` ordered
+    by stages
+  - it initializes a `tu_shader_key` for each stage
+    - this is only used by turnip
+    - not for variants tracked by `ir3_shader`
+  - it initializes a single `ir3_shader_key` for all stages
+    - turnip does not make use of `ir3_shader` variants
+  - it initializes `pipeline_sha1` for cache
+    - inputs are pipeline layout, `ir3_shader_key`, compile options, plus
+    - spirv sha1s, names of entrypoints, specializations, and `tu_shader_key`s
+  - it calls `tu_spirv_to_nir` to translate spirv to nir for each stage
+    - plus common lowerings
+  - it calls `tu_link_shaders` to link varyings between stages
+    - plus dropping dead varyings and compact varyings
+  - it calls `tu_shader_create` to create a `tu_shader` for each stage
+    - this applies all lowerings and optimizations on the nir
+    - `ir3_finalize_nir` is called to finalize the nir (to be consumed by ir3
+      backend compiler)
+    - `ir3_shader_from_nir` is called to create `ir3_shader`
+  - it calls `tu_shaders_init` to create a `tu_compiled_shaders`
+    - `tu_compiled_shaders` can be serialized into or deserialized out of the
+      pipeline cache
+  - finally, it calls `ir3_shader_create_variant` for each stage
+    - this creates `ir3_shader_variant` and compiles finalized nir to the
+      binary code
+    - internally, `ir3_nir_post_finalize` is called to really finalize nir
