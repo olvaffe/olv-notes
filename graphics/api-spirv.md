@@ -23,3 +23,115 @@ SPIR-V
   - depends on glslang and SPIRV-Tools
   - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
     to SPIR-V
+- `glslangValidator`
+  - `glslangValidator -V -o a.spirv a.frag`
+  - `-x` to output something for inclusion by C source code
+  - `-g` to include debug info
+  - `-H` to print human-readable form of spirv
+
+## Basics
+
+- `cat a.frag`
+
+    #version 460 core
+    layout(location = 0) in mediump vec4 in_val;
+    layout(location = 0) out vec4 out_val;
+    void main() { out_val = in_val / 2.0; }
+- `glslangValidator -V -H -o a.spirv a.frag`, or better yet, complie with `-g`
+  and disassemble with `spirv-dis`
+
+    ; SPIR-V
+    ; Version: 1.0
+    ; Generator: Khronos Glslang Reference Front End; 10
+    ; Bound: 17
+    ; Schema: 0
+                   OpCapability Shader
+              %2 = OpExtInstImport "GLSL.std.450"
+                   OpMemoryModel Logical GLSL450
+                   OpEntryPoint Fragment %main "main" %out_val %in_val
+                   OpExecutionMode %main OriginUpperLeft
+              %1 = OpString "a.frag"
+                   OpSource GLSL 460 %1 "// OpModuleProcessed client vulkan100
+    // OpModuleProcessed target-env vulkan1.0
+    // OpModuleProcessed entry-point main
+    #line 1
+    #version 460 core
+    
+    layout(location = 0) in mediump vec4 in_val;
+    layout(location = 0) out vec4 out_val;
+    
+    void main() {
+        out_val = in_val / 2.0;
+    }
+    "
+                   OpName %main "main"
+                   OpName %out_val "out_val"
+                   OpName %in_val "in_val"
+                   OpDecorate %out_val Location 0
+                   OpDecorate %in_val RelaxedPrecision
+                   OpDecorate %in_val Location 0
+                   OpDecorate %13 RelaxedPrecision
+                   OpDecorate %15 RelaxedPrecision
+                   OpDecorate %16 RelaxedPrecision
+           %void = OpTypeVoid
+              %4 = OpTypeFunction %void
+          %float = OpTypeFloat 32
+        %v4float = OpTypeVector %float 4
+    %_ptr_Output_v4float = OpTypePointer Output %v4float
+        %out_val = OpVariable %_ptr_Output_v4float Output
+    %_ptr_Input_v4float = OpTypePointer Input %v4float
+         %in_val = OpVariable %_ptr_Input_v4float Input
+        %float_2 = OpConstant %float 2
+           %main = OpFunction %void None %4
+              %6 = OpLabel
+                   OpLine %1 7 0
+             %13 = OpLoad %v4float %in_val
+             %15 = OpCompositeConstruct %v4float %float_2 %float_2 %float_2 %float_2
+             %16 = OpFDiv %v4float %13 %15
+                   OpStore %out_val %16
+                   OpReturn
+                   OpFunctionEnd
+- physical layout of a spir-v module
+  - header
+    - word 0: magic number 0x07230203
+    - word 1: version
+    - word 2: generator magic number
+    - word 3: bound, all ids are smaller than the bound
+    - word 4: reserved
+  - header is followed by instructions, where each instruction is
+    - word 0: word count and opcode of the instruction
+    - depending on opcode, word 0 can be followed by
+      - optional instruction type id
+      - optional instruction result id
+    - word X..(count-1): optional operands
+- logical layout of a spir-v module
+  - instructions must be in the following order
+  - all `OpCapability` instructions
+    - declare what caps the module uses
+  - all `OpExtension` instructions
+    - declare what exts the module uses
+    - strings are 0-terminated and padded to word boundaries
+  - all `OpExtInstImport` instructions
+  - single required `OpMemoryModel`
+  - all entrypoint decls, using `OpEntryPoint`
+  - all execution-mode decls, using `OpExecutionMode` or `OpExecutionModeId`
+  - these debug instructions in order
+    - `OpString`, `OpSourceExtension`, `OpSource`, and `OpSourceContinued`
+    - `OpName` and `OpMemberName`
+    - `OpModuleProcessed`
+  - all annotation instructions
+    - `Op*Decorate*`
+  - all of these
+    - type instructions `OpType*`
+    - constant instructions `OpConstant` or `OpSpec`
+    - variable instructions `OpVariable` with non-function storage class
+  - all function decls (for functions defined in another module)
+    - same as function defs below, except without blocks
+  - all function defs
+    - `OpFunction`
+    - `OpFunctionParameter`s
+    - blocks, where each block is
+      - started with `OpLabel`
+      - all `OpVariable` must have a storage class of `Function`
+      - ended with a termination instruction
+    - `OpFunctionEnd`
