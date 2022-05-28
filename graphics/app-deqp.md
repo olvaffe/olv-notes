@@ -47,19 +47,17 @@ dEQP
   - all arguments required becaues of surfaceless?
   - replace gles2 by gles3 and gles31
 
+## EGL/GLES
+
+- set `DEQP_TARGET` to one of the desired targets under `targets/`
+  - e.g., `x11_egl`
+- force disable GLESv1
+  - edit `targets/x11_egl/x11_egl.cmake`
+  - I have to do this because my cross-compile sysroot has GLESv1 but my
+    target machine does not
+
 ## Android
 
-- Download SDK and NDK
-  - Bootstrap to `~/android-sdk`
-    - <https://developer.android.com/studio>
-    - choose "Command line tools only"
-    - `unzip commandlinetools-linux-*_latest.zip`
-    - `./cmdline-tools/bin/sdkmanager --sdk_root=~/android-sdk cmdline-tools\;latest`
-    - `rm -rf commandlinetools-linux-*_latest.zip cmdline-tools`
-  - Install packages
-    - `cd ~/android-sdk`
-    - `./cmdline-tools/latest/bin/sdkmanager --list`
-    - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-28"`
 - Build
   - `git remote add aosp https://android.googlesource.com/platform/external/deqp`
   - `git fetch aosp`
@@ -76,24 +74,6 @@ dEQP
   - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
     --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
     --deqp-log-filename=/sdcard/dEQP-Log.qpa"'`
-- CTS
-  - download and unzip CTS
-  - `./android-cts/tools/cts-tradefed`
-  - `run cts -m CtsDeqpTestCases -t dEQP-VK.ubo.random.scalar#62 -a x86_64`
-  - logcat says `Writing test log into /sdcard/TestLog.qpa`
-- SkQP
-  - `./android-cts/tools/cts-tradefed run commandAndExit cts --skip-device-info
-    --skip-preconditions --skip-all-system-status-check -m CtsSkQPTestCases -t
-    org.skia.skqp.SkQPRunner#vk_arithmode --abi arm64-v8a`
-
-## EGL/GLES
-
-- set `DEQP_TARGET` to one of the desired targets under `targets/`
-  - e.g., `x11_egl`
-- force disable GLESv1
-  - edit `targets/x11_egl/x11_egl.cmake`
-  - I have to do this because my cross-compile sysroot has GLESv1 but my
-    target machine does not
 
 ## qpa
 

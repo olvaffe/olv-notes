@@ -67,21 +67,6 @@ ARC
 - DUT with test image runs `sslh` to redirect adb packets to DUT:22 to 100.115.92.2:5555
   - host can `adb connect <DUT-IP>:22`
 
-## CTS
-
-- <https://source.android.com/compatibility/cts/downloads.html>
-  - <https://android.googlesource.com/platform/tools/tradefederation/>
-    - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/testtype/suite/BaseTestSuite.java>
-    - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/command/CommandOptions.java>
-  - <https://android.googlesource.com/platform/cts/>
-    - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
-- Download Android Studio to get adb and aapt
-- `PATH=$PATH:~/Android/Sdk/build-tools/28.0.3:~/Android/Sdk/platform-tools
-    ./cts-tradefed run commandAndExit cts-dev -m CtsGraphicsTestCases
-    -t <CLASS>#<METHOD>`
-  - `-t` can be replaced by
-    `--module-arg 'CtsGraphicsTestCases:include-filter:android.graphics.cts.VulkanFeaturesTest*'`
-
 ## Cross-Compile for ARC++ P
 
 - `FEATURES="noclean" emerge arc-foo` and find the generated meson cross files
