@@ -289,3 +289,15 @@ NIR
     `ir3_optimize_nir` final NIR
   - in `draw_vbo`, `ir3_shader_get_variant` is called to
     `ir3_compile_shader_nir` NIR to IR3 and `ir3_shader_assemble` IR3
+
+## IO
+
+- examples
+  - loading `in vec4 in_val` is translated to a `deref_var` and a `load_deref`
+  - loading `in centroid vec4 in_val` or `interpolateAtCentroid` is translated
+    to a `deref_var` and a `interp_deref_at_centroid`
+- `nir_lower_io`
+  - `load_deref` is lowered to `load_barycentric_pixel` and
+    `load_interpolated_input`
+  - `interp_deref_at_centroid` is lowered to `load_barycentric_centroid` and
+    `load_interpolated_input`
