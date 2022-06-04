@@ -14,6 +14,16 @@ NetworkManager
 - to enable,
   - `systemctl enable --now NetworkManager`
 
+## nmcli
+
+- to scan APs,
+  - `nmcli device wifi list`
+- to connect to AP,
+  - `nmcli wifi connect <ssid>`
+  - it prompts password on one machine but requires `password` on another
+- to enable/disable wifi,
+  - `nmcli radio wifi on` or `off`
+
 ## Connection Profiles
 
 - NetworkManager is based on connection profiles, or simply connections
