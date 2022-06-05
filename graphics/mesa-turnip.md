@@ -123,17 +123,89 @@ Mesa Turnip
     - packed: in MSB to LSB order
     - array: in low to high order
 - msm formats
-  - little-endian
-  - for (MSB A R G B LSB), swap is (W X Y Z)
-  - for (MSB A B G R LSB), swap is (W Z Y X)
-  - in other words, swap labels each component in msb-to-lsb order
-    - X means R (or D)
-    - Y means G (or S)
-    - Z means B
-    - W means A
-  - when format has 3 components, W is at the leading position
-  - when format has 2 components, WZ is at the leading positions
-  - when format has 1 components, WZY is at the leading positions
+  - `FMT6_<COMPONENT_SIZES>_<TYPE`
+  - `<COMPONENT_SIZES>` convention
+    - always little-endian
+    - packed: in LSB to MSB order
+    - array: in low to high order
+  - swap
+    - one of `WZYX`, `WXYZ`, `ZYXW`, or `XYZW`
+    - for (MSB A R G B LSB), swap is (W X Y Z)
+    - for (MSB A B G R LSB), swap is (W Z Y X)
+    - in other words, swap labels each component in msb-to-lsb order
+      - X means R (or D)
+      - Y means G (or S)
+      - Z means B
+      - W means A
+    - when format has 3 components, W is at the leading position
+    - when format has 2 components, WZ is at the leading positions
+    - when format has 1 components, WZY is at the leading positions
+- some pipe formats are used only internally by certain drivers
+  - for example, for all but turnip, the Y plane of NV12 is `PIPE_FORMAT_R8_UNORM`
+  - for turnip, it is `PIPE_FORMAT_Y8_UNORM`
+  - this allows turnip to map R8 to `FMT6_8_UNORM` and Y8 to `FMT6_NV12_Y`
+  - the reason is that, when compressed (or tiled?), the two formats are
+    different
+- interesting facts about the format table
+  - `SSCALED` and `USCALED` are only for vertices, and
+    - both `PIPE_FORMAT_*_UINT` and `PIPE_FORMAT_*_USCALED` are mapped to
+      `FMT6_*_UINT`
+    - boith `PIPE_FORMAT_*_SINT` and `PIPE_FORMAT_*_SSCALED` are mapped to
+      `FMT6_*_SINT`
+    - there is a bit in `A6XX_VFD_DECODE_INSTR` that is based on
+      `vk_format_is_int` 
+  - both `PIPE_FORMAT_*_UNORM` and `PIPE_FORMAT_*_SRGB` are mapped to `FMT6_*_UNORM`
+  - `PIPE_FORMAT_A8_UNORM` is mapped to `FMT6_8_UNORM` for texturing and
+    `FMT6_A8_UNORM` for rendering
+  - `PIPE_FORMAT_R10G10B10A2_UNORM` is mapped to `FMT6_10_10_10_2_UNORM` for
+    texturing and `FMT6_10_10_10_2_UNORM_DEST` for rendering
+  - are the mappings for 5551/1555 correct?
+  - depth is complicated
+    - depth buffers use `DEPTH6_*` instead of `FMT6_*`
+    - depth formats are still mapped to `FMT6_*` in the format table because
+      of
+      - texturing
+      - clear/copy/blit dst
+    - `PIPE_FORMAT_S8_UINT` is mapped to `FMT6_8_UINT`
+    - `PIPE_FORMAT_Z16_UNORM` is mapped to `FMT6_16_UNORM`
+    - `PIPE_FORMAT_Z24X8_UNORM` is mapped to `FMT6_Z24_UNORM_S8_UINT`
+      - this is the mapping in the format table, and is only used for
+      	texturing
+      - for blitting, `tu6_base_format` forces `FMT6_8_8_8_8_UNORM` and
+      	adjusts the clear value; if ubwc, forces
+      	`FMT6_Z24_UNORM_S8_UINT_AS_R8G8B8A8`
+      - this should be because the 2d engine cannot do 24-bit but uses
+      	`R2D_UNORM8`
+    - `PIPE_FORMAT_X24S8_UINT` is mapped to `FMT6_8_8_8_8_UINT`
+      - this can be returned by `tu_format_for_aspect`
+    - `PIPE_FORMAT_Z24_UNORM_S8_UINT` is mapped to `FMT6_Z24_UNORM_S8_UINT`
+    - `PIPE_FORMAT_Z32_FLOAT` is mapped to `FMT6_32_FLOAT`
+    - `PIPE_FORMAT_Z32_FLOAT_S8X24_UINT` is mapped to `FMT6_32_FLOAT`
+    - `PIPE_FORMAT_X32_S8X24_UINT` is mapped to `FMT6_8_UINT`
+    - `PIPE_FORMAT_Z24_UNORM_S8_UINT_AS_R8G8B8A8` is mapped to
+      `FMT6_Z24_UNORM_S8_UINT_AS_R8G8B8A8`
+- vertex buffers
+  - `tu6_emit_vertex_input` emits the vertex inputs
+  - it calls `fd6_vertex_format`
+    - `fd6_vertex_format` for format
+    - `fd6_vertex_swap` for swap
+- color buffers
+  - `tu6_emit_mrt` emits the color buffers
+  - it uses `fdl6_view::RB_MRT_BUF_INFO` initialized by `fdl6_view_init`
+    - `fd6_color_format` for format
+    - `fd6_color_swap` for swap
+- depth buffers
+  - `tu6_emit_zs` emits the depth buffer
+  - it calls `tu6_pipe2depth` to get the format
+    - one of `DEPTH6_16`, `DEPTH6_24_8`, or `DEPTH6_32`
+    - no swap
+    - `fd6_pipe2depth` is unused
+  - there is also hw support for separate stencil
+- textures
+  - `write_image_descriptor` writes the descriptor
+  - it uses `fdl6_view::descriptor` initialized by `fdl6_view_init`
+    - `fd6_texture_format` for format
+    - `fd6_texture_swap` for swap
 
 ## Image Layout
 
