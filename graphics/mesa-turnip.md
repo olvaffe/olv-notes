@@ -128,6 +128,7 @@ Mesa Turnip
     - although not explicitly mentioned, they are usually in RGBA order
       - `FMT6_5_5_5_1_UNORM` means R5, G5, B5, and A1
       - there are exceptions
+        - `FMT6_1_5_5_5_UNORM` makes no sense...
     - component order in memory is decided by swap
   - swap
     - one of `WZYX`, `WXYZ`, `ZYXW`, or `XYZW`
@@ -147,6 +148,7 @@ Mesa Turnip
       `PIPE_FORMAT_B5G5R5A1_UNORM`
     - with XYZW, we have (MSB R5 G5 B5 A1 LSB), which is
       `PIPE_FORMAT_A1B5G5R5_UNORM`
+    - again, `FMT6_1_5_5_5_UNORM` and its swaps make no sense. Accept it.
 - some pipe formats are used only internally by certain drivers
   - for example, for all but turnip, the Y plane of NV12 is `PIPE_FORMAT_R8_UNORM`
   - for turnip, it is `PIPE_FORMAT_Y8_UNORM`
@@ -166,6 +168,9 @@ Mesa Turnip
     `FMT6_A8_UNORM` for rendering
   - `PIPE_FORMAT_R10G10B10A2_UNORM` is mapped to `FMT6_10_10_10_2_UNORM` for
     texturing and `FMT6_10_10_10_2_UNORM_DEST` for rendering
+  - are the mappings for 5551/1555 correct?
+    - yes, `FMT6_5_5_5_1_UNORM` and swap are correct
+    - `FMT6_1_5_5_5_UNORM` and its swaps make no sense. Accept it.
   - depth is complicated
     - depth buffers use `DEPTH6_*` instead of `FMT6_*`
     - depth formats are still mapped to `FMT6_*` in the format table because
