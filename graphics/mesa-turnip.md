@@ -123,11 +123,12 @@ Mesa Turnip
     - packed: in MSB to LSB order
     - array: in low to high order
 - msm formats
-  - `FMT6_<COMPONENT_SIZES>_<TYPE`
-  - `<COMPONENT_SIZES>` convention
-    - always little-endian
-    - packed: in LSB to MSB order
-    - array: in low to high order
+  - `FMT6_<COMPONENTS>_<TYPE>`
+  - `<COMPONENTS>` convention
+    - although not explicitly mentioned, they are usually in RGBA order
+      - `FMT6_5_5_5_1_UNORM` means R5, G5, B5, and A1
+      - there are exceptions
+    - component order in memory is decided by swap
   - swap
     - one of `WZYX`, `WXYZ`, `ZYXW`, or `XYZW`
     - for (MSB A R G B LSB), swap is (W X Y Z)
@@ -140,6 +141,12 @@ Mesa Turnip
     - when format has 3 components, W is at the leading position
     - when format has 2 components, WZ is at the leading positions
     - when format has 1 components, WZY is at the leading positions
+  - examples
+    - `FMT6_5_5_5_1_UNORM` means R5, G5, B5, and A1
+    - with WXYZ, we have (MSB A1 R5 G5 B5 LSB), which is
+      `PIPE_FORMAT_B5G5R5A1_UNORM`
+    - with XYZW, we have (MSB R5 G5 B5 A1 LSB), which is
+      `PIPE_FORMAT_A1B5G5R5_UNORM`
 - some pipe formats are used only internally by certain drivers
   - for example, for all but turnip, the Y plane of NV12 is `PIPE_FORMAT_R8_UNORM`
   - for turnip, it is `PIPE_FORMAT_Y8_UNORM`
@@ -159,7 +166,6 @@ Mesa Turnip
     `FMT6_A8_UNORM` for rendering
   - `PIPE_FORMAT_R10G10B10A2_UNORM` is mapped to `FMT6_10_10_10_2_UNORM` for
     texturing and `FMT6_10_10_10_2_UNORM_DEST` for rendering
-  - are the mappings for 5551/1555 correct?
   - depth is complicated
     - depth buffers use `DEPTH6_*` instead of `FMT6_*`
     - depth formats are still mapped to `FMT6_*` in the format table because
