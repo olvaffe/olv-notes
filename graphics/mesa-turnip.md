@@ -128,7 +128,8 @@ Mesa Turnip
     - although not explicitly mentioned, they are usually in RGBA order
       - `FMT6_5_5_5_1_UNORM` means R5, G5, B5, and A1
       - there are exceptions
-        - `FMT6_1_5_5_5_UNORM` makes no sense...
+        - `FMT6_1_5_5_5_UNORM` also means R5, G5, B5, A1
+          - it should probably be named `FMT6_5_5_5_1_UNORM_REV`
     - component order in memory is decided by swap
   - swap
     - one of `WZYX`, `WXYZ`, `ZYXW`, or `XYZW`
@@ -148,7 +149,7 @@ Mesa Turnip
       `PIPE_FORMAT_B5G5R5A1_UNORM`
     - with XYZW, we have (MSB R5 G5 B5 A1 LSB), which is
       `PIPE_FORMAT_A1B5G5R5_UNORM`
-    - again, `FMT6_1_5_5_5_UNORM` and its swaps make no sense. Accept it.
+    - `FMT6_1_5_5_5_UNORM` and its swaps make no sense
 - some pipe formats are used only internally by certain drivers
   - for example, for all but turnip, the Y plane of NV12 is `PIPE_FORMAT_R8_UNORM`
   - for turnip, it is `PIPE_FORMAT_Y8_UNORM`
