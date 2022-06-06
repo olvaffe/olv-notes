@@ -150,6 +150,10 @@ Mesa Turnip
     - with XYZW, we have (MSB R5 G5 B5 A1 LSB), which is
       `PIPE_FORMAT_A1B5G5R5_UNORM`
     - `FMT6_1_5_5_5_UNORM` and its swaps make no sense
+      - I guess it expands (MSB R5 G5 B5 A1 LSB) into (MSB A8 R8 G8 B8 LSB)
+      	first
+      - with that, WXYZ returns the correct color
+      - WZYX swaps R and B
 - some pipe formats are used only internally by certain drivers
   - for example, for all but turnip, the Y plane of NV12 is `PIPE_FORMAT_R8_UNORM`
   - for turnip, it is `PIPE_FORMAT_Y8_UNORM`
