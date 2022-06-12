@@ -605,3 +605,44 @@ Mesa Turnip
     - this creates `ir3_shader_variant` and compiles finalized nir to the
       binary code
     - internally, `ir3_nir_post_finalize` is called to really finalize nir
+
+## Draw State Groups
+
+- `enum tu_draw_state_group_id` is a list of draw state groups
+  - a draw state group is a driver-defined stateobj, a small gpu buffer
+    containing gpu commands
+  - when a pipeline is created, many draw state groups are allocated and
+    initialized
+    - the more dynamic states the pipeline has, the less draw state groups are
+      allocated
+  - there are also draw state groups not covered by a pipeline
+- when a pipeline is created, many draw state groups are initialized
+  - for a draw state group that has a fixed size, `tu_cs_draw_state` is used
+    to sub-allocate the bo
+  - for a draw state group that has a dynamic size, `tu_cs_begin_sub_stream`
+    is used to sub-allocate the bo
+- `CP_SET_DRAW_STATE`
+  - outside of a render pass, `tu_disable_draw_states` is used to disable all
+    groups
+    - the important hw bit is `CP_SET_DRAW_STATE__0_DISABLE_ALL_GROUPS`
+    - the function sets `TU_CMD_DIRTY_DRAW_STATE`
+  - `tu6_draw_common` re-emits all dirty draw state gropus
+  - `tu_CmdBindPipeline` emits many draw state gropus, unless deferred to
+    `tu6_draw_common` when `TU_CMD_DIRTY_DRAW_STATE` is set
+- pipeline dynamic states
+  - `tu_pipeline_builder_parse_dynamic` handles
+    `VkPipelineDynamicStateCreateInfo`
+    - `pipeline->dynamic_state_mask` is the mask of `TU_DYNAMIC_STATE_blah`
+    - `pipeline->blah` is the reg value derived from both static and dynamic
+      states
+    - `pipeline->blah_mask` is the mask of static states
+  - `tu_pipeline_static_state` returns true when a state is static
+    - it suballocates a bo (stateobj) decribed by `tu_draw_state`
+    - the caller encodes the commands to the bo right away
+    - when dyanmic, it returns false
+  - take `GRAS_SU_CNTL` register for example
+    - when the related dynamic states are set, such as by `tu_CmdSetLineWidth`,
+      the values are stored in `cmd->state.gras_su_cntl` and
+      `TU_CMD_DIRTY_GRAS_SU_CNTL` is set
+    - `tu6_draw_common` emits the register
+    - `tu_CmdBindPipeline` has `UPDATE_REG` macro to do the same

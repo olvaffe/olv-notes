@@ -891,6 +891,16 @@ Qualcomm Adreno
   - the shader find a descriptor in a set by calculating base plus offset
   - the descriptors can be preloaded too
 
+## `CP_SET_DRAW_STATE`
+
+- there can be up to 32 driver-defined draw state groups
+- each mode, `GMEM`, `SYSMEM`, or `BINNING`, has its own 32 draw state groups
+- the draw state groups are executed on `CP_DRAW_*` or `CP_SET_MODE`
+- the hw skips executing a draw state group when it is clean
+  - that is, the draw state group has been executed and the iova hasn't
+    changed
+  - the `DIRTY` bit can force a draw state group dirty
+
 ## Formats
 
 - Tiling
