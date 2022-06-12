@@ -12,7 +12,7 @@ AMD CPUs
 - Zen 2       - 2019 - 7nm
 - Zen 3       - 2020 - 7nm
 - Zen 3+      - 2022 - 6nm (APU only)
-- Zen 4       - 2022 - 5nm??
+- Zen 4       - 2022 - 5nm
 - Zen 5       - 2024 - 3nm??
 
 ## Product Lines
@@ -66,8 +66,8 @@ AMD CPUs
     - Vermeer
   - Ryzen 9/Threadripper
     - Genesis
-- Ryzen 7000 series?
-  - 2022?
+- Ryzen 7000 series
+  - 2022
   - Zen 4 uArch
   - Raphael
 - Ryzen 8000 series?
@@ -110,9 +110,10 @@ AMD CPUs
   - Zen 3+ uArch (6nm)
   - RDNA2 GPU
   - desktop/mobile: Rembrandt
-- Ryzen 7000 series APUs?
-  - 2023?
-  - Zen 4 uArch
+- Ryzen 7000 series APUs
+  - 2022
+  - Zen 4 uArch (5nm)
+  - RDNA2 GPU
   - desktop/mobile: Phoenix
 - Ryzen 8000 series APUs?
   - 2025?

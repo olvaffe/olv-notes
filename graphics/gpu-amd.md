@@ -59,6 +59,10 @@ AMD
   - Direct3D 12.0 w/ `12_2` feature level
   - `radeonsi_dri.so` `GFX10_3`
   - RDNA 2
+- Navi 3x released in 2022
+  - RDNA 3
+  - 5nm
+  - chiplet
 
 ## RDNA
 
