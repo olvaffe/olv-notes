@@ -295,6 +295,11 @@ DRM msm
   - `/d/dri/<minor>/mm` dumps `vma_offset_manager` mm
   - `/d/dri/<minor>/fb` dumps all framebuffers
   - `/d/dri/<minor>/gpu` dumps GPU states (crash the system!)
+  - `/d/dri/<minor>/kms` dumps DPU states
+  - `/d/dri/<minor>/hangcheck_period_ms` sets hangcheck timeout (default 500ms)
+    - `msm_gpu_submit` calls `hangcheck_timer_reset` to reset the timer
+    - when the timer fires, `hangcheck_fence` checks if fence seqno has been
+      updated
 - `dpu_kms_debugfs_init` adds
   - `/d/dri/<minor>/debug/*`, a bunch of stuff
 - `msm_rd_debugfs_init` adds
