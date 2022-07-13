@@ -3,7 +3,7 @@ Chrome OS AP firmware
 
 ## AP firmware (BIOS)
 
-- `emerge-<board> chromeos-bootimage`
+- `emerge-<board> sys-boot/chromeos-bootimage`
   - depends on `coreboot`
     - `/build/$BOARD/firmware/$DEVICE/coreboot.rom`
     - a CBFS archive
@@ -15,12 +15,26 @@ Chrome OS AP firmware
   - `/build/$BOARD/firmware/image-$DEVICE.bin`
   - `/build/$BOARD/firmware/image-$DEVICE.serial.bin` for debug
   - others
+- in my experience, the latest version does not boot
+  - use a known-good version
+  - already packed into `chromeos-firmwareupdate` on DUT
 
-## Update BIOS
+## Flash AP Firmware
 
-- `emerge-<board> chromeos-bootimage`
-- `futility update -i image-<board>.bin` on DUT
-- `futility update --servo -i image-<board>.bin` on host
+- flash from host
+  - `futility update --servo -i image-<board>.bin`
+  - or, `cros ap flash`
+  - or, `flashrom -p raiden_debug_spi:target=AP -w $IMAGE`
+- flash on dut
+  - `crossystem fwid` to get current version
+  - `futility update -i image-<board>.bin` to flash
+  - or, `flashrom -p host -w <image>`
+  - or, `chromeos-firmwareupdate`
+
+## Flash kernel and userspace
+
+- `./update_kernel.sh`
+- `cros flash`
 
 ## `cbfstool`
 
@@ -30,35 +44,6 @@ Chrome OS AP firmware
   - `cbfstool image-<board>.bin layout`
   - `cbfstool image-<board>.bin print -r COREBOOT`
   - `cbfstool image-<board>.bin print -r RW_LEGACY`
-
-## Depthcharge
-
-- depthcharge is a payload of coreboot
-- it links to `libpayload`
-- it links to vboot
-  - `vboot_reference`
-
-## altfw
-
-- to use altfw on DUT,
-  - `crossystem dev_boot_legacy=1`
-  - `Ctrl-L` in boot prompt
-- when building chromeos-bootimage,
-  - `USE=seabios` to include seabios
-  - `USE=tianocore` to include UEFI
-  - `USE=u-boot` to include u-boot
-- `cbfstool /build/$BOARD/firmware/image-$DEVICE.bin print -r RW_LEGACY` to
-  see the included payloads
-- <https://chromium.googlesource.com/chromiumos/docs/+/refs/heads/master/developer_mode.md#alt-firmware>
-  - `flashrom -r /tmp/bios.bin`
-  - `cbfstool /tmp/bios.bin print -r RW_LEGACY`
-  - `cbfstool /tmp/bios.bin add-payload -r RW_LEGACY -c lzma -n <your bootloader name> -f <path/to/your/bootloader.elf>`
-  - `cbfstool /tmp/bios.bin extract -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt`
-  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n altfw/list`
-  - `cbfstool /tmp/bios.bin add -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt -t raw`
-  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n cros_allow_auto_update`
-  - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
-  - `crossystem dev_boot_legacy=1`
 
 ## coreboot
 
@@ -73,6 +58,10 @@ Chrome OS AP firmware
 
 ## depthcharge
 
+- depthcharge is a payload of coreboot
+  - it links to `libpayload`
+  - it links to vboot
+    - `vboot_reference`
 - Keyboard shortcuts
   - need to use AP console if physical keyboard does not work in coreboot
   - shutdown the device: hold power key until the device shutdown
@@ -97,3 +86,25 @@ Chrome OS AP firmware
     `depthcharge.ldscript.S`
   - in libpayload, `_entry` jumps to `_init` which calls `start_main` which
     calls `main`
+
+## altfw
+
+- to use altfw on DUT,
+  - `crossystem dev_boot_legacy=1`
+  - `Ctrl-L` in boot prompt
+- when building chromeos-bootimage,
+  - `USE=seabios` to include seabios
+  - `USE=tianocore` to include UEFI
+  - `USE=u-boot` to include u-boot
+- `cbfstool /build/$BOARD/firmware/image-$DEVICE.bin print -r RW_LEGACY` to
+  see the included payloads
+- <https://chromium.googlesource.com/chromiumos/docs/+/refs/heads/master/developer_mode.md#alt-firmware>
+  - `flashrom -r /tmp/bios.bin`
+  - `cbfstool /tmp/bios.bin print -r RW_LEGACY`
+  - `cbfstool /tmp/bios.bin add-payload -r RW_LEGACY -c lzma -n <your bootloader name> -f <path/to/your/bootloader.elf>`
+  - `cbfstool /tmp/bios.bin extract -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt`
+  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n altfw/list`
+  - `cbfstool /tmp/bios.bin add -r RW_LEGACY -n altfw/list -f /tmp/altfw.txt -t raw`
+  - `cbfstool /tmp/bios.bin remove -r RW_LEGACY -n cros_allow_auto_update`
+  - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
+  - `crossystem dev_boot_legacy=1`

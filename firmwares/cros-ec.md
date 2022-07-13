@@ -1,24 +1,47 @@
 Chrome OS EC
 ============
 
-## Directory Structure
+## EC Firmware, Zephyr EC
 
-- <https://chromium.googlesource.com/chromiumos/platform/ec>
-- A board under `board/` decides the baseboard
-- A baseboard under `baseboard/` decides the controller
-- A controller under `chip/` decides the CPU under `core/`
+- EC firmware is now zephyr-based
+  - <https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/zephyr/README.md>
+  - `zmake <board>`
+  - `build/zephyr/<board>/output/zephyr.bin`
+- previously, it was based on
+  - <https://chromium.googlesource.com/chromiumos/platform/ec>
+  - `make BOARD=<board>`
+    - the binary will be at `build/<board>/ec.bin`
+    - or, `emerge-<board> chromeos-base/chromeos-ec`
+  - source code directory structure
+    - A board under `board/` decides the baseboard
+    - A baseboard under `baseboard/` decides the controller
+    - A controller under `chip/` decides the CPU under `core/`
+  - To get ec.bin,
+    - `$(out)/%.elf: $(out)/%.lds $(objs)`
+      - use ec.lds to link
+    - `$(out)/%.flat: $(out)/%.elf $(out)/%.smap $(build-utils)`
+      - create EC binary image
+    - `$(out)/$(PROJECT).obj: common/firmware_image.S $(out)/firmware_image.lds $(flat-y)`
+      - create firmware image that combines several binary images
+    - `$(out)/%.bin: $(out)/%.obj`
+      - create firmware binary
+- in my experience, the latest EC firmware does not boot
+  - one should use a known-good version
+  - a version is already packed into `chromeos-firmwareupdate`
+    - `chromeos-firmwareupdate --unpack` on DUT to unpack
+- some EC has built-in flash and some has external flash
 
-## Build System
+## Flash EC firmware
 
-- To get ec.bin,
-  - `$(out)/%.elf: $(out)/%.lds $(objs)`
-    - use ec.lds to link
-  - `$(out)/%.flat: $(out)/%.elf $(out)/%.smap $(build-utils)`
-    - create EC binary image
-  - `$(out)/$(PROJECT).obj: common/firmware_image.S $(out)/firmware_image.lds $(flat-y)`
-    - create firmware image that combines several binary images
-  - `$(out)/%.bin: $(out)/%.obj`
-    - create firmware binary
+- `flashrom` on DUT
+  - `flashrom -p ec -r <backup.bin>`
+  - `flashrom -p ec -w <path-to/ec.bin>`
+  - or, `chromeos-firmwareupdate`, but it never works for me
+- `flash_ec` script on host
+  - requires working servod, see <cros-cr50.md>
+  - `flash_ec --board=<boardname> [--zephyr] [--image=<path/to/ec.bin>]`
+  - it might need `npcx_monitor.bin` as well
+- this flashes to EC flash, which is different from H1 flash
 
 ## `ectool`
 
@@ -28,8 +51,8 @@ Chrome OS EC
 - `ectool` talk to EC via `/dev/cros_ec`
   - <https://chromium.googlesource.com/chromiumos/platform/ec/+/master/util/ectool.c>
 - useful commands
-  - `ectool hello` checks basic EC communication
   - `ectool version` prints EC version
+  - `ectool hello` checks basic EC communication
   - `ectool usbpdpower` prints USB PD info
   - `ectool temps all` prints temperatures
   - `ectool switches` prints switch info
@@ -41,16 +64,3 @@ Chrome OS EC
 - EC console is accessible from host
   - requires a debug table
   - read-only until CCD is opened
-
-## Update EC firmware
-
-- `make BOARD=<board>`
-  - the binary will be at `build/<board>/ec.bin`
-  - or, `emerge-<board> chromeos-ec`
-- `flashrom` on DUT
-  - `flashrom -p ec -r <backup.bin>`
-  - `flashrom -p ec -w <path-to/ec.bin>`
-- `flash_ec` script on host
-  - requires working servod, see <cros-cr50.md>
-  - `flash_ec --board=<boardname> [--image=<path/to/ec.bin>]`
-- this flashes to EC flash, which is different from H1 flash
