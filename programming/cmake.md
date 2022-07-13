@@ -43,6 +43,8 @@ CMake
   - `CMAKE_BUILD_TYPE`
   - `CMAKE_<LANG>_COMPILER`
   - `CMAKE_<LANG>_FLAGS`
+  - `CMAKE_<LANG>_COMPILER_LAUNCHER`
+    - e.g., ccache
 - `cmake-env-variables` for user customizations
   - `DESTDIR`
   - `LDFLAGS`

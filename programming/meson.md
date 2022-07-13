@@ -35,6 +35,8 @@ Meson
 - `CC`, `CC_LD`, `CXX`, `CXX_LD`
   - not idiomatic
   - but more convenient than `--native-file` and a native machine flie
+  - meson automatically uses ccache when it is available; to diable it, one
+    must explicit override the compiler
 - `CFLAGS`, `CXXFLAGS`, `LDFLAGS`
   - do not use if possible
   - use `c_args`, `cpp_args`, `c_link_args`, `cpp_link_args` instead
