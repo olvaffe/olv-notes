@@ -16,11 +16,12 @@ Chrome OS AP firmware
   - `/build/$BOARD/firmware/image-$DEVICE.serial.bin` for debug
   - others
 - in my experience, the latest version does not boot
-  - use a known-good version
+  - use a known-good version instead
   - already packed into `chromeos-firmwareupdate` on DUT
 
 ## Flash AP Firmware
 
+- NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
 - flash from host
   - `futility update --servo -i image-<board>.bin`
   - or, `cros ap flash`

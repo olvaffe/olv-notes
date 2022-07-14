@@ -26,13 +26,14 @@ Chrome OS EC
     - `$(out)/%.bin: $(out)/%.obj`
       - create firmware binary
 - in my experience, the latest EC firmware does not boot
-  - one should use a known-good version
+  - one should use a known-good version instead
   - a version is already packed into `chromeos-firmwareupdate`
     - `chromeos-firmwareupdate --unpack` on DUT to unpack
 - some EC has built-in flash and some has external flash
 
 ## Flash EC firmware
 
+- NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
 - `flashrom` on DUT
   - `flashrom -p ec -r <backup.bin>`
   - `flashrom -p ec -w <path-to/ec.bin>`
