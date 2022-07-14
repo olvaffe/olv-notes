@@ -123,21 +123,26 @@ Qualcomm Adreno
     - SDM{710,712}
     - 10nm
     - Adreno 616
-  - 720, 730, 732
+  - 720G, 730G, 732G
     - 2019-2020
     - SM71{25,50}
     - 8nm
     - Adreno 618
-  - 750, 765, 768
+  - 750G, 765G, 768G
     - 2020
     - SM72{25,50}
     - 7nm
     - Adreno 620
-  - 778, 780
+  - 778G, 780G
     - 2021
     - SM73{25,50}
     - 5nm-6nm
     - Adreno 642
+  - 7 Gen1
+    - 2022
+    - SM7450
+    - 4nm
+    - Adreno ?
 - Snapdragon 8 series
   - high-end
   - 800, 801, 805
@@ -170,19 +175,19 @@ Qualcomm Adreno
     - SM8150
     - 7nm
     - Adreno 640
-  - 865, 870
+  - 865/865+, 870
     - 2020-2021
     - SM8250
     - 7nm
     - Adreno 650
-  - 888
+  - 888/888+
     - 2021
     - SM8350
     - 5nm
     - Adreno 660
-  - 8 Gen1
+  - 8/8+ Gen1
     - 2022
-    - SM8450
+    - SM84{50,75}
     - 4nm
     - Adreno 730
 - Snapdragon 7 Compute Platforms
@@ -197,7 +202,7 @@ Qualcomm Adreno
     - 8nm
     - Adreno 618
   - 7c+ Gen3
-    - 2021
+    - 2022
     - SC7280?
     - 6nm
     - Adreno 7c+ Gen3 (Adreno 635)
@@ -207,11 +212,16 @@ Qualcomm Adreno
     - MSM8998, SDM850
     - 10nm
     - Adreno 540, 630
-  - 8c, 8cx, 8cx Gen2
-    - 2019-2020
+  - 8c, 8cx
+    - 2019
     - SC8180
     - 7nm
     - Adreno 675, 680, 690
+  - 8cx Gen2
+    - 2020
+    - SC8180
+    - 7nm
+    - Adreno 690
   - 8cx Gen3
     - 2022
     - SC8???
