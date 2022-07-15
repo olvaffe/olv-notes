@@ -41,5 +41,16 @@ Android Chroot
 
 ## init
 
-- test `systemd-nspawn --boot` to start init?
 - this gives us properties, logcat, adb, etc.
+- to make `systemd-nspawn` happy,
+  - `touch <chroot>/system/etc/os-release`
+  - `ln -sf /system <chroot>/usr`
+  - `ln -sf /system/bin <chroot>/sbin`
+  - `mkdir -p <chroot>/mkdir -p <chroot>/{tmp,run,var,var/log}`
+  - `sudo cp /etc/localtime chroot/system/etc`
+- `systemd-nspawn -bnUD <chroot>`
+  - this does not work
+  - `init` has first stage init and second stage init
+  - first stage init is hardcoded and is hard to fool
+  - maybe we can get lucky by skipping the first stage?
+- maybe starting logd and adbd manually.  Not sure about properties.
