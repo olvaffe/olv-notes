@@ -151,3 +151,31 @@ dEQP
   - `eglw::DefaultLibrary::DefaultLibrary`
     - this is where `libEGL.so` is loaded
     - and where `eglGetProcAddress` is called the first time
+
+## Test Case: `dEQP-VK.subgroups.ballot_broadcast.framebuffer.*`
+
+- `external/vulkancts/modules/vulkan/subgroups/vktSubgroupsBallotBroadcastTests.cpp`
+- `createSubgroupsBallotBroadcastTests`
+  - for each format
+    - glsl formats: int, uint, float, double, bool, and their vecs
+    - for each op
+      - broadcast ops: `subgroupBroadcast`, `broadcast_nonconst`
+        (subgroupBroadcastDynamicId), `subgroupBroadcastFirst`
+      - for each stage
+        - vs, tcs, tes, gs
+- `initFrameBufferPrograms`
+  - `initStdFrameBufferPrograms`
+    - `setFragmentShaderFrameBuffer` adds fs
+      - it writes `float in_color` to `uint out_color`
+    - if stage is vs,
+      - see qpa for the dumped vs source code
+- `noSSBOtest` -> `makeVertexFrameBufferTest`
+  - `maxWidth` is hard coded to 1024
+  - `extraDataCount` is 1 and `extraData[0].numElements` is hard coded to 128
+  - allocates a `VkBuffer` holding 128 elements
+  - `subgroupSize` is queryed from the driver
+    - 128 for turnip
+  - topology is `VK_PRIMITIVE_TOPOLOGY_POINT_LIST`
+  - for some widths
+    - 1..128, 256, 512; total 130 iterations
+    - draw `width` vertices

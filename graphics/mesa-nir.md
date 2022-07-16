@@ -297,7 +297,11 @@ NIR
   - loading `in centroid vec4 in_val` or `interpolateAtCentroid` is translated
     to a `deref_var` and a `interp_deref_at_centroid`
 - `nir_lower_io`
-  - `load_deref` is lowered to `load_barycentric_pixel` and
-    `load_interpolated_input`
-  - `interp_deref_at_centroid` is lowered to `load_barycentric_centroid` and
-    `load_interpolated_input`
+  - `load_deref` is lowered to
+    - vs: `load_input`
+    - fs: `load_barycentric_pixel` and `load_interpolated_input`
+  - `interp_deref_at_centroid` is lowered to
+    - fs: `load_barycentric_centroid` and `load_interpolated_input`
+- `nir_assign_io_var_locations`
+  - it scans variables and assigns `var->data.driver_location`
+  - callers use this to update `nir->num_inputs` / `nir->num_outputs` as well

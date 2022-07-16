@@ -651,6 +651,7 @@ Qualcomm Adreno
 
 ## SP, streaming processor
 
+- <https://gitlab.freedesktop.org/freedreno/freedreno/-/wikis/A6xx-SP>
 - `SP_VS_CONFIG`:
 - `SP_VS_CTRL_REG0`:
 - `SP_VS_INSTRLEN`:
@@ -1095,3 +1096,41 @@ Qualcomm Adreno
   - `PERF_UCHE_READ_REQUESTS_TP`
   - `PERF_UCHE_READ_REQUESTS_VFD`
   - `PERF_UCHE_READ_REQUESTS_HLSQ`
+
+## ISA
+
+- an instruction has 64 bits
+- gpr register number has 6 bits
+  - r0..r47 are general registers
+  - r48..r55 are shared registers
+  - r61 is address register (a0)
+  - r62 is predicate register (p0)
+  - half registers (hr0..hr47) alias the general registers
+- const register number has 9 bits
+  - c0..c511 are const registers
+- an SP can have up to 16 waves
+  - wave size can be 64 or 128
+  - getspid, getwid, getfiberid
+- register files
+  - 128KB GPR
+  - 32KB shared
+  - `ir3_pressure` used in `ir3_ra` has 16-bit words as units
+  - `RA_HALF_SIZE` is `4 * 48`, because there are hr0..hr47
+  - `RA_FULL_SIZE` is `4 * 48 * 2`, because there are r0..r47
+  - `RA_SHARED_SIZE` is `2 * 4 * 8` because there are r48..r55
+- category 0
+  - flow control, predication, prologue
+- category 1
+  - move, swizzle, gather/scatter
+- category 2
+  - 1-/2-src ALUs
+- category 3
+  - 3-src ALUs
+- category 4
+  - EFU (elementary function unit), aka SFU (special function unit), aka math
+- category 5
+  - texture
+- category 6
+  - load/store/atomic
+- category 7
+  - barrier
