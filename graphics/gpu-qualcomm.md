@@ -1134,3 +1134,14 @@ Qualcomm Adreno
   - load/store/atomic
 - category 7
   - barrier
+- instructions
+  - `shps` prologue starts
+  - `shpe` prologue ends
+  - `getone` branches all but one fiber
+  - `movmsk` sets all bits to 1?
+  - `shl.b` shifts left
+  - `cmps.s` compares signed
+  - `and.b` logical AND bool
+  - `br` branches
+  - `isam` samples
+  - `stc` stores const

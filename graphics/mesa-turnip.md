@@ -589,6 +589,9 @@ Mesa Turnip
       - `mesa_logi("NIR (final form) for %s shader %s:", ir3_shader_stage(so), so->name);`
     - after assembly, it calls `ir3_shader_disasm`
       - `"Native code%s for unnamed %s shader %s with sha1 %s:\n"`
+  - `IR3_SHADER_OVERRIDE_PATH=<dir>`
+    - replace shaders by `<dir>/<sha1>.asm`, where sha1 is from
+      `IR3_SHADER_DEBUG=disasm`
 - `vk_common_CreateShaderModule` is used
   - the common entrypoint just saves and hashes SPIR-V for later use
   - the common `vk_shader_module` has `nir`, which is only used by radv to
