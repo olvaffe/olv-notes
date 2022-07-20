@@ -5,15 +5,18 @@ NIR
 
 - a `nir_variable` represents a variable in a high-level language
   - it encapsulates all info about the high-level variable, such as type,
-    qualifiers, dimensions, etc.
+    qualifiers, dimensions, storage, etc.
   - but it is not directly usable
 - a `nir_deref_instr` results in a "pointer" to the variable
   - `dest` is a SSA `nir_dest`
   - `dest.ssa.parent_instr->var` points back to the variable
   - the dest is a pointer and is still not directly usable
-- a `nir_instrinsic_instr` with op `nir_intrinsic_load_deref` loads the value
+- a `nir_intrinsic_instr` with op `nir_intrinsic_load_deref` loads the value
   - `instr->src[0].ssa` points to the "pointer"
   - `instr->dest.ssa` holds the variable value
+  - `nir_variable_mode` specifies the mode/storage of the variable
+  - `nir_lower_io` lowers `nir_intrinsic_load_deref` to one of low-level
+    `nir_intrinsic_load_*` depending on the mode of the variable
 - when the variable is more than a vec4, such as a matrix or an array or a
   struct, multiple `nir_deref_instr` are needed to get a `nir_dest` that can
   be used as a `nir_src` in `nir_intrinsic_load_deref`
@@ -278,6 +281,9 @@ NIR
   - "in" variable derefs to `nir_intrinsic_load_input` or others
   - "out" variable derefs to `nir_intrinsic_store_output` or others
   - "uniform" variable derefs to `nir_intrinsic_load_uniform`
+    - modern hw has no special storage for uniforms
+    - `nir_lower_uniforms_to_ubo` lowers `nir_intrinsic_load_uniform` to
+      `nir_intrinsic_load_ubo`
 - however, those intrinsics require `driver_location` to be set
   - and?
 - freedreno tools

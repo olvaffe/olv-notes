@@ -667,3 +667,68 @@ Mesa Turnip
       `TU_CMD_DIRTY_GRAS_SU_CNTL` is set
     - `tu6_draw_common` emits the register
     - `tu_CmdBindPipeline` has `UPDATE_REG` macro to do the same
+
+## Const Register File
+
+- drivers use `CP_LOAD_STATE6_GEOM/FRAG` to load data into the register file 
+  - `CP_LOAD_STATE6_0_DST_OFF` and `CP_LOAD_STATE6_0_NUM_UNIT` are in vec4's
+  - type is `ST6_CONSTANTS`, to load into the const register file
+  - `SS6_DIRECT` if data is in the pkt payload; `SS6_INDIRECT` if data is at
+    iova
+  - block is `SB6_VS_SHADER` to `SB6_FS_SHADER`
+- `struct ir3_const_state`
+  - layout of the const register file
+  - `ir3_setup_const_state`
+  - `reserved_user_consts`
+    - units are vec4's
+    - this is a `ir3_shader_options` that drivers can use
+    - drivers use `nir_intrinsic_load_uniform` to access
+  - `ubo_state::size`
+    - units are bytes
+    - `ir3_nir_analyze_ubo_ranges` and `ir3_nir_lower_ubo_loads` can lower
+      `nir_intrinsic_load_ubo` to `nir_intrinsic_load_uniform`, if the range
+      can be statically determined and there is space in the const register
+      file
+  - `preamble_size`
+    - units are vec4's
+    - ir3 uses `nir_intrinsic_store_preamble` to init
+    - ir3 uses `nir_intrinsic_load_preamble` to access
+    - transparent to drivers
+  - `num_ubos`
+    - for iovas of UBOs
+    - isn't turnip bindless?
+  - `image_dims.count`
+    - only for a5xx-
+    - a6xx uses `ir3_RESINFO`
+  - `num_driver_params`
+    - units are dwords
+    - various params (`ir3_driver_param`) to be uploaded by drivers
+  - `primitive_param`
+  - `primitive_map`
+  - `immediates_count`
+    - units are dwords
+    - some immediates cannot be encoded in the instructions.  `lower_immed`
+      lowers them use const register file
+- `ir3_shader_variant::constlen`
+  - `ir3_collect_info` calls `collect_reg_info` to find the max const register
+    accessed and saves it in `max_const`
+  - `constlen` is set to `max_const + 1`, thus the units are vec4s
+  - when the const register file is relatively addressed, `constlen` is set to
+    cover all consts
+- `ir3_trim_constlen`
+  - `max_const_geom` is 512
+  - `max_const_safe` is 128
+  - VS to GS share the same const register file, whose size is indicated by
+    `max_const_geom`
+  - this function marks which stages should be recompiled with `safe_constlen`
+    such that their constlen is capped at 128
+- push constants
+  - `tu_shader_create` calls `nir_lower_explicit_io` with
+    `nir_var_mem_push_const` to lower `nir_intrinsic_load_deref` to
+    `nir_intrinsic_load_push_constant`
+  - `gather_push_constants` scans all `nir_intrinsic_load_push_constant` to
+    determine min/max byte offsets
+  - `lower_load_push_constant` lowers `nir_intrinsic_load_push_constant` to
+    `nir_intrinsic_load_uniform`
+    - note that spirv only has UBOs (loaded with `nir_intrinsic_load_ubo`) but
+      no uniforms
