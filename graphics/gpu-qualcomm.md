@@ -1145,3 +1145,28 @@ Qualcomm Adreno
   - `br` branches
   - `isam` samples
   - `stc` stores const
+  - `stib` stores ibo/ssbo
+  - `stl` stores local
+  - `chmask` resets execution mask
+  - `chsh` jumps to the next shader
+    - `cmask` and `chsh` are used by VS to chain to HS or GS
+    - VS should also do `stl` outputs to local storage, for use by HS or GS
+- flags
+  - `IR3_INSTR_SY` is set after sample instructions to avoid data hazard
+  - `IR3_INSTR_SS` is set after long (EFU/math) instructions to avoid data
+    hazard
+  - `IR3_INSTR_JP` is set on jump targets.. why?
+  - `IR3_INSTR_UL` is set on the last use of `a0.x`... why?
+  - `IR3_INSTR_3D` is set when sampling 3D images
+  - `IR3_INSTR_A` is set when sampling array images
+  - `IR3_INSTR_O` is set when sampling with offset
+  - `IR3_INSTR_P` is set when sampling with projection
+  - `IR3_INSTR_S` is set when sampling with shadow comparison
+  - `IR3_INSTR_S2EN` is set when sampl/tex idx is in another register
+  - `IR3_INSTR_SAT` saturates the result
+  - `IR3_INSTR_B` if the resource is bindless
+  - these are not translated directly to hw encoding
+    - `IR3_INSTR_NONUNIF` if res idx is non-uniform
+    - `IR3_INSTR_A1EN` uses `a1.x`
+    - `IR3_INSTR_MARK`
+    - `IR3_INSTR_UNUSED`
