@@ -732,3 +732,122 @@ Mesa Turnip
     `nir_intrinsic_load_uniform`
     - note that spirv only has UBOs (loaded with `nir_intrinsic_load_ubo`) but
       no uniforms
+
+## IR3 Public APIs
+
+- drivers include `ir3_comiler.h`, `ir3_shader.h`, and `ir3_nir.h` to access
+  the public APIs
+- `tu_CreateDevice`
+  - `ir3_compiler_create` creates the top-level `struct ir3_compiler`
+  - turnip sets `disable_cache` and manages disk cache itself
+- `tu_DestroyDevice`
+  - `ir3_compiler_destroy` destroys the top-level `struct ir3_compiler`
+- `tu_pipeline_builder_compile_shaders` or `tu_compute_pipeline_create`
+  - `tu_spirv_to_nir` converts spirv to nir
+    - `ir3_get_compiler_options` to get `nir_options`
+    - `ir3_optimize_loop` applies generic optimizations
+  - `tu_shader_create` creates `ir3_shader`
+    - `ir3_nir_lower_io_to_temporaries` applies some std passes
+    - `ir3_finalize_nir` applies more passes and the nir is ready
+    - `ir3_shader_from_nir` creates `ir3_shader` to wrap nir
+  - `ir3_shader_create_variant` created `ir3_shader_variant`
+    - this is the most heavy function
+  - `ir3_trim_constlen` checks variants do not exceed `constlen` limits
+    - drivers need to re-create variants with `safe_constlen` if they exceed
+      the limits
+  - `tu_shader_destroy`
+    - `ir3_shader_destroy` destroys `ir3_shader` now that turnip has
+      `ir3_shader_variant`
+- `tu_pipeline_builder_parse_*`
+  - `ir3_const_state` gets the const register file layout
+  - `ir3_shader_branchstack_hw`
+  - `ir3_link_shaders` updates `ir3_shader_linkage` for vs and fs
+  - `ir3_link_stream_out` updates `ir3_shader_linkage` for vs and so
+  - `ir3_link_add` updates `ir3_shader_linkage` even more
+  - `ir3_find_output_regid` is for linkage of outputs
+  - `ir3_find_sysval_regid` is for linkage of sysvals
+- misc
+  - pipeline cache
+    - `ir3_store_variant`
+    - `ir3_retrieve_variant`
+  - `ir3_shader_get_variant`
+    - it is the same as `ir3_shader_create_variant`, except the memory is
+      managed by `ir3_shader`
+
+## IR3 Source Code Structure
+
+- driver apis
+  - `ir3_compiler.c`
+    - `ir3_compiler_create`, top-level function for  use by drivers
+    - `ir3_disk_cache.c` is disabled by turnip
+  - `ir3_shader.c`
+    - `ir3_shader_from_nir`
+    - `ir3_shader_create_variant`
+    - `ir3_shader_get_variant`
+    - `ir3_shader_assemble`
+    - `ir3_shader_disasm`
+      - disabbembly for debug
+    - `ir3_shader_outputs`, a3xx only
+    - `ir3_link_stream_out` adds so linkage
+- `ir3_shader_create_variant` complies nir
+  - `ir3_nir.c` provides nir post-processing
+    - `ir3_finalize_nir` has been called by drivers
+    - `ir3_nir_post_finalize` is called once before creating variants
+      - `ir3_nir_lower_load_barycentric_at_offset.c`
+      - `ir3_nir_lower_load_barycentric_at_sample.c`
+      - `ir3_nir_move_varying_inputs.c`
+      - `ir3_nir_trig.py`
+    - `ir3_nir_lower_variant` is called from `ir3_context_init` (which is
+      called from `ir3_compile_shader_nir`) for each variant
+      - `ir3_nir_lower_tess.c`
+      - `ir3_nir_lower_wide_load_store.c`
+      - `ir3_nir_lower_64b.c`
+      - `ir3_nir_opt_preamble.c`
+      - `ir3_nir_analyze_ubo_ranges.c`
+      - `ir3_nir_lower_io_offsets.c`
+  - `ir3_context.c` manages nir to ir3 translation
+    - `ir3_context_init` applies NIR passes before the translation
+      - `ir3_nir_lower_variant`
+      - `ir3_nir_imul.py`
+      - `ir3_nir_lower_tex_prefetch.c`
+  - `ir3_compiler_nir.c` translates nir to ir3
+    - `ir3_compile_shader_nir`
+      - `ir3_context_init` is called to prepare nir for translation
+      - `emit_instructions` translates `nir_instr` to `ir3_instruction`
+        - `OPC_META_*` and `OPC_*_MACRO` are pseudo instructions that will be
+          lowered from various places
+      - `ir3.c` is for working with IR3
+        - `ir3_a4xx.c` is a4xx backend
+        - `ir3_a6xx.c` is a6xx backend
+        - `ir3_image.c` is for ibo/ssbo related stuff
+	- `ir3_delay.c` is used by `ir3_sched`, `ir3_postsched`, and
+	  `ir3_legalize` for nop-delays
+      - ir3 passes are applied
+        - `ir3_remove_unreachable.c`
+        - `ir3_array_to_ssa.c`
+        - `ir3_cf.c`
+        - `ir3_cp.c`
+        - `ir3_cse.c`
+        - `ir3_dce.c`
+      - `ir3_sched.c` schedules instructions (to minimize nop-delays) pre-RA
+      - `ir3_ra.c` performs register allocation and spilling
+        - `ir3_dominance.c`
+        - `ir3_liveness.c`
+        - `ir3_merge_regs.c`
+        - `ir3_spill.c`
+        - `ir3_lower_spill.c`
+        - `ir3_lower_parallelcopy.c`
+      - `ir3_postsched.c` schedules instructions post-RA
+      - `ir3_lower_subgroups.c` lowers  `OPC_MACRO_*` that are
+      	subgroup-related
+      - `ir3_legalize.c`
+        - it also lowers `OPC_DSXPP_MACRO`
+      - `ir3_legalize.c`
+      - `collect_tex_prefetches` lowers `OPC_META_TEX_PREFETCH`
+  - `assemble_variant` generates the native code
+    - `ir3_shader_assemble` calls `isa_assemble` from `libir3encode`
+- utils
+  - `ir3_print.c` provides debug prints
+  - `ir3_validate.c` and `ir3_ra_validate.c` are only enabled on debug build
+    for validations
+  - `disasm-a3xx.c` and `ir3_assembler.c` are only used by tools

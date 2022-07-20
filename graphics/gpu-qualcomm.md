@@ -1113,11 +1113,12 @@ Qualcomm Adreno
   - getspid, getwid, getfiberid
 - register files
   - 128KB GPR
-  - 32KB shared
   - `ir3_pressure` used in `ir3_ra` has 16-bit words as units
   - `RA_HALF_SIZE` is `4 * 48`, because there are hr0..hr47
   - `RA_FULL_SIZE` is `4 * 48 * 2`, because there are r0..r47
   - `RA_SHARED_SIZE` is `2 * 4 * 8` because there are r48..r55
+- 32KB local memory
+  - as defined in OpenCL
 - category 0
   - flow control, predication, prologue
 - category 1
@@ -1144,9 +1145,10 @@ Qualcomm Adreno
   - `and.b` logical AND bool
   - `br` branches
   - `isam` samples
-  - `stc` stores const
-  - `stib` stores ibo/ssbo
-  - `stl` stores local
+  - `stc` stores const (register file)
+  - `stib` stores ibo/ssbo (memory)
+  - `stl` stores local (memory)
+  - `stg` stores global (memory)
   - `chmask` resets execution mask
   - `chsh` jumps to the next shader
     - `cmask` and `chsh` are used by VS to chain to HS or GS
