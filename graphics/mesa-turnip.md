@@ -851,3 +851,51 @@ Mesa Turnip
   - `ir3_validate.c` and `ir3_ra_validate.c` are only enabled on debug build
     for validations
   - `disasm-a3xx.c` and `ir3_assembler.c` are only used by tools
+
+## UBOs
+
+- descriptors
+  - `descriptor_size` returns `A6XX_TEX_CONST_DWORDS * 4`, 64 bytes, for UBOs
+  - `write_ubo_descriptor` uses only 8 bytes
+  - I guess this is because adreno bindless expects descriptors to be
+    multiples of 64 bytes
+- spirv-to-nir
+  - use `nir_intrinsic_vulkan_resource_index` and
+    `nir_intrinsic_load_vulkan_descriptor` to load descriptors
+- `tu_shader_create`
+  - `nir_lower_explicit_io` lowers `nir_intrinsic_load_deref` to
+    `nir_intrinsic_load_ubo`
+    - the deref, which is a `nir_deref_type_struct`, is also lowered to an
+      offset by `nir_explicit_io_address_from_deref`
+  - `nir_intrinsic_vulkan_resource_index` is lowered to vec3
+    - x is `set`, a constant,
+    - y is `offset` to the descriptor set iova (units are 64-bytes)
+    - z is shift
+  - `nir_intrinsic_load_vulkan_descriptor` passes the vec3 along and forces z
+    to 0, because the address format is
+    `nir_address_format_vec2_index_32bit_offset`
+  - `lower_ssbo_ubo_intrinsic` replaces `(set, offset)` by
+    `nir_intrinsic_bindless_resource_ir3(set, offset)`
+- `ir3_nir_lower_variant`
+  - `nir_intrinsic_bindless_resource_ir3` is untouched
+  - `nir_intrinsic_load_ubo` has several outcomes
+    - `ir3_nir_lower_ubo_loads` can potentially lower it to
+      `nir_intrinsic_load_uniform`
+      - `ir3_nir_lower_preamble` can further lower it to
+      	`nir_intrinsic_copy_ubo_to_uniform_ir3`
+    - otherwise, `nir_lower_ubo_vec4` lowers it to
+      `nir_intrinsic_load_ubo_vec4`
+- `emit_instructions`
+  - `nir_intrinsic_bindless_resource_ir3` is translated to `mov`
+    - remember that its src is an offset (in units of 64-bytes)
+  - `nir_intrinsic_load_ubo_vec4` is translated to `ldc`
+    - because it loads from a bindless resource, `ir3_handle_bindless_cat6`
+      sets `IR3_INSTR_B` and sets `base` to `nir_intrinsic_desc_set`
+  - `nir_intrinsic_load_uniform` is translated to `mov` from the const reg
+    file
+  - `nir_intrinsic_copy_ubo_to_uniform_ir3` is translated to `ldc.k`
+- bind descriptor set
+  - update `REG_A6XX_SP_BINDLESS_BASE` to sets' iovas for all 5 sets
+  - update `REG_A6XX_HLSQ_BINDLESS_BASE` to sets' iovas for all 5 sets
+  - `A6XX_HLSQ_INVALIDATE_CMD` `A6XX_HLSQ_INVALIDATE_CMD_GFX_BINDLESS`
+- 

@@ -153,6 +153,20 @@ NIR
   - `vec4 ssa4 = vec4 ssa2.x, ssa2.y, ssa2.z, ssa3`
   - `intrinsic store_output (ssa4, ssa1) (/*base*/8, /*wrmast*/15, /*component*/0, /*type*/160)`
 - codegen
+- UBOs
+  - `layout(set = 0, binding = 0) uniform xxx { float qqq; };`
+  - `decl_var ubo INTERP_MODE_NONE xxx  (~0, 0, 0)`
+    - the three numbers are `location`, `driver_location`, and `binding`
+  - `vec1 32 ssa_2 = load_const (0x00000000 = 0.000000)`
+  - `vec3 32 ssa_3 = intrinsic vulkan_resource_index (ssa_2) (desc_set=0, binding=0, desc_type=UBO /*6*/)`
+    - at `desc_set` and `binding` is an array of resources
+    - `ssa_2` is the array index
+  - `vec3 32 ssa_4 = intrinsic load_vulkan_descriptor (ssa_3) (desc_type=UBO /*6*/)`
+    - this loads the resource descriptor from the resource index, which is
+      usually no-op
+  - `vec3 32 ssa_5 = deref_cast (xxx *)ssa_4 (ubo xxx)  /* ptr_stride=0, align_mul=0, align_offset=0 */`
+  - `vec3 32 ssa_6 = deref_struct &ssa_5->qqq (ubo float) /* &((xxx *)ssa_4)->qqq */`
+  - `vec1 32 ssa_7 = intrinsic load_deref (ssa_6) (access=0)`
 
 ## GLSL to NIR
 

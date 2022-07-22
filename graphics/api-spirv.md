@@ -135,3 +135,17 @@ SPIR-V
       - all `OpVariable` must have a storage class of `Function`
       - ended with a termination instruction
     - `OpFunctionEnd`
+
+## UBOs
+
+- definition
+  - `OpTypeStruct` to define the struct type
+  - `OpTypePointer` to define a pointer type to the struct, with Uniform
+    storage class
+  - `OpVariable` to define a variable of the pointer type, with Uniform
+    storage class as well
+  - one `OpTypePointer` for each of the struct members, with Uniform storage
+    class again
+- load
+  - `OpAccessChain` on the variable to get a pointer to a struct member
+  - `OpLoad` to load
