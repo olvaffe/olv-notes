@@ -852,7 +852,117 @@ Mesa Turnip
     for validations
   - `disasm-a3xx.c` and `ir3_assembler.c` are only used by tools
 
-## UBOs
+## IR3 VS IOs
+
+- spirv
+  - `OpVariable`
+  - `OpLoad`
+  - `OpStore`
+- nir
+  - `decl_var`
+  - `deref_var`
+  - `load_deref`
+  - `store_deref`
+- `nir_lower_io`
+  - `load_input`
+  - `store_output`
+- `ir3_compile_shader_nir`
+  - `setup_input` lowers `nir_intrinsic_load_input` to `OPC_META_INPUT`
+    - `ir3_legalize` will discard most meta instructions including
+    	`OPC_META_INPUT`
+  - `create_sysval_input`
+  - `setup_output` lowers `nir_intrinsic_store_output` to nothing
+- `ir3_shader_variant`
+  - `outputs_count` and `outputs`
+    - these are `gl_varying_slot`
+  - `output_size` is used only when HS/DS/GS is enabled
+  - `inputs_count` and `inputs`
+    - these include `gl_vert_attrib` and `gl_system_value`
+  - `input_size` is 0 because it is only for HS/DS/GS
+  - `total_in`, `sysval_in`, and `varying_in` are set but are not used for
+    VS
+    - they are mostly used for fs before a6xx
+  - `tu6_emit_vertex_input` uses `inputs` to emit `A6XX_VFD_DEST_CNTL_INSTR`
+- when HS/DS/GS is enabled
+  - vs uses `chsh` to jump to the next stage
+  - `ir3_nir_lower_to_explicit_output` initializes `output_loc` and
+    `output_size`
+    - it uses `shader_io_get_unique_index` to map `gl_varying_slot` to byte
+    	offsets
+    - `output_size` is in dwords (e.g., 2 out's have 8 dwords)
+    - `store_output` is lowered to `store_shared_ir3`
+  - system values
+    - `SYSTEM_VALUE_TCS_HEADER_IR3` is written to
+    	`VARYING_SLOT_TCS_HEADER_IR3`
+    - `SYSTEM_VALUE_REL_PATCH_ID_IR3` is written to
+    	`VARYING_SLOT_REL_PATCH_ID_IR3`
+    - `SYSTEM_VALUE_GS_HEADER_IR3` is written to
+    	`VARYING_SLOT_GS_HEADER_IR3`
+    - `SYSTEM_VALUE_PRIMITIVE_ID` is written to `VARYING_SLOT_PRIMITIVE_ID`
+
+## IR3 HS/DS IOs
+
+- spirv
+  - `OpVariable`
+  - `OpLoad`
+  - `OpStore`
+  - `AccessChain`
+- nir
+  - `decl_var`
+  - `deref_var`
+  - `load_deref`
+  - `store_deref`
+  - `deref_array`
+- `nir_lower_io`
+  - `load_per_vertex_input`
+  - `store_per_vertex_output`
+- ir3-specific tess lowering
+  - `ir3_nir_lower_tess_ctrl`
+    - `load_per_vertex_output` and `load_output` are lowered to
+      `load_global_ir3`
+    - `store_per_vertex_output` and `store_output` are lowered to
+      `store_global_ir3`
+    - these use a bo of size `TU_TESS_BO_SIZE`
+  - `ir3_nir_lower_tess_eval`
+    - `load_per_vertex_input` and `load_input` are lowered to
+      `load_global_ir3`
+  - `ir3_nir_lower_to_explicit_output`
+    - `store_output` is lowered to `store_shared_ir3` and uses the shared
+      (local) memory
+    - `output_loc` and `output_size` describe the layout of the local memory
+  - `ir3_nir_lower_to_explicit_input`
+    - `load_per_vertex_input` is lowered to `load_shared_ir3`
+  - VS
+    - when followed by HS/DS/GS, use `ir3_nir_lower_to_explicit_output` to
+      lower outputs to share (local) memory
+    - otherwise, no special handling
+  - HS is always followed by DS
+    - use `ir3_nir_lower_tess_ctrl` to lower outputs to a `TU_TESS_BO_SIZE` bo
+    - use `ir3_nir_lower_to_explicit_input` to lower inputs to share (local)
+      memory
+  - DS is always preceded by HS
+    - use `ir3_nir_lower_tess_eval` to lower inputs to a `TU_TESS_BO_SIZE` bo
+    - if followed by GS, also use `ir3_nir_lower_to_explicit_output` to lower
+      outputs to share (local) memory
+  - GS is always preceded by VS/HS/DS
+    - use `ir3_nir_lower_to_explicit_input`
+- HS `ir3_shader_variant`
+  - `inputs_count` and `inputs`
+    - `gl_varying_slot` has been lowered to local memory
+    - these are system values such as `SYSTEM_VALUE_TCS_HEADER_IR3` and
+      `SYSTEM_VALUE_REL_PATCH_ID_IR3`
+  - `input_size` is set by `ir3_nir_lower_to_explicit_input` and is the max
+    unique index plus 1
+  - `outputs_count` and `outputs` are 0
+  - `output_size` is set by `ir3_nir_lower_tess_ctrl`
+- DS `ir3_shader_variant`
+  - `inputs_count` and `inputs` are the same as in HS
+  - `input_size` is by `ir3_nir_lower_tess_eval` and is the max unique index
+    plus 1
+  - with GS, `outputs_count` and `outputs` are 0.  `output_size` is set.
+  - without GS, `outputs_count` and `outputs` are for fs.  `output_size` is 0.
+
+## IR3 UBOs
 
 - descriptors
   - `descriptor_size` returns `A6XX_TEX_CONST_DWORDS * 4`, 64 bytes, for UBOs
@@ -898,4 +1008,3 @@ Mesa Turnip
   - update `REG_A6XX_SP_BINDLESS_BASE` to sets' iovas for all 5 sets
   - update `REG_A6XX_HLSQ_BINDLESS_BASE` to sets' iovas for all 5 sets
   - `A6XX_HLSQ_INVALIDATE_CMD` `A6XX_HLSQ_INVALIDATE_CMD_GFX_BINDLESS`
-- 
