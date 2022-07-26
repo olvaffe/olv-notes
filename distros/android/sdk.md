@@ -3,16 +3,16 @@ Android SDK
 
 ## SDK/NDK
 
-- Bootstrap to `~/android-sdk`
+- Bootstrap to `~/android/sdk`
   - <https://developer.android.com/studio>
   - choose "Command line tools only"
   - `unzip commandlinetools-linux-*_latest.zip`
-  - `./cmdline-tools/bin/sdkmanager --sdk_root=~/android-sdk cmdline-tools\;latest`
+  - `./cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android/sdk cmdline-tools\;latest`
   - `rm -rf commandlinetools-linux-*_latest.zip cmdline-tools`
 - Install packages
-  - `cd ~/android-sdk`
+  - `cd ~/android/sdk`
   - `./cmdline-tools/latest/bin/sdkmanager --list`
-  - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-28"`
+  - `./cmdline-tools/latest/bin/sdkmanager --install 'build-tools;33.0.0' 'ndk;25.0.8775105' platform-tools`
 - if only adb is needed,
   - search for "android sdk platform tools" for direct download
   - <https://developer.android.com/studio/releases/platform-tools>

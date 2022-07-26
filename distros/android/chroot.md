@@ -54,3 +54,20 @@ Android Chroot
   - first stage init is hardcoded and is hard to fool
   - maybe we can get lucky by skipping the first stage?
 - maybe starting logd and adbd manually.  Not sure about properties.
+
+## GSI image
+
+- build image
+  - <https://source.android.com/setup/build/gsi>
+  - `repo init -u https://android.googlesource.com/platform/manifest -b android12-gsi`
+  - `repo sync -c`
+  - `. build/envsetup.sh`
+  - `lunch gsi_x86_64-userdebug`
+  - `make`
+- create chroot
+  - `mount -o ro system.img tmp`
+  - `cp -a tmp chroot`
+  - `umount tmp`
+  - `mkdir chroot/usr`
+    - this makes systemd-nspawn happy
+- 
