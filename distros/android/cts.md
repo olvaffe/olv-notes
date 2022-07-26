@@ -1,21 +1,6 @@
 Android CTS
 ===========
 
-## SDK/NDK
-
-- Bootstrap to `~/android-sdk`
-  - <https://developer.android.com/studio>
-  - choose "Command line tools only"
-  - `unzip commandlinetools-linux-*_latest.zip`
-  - `./cmdline-tools/bin/sdkmanager --sdk_root=~/android-sdk cmdline-tools\;latest`
-  - `rm -rf commandlinetools-linux-*_latest.zip cmdline-tools`
-- Install packages
-  - `cd ~/android-sdk`
-  - `./cmdline-tools/latest/bin/sdkmanager --list`
-  - `./cmdline-tools/latest/bin/sdkmanager --install "build-tools;29.0.3" "ndk;23.1.7779620" "platforms;android-28"`
-- or just download Android Studio and get adb and aapt
-  - `export PATH=$PATH:~/Android/Sdk/build-tools/28.0.3:~/Android/Sdk/platform-tools`
-
 ## CTS
 
 - `./cts-tradefed run commandAndExit cts-dev -m <module> -t <CLASS>#<METHOD>`
