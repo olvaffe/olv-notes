@@ -67,3 +67,70 @@ Workout
     - hamstrings (back of upper legs)
     - quadriceps (front of upper legs)
     - glutes (butt and hips)
+
+## Equipments
+
+- cardio
+  - treadmill
+  - elliptical machine (low-impact treadmill)
+  - stationary bike
+  - rowing machine
+- strength
+  - chest press
+  - lat pulldown
+  - leg press
+  - smith machine
+  - cables
+  - dumbbell set
+  - barbell
+
+## Sets and Reps
+
+- RM, repetition maximum
+  - 1RM: can only do 1 rep at the weight
+  - 8RM: can do 8 reps at the weight, with the last 2 reps very difficult
+  - beginner should target 8RM or higher
+- stregnth training
+  - compound exercises
+    - <= 6 reps
+    - 2-6 sets
+    - 2-5 minutes rest
+  - isolation exercises
+    - <= 8 reps
+    - 1-3 sets
+- hypertrophy training
+  - 6-12 reps
+  - 3-6 sets
+  - 30-90 seconds rest
+  - training volume
+    - reps times sets times weight
+    - most important factor for hypertrophy
+- endurance training
+  - >= 12 reps
+  - 2-3 sets
+  - <=30 seconds rest
+- power training
+  - 1-5 reps
+  - 3-5 sets
+  - 2-5 minutes rest
+
+## Routines
+
+- a muscle group needs 48-72 hours to rest after trained
+- bro split
+  - M-F: one muscle group a day
+  - weekends: rest days
+- push pull legs
+  - push: chest, shoulder, triceps
+  - pull: back, biceps
+  - legs: quadriceps, hamstrings, glutes, and calves
+  - can be 3-day, 6-day, or 2-day (push and pull on the same day)
+- when combining strengh and cardio, do stregth first
+  - not a big deal though
+
+## Lifts
+
+- the big 3 lifts
+  - barbell squat
+  - bench press
+  - deadlift
