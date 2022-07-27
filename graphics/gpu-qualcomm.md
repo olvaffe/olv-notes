@@ -338,7 +338,9 @@ Qualcomm Adreno
 - memory access
   - CP memory access is uncached
   - `CP_MEM_WRITE` writes a dword or qword to addr
-  - `CP_MEM_TO_MEM` copies a qword with alu
+  - `CP_MEM_TO_MEM` sums  dwords or qwords and writes the result to addr
+    - `DOUBLE` selects dword / qword
+    - `NEG_A/B/C` negates values before summing
   - `CP_MEMCPY` copies N dwords
   - `CP_COND_WRITE5` writes addr if val at another addr meets the condition
   - `CP_REG_TO_MEM` copies a reg to addr

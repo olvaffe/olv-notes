@@ -561,6 +561,107 @@ Mesa Turnip
     - `tu6_draw_common`
     - `tu_CmdClearAttachments`
 
+## Queries
+
+- `tu_GetQueryPoolResults`
+  - `query_slot` has an `available` member that is set by gpu
+  - `query_result_addr` expects result(s) to follow `query_slot` immediately
+  - if `VK_QUERY_RESULT_WAIT_BIT` and the result is not available,
+    `wait_for_available` busy waits
+  - otherwise, the results are copied out
+- `VK_QUERY_TYPE_OCCLUSION`
+  - a `occlusion_query_slot` has
+    - `available`
+    - `result`
+    - `begin`
+    - `end`
+  - `CP_EVENT_WRITE(ZPASS_DONE)` writes out the count of fragments that pass
+    depth test
+    - `PERF_CP_ZPASS_DONE` is a counter for fragments that pass depth test
+    - `RB_SAMPLE_COUNT_CONTROL` specifies to copy out the counter
+    - `RB_SAMPLE_COUNT_ADDR` specifies the dst address
+  - `tu_CmdBeginQuery` emits `CP_EVENT_WRITE(ZPASS_DONE)` to update `begin`
+  - `tu_CmdEndQuery` updates `end` and `result`
+    - it uses `CP_EVENT_WRITE(ZPASS_DONE)` to update `end`
+    - to be able to wait for the update, it
+      - uses `CP_MEM_WRITE` to init `end` to ~0 first
+      - uses `CP_WAIT_REG_MEM` to wait for the update on gpu
+      - uses `CP_MEM_TO_MEM` to accumulate `end - begin` to `result`
+      - uses `CP_MEM_WRITE` to set `available`
+    - accumulation is cruicial because, when in a render pass, these cmds are
+      emitted to `draw_cs` and are executed for each tile
+- `VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT`
+  - a `primitives_generated_query_slot` has
+    - `available`
+    - `result`
+    - `begin`
+    - `end`
+  - `tu_CmdBeginQuery` updates `begin`
+    - `CP_EVENT_WRITE(START_PRIMITIVE_CTRS)` starts the counter
+    - `CP_REG_TO_MEM` to copy `REG_A6XX_RBBM_PRIMCTR_7` to `begin`
+    - it carefully does this only in binning or sysmem mode, rather than
+      per-tile, with some help from `tu6_render_tile`
+  - `tu_CmdEndQuery` updates `end` and `result`
+    - `CP_REG_TO_MEM` to copy `REG_A6XX_RBBM_PRIMCTR_7` to `end`
+    - `CP_MEM_TO_MEM` to accumulate `end - begin` to `result`
+    - `CP_EVENT_WRITE(STOP_PRIMITIVE_CTRS)` to stop the counter
+
+## Vertex Inputs
+
+- `tu_pipeline_builder_parse_vertex_input`
+  - it parses `VkPipelineVertexInputStateCreateInfo` and emits
+    - `VFD_FETCH_STRIDE(i)`
+    - `VFD_DECODE_INSTR(i)`
+    - `VFD_DECODE_STEP_RATE(i)`
+  - it uses `tu6_emit_vertex_input` as the helper, which can handle the
+    dynamic `VkVertexInputBindingDescription2EXT` and
+    `VkVertexInputAttributeDescription2EXT`
+- `tu6_emit_program`
+  - `tu6_emit_vfd_dest` parses vs inputs and emits
+    - `VFD_CONTROL_0`
+    - `VFD_DEST_CNTL_INSTR`
+  - `tu6_emit_vs_system_values` parses vs inputs and emits
+    - `VFD_CONTROL_1..6`
+- `tu_CmdBindVertexBuffers2EXT` emits
+  - `VFD_FETCH_BASE(i)`
+  - `VFD_FETCH_SIZE(i)`
+- dynamic states
+  - `tu_pipeline_builder_parse_dynamic` translates `VK_DYNAMIC_STATE_*` to
+    `TU_DYNAMIC_STATE_*`
+  - both `tu_pipeline` and `tu_cmd_state` have
+    `dynamic_state[TU_DYNAMIC_STATE_COUNT]`
+    - bits in `pipeline->dynamic_state_mask` decide which to use
+- `VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE`
+  - it is translated to `TU_DYNAMIC_STATE_VB_STRIDE`
+  - when not set, `VFD_FETCH_STRIDE` is emitted to
+    `pipeline->dynamic_state[TU_DYNAMIC_STATE_VB_STRIDE]`
+    - `tu_CmdBindPipeline` calls `tu_cs_emit_draw_state` on the stateobj
+  - when set, `VFD_FETCH_STRIDE` is deferred until
+    `tu_CmdBindVertexBuffers2EXT`
+    - `tu6_emit_vertex_strides` emits `VFD_FETCH_STRIDE` to
+      `cmd->state.dynamic_state[TU_DYNAMIC_STATE_VB_STRIDE]` and sets
+      `TU_CMD_DIRTY_VB_STRIDE`
+    - `tu6_draw_common` checks the dirty bit and calls `tu_cs_emit_draw_state`
+- `VK_DYNAMIC_STATE_VERTEX_INPUT_EXT`
+  - it is translated to `TU_DYNAMIC_STATE_VERTEX_INPUT` and
+    `TU_DYNAMIC_STATE_VERTEX_INPUT`
+    - it is a super set of `VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE`
+- to summarize,
+  - `tu_CmdBindVertexBuffers2EXT` emits to `cmd->state.vertex_buffers` and
+    sets `TU_CMD_DIRTY_VERTEX_BUFFERS`
+    - if `VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE`,
+      `tu6_emit_vertex_strides` emits to
+      `cmd->state.dynamic_state[TU_DYNAMIC_STATE_VB_STRIDE]` and sets
+      `TU_CMD_DIRTY_VB_STRIDE`
+  - `tu_CmdBindPipeline`, when not dynamic, emits dynamic states from
+    `pipeline->dynamic_state[..]`
+    - `tu_update_num_vbs` reduces the stateobj sizes using `pipeline->num_vbs`
+  - `tu_CmdSetVertexInputEXT`
+  - `tu6_draw_common`
+    - emits `TU_DRAW_STATE_VB` if `TU_CMD_DIRTY_VERTEX_BUFFERS`
+    - emits `TU_DYNAMIC_STATE_VB_STRIDE` if `TU_CMD_DIRTY_VB_STRIDE` and
+      dynamic
+
 ## Shaders
 
 - debug environment variables
