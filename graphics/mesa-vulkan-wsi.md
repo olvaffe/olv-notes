@@ -313,3 +313,49 @@ Mesa Vulkan WSI
     - chained to empty (or blit) `VKQueueSubmit` just before presentation
     - gives driver a chance to set up implicit sync for the bo
     - used by anv to add a `EXEC_OBJECT_WRITE` reloc for implicit sync
+
+## Displays
+
+- related extensions
+  - `VK_KHR_display`
+    - `VK_KHR_get_display_properties2`
+    - `VK_KHR_display_swapchain`
+  - `VK_EXT_direct_mode_display`
+    - `VK_EXT_acquire_xlib_display`
+    - `VK_EXT_acquire_drm_display`
+    - `VK_EXT_display_surface_counter`
+    - `VK_EXT_display_control`
+- basic usage only needs `VK_KHR_display` and `VK_KHR_get_display_properties2`
+  - `vkGetPhysicalDeviceDisplayPropertiesKHR2` enumerates `VkDisplayKHR`s
+  - `vkGetDisplayModeProperties2KHR` enumerates `VkDisplayModeKHR`s of a
+    `VkDisplayKHR`
+  - `vkGetPhysicalDeviceDisplayPlaneProperties2KHR` returns hw plane count as
+    well as `VkDisplayKHR`s to which hw planes are currently attached
+  - `vkGetDisplayPlaneSupportedDisplaysKHR` returns `VkDisplayKHR`s with which
+    a hw plane is compatible
+  - `vkGetDisplayPlaneCapabilities2KHR` returns capabilities of a hw plane
+  - `vkCreateDisplayPlaneSurfaceKHR` creates a `VkSurfaceKHR` from
+    `VkDisplayModeKHR` and hw plane index
+  - a swapchain can then be created using `VK_KHR_swapchain`
+    - `VK_KHR_display_swapchain` is about swapchains that share images and is
+      optional
+- display leasing uses `VK_EXT_direct_mode_display` and platform-specific
+  extensions
+  - `vkAcquireXlibDisplayEXT` leases an X11 display using
+    `xcb_randr_create_lease` for direct access
+  - `wsi_ReleaseDisplayEXT` releases the X11 display back to X11
+- internals
+  - when `VK_KHR_display` is enabled, `vkCreateDevice` opens the render node
+    as well as the primary node
+  - `wsi_device_init` calls `wsi_display_init_wsi` to initialize `wsi_display`
+  - `wsi_get_connectors` calls `drmModeGetResources` to discover all
+    connectors and all modes
+    - for each drm connector, a `wsi_display_connector` is created
+    - for each drm mode of each connector, a `wsi_display_mode` is created
+    - a `VkDisplayKHR` is a `wsi_display_connector`
+    - a `VkDisplayModeKHR` is a `wsi_display_mode`
+  - wsi assumes each drm connector has a hw plane
+    - that sounds bad
+    - as such, `wsi_GetDisplayPlaneSupportedDisplaysKHR` always returns 1
+      `VkDisplayKHR`
+    - `wsi_GetDisplayPlaneCapabilities2KHR` just lies
