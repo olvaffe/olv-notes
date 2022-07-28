@@ -309,7 +309,9 @@ Kernel Config
       - deselect all but the desired drivers
       - select `Broadcom GENET internal MAC support` if rpi
     - select `Qualcomm IPA support` if msm modem
-    - select `USB Network Adapters` if any
+    - select `USB Network Adapters`
+      - select desired drivers, such as
+      - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
     - select `Wireless LAN` if any
       - deselect all but the desired drivers
       - if msm
@@ -522,6 +524,9 @@ Kernel Config
 - select `Networking support`
   - select `Networking options`
     - select `802.1d Ethernet Bridging`
+- select `Device Drivers`
+  - select `Network device support`
+    - select `Virtual ethernet pair device`
 
 ## Config: KVM Host
 
