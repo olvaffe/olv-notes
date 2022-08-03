@@ -404,6 +404,87 @@ Qualcomm Adreno
   - `ZPASS_DONE` writes zpass fragment count to addr specified in
     `A6XX_RB_SAMPLE_COUNT_ADDR`
 
+## CP Firmware
+
+- `a630_sqe.fw` can be disassembled with `afuc-disasm`
+  - `disasm` executes and disassembles all instructions
+  - lpac is not used
+  - `emu_pipe_regs` is not used
+- afuc emulator
+  - 65536 GPU Register Space
+    - `struct emu_gpu_regs`
+    - `emu_set_gpu_reg`
+    - `emu_get_gpu_reg`
+    - these are gpu registers
+  - 4096 Control Register Space
+    - `struct emu_control_regs`
+    - `emu_set_control_reg`
+    - `emu_get_control_reg`
+    - these are SQE registers and only a few are used/known
+  - 32 GPRs
+    - `struct emu_gpr_regs`
+    - `emu_set_gpr_reg`
+    - `emu_get_gpr_reg`
+    - some of them are special
+  - special GPRs
+    - these are called fifo regs
+    - `emu_set_fifo_reg`
+    - `emu_get_fifo_reg`
+- `emu_run_bootstrap` executes the firmware up the point that the packet table
+  is initialized
+  - read gpu registers
+    - `cwrite`s to SQE's `REG_READ_DWORDS` and `REG_READ_ADDR`
+      - this reads the gpu registers into a fifo
+    - reads from `REG_REGDATA` gpr
+      - each read consumes a value in the fifo
+  - write gpu registers
+    - `cwrite`s to SQE's `REG_WRITE_ADDR` and `REG_WRITE`
+      - this writes the gpu registers
+      - each write increments `REG_WRITE_ADDR`
+  - write gpu registers #2
+    - writes to `REG_ADDR` or `REG_USRADDR`
+    - writes to `REG_DATA`
+      - this gets the gpu reg from `REG_ADDR` or `REG_USRADDR` and increments
+      	them
+      - this then updates the gpu reg
+  - read cpu memory
+    - `cwrite`s to SQE's `MEM_READ_ADDR` and `MEM_READ_DWORDS`
+      - this reads the cpu memory data into a fifo
+      - cpu mem addr is 64-bit iova and requires two `cwrite`s
+    - reads from `REG_MEMDATA` gpr
+      - each read consumes a value in the fifo
+  - read cpu memory #2
+    - `cwrite`s to SQE's `LOAD_STORE_HI`
+      - this writes the higher 32-bit of iova
+    - `load`s from the iova
+      - this directly specifies the lower 32-bit of iova plus an offset
+  - initialize packet table
+    - `cwrite`s 0 to SQE's `PACKET_TABLE_WRITE_ADDR`
+    - `cwrite`s to `PACKET_TABLE_WRITE` with `(rep)`
+      - `(rep)` repeats the instruction until `REG_REM` is 0
+      - each write increments the addr
+      - each write also initializes `emu->jmptbl[addr]`
+- with the packet table known, `afuc-disasm` disassembles all instructions and
+  labels where each packet type is handled
+- if emulator mode, `afuc-disasm` keeps executing while disassembling
+  - `waitin` waits for the next PM4 packet
+    - emulator sets `emu->waitin` and clears `emu->run_mode`
+  - `emu_main_prompt` waits for user input
+    - user should inject a PM4 packet into `emu->roq`, which is the command
+      queue
+  - `mov $01, $data` always follows `waitin`
+    - each read from `REG_DATA` consumes `emu->roq`
+    - `emu_step` also has logic to
+      - peek the header in `$01`
+      - update `REG_REM`
+      - jumps with `emu->gpr_regs.pc = emu->jmptbl[id]`
+- for example, `CP_CONTEXT_REG_BUNCH` writes to a bunch of gpu registers
+  - `(rep)(xmov3)mov $usraddr, $data`
+  - reading `REG_DATA` reads the next dword in ROQ
+  - writing `REG_USRDATA` updates the reg addr
+  - `(xmov3)` updates the gpu registers
+  - `(rep)` repeats until `REG_MEM` is 0.  That is, all `$data` are consumed
+
 ## Caches
 
 - L1 ro texture cache, coupled with TP

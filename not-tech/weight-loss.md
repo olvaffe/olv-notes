@@ -32,6 +32,23 @@ Weight Loss
 
 ## Diets
 
+- Target
+  - recommended when maintaining,
+    - carbs: 45-65%
+    - protein: 10-35%
+    - fat: 20-35%
+  - recommended when losing weight
+    - carbs: 10-30%
+    - protein: 40-50%
+    - fat: 30-40%
+  - personal target
+    - carbs: 40-45%
+    - protein: 35-40%
+    - fat: 20%
+  - with 1800kcal,
+    - carbs: 720-810kcal, 180-202.5g
+    - protein: 630-720kcal, 157.5-180g
+    - fat: 360kcal, 40g
 - McDonald's
   - Cheeseburger: 300cal, fat 13g, carbs 32g, protein 15g
   - Quarter Pounder with Cheese: 520cal, fat 26g, carbs 42g, protein 30g
