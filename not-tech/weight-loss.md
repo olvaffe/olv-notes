@@ -80,3 +80,56 @@ Weight Loss
   - 70cal per 10kg per hour
   - at 100kg and with a 600m loop, 100cal per loop
     - a loop takes 4.5min
+
+## Metabolism
+
+- digestion process
+  - carbohydrates
+    - the amylase in saliva breaks down some carbs and the food is referred to
+      as chyme
+    - the acid in stomach kills bacteria in the chyme
+    - in duodenum, pancreatic amylase breaks chyme down into dextrin and
+      maltose
+    - the lactase, sucrase, and maltase in small intestine breaks sugars down
+      into monosaccharides or single sugars
+    - the small intestine aborts and releases them into bloodstream
+    - the single sugars are called glucose
+  - proteins
+    - the hydrochloric acid and proteases in stomach break proteins down into
+      chains of amino acids
+    - the small intestine breaks them down into amino acids, absorbs and
+      releases them into bloodstream
+  - fats
+    - triglycerides are the scientific term
+    - the lipase in salvia breaks some triglycerides down
+    - the gastric lipase in the stomach breaks triglycerides down into
+      diglycerides and fatty acids
+    - more lipase and bile in the small instestine package them into chylomicrons
+    - chylomicrons enter the bloodsream through the lymph system
+- bloodstream
+  - amino acids
+    - amino acids are sent to cells for use right away, to repair protein
+      structures in different tissues
+    - excessive amino acids are not stored and are converted to glucose by the
+      liver
+  - chylomicrons
+    - triglycerides in chylomicrons are absorbed and stored in fat cells and
+      the liver
+      - the liver can convert triglycerides to glucose (via gluconeogenesis)
+    - fatty acids in chylomicros are absorbed and stored in adipocytes
+    - the remaining, mostly cholesterol, are sent to the liver
+  - glucose
+    - glucose can be sent to cells for use right away
+    - excessive glucose can be
+      - absorbed by the muscles and converted into glycogen
+      - absorbed by the liver and converted into glycogen (via glycogenesis) and
+        triglycerides (via lipogenesis)
+      - these processes are signaled by insulin
+- to summarize,
+  - carbs provide glucose for energy
+    - excess glucose can be converted to glycogen and triglycerides for
+      storage
+  - proteins provide amino acids for repairs
+    - excess amino acids can be converted to glucose
+  - fats provide triglycerides and are stored
+  - stored glycogen and triglycerides can be converted to glucose
