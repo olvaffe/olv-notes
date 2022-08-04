@@ -411,25 +411,44 @@ Qualcomm Adreno
   - lpac is not used
   - `emu_pipe_regs` is not used
 - afuc emulator
-  - 65536 GPU Register Space
-    - `struct emu_gpu_regs`
-    - `emu_set_gpu_reg`
-    - `emu_get_gpu_reg`
-    - these are gpu registers
-  - 4096 Control Register Space
+  - 12-bit Control Register Space
     - `struct emu_control_regs`
     - `emu_set_control_reg`
     - `emu_get_control_reg`
-    - these are SQE registers and only a few are used/known
+    - they emulate SQE internal registers and only a few are used/known
+      - accessed using `cread` and `cwrite` instructions
+      - 0x0xx: 
+      - 0x1xx: scratch space
+  - 8-bit Pipe Register Space
+    - `struct emu_pipe_regs`
+    - `emu_set_pipe_reg`
+    - `emu_get_pipe_reg`
+    - they emulate pipe registers
+      - write addr first to `$addr` and write val to `$data`
+        - addr is left-shifted by 24
+        - addr is auto-incremented after write
+        - some pipe regs are "void" and does not need writing val to `$data`
+      - write-only
+  - 16-bit GPU Register Space
+    - `struct emu_gpu_regs`
+    - `emu_set_gpu_reg`
+    - `emu_get_gpu_reg`
+    - they emulate gpu registers
+      - write addr first to `$addr` and write val to `$data`
+        - addr is auto-incremented after write
+      - or, cwrite addr first to `REG_WRITE_ADDR` and cwrite val to
+        `REG_WRITE`
+        - addr is auto-incremented after write
+      - to read, cwrite count first to `REG_READ_DWORDS` and cwrite addr to
+        `REG_READ_ADDR`
+        - this reads the vals into a FIFO which can be accessed via `$regdata`
   - 32 GPRs
     - `struct emu_gpr_regs`
     - `emu_set_gpr_reg`
     - `emu_get_gpr_reg`
-    - some of them are special
-  - special GPRs
-    - these are called fifo regs
-    - `emu_set_fifo_reg`
-    - `emu_get_fifo_reg`
+    - some of them are special and are called fifo regs
+      - `emu_set_fifo_reg`
+      - `emu_get_fifo_reg`
 - `emu_run_bootstrap` executes the firmware up the point that the packet table
   is initialized
   - read gpu registers
@@ -458,6 +477,10 @@ Qualcomm Adreno
       - this writes the higher 32-bit of iova
     - `load`s from the iova
       - this directly specifies the lower 32-bit of iova plus an offset
+  - read cpu memory #3
+    - write `NRT_ADDR` pipe registers and read from `REG_MEMDATA`
+  - write cpu memory
+    - for small writes, write `NRT_ADDR` and `NRT_DATA` pipe registers
   - initialize packet table
     - `cwrite`s 0 to SQE's `PACKET_TABLE_WRITE_ADDR`
     - `cwrite`s to `PACKET_TABLE_WRITE` with `(rep)`
@@ -484,6 +507,19 @@ Qualcomm Adreno
   - writing `REG_USRDATA` updates the reg addr
   - `(xmov3)` updates the gpu registers
   - `(rep)` repeats until `REG_MEM` is 0.  That is, all `$data` are consumed
+- `CP_WAIT_FOR_ME`
+  - increment `WFI_PEND_CTR` with `cwrite` to `WFI_PEND_INCR` control reg
+    - I think this happens immediately
+  - decrement `WFI_PEND_CTR` with `mov` to `WFI_PEND_DECR` pipe reg
+    - I think this is pipelined
+  - loop until `WFI_PEND_CTR` is 0
+- `CP_WAIT_FOR_IDLE`
+  - increment `WFI_PEND_CTR` immediately
+  - decrement `WFI_PEND_CTR` pipelined
+- `CP_MEM_WRITE`
+  - `mov` to `NRT_ADDR` and `NRT_DATA` pipe registers, which is pipelined
+- `CP_WAIT_MEM_WRITES`
+  - `mov` to `WAIT_MEM_WRITES` pipe reg, which is pipelined
 
 ## Caches
 
