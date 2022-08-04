@@ -505,7 +505,7 @@ Qualcomm Adreno
   - `(rep)(xmov3)mov $usraddr, $data`
   - reading `REG_DATA` reads the next dword in ROQ
   - writing `REG_USRDATA` updates the reg addr
-  - `(xmov3)` updates the gpu registers
+  - `(xmov3)` does `min(3, REG_REM)` more `mov`s from src2 to `$data`
   - `(rep)` repeats until `REG_MEM` is 0.  That is, all `$data` are consumed
 - `CP_WAIT_FOR_ME`
   - increment `WFI_PEND_CTR` with `cwrite` to `WFI_PEND_INCR` control reg
@@ -520,6 +520,49 @@ Qualcomm Adreno
   - `mov` to `NRT_ADDR` and `NRT_DATA` pipe registers, which is pipelined
 - `CP_WAIT_MEM_WRITES`
   - `mov` to `WAIT_MEM_WRITES` pipe reg, which is pipelined
+- `CP_BLIT`
+  - writes `CP_2D_EVENT_START`
+  - writes `HLSQ_2D_EVENT_CMD` and `PC_2D_EVENT_CMD`
+    - `BLIT_OP_FILL_2D`
+    - `BLIT_OP_COPY_2D`
+    - `BLIT_OP_SCALE_2D`
+  - writes coordinates
+  - writes to `HLSQ_2D_EVENT_CMD` and `PC_2D_EVENT_CMD` again
+    - `CONTEXT_DONE_2D`
+  - writes `CP_2D_EVENT_END`
+    - this triggers the event
+- `CP_SKIP_IB2_ENABLE_LOCAL`
+  - `$14` bit 8 indicates local ib2 skip
+- `CP_SKIP_IB2_ENABLE_GLOBAL`
+  - `$14` bit 9 indicates global ib2 skip
+- `CP_SET_MODE`
+  - if 1, set b29 and b30 of `$14` and done
+  - if 0, clear b29 and optionally b30 of `$14`
+  - `$12`
+    - b0 and b1 are the IB level: 0, 1, 2, or 3
+      - 0 is ring buffer
+      - 1 is user batches
+      - 2 is secondary batches or stateobjs
+      - 3 is stateobjs in secondary batches
+    - b4 and b5 are flags
+- `CP_SET_MARKER`
+  - userspace only uses mode 1..8
+- `CP_INDIRECT_BUFFER`
+- `CP_PREEMPT_ENABLE`
+  - infinite loop
+  - it seems the firmware jumps here for fatal errors
+- kernel
+  - `a6xx_hw_init`
+    - writes `CP_SQE_CNTL` to start SQE
+    - constructs a `CP_ME_INIT` packet and writes `CP_RB_WPTR` to exec
+    - more init
+  - `a6xx_submit`
+    - `CP_EVENT_WRITE(PC_CCU_INVALIDATE_DEPTH)`
+    - `CP_EVENT_WRITE(PC_CCU_INVALIDATE_COLOR)`
+    - one or more `CP_INDIRECT_BUFFER_PFE`
+    - write fence seqno to `CP_SCRATCH_REG(2)` (for hang debug)
+    - `CP_EVENT_WRITE(CACHE_FLUSH_TS)` w/ interrupt and writing seqno to
+      `msm_rbmemptrs::fence` 
 
 ## Caches
 

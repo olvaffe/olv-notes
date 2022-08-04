@@ -268,6 +268,66 @@ Mesa Turnip
     - because `MSM_SUBMIT_BO_WRITE` is always set, it calls
       `dma_resv_add_excl_fence` on all bos
 
+## Queues
+
+- `vkQueueSubmit`
+  - msm supports binary syncobjs but not timeline syncobjs
+  - the runtime picks `VK_DEVICE_TIMELINE_MODE_EMULATED` and emulates
+    timeline syncobjs using binary syncobjs
+  - to handle wait-before-signal, the runtime might reorder the submits
+- `tu_queue_submit`
+  - each `tu_cs` has a list of `tu_cs_entry`, which are regions of `tu_bo`s
+  - all `tu_cs_entry` from all `tu_cmd_buffer::cs`s are collected into `struct
+    tu_queue_submit`
+  - `DRM_MSM_GEM_SUBMIT` submits them to the kernel
+
+## Command Buffers
+
+- a `tu_cmd_buffer` has several `tu_cs`s
+  - `cs` is what gets submitted to the kernel directly
+  - `draw_cs` is for commands inside a render pass
+    - in sysmem, it is called once
+    - in gmem, it is called for binning and for each tile
+  - `tile_store_cs` is for tile resolve and is called for each tile
+  - `draw_epilogue_cs` is for queries in a render pass and is called at the
+    end of the render pass
+  - `sub_cs` is for suballocating stateobjs and inline data
+- `sub_cs`
+  - the inline data for `vkCmdUpdateBuffer`
+  - temp image desc for 3D blit src
+  - temp image descs for input attachments
+  - stateobj for vertex buffers
+    - `TU_CMD_DIRTY_VERTEX_BUFFERS` and `TU_DRAW_STATE_VB`
+    - `TU_CMD_DIRTY_VB_STRIDE` and `TU_DYNAMIC_STATE_VB_STRIDE`
+  - dynamic descs for a descriptor set
+  - stateobj for descriptor sets
+  - stateobjs for dynamic states such as
+    - scissors and viewports
+    - line width, cull mode
+    - depth bias and bounds
+    - stencil masks and refs
+    - blend consts, logic op, etc.
+  - inline data for push consts
+  - stateobj for lrz
+  - stateobj for draw info
+- action commands outside of a render pass go to `cs`
+  - `vkCmdCopy*`, `vkCmdClear*`, and friends (except `vkCmdClearAttachments`)
+  - `vkCmdSetEvent` and friends
+  - `vkCmd*Query*` when outside of a render pass
+  - `vkCmdDispatch`
+- action commands inside of a render pass go to `draw_cs`
+  - `vkCmdClearAttachments`
+- state commands outside or inside of a render pass go to `draw_cs`
+  - because we need to reset the states for each tile
+- `draw_epilogue_cs`
+  - for queries
+- barriers 
+  - barriers are combined and deferred
+  - they go to `draw_cs` in `tu_emit_cache_flush_renderpass` normally
+  - in some cases, they go to `cs` in `tu_emit_cache_flush`
+- execute secondary command buffers
+- render pass begin/end
+
 ## Clear & Blit
 
 - `tu_CmdFillBuffer` uses `r2d_ops` with `r2d_clear_value`
