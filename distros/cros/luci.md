@@ -74,3 +74,14 @@ Chrome OS CI
     - `arc.Boot.vm`
     - `arc.DEQP.vm`
   - `tast list -buildbundle crosint <dut>`
+
+## `cheets_CTS_R`
+
+- `src/third_party/autotest/files/server/site_tests/cheets_CTS_R`
+- `cheets_CTS_R.py`
+  - `LATEST` is official cts
+  - `DEV` is preview cts
+- `control.internal.arm.CtsDeqp*`
+  - `cheets_CTS_R.internal.arm.CtsDeqp.32` and `cheets_CTS_R.internal.arm.CtsDeqp.64` use DEV
+  - the rest uses LATEST
+  - what are `suite:arc-cts`, `suite:arc-cts-r`, `suite:arc-cts-unibuild`?
