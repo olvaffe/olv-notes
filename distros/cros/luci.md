@@ -84,4 +84,22 @@ Chrome OS CI
 - `control.internal.arm.CtsDeqp*`
   - `cheets_CTS_R.internal.arm.CtsDeqp.32` and `cheets_CTS_R.internal.arm.CtsDeqp.64` use DEV
   - the rest uses LATEST
-  - what are `suite:arc-cts`, `suite:arc-cts-r`, `suite:arc-cts-unibuild`?
+- what are `suite:arc-cts`, `suite:arc-cts-r`, `suite:arc-cts-unibuild`,
+  `suite:arc-cts-qual`, and `suite:arc-cts-hardware`?
+  - `infra/suite_scheduler/generated_configs/suite_scheduler.ini`
+  - `arc-cts-qual` and `arc-cts-hardware`
+    - run on Mon, Wed, and Fri at hour 0 for beta channel
+    - run on Sat at hour 0 for stable channel
+    - run on Sun at hour 6 for dev channel
+    - timeout is 30 hours
+  - `arc-cts-r`
+    - run on selected days at hour 0 for dev channel
+      - Tue: {eve,kukui,trogdor,zork}-arc-r
+      - Thu: {kukui,trogdor}-arc-r
+      - Sat: kukui-arc-r
+      - Sun: zork-arc-r
+    - timeout is 43 hours
+  - `arc-cts`
+    - run on Mon, Wed, and Fri at hour 11 for dev channel
+    - run on Tue, Thu, and Sat at hour 0 for dev channel
+    - timeout is 30 hours
