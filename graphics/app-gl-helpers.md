@@ -5,6 +5,7 @@ Open GL (ES) Helpers
 
 - handling GL function pointers
   - old
+  - can not be used if GLES-only is desired
 - usage
   - `glewInit()`
   - `if (GLEW_ARB_vertex_program) ...`
