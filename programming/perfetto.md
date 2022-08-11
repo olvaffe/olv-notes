@@ -30,8 +30,9 @@ Perfetto
 
 ## Running
 
-- Build
-  - `tools/install-build-deps`
+- <https://perfetto.dev/docs/contributing/build-instructions>
+  - `git clone https://android.googlesource.com/platform/external/perfetto`
+  - `tools/install-build-deps [--linux-arm]` to install
     - `BUILD_DEPS_TOOLCHAIN_HOST`
       - `gn`
       - `clang-format`
@@ -51,15 +52,17 @@ Perfetto
       - `lzma`
       - `zlib`
       - `linenoise`
-  - `tools/build_all_configs.py`
-    - `LINUX_BUILD_CONFIGS`
-      - `linux_gcc_debug`, `linux_gcc_release`
-      - `linux_clang_debug`, `linux_clang_release`
-      - various sanitizer builds
-  - `tools/ninja -C out/linux_clang_release traced traced_probes perfetto`
+    - sysroot
+  - `tools/gn args out/blah`
+    - `target_os = "linux"`
+    - `target_cpu = "x64" or "arm64"`
+    - `is_debug = false`
+    - `cc_wrapper = "ccache"`
+  - `ninja -C out/blah`
+  - `scp out/blah/tracebox dst:~`
 - Run
-  - start `traced` as a regular user
-  - start `traced_probes --reset-ftrace` as root
+  - start `tracebox traced` as a regular user
+  - start `tracebox traced_probes --reset-ftrace` as root
     - or, make `/sys/kernel/debug` accessible by user
   - use `perfetto` to start/stop tracing
     - `perfetto -c configs/scheduling.cfg --txt --out aaa`
