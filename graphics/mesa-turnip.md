@@ -328,6 +328,33 @@ Mesa Turnip
 - execute secondary command buffers
 - render pass begin/end
 
+## Autotune
+
+- on `vkCmdEndRenderPass2`
+  - `use_sysmem_rendering` decides whether sysmem or gmem should be used
+    - it calls `tu_autotune_use_bypass` and add the `tu_renderpass_result` to
+      `cmd->renderpass_autotune_results`
+  - `tu_cmd_render_sysmem` and `tu_cmd_render_tiles` call
+    `tu_autotune_begin_renderpass`/`tu_autotune_end_renderpass` before and
+    after rendering
+    - they write `ZPASS_DONE` to `tu_renderpass_result::bo` to get number of
+      samples
+- on `vkQueueSubmit`
+  - `tu_autotune_submit_requires_fence` checks if any cmdbuf has
+    `renderpass_autotune_results`
+  - `tu_autotune_on_submit` does most of autotune processing
+    - it increments `at->fence_counter`
+    - it associates all `cmd->renderpass_autotune_results` with
+      `tu_renderpass_history`
+      - there is one `tu_renderpass_history` for each renderpass
+    - `create_submission_data` adds a `tu_submission_data` to
+      `at->pending_submission_data`
+      - this updates fence seqno on gpu
+    - `queue_pending_results` moves or copies `tu_renderpass_result` from
+      `cmd->renderpass_autotune_results` to `at->pending_results`
+    - `process_results` retires completed `at->pending_results`
+      - `history_add_result` moves the result to `history->results`
+
 ## Clear & Blit
 
 - `tu_CmdFillBuffer` uses `r2d_ops` with `r2d_clear_value`
