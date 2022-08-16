@@ -120,6 +120,20 @@ Mesa Turnip IR3
     for validations
   - `disasm-a3xx.c` and `ir3_assembler.c` are only used by tools
 
+## NIR to IR3
+
+- `get_block` returns an `ir3_block` for each `nir_block`
+- `ir3_instr_create` adds an `ir3_instruction` to the end of the block
+  - an `ir3_instruction` has multiple dst and src registers
+  - `instr_create` allocates the memory
+  - `ir3_dst_create` adds an `ir3_register` to `instr->dsts`
+  - `ir3_src_create` adds an `ir3_register` to `instr->srcs`
+  - `ir3_register`
+    - ssa def is with `INVALID_REG` and `IR3_REG_SSA`
+    - imm is with 0 and `IR3_REG_IMMED`
+    - uniform is with base and `IR3_REG_CONST`
+- `emit_alu` translates a `nir_alu_instr`
+
 ## IR3 VS IOs
 
 - spirv
@@ -287,3 +301,15 @@ Mesa Turnip IR3
   - `live_in` are regs used in a block before definitions
     - that is, regs that are initialized by a preceding block
   - `live_out` are regs that are used by a following block
+
+## Geometry Shader
+
+- gs header
+  - b0..b5: `gl_PrimitiveIDIn`, current primitive in the stream
+  - b6..b10: vertex id
+  - b11..b15: `gl_InvocationID`, current instance of the primitive
+    - `layout(invocations = <num_instances>) in;`
+  - b16..b25: local thread id
+- primitive params
+  - .x: primitive stride
+  - .y: vertex stride

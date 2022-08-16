@@ -336,3 +336,40 @@ NIR
 - `nir_assign_io_var_locations`
   - it scans variables and assigns `var->data.driver_location`
   - callers use this to update `nir->num_inputs` / `nir->num_outputs` as well
+
+## Subgroup
+
+- `GL_ARB_shader_group_vote`
+  - `nir_intrinsic_vote_any`
+  - `nir_intrinsic_vote_all`
+  - `nir_intrinsic_vote_feq`
+  - `nir_intrinsic_vote_ieq`
+- `GL_ARB_shader_ballot`
+  - `nir_intrinsic_load_subgroup_size`
+  - `nir_intrinsic_load_subgroup_eq_mask`
+  - `nir_intrinsic_load_subgroup_ge_mask`
+  - `nir_intrinsic_load_subgroup_gt_mask`
+  - `nir_intrinsic_load_subgroup_le_mask`
+  - `nir_intrinsic_load_subgroup_lt_mask`
+  - `nir_intrinsic_ballot`
+  - `nir_intrinsic_ballot_bitfield_extract`
+  - `nir_intrinsic_ballot_bit_count_reduce`
+  - `nir_intrinsic_ballot_find_lsb`
+  - `nir_intrinsic_ballot_find_msb`
+  - `nir_intrinsic_ballot_bit_count_exclusive`
+  - `nir_intrinsic_ballot_bit_count_inclusive`
+  - `nir_intrinsic_read_invocation`
+  - `nir_intrinsic_read_first_invocation`
+- `GL_KHR_shader_subgroup`
+  - `nir_intrinsic_elect`
+  - `nir_intrinsic_shuffle`
+  - `nir_intrinsic_shuffle_xor`
+  - `nir_intrinsic_shuffle_up`
+  - `nir_intrinsic_shuffle_down`
+  - `nir_intrinsic_quad_broadcast`
+  - `nir_intrinsic_quad_swap_horizontal`
+  - `nir_intrinsic_quad_swap_vertical`
+  - `nir_intrinsic_quad_swap_diagonal`
+  - `nir_intrinsic_reduce`
+  - `nir_intrinsic_inclusive_scan`
+  - `nir_intrinsic_exclusive_scan`
