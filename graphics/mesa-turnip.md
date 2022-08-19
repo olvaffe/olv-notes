@@ -268,6 +268,53 @@ Mesa Turnip
     - because `MSM_SUBMIT_BO_WRITE` is always set, it calls
       `dma_resv_add_excl_fence` on all bos
 
+## Descriptor Sets
+
+- `tu_CreateDescriptorSetLayout`
+  - host memory layout
+    - `struct tu_descriptor_set_layout` itself
+    - `struct tu_descriptor_set_binding_layout` times `num_bindings`
+    - `struct tu_sampler` times `immutable_sampler_count`
+    - `struct tu_sampler_ycbcr_conversion` times `ycbcr_sampler_count`
+  - `layout->size` is the size required for non-dynamic descriptors
+  - `layout->dynamic_offset_size` is the size required for dynamic descriptors
+- `tu_CreateDescriptorPool`
+  - host memory layout
+    - `struct tu_descriptor_pool` itself
+    - `struct tu_descriptor_set` times `maxSets`
+      - if `VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT` is set, this
+      	becomes `struct tu_descriptor_pool_entry` array
+    - dynamic descriptors
+  - descriptors are 16 or 32 dwords
+    - depending on the type, the effective size is smaller.  The rest is
+      padding
+  - gpu memory for non-dynamic descriptors are allocated upfront
+  - cpu memory for dynamic descriptors are allocated upfront
+- `tu_AllocateDescriptorSets`
+  - host memory layout
+    - `struct tu_descriptor_set` itself
+    - dynamic descriptors
+    - the host memory is suballocated from the pool, unless
+      `VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT` is set
+  - gpu memory is suballocated from the pool
+  - `set->dynamic_descriptors` points to the suballocated host memory
+  - `set->mapped_ptr` points to the suballocated gpu memory
+- `tu_UpdateDescriptorSets`
+  - writes descriptors into gpu memory for non-dynamic descriptors and into
+    cpu memory for dynamic descriptors
+- how does shader access ubo?
+  - nir is
+    - `bindless_resource_ir3`
+    - `load_ubo_vec4`
+  - binary is
+    - `ldc.offset0.2.imm.base0 r0.z, 0, 0`
+      - base 0, size 2 (in dwords)
+  - `ir3_nir_lower_load_constant` can lower `load_ubo_vec4` to
+    - `copy_ubo_to_uniform_ir3`
+      - binary is `ldc.4.k.imm.base0`
+        - load size is 4 (in dwords)
+    - `load_uniform`
+
 ## Queues
 
 - `vkQueueSubmit`
