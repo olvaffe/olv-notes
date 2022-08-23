@@ -497,6 +497,61 @@ Mesa Turnip
   - `tu6_emit_tile_store` has slightly different commands, mainly to skip
     storing when the tile is not covered
 
+## Tracepoints
+
+- see also <mesa-utrace.md>
+- tracepoints
+  - `blit` in `vkCmdBlitImage2`
+    - use `cmd->cs`
+    - `CP_BLIT` (mostly) or `CP_DRAW_INDX_OFFSET` in `tu6_blit_image` for each
+      `pRegions`
+  - `compute` in `vkCmdDispatch*`
+    - use `cmd->cs`
+    - `CP_EXEC_CS` in `tu_dispatch`
+  - `render_pass` between `vkCmdBeginRenderPass2` and `vkCmdEndRenderPass2`
+    - use `cmd->cs`
+    - just markers
+  - when sysmem
+    - `sysmem_clear` in `vkCmdBeginRenderPass2`
+      - use `cmd->draw_cs`
+      - `CP_BLIT` (mostly) or `CP_DRAW_INDX_OFFSET` in
+        `tu_clear_sysmem_attachment` for each `VK_ATTACHMENT_LOAD_OP_CLEAR`
+    - `sysmem_clear_all` in `vkCmdClearAttachments`
+      - use `cmd->draw_cs`
+      - `CP_DRAW_INDX_OFFSET` in `tu_clear_sysmem_attachments`
+    - `sysmem_resolve` in `vkCmdNextSubpass2`
+      - use `cmd->draw_cs`
+      - `CP_BLIT` in `tu_resolve_sysmem` for each `pResolveAttachments`
+    - `draw_ib_sysmem` in `vkCmdEndRenderPass2`
+      - use `cmd->cs`
+      - etnire `cmd->draw_cs` in `tu_cmd_render_sysmem`
+    - `sysmem_resolve` again in `vkCmdEndRenderPass2`
+      - use `cmd->cs` this time
+  - when gmem
+    - `gmem_load` in `vkCmdBeginRenderPass2`
+      - use `cmd->draw_cs`
+      - `CP_EVENT_WRITE(BLIT)` in `tu_load_gmem_attachment` for each
+      	`VK_ATTACHMENT_LOAD_OP_LOAD`
+    - `gmem_clear` in `vkCmdBeginRenderPass2`
+      - use `cmd->draw_cs`
+      - `CP_EVENT_WRITE(BLIT)` in `tu_emit_clear_gmem_attachment` for each
+      	`VK_ATTACHMENT_LOAD_OP_CLEAR`
+    - `gmem_clear` again in `vkCmdClearAttachments`
+      - use `cmd->draw_cs` too
+    - `gmem_store` in `vkCmdNextSubpass2`
+      - use `cmd->draw_cs`
+      - `CP_EVENT_WRITE(BLIT)` (mostly), `CP_BLIT` or `CP_DRAW_INDX_OFFSET` in
+      	`tu_store_gmem_attachment` for each `pResolveAttachments`
+    - `gmem_store` again in `vkCmdEndRenderPass2`
+      - use `cmd->tile_store_cs` this time
+    - `binning_ib` in `vkCmdEndRenderPass2`
+      - use `cmd->cs`
+      - entire `cmd->draw_cs` in `tu6_emit_binning_pass`
+    - `draw_ib_gmem` in `vkCmdEndRenderPass2`
+      - use `cmd->cs`
+      - entire `cmd->draw_cs` and `cmd->tile_store_cs` in `tu6_render_tile`
+      	for each tile
+
 ## `VkPipelineStageFlagBits2`
 
 - these are CP
