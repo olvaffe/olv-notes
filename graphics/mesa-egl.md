@@ -1,6 +1,49 @@
 Mesa and EGL
 ============
 
+## Thread Safety
+
+- the spec states "EGL and its client APIs must be threadsafe. Interrupt
+  routines may not share a context with their main thread."
+  - I guess the second sentence is about client apis, where a context can only
+    be current to a single thread
+  - it seems valid to call, for example, `eglInitialize` and `eglTerminate` at
+    the same time.  After both calls return, the display may be initialized or
+    terminated depending on which happens first.
+- EGL functions that does not take a `EGLDisplay`
+  - these can use the "current thread info" tls trivially
+    - `eglGetError`
+    - `eglBindAPI`
+    - `eglQueryAPI`
+    - `eglGetCurrentContext`
+    - `eglGetCurrentDisplay`
+    - `eglGetCurrentSurface`
+    - `eglReleaseThread`
+      - this unbinds context/surfaces as well
+  - these use the current context
+    - `eglWaitClient`
+    - `eglWaitGL`
+    - `eglWaitNative`
+  - these are standalone
+    - `eglQueryString`
+      - display is optional
+    - `eglGetProcAddress`
+    - `eglGetDisplay`
+    - `eglGetPlatformDisplay`
+- some other EGL functions
+  - `eglInitialize`
+  - `eglTerminate`
+  - `eglMakeCurrent`
+  - display resources that can be created/destroyed/manipulated
+    - `EGLContext`
+    - `EGLSurface`
+    - `EGLSync`
+    - `EGLImage`
+- mesa implementation notes
+  - there is a `_EGLThreadInfo` TLS
+  - resources (contexts, surfaces, etc.) of a `EGLDisplay` are reference-counted
+    - such that destroying a context that is still current does not lead to UAF
+
 ## History
 
 * EGL 1.0 is based on GLX 1.3.
