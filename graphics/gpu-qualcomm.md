@@ -1131,8 +1131,14 @@ Qualcomm Adreno
     the normalized delta by max freq and displays as percentage
   - otherwise, it displays the normalized delta
 - CP
+  - `PERF_CP_ALWAYS_COUNT`
+    - always increment
+    - used to get gpu freq (CP freq)
   - `PERF_CP_BUSY_GFX_CORE_IDLE`
+    - increment if CP is busy but GFX core is idle
+    - if high, CP-bound
   - `PERF_CP_BUSY_CYCLES`
+    - increment if CP is busy
   - `PERF_CP_NUM_PREEMPTIONS`
   - `PERF_CP_PREEMPTION_REACTION_DELAY`
   - `PERF_CP_PREEMPTION_SWITCH_OUT_TIME`
