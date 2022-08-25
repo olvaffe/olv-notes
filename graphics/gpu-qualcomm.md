@@ -1108,20 +1108,26 @@ Qualcomm Adreno
 ## Performance Counters
 
 - how does it work
-  - there appears to be a GMU that runs at 19.2MHz
-  - at each cycle, GMU samples the selected events and increments the
+  - there appears to be a RBBM timer that runs at 19.2MHz
+  - at each cycle, RBBM samples the selected events and increments the
     corresponding counter registers
   - `VFD_PERFCTR_VFD_SEL(i)`, `SP_PERFCTR_SP_SEL(i)`, `RB_PERFCTR_RB_SEL(i)`,
     etc are used to select the events to sample
     - for each block, there are N events and M select registers, with N >= M
   - `RBBM_PERFCTR_VFD(i)`, `RBBM_PERFCTR_SP(i)`, `RBBM_PERFCTR_RB(i)`, etc.
     are free-running counters
-    - GMU increments these counter registers after sampling the events
+    - RBBM increments these counter registers after sampling the events
       selected by the select registers
     - for each block, there are M select registers and M counter registers in
       RBBM
   - these registers are represented by `fd_perfcntr_counter` in turnip
     - the selected events are `fd_perfcntr_countable`
+- for example,
+  - `CP_ALWAYS_ON_COUNTER` is a register that increments at gpu freq
+  - we can set `CP_PERFCTR_CP_SEL(i)` to select `PERF_CP_ALWAYS_COUNT` event
+  - every cycle of RBBM (at 19.2MHz), it adds the delta of
+    `CP_ALWAYS_ON_COUNTER` to `RBBM_PERFCTR_CP(i)`
+  - this gives us gpu freq
 - `fdperf`
   - some counters are reserved for the kernel and cannot be used
   - `fdperf` also reserves a CP counter internally for `PERF_CP_ALWAYS_COUNT`,
@@ -1134,13 +1140,13 @@ Qualcomm Adreno
   - otherwise, it displays the normalized delta
 - CP
   - `PERF_CP_ALWAYS_COUNT`
-    - always increment
-    - used to get gpu freq (CP freq)
+    - count gpu cycles
+    - used to get gpu freq
   - `PERF_CP_BUSY_GFX_CORE_IDLE`
-    - increment if CP is busy but GFX core is idle
+    - count cycles where CP is busy and core is idle
     - if high, CP-bound
   - `PERF_CP_BUSY_CYCLES`
-    - increment if CP is busy
+    - count cycles where CP is busy
   - `PERF_CP_NUM_PREEMPTIONS`
   - `PERF_CP_PREEMPTION_REACTION_DELAY`
   - `PERF_CP_PREEMPTION_SWITCH_OUT_TIME`
@@ -1149,20 +1155,29 @@ Qualcomm Adreno
   - `PERF_CP_PREDICATED_DRAWS_KILLED`
   - `PERF_CP_MODE_SWITCH`
   - `PERF_CP_ZPASS_DONE`
+    - count fragments passing z-test
   - `PERF_CP_CONTEXT_DONE`
   - `PERF_CP_CACHE_FLUSH`
 - VFD
   - `PERF_VFD_BUSY_CYCLES`
+    - count cycles where VFD is busy
+    - when VFD is stalled or starved (thus not doing real work), it still
+      counts as busy
   - `PERF_VFD_STALL_CYCLES_UCHE`
+    - count cycles where VFD is stalled because UCHE write is not ready
   - `PERF_VFD_STALL_CYCLES_VPC_ALLOC`
   - `PERF_VFD_STALL_CYCLES_SP_INFO`
   - `PERF_VFD_STALL_CYCLES_SP_ATTR`
   - `PERF_VFD_STARVE_CYCLES_UCHE`
+    - count cycles where VFD is starved because UCHE read is not ready
   - `PERF_VFD_RBUFFER_FULL`
   - `PERF_VFD_ATTR_INFO_FIFO_FULL`
 - VPC
   - `PERF_VPC_BUSY_CYCLES`
+    - count cycles where VFD is busy
   - `PERF_VPC_WORKING_CYCLES`
+    - count cycles where VFD is busy and doing real work
+    - that is, not stalled or starved
   - `PERF_VPC_STALL_CYCLES_UCHE`
   - `PERF_VPC_STALL_CYCLES_VFD_WACK`
   - `PERF_VPC_STALL_CYCLES_HLSQ_PRIM_ALLOC`
