@@ -1120,6 +1120,8 @@ Qualcomm Adreno
       selected by the select registers
     - for each block, there are M select registers and M counter registers in
       RBBM
+  - these registers are represented by `fd_perfcntr_counter` in turnip
+    - the selected events are `fd_perfcntr_countable`
 - `fdperf`
   - some counters are reserved for the kernel and cannot be used
   - `fdperf` also reserves a CP counter internally for `PERF_CP_ALWAYS_COUNT`,
