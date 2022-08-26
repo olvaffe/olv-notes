@@ -18,6 +18,18 @@ Mesa utrace
     - for each payload, `traceq` waits until the gpu timestamp is available
     - if perfetto is enabled, `traceq` sends the gpu timestamp and the payload
       to perfetto
+- there are several ways to enable `u_trace`
+  - `GPU_TRACE=1` or `GPU_TRACEFILE=<file>`
+    - this enables `u_trace`
+    - it outputs to stdout or the specified file
+  - `GPU_TRACE_INSTRUMENT=1`
+    - this also enables `u_trace`
+    - but there is no output
+    - this is useful with vulkan plus perfetto.  It makes sure a vk cmdbuf
+      recorded before perfetto tracing includes `u_trace` payloads
+  - perfetto tracing
+    - perfetto can enable/disable `u_trace` on-demand
+    - when the env vars above are specified, `u_trace` is never disabled
 
 ## Example
 
