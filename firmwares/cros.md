@@ -131,6 +131,11 @@ Chrome OS Firmwares
   - `emerge hdctools`, hardware debug and control tools
     - `servod -b $BOARD` to start the servo daemon
     - `dut-control` to talk to `servod`
+      - `dut-control cr50_uart_pty` for cr50 uart
+      - `dut-control ec_uart_pty` for ec uart
+      - `dut-control cpu_uart_pty` for cpu uart
+        - non-dev bios does not output to cpu uart
+        - kernel might output to cpu uart
   - `servod` supports a wide range of interfaces
     - cr50 ccd: 18d1:5014
       - GSC's cr50 firmware implements ccd and servo protocol
