@@ -262,11 +262,17 @@ Chrome OS Firmwares
 
 - NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
   - in my experience, the latest EC and AP firmwares do not boot
-  - one should use known-good versions for EC and AP instead
+  - even ccd open can brick
+  - one should use known-good versions for CR50, EC and AP instead
+    - for cr50, `emerge chromeos-cr50` in chroot
+    - for EC and AP, flash the latest build and `chromeos-firmwareupdate --unpack`
+      on DUT to unpack
+      - each board provides its `virtual/chromeos-firmware` that depends on
+      	`chromeos-base/chromeos-firmware-$BOARD`
+      - `chromeos-base/chromeos-firmware-$BOARD/files/srcuris` are uris for
+      	the firmwares
     - download the recommended versions from CPFE,
       <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/archive_mirrors.md#private-mirrors>
-  - a version is also packed into `chromeos-firmwareupdate`
-    - `chromeos-firmwareupdate --unpack` on DUT to unpack
 - to flash GSC, use `gsctool` on dut or host
   - `gsctool -f` to get the running firmware version
   - `gsctool -b <cr50-firmware>` to check the firmware version
@@ -277,7 +283,8 @@ Chrome OS Firmwares
       version
     - `gsctool -a /opt/google/cr50/firmware/cr50.bin.prod` to flash
   - on host,
-    - `emerge chromeos-cr50-dev` and use `gsctool` to flash over suzyqable
+    - `emerge chromeos-cr50-dev chromeos-cr50` and use `gsctool` to flash over
+      suzyqable
     - use `cr50-rescue` to flash over uart as a final resort
 - to flash EC, use `flash_ec` script on host
   - `emerge ec-devutils` to get `flash_ec`
@@ -287,6 +294,7 @@ Chrome OS Firmwares
   - one can also flash EC on dut
     - `flashrom -p ec -r <backup.bin>`
     - `flashrom -p ec -w <path-to/ec.bin>`
+    - `futility`
 - to flash AP on host,
   - `futility update --servo -i image-<board>.bin`
   - or, `cros ap flash`
