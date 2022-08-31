@@ -51,21 +51,21 @@ QEMU
   - `enable-opengl`
     - requires epoxy and gbm
     - enables `-display sdl,gl=on`
-  - enable-virglrenderer
+  - `enable-virglrenderer`
     - requires virglrenderer
-    - enables "-vga virtio"
-- make
+    - enables `-vga virtio`
+- `ninja`
 
 ## Bootstrap
 
-- ./qemu-img create -f qcow2 <disk>.qcow2 35G
-- MACHINE_OPTS="-machine q35 -smp 2 -m 4G"
-- BLOCK_OPTS="-hda <disk>.qcow2"
-- NETWORK_OPTS="-nic user,hostfwd=tcp::2222-:22,model=virtio"
-- DISPLAY_OPTS="-display sdl,gl=on -vga virtio"
-- ./x86_64-softmmu/qemu-system-x86_64 -enable-kvm -cpu host \
+- `./qemu-img create -f raw disk.img 32G`
+- `MACHINE_OPTS="-machine q35 -smp 2 -m 4G"`
+- `BLOCK_OPTS="-hda disk.img"`
+- `NETWORK_OPTS="-nic user,hostfwd=tcp::2222-:22,model=virtio"`
+- `DISPLAY_OPTS="-display sdl,gl=on -vga virtio"`
+- `./qemu-system-x86_64 -enable-kvm -cpu host \
    $MACHINE_OPTS $BLOCK_OPTS $NETWORK_OPTS $DISPLAY_OPTS \
-   -cdrom <cd>.iso -boot d
+   -cdrom <cd>.iso -boot d`
 - Arch
 
 ## Tips
@@ -75,6 +75,10 @@ QEMU
   - Ctrl-Alt-G
 - SSH
   - ssh ssh://root@localhost:2222
+- headless
+  - `-vnc localhost:5900`
+  - `-nographic`
+    - Ctrl-A X to quit qemu
 
 ## Options
 
