@@ -17,6 +17,7 @@ ArchLinux
     - `timedatectl set-ntp true`
   - partition disk with fdisk
     - see <disk.md>
+    - 1M for BIOS boot partition (type 4), if bios
     - 260M for EFI system partition (type 1), esp
       - `mkfs.vfat -F32 <part>`
     - remainder for root partition

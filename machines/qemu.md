@@ -59,12 +59,12 @@ QEMU
 ## Bootstrap
 
 - `./qemu-img create -f raw disk.img 32G`
-- `MACHINE_OPTS="-machine q35 -smp 2 -m 4G"`
+- `MACHINE_OPTS="-machine q35 -cpu host -accel kvm -smp 2 -m 4G -nodefaults"`
+- `DISPLAY_OPTS="-display sdl,gl=core -device virtio-vga-gl"`
 - `BLOCK_OPTS="-hda disk.img"`
 - `NETWORK_OPTS="-nic user,hostfwd=tcp::2222-:22,model=virtio"`
-- `DISPLAY_OPTS="-display sdl,gl=on -vga virtio"`
-- `./qemu-system-x86_64 -enable-kvm -cpu host \
-   $MACHINE_OPTS $BLOCK_OPTS $NETWORK_OPTS $DISPLAY_OPTS \
+- `./qemu-system-x86_64 \
+   $MACHINE_OPTS $DISPLAY_OPTS $BLOCK_OPTS $NETWORK_OPTS \
    -cdrom <cd>.iso -boot d`
 - Arch
 
@@ -79,6 +79,8 @@ QEMU
   - `-vnc :0`
   - `-nographic`
     - Ctrl-A X to quit qemu
+- custom kernel
+  - `-kernel` and `-append`
 
 ## Options
 
