@@ -3,10 +3,10 @@ QEMU
 
 ## Get Source Code
 
-- git clone https://git.qemu.org/git/qemu.git
-- cd qemu
-- git submodule init
-- git submodule update --recursive
+- `git clone https://git.qemu.org/git/qemu.git`
+- `cd qemu`
+- `git submodule init`
+- `git submodule update --recursive`
   - `capstone` is a disassembly framework
     `https://github.com/aquynh/capstone`
   - `dtc` is DeviceTree compiler
@@ -43,18 +43,14 @@ QEMU
 
 ## Build
 
-- ./configure \
-   --target-list=x86_64-softmmu \
-   --enable-kvm \
-   --enable-sdl \
-   --enable-opengl \
-   --enable-virglrenderer
-  - enable-sdl (or gtk)
+- `mkdir out; cd out`
+- `../configure --target-list=x86_64-softmmu --enable-kvm --enable-sdl --enable-opengl --enable-virglrenderer`
+  - `enable-sdl` (or gtk)
     - requires sdl (or gtk)
-    - enables "-display sdl"
-  - enable-opengl
+    - enables `-display sdl`
+  - `enable-opengl`
     - requires epoxy and gbm
-    - enables "-display sdl,gl=on"
+    - enables `-display sdl,gl=on`
   - enable-virglrenderer
     - requires virglrenderer
     - enables "-vga virtio"
