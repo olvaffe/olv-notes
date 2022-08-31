@@ -76,7 +76,7 @@ QEMU
 - SSH
   - ssh ssh://root@localhost:2222
 - headless
-  - `-vnc localhost:5900`
+  - `-vnc :0`
   - `-nographic`
     - Ctrl-A X to quit qemu
 
