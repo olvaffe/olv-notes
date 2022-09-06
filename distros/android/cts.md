@@ -63,3 +63,7 @@ Android CTS
 - `CtsCameraTestCases`
   - `--module-arg 'CtsCameraTestCases:include-filter:android.hardware.cts.CameraGLTest#*'`
     - 2m
+- `CtsNNAPITestCases`
+- `CtsGpuToolsHostTestCases`
+- `CtsOpenGLTestCases`
+- `CtsVideoTestCases`
