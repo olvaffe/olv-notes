@@ -1357,3 +1357,25 @@ Qualcomm Adreno
     - `IR3_INSTR_A1EN` uses `a1.x`
     - `IR3_INSTR_MARK`
     - `IR3_INSTR_UNUSED`
+
+## Reverse Engineering
+
+- <https://gitlab.freedesktop.org/freedreno/freedreno.git>
+  - with <https://gitlab.freedesktop.org/freedreno/freedreno/-/merge_requests/19>
+  - `BUILD=ndk NDK_PATH=~/android/sdk/ndk/25.0.8775105 make libwrapfake.so`
+- <https://github.com/olvaffe/vktest.git>
+  - edit NDK path in `machines/android-arm64.txt`
+  - `meson --cross-file machines/android-arm64.txt out-android`
+- <https://gitlab.freedesktop.org/freedreno/freedreno/-/wikis/Reverse-Engineering-Tools/How-To-Fake-GPU-With-Chroot-On-Android-11>
+  - search <https://vulkan.gpuinfo.org/> to find the device with the latest
+    driver
+  - find the latest recovery image for the device
+  - unpack images
+    - `brotli -d vendor.new.dat.br`
+    - `sdat2img.py vendor.transfer.list vendor.new.dat vendor.img`
+    - `ext2rd vendor.img ./:vendor`
+  - chroot
+    - `adb root`
+    - `adb shell mkdir /data/chroot`
+    - `sudo adb push vendor /data/chroot`
+    - `sudo adb push system/* /data/chroot`
