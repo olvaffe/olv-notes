@@ -67,6 +67,7 @@ Chrome OS CI
     - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-GLES3`, 200m
     - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-GLES31`, 220m
   - fast CTS
+    - `cheets_CTS_R.internal.arm.CtsCamera`, 10m
     - `cheets_CTS_R.internal.arm.CtsGpu`, 15m
     - `cheets_CTS_R.internal.arm.CtsGraphics`, 30m
     - `cheets_CTS_R.internal.arm.CtsNNAPI`, 15m
@@ -80,7 +81,6 @@ Chrome OS CI
     - `cheets_CTS_R.internal.arm.CtsMediaStressTestCases`, 300m
     - `cheets_CTS_R.internal.arm.CtsMediaTestCases.64`, 900m
     - `cheets_CTS_R.internal.arm.CtsMediaV2TestCases`
-    - `cheets_CTS_R.internal.arm.CtsCamera`
 - tast
   - <https://chromium.googlesource.com/chromiumos/platform/tast/>
   - <https://chromium.googlesource.com/chromiumos/platform/tast-tests>
