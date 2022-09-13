@@ -61,7 +61,26 @@ Chrome OS CI
     - `graphics_per-day`
     - `graphics_per-week`
     - `vmtest_informational[1-4]`
-  - `cheets_CTS_R` `CtsGraphicsTestCases` and `CtsDeqpTestCases`
+  - critical CTS
+    - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-EGL`, 35m
+    - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-GLES2`, 35m
+    - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-GLES3`, 200m
+    - `cheets_CTS_R.internal.arm.CtsDeqpTestCases.dEQP-GLES31`, 220m
+  - fast CTS
+    - `cheets_CTS_R.internal.arm.CtsGpu`, 15m
+    - `cheets_CTS_R.internal.arm.CtsGraphics`, 30m
+    - `cheets_CTS_R.internal.arm.CtsNNAPI`, 15m
+    - `cheets_CTS_R.internal.arm.CtsNative`, 20m
+    - `cheets_CTS_R.internal.arm.CtsOpenG`, 15m
+    - `cheets_CTS_R.internal.arm.CtsSkQP`, 20m
+    - `cheets_CTS_R.internal.arm.CtsUi`, 10m
+  - slow CTS
+    - `cheets_CTS_R.internal.arm.CtsView`, 160m
+    - `cheets_CTS_R.internal.arm.CtsVideo`, 260m
+    - `cheets_CTS_R.internal.arm.CtsMediaStressTestCases`, 300m
+    - `cheets_CTS_R.internal.arm.CtsMediaTestCases.64`, 900m
+    - `cheets_CTS_R.internal.arm.CtsMediaV2TestCases`
+    - `cheets_CTS_R.internal.arm.CtsCamera`
 - tast
   - <https://chromium.googlesource.com/chromiumos/platform/tast/>
   - <https://chromium.googlesource.com/chromiumos/platform/tast-tests>
