@@ -328,6 +328,10 @@ Mesa Turnip
     tu_queue_submit`
   - `DRM_MSM_GEM_SUBMIT` submits them to the kernel
 
+## Fences and Semaphores
+
+- common syncobj
+
 ## Command Buffers
 
 - a `tu_cmd_buffer` has several `tu_cs`s

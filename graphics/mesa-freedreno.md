@@ -1,8 +1,18 @@
 Mesa Freedreno
 ==============
 
+## `fd_device` and `fd_pipe`
+
+- `fd_device_new` creates an `fd_device` from a drm fd
+  - depending on the drm fd, it calls `msm_device_new` or `virtio_device_new`
+- `fd_pipe_new2` creates an `fd_pipe` for each `pipe_context`
+  - depending on whether softpin is supported, it uses `sp_funcs` or
+    `legacy_funcs`
+  - internally it creates a msm submitqueue
+
 ## `fd_ringbuffer`
 
+- `fd_submit_new` and `fd_submit_del` are called for each batch buffer
 - `fd_submit_new_ringbuffer` creates a ringbuffer for short-lived cmdstream
   - it calls `fd_submit_sp_new_ringbuffer` on newer kernel
   - it can allocates a new bo (`fd_bo_new_ring`) or it can suballocate from
@@ -13,6 +23,7 @@ Mesa Freedreno
     `dev->suballoc_bo`
   - `fd_ringbuffer_sp` has a dynamic array of `fd_cmd_sp` and can suballocate
     more when it runs out of space
+- `OUT_RELOC` adds an `fd_reloc` to an `fd_ringbuffer`
 
 ## `fd_batch`
 
