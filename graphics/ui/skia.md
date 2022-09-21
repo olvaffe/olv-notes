@@ -15,15 +15,24 @@ Skia
     - `gn args --list out`
     - `gn/BUILDCONFIG.gn`
     - `gn/skia.gni`
+  - gl/gles
+    - `skia_use_gl = true` to enable GL or GLES backend
+    - `skia_use_egl = true` to pick EGL/GLES
+    - `skia_use_x11 = false` to pick GLX/GL
   - vulkan
-    - `skia_use_x11 = false`
-    - `skia_use_gl = false`
-    - `skia_use_egl = false`
-    - `skia_use_vulkan = true`
+    - `skia_use_vulkan = true` to enable VK backend
   - disable font
-    - `skia_use_freetype = false`
-    - `skia_use_fontconfig = false`
-    - `skia_use_harfbuzz = false`
+    - `skia_enable_fontmgr_android = false`
+    - `skia_enable_fontmgr_empty = true`
+  - disable optional features
+    - `skia_enable_pdf = false`
+  - cross-compile
+    - `target_os = "linux"`
+    - `target_cpu = "arm64"`
+    - `target_cc = "/usr/bin/aarch64-linux-gnu-gcc"`
+    - `target_cxx = "/usr/bin/aarch64-linux-gnu-g++"`
+  - misc
+    - `cc_wrapper = "ccache"`
 - terms
   - gm stands for golden master test suite
   - dm stands for dungeon master and runs unit tests and gms
@@ -34,9 +43,8 @@ Skia
   - `./out/fm --resourcePath resources --sources arithmode --backend vk`
     - `--listTests`
     - `--listGMs`
-  - `./out/skqp platform_tools/android/apps/skqp/src/main/assets skqp/rendertests.txt results`
-    - `./out/skqp NOT USED results '^vk_arithmode$'` seems better
   - `./out/dm --resourcePath resources --src gm --config vk --verbose`
+  - see below for skqp
 - skia on angle
   - <https://skia.org/docs/user/special/angle/>
 - skia on vulkan
@@ -44,3 +52,24 @@ Skia
 - skia on android
   - <https://skia.org/docs/user/build/#android>
   - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
+
+## SkQP
+
+- modifications
+  - edit `tools/skqp/src/skqp.h` to set `fEnforcedAndroidAPILevel` to 99
+    - otherwise, all tests are skipped
+  - to see the list of tests, add `printf` to `get_unit_tests`
+- `./out/skqp . report` to run all tests
+  - `.` is the asset dir: skqp looks for `resources` under the asset dir
+  - `report` is for test results
+- tests
+  - `DEF_GANESH_TEST_*`
+    - defines a test of type `skiatest::TestType::kGanesh`
+    - a gpu test
+  - `DEF_TEST`
+    - defines a test of type `skiatest::TestType::kCPU`
+    - a gpu test
+  - skqp only tests ganesh tests
+- old
+  - `./out/skqp platform_tools/android/apps/skqp/src/main/assets skqp/rendertests.txt results`
+    - `./out/skqp NOT USED results '^vk_arithmode$'` seems better
