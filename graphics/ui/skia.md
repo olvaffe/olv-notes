@@ -52,6 +52,13 @@ Skia
 - skia on android
   - <https://skia.org/docs/user/build/#android>
   - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
+- `android11-tests-release`
+  - install `python-is-python2`
+  - enable `skia_enable_pdf`
+  - `(cd include/config/ && ln -sf ../../linux/include/config/SkUserConfig.h)`
+  - edit `include/config/SkUserConfigManual.h` and
+    - comment out `SK_BUILD_FOR_ANDROID_FRAMEWORK`
+    - `#define SK_SUPPORT_GPU 1`
 
 ## SkQP
 
@@ -70,6 +77,10 @@ Skia
     - defines a test of type `skiatest::TestType::kCPU`
     - a gpu test
   - skqp only tests ganesh tests
+- `android11-tests-release`
+  - no need to modify `fEnforcedAndroidAPILevel`
+  - add printf to `get_render_tests` and `get_unit_tests` to list all tests
+  - `./out/skqp . report '^vk_'`
 - old
   - `./out/skqp platform_tools/android/apps/skqp/src/main/assets skqp/rendertests.txt results`
     - `./out/skqp NOT USED results '^vk_arithmode$'` seems better
