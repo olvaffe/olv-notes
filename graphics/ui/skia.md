@@ -52,6 +52,11 @@ Skia
 - skia on android
   - <https://skia.org/docs/user/build/#android>
   - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
+
+## Android
+
+- <https://android.googlesource.com/platform/external/skia> for platform
+- <https://android.googlesource.com/platform/external/skqp> for cts
 - `android11-tests-release`
   - install `python-is-python2`
   - args
