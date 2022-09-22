@@ -54,11 +54,30 @@ Skia
   - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
 - `android11-tests-release`
   - install `python-is-python2`
-  - enable `skia_enable_pdf`
+  - args
+    - enable `skia_enable_pdf`
   - `(cd include/config/ && ln -sf ../../linux/include/config/SkUserConfig.h)`
   - edit `include/config/SkUserConfigManual.h` and
     - comment out `SK_BUILD_FOR_ANDROID_FRAMEWORK`
     - `#define SK_SUPPORT_GPU 1`
+- `pie-cts-release`
+  - install `python-is-python2`
+  - args
+    - enable `skia_enable_pdf`
+    - remove `skia_enable_fontmgr_android`
+    - remove `skia_use_gl`
+    - remove `skia_use_x11`
+    - add `extra_cflags = [ "-Wno-error" ]`
+  - edit `include/config/SkUserConfigManual.h` and
+    - comment out `SK_BUILD_FOR_ANDROID_FRAMEWORK`
+    - `#define SK_SUPPORT_GPU 1`
+  - edit `include/config/SkUserConfig.h` and remove those defined by `-D`
+    already
+    - most defines need to be commented out
+  - fix aarch64 compile issues by using the slow paths
+    - `src/jumper/SkJumper_stages.cpp`
+    - `third_party/externals/sdl/src/atomic/SDL_spinlock.c`
+    - `third_party/externals/skcms/src/Transform.c`
 
 ## SkQP
 
@@ -81,6 +100,10 @@ Skia
   - no need to modify `fEnforcedAndroidAPILevel`
   - add printf to `get_render_tests` and `get_unit_tests` to list all tests
   - `./out/skqp . report '^vk_'`
+- `pie-cts-release`
+  - no need to modify `fEnforcedAndroidAPILevel`
+  - add printf to `register_skia_tests` to list all tests
+  - `./out/skqp --gtest_filter="SkiaGM_vk.*" . report`
 - old
   - `./out/skqp platform_tools/android/apps/skqp/src/main/assets skqp/rendertests.txt results`
     - `./out/skqp NOT USED results '^vk_arithmode$'` seems better
