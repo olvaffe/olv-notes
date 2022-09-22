@@ -57,26 +57,30 @@ Skia
   - <https://android.googlesource.com/platform/external/skqp> for cts
   - <https://skia.org/docs/user/build/#android>
   - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
-- to build an apk from skqp's `android12-tests-release` branch
+- to build an apk from skqp's `android12-tests-release` or
+  `android11-tests-release` branch
   - install python2 and openjdk 8
     - `python-is-python2`
     - `openjdk-8-jre` and `openjdk-8-jdk`
-  - install ndk 16
+  - install `ndk;16.1.4479499` and `platforms;android-26`
   - `tools/git-sync-deps`
   - edit `BUILD.gn` and remove all mentions of `//third_party/Nima-Cpp`
   - `rm -rf platform_tools/android/apps/arcore`
   - comment out duplicated defines from `include/config/SkUserConfig.h`
   - `ANDROID_HOME=~/android/sdk ANDROID_NDK=~/android/sdk/ndk/16.1.4479499
     tools/skqp/make_universal_apk arm64`
-- `android11-tests-release`
+- to build an apk from skqp's `pie-cts-release` branch
+  - same as above
+  - no need to remove Nima-Cpp and arcor
+- linux build on skqp's `android11-tests-release`
+  - install `python-is-python2`
   - args
     - enable `skia_enable_pdf`
   - `(cd include/config/ && ln -sf ../../linux/include/config/SkUserConfig.h)`
   - edit `include/config/SkUserConfigManual.h` and
     - comment out `SK_BUILD_FOR_ANDROID_FRAMEWORK`
     - `#define SK_SUPPORT_GPU 1`
-- `pie-cts-release`
-  - install `python-is-python2`
+- linux build on skqp's `pie-cts-release`
   - args
     - enable `skia_enable_pdf`
     - remove `skia_enable_fontmgr_android`
