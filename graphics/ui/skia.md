@@ -49,16 +49,26 @@ Skia
   - <https://skia.org/docs/user/special/angle/>
 - skia on vulkan
   - <https://skia.org/docs/user/special/vulkan/>
-- skia on android
-  - <https://skia.org/docs/user/build/#android>
-  - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
 
 ## Android
 
-- <https://android.googlesource.com/platform/external/skia> for platform
-- <https://android.googlesource.com/platform/external/skqp> for cts
+- skia on android
+  - <https://android.googlesource.com/platform/external/skia> for platform
+  - <https://android.googlesource.com/platform/external/skqp> for cts
+  - <https://skia.org/docs/user/build/#android>
+  - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
+- to build an apk from skqp's `android12-tests-release` branch
+  - install python2 and openjdk 8
+    - `python-is-python2`
+    - `openjdk-8-jre` and `openjdk-8-jdk`
+  - install ndk 16
+  - `tools/git-sync-deps`
+  - edit `BUILD.gn` and remove all mentions of `//third_party/Nima-Cpp`
+  - `rm -rf platform_tools/android/apps/arcore`
+  - comment out duplicated defines from `include/config/SkUserConfig.h`
+  - `ANDROID_HOME=~/android/sdk ANDROID_NDK=~/android/sdk/ndk/16.1.4479499
+    tools/skqp/make_universal_apk arm64`
 - `android11-tests-release`
-  - install `python-is-python2`
   - args
     - enable `skia_enable_pdf`
   - `(cd include/config/ && ln -sf ../../linux/include/config/SkUserConfig.h)`
