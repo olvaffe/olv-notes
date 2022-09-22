@@ -166,4 +166,5 @@ Skia
   - `adb shell am instrument -w org.skia.skqp`
   - `adb logcat org.skia.skqp skia "*:S"`
 - CTS run
-  - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases -t org.skia.skqp.SkQPRunner#gles_*`
+  - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases
+       --module-arg 'CtsSkQPTestCases:include-filter:org.skia.skqp.SkQPRunner#gles_imageblur*'`
