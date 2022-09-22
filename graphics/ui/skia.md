@@ -157,3 +157,13 @@ Skia
 - to build an apk from skqp's `pie-cts-release` branch
   - same as above
   - no need to remove Nima-Cpp and arcore
+- note that `make_universal_apk` downloads models and sets up `resources`
+  symlink
+  - `tools/skqp/download_model`
+  - `resources` symlink
+- manual run
+  - `adb install -r out/skqp/skqp-universal-debug.apk`
+  - `adb shell am instrument -w org.skia.skqp`
+  - `adb logcat org.skia.skqp skia "*:S"`
+- CTS run
+  - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases -t org.skia.skqp.SkQPRunner#gles_*`
