@@ -1,7 +1,49 @@
 Font
 ====
 
-## Fontconfig
+## DPI
+
+- in publishing, common font sizes are 10pt, 11pt, or 12pt
+  - 1pt is 1/72 inch
+- I like 10pt
+  - at 96dpi, that's 13.3px
+  - at 160dpi, that's 22.2px
+  - at 300dpi, that's 41.6px
+- many softwares get dpi "wrong" for compatibility reasons
+  - system softwares/libraries commonly assume 96dpi
+    - but some detect the real dpi
+    - and some assume 72dpi or 75dpi
+  - computer standards on 15" monitor
+    - VGA, 640x480, is ~55dpi
+    - SVGA, 800x600, is ~70dpi
+    - XGA, 1024x768, is ~85dpi
+    - SXGA, 1280x1024, is ~110dpi
+    - UXGA, 1600x1200, is ~135dpi
+  - tv standards on 15" monitor
+    - HD, 1280x720, is ~100dpi
+    - FHD, 1920x1080, is ~150dpi
+    - UHD 4K, 3840x2160, is ~300dpi
+    - UHD 8K, 7680x4320, is ~600dpi
+- common scenarios
+  - a 14" laptop at 1920x1080 is ~160dpi
+  - a 14" laptop at 3840x2160 is ~320dpi
+    - this is known as HiDPI
+  - a 32" monitor at 3840x2160 is ~140dpi
+- on HiDPI, things are easier
+  - we want to double the sizes of UI elements and fonts first
+  - `gsettings set org.gnome.desktop.interface scaling-factor 2` for gnome
+  - many guides online
+- at ~150dpi, things are harder
+  - UI elements are a bit small but OK
+    - because this is common enough that designers have accomodated for it
+  - text is too small on linux
+    - because many system softwares/libraries assume 96dpi
+      - they assume 10pt is 13.3px while the correct size is 20.8px
+    - doubling the sizes of UI elements and fonts makes text comfortable, but
+      UI elements become too huge
+    - each app might require a different solution
+
+## fontconfig
 
 - `fc-pattern`
   - calls `FcNameParse` to parse a string into a pattern or `FcPatternCreate`
@@ -33,7 +75,49 @@ Font
 - `FC_DEBUG=2` shows all fonts and their scores
   - `FC_DEBUG=2 fc-match monospace`
 
-## Alacritty as an example
+## xft
+
+- `XftFontMatch` is a wrapper of `FcFontMatch`
+  - calls `FcConfigSubstitute` for config substitute
+  - calls `XftDefaultSubstitute` which is a wrapper to `FcDefaultSubstitute`
+    - `_XftDefaultInit` initializes more defaults from `XGetDefault`, X
+      resource db
+      - `Xft.scale` for fc `scale`
+      - `Xft.dpi` for fc `dpi` 
+      - and more
+    - if `Xft.dpi` is not set, it uses `DisplayHeight() * 25.4 / DisplayHeightMM()`
+    - with `scale`, `dpi`, and `size` known, `FcDefaultSubstitute` calculates
+      `pixelsize`
+- `XftFontOpenPattern` opens a font using `FcPattern`
+  - `_XftSetFace` calls `FT_Set_Char_Size`
+  - `xsize` and `ysize` are from `pixelsize`
+- `XftDrawString8` internally calls `XftGlyphRender`
+
+## pango
+
+- `PangoFontDescription`
+  - `pango_font_description_from_string` parses family, size, etc. from the
+    string and returns a `PangoFontDescription`
+- `PangoLayout`
+  - `pango_cairo_create_layout` creates a `PanglLayout` from a `cairo_t`
+  - `pango_layout_set_text(layout, str, -1)` sets the string to lay out
+  - `pango_layout_set_font_description` sets the font desc
+  - `pango_cairo_update_layout` updates pango's internal states
+  - `pango_cairo_show_layout` draws the layout
+  - `pango_font_map_load_font` is called internally somewhere
+    - it calls `pango_fc_font_map_load_font` which calls
+      `pango_fc_font_map_load_fontset`
+    - `get_scaled_size` calculates `pixelsize` which honors `dpi`
+- `pango_cairo_font_map_new` uses `PANGO_TYPE_CAIRO_FC_FONT_MAP` on linux
+  - it does not use Xft nor `Xft.dpi`
+  - `pango_cairo_context_set_resolution` is used instead
+    - otherwise, by default, it is 96dpi
+
+## gnome
+
+- `gsettings set org.gnome.desktop.interface text-scaling-factor 1.6`
+
+## alacritty
 
 - say, `alacritty.yml` specifies `font: size: 16.0`
 - alacritty calls `load_font` with `16.0`
@@ -46,7 +130,12 @@ Font
     `set_char_size` (`FT_Set_Char_Size`)
   - `FT_Set_Char_Size` doc says that dpi is assumed to be 72 when 0 is
     specified
+- it is helpless
 
-## pattern
+## chrome
 
-- Xft.dpi
+- it used to respect gnome's `text-scaling-factor`
+  - but not anymore
+  - no known workaround on `--ozone-platform=wayland --gtk-version=4`
+- current solution
+  - Settings -> Appearance -> Page zoom -> 150%
