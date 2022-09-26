@@ -16,6 +16,7 @@ dnsmasq
 ## Usage
 
 - to disable DNS, `--port 0`
+  - to explicitly specify a server, `--server 8.8.8.8`
 - to enable DHCP, `--dhcp-range <range>`
 - to advertise PXE boot options over DHCP, `--pxe-service <type,name>`
 - to enable TFTP, `--enable-tftp`

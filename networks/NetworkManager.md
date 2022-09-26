@@ -23,6 +23,8 @@ NetworkManager
   - it prompts password on one machine but requires `password` on another
 - to enable/disable wifi,
   - `nmcli radio wifi on` or `off`
+- to manage/unmanage a device,
+  - `nmcli device set <dev> managed yes/no`
 
 ## Connection Profiles
 
