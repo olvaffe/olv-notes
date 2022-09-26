@@ -5,14 +5,10 @@ Font
 
 - in publishing, common font sizes are 10pt, 11pt, or 12pt
   - 1pt is 1/72 inch
-- I like 10pt
+- I like 10pt for its compactness
   - at 96dpi, that's 13.3px
   - at 160dpi, that's 22.2px
   - at 300dpi, that's 41.6px
-- many softwares get dpi "wrong" for compatibility reasons
-  - system softwares/libraries commonly assume 96dpi
-    - but some detect the real dpi
-    - and some assume 72dpi or 75dpi
   - computer standards on 15" monitor
     - VGA, 640x480, is ~55dpi
     - SVGA, 800x600, is ~70dpi
@@ -24,21 +20,36 @@ Font
     - FHD, 1920x1080, is ~150dpi
     - UHD 4K, 3840x2160, is ~300dpi
     - UHD 8K, 7680x4320, is ~600dpi
+- many softwares get dpi "wrong"
+  - system softwares/libraries commonly assume 96dpi
+    - but some detect the real dpi
+    - and some assume 72dpi or 75dpi
+  - they are not "wrong" though
+    - when dpi changes, we want to scale both ui elements and text
+    - but dpi applies to text only
+    - modern softwares assume fixed 96dpi as the logical dpi
+    - they have a separate "scale" (aka "ui scale", "device scale") to scale
+      both ui elements and text
+  - the problem is that "scale" is integral
+    - they are slowly gaining fractoinal scale support
 - common scenarios
   - a 14" laptop at 1920x1080 is ~160dpi
-  - a 14" laptop at 3840x2160 is ~320dpi
-    - this is known as HiDPI
+    - we want a `160/96 = 1.66` scale
+    - only fractional scale works
   - a 32" monitor at 3840x2160 is ~140dpi
-- on HiDPI, things are easier
-  - we want to double the sizes of UI elements and fonts first
-  - `gsettings set org.gnome.desktop.interface scaling-factor 2` for gnome
-    - not working on wayland
-    - use sway output scale instead
-  - many guides online
-- at ~150dpi, things are harder
-  - UI elements are a bit small but OK
+    - we want a `140/96 = 1.45` scale
+    - only fractional scale works
+  - a 14" laptop at 3840x2160 is ~320dpi
+    - we want a `320/96 = 3.33` scale
+    - 3 can work
+    - this is known as HiDPI
+- Wayland
+  - there is (integral) output scale
+  - fractional scale is wip
+- at ~150dpi, we really need fractional scale
+  - without it, UI elements are a bit small but OK
     - because this is common enough that designers have accomodated for it
-  - text is too small on linux
+  - without it, text is too small on linux
     - because many system softwares/libraries assume 96dpi
       - they assume 10pt is 13.3px while the correct size is 20.8px
     - doubling the sizes of UI elements and fonts makes text comfortable, but
@@ -118,6 +129,7 @@ Font
 ## gnome
 
 - `gsettings set org.gnome.desktop.interface text-scaling-factor 1.5`
+  - this is a accessibility setting
 
 ## alacritty
 
