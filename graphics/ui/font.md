@@ -32,6 +32,8 @@ Font
 - on HiDPI, things are easier
   - we want to double the sizes of UI elements and fonts first
   - `gsettings set org.gnome.desktop.interface scaling-factor 2` for gnome
+    - not working on wayland
+    - use sway output scale instead
   - many guides online
 - at ~150dpi, things are harder
   - UI elements are a bit small but OK
@@ -115,27 +117,28 @@ Font
 
 ## gnome
 
-- `gsettings set org.gnome.desktop.interface text-scaling-factor 1.6`
+- `gsettings set org.gnome.desktop.interface text-scaling-factor 1.5`
 
 ## alacritty
 
-- say, `alacritty.yml` specifies `font: size: 16.0`
-- alacritty calls `load_font` with `16.0`
-  - crossfont calls `get_face` with `16.0` and sets fontconfig `pixelsize` to
-    `16.0 * device_pixel_ratio * 96 / 72`
+- say, `alacritty.yml` specifies `font: size: 10.0`
+- alacritty calls `load_font` with `10.0`
+  - crossfont calls `get_face` with `10.0` and sets fontconfig `pixelsize` to
+    `10.0 * device_pixel_ratio * 96 / 72`
     - that is, it uses hardcoded dpi 96 and forces `pixelsize`
     - I am not sure if this is used or not
-- alacritty calls `get_glyph` with `16.0`
-  - crossfont uses `16.0 * device_pixel_ratio * 96 / 72` as the size and calls
+- alacritty calls `get_glyph` with `10.0`
+  - crossfont uses `10.0 * device_pixel_ratio * 96 / 72` as the size and calls
     `set_char_size` (`FT_Set_Char_Size`)
   - `FT_Set_Char_Size` doc says that dpi is assumed to be 72 when 0 is
     specified
-- it is helpless
+- it is helpless on a non-96dpi monitor
+  - manually times 1.6 on the font size
+  - `device_pixel_ratio` is 2 for HiDPI
 
 ## chrome
 
-- it used to respect gnome's `text-scaling-factor`
-  - but not anymore
-  - no known workaround on `--ozone-platform=wayland --gtk-version=4`
+- it respects `Xft.dpi`, but not working on wayland
+  - I am using `--ozone-platform=wayland --gtk-version=4`
 - current solution
   - Settings -> Appearance -> Page zoom -> 150%
