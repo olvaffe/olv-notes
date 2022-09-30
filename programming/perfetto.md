@@ -311,3 +311,33 @@ Perfetto
 - `args` table
   - columns: `id`, `type`, `arg_set_id`, `flat_key`, `key`, `int_value`,
     `string_value`, ...
+
+## Host/Guest Time Sync
+
+- Host
+  - one of the producers must use modified SDK, such as perCetto, to take
+    special clock snapshots
+  - in `PercettoDataSource::DoIncrementalUpdate`, perCetto adds a trace packet
+    with two clocks
+    - one has `clock_id` `BUILTIN_CLOCK_BOOTTIME` (or
+      `BUILTIN_CLOCK_MONOTONIC`) and `timestamp` from
+      `clock_gettime(CLOCK_BOOTTIME or CLOCK_MONOTONIC)`
+    - one has `clock_id` `kCpuCounterClockId (64)` and `timestamp` from
+      `rdtsc` (x86) or `cntvct` (arm) to count cpu cycles
+- Guest
+  - one of the producers must use modified SDK or generate track events with
+    special debug annotations
+  - in `tick_forever`, `com.google.perfettoguesttimesync` generates
+    `cros/guest_clock_sync` track events with debug annotations
+    - `clock_sync_boottime` is from `clock_gettime(CLOCK_BOOTTIME)`
+    - `clock_sync_monotonic` is from `clock_gettime(CLOCK_MONOTONIC)`
+    - `clock_sync_cputime` is from `rdtsc` (x86) or `cntvct` (arm) to count
+      cpu cycles
+- `vperfetto_merge`
+  - `getTraceCpuTimeSync` computes `TraceCpuTimeSync` using clock snapshots
+  - these use the last snapshot
+    - `clockId` is `BUILTIN_CLOCK_BOOTTIME` or `BUILTIN_CLOCK_MONOTONIC`
+    - `clockTime` is `clock_gettime`
+    - `cpuTime` is cpu cycle count
+  - this use the first and the last snapshot
+    - `cpuCyclesPerNano` is "cpu cycle delta" divided by "clock time delta"
