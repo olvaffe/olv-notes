@@ -312,6 +312,56 @@ Perfetto
   - columns: `id`, `type`, `arg_set_id`, `flat_key`, `key`, `int_value`,
     `string_value`, ...
 
+## protobuf
+
+- implementations
+  - the official one is <https://github.com/protocolbuffers/protobuf>
+  - C library, <https://github.com/protobuf-c/protobuf-c>
+  - minimal and high-performance, <https://github.com/mapbox/protozero>
+  - perfetto has yet another implementation that is also called protozero,
+    <https://perfetto.dev/docs/design-docs/protozero>
+- `protos/perfetto/trace/trace.proto`
+  - `Trace`
+    - `packet` is a sequence of `TracePacket`
+  - `TracePacket`
+    - `timestamp_clock_id` and `timestamp` are the clock and timestamp of the
+      packet
+    - `trusted_uid` and `trusted_pid` are service-written uid/pid of the producer
+    - `trusted_packet_sequence_id` is service-written id that uniquely
+      identified producer+writer in this session
+    - `interned_data` for data interning to reduce trace size
+    - `trace_packet_defaults` provides default values to reduce trace size
+    - `previous_packet_dropped`
+    - `sequence_flags`
+      - `SEQ_INCREMENTAL_STATE_CLEARED` means prior incremental data (e.g.,
+      	`interned_data`, trace_packet_defaults`) will no longer be referenced
+      	by this or future packets
+      - `SEQ_NEEDS_INCREMENTAL_STATE` means this packet requires valid
+      	incremental data to parse
+    - `data` is one of many possible payloads, such as
+      - misc
+        - `ClockSnapshot`
+        - `TraceConfig`
+        - `CpuInfo`
+        - `FtraceEventBundle`
+      - track-related
+	- `TrackDescriptor` describes a track
+	  - that is, a row in the trace viewer
+	  - there is a track for each process and thread
+        - `TrackEvent` describes a track event
+          - an event on a track
+          - slice begin/end, instance, counter
+      - gpu-related
+        - `FrameTimelineEvent`
+        - `GpuCounterEvent`
+        - `GpuLog`
+        - `GpuMemTotalEvent`
+        - `GpuRenderStageEvent`
+        - `GraphicsFrameEvent`
+        - `VulkanApiEvent`
+        - `VulkanMemoryEvent`
+  - `TrackEvent`
+
 ## Host/Guest Time Sync
 
 - Host
