@@ -211,5 +211,7 @@ Meson
     cpu_family = 'arm'
     cpu = 'armv7a'
     endian = 'little'
+- x86-64
+  - both `cpu_family` and `cpu` are `x86_64`
 - there seems to be cases where `SYSROOT=<sysroot>` env var works better than
   `--sysroot` flag
