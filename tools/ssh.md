@@ -28,3 +28,19 @@ SSH
     matches
   - `user` is true when the remote user name matches
   - `localuser` is true when the local user name matches
+
+## server
+
+- there is a sshd process running as root
+  - when a connection is accepted, it forks a `[priv]` process to manage the
+    connection
+  - `[priv]` does not process network traffic directly; instead, it forks a
+    unpriviledged `[net]` process to process authentication traffic
+  - once authenticated, `[net]` exits; `[priv]` forks a user
+    `some_user@some_pty` or `some_user@notty` process to handle traffic
+- pty allocation
+  - a pty is allocated if no command is specified
+    - `ssh host` allocates a pty
+    - `ssh host sh` does not
+  - `-T`, `-t, and `-tt` can explicit control whether a pty is allocated by
+    sshd
