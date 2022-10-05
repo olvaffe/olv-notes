@@ -26,6 +26,13 @@ Chrome OS Build
       - virtual/target-os-test, deqp, etc.
       - chromeos-base/autotest-all
     - binary packages can be found under /build/$BOARD/packages
+    - before it builds, it invokes `update_chroot --toolchain_boards $BOARD`
+      - `Updating cross-compilers` invokes `cros_setup_toolchains` to update
+      	chroot toolchains
+      - `Bootstrapping depot_tools`
+      - `Rebuilding Portage cache`
+      - `Updating the SDK` builds chroot `virtual/target-sdk` and `world`
+        - this steps easily takes >10m
   - `build_image`
     - it builds images under ~/trunc/src/build/$BOARD
     - it always wipes the build directory clean, install packages, and done
