@@ -1,6 +1,34 @@
 Chrome OS Overview
 ==================
 
+## New Device
+
+- enable developer mode
+  - hold ESC and F3/Refresh, then press power button to boot into recovery
+    mode
+  - while in recovery mode, press Ctrl-D to enter developer mode
+- select boot device
+  - at developer mode warning, press Ctrl-D or Ctrl-U to boot from disk or usb
+    - for USB boot, need to run `enable_dev_usb_boot` from console first
+- console
+  - while in developer mode, Ctrl-Alt-F2 to enter console
+- rw rootfs and ssh
+  - see `/etc/init/openssh-server.conf.README`
+  - select `Enable debugging features` in OOBE (out-of-box experience) will do
+  - otherwise,
+    - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
+    - `reboot`
+    - `/usr/libexec/debugd/helpers/dev_features_ssh`
+    - `passwd`
+- flash latest test image
+  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
+- confirm versions
+  - H1 firmware: `gsctool -a -f`
+  - EC firmware: `ectool version`
+  - AP firmware: `crossystem fwid`
+  - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
+  - `chromeos-firmwareupdate -t` to flash
+
 # Host
 
 ## Source Code
@@ -143,32 +171,6 @@ Chrome OS Overview
   - ControlPath ~/.ssh/control-%r@%h:%p
   - ControlPersist yes
   - LocalForward 1234 localhost:1234 # for gdbserver
-
-## New Device
-
-- enable developer mode
-  - hold ESC and F3/Refresh, then press power button to boot into recovery
-    mode
-  - while in recovery mode, press Ctrl-D to enter developer mode
-- select boot device
-  - at developer mode warning, press Ctrl-D or Ctrl-U to boot from disk or usb
-    - for USB boot, need to run `enable_dev_usb_boot` from console first
-- console
-  - while in developer mode, Ctrl-Alt-F2 to enter console
-- rw rootfs
-  - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
-  - `reboot`
-- sshd
-  - `/usr/libexec/debugd/helpers/dev_features_ssh`
-  - `passwd`
-- flash latest test image
-  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
-- confirm versions
-  - H1 firmware: `gsctool -a -f`
-  - EC firmware: `ectool version`
-  - AP firmware: `crossystem fwid`
-  - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
-  - `chromeos-firmwareupdate -t` to flash
 
 ## Flash Images
 
