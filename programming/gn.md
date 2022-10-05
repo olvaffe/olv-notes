@@ -7,6 +7,8 @@ GN
   - `gn gen out/my_build`
   - `gn args out/my_build`
   - `gn args --list out/my_build`
+- ccache
+  - `cc_wrapper = "ccache"`
 
 ## Cross-compile
 

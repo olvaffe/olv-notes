@@ -82,6 +82,21 @@ Perfetto
     - categories to enable
       - `am binder_driver dalvik freq gfx hal idle input res view sched wm`
 
+## Tools
+
+- `traceconv` to convert protobuf binary to protobuf text, systrace, etc.
+- `trace_processor_shell` is a sql shell
+  - `.dump <file>` to save to sqlite
+  - `select * from track` shows all tracks
+  - `select * from thread_track` shows all tracks that are threads
+    - perfetto uses an OO design
+  - `select * from slice` shows all slices
+- newbie way
+  - `select utid from thread where name == blah` to find `utid` of `blah`
+  - `select id from thread_track where utid == foo` to find the track id
+  - `select ts, dur, name, depth from slice where track_id == bar order by ts`
+    to find the slices
+
 ## Release Process
 
 - `master` is the development branch
