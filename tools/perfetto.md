@@ -85,6 +85,9 @@ Perfetto
 ## Tools
 
 - `traceconv` to convert protobuf binary to protobuf text, systrace, etc.
+  - protoc can be used to decode binary to txt as well
+    - `protoc --decode=perfetto.protos.Trace protos/perfetto/trace/perfetto_trace.proto`
+  - protoc can support encode which `traceconv` can't
 - `trace_processor_shell` is a sql shell
   - `.dump <file>` to save to sqlite
   - `select * from track` shows all tracks
