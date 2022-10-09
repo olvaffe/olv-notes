@@ -43,4 +43,3 @@ dnsmasq
             --enable-tftp \
             --tftp-root <path>
 - make sure `<path>` is accessible by nobody or specify `--user`
-

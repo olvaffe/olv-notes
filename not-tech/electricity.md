@@ -1,7 +1,6 @@
 Electricity
 ===========
 
-
 ## Overview
 
 - service drop

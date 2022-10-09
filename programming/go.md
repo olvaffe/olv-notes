@@ -18,3 +18,4 @@ Go
   - running `go<ver>` prompts that the SDK is missing
     - `go<ver> download` downloads the tarball and untars it to
       `$HOME/sdk/go<ver>`
+- to run old go code, `GO111MODULE=off` might be necessary

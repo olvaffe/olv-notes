@@ -326,3 +326,43 @@ the sizeof(long) actually varies between the targets we care about.
   - special numbers follow the same rules
     - arm supports "alternative half-precision" format where 0x1f exponent
       bits are treated normally and does not represent infinity/nan
+
+## Inline
+
+- <http://gcc.gnu.org/onlinedocs/gcc-4.4.0/gcc/Inline.html>
+- quote <http://stackoverflow.com/questions/216510/extern-inline>
+- GNU89
+  - "inline": the function may be inlined (it's just a hint though). An
+    out-of-line version is always emitted and externally visible. Hence you can
+    only have such an inline defined in one compilation unit, and every other
+    one needs to see it as an out-of-line function (or you'll get duplicate
+    symbols at link time).
+  - "static inline" will not generate a externally visible out-of-line version,
+    though it might generate a file static one. The one-definition rule does not
+    apply, since there is never an emitted external symbol nor a call to one.
+  - "extern inline" will not generate an out-of-line version, but might call one
+    (which you therefore must define in some other compilation unit. The
+    one-definition rule applies, though; the out-of-line version must have the
+    same code as the inline offered here, in case the compiler call's it instead
+    it.
+- GNU99
+  - "inline": like GNU "extern inline"; no externally visible function is
+    emitted, but one might be called and so must exist
+  - "extern inline": like GNU "inline": externally visible code is emitted, so
+    at most one translation unit can use this.
+  - "static inline": like GNU "static inline". This is the only
+    portable one between gnu89 and c99
+- C99 spec <http://www.greenend.org.uk/rjk/2003/03/inline.html>
+  - a function that is always mentioned with `inline` and never with `extern`
+  - a function that is mentioned without `inline` or with `extern` somewhere
+  - a function that is static inline.
+- In practice,
+  - Use `static inline` with definition in headers or files.  No others.  This
+    would be the best.  For files or files include the headers, it might be
+    inlined or not.
+  - Follow GNU89 and use `extern inline` with definition in headers.  One of the
+    source must define the same function without mentioning inline.  Sources
+    calling the funtion might inline it, or call to the one we just defined in
+    some file.
+  - Follow GNU99 and use `inline` with definition in headers.  It has the same
+    effect as GNU89's `extern inline`.  So some file must define it.
