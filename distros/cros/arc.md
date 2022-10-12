@@ -93,3 +93,7 @@ ARC
      meson --cross-file meson.aarch64-linux-android.arm64.ini out-$BOARD \
      -Dgallium-drivers= -Dvulkan-drivers=virtio-experimental \
      -Dbuildtype=debug -Dplatforms=android -Dplatform-sdk-version=30`
+- kernel
+  - `cd src/third_party/kernel/v5.10-arcvm`
+  - `make ARCH=arm64 O=ARCVM CROSS_COMPILE=aarch64-cros-linux-gnu- arm64_arcvm_defconfig`
+  - `scp -C ARCVM/arch/arm64/boot/Image dut:/opt/google/vms/android/vmlinux`
