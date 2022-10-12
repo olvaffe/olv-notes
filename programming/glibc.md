@@ -36,3 +36,14 @@ glibc
     - it is implied when `-std=` is not given
   - `_GNU_SOURCE` for all above plus a little more deprecated stuff plus GNU
     extensions
+
+## Large File Support
+
+- `ftell` variants, as an example
+  - `long int ftell(FILE *);`
+  - `off_t ftello(FILE *);`
+  - `off64_t ftello64(FILE *);`
+- `ftell` will fail when the file position cannot be represented by `long int`
+  - normally `long int` is 64-bit for 64-bit programs and is not an issue
+- `ftello` is defined to `ftello64` when `_FILE_OFFSET_BITS=64` is defined
+  - define the macro and do not use `ftello64` directly
