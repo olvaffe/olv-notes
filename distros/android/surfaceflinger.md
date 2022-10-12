@@ -152,6 +152,33 @@ Android SurfaceFlinger
 - a GPU-bound app
 - a CPU-bound app
 
+## Vulkan
+
+- Android vulkan loader implements `VK_KHR_android_surface` and `VK_KHR_swapchain`
+- `vkCreateAndroidSurfaceKHR`
+  - it creates a `VkSurfaceKHR` from a `ANativeWindow`, which is from
+    `ANativeWindow_fromSurface`
+  - internally, the concrete type is `Surface` which is a wrapper over
+    `IGraphicBufferProducer`
+- `vkQueuePresentKHR` calls `ANativeWindow::queueBuffer`
+  - it calls `Surface::queueBuffer` which calls
+    `BpGraphicBufferProducer::queueBuffer`
+    - `BpGraphicBufferProducer` is a proxy object in the app process
+    - `BufferQueueProducer` is the real object in the sf process
+      - `BufferQueueProducer` implements `BnBufferQueueProducer`
+      - `BnBufferQueueProducer::onTransact` calls
+      	`BufferQueueProducer::queueBuffer`
+  - `BufferQueueProducer::queueBuffer` adds the buffer to the queue
+    - it has a `waitForever` on the previous buffer to throttle
+  - when tracing is on, after `BufferQueueProducer::queueBuffer` returns,
+    `Surface::queueBuffer` adds the fence to `gpuCompletionThread` in the app
+    process
+    - there is a `GPU completion` thread that waits on the fence
+    - the thread has a `GPU completion` counter that tracks the number of
+      fences pending in the thread
+- `vkAcquireNextImageKHR` calls `ANativeWindow::dequeueBuffer`
+  - similarly, it calls `BufferQueueProducer::dequeueBuffer`
+
 ## Graphics
 
 * android.graphics: Skia
