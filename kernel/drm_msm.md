@@ -326,3 +326,21 @@ DRM msm
     - write a `RD_GPUADDR` for the BO
     - write a `RD_BUFFER_CONTENTS` for the BO
     - write a `RD_CMDSTREAM_ADDR`
+
+## GPU Hang
+
+- IRQs
+  - looking for `request_irq`, msm asks for a few irqs
+  - `a6xx_hfi_irq` for hardware firmware interface, a queue that cpu uses to
+    communicate with gmu
+  - `a6xx_gmu_irq` for graphics management unit, for gpu power management
+  - `a6xx_irq` for gpu core
+  - `dpu_core_irq` for display processing unit
+  - `a6xx_fault_handler` for iommu fault handler
+    - adreno is behind `qcom,adreno-smmu` iommu
+- `msm_gpu_crashstate_capture`
+  - it can be called by `recover_worker` on adreno fault or by `fault_worker`
+    on iommu fault
+  - `a6xx_gpu_state_get` collects important gpu state info `msm_gpu_state`
+  - `msm_gpu_crashstate_get_bo` add dumpable submit bos into `msm_gpu_state`
+  - it also calls `dev_coredumpm` to integrate with dev coredump
