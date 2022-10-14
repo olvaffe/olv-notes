@@ -93,6 +93,24 @@ ARC
      meson --cross-file meson.aarch64-linux-android.arm64.ini out-$BOARD \
      -Dgallium-drivers= -Dvulkan-drivers=virtio-experimental \
      -Dbuildtype=debug -Dplatforms=android -Dplatform-sdk-version=30`
+  - for freedreno,
+
+     -Degl=enabled
+     -Dllvm=disabled
+     -Dgallium-xa=false
+     -Dgbm=false
+     -Ddri-search-path=/vendor/lib64/dri
+     -Dgles-lib-suffix=_mesa
+     -Degl-lib-suffix=_mesa
+     -Dplatforms=android
+     -Dplatform-sdk-version=30
+     -Dgallium-drivers=freedreno
+     -Dfreedreno-virtio=true
+     -Dvulkan-drivers=
+  - and push `out-$BOARD/src/egl/libEGL_mesa.so` to
+    `/vendor/lib64/egl/libEGL_mesa.so` and push
+    `out-$BOARD/src/gallium/targets/dri/msm_dri.so` as
+    `/vendor/lib64/dri/virtio_gpu_dri.so`
 - kernel
   - `cd src/third_party/kernel/v5.10-arcvm`
   - `make ARCH=arm64 O=ARCVM CROSS_COMPILE=aarch64-cros-linux-gnu- arm64_arcvm_defconfig`
