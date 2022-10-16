@@ -76,3 +76,10 @@ udev
   - when a device is hotplugged, the kernel sends uevents for the new device
 - udevd drivers.rules does
   - if `MODALIAS` is set in the uevent, invoke `kmod load $env{MODALIAS}`
+
+## `udevadm`
+
+- `udevadm info /sys/class/net/wlan0`
+- `udevadm test-builtin net_id  /sys/class/net/wlan0`
+  - `man systemd.net-naming-scheme`
+  - `man systemd.link`
