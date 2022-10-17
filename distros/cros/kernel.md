@@ -3,17 +3,34 @@ Chrome OS Kernel
 
 ## Kernel
 
-- "cros_workon --board=${BOARD} start chromeos-kernel-4_19"
-- make changes to src/third_party/kernel/v4.19
-  - or fetch a WIP branch, "git fetch cros <branch>"
-    - https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>
-- to build, "USE=\"kgdb vtconsole\" emerge-${BOARD} --nodeps chromeos-kernel-4_19"
-- to deploy, "./update_kernel.sh --remote=<DUT IP address>"
-- change kernel config
-  - chromeos/config/*/*.config
-- update kernel cmdline
-  - on DUT: /usr/share/vboot/bin/make_dev_ssd.sh --edit_config
-  - update_kernel.sh: edit src/build/images/<BOARD>/latest/config.txt
+- `cros_workon --board=${BOARD} start chromeos-kernel-5_15`
+- make changes to `src/third_party/kernel/v5.15`
+  - or fetch a WIP branch, `git fetch cros <branch>`
+    - `https://chromium.googlesource.com/chromiumos/third_party/kernel/+log/<branch>`
+- to build, `USE="kgdb vtconsole" emerge-${BOARD} --nodeps chromeos-kernel-5_15`
+- to deploy, `./update_kernel.sh --remote=<DUT IP address> --ssh_port 22`
+
+## Config
+
+- to change kernel config
+  - `chromeos/config/*/*.config`
+- to update kernel cmdline
+  - on DUT: `/usr/share/vboot/bin/make_dev_ssd.sh --edit_config`
+  - `update_kernel.sh`: edit `src/build/images/<BOARD>/latest/config.txt`
+- ebuild
+  - ebuild uses `cros-kernel2`, which is at
+    `src/third_party/chromiumos-overlay/eclass/cros-kernel2.eclass`
+  - it picks `$CHROMEOS_KERNEL_SPLITCONFIG` or
+    `chromeos-$CHROMEOS_KERNEL_ARCH` as the config
+    - on chipset-mt8183, we have
+      `CHROMEOS_KERNEL_SPLITCONFIG="chromiumos-mediatek"` and
+      `CHROMEOS_KERNEL_ARCH="arm64"`
+  - `chromeos/scripts/prepareconfig` generates the final config using
+    `chromeos/configs`
+    - `base.config` is common between all cros kernels
+    - `$arch/common.config` is common between those of the same arch
+    - `$arch/chromiumos-$soc.flavour.config` is common between those of the
+      same soc
 
 ## Build Kernel
 
