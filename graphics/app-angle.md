@@ -176,3 +176,46 @@ ANGLE
 - on flush
   - `rx::ContextVk::flushCommandsAndEndRenderPassImpl`
   - `rx::vk::RenderPassCommandBufferHelper::endRenderPass`
+
+## Traces
+
+- <https://chromium.googlesource.com/angle/angle/+/HEAD/src/tests/restricted_traces/README.md>
+- data files
+  - `angle_trace_tests` uses `src/tests/restricted_traces` as the data dir
+  - `restricted_traces.json` lists all traces
+  - `$trace/$trace.json` has the metadata for `$trace`
+- `angle_trace_tests`
+  - `--gtest_list_tests` lists all tests
+    - e.g., `TracePerfTest.Run/vulkan_pokemon_go`
+    - `RegisterTraceTests` parses trace jsons and generates them dynamically
+    - by default, it uses `SurfaceType::Window` and generates tests that use
+      `Vulkan` or `Native` renderer
+  - `--gtest_filter` to filter tests
+  - `ANGLEProcessPerfTestArgs` understands these options
+    - `--enable-all-trace-tests` generates all combinations, such as offscreen
+      or swiftshader
+    - `--minimize-gpu-work` forces 1x1 window
+    - `--verbose`
+  - the driver is hardcoded to `GLESDriverType::AngleEGL` which loads
+    `libEGL.so`
+    - to override, create a symlink to the system `libEGL.so.1`
+- `TracePerfTest` is the class to run tests
+  - `ANGLERenderTest::SetUp`
+    - creates an `OSWindow`
+    - calls `initializeGLWithResult` to initialize EGL/GLES
+    - calls `TracePerfTest::initializeBenchmark` to initialize trace loader
+    - `iterationsPerStep` is 1
+    - calls `ANGLEPerfTest::runTrial` to warm up
+      - `gWarmupTrials` is 3 and `gCalibrationTimeSeconds` is 1.0 by default
+      - it keeps `ANGLERenderTest::step` and `TracePerfTest::drawBenchmark`
+      	until `gCalibrationTimeSeconds` is reached
+      - and repeat above for `gWarmupTrials` times
+      - each step draws a frame of the trace
+- outputs
+  - `cpu_time` is average cpu time (could be larger than `wall_time` when threaded)
+    per step
+  - `wall_time` is average `CLOCK_MONOTONIC` per step
+  - `trial_steps` how many steps (frames) in this trial
+  - `total_steps` how many steps in `gTestTrials` trials
+  - `memory_median`
+  - `memory_max`
