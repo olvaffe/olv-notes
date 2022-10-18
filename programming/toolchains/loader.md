@@ -26,3 +26,8 @@ Dynamic Loader
   - `LD_PRELOAD` specifies a colon-seperated list of libraries to preload
   - `LD_DEBUG` prints debug messages
   - more
+- cmdline options
+  - `/lib64/ld-linux-x86-64.so.2 --list /usr/bin/ls` is like `ldd /usr/bin/ls`
+  - `--inhibit-rpath` specifies a colon-seperated of list of objects whose
+    `DT_RPATH`/`DT_RUNPATH` should be ignored
+    - for the main executable itself, use an empty string
