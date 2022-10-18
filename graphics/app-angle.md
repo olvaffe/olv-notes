@@ -28,8 +28,12 @@ ANGLE
   - `gn args out/Android`
     - `target_os = "android"`
     - `target_cpu = "arm64"`
+    - `angle_enable_vulkan = true`
+    - `angle_expose_non_conformant_extensions_and_versions = true`
     - `is_component_build = false`
+    - `is_official_build = true`
     - `is_debug = false`
+    - `angle_assert_always_on = false`
     - `use_goma = true`
   - `autoninja -C out/Android`
   - `adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk`
@@ -43,12 +47,9 @@ ANGLE
   - to verify, `adb logcat -d | grep ANGLE`
 - cross compile
   - `./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64`
-  - `gn args out/AArch64`
+  - `gn args out/AArch64`, same as android except
     - `target_os = "linux"`
-    - `target_cpu = "arm64"`
-    - `is_component_build = false`
-    - `is_debug = false`
-    - `use_goma = true`
+    - `is_official_build = false`
   - `autoninja -C out/AArch64`
   - package
     - `cd out`
