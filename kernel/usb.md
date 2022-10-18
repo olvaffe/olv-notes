@@ -1,21 +1,48 @@
 USB
 ===
 
-## Hardware
+## Specs
 
-- Speed
+- USB 1.0 / 1.1
+  - 1996 / 1998
   - Low Speed: 1.5Mbit/s
   - Full Speed: 12Mbit/s
-  - High Speed: 480Mbit/s, since 2.0
-  - SuperSpeed: 5Gbit/s, since 3.0
-    - also called 3.1 Gen1
-  - SuperSpeed+: 10Gbit/s, since 3.1
-    - also called 3.1 Gen2
-  - USB 3.2 introduced
-    - 3.2 Gen1x1: 5Gbit/s
-    - 3.2 Gen1x2: 10Gbit/s (Gen1 with two-lane operation)
-    - 3.2 Gen2x1: 10Gbit/s
-    - 3.2 Gen2x2: 20Gbit/s (Gen2 with two-lane operation)
+  - Type-A and Type-B
+- USB 2.0
+  - 2000
+  - High Speed: 480Mbit/s
+  - Mini-A, Mini-B, and Micro-USB
+  - On-The-Go 1.3
+  - Battery Charging Spec 1.1 and 1.2
+- USB 3.0
+  - 2008
+  - SuperSpeed: 5Gbit/s
+    - Type-A blue connectors and SS initials
+- USB 3.1 / 3.2
+  - 2013 / 2017
+  - Gen 1
+    - Gen 1x1: USB 3.0 rebranded
+    - Gen 1x2: two-lane and 10Gbit/s
+  - Gen 2
+    - Gen 2x1: 10Gbit/s
+    - Gen 2x2: 20Gbit/s
+  - Type-C
+  - USB PD
+- USB4
+  - 2019
+  - based on Thunderbolt 3
+  - can tunnel
+    - USB 3.2
+    - DisplayPort
+    - PCIe
+  - requires Type-C and USB PD
+  - Gen 3x1: 20Gbit/s
+  - Gen 3x2: 40Gbit/s
+  - Gen 4x1: 40Gbit/s
+  - Gen 4x2: 80Gbit/s
+  - Thunderbolt 4
+    - USB4 plus all optional USB4 functionality is TB4 without optional TB4
+      functionality
 - Power
   - Low Power: 5V * 0.1A = 0.5W
   - High Power: up to 5V * 0.5A = 2.5W
@@ -53,16 +80,29 @@ USB
 
 ## lspci / lsusb
 
-- example on my laptop
-  - two physical USB-A ports
+- Lenovo X1 Gen9
+  - specs
+    - 1x Thunderbolt 4 power input
+    - 1x Thunderbolt 4
+    - 2x USB-A 3.2 Gen1
+  - `lsusb -t`
+    - 2x 4-port USB 3.2 Gen2 (10Gbit/s) root hubs
+      - not used; used only when TB or USB3 device is plugged in?
+    - 1x 1-port USB 2.0 (480Mbit/s) root hub
+      - not used
+    - 1x 12-port USB 2.0 (480Mbit/s) root hub
+      - touchpad (12Mbit)
+      - camera (480Mbit)
+      - bluetooth (12Mbit)
+      - all 4 USB Type-A and Type-C ports
+  - I connect these to the ports
+    - security key (12Mbit)
+    - usb dock (480Mbit)
+      - built-in usb ethernet (480Mbit)
+      - monitor (480Mbit)
+        - keyboard (12Mbit) and mouse (12Mbit)
 - lspci -v
   - one xHCI USB controller driven by `xhci_hcd` pci driver
-- lsusb -t
-  - one USB 2.0 root hub
-    - with built-in USB devices such as webcam, bluetooth, and touchscreen
-      connected
-  - one USB 3.0 root hub
-    - with two USB-A ports for external USB devices
 - most USB devices are driven by a `usb_device_driver` called `usb`
   - the driver enumerates usb interfaces that can be driven by `usb_driver`s
 - A USB hub, root or not, is driven by a `usb_driver` called `hub`
