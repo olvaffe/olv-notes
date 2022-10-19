@@ -219,3 +219,13 @@ ANGLE
   - `total_steps` how many steps in `gTestTrials` trials
   - `memory_median`
   - `memory_max`
+- android
+  - push traces to `/sdcard/chromium_tests_root/src/tests/restricted_traces`
+  - `adb shell appops set --uid com.android.angle.test MANAGE_EXTERNAL_STORAGE 0`
+  - `adb shell appops write-settings`
+  - `adb shell am instrument -w \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
+       -e org.chromium.native_test.NativeTest.CommandLineFlags '--gtest_filter=TracePerfTest.Run/vulkan_*' \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.NativeTestActivity com.android.angle.test.AngleUnitTestActivity \
+       com.android.angle.test/org.chromium.build.gtest_apk.NativeTestInstrumentationTestRunner`

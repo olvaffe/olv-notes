@@ -313,3 +313,31 @@ Mesa Turnip IR3
 - primitive params
   - .x: primitive stride
   - .y: vertex stride
+
+## isaspec
+
+- `ir3.xml`
+  - a `#instruction` has 64 bits
+  - different members of `struct ir3_instruction` map to different abstract
+    fields
+- `ir3-cat2.xml`
+  - a `#instruction-cat2-2src-input` has
+    - b0...15: a `#multisrc` for `SRC1`
+    - b16..31: a `#multisrc` for `SRC2`
+    - b32..39: a `#reg-gpr` for `DST`
+    - b40..41: a `#rptN` for `REPEAT`
+    - b42    : `SAT`
+    - b43    : `SRC1_R`
+    - b44    : `SS`
+    - b45    : `UL`
+    - b46    : `DST_CONV`, whether dst has opposite precision as src
+    - b47    : `EI`
+    - b48..49: `COND`
+    - b50    : 0 or 1, for `bary.f` and `flat.b` respectively
+    - b51    : `SRC2_R`
+    - b52    : `FULL`, whether src is full
+    - b53..58: `111001
+    - b59    : `JP`, set on jump target
+    - b60    : `SY`, set on first instruction or first instruction after
+                sample instructions
+    - b61..63: `010`, cat2

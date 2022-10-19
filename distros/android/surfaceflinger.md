@@ -579,3 +579,13 @@ DisplayHardware:
   * `MIN_SYNC_BUFFER_SLOTS` is 2
   * client buffer count is used only when it is not zero.
   * at most one buffer can be dequeued if client buffer count is not set
+
+## `captureScreen`
+
+- `renderScreenImplLocked` draws all layers from bottom to top
+  - `layersSortedByZ` is from bottom to top
+  - when an activity has a surface view, the layer of the surface view is
+    under the layer of the activity.  A hole is dug out from the layer of the
+    activity
+    - `transparentRegionHint` is just a hint
+    - I think it clears the alpha channel to 0.0
