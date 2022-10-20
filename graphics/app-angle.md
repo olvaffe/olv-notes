@@ -229,3 +229,9 @@ ANGLE
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.NativeTestActivity com.android.angle.test.AngleUnitTestActivity \
        com.android.angle.test/org.chromium.build.gtest_apk.NativeTestInstrumentationTestRunner`
+  - <https://chromium.googlesource.com/chromium/src/+/main/testing/android/docs/gtest_implementation.md>
+    - `gclient sync` clones `testing` from chromium
+    - it builds an apk containing
+      - one or more `.so` 
+      - one or more `.dex` 
+      - a manifest file containing `<instrument>` and `<activity>`
