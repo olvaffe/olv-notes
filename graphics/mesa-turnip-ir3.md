@@ -244,6 +244,18 @@ Mesa Turnip IR3
   - with GS, `outputs_count` and `outputs` are 0.  `output_size` is set.
   - without GS, `outputs_count` and `outputs` are for fs.  `output_size` is 0.
 
+## IR3 FS IOs
+
+- `load_barycentric_pixel` is lowered by `emit_intrinsic_barycentric`
+  - it creates sysval inputs called `ij`
+  - in turnip's `tu6_emit_fs_inputs`, it makes sure the weights are loaded
+    into `ij`
+- `load_interpolated_input` is lowered by `setup_input`
+  - `create_frag_input` emits `ir3_BARY_F` with `inloc` and `coord` as srcs
+    - `inloc` is the attribute
+    - `coord` is `ij`
+  - in turnip's `tu6_emit_vpc_varying_modes`, it sets up the attributes for fs
+
 ## IR3 UBOs
 
 - descriptors

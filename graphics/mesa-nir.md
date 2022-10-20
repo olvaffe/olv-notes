@@ -336,6 +336,13 @@ NIR
 - `nir_assign_io_var_locations`
   - it scans variables and assigns `var->data.driver_location`
   - callers use this to update `nir->num_inputs` / `nir->num_outputs` as well
+- fs inputs
+  - barycentric coordinates
+  - `load_barycentric_pixel` loads the barycentric weight vector for the
+    fragment
+  - `load_interpolated_input` loads the interpolated value of an input
+    - src0 is the barycentric weight vector
+    - src1 is offset which is always 0?
 
 ## Subgroup
 

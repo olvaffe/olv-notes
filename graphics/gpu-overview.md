@@ -318,3 +318,10 @@ GPU
   - 16-wide: arm valhall
   - 32-wide: nvidia, amd rdna
   - 64-wide: amd gcn, amd rdna
+
+## Barycentric coordinates
+
+- given a triangle with vertices v1, v2, v3
+- each point inside the triangle can be expressed as
+  `p = v1 * a + v2 * b + v3 * c`, where `a + b + c = 1`
+- `(a, b, c)` is called the barycentric weight vector of the point
