@@ -325,19 +325,27 @@ Mesa Turnip IR3
     - b0...15: a `#multisrc` for `SRC1`
     - b16..31: a `#multisrc` for `SRC2`
     - b32..39: a `#reg-gpr` for `DST`
-    - b40..41: a `#rptN` for `REPEAT`
-    - b42    : `SAT`
-    - b43    : `SRC1_R`
-    - b44    : `SS`
-    - b45    : `UL`
+    - b40..41: a `#rptN` for `REPEAT`, to repeat the instruction a few times
+    - b42    : `SAT`, saturate
+    - b43    : `SRC1_R`, auto-increment src1 when repeating (dst is always
+                auto-incremented and does not need a flag)
+    - b44    : `SS`, set on first instruction or first instruction after long
+               instructions
+    - b45    : `UL`, set on the last instruction that is relative
     - b46    : `DST_CONV`, whether dst has opposite precision as src
-    - b47    : `EI`
-    - b48..49: `COND`
+    - b47    : `EI`, set on `add.s`, `add.u`, or the last `bary.f`
+    - b48..49: unused for `#instruction-cat2-2src-input`
     - b50    : 0 or 1, for `bary.f` and `flat.b` respectively
-    - b51    : `SRC2_R`
-    - b52    : `FULL`, whether src is full
-    - b53..58: `111001
+    - b51    : `SRC2_R`, auto-increment src2 when repeating
+    - b52    : `FULL`, whether src is full or half
+    - b53..58: `111001`
     - b59    : `JP`, set on jump target
     - b60    : `SY`, set on first instruction or first instruction after
                 sample instructions
     - b61..63: `010`, cat2
+- `nop` and `repeat` of `ir3_instruction`
+  - in binary encoding,
+    - when `REPEAT` is non-zero, `SRC1_R` and `SRC2_R` are flags to auto-increment
+      src1 and src2 respectively
+    - when `REPEAT` is 0, `SRC1_R` and `SRC2_R` are 2-bit integer to indicate
+      number of cycles to delay

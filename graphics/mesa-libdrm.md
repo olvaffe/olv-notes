@@ -1,6 +1,86 @@
 libdrm
 ======
 
+## `drmdevice`
+
+- it is to demonstrate `drmGetDevices2` and `drmGetDevice2`
+  - it calls `drmGetDevices2` to enumerate all `drmDevicePtr` and dumps them
+  - it then calls `drmGetDevice2` on each dev node and dumps the same info again
+  - no root required, except opening primary nodes might require `video` group
+
+## `vbltest`
+
+- it is to demonstrate `drmWaitVBlank`
+  - it times 60 vblanks and prints the vblank frequency
+  - no root required, except opening primary nodes might require `video` group
+- it uses the older `drmOpen(driver_name, bus_id)` to open the device
+  - only one of `driver_name` and `bus_id` is needed
+    - it tries `drmOpenByBusid` and then `drmOpenByName`
+    - internally, they scan all devices and return the first device that
+      matches the condition
+  - modern way is to `drmGetDevices2` and `open` instead
+- it uses `drmWaitVBlank` with `sequence = 0` and `type = DRM_VBLANK_RELATIVE`
+  to get the current vblank count
+- it uses `drmWaitVBlank` with `sequence = 1` and
+  `type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT` to queue an event on next
+  vblank
+- when events are delivered, drm fd becomes readable
+- `drmHandleEvent` can read events from drm fd
+  
+## `proptest`
+
+- it is to demonstrate `drmModeGetResources`, `drmModeObjectGetProperties`,
+  `drmModeGetProperty`, and `drmModeObjectSetProperty`
+  - `drmModeGetResources` returns all mode objects: fbs, crtcs, connectors,
+    and encoders
+    - note that it only dumps crtcs and connectors but not other mode objects
+  - each object has some properties that can be set/get
+  - no root required, except opening primary nodes might require `video` group
+- each property has
+  - name
+    - a connector has `EDID`, `DPMS`, etc.
+    - a crtc has `VRR_ENABLED`, `CTM`, etc.
+  - `flags` can be anything but some bits are used for property value types
+    (enum, blob, range, etc.)
+  - values
+
+## `modeprint`
+
+- it is to demonstrate `drmModeGetResources`
+  - it dumps all resources by default
+  - `-v` to further dump connector mode and property details
+    - note that it only dumps property details of connectors but not other mode objects
+  - no root required, except opening primary nodes might require `video` group
+
+## `modetest`
+
+- it can set/get everything
+- when no argument is specified, it dumps all mode objects
+  - `-e` to dump just encoders
+  - `-c` to dump just connectors and their props
+  - `-p` to dump just crtcs, planes, and their props
+  - `-f` to dump just fbs
+- otherwise, it sets mode objects
+  - `-a` uses atomic modesetting
+  - each `-w` sets one prop
+  - each `-s` sets a connector to a mode
+    - `-s 32:#0` sets connector 32 to its first mode
+  - `-r` sets all connectors to their preferred modes
+  - each `-P` sets a plane
+    - `-P 41@65:1000x1000` assigns plane 41 to crtc 65.  The plane scans out
+      from a 1000x1000 bo and is centered
+  - `-F` sets the fb fill pattern
+    - `smpte` is default
+    - `tiles`
+    - `plain`
+    - `gradient`
+- `-v` requires `-s` and tests vsyncs
+  - it keeps flipping between two bos
+  - it seems semi-broken without `-a`
+  - if `-a`, it also requires `-P`
+- `-C` requires `-s` and tests cursors
+  - if `-a`, it is silently ignored
+
 ## Device Enumeration
 
 - `drmGetDevices2` enumerates all DRM devices
