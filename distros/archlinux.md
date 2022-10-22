@@ -167,6 +167,15 @@ ArchLinux
     - ~630M after `pacman -Scc`
   - `pacstrap` just the `pacman` package results in ~560M
     - ~460M after `pacman -Scc`
+- manually
+  - use `pacstrap` from `arch-install-scripts`
+    - <https://github.com/archlinux/arch-install-scripts>
+  - minimal packages
+    - to boot, `base linux linux-firmware`
+    - basic tools, `vim sudo`
+    - wifi, `iwd` or `wpa_supplicant`
+    - gui, `sway alacritty i3status mako xorg-xwayland`
+    - devel, `gcc git meson`
 
 ## `base` package
 
