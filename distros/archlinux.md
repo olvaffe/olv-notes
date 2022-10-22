@@ -177,6 +177,7 @@ ArchLinux
     - tools, `sudo vim man-db`
     - devel, `gcc git ctags meson pkgconf`
       - also `gdb perf strace man-pages`
+      - also `bison flex python-mako wayland-protocols` for mesa
     - gui, `sway swayidle swaylock i3status mako`
       - `alacritty google-chrome noto-fonts noto-fonts-cjk`
       - `light wayland-utils`
