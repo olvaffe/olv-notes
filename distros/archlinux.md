@@ -171,11 +171,24 @@ ArchLinux
   - use `pacstrap` from `arch-install-scripts`
     - <https://github.com/archlinux/arch-install-scripts>
   - minimal packages
-    - to boot, `base linux linux-firmware`
-    - basic tools, `vim sudo`
+    - boot, `base linux linux-firmware`
+      - also `btrfs-progs dosfstools`
     - wifi, `iwd` or `wpa_supplicant`
-    - gui, `sway alacritty i3status mako xorg-xwayland`
-    - devel, `gcc git meson`
+    - tools, `sudo vim man-db`
+    - devel, `gcc git ctags meson pkgconf`
+      - also `gdb perf strace man-pages`
+    - gui, `sway swayidle swaylock i3status mako`
+      - `alacritty google-chrome noto-fonts noto-fonts-cjk`
+      - `light wayland-utils`
+      - `mesa mesa-utils vulkan-radeon vulkan-tools`
+    - bluetooth, `bluez bluez-utils`
+    - printer, `cups samsung-unified-driver-printer`
+    - audio, `pulseaudio`
+  - reduce to minimal packages
+    - `pacman -Qeq` to get explicitly packages
+    - `pacman -D --asdeps` to mark them deps
+    - `pacman -D --asexplicit` to mark desired packages explicit
+    - `pacman -Qtdq` to get packages to remove
 
 ## `base` package
 
