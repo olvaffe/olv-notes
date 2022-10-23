@@ -45,6 +45,10 @@ Cross Toolchain
          are correct but still not working
       - `mv /usr/aarch64-linux-gnu/lib/libc.so /tmp` allows it to work
         - that file is a ld script and hard codes `/lib/libc.so.6`
+        - this issue is arch-specific.  On debian,
+          `/usr/aarch64-linux-gnu/lib/libc.so` is installed by
+          `libc6-dev-arm64-cross` and hard codes
+          `/usr/aarch64-linux-gnu/lib/libc.so.6` instead
 - clang
   - clang can cross-compile to many targets by default
   - need `-target aarch64-linux-gnu --sysroot /usr/aarch64-linux-gnu`
