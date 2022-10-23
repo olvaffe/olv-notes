@@ -1,6 +1,54 @@
 Cross Toolchain
 ===============
 
+## Arch Linux Cross Toolchains
+
+- `aarch64-linux-gnu-gcc` is a cross toolchain
+  - it depends on `aarch64-linux-gnu-binutils`
+  - it also depends on `aarch64-linux-gnu-glibc`
+    - which in turn depends on `aarch64-linux-gnu-linux-api-headers`
+- contents of `aarch64-linux-gnu-binutils`
+  - executables (nm, ld, strip, etc.) are installed to `/usr/bin`
+    - they are prefixed
+    - unprefixed ones are installed to `/usr/aarch64-linux-gnu/bin`
+      - they should not be used
+      - they are for old projects who hard code linker, etc.
+  - linker scripts are installed to `/usr/aarch64-linux-gnu/lib/ldscripts`
+- contents of `aarch64-linux-gnu-linux-api-headers`
+  - kernel uapi is installed to `/usr/aarch64-linux-gnu/include`
+- contents of `aarch64-linux-gnu-glibc`
+  - headers are installed to `/usr/aarch64-linux-gnu/include`
+  - runtime and helpers are installed to `/usr/aarch64-linux-gnu/lib`
+    - `libc`, `libm`, `libdl`, `libpthread`, `libresolv`, etc.
+    - `ld-linux-aarch64`, `crt1.o`, etc.
+- `aarch64-linux-gnu-gcc`
+  - executables are installed to `/usr/bin`
+  - helpers are installed to `/usr/lib/gcc/<arch>/<version>`
+    - `cc1`, `crtbegin.o`, `crtend.o`, etc.
+    - `stddef.h`, `stdbool.h`, etc.
+      - yeah, some std headers are in gcc
+  - runtime is installed to `/usr/aarch64-linux-gnu/lib64`
+    - `libgcc_s`, `libgomp`, etc.
+  - `libstdc++` is a part of g++
+    - headers are installed to `/usr/aarch64-linux-gnu/include`
+    - libraries are installed to `/usr/aarch64-linux-gnu/lib64`
+- sysroot
+  - the gcc cross toolchain uses `/usr/aarch64-linux-gnu` as the sysroot
+    - `aarch64-linux-gnu-gcc -print-sysroot`
+  - if needing anything beyond glibc/stdc++, bootstrap arch linux arm as the
+    sysroot instead
+    - `pacman -S qemu-user-static qemu-user-static-binfmt`
+    - `systemctl start systemd-binfmt`
+    - `wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz`
+    - not working
+      - `aarch64-linux-gnu-gcc -print-search-dirs` confirms the search dirs
+         are correct but still not working
+      - `mv /usr/aarch64-linux-gnu/lib/libc.so /tmp` allows it to work
+        - that file is a ld script and hard codes `/lib/libc.so.6`
+- clang
+  - clang can cross-compile to many targets by default
+  - need `-target aarch64-linux-gnu --sysroot /usr/aarch64-linux-gnu`
+
 ## overview
 
 - <http://www.gentoo.org/proj/en/base/embedded/handbook/?part=1&chap=4#doc_chap3>

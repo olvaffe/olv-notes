@@ -177,14 +177,18 @@ ArchLinux
     - tools, `sudo vim man-db`
     - devel, `gcc git ctags meson pkgconf`
       - also `gdb perf strace man-pages`
-      - also `bison flex python-mako wayland-protocols` for mesa
-    - gui, `sway swayidle swaylock i3status mako`
+    - gui, `sway swayidle swaylock i3status mako polkit`
       - `alacritty google-chrome noto-fonts noto-fonts-cjk`
       - `light wayland-utils`
       - `mesa mesa-utils vulkan-radeon vulkan-tools`
     - bluetooth, `bluez bluez-utils`
     - printer, `cups samsung-unified-driver-printer`
-    - audio, `pulseaudio`
+    - audio, `pipewire pipewire-pulse`
+    - misc
+      - `fakeroot` for makepkg
+      - `bison flex python-mako wayland-protocols` for mesa
+      - `cmake make` for cmake
+      - `aarch64-linux-gnu-gcc` for cross-compile
   - reduce to minimal packages
     - `pacman -Qeq` to get explicitly packages
     - `pacman -D --asdeps` to mark them deps
