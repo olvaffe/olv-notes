@@ -53,6 +53,31 @@ Cross Toolchain
   - clang can cross-compile to many targets by default
   - need `-target aarch64-linux-gnu --sysroot /usr/aarch64-linux-gnu`
 
+## crostool-ng
+
+- build
+  - `./bootstrap`
+  - `./configure --enable-local`
+  - `./ct-ng menuconfig` and configure the toolchain
+  - `./ct-ng build.128`
+  - the cross toolchain is at `$HOME/x-tools`
+- internally, it builds these packages, in order
+  - `zlib`, `gmp`, `mpfr`, `isl`, `mpc`, `ncurses`, `libiconv`, `gettext`
+  - `binutils`, kernel headers, core `gcc`, `glibc`, final `gcc`
+- sysroot
+  - <https://crosstool-ng.github.io/docs/toolchain-usage/> documents 4 ways to
+    use a sysroot
+
+## buildroot
+
+- build
+  - `make menuconfig` and configure the toolchain
+  - `make -j128 toolchain`
+  - the cross toolchain is at `output/host/bin`
+- internally, it builds these packages, in order
+  - `m4`, `bison`, `gawk`, `binutils`, `gmp`, `mpfr`, `mpc`
+  - `gcc-initial`, `linux-headers`, `glibc`, `gcc-final`
+
 ## overview
 
 - <http://www.gentoo.org/proj/en/base/embedded/handbook/?part=1&chap=4#doc_chap3>
