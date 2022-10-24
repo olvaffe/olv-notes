@@ -248,3 +248,25 @@ AMD
 - `vkMapMemory`
   - if userptr, return directly
   - otherse, `DRM_IOCTL_AMDGPU_GEM_MMAP` followed by an mmap
+
+## Command Processor
+
+- Relation to Adreno
+  - ATI was founded in 1993 and acquired by AMD in 2006
+  - ATI introduced Imageon in 2002 which was acquired by Qualcomm in 2009
+  - Imageon Z430 was incorporated into the Qualcomm MSM7x27 and QSD8x50 series
+    of processors, being rebranded as the Adreno 200
+- PM4 Packets
+  - Type-0 should be avoided in favor of Type-3
+    - it writes consecutive registers
+  - Type-2 is filler for trailing space
+  - Type-3 has an opcode
+- SI
+  - there are two CP engines on SI
+    - DE, drawing engine, which was previously known as ME, micro engine
+    - CE, constant engine
+  - `ME_INITIALIZE` initializes ME (known as DE since SI)
+  - `PFP_SYNC_ME` stalls PFP until ME catches up
+  - `WAIT_REG_MEM` can be executed on PFP or ME
+    - it stalls until reg/mem meets the condition
+  - `COPY_DATA` can be executed on ME or CE

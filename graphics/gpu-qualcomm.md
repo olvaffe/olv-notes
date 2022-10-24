@@ -305,13 +305,35 @@ Qualcomm Adreno
 
 ## CP, Command Processor
 
-- CP has ME (microengine) and PFP (prefetch parser)
-  - PFP adds commands to a FIFO named MEQ
+- CP used to consist of PFP (prefetch parser) and ME (microengine)
+  - PFP fetches commands into a FIFO named MEQ
   - ME processes commands from MEQ
-  - since a6xx, they are replaced by SQE
+  - some commands are executed by PFP and are not fetched into MEQ
+  - they are different microcontrollers with different instruction sets before
+    a5xx
+  - in a5xx, they are two of the same microcontrollers using an instruction
+    set nicknamed afuc
+- since a6xx, CP is a microcontroller called SQE
+  - SQE uses afuc instruction set
+  - when idle, SQE executes `waitin` waiting for packets to arrive at ROQ
+  - ROQ (or may be SQE firmware itself) peaks the packets and put them onto
+    different ROQ queues
+    - RB
+    - IB1 
+    - IB2
+    - MRB (memory read)
+    - SDS (set draw state)
+    - VSD (visibility stream decode)
+  - SQE reads packets from ROQ and executes them
+    - SQE is capable of ALU, synchronized gpu register access, and pipelined
+      gpu register access
+    - it has no memory access; it uses the gpu (by programming gpu registers)
+      to access memory
   - see also
     - `afuc/README.rst`
     - `registers/adreno/adreno_pm4.xml`
+    - <https://www.x.org/docs/AMD/>
+    - `dump_cmdstream` in crashdec
 - command processing
   - `CP_INDIRECT_BUFFER` calls an indirect buffer (IB)
     - actually, CP executes commands from a ring buffer (RB) controlled by
