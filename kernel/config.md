@@ -265,7 +265,6 @@ Kernel Config
   - select `CPU Idle`
     - select `CPU idle PM support`
     - select `ARM CPU Idle Drivers`
-      - select `Generic ARM/ARM64 CPU idle Driver`
       - select `PSCI CPU idle Driver`
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
@@ -512,6 +511,8 @@ Kernel Config
     - select `Qualcomm QUSB2 PHY Driver`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd
+  - select `NVMEM Support`
+    - select `QCOM QFPROM Support` if msm
   - select `Trusted Execution Environment support` if arm
   - select `TEE drivers` if arm
     - select `OP-TEE`
