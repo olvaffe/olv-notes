@@ -1,5 +1,5 @@
-ArchLinux
-=========
+Arch Linux
+==========
 
 ## Installation
 
@@ -40,8 +40,7 @@ ArchLinux
     - `pacman -S linux linux-firmware`
     - `pacman -S btrfs-progs dosfstools`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
-    - `pacman -S sudo`
-    - `pacman -S vim`
+    - `pacman -S sudo vim`
     - `pacman -S grub`, if using BIOS
     - `pacman -S broadcom-wl-dkms`, or other out-of-tree drivers
   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
@@ -51,14 +50,14 @@ ArchLinux
     - `echo <host-name> > /etc/hostname`
     - `passwd` to set a password for root
   - create user
-    - `useradd -m -G wheel <user>`
+    - `useradd -m -G wheel,video <user>`
     - `passwd <user>`
     - `visudo`
   - traditionally, also
     - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
       - replaced by `libnss_myhostname`
   - install bootloader
-    - `bootctl --path=/boot install` for EFI
+    - `bootctl install` for EFI
     - create `/boot/loader/entries/arch.conf`
       - `title	Arch Linux`
       - `linux	/vmlinuz-linux`
@@ -81,7 +80,7 @@ ArchLinux
     - create `/etc/systemd/network/blah.network`
     - `systemctl enable --now systemd-networkd systemd-resolved`
   - for wireless,
-    - `/etc/iwd/main.conf`
+    - if need built-in dhcp, create `/etc/iwd/main.conf`
       - `[General]`
       - `EnableNetworkConfiguration=true`
     - `systemctl enable --now iwd systemd-resolved`
@@ -89,15 +88,28 @@ ArchLinux
     - `dkms autoinstall`
     - `/etc/modules-load.d`
     - `/etc/modprobe.d/blacklist.conf`
-- devel
-  - `pacman -S base-devel git meson`
-- gui
-  - X11: `pacman -S xorg xorg-xinit i3 xterm`
-  - wayland: `pacman -S sway xorg-server-xwayland`
-  - `pacman -S noto-fonts noto-fonts-cjk noto-fonts-emoji`
-- mesa
-  - `pacman -S python-mako wayland-protocols`
-  - `pacman -S mesa-demos vulkan-tools`
+- minimal packages
+  - boot, `base linux linux-firmware`
+    - also `btrfs-progs dosfstools`
+  - wifi, `iwd` or `wpa_supplicant`
+  - tools, `sudo vim man-db`
+  - devel, `gcc git ctags meson pkgconf`
+    - also `gdb perf strace man-pages`
+  - gui, `sway swayidle swaylock i3status mako polkit`
+    - `alacritty google-chrome noto-fonts noto-fonts-cjk`
+    - `light wayland-utils`
+    - `mesa mesa-utils vulkan-radeon vulkan-tools`
+  - bluetooth, `bluez bluez-utils`
+  - printer, `cups samsung-unified-driver-printer`
+  - audio, `pipewire pipewire-pulse`
+  - misc
+    - `fakeroot` for makepkg
+    - `bison flex python-mako wayland-protocols` for mesa
+    - `cmake make` for cmake
+    - `aarch64-linux-gnu-gcc` for cross-compile
+- x11
+  - xwayland: `xorg-xwayland`
+  - X11: `xorg xorg-xinit i3 xterm`
 - 32-bit
   - uncomment the `[multilib]` section in `/etc/pacman.conf`
   - `pacman -S multilib-devel`
@@ -125,6 +137,13 @@ ArchLinux
   - `arch.qcow2` is `/dev/vda`
     - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
     - but can still partition, format, and bootstrap normally for qemu
+
+## Tidy Up an Existing Installation
+
+- `pacman -Qeq` to get explicitly packages
+- `pacman -D --asdeps` to mark them deps
+- `pacman -D --asexplicit` to mark desired packages explicit
+- `pacman -Qtdq` to get packages to remove
 
 ## Pacman
 
@@ -170,30 +189,6 @@ ArchLinux
 - manually
   - use `pacstrap` from `arch-install-scripts`
     - <https://github.com/archlinux/arch-install-scripts>
-  - minimal packages
-    - boot, `base linux linux-firmware`
-      - also `btrfs-progs dosfstools`
-    - wifi, `iwd` or `wpa_supplicant`
-    - tools, `sudo vim man-db`
-    - devel, `gcc git ctags meson pkgconf`
-      - also `gdb perf strace man-pages`
-    - gui, `sway swayidle swaylock i3status mako polkit`
-      - `alacritty google-chrome noto-fonts noto-fonts-cjk`
-      - `light wayland-utils`
-      - `mesa mesa-utils vulkan-radeon vulkan-tools`
-    - bluetooth, `bluez bluez-utils`
-    - printer, `cups samsung-unified-driver-printer`
-    - audio, `pipewire pipewire-pulse`
-    - misc
-      - `fakeroot` for makepkg
-      - `bison flex python-mako wayland-protocols` for mesa
-      - `cmake make` for cmake
-      - `aarch64-linux-gnu-gcc` for cross-compile
-  - reduce to minimal packages
-    - `pacman -Qeq` to get explicitly packages
-    - `pacman -D --asdeps` to mark them deps
-    - `pacman -D --asexplicit` to mark desired packages explicit
-    - `pacman -Qtdq` to get packages to remove
 
 ## `base` package
 
