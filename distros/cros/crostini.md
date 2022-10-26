@@ -110,6 +110,12 @@ Crostini
 - Xwayland is run
 - sommelier is a wayland compositor that forwards the traffic to the host
   wayland compositor via `/dev/wl0`
+- `lxc profile show default`
+  - `raw.idmap: ...` remaps uid/gid for unprivileged container
+  - `security.nesting: "true"` allows nested containers
+    - it mount `/sys` and `/proc` rw
+    - it creates `/dev/.lxc`
+    - no real security impact with unprivileged container
 
 ## Processes
 
