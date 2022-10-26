@@ -13,6 +13,7 @@ Intel CPUs
   - Sunny Cove    - 2019 - 10nm
   - Willow Cove   - 2020 - 10nm
   - Golden Cove   - 2021 - Intel 7 (was 10nm, but roughly TSMC's 7nm)
+  - Raptor Cove   - 2022 - Intel 7
 - Little Cores
   - Silvermont    - 2013 - 22nm
   - Airmont       - 2014 - 14nm
@@ -50,6 +51,9 @@ Intel CPUs
     - Golden Cove / Gracemont uArch
     - Gen12.5 GPU
   - Raptor Lake
+    - 2022
+    - Raptor Cove / Gracemont uArch
+    - Gen12.5 GPU
   - Meteor Lake
   - Arrow Lake
   - Lunar Lake
