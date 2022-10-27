@@ -187,19 +187,16 @@ ANGLE
   - `$trace/$trace.json` has the metadata for `$trace`
 - `angle_trace_tests`
   - `--gtest_list_tests` lists all tests
-    - e.g., `TracePerfTest.Run/vulkan_pokemon_go`
+    - e.g., `TraceTest.pokemon_go`
     - `RegisterTraceTests` parses trace jsons and generates them dynamically
-    - by default, it uses `SurfaceType::Window` and generates tests that use
-      `Vulkan` or `Native` renderer
   - `--gtest_filter` to filter tests
   - `ANGLEProcessPerfTestArgs` understands these options
-    - `--enable-all-trace-tests` generates all combinations, such as offscreen
-      or swiftshader
+    - `--use-gl=angle` selects `GLESDriverType::AngleEGL` and loads `libEGL.so`
+    - `--use-gl=system` selects `GLESDriverType::SystemEGL` and loads `libEGL.so.1`
+    - `--use-angle=vulkan` selects the vulkan backend when using angle
     - `--minimize-gpu-work` forces 1x1 window
     - `--verbose`
-  - the driver is hardcoded to `GLESDriverType::AngleEGL` which loads
-    `libEGL.so`
-    - to override, create a symlink to the system `libEGL.so.1`
+    - `--offscreen`
 - `TracePerfTest` is the class to run tests
   - `ANGLERenderTest::SetUp`
     - creates an `OSWindow`
@@ -226,7 +223,7 @@ ANGLE
   - `adb shell appops write-settings`
   - `adb shell am instrument -w \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
-       -e org.chromium.native_test.NativeTest.CommandLineFlags '--gtest_filter=TracePerfTest.Run/vulkan_*' \
+       -e org.chromium.native_test.NativeTest.CommandLineFlags '--gtest_filter=TraceTest.*' \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.NativeTestActivity com.android.angle.test.AngleUnitTestActivity \
        com.android.angle.test/org.chromium.build.gtest_apk.NativeTestInstrumentationTestRunner`
