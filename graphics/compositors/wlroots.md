@@ -1,6 +1,35 @@
 wlroots
 =======
 
+## running sway from ssh session
+
+- `WLR_LIBINPUT_NO_DEVICES=1 WLR_SESSION=noop sway -d`
+
+## `swaymsg -t get_tree`
+
+- when there is an Alacritty window on the screen
+  - node
+    - `type`: `root`
+    - `name`: `root`
+    - node
+      - `type`: `output`
+      - `name`: `__i3`
+      - node
+        - `type`: workspace
+        - `name`: `__i3_scratch`
+    - node
+      - `type`: `output`
+      - `name`: `eDP-1`
+      - node
+        - `type`: `workspace`
+        - `name`: `1`
+        - node
+          - `type`: `con`
+          - `name`: current window title
+          - `pid`: process pid
+          - `app_id`: `Alacritty`
+          - `shell`: `xdg_shell`
+
 ## Sway on X11
 
 - `server_privileged_prepare`
@@ -111,3 +140,20 @@ wlroots
   - these extensions are required
     - `GL_EXT_texture_format_BGRA8888`
     - `GL_EXT_unpack_subimage`
+
+## output
+
+- a compositor normally wraps `wlr_output` in a `wlr_output_damage`
+  - when a `wlr_output` needs a frame, it calls `wlr_output_send_frame` to
+    send a frame signal
+  - `wlr_output_damage` handles the signal in `output_handle_frame` and sends
+    its own frame signal
+  - `damage_handle_frame` in sway handles the signal
+    - `output_repaint_timer_handler` uses `wlr_renderer` to render the frame
+      - `wlr_renderer_begin`
+      - render
+      - `wlr_renderer_end`
+    - it calls `wlr_output_commit` after rendering
+- output power on and off
+  - `wlr_output_state_set_enabled` controls output power state
+  - when output is off, `wlr_output` does not ask for frames

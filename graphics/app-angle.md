@@ -54,10 +54,11 @@ ANGLE
   - package
     - `cd out`
     - `angledir=angle-aarch64-$(date +%Y%m%d)`
-    - `ln -sf AArch64 $angledir`
-    - `find -H $angledir -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
-    - `find -H $angledir -maxdepth 1 -type f -executable | xargs tar zcf $angledir.tar.gz $angledir/gen`
-    - after unpack,
+    - `find out/AArch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
+    - `find out/AArch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/AArch64,$angledir,"`
+    - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt`
+    - `zstd $angledir.tar`
+    - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
       - `ln -sf libEGL.so libEGL.so.1`
       - `ln -sf libGLESv2.so libGLESv2.so.2`
   - `angle_deqp_egl_tests`
@@ -235,3 +236,15 @@ ANGLE
       - one or more `.so` 
       - one or more `.dex` 
       - a manifest file containing `<instrument>` and `<activity>`
+
+## `GL_KHR_blend_equation_advanced`
+
+- if `VK_EXT_rasterization_order_attachment_access` and
+  `rasterizationOrderColorAttachmentAccess`,
+  - `supportsRasterizationOrderAttachmentAccess` is set
+  - `supportsShaderFramebufferFetch` is set
+  - `GL_EXT_shader_framebuffer_fetch` is advertised
+- if `VK_EXT_blend_operation_advanced`,
+  - `supportsBlendOperationAdvanced` is set
+  - otherwise, `emulateAdvancedBlendEquations` is set if not on intel
+  - `GL_KHR_blend_equation_advanced` is advertised if either is set

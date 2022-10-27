@@ -139,6 +139,33 @@ Mesa and GLX
 * CopyRegion copies src to drawable by gc->ops->CopyArea.
 * in intel dri2, all pixmaps are backed by bo, thus all offscreen in exa terms.
 
+## Frame Throttling
+
+- many apps have mainloops that keep
+  - `glCear`
+  - draw frame
+  - `glXSwapBuffers`
+- they expect GL/GLX to throttle
+- `glCear`
+  - in mesa, this calls `st_validate_state` which calls down into
+    `st_framebuffer_validate` and `loader_dri3_get_buffers`
+  - when all buffers in the swapchain are in use, `loader_dri3_get_buffers` is
+    blocked inside `dri3_find_back` until one of the buffer becomes idle
+- draw frame draws to the acquired buffer
+- `glXSwapBuffers`
+  - in mesa, this calls `dri3_swap_buffers` and `loader_dri3_swap_buffers_msc`
+  - `loader_dri3_swap_buffers_msc` performs an implicit flush
+    - `loader_dri3_flush` calls `dri_flush`
+    - `dri_flush` calls `st_thread_finish` and `st_flush`
+- when is a buffer consider idle in `dri3_find_back`?
+  - vblank wakes up wayland
+    - wayland latches all client buffers and composites them
+    - it also knows the previous scanout buffer(s) are idle and notifies
+      xwayland
+  - xwayland notifies mesa and `dri3_find_back` returns
+  - when if crtc is off?
+    - xwayland `present_fake_screen_init` fakes 1fps
+
 ## two threads `glXMakeCurrent` and `glXSwapBuffers`
 
 * Have a look at `glXGetCurrentContext` for `__GLXcontext` first
