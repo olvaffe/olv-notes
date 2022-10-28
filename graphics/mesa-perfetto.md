@@ -131,3 +131,64 @@ Mesa Perfetto
 - `Counter::getter`
   - an anonymous function in `IntelDriver::init_perfcnt`
   - read values from `intel_perf_query_result`
+
+## freedreno
+
+- `FreedrenoDriver::Countable`
+  - every call to `FreedrenoDriver::countable` adds a `Countable`
+  - countables are tracked in `countables`
+  - their ids are from `next_countable_id`
+  - these are hidden from pps core
+  - internally, each `FreedrenoDriver::Countable` is associated with a
+    `fd_perfcntr_countable` and a `fd_perfcntr_counter`
+    - a `fd_perfcntr_countable` is an event that can be counted
+    - a `fd_perfcntr_counter` is a hw sampler that counts an event at a fixed
+      rate
+      - e.g., we can program a `fd_perfcntr_counter` to count
+      	`PERF_CP_ALWAYS_COUNT` event
+      - this gives us gpu ticks
+    - a `Countable` uses a `fd_perfcntr_counter` to count a
+      `fd_perfcntr_countable`
+  - `resolve`
+    - it associates a `Countable` with a `fd_perfcntr_countable`
+      and `fd_perfcntr_counter` based on the event name (e.g.,
+      `PERF_CP_ALWAYS_COUNT`)
+  - `configure`
+    - emits pm4 packets to initialize the associated `fd_perfcntr_counter`
+  - `collect`
+    - reads and saves `fd_perfcntr_counter` value
+    - it save the last two values
+  - `get_value`
+    - return the delta of the last two counter values
+- `FreedrenoDriver::DerivedCounter`
+  - every call to `FreedrenoDriver::counter` adds a `DerivedCounter`
+    - it is a subclass of `pps::Counter`
+  - counters are tracked in `counters`
+  - their ids are from `next_counter_id`
+  - these are what pps core sees
+  - when pps core calls `pps::Counter::get_value`, it calls an anonymous
+    function associated with the `DerivedCounter`
+    - the anonymous funcion calls `FreedrenoDriver::Countable::get_value` from
+      one or more of the countables, does some ALUs, and returns a value
+      sensible for UI
+- `FreedrenoDriver::init_perfcnt`
+  - initializes `countables` and `counters`
+  - mmaps `/dev/mem`
+  - calls `FreedrenoDriver::Countable::configure` on all `countables`
+  - calls `FreedrenoDriver::Countable::collect` on all `countables`
+    - this is to make sure `Countable::get_value` has a delta to return after
+      every `Countable::collect` call
+- `FreedrenoDriver::enable_counter`
+  - because we don't know which `DerivedCounter` depends on which
+    `Countable`s, we cannot make use of this but have to enable all
+    `Countable`s
+- `FreedrenoDriver::get_min_sampling_period_ns`
+  - randomly returns 100us
+- `FreedrenoDriver::enable_perfcnt` is nop
+- `FreedrenoDriver::dump_perfcnt`
+  - if the gpu was suspended, we reinitialize and return false
+  - otherwise, `collect_countables` calls `collect` on all `countables`
+  - `last_dump_ts` is the time of the last `collect_countables` call
+  - `time` is the duration between this and last `collect_countables` calls
+- `FreedrenoDriver::next`
+  - returns `last_capture_ts`
