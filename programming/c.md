@@ -1,8 +1,9 @@
 C
 =
 
-## C2x
+## C23
 
+- <https://en.cppreference.com/w/c/23>
 - single-argument `_Static_assert`
 - C++-style function attributes: `nodiscard`, `maybe_unused`, `deprecated`,
   and `fallthrough`
@@ -62,6 +63,44 @@ C
     - `__LINE__`
     - `__DATE__`
     - `__TIME__`
+
+## Standard Library Headers
+
+- <https://en.cppreference.com/w/c/header>
+  - note that POSIX adds stuff to the std headers as well
+- commonly used
+  - `assert.h`	Conditionally compiled macro that compares its argument to zero
+  - `ctype.h`	Functions to determine the type contained in character data
+  - `errno.h`	Macros reporting error conditions
+  - `inttypes.h`	Format conversion of integer types
+  - `limits.h`	Ranges of integer types
+  - `locale.h`	Localization utilities
+  - `math.h`	Common mathematics functions
+  - `signal.h`	Signal handling
+  - `stdalign.h`	alignas and alignof convenience macros
+  - `stdarg.h`	Variable arguments
+  - `stdatomic.h`	Atomic operations
+  - `stdbit.h`	Macros to work with the byte and bit representations of types
+  - `stdbool.h`	Macros for boolean type
+  - `stddef.h`	Common macro definitions
+  - `stdint.h`	Fixed-width integer types
+  - `stdio.h`	Input/output
+  - `stdlib.h`	General utilities: memory management, program utilities, string conversions, random numbers, algorithms
+  - `string.h`	String handling
+  - `threads.h`	Thread library
+  - `time.h`	Time/date utilities
+- less used
+  - `complex.h` Complex number arithmetic
+  - `fenv.h`    Floating-point environment
+  - `float.h`	Limits of floating-point types
+  - `iso646.h`	Alternative operator spellings
+  - `setjmp.h`	Nonlocal jumps
+  - `stdckdint.h`	macros for performing checked integer arithmetic
+  - `stdnoreturn.h`	noreturn convenience macro
+  - `tgmath.h`	Type-generic math (macros wrapping math.h and complex.h)
+  - `uchar.h`	UTF-16 and UTF-32 character utilities
+  - `wchar.h`	Extended multibyte and wide character utilities
+  - `wctype.h`	Functions to determine the type contained in wide character data
 
 ## Integer Promotion
 

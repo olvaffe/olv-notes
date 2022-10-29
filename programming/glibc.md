@@ -47,3 +47,93 @@ glibc
   - normally `long int` is 64-bit for 64-bit programs and is not an issue
 - `ftello` is defined to `ftello64` when `_FILE_OFFSET_BITS=64` is defined
   - define the macro and do not use `ftello64` directly
+
+## POSIX Headers
+
+- these C standard headers are extended
+  - `assert.h`
+  - `complex.h`
+  - `ctype.h`
+  - `errno.h`
+  - `fenv.h`
+  - `float.h`
+  - `inttypes.h`
+  - `iso646.h`
+  - `limits.h`
+  - `locale.h`
+  - `math.h`
+  - `setjmp.h`
+  - `signal.h`
+  - `stdarg.h`
+  - `stdbool.h`
+  - `stddef.h`
+  - `stdint.h`
+  - `stdio.h`
+  - `stdlib.h`
+  - `string.h`
+  - `tgmath.h`
+  - `time.h`
+  - `wchar.h`
+  - `wctype.h`
+- these are mandatory headers
+  - `aio.h`, asynchronous input and output
+  - `arpa/inet.h`, definitions for internet operations
+  - `cpio.h`, cpio archive values
+  - `dirent.h`, format of directory entries
+  - `dlfcn.h`, dynamic linking
+  - `fcntl.h`, file control options
+  - `fnmatch.h`, filename-matching types
+  - `glob.h`, pathname pattern-matching types
+  - `grp.h`, group structure
+  - `iconv.h`, codeset conversion facility
+  - `langinfo.h`, language information constants
+  - `monetary.h`, monetary types
+  - `net/if.h`, sockets local interfaces
+  - `netdb.h`, definitions for network database operations
+  - `netinet/in.h`, Internet address family
+  - `netinet/tcp.h`, definitions for the Internet Transmission Control Protocol (TCP)
+  - `nl_types.h`, data types
+  - `poll.h`, definitions for the poll() function
+  - `pthread.h`, threads
+  - `pwd.h`, password structure
+  - `regex.h`, regular expression matching types
+  - `sched.h`, execution scheduling
+  - `semaphore.h`, semaphores
+  - `strings.h`, string operations
+  - `sys/mman.h`, memory management declarations
+  - `sys/select.h`, select types
+  - `sys/socket.h`, main sockets header
+  - `sys/stat.h`, data returned by the stat() function
+  - `sys/statvfs.h`, VFS File System information structure
+  - `sys/times.h`, file access and modification times structure
+  - `sys/types.h`, data types
+  - `sys/utsname.h`, system name structure
+  - `sys/un.h`, definitions for UNIX domain sockets
+  - `sys/wait.h`, declarations for waiting
+  - `tar.h`, extended tar definitions
+  - `termios.h`, define values for termios
+  - `unistd.h`, standard symbolic constants and types
+  - `wordexp.h`, word-expansion types
+- these are xsi headers
+  - `fmtmsg.h`, message display structures
+  - `ftw.h`, file tree traversal
+  - `libgen.h`, definitions for pattern matching functions
+  - `ndbm.h`, definitions for ndbm database operations
+  - `search.h`, search tables
+  - `sys/ipc.h`, XSI interprocess communication access structure
+  - `sys/msg.h`, XSI message queue structures
+  - `sys/resource.h`, definitions for XSI resource operations
+  - `sys/sem.h`, XSI semaphore facility
+  - `sys/shm.h`, XSI shared memory facility
+  - `sys/time.h`, time types
+  - `sys/uio.h`, definitions for vector I/O operations
+  - `syslog.h`, definitions for system error logging
+  - `utmpx.h`, user accounting database definitions
+- these are realtime headers
+  - `mqueue.h`, message queues
+  - `spawn.h`, spawn
+- these are obsoleted
+  - `stropts.h`, STREAMS interface
+  - `trace.h`, tracing
+  - `ulimit.h`, ulimit commands
+  - `utime.h`, access and modification times structure
