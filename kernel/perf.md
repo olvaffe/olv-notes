@@ -49,3 +49,38 @@ Linux perf
   - get trace: `cat trace`
 - list all events
   - `find /sys/kernel/debug/tracing/events -type d`
+
+## `clock_nanosleep`
+
+- an idle system and a program in a tight loop that sleeps for different times
+- sleep 1us
+  - top says 10.5% cpu time
+  - perf record says 24.5% cpu cycles
+  - perf stat says 20% cpu
+- sleep 10us
+  - top says 9% cpu time
+  - perf record says 20.5% cpu cycles
+  - perf stat says 15% cpu
+- sleep 100us
+  - top says 4% cpu time
+  - perf record says 11% cpu cycles
+  - perf stat says 7% cpu
+- sleep 1ms
+  - top says 1.5% cpu time
+  - perf record says 7% cpu cycles
+  - perf stat says 2% cpu
+- sleep 10ms
+  - top says 0.5% cpu time
+  - perf record says 3.5% cpu cycles
+  - perf stat says 0.3% cpu
+
+## symbols
+
+- `/proc/sys/kernel/kptr_restrict`
+  - default 0 on arch linux
+- `/proc/sys/kernel/perf_event_paranoid`
+  - default 2 on arch linux
+- just use sudo to record and report
+- `perf record` has debuginfod integration
+  - when `DEBUGINFOD_URLS` is set, it downloads all symbols and is slow at the
+    end of the first run

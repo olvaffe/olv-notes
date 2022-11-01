@@ -47,3 +47,14 @@ Kernel Debug
 
 - specify `netconsole=@192.168.0.2/,@192.168.0.1/` in cmdline
 - host does `nc -u -l 6666`
+
+## configs and symbols
+
+- `CONFIG_IKCONFIG`
+  - embed the config in the kernel image/module
+  - can be extracted using `./scripts/extract-ikconfig`
+- `CONFIG_IKCONFIG_PROC`
+  - make the embedded config accessible at `/proc/config.gz`
+- `CONFIG_KALLSYMS`
+  - embed symbols for pretty oops and backtraces
+  - the same info is accessible at `/proc/kallsyms`

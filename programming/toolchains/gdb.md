@@ -103,3 +103,7 @@ GDB
   - `--print-raw-loclists` dumps `.debug_loclists`
   - there is also `llvm-dwarfdump` that can pretty print `.debug_info`
   - there is also `readelf --debug-dump`
+
+## debuginfod
+
+- `DEBUGINFOD_URLS`
