@@ -52,6 +52,8 @@ Kernel Config
   - `config.txt`
     - `arm_64bit=1`
     - `kernel=Image`
+- for cros,
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel>
 
 ## Tips
 
@@ -453,6 +455,7 @@ Kernel Config
       - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
       - select `UCSI ACPI Interface Driver` if x86
+    - select `Onboard USB hub support` if msm
   - select `MMC/SD/SDIO card support`
     - select `Secure Digital Host Controller Interface support`
     - if arm
