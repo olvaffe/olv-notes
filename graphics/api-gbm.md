@@ -61,3 +61,4 @@ GBM
 
 - to build,
   - `VERBOSE=1 CFLAGS=-DDRV_I915 MODE=dbg OUT=out DESTDIR=out/install make install`
+  - for amdgpu, `CFLAGS="-DDRV_AMDGPU -DDRI_DRIVER_DIR=/usr/lib/dri"`
