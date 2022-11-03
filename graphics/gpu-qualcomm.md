@@ -1393,6 +1393,8 @@ Qualcomm Adreno
     `LD_PRELOAD=/data/local/tmp/libwrap.so`
     - it will intercept ioctls to kgls
   - ioctls are dumped to stdout and rd is saved to `/sdcard/trace.rd`
+- using `libwrapfake.so`
+  - additionally set `WRAP_GPU_ID=635.0` and `WRAP_GMEM_SIZE=0x80000`
 - <https://gitlab.freedesktop.org/freedreno/freedreno/-/wikis/Reverse-Engineering-Tools/How-To-Fake-GPU-With-Chroot-On-Android-11>
   - search <https://vulkan.gpuinfo.org/> to find the device with the latest
     driver
