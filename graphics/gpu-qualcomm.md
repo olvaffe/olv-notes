@@ -1384,10 +1384,15 @@ Qualcomm Adreno
 
 - <https://gitlab.freedesktop.org/freedreno/freedreno.git>
   - with <https://gitlab.freedesktop.org/freedreno/freedreno/-/merge_requests/19>
-  - `BUILD=ndk NDK_PATH=~/android/sdk/ndk/25.0.8775105 make libwrapfake.so`
+  - `BUILD=ndk NDK_PATH=~/android/sdk/ndk/25.0.8775105 make libwrap.so libwrapfake.so`
 - <https://github.com/olvaffe/vktest.git>
   - edit NDK path in `machines/android-arm64.txt`
   - `meson --cross-file machines/android-arm64.txt out-android`
+- using `libwrap.so`
+  - `adb push libwrap.so /data/local/tmp` and set
+    `LD_PRELOAD=/data/local/tmp/libwrap.so`
+    - it will intercept ioctls to kgls
+  - ioctls are dumped to stdout and rd is saved to `/sdcard/trace.rd`
 - <https://gitlab.freedesktop.org/freedreno/freedreno/-/wikis/Reverse-Engineering-Tools/How-To-Fake-GPU-With-Chroot-On-Android-11>
   - search <https://vulkan.gpuinfo.org/> to find the device with the latest
     driver
