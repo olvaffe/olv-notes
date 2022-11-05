@@ -69,3 +69,6 @@ PipeWire
 
 - I guess it listens to pipewire core events
 - when a new Node shows up, it creates Links as needed
+- with wireplumber
+  - `wpctl get-volume @DEFAULT_AUDIO_SINK@`
+  - `wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+`
