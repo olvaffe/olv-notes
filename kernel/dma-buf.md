@@ -76,11 +76,11 @@ dma-buf
       timeline, and are managed with a dma-fence-chain
     - userspace can
       - userspace can advance the seqno of the timeline
-        * appends a signaled fence with the desired seqno to the chain
+        - appends a signaled fence with the desired seqno to the chain
       - userspace can query the seqnos of the points
-        * get seqnos of the fences
+        - get seqnos of the fences
       - userspace can wait until the timeline reaches a certain seqno
-        * wait for fences before the seqno to signal
+        - wait for fences before the seqno to signal
 
 ## sync-file
 

@@ -63,9 +63,9 @@ LLVM TableGen
   - On ARM,
     - there are r0 to r12, sp, lr, pc
     - there are s0 to s31 for floats
-      * or, d0 to d15 for doubles
-      * vfp3 defines additionally d16 to d31
-      * or, q0 to q15 for quad-words
+      - or, d0 to d15 for doubles
+      - vfp3 defines additionally d16 to d31
+      - or, q0 to q15 for quad-words
     - there are also cpsr, apsr, spsr, fpscr, itstate
     - there are also fpsid, fpexc
 - `RegisterClass`

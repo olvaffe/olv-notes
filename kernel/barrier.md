@@ -2,86 +2,86 @@
 
 ## Memory Model
 
-* there are multiple CPUs and devices that share the memory system.
-* within a CPU, it assumes it owns the memory system exclusively.  It will
+- there are multiple CPUs and devices that share the memory system.
+- within a CPU, it assumes it owns the memory system exclusively.  It will
   optmize its memory operations to maximize performance
-  * e.g., it multi-issues instructions that have no data dependency.  Memory
+  - e.g., it multi-issues instructions that have no data dependency.  Memory
     operations from these instructions can be in any order.
-  * we can assume its order only when there is a clear data dependency
-    * overlapping accesses are ordered: when it reads and then writes the same
+  - we can assume its order only when there is a clear data dependency
+    - overlapping accesses are ordered: when it reads and then writes the same
       memory address, the read is always issued before the write
-    * dependent accesses are ordered: when it reads one address and uses the
+    - dependent accesses are ordered: when it reads one address and uses the
       result to read another address, the two reads are issued in order.
-* A compiler might also assume the compiled program owns the memory system
+- A compiler might also assume the compiled program owns the memory system
   exclusively.  It may generate instructions that optimize for the memory
   operations
-  * `a = ptr[0]; b = ptr[0]` might generate only one memory load
-  * `a = ptr[0]; b = ptr[1]` might generate only one merged memory load
-  * `a = *ptr1; b = *ptr2; do_something(b)` might load ptr2 before ptr1 to
+  - `a = ptr[0]; b = ptr[0]` might generate only one memory load
+  - `a = ptr[0]; b = ptr[1]` might generate only one merged memory load
+  - `a = *ptr1; b = *ptr2; do_something(b)` might load ptr2 before ptr1 to
     hide the latency from `do_something`
-* These can be problematic for CPU-CPU interaction and for device I/O.
-* Even when the compiler and the CPU does not reorder, the memory/cache might
+- These can be problematic for CPU-CPU interaction and for device I/O.
+- Even when the compiler and the CPU does not reorder, the memory/cache might
   still reorder
-  * CPU1 might see outdated value at addr1 and updated value at addr2 even
+  - CPU1 might see outdated value at addr1 and updated value at addr2 even
     with this memory operation order
-    * CPU0 issues write to addr1
-    * CPU0 issues write to addr2
-    * CPU1 issues read from addr2
-    * CPU1 issues read from addr1
-  * this happens when the cacheline in L1$ of CPU1 for addr2 is invalidated
+    - CPU0 issues write to addr1
+    - CPU0 issues write to addr2
+    - CPU1 issues read from addr2
+    - CPU1 issues read from addr1
+  - this happens when the cacheline in L1$ of CPU1 for addr2 is invalidated
     but the cacheline for addr1 is not
-  * this does not happen on x86
-* We need to insert barriers to impose ordering over memory operations, at
+  - this does not happen on x86
+- We need to insert barriers to impose ordering over memory operations, at
   the compiler level, the CPU level, and the memory/cache level
 
 ## Memory Barriers
 
-* There are three main types of memory barriers
-  * write/store memory barriers, wmb
-    * all writes/stores before the barrier must be issued before all
+- There are three main types of memory barriers
+  - write/store memory barriers, wmb
+    - all writes/stores before the barrier must be issued before all
       writes/stores after the barrier
-    * it has no effect on reads/loads
-    * a CPU can `val = compute(); wmb(); ready = true` to make sure that
-      * compiler does not reorder the two writes
-      * CPU does not reorder the two writes
-      * for another CPU, when `ready` is true, `val` has the valid value
-  * read/load memory barriers, rmb
-    * all reads/loads before the barrier must be issued before all
+    - it has no effect on reads/loads
+    - a CPU can `val = compute(); wmb(); ready = true` to make sure that
+      - compiler does not reorder the two writes
+      - CPU does not reorder the two writes
+      - for another CPU, when `ready` is true, `val` has the valid value
+  - read/load memory barriers, rmb
+    - all reads/loads before the barrier must be issued before all
       reads/loaders after the barrier
-    * it has no effect on writes/stores
-    * a CPU can `while (!ready); rmb(); result = val` to make sure that
-      * compiler does not reorder the two reads
-      * CPU does not reorder the two reads
-      * cache invalidation does not reorder
-  * general memory barriers, mb
-    * all memory operations before the barrier must be issued after
+    - it has no effect on writes/stores
+    - a CPU can `while (!ready); rmb(); result = val` to make sure that
+      - compiler does not reorder the two reads
+      - CPU does not reorder the two reads
+      - cache invalidation does not reorder
+  - general memory barriers, mb
+    - all memory operations before the barrier must be issued after
       all memory operations after the barrier
-* There are also data dependency barriers, `read_barrier_depends`
-  * by definition, when any load before the barrier overlaps with any store
+- There are also data dependency barriers, `read_barrier_depends`
+  - by definition, when any load before the barrier overlaps with any store
     from another CPU, all stores from the other CPU before that overlapping
     store will be perceptible to any load by this CPU after the barrier
-  * rmb implies this barrier
-  * imagine
-    * CPU0: `val = compute(); wmb(); ready = &val`
-    * CPU1: `while (!ready); result = *ready`
-  * because of the inherent dependency between the two reads
-    * compiler can not reorder
-    * CPU can not reorder
-    * cache invalidation might reoder!
-  * rmb works in this case, but `read_barrier_depends` is supposedly cheaper
-* Then there are one-way acquire and release operations
-  * An acquire operation, lock or `smp_load_acquire`,  guarantess that all
+  - rmb implies this barrier
+  - imagine
+    - CPU0: `val = compute(); wmb(); ready = &val`
+    - CPU1: `while (!ready); result = *ready`
+  - because of the inherent dependency between the two reads
+    - compiler can not reorder
+    - CPU can not reorder
+    - cache invalidation might reoder!
+  - rmb works in this case, but `read_barrier_depends` is supposedly cheaper
+- Then there are one-way acquire and release operations
+  - An acquire operation, lock or `smp_load_acquire`,  guarantess that all
     memory operations after it happen after it
-  * A release operation, unlock or `smp_store_release`,  guarantess that all
+  - A release operation, unlock or `smp_store_release`,  guarantess that all
     memory operations before it happen before it
-  * e.g.,
-    * `spin_lock(); val = compute(); ready = true; spin_unlock()`
-    * without the acquire/release implication, the two writes can be reordered
+  - e.g.,
+    - `spin_lock(); val = compute(); ready = true; spin_unlock()`
+    - without the acquire/release implication, the two writes can be reordered
       outside of the critical region.
 
 ## x86 barriers
 
-* SFENCE
+- SFENCE
 
     Performs a serializing operation on all store-to-memory instructions that
     were issued prior the SFENCE instruction. This serializing operation
@@ -93,7 +93,7 @@
     instruction). It is not ordered with respect to load instructions or the
     LFENCE instruction.
 
-* LFENCE
+- LFENCE
 
     Performs a serializing operation on all load-from-memory instructions that
     were issued prior the LFENCE instruction. This serializing operation
@@ -105,7 +105,7 @@
     CPUID instruction). It is not ordered with respect to store instructions
     or the SFENCE instruction.
 
-* MFENCE
+- MFENCE
 
     Performs a serializing operation on all load-from-memory and
     store-to-memory instructions that were issued prior the MFENCE
@@ -117,10 +117,10 @@
     instructions, any SFENCE and LFENCE instructions, and any serializing
     instructions (such as the CPUID instruction).
 
-* No need for data dependency barriers
-* acquire/release disables compiler reordering
+- No need for data dependency barriers
+- acquire/release disables compiler reordering
 
 ## Atomicy
 
-* This is a different issue than ordering, but be aware that concurrent
+- This is a different issue than ordering, but be aware that concurrent
   `*ptr |= 1` and `*ptr |= 2` from two CPUs might only set one of the two bits

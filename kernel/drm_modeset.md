@@ -105,13 +105,13 @@ DRM Modesetting
   - `drm_atomic_helper_wait_for_dependencies` to wait for preceding commits
   - `drm_atomic_helper_commit_tail`
     - `drm_atomic_helper_commit_modeset_disables`
-      * `->atomic_disable` each crtc
+      - `->atomic_disable` each crtc
     - `drm_atomic_helper_commit_planes` to update the registers
-      * `->atomic_begin` each crtc
-      * `->atomic_update` each plane
-      * `->atomic_flush` each crtc
+      - `->atomic_begin` each crtc
+      - `->atomic_update` each plane
+      - `->atomic_flush` each crtc
     - `drm_atomic_helper_commit_modeset_enables`
-      * `->atomic_enable` each crtc
+      - `->atomic_enable` each crtc
     - `drm_atomic_helper_commit_hw_done` to update the progress
     - `drm_atomic_helper_wait_for_vblanks` to wait until next vsync
     - `drm_atomic_helper_cleanup_planes` to clean up after the commit

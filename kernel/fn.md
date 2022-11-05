@@ -13,6 +13,6 @@ through /proc/acpi/event and/or input layer.
 
 ## kernel
 
-* Some traditional acpi events are input events and go through input layer now
-  * `KEY_POWER`, `KEY_SLEEP`, `KEY_SUSPEND`, `SW_LID`, and etc.
-* netlink is prefered over `/proc/acpi/event`
+- Some traditional acpi events are input events and go through input layer now
+  - `KEY_POWER`, `KEY_SLEEP`, `KEY_SUSPEND`, `SW_LID`, and etc.
+- netlink is prefered over `/proc/acpi/event`

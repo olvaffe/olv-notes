@@ -57,8 +57,8 @@ xxx_ooo_get
 
 Having ooo as property, we have
 
-* a generic way to set ooo -> themeable!
-* 
+- a generic way to set ooo -> themeable!
+- 
 
 
 ---------------

@@ -125,11 +125,11 @@ LLVM
     - Consider A+B*C-D, we want to parse it to `(-, LHS, RHS)`, where RHS is `D`
       and LHS is `(+, A, B*C)`.
     - We can have `ParseBinOpRHS(precedence, LHS)`
-      * it is called with precedence 0 (lower than _any_ op), and LHS `A`
-      * it needs to parse RHS and merge both side with current op
-      * and loop
-      * precedence controls how RHS is parsed
-        * e.g., for LHS `A`, the RHS is `B*C`, not `B*C-D`
+      - it is called with precedence 0 (lower than _any_ op), and LHS `A`
+      - it needs to parse RHS and merge both side with current op
+      - and loop
+      - precedence controls how RHS is parsed
+        - e.g., for LHS `A`, the RHS is `B*C`, not `B*C-D`
 - codegen
   - define a virtual codegen method in each AST Expr to generate IRs
   - the return value of codegen method is `llvm::Value *`

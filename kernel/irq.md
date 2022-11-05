@@ -133,15 +133,15 @@ Kernel and IRQ
 
 ## Privilege
 
-* In an IDT entry, there is a 16-bits segment selector and a 2-bits DPL.
-  * The selector decides thew new segment
-  * The DPL decides the lowest privilege that can interrupt
-  * `cs` gives CPL.  If `CPL >= PL of new segment` and `CPL <= DPL`, interrupt
+- In an IDT entry, there is a 16-bits segment selector and a 2-bits DPL.
+  - The selector decides thew new segment
+  - The DPL decides the lowest privilege that can interrupt
+  - `cs` gives CPL.  If `CPL >= PL of new segment` and `CPL <= DPL`, interrupt
     succeeds.  The idea is so that the interrupt handler has higher privilege
     than the program caused the interrupt and the program has enough privilege
     to cause the interrupt.
-  * `cs:eip` becomes `segment selector:offset` in the IDT entry.
-* In `setup_gdt` in `boot/pm.c`, `GDT_ENTRY_BOOT_CS` and `GDT_ENTRY_BOOT_DS`
+  - `cs:eip` becomes `segment selector:offset` in the IDT entry.
+- In `setup_gdt` in `boot/pm.c`, `GDT_ENTRY_BOOT_CS` and `GDT_ENTRY_BOOT_DS`
   GDT have acess flags `0x9b` and `0x93`.  Both indicate highest privilege.
 
 ## Preempt count

@@ -3,31 +3,31 @@ Input subsystem
 
 ## Structs
 
-* `struct input_event`: time/type/code/value
-* `struct input_dev`: represent a input device.
+- `struct input_event`: time/type/code/value
+- `struct input_dev`: represent a input device.
     - include evbit, keybit, relbit, absbit, mscbit, ledbit, sndbit, ffbit and swbit.
     - scancode -> keycode map.
     - another set of long arrays for tracking states: key, led, snd, sw
     - first open calls ->open, last close calls ->close.  can also be notified about ->event (pcspkr)
     - input device could be grabbed, only the grabbing handle receives events
-* `struct input_handler`: an interface of input device (evdev interface, blah)
-* `struct input_handle`: a handle connects handler and device.
+- `struct input_handler`: an interface of input device (evdev interface, blah)
+- `struct input_handle`: a handle connects handler and device.
                        multiple devices might have the same interface.  There is one handler, but multiple handles.
 
 ## flow
 
-* device driver calls `input_register_device`
-* handler driver calls `input_register_handler`
-* if a device/handler pair matches, `handler->connect` is called which should
+- device driver calls `input_register_device`
+- handler driver calls `input_register_handler`
+- if a device/handler pair matches, `handler->connect` is called which should
   allocate and call `input_register_handle`
-* when the handler is to be used (e.g., userspace opens /dev/input/eventX),
+- when the handler is to be used (e.g., userspace opens /dev/input/eventX),
   `input_open_device` is called and device starts sending events.
-* device report event through `input_report_XXX`, which calls `input_event`
-* handler could also simulate events through `input_inject_event`.
+- device report event through `input_report_XXX`, which calls `input_event`
+- handler could also simulate events through `input_inject_event`.
 
 ## event types
 
-* Types
+- Types
 
         EV_SYN		0x00
         EV_KEY		0x01
@@ -43,21 +43,21 @@ Input subsystem
         EV_FF_STATUS	0x17
         EV_MAX		0x1f
         EV_CNT		(EV_MAX+1)
-* a touch on the touchpad might generate (`BTN_TOUCH, ABS_X, ABS_Y,
+- a touch on the touchpad might generate (`BTN_TOUCH, ABS_X, ABS_Y,
       ABS_PRESSURE, ABS_TOOL_WIDTH, BTN_TOOL_FINGER, BTN_LEFT, BTN_RIGHT, etc.`)
       and a `EV_SYN` follows.
-* on the device side, (HW STATE -> series of EVENTS -> SYN)
+- on the device side, (HW STATE -> series of EVENTS -> SYN)
       on the handler side, (series of EVENTS -> SYN -> compose HW STATE)
 
 ## device -> handler
 
-* report events through one of `input_report_{key,rel,abs,blah} `
-* they call into `input_event`, which calls `input_handle_event`
-* `input_handle_event` might ignore the event, route the event to device and/or handler
+- report events through one of `input_report_{key,rel,abs,blah} `
+- they call into `input_event`, which calls `input_handle_event`
+- `input_handle_event` might ignore the event, route the event to device and/or handler
 
 ## `EVIOCGRAB`
 
-* invokes `evdev_grab`
+- invokes `evdev_grab`
 
 ## gamepad
 

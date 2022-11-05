@@ -481,26 +481,26 @@ Vulkan
 
 ## Render Passes and Framebuffers
 
-* A VkRenderPass contains a set of (abstract) attachments it will work on
-  * each attachment is described with VkAttachmentDescription abstractly
-  * format
-  * load/store ops
-  * initial layout: the layout the attachment is in when entering the render
+- A VkRenderPass contains a set of (abstract) attachments it will work on
+  - each attachment is described with VkAttachmentDescription abstractly
+  - format
+  - load/store ops
+  - initial layout: the layout the attachment is in when entering the render
     pass
-  * final layout: the layout the attachment will be transitioned to by the
+  - final layout: the layout the attachment will be transitioned to by the
     implementation automatically when exiting the render pass
-* A VkFramebuffer contains a set of (physical) attachments
-  * each attachemnt is a VkImageView
-  * VkFramebuffer is like a physical instance of a VkRenderPass
-  * the separation is such that, when a pipeline is created for a render pass,
+- A VkFramebuffer contains a set of (physical) attachments
+  - each attachemnt is a VkImageView
+  - VkFramebuffer is like a physical instance of a VkRenderPass
+  - the separation is such that, when a pipeline is created for a render pass,
     the pipeline can work with any framebuffer compatible with the render pass.
-* A subpass of a render pass works with a subset of the attachments
-  * input attachemnts
-  * color attachemnts
-  * resolve attachemnts
-  * depth attachemnt
-  * preserve attachemnts
-  * the implementation transitions all attachments to the specified layouts
+- A subpass of a render pass works with a subset of the attachments
+  - input attachemnts
+  - color attachemnts
+  - resolve attachemnts
+  - depth attachemnt
+  - preserve attachemnts
+  - the implementation transitions all attachments to the specified layouts
     automatically when entering a subpass
 
 ## Descriptor Sets

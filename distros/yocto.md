@@ -12,7 +12,7 @@ Yocto Project
 
 ## BitBake
 
-* http://olvaffe.blogspot.com/2008/12/bitbake-data-class.html
+- http://olvaffe.blogspot.com/2008/12/bitbake-data-class.html
 
 handle and feeder functions of bb/parse/parse_py/BBHandler.py:
 

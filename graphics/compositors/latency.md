@@ -197,9 +197,9 @@
     - +4090us: X wake up again and flips
     - +4281us: sommilier wake up
       - `sl_host_surface_attach`, it seems
-        * +6574us: `DRM_IOCTL_PRIME_FD_TO_HANDLE`
-        * +6627us: `DRM_VIRTGPU_WAIT`
-        * +6634us: `DRM_IOCTL_GEM_CLOSE`
+        - +6574us: `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+        - +6627us: `DRM_VIRTGPU_WAIT`
+        - +6634us: `DRM_IOCTL_GEM_CLOSE`
     - +6975us: sommilier `VIRTWL_IOCTL_SEND`
 - Example (glxgears in crosvm, traced in host)
   - idle (guest X wakes up every second)

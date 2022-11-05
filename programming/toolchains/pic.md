@@ -12,12 +12,12 @@ Position Independent Code
     `R_386_GOTPC` to find GOT and `R_386_GOTOFF` to find entry.
   - The same trick can be used locate the variable directly.  Why go through
     GOT?
-    * Consider our PIC code is linked to a shared library and the variables it
+    - Consider our PIC code is linked to a shared library and the variables it
       access are in that library.  Since the addresses of the variables are
       unknown at link time, we cannot derive the needed offsets to the
       variables.  Therefore, we need GOT.  GOT can be modified by dynamic
       loader.
-    * Probably because we do not want to (and cannot in the case of linked to a
+    - Probably because we do not want to (and cannot in the case of linked to a
       shared library) force text and data sections to have constant offset.
       With GOT, it is GOT that has constant offset from text section.  Data
       section may be put in a better place to share with other processes.
