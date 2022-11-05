@@ -160,3 +160,29 @@ GLSL
 - `texelFetchOffset`: `texelFetch` with offset
 - `texture1D*`, `texture2D*`, `texture3D*`, `textureCube*`, `shadow*`
   - deprecated
+
+## Chapter 4. Variables and Types
+
+- there are texture-combined sampler types
+  - `gsampler*`
+  - both GL and VK use them
+- there are also (separated) texture and sampler types
+  - VK only
+- `layout(location=2, binding=3) uniform sampler2D s;`
+  - this binds the sampler to unit 3
+  - `glUniformi(2, 3)`
+
+## Chapter 5. Operators and Expressions
+
+- texture-combined sampler constructors
+  - a `sampler2D` can be constructed from a separated pair of `sampler s` and
+    `texture2D t` through `sampler2D(t, s)`
+  - VK only
+
+## Chapter 6. Statements and Structure
+
+## Chapter 7. Built-In Variables
+
+## Chapter 8. Built-In Functions
+
+- to sample a texture-compined sampler, `texture()`
