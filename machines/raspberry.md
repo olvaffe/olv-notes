@@ -190,7 +190,7 @@ Raspberry Pi
     - compatible: `raspberrypi,bcm2835-firmware`
     - driver: `CONFIG_RASPBERRYPI_FIRMWARE`
     - `clocks`
-      - compatible: `raspberrypi,firmware-clocks
+      - compatible: `raspberrypi,firmware-clocks`
       - driver: `CONFIG_CLK_RASPBERRYPI`
     - `gpio`
       - compatible: `raspberrypi,firmware-gpio`

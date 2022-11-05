@@ -17,7 +17,7 @@ UEFI
   - partitions are expressed by 512-byte sectors
   - because physical sector size might be 4096-byte, align partition to 8 sectors
   - traditionally, partitions should align to 63 sectors.  So one might also
-    want to align partitions to 8*63 sectors.
+    want to align partitions to `8*63` sectors.
 - Partitioning for booting
   - UEFI requires ESP, EFI System Partition, to store boot loaders, drivers, and
     other files.  Size should be 200MiB

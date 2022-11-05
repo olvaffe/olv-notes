@@ -176,7 +176,7 @@ crosvm
       uses this device ultimately
   - when read at 0xcfc, it calls `pci_root::PciConfigIo::config_space_read` to
     read from `self.config_address`.  This is done by translating
-    `self.config_address` to pci `(bus, dev, func) and `reg`.
+    `self.config_address` to pci `(bus, dev, func)` and `reg`.
 - when sandboxed, the device is ProxyDevice that imeplements `BusDevice`
   - `config_register_write` sends a one-way `Command::WriteConfig`
   - `config_register_read` sends a synchronous `Command::ReadConfig`

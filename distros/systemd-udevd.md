@@ -45,7 +45,7 @@ udev
   - a worker works on a `struct udev_device` by wrapping it in a
     `struct udev_event`.  It thens calls `udev_event_execute_rules` and
     `udev_event_execute_run`.  Rule execution involves `udev_device_update_db`.
-- events_start
+- `events_start`
   - for each queued event, it calls `event_run` to find a worker to work on this
     event.
 - `struct udev_queue_export` and `struct udev_queue`

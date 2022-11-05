@@ -118,3 +118,23 @@ systemd-logind
       - calls `setuid`
       - calls `chdir` to home
       - calls `execvp` to execute the shell
+
+## User Login
+
+- agetty prompts for user name
+- after getting the user name, agetty `exec`s login
+- login prompts for user password and authenticates using PAM
+- `/etc/pam.d/login` includes `/etc//pam.d/system-login`.  Among other things,
+  it include `pam_systemd`
+- `pam_systemd` together with `systemd-logind` does
+  - starts `user-$UID.slice`.  Under which,
+    - starts `user@$UID.service`
+    - starts `session-$SESSION.scope`
+- when $UID first logs in, `pam_systemd` starts `user@$UID.service`
+  - the service depends on `user-runtime-dir@.service` which mounts tmpfs at
+    `/run/user/$UID`
+  - it then starts `systemd --user` under `user-$UID.slice`
+- for each $UID login, `pam_systemd` also starts a session scope,
+  `session-$SID.scope`
+  - `login` process itself is moved to the scope
+  - all future processes are also in this scope
