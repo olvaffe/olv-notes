@@ -94,19 +94,20 @@ Arch Linux
   - wifi, `iwd` or `wpa_supplicant`
   - tools, `sudo vim man-db`
   - devel, `gcc git ctags meson pkgconf`
-    - also `gdb perf strace man-pages`
+    - also `gdb debuginfod perf strace man-pages`
   - gui, `sway swayidle swaylock i3status mako polkit`
     - `alacritty google-chrome noto-fonts noto-fonts-cjk`
-    - `light wayland-utils`
+    - `light imv wl-clipboard wayland-utils`
     - `mesa mesa-utils vulkan-radeon vulkan-tools`
   - bluetooth, `bluez bluez-utils`
   - printer, `cups samsung-unified-driver-printer`
-  - audio, `pipewire pipewire-pulse`
+  - audio, `pipewire pipewire-pulse pavucontrol`
   - misc
     - `fakeroot` for makepkg
     - `bison flex python-mako wayland-protocols` for mesa
     - `cmake make` for cmake
     - `aarch64-linux-gnu-gcc` for cross-compile
+      - also `qemu-user-static qemu-user-static-binfmt`
 - x11
   - xwayland: `xorg-xwayland`
   - X11: `xorg xorg-xinit i3 xterm`
