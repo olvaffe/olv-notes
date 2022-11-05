@@ -57,7 +57,7 @@ Mesa Gallium
     `libsoftpipe.a`, and `libi915simple.a`.
   - `dri` provides `i915_dri.so`, linking to `libdridrm.a`, `libinteldrm.a`,
     `libsoftpipe.a`, and `libi915simple.a`.
-- winsys combines pipe driver(s) and talks to state_tracker.
+- winsys combines pipe driver(s) and talks to `state_tracker`.
   e.g. `egl_softpipe.so` links to `libsoftpipe.a` and calls to functions like
   `st_create_context`, provided by, say, `libOpenVG.so` state tracker.
   Or, `i915_dri.so` links to `libi915simple.a` and `libdridrm.a`, which talks to
@@ -613,3 +613,32 @@ Mesa Gallium
   - for vertex/index buffer, use GTT
   - otherwise, for dynamic/stream, use GTT
   - otherwise, for static, use VRAM
+
+## Samplers and Sampler Views
+
+- the dirty bits are `ST_NEW_SAMPLERS` and `ST_NEW_SAMPLER_VIEWS`
+  - they are set in `st_invalidate_state` when some prior GL call set
+    `_NEW_TEXTURE_OBJECT`
+  - also somewhat indirectly when some prior GL call set `_NEW_PROGRAM`
+    - when a program is linked, `st_link_nir` calls
+      `st_set_prog_affected_state_flags` to decide states that the program
+      invalidates
+    - upon program change, `st->gfx_shaders_may_be_dirty` is set
+    - `st_validate_state` calls `check_program_state` to mark the affected
+      states dirty
+- `st_validate_state` calls "atoms" depending on the dirty states
+- `st_update_fragment_samplers`
+  - when a program is linked, `gl_nir_link_uniforms` sets `prog->SamplersUsed`
+    and `prog->SamplerUnits`
+    - every glsl uniform that is a sampler is assigned an sequential index
+    - `prog->SamplersUsed` is a mask of all samplers
+    - `prog->SamplerUnits` maps a glsl sampler to a gl texture unit
+      - it is updated by `glUniform1i`
+      - or using `layout(binding=X)` in glsl
+  - `st_update_fragment_samplers` updates `st->state.frag_samplers` based on
+    `SamplersUsed` and `SamplerUnit`
+    - IOW, `pipe_context::bind_sampler_states` indices are the
+      driver-generated sequential indices of glsl sampler uniforms
+- `st_update_fragment_textures`
+  - `pipe_context::set_sampler_views` indices are the driver-generated
+    sequential indices of glsl sampler uniforms
