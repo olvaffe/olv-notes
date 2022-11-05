@@ -1,6 +1,22 @@
 OpenCL
 ======
 
+## History
+
+- 1.0 was released in 2008
+- 1.1 was released in 2010
+- 1.2 was released in 2011
+- 2.0 was released in 2013
+  - SVM, shared virtual memory
+- 2.1 was released in 2015
+  - "OpenCL C++ Kernel Language" based on C++14
+  - SPIR-V
+- 2.2 was released in 2017
+- 3.0 was released in 2020
+  - only OpenCL 1.2 functionality is mandatory
+  - all OpenCL 2.x and OpenCL 3.0 functionality is optional
+  - replaced "OpenCL C++ Kernel Language" by "C++ for OpenCL", based on C++17
+
 # References
 
 - http://www.khronos.org/registry/cl/specs/opencl-1.0.48.pdf (obvious :) ),

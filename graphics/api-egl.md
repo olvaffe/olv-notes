@@ -1,6 +1,29 @@
 EGL
 ===
 
+## History
+
+- 1.0 was released in 2003
+  - based on GLX 1.3
+  - OpenGL ES 1.x
+- 1.1 was released in 2004
+- 1.2 was released in 2005
+  - added OpenVG support
+- 1.3 was released in 2007
+  - added OpenGL ES 2.x support
+- 1.4 was released in 2008
+  - added OpenGL support
+- 1.4 was released in 2008
+  - added OpenGL support
+- 1.5 was released in 2014
+  - `EGL_EXT_client_extensions`
+  - `EGL_EXT_platform_base`
+  - `EGL_KHR_fence_sync`
+  - `EGL_KHR_image_base`
+  - `EGL_KHR_create_context`
+  - `EGL_KHR_get_all_proc_addresses`
+  - `EGL_KHR_surfaceless_context`
+
 ## EGL
 
 - `eglSwapBuffers` posts color buffer to a native window.  It has no effect on
