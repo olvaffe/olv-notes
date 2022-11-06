@@ -45,3 +45,18 @@ glTF
 - each scene has an array of nodes
 - each node can have an array of children nodes
   - this allows glTF to model a scene hierarchy
+
+## KTX
+
+- Khronos Texture, KTX
+- <https://www.khronos.org/assets/uploads/apis/KTX-2.0-Launch-Overview-Apr21_.pdf>
+  - GPU Compressed Formats
+    - BC1/BC3/BC7
+      - Intel, AMD, nVidia (desktop and tegra), Apple (Mx)
+    - ETC1/ETC2/ASTC
+      - Intel, nVidia (tegra), Mali, Adreno, Apple (Ax and Mx)
+    - PVRTC1
+  - KTX 2.0 supports Basis Universal compression
+    - <https://github.com/BinomialLLC/basis_universal>
+    - no direct GPU support
+    - can be transcoded to GPU compressed formats quickly
