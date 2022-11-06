@@ -543,3 +543,16 @@ Mesa and EGL
     - meaningless restriction by EGL
   - GL requires the front buffer to be available
     - required by GL spec
+
+## dma-buf
+
+- `eglQueryDmaBufFormatsEXT`
+  - `dri2_query_dma_buf_formats` (in gallium dri, not the one in egl dri)
+    loops over `dri2_format_table` and returns formats that can be supported
+    as `PIPE_BIND_RENDER_TARGET` or `PIPE_BIND_SAMPLER_VIEW` natively
+  - it also uses `dri2_yuv_dma_buf_supported` for planar formats
+- `eglQueryDmaBufModifiersEXT`
+  - `dri2_query_dma_buf_modifiers` (in gallium dri, not the one in egl dri)
+    gets the supported modifiers from the pipe driver
+  - if no native sampling support and relies on `dri2_yuv_dma_buf_supported`,
+    `external_only` is set to true
