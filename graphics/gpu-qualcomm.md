@@ -910,6 +910,7 @@ Qualcomm Adreno
 - `SP_BLEND_CNTL`: blend enable, dual color, alpha-to-coverage
 - `SP_CHICKEN_BITS`: magic
 - `SP_FLOAT_CNTL`: alt float mode
+- `SP_BINDLESS_BASE`: 5 bindless bases
 - `SP_IBO_COUNT`: 0
 - `SP_MODE_CONTROL`: how float consts are converted to half
 - `SP_PERFCTR_ENABLE`: magic
@@ -948,7 +949,7 @@ Qualcomm Adreno
 - `HLSQ_CS_NDRANGE_6`:
 - `HLSQ_CS_UNKNOWN_B9D0`:
 - `HLSQ_CONTROL_[1-5]_REG`: regids of special fs inputs (face, sampleid, bary coeff)
-- `HLSQ_BINDLESS_BASE`: for bindless
+- `HLSQ_BINDLESS_BASE`: 5 bindless bases
 - `HLSQ_INVALIDATE_CMD`: invalidate vs/hs/ds/gs/fs/cs states
 - `HLSQ_SHARED_CONSTS`: always 0
 
@@ -1093,8 +1094,8 @@ Qualcomm Adreno
     does not happen until `CP_DRAW` and can be canceled
   - `SS6_UBO`: not currently used
 - bindless
-  - there are 5 registers that can point to the base addresses of 5 descriptor
-    sets.
+  - there are 5 registers (`SP_BINDLESS_BASE` and `HLSQ_BINDLESS_BASE`) that
+    can point to the base addresses of 5 descriptor sets.
   - the shader find a descriptor in a set by calculating base plus offset
   - the descriptors can be preloaded too
 

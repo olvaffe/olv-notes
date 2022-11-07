@@ -5,16 +5,20 @@ EGL
 
 - 1.0 was released in 2003
   - based on GLX 1.3
-  - OpenGL ES 1.x
+  - OpenGL ES 1.0
 - 1.1 was released in 2004
+  - OpenGL ES 1.1
+  - power management and swap control from IMG
+  - render-to-texture based on `WGL_ARB_render_texture`
 - 1.2 was released in 2005
-  - added OpenVG support
+  - added OpenVG 1.0 support
+  - added OpenGL ES 2.0 support
 - 1.3 was released in 2007
-  - added OpenGL ES 2.x support
+  - separate OpenGL ES 1.0 and 2.0 contexts in `eglCreateContext`
+  - rename tokens, e.g. `NativeWindowType` renamed to `EGLNativeWindowType`.
 - 1.4 was released in 2008
   - added OpenGL support
-- 1.4 was released in 2008
-  - added OpenGL support
+  - `EGL_SWAP_BEHAVIOR`
 - 1.5 was released in 2014
   - `EGL_EXT_client_extensions`
   - `EGL_EXT_platform_base`

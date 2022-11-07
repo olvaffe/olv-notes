@@ -44,22 +44,6 @@ Mesa and EGL
   - resources (contexts, surfaces, etc.) of a `EGLDisplay` are reference-counted
     - such that destroying a context that is still current does not lead to UAF
 
-## History
-
-- EGL 1.0 is based on GLX 1.3.
-- EGL 1.1 adds
-  - power management and swap control from IMG
-  - render-to-texture based on `WGL_ARB_render_texture`
-- EGL 1.2 adds
-  - OpenVG (1.0?) support
-  - OpenGL ES (2.0?) support
-- EGL 1.3, Feb. 2007, adds
-  - separate OpenGL ES 1.0 and 2.0 contexts in `eglCreateContext`
-  - rename tokens, e.g. `NativeWindowType` renamed to `EGLNativeWindowType`.
-- EGL 1.4, May. 2008, adds
-  - `EGL_SWAP_BEHAVIOR`
-  - OpenGL support
-
 ## EGL
 
 - egl/main provides libEGL.so which implements EGL
@@ -556,3 +540,18 @@ Mesa and EGL
     gets the supported modifiers from the pipe driver
   - if no native sampling support and relies on `dri2_yuv_dma_buf_supported`,
     `external_only` is set to true
+- `eglCreateImage(EGL_LINUX_DMA_BUF_EXT, DRM_FORMAT_NV12)`
+  - `dri2_from_dma_bufs2` uses a `dri2_format_mapping` that has
+    - `DRM_FORMAT_NV12`
+    - `__DRI_IMAGE_FORMAT_NONE`
+    - `PIPE_FORMAT_NV12`
+    - plane count 2
+      - `__DRI_IMAGE_FORMAT_R8`
+      - `__DRI_IMAGE_FORMAT_GR88`
+  - `dri2_create_image_from_winsys` imports 2 plane fds as 2 `pipe_resource`s
+    - without native support, `use_lowered` is true and the two resoruces have
+      formats `PIPE_FORMAT_R8_UNORM` and `PIPE_FORMAT_RG88_UNORM` respectively
+    - with native support, the two resources have format `PIPE_FORMAT_NV12`
+    - on freedreno, there is semi-native support and requires a format
+      translation
+      - the two resources have format `PIPE_FORMAT_R8_G8B8_420_UNORM`
