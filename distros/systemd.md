@@ -68,6 +68,17 @@ systemd
   - they must be named after the devices they control
 - path units define pathes to be monitored, enabling path-based activation
   - a matching service unit file must exist
+- `man systemd.unit`
+  - `Wants=`: if this unit gets started, other units listed are also started;
+    it is fine for other units to fail
+  - `Requires=`: if this unit gets started, other units listed are also
+    started; if any of other unit fails to start, this unit is not started
+  - `Conflicts=`: if this unit gets started, other units listed are stopped
+  - `Before=`: if this unit gets started at the same time with other units
+    listed, this unit is started before other units
+    - this does not express dependency; use `Wants=` for that
+    - on stop, other units are stopped before this unit
+  - `After=`: the opposite of `Before=`
 
 ## Helpers
 
