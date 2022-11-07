@@ -790,6 +790,11 @@ Qualcomm Adreno
 - `RB_STENCILREF`: stencil ref
 - `RB_STENCILWRMASK`: stencil writemask
 - `RB_DEPTH_BUFFER_*`: format, pitch, layer, bo addr, gmem offset 
+  - `RB_DEPTH_BUFFER_INFO` controls format
+  - `RB_DEPTH_BUFFER_PITCH` controls pitch
+  - `RB_DEPTH_BUFFER_ARRAY_PITCH` controls layer pitch
+  - `RB_DEPTH_BUFFER_BASE` controls iova
+  - `RB_DEPTH_BUFFER_BASE_GMEM` controls gmem offset
 - `RB_DEPTH_CNTL`: depth test enable, compare op, depth write/clamp/bounds
 - `RB_DEPTH_FLAG_BUFFER_BASE`: addr of ubwc metadata
 - `RB_DEPTH_PLANE_CNTL`: early-z, lrz, or late-z
@@ -801,6 +806,13 @@ Qualcomm Adreno
 - `RB_SAMPLE_COUNT_ADDR`: where to write zpass count, for queries
 - `RB_SAMPLE_COUNT_CONTROL`: how to write zpass count, for queries
 - `RB_MRT_*`: mrt format, pitch, layer, bo addr, gmem offset
+  - there are 8 MRTs and each MRT has 8 registers
+  - `RB_MRT_CONTROL` controls blending, write mask, and logicop
+  - `RB_MRT_BLEND_CONTROL` controls blend factors
+  - `RB_MRT_BUF_INFO` controls the buffer format, tiling, swap
+  - `RB_MRT_PITCH` controls the buffer pitch
+  - `RB_MRT_ARRAY_PITCH` controls the layer pitch
+  - 3 more registers control the iova and the gmem offset
 - `RB_MRT_FLAG_BUFFER_*`: addr of ubwc metadata
 - `RB_RENDER_COMPONENTS`: bitmask of which compoents of which mrts are written
 - `RB_RENDER_CONTROL0`: barycentric interps
@@ -1102,6 +1114,21 @@ Qualcomm Adreno
   - `TILE6_LINEAR` is linear
   - `TILE6_2` is what gmem uses
   - `TILE6_3` is tiled
+  - for a tiled mipmap, it is controllable whether the tail is also tiled or
+    linear
+    - by default, the sampler hw assumes lod of width < 16 is linear unless
+      `TILE_ALL` is set
+  - MRT
+    - tiling and ubwc are controllable
+      - ubwc requires tiling
+    - if the width is less than 16, it is preferred to use `TILE6_LINEAR`
+      - this is assumed by the sampler hw unless `TILE_ALL` is set
+      - because ubwc requires tiling, we use tiling even when the width is less
+        than 16 when ubwc is enabled
+  - Depth
+    - always tiled
+      - must set `TILE_ALL` when sampling a depth texture
+    - ubwc is controllable
 - UBWC
   - it is called flags in register definitions
 - when linear and no ubwc, compatible formats can be reinterpreted
