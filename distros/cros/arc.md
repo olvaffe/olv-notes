@@ -115,3 +115,24 @@ ARC
   - `cd src/third_party/kernel/v5.10-arcvm`
   - `make ARCH=arm64 O=ARCVM CROSS_COMPILE=aarch64-cros-linux-gnu- arm64_arcvm_defconfig`
   - `scp -C ARCVM/arch/arm64/boot/Image dut:/opt/google/vms/android/vmlinux`
+
+## D-Bus
+
+- for some projects under platform2, there is a `dbus_bindings` subdirectory
+  - e.g., `login_manager/dbus_bindings/org.chromium.SessionManagerInterface.xml`
+- for others, there is `system_api/dbus`
+  - e.g., `system_api/dbus/vm_concierge`
+  - these are a part of "system api" and are used by chrome the browser as
+    well
+- to get user hash,
+  - `dbus-send --system --dest=org.chromium.SessionManager --print-reply \
+      /org/chromium/SessionManager org.chromium.SessionManagerInterface.RetrievePrimarySession`
+  - `awk -F\" 'NR==3{print $2}'`
+- to get `vm_concierge` pid,
+  - `dbus-send --system --dest=org.freedesktop.DBus --print-reply \
+      / org.freedesktop.DBus.GetConnectionUnixProcessID string:org.chromium.VmConcierge`
+- to list vms
+  - `concierge_client --cryptohome_id=<hash> --list_vms`
+- to get arcvm cid,
+  - `concierge_client --cryptohome_id=<hash> --name=arcvm --get_vm_cid`
+  - should work for `termina` and `borealis` as well
