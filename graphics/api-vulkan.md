@@ -790,3 +790,24 @@ Vulkan
     strict rule, except implementations can include pixels that are not
     covered and can compute coverage values freely
   - also support stippled line rasterization
+
+## YCbCr Conversion
+
+- feature bits
+  - these control valid values of `xChromaOffset` and `yChromaOffset`
+    - `VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT`
+    - `VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT`
+    - each bit enables each chroma location
+  - this controls valid values of `chromaFilter`
+    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT`
+    - without the bit, only `VK_FILTER_NEAREST` is allowed
+  - this controls valid values of `minFilter`, `magFilter`, and `chromaFilter`
+    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT`
+    - without the bit, all three must have the same value
+  - these controls valid values of `forceExplicitReconstruction`
+    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT`
+      - with the bit, always explicit and `forceExplicitReconstruction` is
+        assumed true
+      - without the bit, it is implicit by default
+    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT`
+      - with the bit, `forceExplicitReconstruction` can be set to true
