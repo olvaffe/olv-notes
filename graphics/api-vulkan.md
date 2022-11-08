@@ -811,3 +811,25 @@ Vulkan
       - without the bit, it is implicit by default
     - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT`
       - with the bit, `forceExplicitReconstruction` can be set to true
+- when CbCr is subsampled, reconstruction is required
+  - reconstruction uses `chromaFilter`
+    - `minFilter` and `magFilter` are not used
+  - implicit reconstruction
+    - scale unnormalized coordinates `(u, v)` to be `(u/2, v/2)`
+    - if `VK_FILTER_NEAREST`, use the texel closest to `(u/2, v/2)`
+    - if `VK_FILTER_LINEAR`, use the average of the 4 texels closest to `(u/2, v/2)`
+  - explicit reconstruction
+    - if `VK_FILTER_NEAREST` and texel `(i, j)` is needed, use texel `(i/2, j/2)`
+    - if `VK_FILTER_LINEAR` and texel `(i, j)` is needed, use the average of
+      the 4 texels closest to `(i/2, j/2)`
+      - because `VK_FILTER_LINEAR` needs 4 texels, this can read up to 9
+        texels in total
+      - quad-linear filtering
+  - chroma offsets (cosited or midpoint) are chosen based on how CbCr was
+    subsampled
+    - Y and full CbCr samples are co-sited
+    - when full CbCr samples are downsampled,
+      - we can store the average of each 2x2 samples, in this case we want to
+        treat the stored sample as the midpoint of the 2x2 samples
+      - we can store the top-left sample of each 2x2 samples, in this case we
+        want to treat the stored sample as co-sited with the top-left Y aample
