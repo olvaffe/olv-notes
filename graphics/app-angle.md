@@ -223,7 +223,7 @@ ANGLE
   - `adb shell appops write-settings`
   - `adb shell am instrument -w \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
-       -e org.chromium.native_test.NativeTest.CommandLineFlags '--gtest_filter=TraceTest.*' \
+       -e org.chromium.native_test.NativeTest.CommandLineFlags '--use-gl=angle\ --gtest_filter=TraceTest.*' \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.NativeTestActivity com.android.angle.test.AngleUnitTestActivity \
        com.android.angle.test/org.chromium.build.gtest_apk.NativeTestInstrumentationTestRunner`
