@@ -219,6 +219,7 @@ ANGLE
   - `memory_max`
 - android
   - push traces to `/sdcard/chromium_tests_root/src/tests/restricted_traces`
+  - `adb install -r -d --force-queryable ./out/Android/angle_trace_tests_apk/angle_trace_tests-debug.apk`
   - `adb shell appops set --uid com.android.angle.test MANAGE_EXTERNAL_STORAGE 0`
   - `adb shell appops write-settings`
   - `adb shell am instrument -w \

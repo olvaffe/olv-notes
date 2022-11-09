@@ -334,6 +334,34 @@ Qualcomm Adreno
     - `registers/adreno/adreno_pm4.xml`
     - <https://www.x.org/docs/AMD/>
     - `dump_cmdstream` in crashdec
+- on gpu fault, kernel prints
+  `gpu fault ring 0 fence 36b0 status 00800005 rb 04f0/0560 ib1 0000000113403000/0002 ib2 0000000113413000/0000`
+  - `0x36b0` is the fence seqno of the last job
+    - each job is assigned a fence seqno
+  - `0x00800005` is `REG_A6XX_RBBM_STATUS`
+    - `GPU_BUSY_IGN_AHB`
+    - `CP_BUSY`
+    - `CP_AHB_BUSY_CX_MASTER`
+  - `0x04f0` is `REG_A6XX_CP_RB_RPTR`
+    - this is the read ptr of the ring buffer
+  - `0x0560` is `REG_A6XX_CP_RB_WPTR`
+    - this is the write ptr of the ring buffer
+  - `0x0000000113403000` is `REG_A6XX_CP_IB1_BASE`
+    - this is the iova of an execbuf
+    - `CP_INDIRECT_BUFFER_PFE(iova, size)`
+  - `0x0002` is `REG_A6XX_CP_IB1_REM_SIZE`
+    - this is the remaining size in IB1
+  - `0x0000000113413000` is `REG_A6XX_CP_IB2_BASE`
+    - execbuf can have another level of indirection known as IB2
+      - it is used by userspace driver
+      - e.g., draw ib that is invoked for each tile
+    - `CP_INDIRECT_BUFFER(iova, size)`
+  - `0x0000` is `REG_A6XX_CP_IB2_REM_SIZE`
+    - this is the remaining size in IB2
+  - `REG_A6XX_CP_CSQ_IB1_STAT` and `REG_A6XX_CP_CSQ_IB2_STAT`
+    - ROQ pre-fetches commands and updates `REG_A6XX_CP_IB1_REM_SIZE`
+    - `REG_A6XX_CP_CSQ_IB1_STAT` is the size of data prefetched and yet
+      consumed by SQE
 - command processing
   - `CP_INDIRECT_BUFFER` calls an indirect buffer (IB)
     - actually, CP executes commands from a ring buffer (RB) controlled by

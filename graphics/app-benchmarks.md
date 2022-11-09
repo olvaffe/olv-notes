@@ -112,6 +112,12 @@ GPU Benchmarks
     scene
     - with play time 1000 and step time 20, it will render 50 frames
   - `loop_count` repeats the test N times
+- cmdline
+  - `-w 1920 -h 1080 --gfx egl -t gl_trex_off,gl_trex`
+  - `--ei -single_frame=20000`
+  - `adb shell am broadcast -a net.kishonti.testfw.ACTION_RUN_TESTS -n
+    net.kishonti.gfxbench.v50004.corporate/net.kishonti.benchui.corporate.CommandLineSession
+    -e test_ids 'gl_manhattan31' --ei raw_config.single_frame 20000`
 - test configs from android apk
   - 3.0
     - `gl_alu`, ALU
