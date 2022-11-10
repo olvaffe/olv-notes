@@ -458,6 +458,7 @@ Qualcomm Adreno
 
 - `a630_sqe.fw` can be disassembled with `afuc-disasm`
   - `disasm` executes and disassembles all instructions
+    - `./afuc-disasm /lib/firmware/qcom/a630_sqe.fw`
   - lpac is not used
   - `emu_pipe_regs` is not used
 - afuc emulator
@@ -566,6 +567,11 @@ Qualcomm Adreno
 - `CP_WAIT_FOR_IDLE`
   - increment `WFI_PEND_CTR` immediately
   - decrement `WFI_PEND_CTR` pipelined
+- `CP_REG_TO_MEM`
+  - it calls `fxn08`
+    - increment `WFI_PEND_CTR` immediately
+    - decrement `WFI_PEND_CTR` pipelined
+    - calls `fxn06` to loop until `WFI_PEND_CTR` is 0
 - `CP_MEM_WRITE`
   - `mov` to `NRT_ADDR` and `NRT_DATA` pipe registers, which is pipelined
 - `CP_WAIT_MEM_WRITES`
