@@ -91,6 +91,12 @@ GPU Benchmarks
     - `vkb::RenderContext::submit`
     - `DescriptorManagement::update`
 
+## GravityMark
+
+- <https://gravitymark.tellusim.com/>
+  - Android
+  - Linux x86-64 and arm64
+
 ## GFXBench
 
 - results
