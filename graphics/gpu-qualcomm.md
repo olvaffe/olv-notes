@@ -420,6 +420,8 @@ Qualcomm Adreno
     - it allows drivers to construct stateobjs (IBs)
     - it can conditionally exec stateobjs depending on the operation mode and
       whether the stateobjs have changed
+      - e.g., binning must decide no draw hit a tile and stateobjs can be
+      	skipped
   - `CP_SET_SUBDRAW_SIZE` sets the tess factor/param buffer size for HS
   - `CP_DRAW_INDX_OFFSET` draws
   - `CP_DRAW_INDIRECT_MULTI` draws indirectly
