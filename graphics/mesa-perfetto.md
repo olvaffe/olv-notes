@@ -131,6 +131,15 @@ Mesa Perfetto
 - `Counter::getter`
   - an anonymous function in `IntelDriver::init_perfcnt`
   - read values from `intel_perf_query_result`
+- `intel_perf_init_metrics(..., false, false)`
+  - `oa_metrics_available`
+    - `i915_query_supported` is optional and is unused
+      - `DRM_IOCTL_I915_QUERY(DRM_I915_QUERY_PERF_CONFIG, DRM_I915_QUERY_PERF_CONFIG_LIST)`
+    - `I915_PARAM_PERF_REVISION`
+      - it is 5 right now
+    - must be root or `/proc/sys/dev/i915/perf_stream_paranoid` must be 0
+      - `sysctl dev.i915.perf_stream_paranoid=0`
+    - `perf->sysfs_dev_dir` is initialized to `/sys/dev/char/226:128/device/drm/card0`
 
 ## freedreno
 
