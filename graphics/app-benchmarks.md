@@ -118,6 +118,10 @@ GPU Benchmarks
     scene
     - with play time 1000 and step time 20, it will render 50 frames
   - `loop_count` repeats the test N times
+  - to change off-screen test sizes,
+    - set `test_width` and `test_height`
+    - but better set `offscreen_width` and `offscreen_height` as well to be
+      safe
 - cmdline
   - `-w 1920 -h 1080 --gfx egl -t gl_trex_off,gl_trex`
   - `--ei -single_frame=20000`
