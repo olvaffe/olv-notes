@@ -197,6 +197,30 @@ ANGLE
     - `--minimize-gpu-work` forces 1x1 window
     - `--verbose`
     - `--offscreen`
+    - `--no-warmup`
+    - `--one-frame-only`
+- `ANGLEProcessTraceTestArgs`
+  - by default,
+    - `gTrialTimeSeconds` is 10
+    - `gWarmupTrials` is 3
+    - `gTestTrials` is 3
+    - `gWarmupSteps` is max
+    - `gCalibrationTimeSeconds` is 1
+    - `gScreenshotFrame` is 1
+    - the rest is 0/false
+  - by default, `ANGLEPerfTest` ctor
+    - `mStepsToRun` is 0
+    - `mTrialTimeLimitSeconds` is 10
+    - `mIterationsPerStep` is 1
+  - by default, `ANGLEPerfTest::run`
+    - `calibrateStepsToRun` because `mStepsToRun` is 0
+      - it wants to decide how many steps (frames) take
+      	`mTrialTimeLimitSeconds` seconds
+      - it runs for `mTrialTimeLimitSeconds` for `gWarmupTrials` times, and
+      	adjust number of steps to run
+    - it then runs the test for `mTrialTimeLimitSeconds` / `mStepsToRun`
+      (which ever reaches first), and repeat for `gTestTrials` times
+  - note that `TracePerfTest::getStepAlignment` returns trace frame count
 - `TracePerfTest` is the class to run tests
   - `ANGLERenderTest::SetUp`
     - creates an `OSWindow`
@@ -234,6 +258,33 @@ ANGLE
       - one or more `.so` 
       - one or more `.dex` 
       - a manifest file containing `<instrument>` and `<activity>`
+- angle trace internals
+  - an angle trace consists of a `.so` and a data file
+  - when angle captures api calls, it saves them into cpp files per frame
+    - this allows the trace to be edited easily
+  - the cpp files include `angle_trace_gl.h`
+    - `angle_trace_gl.h` redirects EGL/GLES calls to dispatch tables set up by
+      `LoadTraceEGL` and `LoadTraceGLES`
+  - trace replay
+    - a `TraceInterpreter` is created to wrap a trace
+    - `setupReplay` is called followed by `glFinish` to load resources
+      - this calls `SetupReplay` defined by the trace
+    - `replayFrame` is called to play a frame
+      - it calls `ReplayContext%dFrame%u` defined by the trace
+    - `resetReplay` is called before looping back to the first frame
+      - it calls `ResetReplay` defined by the trace
+    - `finishReplay` is called to terminate
+      - it cleans up `TraceInterpreter` itself
+  - the trace `.so`
+    - `SetupReplay`
+      - `InitReplay` calls `InitializeReplay` to load the binary tarball and
+      	initialize global variables in the fixture
+      - `SetupReplayContextShared` initializes GL states in a shared context?
+      - `SetupReplayContext1`  initializes GL states in the game context
+    - `ReplayContext1Frame1` replays a frame
+      - normally thousands of gl calls and hundreds of draw calls
+    - `ResetReplay` to reset all GL states back to the initial states
+      - this is for looping back to the first frame
 
 ## `GL_KHR_blend_equation_advanced`
 
