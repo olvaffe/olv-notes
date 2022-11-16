@@ -274,3 +274,74 @@ GFXBench
     - outputs
       - back color
       - back depth (not used)
+- fd renderstages @ 2574x1380, frame time 95ms
+  - Compute
+    - 0.3ms
+  - Surface: z16, 1024x1024
+    - 0.9ms
+  - Surface: r8g8b8a8 x4 + z24, 2574x1380
+    - 13.6ms
+      - bin 224x96, count 180=12x15
+      - binning 2.4ms
+  - Surface: r10g10b10a2 + z24, 2574x1380
+    - 19.4ms
+  - Surface: r10g10b10a2 + z24, 2574x1380
+    - 6.0ms
+  - Surface: r10g10b10a2 + z24, 2574x1380
+    - 6.0ms
+  - Compute
+    - 0.2ms
+  - Surface: r10g10b10a2 + z24, 2574x1380
+    - 9.5ms
+  - Compute
+    - 2.4ms
+  - Compute
+    - 4.8ms
+  - Surface: r8g8b8a8, 1287x690, mipmaped
+    - 1.9ms, 0.5ms, 0.1ms, 0.0ms
+  - Surface: r8g8b8a8, 1287x690, mipmaped
+    - 1.7ms, 0.5ms, 0.1ms, 0.0ms
+  - Surface: r8g8b8a8, 2574x1380
+    - 3.8ms
+  - Surface: r8g8b8a8, 2574x1380
+    - 6.8ms
+  - Surface: r8g8b8a8, 2574x1380
+    - 6.0ms
+  - Surface: r8g8b8x8 + z24, 2574x1380
+    - 3.5ms
+- tu renderstages @ 2574x1380, frame time 105ms
+  - command buffer, 21.3ms
+    - Render Pass: z16, 1024x1024
+      - 0.9ms
+    - Compute
+      - 0.3ms
+    - Render Pass: r8g8b8a8 x4 + z24, 2574x1380
+      - 20.2ms
+      - bin 160x128, count 187=17x11
+      - binning 3.1ms
+  - command buffer, 20.6ms
+    - Render Pass: r10g10b10a2 + z24, 2574x1380
+      - 1.1ms
+    - Render Pass: r10g10b10a2 + z24, 2574x1380
+      - 19.5ms
+  - command buffer, 51.2ms
+    - Compute
+      - 0.2ms
+    - Render Pass: r10g10b10a2 + z24, 2574x1380
+      - 16.1ms
+    - Compute
+      - 2.3ms
+    - Compute
+      - 1.1ms
+    - Render Pass: r8g8b8a8, 1287x690, mimapped
+      - 2.7ms, 0.7ms, 0.2ms, 0.1ms
+    - Render Pass: r8g8b8a8, 1287x690, mimapped
+      - 2.4ms, 0.6ms, 0.2ms, 0.1ms
+    - Render Pass: r8g8b8a8, 2574x1380
+      - 3.8ms
+    - Render Pass: r8g8b8a8, 2574x1380
+      - 9.5ms
+    - Render Pass: r8g8b8a8, 2574x1380
+      - 7.7ms
+    - Render Pass: r8g8b8a8, 2574x1380
+      - 3.2ms
