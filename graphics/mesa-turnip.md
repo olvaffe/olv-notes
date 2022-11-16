@@ -1048,6 +1048,34 @@ Mesa Turnip
       - `t7` is type7 packet
       - `46` is the numeric value of `CP_EVENT_WRITE`
       - `2` is the length of the packet
-    - decoded packet
-    - `%x:\t\t%d: %d %d ...` for hexdump
+    - `dump_domain` to decode and dump the packet
+    - `op->fxn` for additonal parsing
+    - `dump_hex` for `%x:\t\t%d: %d %d ...`
       - iova, offset, and values in hex
+  - `CP_INDIRECT_BUFFER`
+    - `cp_indirect` dumps the addrs and recursively calls `dump_commands` with
+      increased indentation
+  - `CP_SET_DRAW_STATE`
+    - if any group is marked immediate, `load_group` to dumps the group
+  - `CP_DRAW_*`, `CP_BLIT`, or `CP_EVENT_WRITE(BLIT)`
+    - for draws, `load_all_groups` calls `load_group` on all groups
+    - at the end, calls `dump_register_summary` to dump registers
+  - `CP_LOAD_STATE6_*` calls `cp_load_state`
+- `load_group` dumps a state group
+  - dumps the group itself
+  - dumps hex of the stateobj
+  - recursively calls `dump_commands`
+- `dump_register_summary` dumps registers
+  - `draw[%d] register values`
+    - `%d` is the Nth draw of the rd dump
+  - `!` means the reg value has changed since the last reg dump
+  - `+` means the reg has been re-written since the last reg dump
+- `dump_register`
+  - decodes and dumps the register val
+  - some registers go through additonally processing
+  - `SP_xS_TEX_SAMP` and `SP_xS_TEX_CONST`
+    - hex dumps the descriptor
+  - `SP_xS_OBJ_START`
+    - disassembles the shader binary
+- `cp_load_state`
+  - additionally dumps resource descriptors or constant contents
