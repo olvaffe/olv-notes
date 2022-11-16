@@ -316,16 +316,28 @@ DRM msm
    
 ## cffdump
 
-- `rd_open` writes `RD_GPU_ID`
-- `msm_rd_dump_submit` writes
-  - `RD_CMD` for comm name, comm pid, submit ring seqno
-  - if module loaded with `rd_full=true`, for each BO,
-    - write a `RD_GPUADDR`
-    - write a `RD_BUFFER_CONTENTS`
-  - for each cmd,
-    - write a `RD_GPUADDR` for the BO
-    - write a `RD_BUFFER_CONTENTS` for the BO
-    - write a `RD_CMDSTREAM_ADDR`
+- an rd dump consists of sections
+  - each section has
+    - 4-byte type
+    - 4-byte payload size
+    - payload
+  - section types
+    - `RD_GPU_ID` for gpu id
+    - `RD_CHIP_ID` for chip id
+    - `RD_CMD` for comm
+    - more
+- `rd_open` is called when userspace opens the rd file
+  - it writes `RD_GPU_ID` and `RD_CHIP_ID` on open
+- `msm_rd_dump_submit` is called for each submit
+  - if rd is not open, it early returns
+  - it writes `RD_CMD` for comm name, comm pid, submit ring seqno
+  - for each bo in the submit, `snapshot_buf` is called
+    - it always writes `RD_GPUADDR` for iova
+    - if the bo is to be fully dumped, it writes `RD_BUFFER_CONTENTS` for
+      contents
+      - one can set `rd_full` to force the behavior
+  - for each bo that contains cmdstream, it writes `RD_CMDSTREAM_ADDR` for the
+    cmdstream offset/size
 
 ## GPU Hang
 

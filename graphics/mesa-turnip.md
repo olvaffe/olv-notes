@@ -1026,3 +1026,28 @@ Mesa Turnip
     `nir_intrinsic_load_uniform`
     - note that spirv only has UBOs (loaded with `nir_intrinsic_load_ubo`) but
       no uniforms
+
+## cffdump
+
+- for each submit, kernel `msm_rd_dump_submit` writes
+  - one `RD_CMD`
+  - zero or more `RD_GPUADDR` and `RD_BUFFER_CONTENTS`
+  - zero or more `RD_CMDSTREAM_ADDR`
+- when `RD_CMD` is parsed,
+  - `cmd: %s`
+- when `RD_CMDSTREAM_ADDR` is parsed,
+  - `############################################################`
+  - `cmdstream: %d dwords`
+  - `dump_commands`
+  - `############################################################`
+  - `vertices: %d`
+    - this is from decoding `CP_DRAW_*` commands
+- `dump_commands`
+  - for each packet,
+    - `t%d\t\t%s`, such as `t7\t\topcode: CP_EVENT_WRITE(46) (2 dwords)`
+      - `t7` is type7 packet
+      - `46` is the numeric value of `CP_EVENT_WRITE`
+      - `2` is the length of the packet
+    - decoded packet
+    - `%x:\t\t%d: %d %d ...` for hexdump
+      - iova, offset, and values in hex

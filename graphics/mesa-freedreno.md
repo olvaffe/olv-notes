@@ -36,6 +36,19 @@ Mesa Freedreno
 - when the time comes to flush, `fd_gmem_render_tiles` emits to `gmem` and
   submits
 
+## GMEM Layout
+
+- `calc_nbins`
+  - tile max: 1024x1008
+  - tile align: 16x4
+  - the goal is to minimize bin count
+  - algorithm
+    - calculate minimal bin count horizontally
+    - calculate minimal bin count verticall
+    - while bin size cannot fit in gmem
+      - increment vertical or horizontal bin count
+    - see if we can make a small adjustment to do better
+
 ## Freedreno
 
 - `fd_draw_vbo` emits into `batch->draw` using `fd6_draw_vbo`
