@@ -1079,3 +1079,27 @@ Mesa Turnip
     - disassembles the shader binary
 - `cp_load_state`
   - additionally dumps resource descriptors or constant contents
+- how to identify a render pass in cffdump?
+  - to identify `tu_cmd_render_tiles`
+    - search for `NUM_INDICES = count` to find a draw call with `count` vertices
+    - search backward for `CP_INDIRECT_BUFFER`
+      - this should be the first IB of the draw cs for the binning pass
+      - if searching forward...
+        - note that the draw cs might consist of multiple BOs due to growing
+        - we can use the iova to skip IBs when searching forward
+        - IBs should be followed by multiple `CP_COND_WRITE5` for
+          `emit_vsc_overflow_test`
+    - search backward for `CP_SKIP_IB2_ENABLE_GLOBAL`
+      - we should now that the beginning of `tu_cmd_render_tiles`
+  - to identify `tu6_render_tile`
+    - search forward for `CP_SET_MARKER`
+      - we should see `RM6_GMEM` which is the beginning of
+      	`tu6_emit_tile_select`
+    - search forward again for `CP_SET_MARKER`
+      - we should see `RM6_ENDVIS` which is after the draw cs
+    - it should be followed by a short IB
+      - this is the tile store cs
+      - it should set the marker to `RM6_RESOLVE`
+      - there is one `CP_EVENT_WRITE(BLIT)` for each attachment store
+    - the pattern should repeat for one or many times for each tile
+  - 
