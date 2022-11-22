@@ -122,7 +122,7 @@ LLVM
     - eat `)` and bail if no `)`
   - how to parse binary expression?
     - Operator-Precedence Parsing
-    - Consider A+B*C-D, we want to parse it to `(-, LHS, RHS)`, where RHS is `D`
+    - Consider `A+B*C-D`, we want to parse it to `(-, LHS, RHS)`, where RHS is `D`
       and LHS is `(+, A, B*C)`.
     - We can have `ParseBinOpRHS(precedence, LHS)`
       - it is called with precedence 0 (lower than _any_ op), and LHS `A`

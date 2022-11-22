@@ -15,24 +15,26 @@ GNU Toolchain
   - toolchain programs, like `cc1`, `as` or `ld`
   - startup files, like `crt?.o` or `libgcc.a`
   - include files
-- the former two are listed as programs and libraries in -print-search-dirs
+- the former two are listed as programs and libraries in `-print-search-dirs`
   the search paths include hardcoded ones and runtime relative (to gcc binary) ones
-- include files are searched in this order in
-  local include dir (/usr/local/include, changable at configure time by --with-local-prefix)
-  prefix include dir (${prefix}/include)
-  gcc's include dir (${libdir}/gcc/<arch>/<version>/include) 
-  standard include dir (/usr/include)
-- standard include dir might not set or might be prefixed by sys-root
-- sysroot prefixes system dirs (e.g. /usr/include or /usr/lib) so that
+- include files are searched in this order
+  - in local include dir (`/usr/local/include`, changable at configure time by
+    `--with-local-prefix`)
+  - prefix include dir (`${prefix}/include`)
+  - gcc's include dir (`${libdir}/gcc/<arch>/<version>/include`) 
+  - standard include dir (`/usr/include`)
+  - standard include dir might not set or might be prefixed by sys-root
+- sysroot prefixes system dirs (e.g. `/usr/include` or `/usr/lib`) so that
   libraries/includes from host system will no be used.
-- -isystem puts a dir before the default ones (but after -I)
-  they are treated specially in that some warnings (unused variable, etc.) are disabled
-- gcc -v -o b b.o
-- when configured --disable-shared, gcc/gcc/ is compiled without ENABLE_SHARED_LIBGCC
-  defined which modifies some ld rules (to not use libgcc, etc.).  gcc/libgcc/
-  compiles libgcc_eh
-- inhibit_libc: when configuring cross compiler without --with-headers, if
-  --with-newlib or no --with-sysroot is given, libc is inhibited
+- `-isystem` puts a dir before the default ones (but after `-I`)
+  - they are treated specially in that some warnings (unused variable, etc.)
+    are disabled
+- `gcc -v -o b b.o`
+- when configured `--disable-shared`, gcc/gcc/ is compiled without
+  `ENABLE_SHARED_LIBGCC` defined which modifies some ld rules (to not use
+  libgcc, etc.).  `gcc/libgcc/` compiles `libgcc_eh`
+- `inhibit_libc`: when configuring cross compiler without `--with-headers`, if
+  `--with-newlib` or no `--with-sysroot` is given, libc is inhibited
 
 ## gcc specs
 
@@ -89,11 +91,12 @@ GNU Toolchain
 ## libgcc
 
 - internal routines (e.g. for float number support) used in compiled binaries
-- see install-leaf and install-shared (if shared) for installed binaries
-- its Makefile includes $(gcc_objdir)/libgcc.mvars
-- libgcc_eh.a: exception handler.  Usually, LIB2ADDEH == LIB2ADDEHSTATIC == LIB2ADDEHSHARED
-  When configured non-shared, it is added to libgcc.a
-- in config.host, extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
+- see `install-leaf` and `install-shared` (if shared) for installed binaries
+- its Makefile includes `$(gcc_objdir)/libgcc.mvars`
+- `libgcc_eh.a`: exception handler
+  - Usually, `LIB2ADDEH == LIB2ADDEHSTATIC == LIB2ADDEHSHARED`
+  - When configured non-shared, it is added to `libgcc.a`
+- in config.host, `extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"`
   for arm
 
 ## ld
@@ -102,20 +105,20 @@ GNU Toolchain
   at configuration time is a decendant of prefix dir, the sysroot is
   relocatable, according to where the current executables are, which
   is strongly recommended.
-- when ld runs, get_sysroot is always called.  It might be empty if
-  not compiled with sysroot support.  ${prefix}/bin is called BINDIR,
-  ${prefix}/<target>/bin is called TOOLBINDIR
-- default search pathes are given by ldscripts.  They are usuall
+- when ld runs, `get_sysroot` is always called.  It might be empty if
+  not compiled with sysroot support.  `${prefix}/bin` is called `BINDIR`,
+  `${prefix}/<target>/bin` is called `TOOLBINDIR`
+- default search pathes are given by `ldscripts`.  They are usually
   absolute, prefixed by sysroot if supported.  ld only needs to find
   ldscripts and the rest is given by script or by command line
-- -L describes the linker search path
-- -rpath describes the dynamic linker search path
-- -rpath-link describes the search path the linker should use when it is
+- `-L` describes the linker search path
+- `-rpath` describes the dynamic linker search path
+- `-rpath-link` describes the search path the linker should use when it is
   emulating dynamic linker search path
 - prog links to libA, which links to libB.  At linking time, libB is
   automatically added to prog, and linker emulates dynamic linker for that
   purpose.  If rpath is used instead of rpath-link, the path leaks into prog.
-  It could be dangerous and overrides LD_LIBRARY_PATH
+  - It could be dangerous and overrides `LD_LIBRARY_PATH`
 
 ## binutils
 
@@ -123,10 +126,10 @@ GNU Toolchain
 
 ## crtX
 
-- removing /usr/lib/crt*.o provided by glibc makes gcc fail to compile executable
-- removing /usr/lib/gcc/<target>/<version>/crt*.o provided by gcc itself makes
+- removing `/usr/lib/crt*.o` provided by glibc makes gcc fail to compile executable
+- removing `/usr/lib/gcc/<target>/<version>/crt*.o` provided by gcc itself makes
   gcc fail to compile executable
-- removing /usr/lib/gcc/<target>/<version>/libgcc.a provided by gcc itself makes
+- removing `/usr/lib/gcc/<target>/<version>/libgcc.a` provided by gcc itself makes
   gcc fail to compile executable
 - when compiling gcc, a list of objects (crtX) to link when compiling is hardcoded.
 - in a compiled x86 shared executable, there are:
@@ -139,29 +142,29 @@ GNU Toolchain
         T _init
         T _start
         T main
-- crti.o: initializer .init, built from initfini.c
-          defines `_init` and `_fini`
-- crt1.o: startup code, at the beginning of .text, built from start.[cS]
-          defines `_start`, calls to `__libc_csu_init` and `__libc_start_main`
-- crtn.o: finalizer .fini, built from initfini.c
-- crtbegin.o, crtend.o: from gcc, appended to .init and .fini
+  - `crti.o`: initializer `.init`, built from `initfini.c`
+    - defines `_init` and `_fini`
+  - `crt1.o`: startup code, at the beginning of `.text`, built from `start.[cS]`
+    - defines `_start`, calls to `__libc_csu_init` and `__libc_start_main`
+  - `crtn.o`: finalizer `.fini`, built from `initfini.c`
+  - `crtbegin.o`, `crtend.o`: from gcc, appended to `.init` and `.fini`
 
 ## lifecycle (x86)
 
-- ld.so jumps to `_start` function defined in sysdeps/i386/elf/start.S (crt1.o)
+- ld.so jumps to `_start` function defined in `sysdeps/i386/elf/start.S` (`crt1.o`)
 - `_start` pushes `__libc_csu_init`, `__libc_csu_fini`, `main`, `argc`, `argv`, etc.
-  to stack and calls `__libc_start_main` defined in `csu/libc-start.c` (libc.so)
+  to stack and calls `__libc_start_main` defined in `csu/libc-start.c` (`libc.so`)
 - `__libc_start_main` calls, among others, `__libc_csu_init` (and then main) defined in
-  csu/elf-init.c (libc_nonshared.a)
-- `__libc_csu_init` calls `_init`, defined in (generated) csu/initfini.c (crti.o)
+  `csu/elf-init.c` (`libc_nonshared.a`)
+- `__libc_csu_init` calls `_init`, defined in (generated) `csu/initfini.c` (`crti.o`)
 
 ## glibc
 
-- see configure.in and sysdeps/unix/sysv/linux/configure.in
-- usually, libdir=$(prefix)/lib and inst_libdir=$(install_root)$(libdir)
-  slibdir=/lib and inst_slibdir=$(install_root)$(slibdir)
-- for libc.so, a ld script is installed to inst_libdir and the real .so
-  is installed to inst_slibdir
+- see `configure.in` and `sysdeps/unix/sysv/linux/configure.in`
+- usually, `libdir=$(prefix)/lib` and `inst_libdir=$(install_root)$(libdir)`
+  - `slibdir=/lib` and `inst_slibdir=$(install_root)$(slibdir)`
+- for `libc.so`, a ld script is installed to `inst_libdir` and the real `.so`
+  is installed to `inst_slibdir`
 
 ## OS ABI
 
