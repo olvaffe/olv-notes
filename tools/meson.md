@@ -120,9 +120,20 @@ Meson
     - `pkg_config_libdir`, used to set `PKG_CONFIG_LIBDIR`
   - `[host_machine]` section
     - `system`
+      - <https://mesonbuild.com/Reference-tables.html#operating-system-names>
+      - `android`, `darwin`, `linux`, `windows`, etc.
+      - `host_machine.system()` returns the string
     - `cpu_family`
+      - <https://mesonbuild.com/Reference-tables.html#cpu-families>
+      - `aarch64`, `arm`, `x86`, `x86_64`, etc.
+      - `host_machine.cpu_family()` returns the string
     - `cpu`
+      - `detect_cpu` in `mesonbuild/environment.py`
+      - `aarch64`, `arm`, `i686`, `x86_64`, etc.
+      - `host_machine.cpu()` returns the string
+      - for arm 32-bit, `armv7a` is more common
     - `endian`
+      - `host_machine.endian()` returns the string
 
 ## Meson Cross-Compilation
 
