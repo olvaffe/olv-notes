@@ -15,6 +15,9 @@ PATrace
 - use
   - `LD_PRELOAD=/my/path/libegltrace.so app` to trace
   - `paretrace trace.1.pat` to replay
+- tools
+  - `-DENABLE_TOOLS=TRUE` to enable
+  - `totxt` can convert trace to txt
 
 ## Android
 
@@ -85,3 +88,10 @@ PATrace
     - when `glFoo` is queried, it returns `glesLayer_foo`
     - `glesLayer_foo` forwards the `glFoo` call to `patrace_Foo`
     - `patrace_Foo` has access to the dispatch table for the next layer
+
+## SkQP
+
+- skqp uses only pbuffer and the trace is considered bad
+  - mainly because `threads` in json header is empty
+- one fix is to modify `patrace/src/tracer/trace.py` to treat
+  `eglCreatePbufferSurface` the same as `eglCreateWindowSurface`
