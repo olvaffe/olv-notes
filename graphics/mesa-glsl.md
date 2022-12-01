@@ -1,18 +1,61 @@
-GLSL
-====
+Mesa GLSL
+=========
 
-## Ref
-- <http://www.lighthouse3d.com/opengl/glsl/index.php?ogluniform>
+## `GL_ARB_vertex_program` and `GL_ARB_fragment_program`
 
-## GLSL and ARB_fragment_program
+- these extensions predate GLSL and never make it into core
+  - their entrypoints have similar names as the GLSL ones
+    - do not get confused
+  - the source code is assembly-like
+- a `gl_program` in mesa can be
+  - an ARB program
+  - a GLSL program
+  - a fixed-function pipeline
+- `_mesa_ProgramStringARB`
+  - calls `_mesa_parse_arb_vertex_program` or
+    `_mesa_parse_arb_fragment_program` to parse the source string
+  - calls `st_program_string_notify` to notify st
+    - st calls `st_translate_vertex_program` or
+      `st_translate_fragment_program` to generate NIR
 
-- Fixed function program generator generates GLSL IR, and calls
-  `_mesa_glsl_link_shader`
-- `glLinkProgram` also calls `_mesa_glsl_link_shader`
-- `_mesa_glsl_link_shader` calls `drv->LinkShader`, which may
-  - convert GLSL IR to mechine code, or
-  - convert GLSL IR to MESA IR
-- `glProgramStringARB` creates a MESA IR program.
+## Fixed-Function Pipeline
+
+- to support OpenGL 1.x fixed-function pipeline on modern hw, core mesa can
+  generate shader code to emulate fixed-function pipeline
+- `_mesa_get_fixed_func_vertex_program` creates an ARB program
+  - it emits the arb program assembly and calls `st_program_string_notify`
+- `_mesa_get_fixed_func_fragment_program` creates a GLSL program
+  - it emits GLSL IR and calls `_mesa_glsl_link_shader`
+
+## GLSL
+
+- `_mesa_CompileShader` calls `_mesa_compile_shader` which calls
+  `_mesa_glsl_compile_shader`
+  - `_mesa_glsl_compile_shader` performs a series of translations
+  - `glcpp_preprocess` preprocesses GLSL
+  - `_mesa_glsl_parse` parses GLSL into AST
+    - `_mesa_glsl_parse` is generated from `glsl_parser.yy`
+    - `_mesa_glsl_lexer_lex` is generated from `glsl_lexer.ll`
+  - `_mesa_ast_to_hir` translates AST to HIR (unoptimized GLSL IR or
+    high-level GLSL IR)
+  - `opt_shader_and_create_symbol_table` optimizes GLSL IR
+- `_mesa_LinkProgram` calls `_mesa_glsl_link_shader`
+  - `link_shaders`
+    - calls `link_intrastage_shaders` to link shaders of the same stage
+    - calls `link_varyings` to link varyings at GLSL IR level
+  - `st_link_shader` calls `st_link_nir` to translate GLSL IR to NIR
+    - `glsl_to_nir` translate GLSL IR to NIR for each stage
+    - `st_nir_preprocess`
+    - `gl_nir_link_glsl` links shaders across stages
+      - `gl_nir_link_varyings`
+      - `gl_nir_link_opts`
+      - `gl_nir_link_uniforms`
+      - more
+    - `st_glsl_to_nir_post_opts`
+    - a lot more
+- variants
+  - at draw time when all states are known, `st_get_common_variant` is called
+    to get a variant from the shader program
 
 ## How to Create Shader?
 
