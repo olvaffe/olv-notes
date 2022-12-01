@@ -186,3 +186,48 @@ GLSL
 ## Chapter 8. Built-In Functions
 
 - to sample a texture-compined sampler, `texture()`
+
+## C Terminologies
+
+- `http://msdn.microsoft.com/zh-tw/library/ks1txk8c.aspx`
+  - `declaration:`
+    - `declaration-specifiers init-declarator-list_opt ;`
+  - `declaration-specifiers:`
+    - `storage-class-specifier declaration-specifiers_opt`
+    - `type-specifier declaration-specifiers_opt`
+    - `type-qualifier declaration-specifiers_opt`
+  - `init-declarator-list:`
+    - `init-declarator`
+    - `init-declarator-list , init-declarator`
+  - `init-declarator:`
+    - `declarator`
+    - `declarator = initializer`
+  - For example, `static const int *fp;`
+    - `declaration-specifiers`: `static const int`
+      - `storage-class-specifier`: `static`
+        - the other storage class specifiers are `extern`, `register`, `typedef`
+      - `type-qualifier`: `const`
+        - the other type qualifier is `volatile`
+      - `type-specifier`: `int`
+    - `init-declarator-list`: `*fp`
+      - one declarator with no initializer in this example
+      - the declarator is modified by `*` to declare a pointer
+      - it may also be modified by `[]` or `()` to declare an array or a
+        function
+  - `declarator:`
+    - `pointer_opt direct-declarator`
+  - `direct-declarator:`
+    - `identifier`
+    - `( declarator )`
+    - `direct-declarator [ const-expression_opt ]`
+    - `direct-declarator ( parameter-list-type )`
+  - `struct-specifier` is a `type-specifier`
+    - `struct identifier_opt { struct-declaration-list }`
+    - `struct identifier`
+  - `struct-declaration-list:`
+    - `struct-declaration`
+    - `struct-declaration struct-declaration-list`
+  - `struct-declaration:`
+    - `specifier-qualifier-list struct-declarator-list ;`
+- A declaration must have at least one declarator, or its type specifier must
+  declare a `struct`.

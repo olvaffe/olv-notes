@@ -857,35 +857,6 @@ Mesa Turnip
 
 ## Shaders
 
-- debug environment variables
-  - `TU_DEBUG=nir` prints the result of `vk_spirv_to_nir`
-    - useful for spirv-to-nir issues
-    - it prints `translated nir:` to stderr first for each translation
-    - it calls `nir_print_shader(nir, stderr)`
-  - `NIR_DEBUG=print` or `NIR_DEBUG=print_vs` to print the result after each
-    lowering/optimization
-    - useful for nir issues
-    - it prints the name of the pass to stdout first
-    - it calls `nir_print_shader(nir, stdout)` after each pass
-  - `IR3_SHADER_DEBUG=disasm` or `IR3_SHADER_DEBUG=vs` prints finalized nir
-    and disassembled binary code
-    - if `disasm`,
-      - in `ir3_finalize_nir`,
-        - it calls `mesa_logi("----------------------");`
-        - it calls `nir_log_shaderi` twice, before and after
-      - after `ir3_nir_post_finalize`, it calls
-        - `mesa_logi("dump nir%d: type=%d", shader->id, shader->type)`
-	- it also calls `nir_log_shaderi`
-      - in `ir3_nir_lower_variant`,
-        - it calls `mesa_logi("----------------------");`
-        - it calls `nir_log_shaderi` twice, before and after
-    - before assembly, it calls `nir_log_shaderi`
-      - `mesa_logi("NIR (final form) for %s shader %s:", ir3_shader_stage(so), so->name);`
-    - after assembly, it calls `ir3_shader_disasm`
-      - `"Native code%s for unnamed %s shader %s with sha1 %s:\n"`
-  - `IR3_SHADER_OVERRIDE_PATH=<dir>`
-    - replace shaders by `<dir>/<sha1>.asm`, where sha1 is from
-      `IR3_SHADER_DEBUG=disasm`
 - `vk_common_CreateShaderModule` is used
   - the common entrypoint just saves and hashes SPIR-V for later use
   - the common `vk_shader_module` has `nir`, which is only used by radv to

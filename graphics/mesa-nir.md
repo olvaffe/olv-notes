@@ -1,6 +1,37 @@
 NIR
 ===
 
+## Debug
+
+- `MESA_SHADER_CACHE_DISABLE` to disable disk cache
+  - otherwise, no shader compilation after the first run
+  - it was called `MESA_GLSL_CACHE_DISABLE`
+- `MESA_GLSL_VERSION_OVERRIDE` to override about GLSL version
+- `MESA_GLSL` for various GLSL debug prints
+  - `dump` to print
+    - GLSL source, GLSL IR, and compiler errors on `glCompileShader`
+    - GLSL IR, NIR, and compiler errors on `glLinkProgram`
+    - ARB source and compiler errors on `glProgramStringARB`
+  - `log` to write GLSL source to files in the working directory on
+    `glCompileShader`
+  - `source` to print GLSL source on `glCompileShader`
+  - `errors` to print compiler errors on `glCompileShader` or `glLinkProgram`
+    failures
+- `NIR_DEBUG` for various NIR debug prints (only on debug builds!)
+  - `tgsi` to print NIR and TGSI on conversions
+  - `print` to print NIR after each pass
+  - `print_*` instead to print NIR only for certain stages
+  - `nir_print_shader`
+    - `source_sha1` is the sha1 of the source code
+      - only used by GLSL
+    - `name` is the name of the shader
+      - `GLSL%d` if GLSL shader
+      - `ARB%d` if ARB program
+      - `nir_builder_init_simple_shader` can set the name of internal shaders
+      - not used otherwise
+    - `label` is the debug label
+      - only used by `glObjectLabel`
+
 ## Variables
 
 - a `nir_variable` represents a variable in a high-level language
