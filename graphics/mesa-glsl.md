@@ -57,6 +57,17 @@ Mesa GLSL
   - at draw time when all states are known, `st_get_common_variant` is called
     to get a variant from the shader program
 
+## Varyings
+
+- `gl_nir_link_varyings` links varyings
+  - `assign_initial_varying_locations`
+    - it uses name matching or explicit location to link varyings
+    - `varying_matches_assign_temp_locations` assigns a unique location (from
+      `VARYING_SLOT_VAR0` on) for each varying
+  - `link_shader_opts`
+  - `remove_unused_shader_inputs_and_outputs`
+  - `assign_final_varying_locations`
+
 ## How to Create Shader?
 
 - Code snippet
