@@ -375,6 +375,38 @@ NIR
     - src0 is the barycentric weight vector
     - src1 is offset which is always 0?
 
+## Varyings
+
+- vulkan requires `layout(location)`, aka `explicit_location`
+  - the locations of varyings are explicitly assigned by users
+  - drivers tend to just do standard optimizations
+    - `nir_link_opt_varyings` optmizes out unecessary varyings
+      - a varying whose value is a const
+      - a varying whose value is a uniform
+      - two varying having the same value
+    - `nir_remove_dead_variables` removes dead variables
+    - `nir_remove_unused_varyings` removes varyings that are unused
+    - `nir_compact_varyings` modifies varying `location` and `location_frac`
+- gl does not require `layout(location)`
+  - `gl_nir_link_varyings` links varyings by assigning `location` and
+    `location_frac` when they are not explicitly specified
+    - `assign_initial_varying_locations`
+      - it uses name matching or explicit location to link varyings
+      - `varying_matches_assign_temp_locations` assigns a unique location (from
+        `VARYING_SLOT_VAR0` on) for each varying
+    - `link_shader_opts`
+      - among others, `nir_lower_io_to_scalar_early` scalarizes varyings
+    - `remove_unused_shader_inputs_and_outputs`
+    - `assign_final_varying_locations`
+      - `varying_matches_store_locations` can assign variables in the same
+        packing class to the same locations
+      - `gl_nir_lower_packed_varyings` is a pass that makes sure `location_frac`
+        is 0 unless it is explicitly specified
+        - this is done becuase not all backend supports `location_frac`
+  - in `st_link_nir`,
+    - `nir_compact_varyings`
+    - `st_nir_vectorize_io` re-vectorizes the varyings
+
 ## Subgroup
 
 - `GL_ARB_shader_group_vote`
