@@ -1,6 +1,72 @@
 Chrome OS Firmwares
 ===================
 
+## Flash Firmwares
+
+- NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
+- on a device that has been setup, `chromeos-firmwareupdate -m recovery`
+  should work
+- on a new device,
+  - the running firmwares are signed by prod keys
+  - our firmwares from `chromeos-firmwareupdate` on the latest build are
+    likely unsigned
+  - without CCD open, we can only flash RW sections and the RO sections will
+    refuse to boot
+  - after CCD open, they might refuse to boot as well
+  - have suzyq ready and be prepared to flash from host
+- getting firmwares
+  - one should use known-good versions for CR50, EC and AP instead
+    - in my experience, the latest EC and AP firmwares do not boot
+    - the recommended versions from CPFE might be oudated or might not boot
+      - <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/archive_mirrors.md#private-mirrors>
+  - best is to flash the latest build and copy these firmwares to host
+    - `/usr/sbin/chromeos-firmwareupdate`
+    - `/opt/google/cr50/firmware`
+  - but if your device does not boot,
+    - for cr50, `emerge chromeos-cr50` in chroot
+    - for EC/AP, each board provides its `virtual/chromeos-firmware` that
+      depends on `chromeos-base/chromeos-firmware-$BOARD`
+      - `chromeos-base/chromeos-firmware-$BOARD/files/srcuris` are uris for
+      	the EC/AP firmwares
+- to flash GSC, use `gsctool` on dut or host
+  - `gsctool -f` to get the running firmware version
+  - `gsctool -b <cr50-firmware>` to check the firmware version
+  - `gsctool <cr50-firmware>`, to update the RW firmware
+  - on dut,
+    - `gsctool -a -f` to get the running version
+    - `gsctool -a -b /opt/google/cr50/firmware/cr50.bin.prod` to get the image
+      version
+      - `cr50.bin.prod` is for MP devices and has RW version `0.5.*`
+      - `cr50.bin.prepvt` is for pre-MP devices and has RW version `0.6.*`
+      - try to match the version of the running version
+    - `gsctool -a /opt/google/cr50/firmware/cr50.bin.prod` to flash
+  - on host,
+    - `emerge chromeos-cr50-dev chromeos-cr50` and use `gsctool` to flash over
+      suzyqable
+    - use `cr50-rescue` to flash over uart as a final resort
+- to ccd open, use `gsctool` on dut or host
+  - this is mainly to disable wp
+  - see `CCD` section below
+- to flash EC, use `flash_ec` script on host
+  - `emerge ec-devutils` to get `flash_ec`
+  - requires working servod
+  - `flash_ec --board=<boardname> [--zephyr] [--image=<path/to/ec.bin>]`
+    - it might need `npcx_monitor.bin` from `emerge-$board chromeos-base/chromeos-ec`
+  - one can also flash EC on dut
+    - `futility`
+    - `flashrom -p ec -r <backup.bin>`
+    - `flashrom -p ec -w <path-to/ec.bin>`
+- to flash AP on host,
+  - `futility update --servo -i image-<board>.bin`
+  - or, `cros ap flash -i image-<board>.bin`
+  - or, `flashrom -p raiden_debug_spi:target=AP -w $IMAGE`
+  - it takes multiple (5-10) minutes to run!  Be patient.
+- to flash AP on dut,
+  - `crossystem fwid` to get current version
+  - `futility update -i image-<board>.bin` to flash
+  - or, `flashrom -p host -w <image>`
+  - might need to disable write-protection, `flashrom --wp-disable`
+
 ## Google Security Chip (GSC), currently H1
 
 - <https://2018.osfc.io/uploads/talk/paper/7/gsc_copy.pdf>
@@ -174,12 +240,18 @@ Chrome OS Firmwares
 
 - <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md>
 - on DUT or host with working `gsctool`
-  - `gsctool -o`
+  - `gsctool -a -o`
   - press power key occasionally for 5 minutes
   - `minicom -D /dev/ttyUSB0`
+    - we can also do `ccd open` here instead of `gsctool -o`
   - `ccd reset factory`
   - `ccd testlab enable`
   - press power key several times
+- to confirm
+  - `reboot`
+  - `ccd testlab` should print `CCD test lab mode enabled`
+  - `ccd` should have `State: Opened`
+  - `wp` should have `force disabled`
 
 ## `gsctool`
 
@@ -262,53 +334,3 @@ Chrome OS Firmwares
   - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
   - `crossystem dev_boot_legacy=1`
   - `Ctrl-L` in boot prompt
-
-## Flash Firmwares
-
-- NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
-  - in my experience, the latest EC and AP firmwares do not boot
-  - even ccd open can brick
-  - one should use known-good versions for CR50, EC and AP instead
-    - for cr50, `emerge chromeos-cr50` in chroot
-    - for EC and AP, flash the latest build and `chromeos-firmwareupdate --unpack`
-      on DUT to unpack
-      - each board provides its `virtual/chromeos-firmware` that depends on
-      	`chromeos-base/chromeos-firmware-$BOARD`
-      - `chromeos-base/chromeos-firmware-$BOARD/files/srcuris` are uris for
-      	the firmwares
-    - download the recommended versions from CPFE,
-      <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/archive_mirrors.md#private-mirrors>
-- to flash GSC, use `gsctool` on dut or host
-  - `gsctool -f` to get the running firmware version
-  - `gsctool -b <cr50-firmware>` to check the firmware version
-  - `gsctool <cr50-firmware>`, to update the RW firmware
-  - on dut,
-    - `gsctool -a -f` to get the running version
-    - `gsctool -a -b /opt/google/cr50/firmware/cr50.bin.prod` to get the image
-      version
-    - `gsctool -a /opt/google/cr50/firmware/cr50.bin.prod` to flash
-  - on host,
-    - `emerge chromeos-cr50-dev chromeos-cr50` and use `gsctool` to flash over
-      suzyqable
-    - use `cr50-rescue` to flash over uart as a final resort
-- to flash EC, use `flash_ec` script on host
-  - `emerge ec-devutils` to get `flash_ec`
-  - requires working servod
-  - `flash_ec --board=<boardname> [--zephyr] [--image=<path/to/ec.bin>]`
-  - it might need `npcx_monitor.bin` as well
-  - one can also flash EC on dut
-    - `flashrom -p ec -r <backup.bin>`
-    - `flashrom -p ec -w <path-to/ec.bin>`
-    - `futility`
-- to flash AP on host,
-  - `futility update --servo -i image-<board>.bin`
-  - or, `cros ap flash`
-  - or, `flashrom -p raiden_debug_spi:target=AP -w $IMAGE`
-  - it takes multiple (5-10) minutes to run!  Be patient.
-- to flash AP on dut,
-  - `crossystem fwid` to get current version
-  - `futility update -i image-<board>.bin` to flash
-  - or, `flashrom -p host -w <image>`
-  - might need to disable write-protection, `flashrom --wp-disable`
-- on dut, there is also `chromeos-firmwareupdate` to update everything
-  - it never works for me

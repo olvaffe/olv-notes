@@ -4,30 +4,49 @@ Chrome OS Overview
 ## New Device
 
 - enable developer mode
-  - hold ESC and F3/Refresh, then press power button to boot into recovery
-    mode
+  - <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_mode.md#dev-mode>
+  - if the device is corp-managed
+    - log in using corp account first
+    - `chrome://policy`, reload policies, and confirm `DeviceBlockDevMode` is
+      false
+  - hold `ESC` and `F3/Refresh`, then press power button to boot into recovery mode
+    - `Power + Volume-Up + Volume-Down` for 10s if tablet
   - while in recovery mode, press Ctrl-D to enter developer mode
+    - `Volume-Up + Volume-Down` if tablet
 - select boot device
-  - at developer mode warning, press Ctrl-D or Ctrl-U to boot from disk or usb
-    - for USB boot, need to run `enable_dev_usb_boot` from console first
+  - `Ctrl-D` to boot from disk
+    - first boot will take 5-10 minutes
+  - `Ctrl-U` to boot from USB
+    - require `crossystem dev_boot_usb=1` first
+  - `Ctrl-L` to chainload an alternative bootloader
+    - require `crossystem dev_boot_altfw=1` first
 - console
-  - while in developer mode, Ctrl-Alt-F2 to enter console
-- rw rootfs and ssh
-  - see `/etc/init/openssh-server.conf.README`
-  - select `Enable debugging features` in OOBE (out-of-box experience) will do
-  - otherwise,
-    - `/usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification`
+  - `Ctrl-Alt-F2` to enter console
+- remove rootfs verification and enable SSH
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/chromeos-base/chromeos-sshd-init/files/openssh-server.conf.README>
+  - use `Enable debugging features` on welcome screen
+    - this removes rootfs verification and enables SSH
+  - or manually
+    - `/usr/share/vboot/bin/make_dev_ssd.sh -r`
     - `reboot`
     - `/usr/libexec/debugd/helpers/dev_features_ssh`
-    - `passwd`
+    - optionally `passwd`
+      - or use <https://chromium.googlesource.com/chromiumos/chromite/+/refs/heads/main/ssh_keys/testing_rsa>
 - flash latest test image
-  - `cros flash ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
-- confirm versions
+  - `cros flash -v --no-ping --disable-rootfs-verification ${DUT_IP} xbuddy://remote/${BOARD}/latest-canary/test`
+    - sometimes `--clobber-stateful --clear-tpm-owner` is required to reformat
+      the stateful partition
+    - if forgot, `echo "fast safe" > /mnt/stateful_partition/factory_install_reset` to powerwash
+  - or, create and flash from a bootable USB
+    - `cros flash usb:// xbuddy://remote/${BOARD}/latest-canary/test`
+    - Ctrl-U to too from USB
+    - `chromeos-install`
+- write down firmware versions
   - H1 firmware: `gsctool -a -f`
   - EC firmware: `ectool version`
   - AP firmware: `crossystem fwid`
   - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
-  - `chromeos-firmwareupdate -t` to flash
+- follow <../../firmwares/cros.md> to update
 
 # Host
 

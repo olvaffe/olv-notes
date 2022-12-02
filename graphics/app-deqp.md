@@ -5,9 +5,7 @@ dEQP
 
 - Build
   - `python3 external/fetch_sources.py`
-  - `mkdir out`
-  - `cd out`
-  - `cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDEQP_TARGET=surfaceless`
+  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDEQP_TARGET=surfaceless`
     - `DEQP_TARGET` is mostly for GL/GLES
   - `ninja`
 - Package
@@ -37,15 +35,6 @@ dEQP
       - Revisions: to see the commits
       - Platforms: pick desired platform such as gen9
       - Group: dEQP-VK
-- Run GLES
-  - `EGL_PLATFORM=surfaceless
-     external/modules/gles2/deqp-gles2 \
-       --deqp-surface-type=pbuffer \
-       --deqp-gl-config-name=rgba8888d24s8ms0 \
-       --deqp-surface-width=256 \
-       --deqp-surface-height=256`
-  - all arguments required becaues of surfaceless?
-  - replace gles2 by gles3 and gles31
 
 ## EGL/GLES
 
@@ -55,6 +44,15 @@ dEQP
   - edit `targets/x11_egl/x11_egl.cmake`
   - I have to do this because my cross-compile sysroot has GLESv1 but my
     target machine does not
+- Run GLES
+  - `EGL_PLATFORM=surfaceless
+     external/modules/gles2/deqp-gles2 \
+       --deqp-surface-type=pbuffer \
+       --deqp-gl-config-name=rgba8888d24s8ms0 \
+       --deqp-surface-width=256 \
+       --deqp-surface-height=256`
+  - all arguments required becaues of surfaceless?
+  - replace gles2 by gles3 and gles31
 
 ## Android
 
