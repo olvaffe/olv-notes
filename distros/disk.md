@@ -1,12 +1,61 @@
 Distro Disk
 ===========
 
+## GPT
+
+- <https://en.wikipedia.org/wiki/GUID_Partition_Table>
+  - disks have physical "sectors" that are commonly 512-byte or 4096-byte
+  - softwares use logical "blocks" that are tradtionally 512 bytes
+  - fdisk can report both
+- LBA 0: protective MBR
+  - reserved for limited backward compatibility with BIOS MBR
+- LBA 1: partition table header
+  - off 0x00: signature
+  - off 0x08: revision
+  - off 0x0c: header size (usually 0x5c)
+  - off 0x28: first usable LBA for partitions (usually 34)
+  - off 0x30: last usable LBA for partitions (usually disk size minus 34)
+  - off 0x48: starting LBA for partition entries (usually 2)
+  - off 0x50: number of partition entries
+  - off 0x54: size of a partition entries (usually 128 bytes)
+  - off 0x5c to end-of-block: mbz
+- LBA 2-33: partition entries
+  - each LBA traditionally hosts 4 partition entries, up to a total of 128
+    partition entries
+    - an LBA tradtionally has 512 bytes
+    - a partition entry tradtionally has 128 bytes
+  - off 0x00: partition type guid
+  - off 0x10: unique partition guid
+  - off 0x20: first LBA
+  - off 0x28: last LBA
+  - off 0x30: attribute flags
+    - bit 0: must be preserved (used for OEM partitions, etc.)
+    - bit 1: uefi should ignore this partition
+    - bit 2: legacy bios bootable
+    - bit 3..47: reserved
+    - bit 48..63: partition type specific flags
+  - off 0x38: partition name (72 bytes)
+- LBA last 1-32: secondary partition entries
+- LBA last 0: secondary partition table header
+- partition type specific flags
+  - Microsoft basic data partition
+    - bit 60: read-only
+    - bit 61: shadow copy
+    - bit 62: hidden
+    - bit 63: no driver letter
+  - ChromeOS kernel
+    - bit 48..51: priority (15 is highest, 1 is lowest, 0 is not bootable)
+    - bit 52..55: tries remaining
+    - bit 56: successful boot flag
+
 ## Partitioning
 
 - fdisk 
   - `g` to use GPT
   - partition 1: 260M, ESP
   - partition 2: entire disk, Linux
+  - by default, fdisk reserves the first and the last 1MB of the disk for
+    primary and secondary GPT tables
 - mkfs
   - partition 1: `mkfs.vfat -F32`
   - partition 2: `mkfs.btrfs`
