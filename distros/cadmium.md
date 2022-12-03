@@ -3,11 +3,18 @@ Cadmium
 
 ## Dependencies
 
-- `parted`, `uboot-tools`
-- AUR `vboot-utils`
-  - uprev to latest branch (e.g., 109.15236)
-  - no `trousers`
-  - append `SDK_BUILD=1 USE_FLASHROM=0` to all make invocations
+- to create disk image
+  - `parted`
+  - AUR `vboot-utils`
+    - uprev to the latest branch (e.g., 109.15236)
+    - no `trousers`
+    - append `SDK_BUILD=1 USE_FLASHROM=0` to all make invocations
+- to download and build kernel,
+  - `curl patch aarch64-linux-gnu-gcc`
+- to boostrap root,
+  - `f2fs-tools qemu-user-static arch-install-scripts wget`
+- to package kernel,
+  - `uboot-tools dtc`
 
 ## `build-all`
 
@@ -16,6 +23,7 @@ Cadmium
   - second partition is unused (for alternative kernel image)
   - last partition is a minimal root with a `/install` script to install
     Cadmium to the internal storage on chromebook
+  - use 3G disk image: the minimal root alone is 2.4G
 - source `config`
   - `FLAV=arm64-chromebook`
   - `ROOTFS=arch`
@@ -30,9 +38,9 @@ Cadmium
   - create an image and set up a loop device
   - use `parted` to `mklabel`
   - use `cgpt` to create 3 partitions
-    - `KERNPART=/dev/loop0p1`
-    - `KERNPART_B=/dev/loop0p2`
-    - `ROOTPART=/dev/loop0p3`
+    - `KERNPART=/dev/loop0p1`, kernel, 32M
+    - `KERNPART_B=/dev/loop0p2`, kernel, 32M
+    - `ROOTPART=/dev/loop0p3`, data, remaining size
   - use `partx` to parse the partition table
 - source `kernel/build`
   - workdir is `tmp`
@@ -54,9 +62,12 @@ Cadmium
     - `pacman-key --populate archlinuxarm`
     - `echo "nameserver 1.1.1.1" > /etc/resolv.conf`
     - `pacman -Syu --noconfirm networkmanager`
+      - olv: add `pacman -R --noconfirm linux-aarch64` before the line to save
+        time
     - `systemctl enable --now NetworkManager.service`
   - source `fs/arch/info`
     - `FS_INST_PKG="pacman -Syu --noconfirm"`
+      - olv: add `--needed` to save time
     - `FS_PKGS_CD_BASE="some essential packages"`
     - many others
   - install `$FS_PKGS_CD_BASE` to chroot
