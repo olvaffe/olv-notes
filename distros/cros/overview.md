@@ -46,7 +46,10 @@ Chrome OS Overview
   - EC firmware: `ectool version`
   - AP firmware: `crossystem fwid`
   - OS image: `grep CHROMEOS_RELEASE_DESCRIPTION /etc/lsb-release`
-- follow <../../firmwares/cros.md> to update
+- follow <../../firmwares/cros.md> to update firmwares
+- after updating firmwares, we might lose developer mode
+  - `crossystem devsw_boot` should return 1
+  - if not, re-enter the developer mode
 
 # Host
 
