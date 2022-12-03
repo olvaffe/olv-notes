@@ -135,7 +135,7 @@ Cadmium
   - install fw, base, and ui packages
 - done
 
-## Qualcomm Modem?
+## Qualcomm Modem/WiFi/BT?
 
 - <https://github.com/andersson/qmic.git>
   - a tool to parse `.qmi` into `.c` and `.h`
