@@ -134,3 +134,34 @@ Cadmium
   - set root passwd
   - install fw, base, and ui packages
 - done
+
+## Qualcomm Modem?
+
+- <https://github.com/andersson/qmic.git>
+  - a tool to parse `.qmi` into `.c` and `.h`
+  - looking at a qmi file, it seems to be for rpc serialization and
+    deserialization
+- <https://github.com/andersson/qrtr.git>
+  - uses `AF_QIPCRTR` socket; according to kernel `CONFIG_QRTR`,
+    - Qualcomm IPC router protocol
+    - The protocol is used to communicate with services provided by other
+      hardware blocks in the system
+  - this userspace tool seems to be used for service discovery and communication
+  - `qrtr-ns.service` provides QIPCRTR Name Service
+- <https://github.com/andersson/rmtfs>
+  - depends on qmic to compile `qmi_rmtfs.qmi`
+  - depends on libqrtr for service discovery and communication
+  - according to kernel `CONFIG_QCOM_RMTFS_MEM`,
+    - The Qualcomm remote filesystem memory driver is used for allocating and
+      exposing regions of shared memory with remote processors for the purpose
+      of exchanging sector-data between the remote filesystem service and its
+      clients
+  - `rmtfs.service` provides Qualcomm remotefs service
+    - it starts rmtfs with
+      - `-r`: read only
+      - `-P`: use partitions
+      - `-s`: sync for remoteproc
+- `/lib/firmware/rmtfs/modem_*`
+  - there are four 2MB initially-zeroed files: `fs1 fs2 fsg fsc`
+  - my guess is the modem needs to read data from the cpu
+  - rmtfs uses those the 4 files to provide 4 remote filesystems to the modem
