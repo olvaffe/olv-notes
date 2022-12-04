@@ -114,12 +114,17 @@ Kernel Config
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
     - select `Qualcomm APCS IPC driver` if msm
+    - select `Qualcomm Technologies, Inc. IPCC driver` if msm
     - select `BCM2835 Mailbox` if rpi
   - select `Remoteproc drivers` if msm
     - select `Support for Remote Processor subsystem`
+    - select `Qualcomm Technology Inc ADSP Peripheral Image Loader`
     - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support`
+    - select `Qualcomm sysmon driver`
   - select `Rpmsg drivers` if msm
     - select `Qualcomm SMEM Glink driver`
+  - select `SoundWire support` if msm
+    - select `Qualcomm SoundWire Master driver`
   - select `SOC (System On Chip) specific Drivers`
     - select `Qualcomm SoC drivers` if msm
       - select all
@@ -127,12 +132,14 @@ Kernel Config
       - select `Raspberry Pi power domain driver`
   - select `Industrial I/O support`
   - select `Pulse-Width Modulation (PWM) Support`
+  - select `Reliability, Availability and Serviceability (RAS) features` if msm
   - select `NVME Support` if msm
     - select `QCOM QFPROM Support`
   - select `On-Chip Interconnect management support` if msm
     - select `Qualcomm Network-on-Chip interconnect drivers`
     - select `Qualcomm OSM L3 interconnect driver`
     - select `Qualcomm SC7180 interconnect driver`
+    - select `Qualcomm SC7280 interconnect driver`
 
 ## Config: General Setup
 
@@ -272,6 +279,8 @@ Kernel Config
   - select `Support for NMI-like interrupts`
 - select `Boot options`
   - deselect `UEFI runtime support`
+- select `Power management options`
+  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
 - select `CPU Power Management`
   - select `CPU Idle`
     - select `CPU idle PM support`
@@ -289,15 +298,19 @@ Kernel Config
   - select `PCI support` if pci
     - select `PCI Express Port Bus support` if pcie
     - select `Message Signaled Interrupts (MSI and MSI-X)`
-    - select `PCI controller drivers` if rpi
-      - select `Broadcom Brcmstb PCIe host controller`
+    - select `PCI controller drivers`
+      - select `DesignWare PCI Core Support`
+        - select Qualcomm PCIe controller` if newer msm
+      - select `Broadcom Brcmstb PCIe host controller` if rpi
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
       - select `Enable compressed firmware support`
-  - select `Firmware Drivers` if x86
-    - select `Mark VGA/VBE/EFI FB as generic system framebuffer`
+  - select `Firmware Drivers`
+    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
+    - select `Google Firmware Drivers` if cros
+      - select all
   - select `Memory Technology Device (MTD) support` if intel/cros
     - select `SPI NOR device support`
   - select `Block devices`
@@ -368,6 +381,9 @@ Kernel Config
       - select `Qualcomm core pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc SC7180 pin controller driver`
+      - select `Qualcomm Technologies Inc SC7280 pin controller driver`
+      - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`
+      - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
   - select `Board level reset or power off` if msm
     - select `Qualcomm power-on driver`
   - select `Power supply class support` if msm/cros
@@ -380,6 +396,7 @@ Kernel Config
     - select `Raspberry Pi voltage monitor` if rpi
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
+    - select `Generic device cooling support` if arm
     - select `Qualcomm thermal drivers` if msm
       - select `Qualcomm TSENS Temperature Alarm`
       - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`
@@ -441,6 +458,9 @@ Kernel Config
         - select `AMD Audio Coprocessor - Renoir support` if amd
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
+          - select `SoC Machine driver for SC7280 boards`
+        - select `CODEC drivers` if msm
+          - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID support`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
@@ -472,6 +492,9 @@ Kernel Config
       - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
       - select `Qualcomm SDHCI Controller Support` if msm
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if any
+  - select `EDAC (Error Detection And Correction) reporting (NEW)` if msm
+    - deselect `EDAC legacy sysfs`
+    - select `QCOM EDAC Controller`
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros
   - select `DMA Engine support`
@@ -490,6 +513,7 @@ Kernel Config
     - select `Support for Qualcomm's clock controllers` if msm
       - select `RPMh Clock Driver`
       - select SC7180*
+      - select SC7280*
     - select `Raspberry Pi firmware based clock support` if rpi
   - select `IOMMU Hardware Support` if msm
     - select `ARM Ltd. System MMU (SMMU) Support`
@@ -509,6 +533,7 @@ Kernel Config
       - select `Proximity and distance sensors`
         - select `ChromeOS EC MKBP Proximity sensor`
         - select `SX9310/SX9311 Semtech proximity sensor`
+        - select `SX9324 Semtech proximity sensor`
   - select `Pulse-Width Modulation (PWM) Support` if arm
     - select `ChromeOS EC PWM driver` if cros
     - select `BCM2835 PWM support` if rpi
@@ -519,8 +544,10 @@ Kernel Config
     - select `Qualcomm PDC Reset Driver` if msm
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
   - select `PHY Subsystem` if msm
+    - select `Qualcomm eDP PHY driver`
     - select `Qualcomm QMP PHY Driver`
     - select `Qualcomm QUSB2 PHY Driver`
+    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd
   - select `NVMEM Support`
