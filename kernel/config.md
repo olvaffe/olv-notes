@@ -461,6 +461,8 @@ Kernel Config
           - select `SoC Machine driver for SC7280 boards`
         - select `CODEC drivers` if msm
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID support`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
