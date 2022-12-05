@@ -56,6 +56,7 @@ Chrome OS Kernel
   - dtb
     - `ln -sf DUT/arch/arm64/boot/dts/foo/bar.dtb Image.dtb`
   - `dtc -I dts -O dtb -p 1024 -o Image.fit Image.its`, where `Image.its` is
+
     /dts-v1/;
     / {
         images {
@@ -92,7 +93,7 @@ Chrome OS Kernel
     - `root=PARTUUID=%U/PARTNROFF=1`, to use the next partition after the
       kernel partition.  depthcharge replaces `%U` by the UUID of the kernel
       partition
-    - `rootwait root=/dev/mmcblc1p3`
+    - `rootwait root=/dev/mmcblk1p3`
     - `console=ttyMSM0,115200 console=tty1`
   - `futility vbutil_kernel --pack Image.vboot \
        --vmlinuz Image.fit \

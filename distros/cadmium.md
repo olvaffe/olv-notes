@@ -22,7 +22,7 @@ Cadmium
   chromebook
 - it can be done manually
 - prepare disk image
-  - `fallocate -l 2GiB my.img`
+  - `fallocate -l 3GiB my.img`
   - `fdisk my.img`
     - two 64MB partitions of type `ChromeOS kernel`
     - 1 partition of type `Linux filesystem`
@@ -32,8 +32,8 @@ Cadmium
 - prepare root
   - `mkfs.f2fs /dev/loop0p3`
   - `mount /dev/loop0p3 /mnt`
-  - `mount -t proc none /proc`
   - `bsdtar -xpf ArchLinuxARM-aarch64-latest.tar.gz -C /mnt`
+  - `mount -t proc none /mnt/proc`
   - `chroot /mnt`
   - `rm /etc/resolv.conf`
   - `echo "nameserver 8.8.8.8" > /etc/resolv.conf`
@@ -42,9 +42,12 @@ Cadmium
   - `pacman -R linux-aarch64`
   - `pacman -Syu`
   - `pacman -S vim vboot-utils f2fs-tools linux-firmware-qcom networkmanager rmtfs-git`
+  - `pacman -Scc`
   - `systemctl enable NetworkManager rmtfs`
   - `userdel -r alarm`
+    - or keep it and the password is `alarm`
   - `passwd -d root`
+    - or keep it and the password is `root`
 - prepare kernel
   - build kernel normally
   - pack the kernel with `vbutil_kernel`
