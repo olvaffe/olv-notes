@@ -51,10 +51,12 @@ Chrome OS Kernel
 
 - fit image
   - <https://github.com/lentinj/u-boot/blob/master/doc/uImage.FIT/source_file_format.txt>
+  - create symlinks
+    - `ln -sf arch/arm64/boot/Image`
+    - `ln -sf arch/arm64/boot/dts/foo/bar.dtb Image.dtb`
   - compress kernel
-    - `lz4 DUT/arch/arm64/boot/Image Image.lz4`
+    - `lz4 Image Image.lz4`
   - dtb
-    - `ln -sf DUT/arch/arm64/boot/dts/foo/bar.dtb Image.dtb`
   - `dtc -I dts -O dtb -p 1024 -o Image.fit Image.its`, where `Image.its` is
 
     /dts-v1/;

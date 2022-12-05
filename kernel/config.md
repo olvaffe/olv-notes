@@ -503,6 +503,9 @@ Kernel Config
       - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
       - select `Qualcomm SDHCI Controller Support` if msm
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if any
+  - select `LED Support` if newer msm
+    - select `LED Multicolor Class Support`
+    - select `LED support for Qualcomm LPG`
   - select `EDAC (Error Detection And Correction) reporting (NEW)` if msm
     - deselect `EDAC legacy sysfs`
     - select `QCOM EDAC Controller`
