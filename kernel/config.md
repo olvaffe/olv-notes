@@ -223,6 +223,8 @@ Kernel Config
     - and many others as indicated by the log
   - select `Hardware crypto devices` if amd
     - select `Support for AMD Secure Processor`
+  - select `Hashes, digests, and MACs` if newer msm
+    - select `Michael MIC`
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed
     - needed by some DRM drivers such as vc4
@@ -341,6 +343,8 @@ Kernel Config
         - select `Atheros/Qualcomm devices`
         - select `Atheros 802.11ac wireless cards support`
         - select `Qualcomm ath10k SNOC support`
+        - select `Qualcomm Technologies 802.11ax chipset support`
+        - select `Atheros ath11k AHB support`
       - select `Broadcom FullMAC WLAN driver` if rpi
   - select `Input device support`
     - select `Event interface`
