@@ -16,6 +16,55 @@ Cadmium
 - to package kernel,
   - `uboot-tools dtc`
 
+## Manual Steps
+
+- cadmium builds a bootable usb disk that can install a linux distro on the
+  chromebook
+- it can be done manually
+- prepare disk image
+  - `fallocate -l 2GiB my.img`
+  - `fdisk my.img`
+    - two 64MB partitions of type `ChromeOS kernel`
+    - 1 partition of type `Linux filesystem`
+  - `cgpt add -i 1 -S 1 -T 2 -P 10 my.img`
+  - `cgpt add -i 2 -S 1 -T 2 -P 5 my.img`
+  - `sudo losetup -f -P my.img`
+- prepare root
+  - `mkfs.f2fs /dev/loop0p3`
+  - `mount /dev/loop0p3 /mnt`
+  - `mount -t proc none /proc`
+  - `bsdtar -xpf ArchLinuxARM-aarch64-latest.tar.gz -C /mnt`
+  - `chroot /mnt`
+  - `rm /etc/resolv.conf`
+  - `echo "nameserver 8.8.8.8" > /etc/resolv.conf`
+  - `pacman-key --init`
+  - `pacman-key --populate archlinuxarm`
+  - `pacman -R linux-aarch64`
+  - `pacman -Syu`
+  - `pacman -S vim vboot-utils f2fs-tools linux-firmware-qcom networkmanager rmtfs-git`
+  - `systemctl enable NetworkManager rmtfs`
+  - `userdel -r alarm`
+  - `passwd -d root`
+- prepare kernel
+  - build kernel normally
+  - pack the kernel with `vbutil_kernel`
+  - `cp Image.vboot /dev/loop0p1`
+  - `make INSTALL_MOD_PATH=/mnt modules_install`
+- clean up and flash
+  - `umount /mnt/proc`
+  - `umount /mnt`
+  - `losetup -D`
+  - `cp my.img /dev/sda`
+  - `sync`
+- installation
+  - boot dut from the usb
+  - partition the dut disk similar to partitioning the disk image
+  - `cp /dev/sda1 /mnt/mmcblk0p1`
+    - this does not work if the kernel cmdline has hardcoded `root=`
+  - `cp /dev/sda3 /mnt/mmcblk0p3`
+  - `resize.f2fs /dev/mmcblk0p3`
+  - `reboot`
+
 ## `build-all`
 
 - the script builds a bootable usb image
