@@ -63,6 +63,11 @@ Kernel Config
       - `chromeos/config/chromeos/base.config`
       - `chromeos/config/chromeos/arm64/common.config`
       - `chromeos/config/chromeos/arm64/chromiumos-qualcomm.flavour.config`
+    - configs to enable/disable
+      - `CONFIG_VT`
+      - `CONFIG_DRM_FBDEV_EMULATION`
+      - `CONFIG_F2FS_FS`
+      - `CONFIG_SECURITY`
 
 ## Tips
 
