@@ -1,7 +1,7 @@
 DRM msm
 ========
 
-## Overview
+## Initialization
 
 - relevant nodes in `sc7180-trogdor-coachz-r3.dts`
   - `simple-bus`
@@ -123,7 +123,7 @@ DRM msm
 - `DRM_IOCTL_MSM_GEM_CPU_FINI`
   - nop
 - `DRM_IOCTL_MSM_WAIT_FENCE`
-  - wait until the specified submitqueue passes the specified fence seqno
+  - wait until the specified submitqueue passes the specified fence id
 - `DRM_IOCTL_MSM_GEM_MADVISE`
   - hints used by the shrinker
   - `MSM_MADV_WILLNEED` for when a bo is moved out of a userspace bo cache
@@ -135,7 +135,74 @@ DRM msm
   - `MSM_SUBMITQUEUE_PARAM_FAULTS` for per-submitqueue faults
   - incremented on every hanged submit
 - `DRM_IOCTL_MSM_GEM_SUBMIT`
-  - see another section
+  - an array of `drm_msm_gem_submit_bo`
+    - `submit_lookup_objects` copies the array from userspace, massages the
+      array, and looks up bos
+    - `submit_lock_objects` calls `dma_resv_lock_interruptible` on all bos'
+      `dma_resv` and sets `BO_LOCKED`
+    - `submit_pin_objects` calls `msm_gem_get_vma_locked` and
+      `msm_gem_pin_vma_locked` to pin bos and sets `BO_OBJ_PINNED` (pages
+      pinned) and `BO_VMA_PINNED` (vma pinned).  It also sets `BO_VALID`
+      unless the bo has been moved (never happens with softpin)
+    - before returning, `submit_cleanup_bo` is called on all bos with
+      `BO_LOCKED` to unlock them
+      - bo pages and vma are pinned until completion
+    - `MSM_SUBMIT_BO_READ` indicates the bo is read from (will add a read
+      implicit fence)
+    - `MSM_SUBMIT_BO_WRITE` indicates the bo is written to (will add a write
+      implicit fence)
+    - `MSM_SUBMIT_BO_DUMP` indicates the bo should be dumped in debug dump
+  - an array of `drm_msm_gem_submit_cmd`
+    - `submit_lookup_cmds` copies the array from userspace and massages the array
+      - each cmd describes a region of a bo
+      - `drm_msm_gem_submit_reloc` is for iova patching and is unused with
+        softpin
+    - `MSM_SUBMIT_CMD_BUF` is added to the ring
+    - `MSM_SUBMIT_CMD_IB_TARGET_BUF` is unused because of softpin
+      - used to let relocs patch IBs
+    - `MSM_SUBMIT_CMD_CTX_RESTORE_BUF` is added to the ring only if there is a
+      context switch; unused
+  - an in array of `drm_msm_gem_submit_syncobj`
+    - `MSM_SUBMIT_SYNCOBJ_RESET`
+  - an out array of `drm_msm_gem_submit_syncobj`
+  - `flags`
+    - `MSM_SUBMIT_NO_IMPLICIT` ignores implicit in-fences
+      - without this flag, the submit job respects implicit in-fences
+        - if the submit reads a bo and the bo has implicit write in-fences,
+          the submit must wait to avoid RAW hazard
+        - if the submit writes a bo and the bo has implicit read in-fences,
+          the submit must wait to avoid WAR hazard
+      - with this flag, the submit job ignores implicit in-fences
+        - There was a time when there can only be a single implicit write
+          fence.  If the submit writes to a bo and adds its own implicit write
+          fence, it needs to wait on the implicit write in-fence before
+          replacing it.  This should have been fixed.
+      - note that this flag does not affect implicit out-fences
+        - each submit is always associated with a fence (`submit->user_fence`)
+          and a fence id (`submit->fence_id` and `queue->last_fence`, but not
+          to be confused with fence context seqno)
+        - `submit_attach_object_fences` always adds the fence as an implicit
+          out-fence to each bo
+    - `MSM_SUBMIT_FENCE_FD_IN`
+      - call `drm_sched_job_add_dependency` to add `fence_fd` as an extra
+        dependency of the job
+    - `MSM_SUBMIT_FENCE_FD_OUT`
+      - return a sync fd in `fence_fd`, pointing to the submit's fence
+    - `MSM_SUBMIT_SUDO` is deprecated
+      - when set, cmdstreams are copied into the ring instead of indirectly
+        executed
+    - `MSM_SUBMIT_FENCE_SN_IN`
+      - without the flag, the fence id is assigned by kernel.  The id can be
+        used with `DRM_IOCTL_MSM_WAIT_FENCE`
+      - with the flag, the fence id is specified by the userspace.
+    - `MSM_SUBMIT_SYNCOBJ_IN`
+      - `msm_parse_deps` calls `drm_sched_job_add_dependency` to add the
+        underlying fences of the syncobjs as extra job dependencies
+      - `MSM_SUBMIT_SYNCOBJ_RESET` resets the syncobjs (removing
+        `syncobj->fence` which makes them unsignaled)
+    - `MSM_SUBMIT_SYNCOBJ_OUT`
+      - `msm_parse_post_deps` looks up the syncobjs
+      - `msm_process_post_deps` adds the submit's fence into the syncobjs
 
 ## devfreq
 
