@@ -47,6 +47,96 @@ DRM msm
     - `dp_display_bind`
     - `dsi_bind`
  
+## ioctls
+
+- `DRM_IOCTL_MSM_GET_PARAM`
+  - `MSM_PARAM_GPU_ID` and `MSM_PARAM_CHIP_ID`
+    - for newer gpus, DT describes them as `qcom,adreno-gmu-XYZ.W`
+      - the 4 numbers are core, major, minor, and patch
+    - gpu id is `XYZ`; newer GPUs return 0 to deprecate it
+    - chip id is `XYZ.W` plus speedbin
+  - `MSM_PARAM_MAX_FREQ`
+    - newer gpus have `operating-points-v2` in DT to describe the freq table
+    - this returns the highest value in the table
+  - `MSM_PARAM_TIMESTAMP`
+    - this reads `REG_A6XX_CP_ALWAYS_ON_COUNTER` register
+  - `MSM_PARAM_GMEM_BASE` and `MSM_PARAM_GMEM_SIZE`
+    - gmem iova base and size
+    - base is 0 on newer gpus; 0x100000 on older gpus
+    - size is 512K, 1M, 1.5M, etc.
+  - `MSM_PARAM_PRIORITIES`
+    - num of rings times num of sched priorities
+    - 1x3 on newer gpus
+  - `MSM_PARAM_PP_PGTABLE`
+    - deprecated; always 0
+  - `MSM_PARAM_FAULTS`
+    - global faults (pre-a6xx) or per-context faults (post-a6xx)
+      - a6xx supports per-context address spaces
+    - for userspace to report gpu lost
+  - `MSM_PARAM_SUSPENDS`
+    - incremented whenever the gpu is powered down
+    - some counters are reset after power down
+      - `REG_A6XX_CP_ALWAYS_ON_COUNTER` used for gpu timestamps
+      - performance counters
+    - userspace would like to handle that
+  - `MSM_PARAM_VA_START` and `MSM_PARAM_VA_SIZE`
+    - return the iova address space
+    - useful if userspace wants to manage the iova address space (for
+      virtualization or for trace record/replay)
+- `DRM_IOCTL_MSM_SET_PARAM`
+  - `MSM_PARAM_SYSPROF`
+    - only root can set this param
+    - when any context sets this to 1, counter reset on context switch is
+      disabled
+    - when any context sets this to 2, `pm_runtime` is disabled
+  - `MSM_PARAM_COMM` and `MSM_PARAM_CMDLINE`
+    - by default, they are `comm` and `cmdline` of the thread that creates the
+      context for debugging
+    - they can be overridden and is useful for virtualization
+- `DRM_IOCTL_MSM_GEM_NEW`
+  - `MSM_BO_SCANOUT`
+    - use the vram (carved out from system memory) on older gpus
+    - no-op otherwise
+  - `MSM_BO_GPU_READONLY`
+    - map in iommu without `IOMMU_WRITE`
+  - `MSM_BO_CACHED`
+    - mapping uses default prot (cached)
+    - is non-coherent
+  - `MSM_BO_WC`
+    - mapping uses `pgprot_writecombine`
+    - abuse dma api to flush/invalidate cpu cache on alloc/free
+  - `MSM_BO_CACHED_COHERENT`
+    - map in iommu with `IOMMU_CACHE` (dma cache coherency)
+    - require a6xx
+- `DRM_IOCTL_MSM_GEM_INFO`
+  - `MSM_INFO_GET_OFFSET` gets the magic offset for `mmap`
+  - `MSM_INFO_GET_IOVA` gets the iova
+  - `MSM_INFO_SET_NAME` sets the debug name
+  - `MSM_INFO_GET_NAME` gets the debug name
+  - `MSM_INFO_SET_IOVA` sets the (userspace-managed) iova
+- `DRM_IOCTL_MSM_GEM_CPU_PREP`
+  - calls `dma_resv_wait_timeout` to wait the `dma_resv` before cpu access
+    - only implicit fencing; no cache management
+  - `MSM_PREP_READ` waits for pending implicit write fences
+  - `MSM_PREP_WRITE` waits for pending implicit read fences
+  - `MSM_PREP_NOSYNC` tests and returns immediately
+- `DRM_IOCTL_MSM_GEM_CPU_FINI`
+  - nop
+- `DRM_IOCTL_MSM_WAIT_FENCE`
+  - wait until the specified submitqueue passes the specified fence seqno
+- `DRM_IOCTL_MSM_GEM_MADVISE`
+  - hints used by the shrinker
+  - `MSM_MADV_WILLNEED` for when a bo is moved out of a userspace bo cache
+  - `MSM_MADV_DONTNEED` for when a bo is moved into a userspace bo cache
+- `DRM_IOCTL_MSM_SUBMITQUEUE_NEW` and `DRM_IOCTL_MSM_SUBMITQUEUE_CLOSE`
+  - for gallium, a `pipe_screen` is a kernel context and a `pipe_context`
+    is a submitqueue
+- `DRM_IOCTL_MSM_SUBMITQUEUE_QUERY`
+  - `MSM_SUBMITQUEUE_PARAM_FAULTS` for per-submitqueue faults
+  - incremented on every hanged submit
+- `DRM_IOCTL_MSM_GEM_SUBMIT`
+  - see another section
+
 ## devfreq
 
 - msm internally has
