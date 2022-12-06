@@ -51,22 +51,27 @@ Chrome OS Overview
   - `crossystem devsw_boot` should return 1
   - if not, re-enter the developer mode
 
-# Host
+## Get Source
 
-## Source Code
-
-- Follow Chromium OS Developer Guide to get the source code
-  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-  - ./depot_tools/repo init -u https://chromium.googlesource.com/chromiumos/manifest.git
-         --repo-url https://chromium.googlesource.com/external/repo.git
-  - ./depot_tools/repo sync -q -j4
+- <https://chromium.googlesource.com/chromiumos/docs/+/main/developer_guide.md>
+- `depot_tools`
+  - `git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git`
+  - `export PATH=/path/to/depot_tools:$PATH`
+- get source code
+  - `mkdir -p ~/chromiumos`
+  - `cd ~/chromiumos`
+  - `repo init -u https://chromium.googlesource.com/chromiumos/manifest -b main`
+    - if googler, use <https://chrome-internal.googlesource.com/chromeos/manifest-internal>
+    - also `~/chromiumos/chromite/scripts/gsutil config` and use
+      `chromeos-bot` as the project id
+  - `repo sync -j4`
 - Source Tree Layout
   - chromite, build tools and scripts
   - chromium, random code from Chromium
   - docs
   - infra, CI, test infrastructure
-  - infra_virtualenv, python virtualenv that infra depends on
-  - manifest*, repo manifests
+  - `infra_virtualenv`, python virtualenv that infra depends on
+  - `manifest*`, repo manifests
   - src
     - aosp, random code from AOSP
     - overlays
@@ -74,25 +79,34 @@ Chrome OS Overview
     - platform2
     - repohooks
     - scripts, to build and install packages in chroot
-    - third_party, tons of third-party projects
+    - `third_party`, tons of third-party projects
     - weave, google weave
+- Portage
+  - `src/third_party/portage-stable`, ebuilds copied from Gentoo portage-stable
+  - `src/third_party/chromiumos-overlay`, ebuilds for Chromium OS-specific apps
+  - overlays add board-specific ebuilds
 - Build Artifacts
   - chroot
   - devserver, images for use by dev server
   - src/build
-- Portage
-  - src/third_party/portage-stable, mirror Gentoo portage-stable?
-  - src/third_party/chromiumos-overlay, ebuilds for Chromium OS-specific apps
-  - overlays add board-specific ebuilds
 
-## chroot
+## SDK chroot
 
-- minimal ChromiumOS distribution
-  - "cat /etc/lsb-release" gives "DISTRIB_CODENAME=ChromiumOS"
-  - is based on Gentoo
-  - packages are installed by emerge
-  - target packages (also ChromiumOS distributions) are managed by emerge-$BOARD
-    - ./setup_board installs emerge-$BOARD and other binaries to /usr/local/bin
+- `cros_sdk` will download and enter SDK chroot
+- to build an image,
+  - `./build_packages --board=BOARD --nowithdebug --internal`
+  - `./build_image --board=BOARD --no-enable-rootfs-verification test`
+- SDK is a cros (gentoo) chroot tarball
+  - <https://chromium.googlesource.com/website/+/HEAD/site/chromium-os/build/sdk-creation/index.md>
+  - `cros_sdk` downloads the tarball from, for example,
+    <https://storage.googleapis.com/chromiumos-sdk/cros-sdk-2022.12.03.124835.tar.xz>
+  - it untars the tarball into `~/chromiumos/chroot`
+  - conceptually, to build a SDK tarball,
+    - `./build_packages --board=amd64-host target-sdk`
+- because SDK is a gentoo chroot, it can be updated without re-downloading the
+  tarball
+  - packages can be updated or installed by `emerge`
+  - `./update_chroot` updates `target-sdk` package
 - /mnt/host/source, host repo sync root
 - /opt, toolchains to build coreboot, Java VM, container/VM images, etc.
 - /packages, cached binary emerge packages
@@ -102,14 +116,8 @@ Chrome OS Overview
 
 # DUT
 
-## firmwares
-
-- see <bootloader/cros.md>
-
 ## Chromium OS
 
-- Keyboard shortcuts
-  - enter console: Ctrl-Alt-{F2,F3,...}
 - Chrome Tricks
   - chrome://restart in URL bar
 - console login as root/test0000
