@@ -1,6 +1,40 @@
 Debian
 ======
 
+## APT
+
+- `apt-get`
+  - `update` updates package index
+  - `upgrade` updates all packages that have newer versions
+  - `dist-upgrade` is similar to `upgrade` but may install/remove new packages
+  - `install` installs listed packages
+  - `reinstall` is the same as `install --reinstall`
+  - `remove` removes listed packages
+  - `pruge` is similar to `remove` and pruges config files
+  - `source` downloads the sources of listed packages
+  - `build-dep` installs build dependencies of listed packages
+  - `downloads` downalods the listed packages
+  - `clean` removes all cached packages
+  - `autoclean` removes cached packages that are outdated
+  - `autoremove` removes packages that were installed as dependencies but are
+    not dependencies anymore
+- `apt-cache`
+  - `show` shows info of listed packages
+  - `search` searches matching packages
+  - `depends` lists dependeices of listed packages
+  - `rdepends` lists reverse-dependeices of listed packages
+- `apt-mark`
+  - `auto` and `manual` mark the listed packages as automatically/manually
+    installed respectively
+  - `showauto` and `showmanual` list automatically/manually installed packages
+    respectively
+  - `minimize-manual` marks dependencies of meta packages as automatically
+    installed
+- to clean up packages,
+  - `apt-mark minimize-manual` first and minimize `apt-mark showmanual` by
+    hand
+  - `apt autoremove`
+
 ## `debootstrap`
 
 - `debootstrap` does 4 things
