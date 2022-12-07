@@ -45,3 +45,14 @@ Android ADB
 - It calls `local_init`
   - on device, it listens on 5555 port.
   - on host, it connects to 5555 port of `ADBHOST`.
+
+## Command Tools
+
+- `setprop` / `getprop`
+  - set/get Android system properties
+- `settings`
+- `dumpsys`
+- `pm`
+- `appops`
+- `am`
+- `run-as`

@@ -189,6 +189,25 @@ Cadmium
 
 ## Qualcomm Modem/WiFi/BT?
 
+- trogdor wifi
+  - kernel `sc7180-trogdor.dtsi` lists these `remoteproc_mpss` firmwares
+    - `qcom/sc7180-trogdor/modem-nolte/mba.mbn`
+    - `qcom/sc7180-trogdor/modem-nolte/qdsp6sw.mbn`
+  - `net-misc/rmtfs` ebuild
+    - depends on `net-libs/libqrtr`
+     - there is no `USE=qrtr_ns` and `qrtr-ns` is not enabled
+    - upstart config does
+      - `mkdir -p /var/lib/rmtfs/boot`
+      - `touch modem_fsc modem_fsg modem_fs1 modem_fs2` in it
+      - `/usr/bin/rmtfs -so /var/lib/rmtfs/boot`
+  - for cadmium,
+    - copy firmwares to `/lib/firmware/qcom/sc7180-trogdor/modem-nolte`
+    - populate `/var/lib/rmtfs/boot`
+    - `sudo systemctl edit rmtfs`
+      - use the cmdline above, optionally add `-v` for verbosity
+      - no need to depend on `qrtr-ns`
+    - dmesg can report remoteproc boot failure or xpu violation
+      - keep `systemctl restart rmtfs` until it works
 - <https://github.com/andersson/qmic.git>
   - a tool to parse `.qmi` into `.c` and `.h`
   - looking at a qmi file, it seems to be for rpc serialization and
