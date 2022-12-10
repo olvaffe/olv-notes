@@ -208,6 +208,13 @@ Cadmium
       - no need to depend on `qrtr-ns`
     - dmesg can report remoteproc boot failure or xpu violation
       - keep `systemctl restart rmtfs` until it works
+- debug
+  - build coreboot-utils
+    - <https://aur.archlinux.org/coreboot-utils.git>
+    - modify `PKGBUILD` to add `aarch64` and to remove x86-specific tools
+    - `makepkg -s`
+  - `cbmem -1`
+  - `sudo systemctl restart rmtfs`
 - <https://github.com/andersson/qmic.git>
   - a tool to parse `.qmi` into `.c` and `.h`
   - looking at a qmi file, it seems to be for rpc serialization and
