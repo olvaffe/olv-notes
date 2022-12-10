@@ -50,9 +50,30 @@ Android ADB
 
 - `setprop` / `getprop`
   - set/get Android system properties
+    - <https://source.android.com/docs/core/architecture/configuration/add-system-properties>
+  - system properties are stored `/dev/__properties__`, a tmpfs
+    - if a property starts with `persist.`, it is also written to
+      `/data/property/persist.foo` on write
+  - on boot, the tmpfs is populated using
+    - `/default.prop`
+    - `/system/build.prop`
+    - more
+    - `/data/property/*`
 - `settings`
-- `dumpsys`
-- `pm`
-- `appops`
-- `am`
+  - actions
+    - `list`
+    - `get`
+    - `put`
+    - `delete`
+  - docs
+    - <https://developer.android.com/reference/android/provider/Settings.Global>
+    - <https://developer.android.com/reference/android/provider/Settings.System>
+    - <https://developer.android.com/reference/android/provider/Settings.Secure>
+  - internally, settings are stored in a sqlite database
+    - `/data/data/com.android.providers.settings/databases/settings.db`
 - `run-as`
+  - <https://android.googlesource.com/platform/system/core.git/+/refs/heads/master/run-as/run-as.cpp>
+- `appops`
+- `pm`
+- `am`
+- `dumpsys`
