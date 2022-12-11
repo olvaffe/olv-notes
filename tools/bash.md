@@ -24,6 +24,16 @@ Bash
     `~/.profile`
   - if a interactive non-login shell, it reads nothing
 
+## Shell Grammar
+
+- `!`
+- `case`, `in`, `esac`
+- `for`, `while`, `do`, `done`
+- `if`, `then`, `elif`, `else`, `fi`
+- `{` and `}`
+- `time`
+- `[[` and `]]`
+
 ## Prompting
 
 - `PS1="\u@\h:\w\$ "`
@@ -38,6 +48,38 @@ Bash
   - replace `2` by `0` to change the "icon name" as well
     - for WMs that understand it, "icon name" is the name to display when the
       window is iconized/minimized
+
+## Shell Builtin Commands
+
+- `:` is nop
+- `.` or `source`
+  - read and execute commands from the specifiled file using the current shell
+- `alias` aliases a command
+- `bg`
+- `builtin` executes the specified builtin command
+  - useful when a function has the same name as the builtin
+- `cd`
+- `command` executes the specified (builtin or external) command
+  - useful when a function has the same name as the command
+- `echo`
+- `eval`
+- `exec`
+- `exit`
+- `export`
+- `fg`
+- `help`
+- `history`
+- `jobs`
+- `kill`
+- `popd`
+- `pushd`
+- `read`
+- `set`
+- `shopt`
+- `test` or `[`
+- `type`
+- `ulimit`
+- `umask`
 
 ## Life of a Key Press
 
