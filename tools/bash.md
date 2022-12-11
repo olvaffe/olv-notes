@@ -24,6 +24,21 @@ Bash
     `~/.profile`
   - if a interactive non-login shell, it reads nothing
 
+## Prompting
+
+- `PS1="\u@\h:\w\$ "`
+  - `\u` is the user name
+  - `\h` is the hostname up to the first dot
+  - `\w` is the working dir
+  - `\$` prints `$` or `#` depending on whether the user is root
+  - `\e` prints ESC
+  - `\a` prints BELL
+- change terminal window title
+  - `ESC]2;titleBEL` sets the window title to `title`
+  - replace `2` by `0` to change the "icon name" as well
+    - for WMs that understand it, "icon name" is the name to display when the
+      window is iconized/minimized
+
 ## Life of a Key Press
 
 - a terminal emulator allocates a pty and starts a shell whose
