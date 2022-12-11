@@ -60,3 +60,9 @@ Git
     - `.gitmodules` serves as a template
   - `git submodule update` clones all submodules and checks out the recorded
     commit hashes
+
+## git config
+
+- `core.pager`
+  - use `GIT_PAGER`, then `core.pager`, then `PAGER`, and then `less`
+  - if `LESS` is not set, git sets it to `LESS=FRX`
