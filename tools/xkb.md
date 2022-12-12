@@ -62,3 +62,7 @@ XKB
       - it remembers things like which keyboard modifiers or LEDs are active
     - `xkb_state_key_get_one_sym(state, keycode)` to translate keyboard to
       keysym
+- `grep -h modifier_map /usr/share/X11/xkb/symbols/{sy,pc} | sort | uniq`
+  - `Mod1` is `Alt`
+  - `Mod2` is `Num_Lock`
+  - `Mod4` is `Super`
