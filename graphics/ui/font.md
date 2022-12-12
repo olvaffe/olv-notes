@@ -5,56 +5,58 @@ Font
 
 - in publishing, common font sizes are 10pt, 11pt, or 12pt
   - 1pt is 1/72 inch
-- I like 10pt for its compactness
-  - at 96dpi, that's 13.3px
-  - at 160dpi, that's 22.2px
-  - at 300dpi, that's 41.6px
-  - computer standards on 15" monitor
-    - VGA, 640x480, is ~55dpi
-    - SVGA, 800x600, is ~70dpi
-    - XGA, 1024x768, is ~85dpi
-    - SXGA, 1280x1024, is ~110dpi
-    - UXGA, 1600x1200, is ~135dpi
-  - tv standards on 15" monitor
-    - HD, 1280x720, is ~100dpi
-    - FHD, 1920x1080, is ~150dpi
-    - UHD 4K, 3840x2160, is ~300dpi
-    - UHD 8K, 7680x4320, is ~600dpi
-- many softwares get dpi "wrong"
-  - system softwares/libraries commonly assume 96dpi
-    - but some detect the real dpi
-    - and some assume 72dpi or 75dpi
-  - they are not "wrong" though
-    - when dpi changes, we want to scale both ui elements and text
-    - but dpi applies to text only
-    - modern softwares assume fixed 96dpi as the logical dpi
-    - they have a separate "scale" (aka "ui scale", "device scale") to scale
-      both ui elements and text
-  - the problem is that "scale" is integral
-    - they are slowly gaining fractoinal scale support
-- common scenarios
-  - a 14" laptop at 1920x1080 is ~160dpi
-    - we want a `160/96 = 1.66` scale
-    - only fractional scale works
-  - a 32" monitor at 3840x2160 is ~140dpi
-    - we want a `140/96 = 1.45` scale
-    - only fractional scale works
-  - a 14" laptop at 3840x2160 is ~320dpi
-    - we want a `320/96 = 3.33` scale
-    - 3 can work
-    - this is known as HiDPI
+  - latex defaults to 10pt
+  - in home printing, some like to add 1pt because home printers used to have
+    lower resolution (~300dpi)
+- I like 10pt on my laptop screens
+  - it is compact which is more suitable for small laptop screens
+  - on external displays, 11pt is better
+    - 11pt is more comfortable
+    - the viewing distance is also larger
+- common resolutions
+  - tv standards
+    - HD, 1280x720
+    - FHD, 1920x1080
+    - UHD 4K, 3840x2160
+    - UHD 8K, 7680x4320
+  - pc standards
+    - VGA, 640x480
+    - SVGA, 800x600
+    - XGA, 1024x768
+    - SXGA, 1280x1024
+    - UXGA, 1600x1200
+- common dpis
+  - 14" FHD laptops or 27" 4K external displays are ~160dpi
+  - 14" 4K laptops are ~320dpi
+  - android definitions
+    - `mdpi` is 160 and is the baseline
+    - `ldpi` is 120
+    - `hdpi` is 240
+- softwares hard-code 96dpi
+  - when `s` pt is requested, they pick `s * 96 / 72 * scale` px
+  - 96dpi came from windows
+    - it made text one-third larger to accomodate for lower display dpi and
+      larger viewing distance
+  - `scale` is determined by compositors
+    - a common formula is `scale = floor(real_dpi / 96)`
+    - dpis equal to or larger than 196 are called HiDPI
+  - `scale` is an integer because it applies to text and ui elements
+    - fonts are vectors and support fractional scales
+    - ui elements tend to be bitmaps and look blurry with fractional scales
+    - it is also called "ui scale", "device scale", etc.
+  - toolkits are slowly gaining fractional scale support for ui elements
+- we really need fractional scale for 160dpi
+  - without it, UI elements are small but OK
+    - because 160dpi is common enough that designers have accomodated for it
+  - without it, text is way too small on linux
+    - 10pt should be `10 * 160 / 72 = 22.2`px
+    - but softwares pick `10 * 96 / 72 = 13.3`px
+    - scaling text and ui elements by 2 makes text readable, but it also makes
+      ui elements too huge
 - Wayland
   - there is (integral) output scale
   - fractional scale is wip
-- at ~150dpi, we really need fractional scale
-  - without it, UI elements are a bit small but OK
-    - because this is common enough that designers have accomodated for it
-  - without it, text is too small on linux
-    - because many system softwares/libraries assume 96dpi
-      - they assume 10pt is 13.3px while the correct size is 20.8px
-    - doubling the sizes of UI elements and fonts makes text comfortable, but
-      UI elements become too huge
-    - each app might require a different solution
+- each app requires a different solution
 
 ## fontconfig
 
