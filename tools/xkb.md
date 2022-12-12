@@ -41,6 +41,17 @@ XKB
     - the client can compile RMLVO to XKM and send XKM to the server instead
       - `setxkbmap -print <RMLVO> | xkbcomp -xkm - $DISPLAY`
   - `xkbprint` can take a XKM and output a PostScript file for the keyboard
+- `setxkbmap -print -rules evdev -model pc104 -layout us`
+  - a rule determines valid MLVO values
+    - it should be `evdev` on linux and `base` on others
+  - a model determines the physical layout of keys
+    - commonly values are `pc104` or `chromebook`
+  - a layout determines what the physical keys output
+    - country codes such as `us`
+  - a variant determines the minor variations
+    - `basic` (default), `intl`, `mac`
+  - options are for extra options
+  - `man xkeyboard-config`
 
 ## xkbcommon
 
@@ -66,3 +77,40 @@ XKB
   - `Mod1` is `Alt`
   - `Mod2` is `Num_Lock`
   - `Mod4` is `Super`
+
+## Physical Keyboard Layout
+
+- character keys
+  - to type characters and other symbols
+- modifier keys
+  - to modify the functions of other keys
+  - `Shift`
+  - `Ctrl`
+  - `Alt`
+  - `AltGr`
+    - on US keyboard, this is just right `Alt`
+  - `Cmd` and `Options` on Apple
+  - `Meta`, `Hyper`, `Super`
+  - dead keys
+  - `Compose`
+- system command keys
+  - `SysRq` and `PrtScn`
+  - `Break` and `Pause`
+  - `Esc`
+  - `Enter`
+  - `Menu`
+  - `Command`
+  - `Window`
+- levels
+  - using `c` key as an example
+  - first level, `c`, types `c`
+  - second level, `Shift+c`, types `C`
+  - third level, `AltGr+c`, types `©`
+  - fourth level, `AltGr+Shift+c`, types `¢`
+- pc101 / pc102 / pc104 / pc105
+  - <https://en.wikipedia.org/wiki/Keyboard_layout>
+  - standard us / europe layout
+    - europe layout has some differences
+    - the extra key is for dead key
+  - pc104 / pc105 has 3 more keys
+    - two `Window` and one `Menu` keys
