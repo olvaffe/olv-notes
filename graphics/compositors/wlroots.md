@@ -1,6 +1,13 @@
 wlroots
 =======
 
+## sway
+
+- require `WAYLAND_DISPLAY=wayland-1`
+  - `libwayland-client` defaults to `wayland-0`
+  - we want to avoid that as explained in
+    <https://gitlab.freedesktop.org/wayland/weston/-/merge_requests/486>
+
 ## running sway from ssh session
 
 - `WLR_LIBINPUT_NO_DEVICES=1 WLR_SESSION=noop sway -d`
