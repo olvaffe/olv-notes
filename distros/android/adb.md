@@ -76,4 +76,12 @@ Android ADB
 - `appops`
 - `pm`
 - `am`
+  - `start-activity <INTENT>`
+  - `broadcast <INTENT>`
+  - `<INTENT>`
+    - `-n <PACKAGE>/<ACTIVITY>`
+    - `-e <EXTRA_KEY> <EXTRA_STR_VALUE>`
+    - activity can access the extra strings by `getIntent().getStringExtra(name)`
+  - `instrument -w -e <name> <value> <TEST_PACKAGE>/<RUNNER_CLASS>`
+    - class's `onCreate` calls `bundle.getString(name)` to access name/value arguments
 - `dumpsys`
