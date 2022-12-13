@@ -31,9 +31,9 @@ Debian
   - `minimize-manual` marks dependencies of meta packages as automatically
     installed
 - to clean up packages,
-  - `apt-mark minimize-manual` first and minimize `apt-mark showmanual` by
-    hand
-  - `apt autoremove`
+  - `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
+  - `apt autoremove --dry-run` to selectively mark packages manual
+  - `apt autoremove` to remove unneeded ones
 
 ## `debootstrap`
 
