@@ -92,3 +92,24 @@ Bash
   - for example, when Ctrl-C is pressed, the terminal feeds ascii code 0x3
     into pty; pty sends SIGINT to the foreground process (which shell sets via
     `tcsetpgrp`)
+- experiment
+  - open a terminal and
+
+    $ tty
+    /dev/pts/0
+    $ stty -F /dev/pts/0
+    speed 38400 baud; line = 0;
+    -brkint -imaxbel iutf8
+  - open a second terminal and
+
+    $ stty -F /dev/pts/0
+    speed 38400 baud; line = 0;
+    lnext = <undef>; discard = <undef>; min = 1; time = 0;
+    -brkint -icrnl -imaxbel iutf8
+    -icanon -echo
+  - bash uses readline for line editing
+    - that puts the tty into the raw mode to handle ascii codes as keys are
+      pressed
+  - when bash starts a program, it restores the tty back to cooked mode
+    - the tty driver handles echoing and line editing
+    - the program sees ascii codes only when Enter is pressed
