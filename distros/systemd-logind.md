@@ -120,14 +120,20 @@ systemd-logind
       - calls `execvp` to execute the shell
 - environment variables
   - kernel invokes `init` with `HOME=/` and `TERM=linux`
-  - systemd modifies its env to
-    - `drop_caps=`
-    - `init=/sbin/init`
-    - `PATH=/sbin:/usr/sbin:/bin:/usr/bin`
-    - `PWD=/`
-    - `rootmnt=/root`
-    - `SHLVL=1`
+  - systemd has
     - `TERM=linux`
+    - added by initramfs shell
+      - `PWD=/`
+      - `SHLVL=1`
+    - added by initramfs `/init`
+      - `PATH=/sbin:/usr/sbin:/bin:/usr/bin`
+      - `drop_caps=`
+      - `init=/sbin/init`
+      - `rootmnt=/root`
+  - systemd-logind has ...
+  - agetty has ...
+  - login has ...
+  - bash has ...
 
 ## User Login
 
