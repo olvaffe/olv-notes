@@ -113,3 +113,48 @@ Bash
   - when bash starts a program, it restores the tty back to cooked mode
     - the tty driver handles echoing and line editing
     - the program sees ascii codes only when Enter is pressed
+
+## ANSI Escape Code
+
+- it allows a program to send an in-band command to the terminal
+- C0 control codes
+  - `echo -ne`
+  - `\a` sends an alert/bell
+  - `\b` sends a backspace
+  - `\e` sends an escape
+  - `\f` sends a form feed (next page for printers)
+  - `\n` sends a new line/line feed
+  - `\r` sends a carriage return (to first column)
+  - `\t` sends a horizontal tab
+  - `\v` sends a vertical tab
+- Fe escape sequences
+  - `\e` followed by `\x40`..`\x5f`
+    - `\x40` is `@`
+    - `\x5b` is `[`
+    - `\x5f` is `_`
+  - `\e[` starts a CSI (control sequence introducer) sequence
+    - try `echo -e '\e[31mAAA\e[0m'`
+    - `\e[Xm` sets the display attribute, where `X` is a number
+      - 0: reset
+      - 1: bolden
+      - 2: dim
+      - 3: italic
+      - 4: underline
+      - 7: invert fg/bg colors
+      - 9: strike
+      - 30-37: foreground colors
+        - 8 colors
+        - black, red, green, yellow, blue, magenta, cyan, white
+      - 38: more foreground colors
+        - `38;5;Y`, where Y is from 0 to 255 for 256 colors
+          - 0-7: same as X 30-37
+          - 8-15: same as X 90-97
+          - 16-231: 6x6x6 colors
+          - 232-255: 24 grayscale
+        - `38;2;R;G;B` for true colors
+      - 39: default foreground color
+      - 40-47: background colors
+      - 48: more background color
+      - 49: default background color
+      - 90-97: bright foreground colors
+      - 100-107: bright background colors
