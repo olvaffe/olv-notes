@@ -118,6 +118,16 @@ systemd-logind
       - calls `setuid`
       - calls `chdir` to home
       - calls `execvp` to execute the shell
+- environment variables
+  - kernel invokes `init` with `HOME=/` and `TERM=linux`
+  - systemd modifies its env to
+    - `drop_caps=`
+    - `init=/sbin/init`
+    - `PATH=/sbin:/usr/sbin:/bin:/usr/bin`
+    - `PWD=/`
+    - `rootmnt=/root`
+    - `SHLVL=1`
+    - `TERM=linux`
 
 ## User Login
 
