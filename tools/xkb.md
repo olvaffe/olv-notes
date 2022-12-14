@@ -64,6 +64,13 @@ XKB
   - or, if we are a wayland client, we can get the keymap from the compositor
     as a string and
     `xkb_keymap_new_from_string(ctx, string, XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS)`
+  - or we can `xkb_keymap_new_from_names(ctx, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS)`
+    and rely on defaults
+    - rules is from `XKB_DEFAULT_RULES` envvar or compile-time default `evdev`
+    - model is from `XKB_DEFAULT_MODEL` envvar or compile-time default `pc105`
+    - layout is from `XKB_DEFAULT_LAYOUT` envvar or compile-time default `us`
+    - variant is from `XKB_DEFAULT_VARIANT` envvar or compile-time default NULL
+    - options is from `XKB_DEFAULT_OPTIONS` envvar or compile-time default NULL
 - a wayland client
   - `wl_keyboard::keymap` gives the keymap
   - `wl_keyboard::key` gives the keycode when a key is pressed/released
