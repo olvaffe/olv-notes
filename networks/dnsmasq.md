@@ -43,3 +43,29 @@ dnsmasq
             --enable-tftp \
             --tftp-root <path>
 - make sure `<path>` is accessible by nobody or specify `--user`
+
+## Names
+
+- `hostname`
+  - kernel defaults hostname to `CONFIG_DEFAULT_HOSTNAME`, which is usually
+    `(none)`
+  - `systemd` uses first of
+    - `systemd.hostname=` from kernel cmdline
+    - `/etc/hostname`
+      - `man 5 hostname` recommends a single label without any dot
+      - some apps might break though
+    - DHCP lease
+    - hard-coded `localhost`
+  - many apps calls `gethostbyname` to resolve the hostname
+    - `/etc/nsswitch.conf` is normally configured to use `/etc/hosts` and then
+      DNS
+    - if hostname is a nickname, specify an alias in `/etc/hosts`
+    - otherwise, dns lookup is configured by `/etc/resolv.conf`
+- `domainname`
+  - this is NIS domain name and is irrelevant nowaday
+- `dnsdomainname` and FQDN
+  - the canonical name returned by calling `getaddrinfo` for `gethostname` is
+    the FQDN
+  - the part after the first dot is the DNS domain name
+  - `getaddrinfo` is configured by `/etc/nsswitch.conf`
+    - in the end, the first name specified in `/etc/hosts` is FQDN

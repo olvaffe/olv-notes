@@ -219,6 +219,7 @@ systemd
 
 - `systemd-hostnamed`
   - is a daemon providing `org.freedesktop.hostname1` to set and get hostname
+  - `systemd-hostnamed` provides/stores additional info in `/etc/machine-info`
 - `systemd-initctl`
   - listens to fds listed in env var `LISTEN_FDS` to provide `/dev/initctl`
     emulation
