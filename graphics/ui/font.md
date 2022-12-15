@@ -1,6 +1,26 @@
 Font
 ====
 
+## Popular Open Fonts
+
+- Noto
+  - best unicode coverage
+  - default on Fedora 36
+- DejaVu
+  - derived from Bitstream Vera
+  - added more unicode coverage
+- Roboto
+  - default font on Android
+  - older Android used Droid
+- Ubuntu
+  - default font on Ubuntu
+- Liberation
+  - metric-compatible with Times New Roman, Arial, Courier New
+- for coding
+  - Anonymous Pro
+  - Inconsolata
+  - Source Code Pro
+
 ## DPI
 
 - in publishing, common font sizes are 10pt, 11pt, or 12pt
