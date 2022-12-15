@@ -33,6 +33,7 @@ Color Management
   - similar to the color matching functions, we can design an experiment to
     learn the perceived luminance of a wavelength
   - this gives us a `y(lambda)`
+    - note that this is relative and is normalized to `[0, 1]`
 - XYZ color space
   - we can pick any r/g/b light in the color matching experiment
     - because we can color match the new primaries using the original color
@@ -45,14 +46,19 @@ Color Management
     - more preferable properties
     - note that these lights are imaginary and do not physically exist
   - this gives us unnormalized XYZ color space
+    - this color space is additive
+    - that is, we can add two colors component-wise
   - and the normalized xyY color space
     - `x = X / (X + Y + Z)`
     - `y = Y / (X + Y + Z)`
+    - this color space is not additive
+  - to convert xyY back to XYZ,
+    - `X = Y * x / y`
+    - `Z = Y * (1 - x - y) / y`
 - define a new color space
   - it is common to define a color space by defining its primaries and its
     white point in only xy
   - this allows xyY to be calculated
-
 - <https://medium.com/hipster-color-science/a-beginners-guide-to-colorimetry-401f1830b65a>
 - a color is a mix of lights of different wavelengths
 - it is not possible to reproduce a color, until we consider the limits of our
