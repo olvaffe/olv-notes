@@ -59,6 +59,25 @@ Color Management
   - it is common to define a color space by defining its primaries and its
     white point in only xy
   - this allows xyY to be calculated
+    - Y is 1 for the white point
+    - using the equation above to convert xy to XZ, we can solve Y for the 3
+      primaries
+  - can we define a color space by defining its primaries in XYZ?
+    - yes, and the primaries can be summed together to get the white point
+    - but it is actually more natural to specify the color space using the
+      chrominances of the primaries and the white point, and derive their
+      luminances
+      - this allows the white point to vary
+      - the white point is also the ambient light environment and being able
+        to vary it can be handy
+- to convert from one color space to another,
+  - apply a matrix to convert from the src color space to XYZ color space
+  - apply a matrix for chromatic adaption if the white points of the two color
+    spaces differ
+    - also known as white balance in the context of a camera
+    - <http://yuhaozhu.com/blog/chromatic-adaptation.html>
+  - apply a matrix to convert from XYZ color space to the dst color space
+
 - <https://medium.com/hipster-color-science/a-beginners-guide-to-colorimetry-401f1830b65a>
 - a color is a mix of lights of different wavelengths
 - it is not possible to reproduce a color, until we consider the limits of our
