@@ -2,7 +2,8 @@ GDB
 ===
 
 ## `gdb`
-- `gdb <prog>`, `gdb <prog> <pid`, or `gdb <prog> <core>`
+
+- `gdb <prog>`, `gdb <prog> <pid>`, or `gdb <prog> <core>`
 
 ## Symbols
 
