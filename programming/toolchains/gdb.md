@@ -41,6 +41,20 @@ GDB
       - `$cdir/path/to/main.c` under each of `directories`
       - `main.c` under each of `directories`
 
+## Debug gdb itself
+
+- `help set debug`
+
+## Breakpoints
+
+- gdb uses software breakpoints on x86-64 and aarch64
+  - gdbserver uses hardware breakpoints instead
+- software breakpoints work by instruction patching
+  - it repalces the instruction at the target address by a special instruction
+  - it works by opening `/proc/<pid>/task/<tid>/mem` for raw memory access
+  - does not work on cros because raw memory access is read-only
+    <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/7c10b00c80d415128d54245d10255e883c62fa4a>
+
 ## `gdbserver`
 
 - to run a program under `gdbserver`, `gdbserver :1234 prog args`
