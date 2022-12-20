@@ -194,12 +194,19 @@ Chrome OS Build
 - sysroot
   - mount locally-built test image
     - `./mount_gpt_image.sh --board=${BOARD} --safe --most_recent -i chromiumos_test_image.bin`
+      - this mounts to `/tmp/m`
     - `./mount_gpt_image.sh --board=${BOARD} -u`
   - or, mount `chromiumos_test_image.bin` manually
     - `losetup -P -f chromiumos_test_image.bin`
     - `mount -o ro /dev/loop0p3 sysroot`
     - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
     - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
+  - or, mount `chromiumos_test_image.bin` for modification
+    - `./mount_gpt_image.sh -f <img-dir> -i chromiumos_test_image.bin`
+    - `enable_rw_mount` in `build_library/ext2_sb_util.sh`
+      - cros sets undefined features flags of ext4 to force read-only rootfs
+      - `enable_rw_mount` clears those flags and allows the rootfs to be
+        modified
 - debug symbols
   - for a locally-built image,
     - `set sysroot /build/$BOARD`
@@ -209,4 +216,8 @@ Chrome OS Build
         image
     - mount the image
     - `set debug-file-direcotry <path-to-debug-symbols>`
+      - it is a good idea to mount the image rw once and to replace
+        `/usr/lib/debug` link by an empty directory
+      - we can the bind-mount debug symbols to the directory and skip setting
+        `debug-file-direcotry`
     - `set sysroot <path-to-mountpoint>`
