@@ -194,8 +194,9 @@ Chrome OS Build
 - debug locally-built image
   - `/build/$BOARD` is the sysroot
   - `/build/$BOARD/usr/lib/debug` has the debug symbols
-  - it suffices to
-    `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' -ex 'set sysroot /build/$BOARD'`
+  - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' \
+       -ex 'set sysroot /build/$BOARD' \
+       -ex 'set debug-file-directory /build/$BOARD/usr/lib/debug'`
 - debug released image
   - download `chromiumos_test_image.tar.xz` and `debug.tgz`
   - unpack `debug.tgz` to `debug`
@@ -207,11 +208,13 @@ Chrome OS Build
       - `enable_rw_mount` clears those flags and allows the rootfs to be
         mounted rw
       - see `build_library/ext2_sb_util.sh`
-  - bind mount debug symbols
+  - bind mount debug symbols (this is unnecessary...)
     - `rm /tmp/m/usr/lib/debug`
     - `mkdir /tmp/m/usr/lib/debug`
     - `mount --bind debug /tmp/m/usr/lib/debug`
-  - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' -ex 'set sysroot /tmp/m'`
+  - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' \
+       -ex 'set sysroot /tmp/m' \
+       -ex 'set debug-file-directory /tmp/m/usr/lib/debug'`
   - to umount,
     - `./mount_gpt_image.sh -f <dir> -i chromiumos_test_image.bin -u`
 - mount `chromiumos_test_image.bin` manually
@@ -219,5 +222,3 @@ Chrome OS Build
   - `mount -o ro /dev/loop0p3 sysroot`
   - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
   - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
-  - if debug symbols cannot be bind-mounted to `sysroot/usr/lib/debug`,
-    - `set debug-file-direcotry <path-to-debug-symbols>` before `set sysroot sysroot`
