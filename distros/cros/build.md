@@ -195,8 +195,9 @@ Chrome OS Build
   - `/build/$BOARD` is the sysroot
   - `/build/$BOARD/usr/lib/debug` has the debug symbols
   - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' \
-       -ex 'set sysroot /build/$BOARD' \
-       -ex 'set debug-file-directory /build/$BOARD/usr/lib/debug'`
+       -ex 'set debug-file-directory /build/$BOARD/usr/lib/debug' \
+       -ex 'set sysroot /build/$BOARD'`
+    - remember to set `debug-file-directory` before `sysroot`
 - debug released image
   - download `chromiumos_test_image.tar.xz` and `debug.tgz`
   - unpack `debug.tgz` to `debug`
@@ -213,8 +214,8 @@ Chrome OS Build
     - `mkdir /tmp/m/usr/lib/debug`
     - `mount --bind debug /tmp/m/usr/lib/debug`
   - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' \
-       -ex 'set sysroot /tmp/m' \
-       -ex 'set debug-file-directory /tmp/m/usr/lib/debug'`
+       -ex 'set debug-file-directory /tmp/m/usr/lib/debug' \
+       -ex 'set sysroot /tmp/m'`
   - to umount,
     - `./mount_gpt_image.sh -f <dir> -i chromiumos_test_image.bin -u`
 - mount `chromiumos_test_image.bin` manually
