@@ -184,3 +184,29 @@ Chrome OS Build
     - `vm_host_tools` depends on `crosvm`
   - when `USE=crosvm-gpu`, `crosvm` depends on `virglrenderer`
   - `USE=kvm_guest` means building for the (crostini) container image
+
+## gdb
+
+- must use gdbserver
+  - gdbserver uses hw breakpoints
+  - gdb uses sw breakpoints
+  - because cros kernel is hardened, sw breakpoints do not work
+- sysroot
+  - mount locally-built test image
+    - `./mount_gpt_image.sh --board=${BOARD} --safe --most_recent -i chromiumos_test_image.bin`
+    - `./mount_gpt_image.sh --board=${BOARD} -u`
+  - or, mount `chromiumos_test_image.bin` manually
+    - `losetup -P -f chromiumos_test_image.bin`
+    - `mount -o ro /dev/loop0p3 sysroot`
+    - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
+    - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
+- debug symbols
+  - for a locally-built image,
+    - `set sysroot /build/$BOARD`
+  - otherwise,
+    - unpack debug symbol tarball
+      - the debug symbols should have a directory structure that mirrors the
+        image
+    - mount the image
+    - `set debug-file-direcotry <path-to-debug-symbols>`
+    - `set sysroot <path-to-mountpoint>`
