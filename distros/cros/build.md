@@ -191,33 +191,33 @@ Chrome OS Build
   - gdbserver uses hw breakpoints
   - gdb uses sw breakpoints
   - because cros kernel is hardened, sw breakpoints do not work
-- sysroot
-  - mount locally-built test image
-    - `./mount_gpt_image.sh --board=${BOARD} --safe --most_recent -i chromiumos_test_image.bin`
-      - this mounts to `/tmp/m`
-    - `./mount_gpt_image.sh --board=${BOARD} -u`
-  - or, mount `chromiumos_test_image.bin` manually
-    - `losetup -P -f chromiumos_test_image.bin`
-    - `mount -o ro /dev/loop0p3 sysroot`
-    - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
-    - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
-  - or, mount `chromiumos_test_image.bin` for modification
-    - `./mount_gpt_image.sh -f <img-dir> -i chromiumos_test_image.bin`
-    - `enable_rw_mount` in `build_library/ext2_sb_util.sh`
+- debug locally-built image
+  - `/build/$BOARD` is the sysroot
+  - `/build/$BOARD/usr/lib/debug` has the debug symbols
+  - it suffices to
+    `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' -ex 'set sysroot /build/$BOARD'`
+- debug released image
+  - download `chromiumos_test_image.tar.xz` and `debug.tgz`
+  - unpack `debug.tgz` to `debug`
+  - unpack `chromiumos_test_image.tar.xz`
+  - `./mount_gpt_image.sh -f <dir> -i chromiumos_test_image.bin`
+    - this mounts the various paritions in the disk image to `/tmp/m`
+    - rootfs is rw
       - cros sets undefined features flags of ext4 to force read-only rootfs
       - `enable_rw_mount` clears those flags and allows the rootfs to be
-        modified
-- debug symbols
-  - for a locally-built image,
-    - `set sysroot /build/$BOARD`
-  - otherwise,
-    - unpack debug symbol tarball
-      - the debug symbols should have a directory structure that mirrors the
-        image
-    - mount the image
-    - `set debug-file-direcotry <path-to-debug-symbols>`
-      - it is a good idea to mount the image rw once and to replace
-        `/usr/lib/debug` link by an empty directory
-      - we can the bind-mount debug symbols to the directory and skip setting
-        `debug-file-direcotry`
-    - `set sysroot <path-to-mountpoint>`
+        mounted rw
+      - see `build_library/ext2_sb_util.sh`
+  - bind mount debug symbols
+    - `rm /tmp/m/usr/lib/debug`
+    - `mkdir /tmp/m/usr/lib/debug`
+    - `mount --bind debug /tmp/m/usr/lib/debug`
+  - `aarch64-cros-linux-gnu-gdb -ex 'target remote :1234' -ex 'set sysroot /tmp/m'`
+  - to umount,
+    - `./mount_gpt_image.sh -f <dir> -i chromiumos_test_image.bin -u`
+- mount `chromiumos_test_image.bin` manually
+  - `losetup -P -f chromiumos_test_image.bin`
+  - `mount -o ro /dev/loop0p3 sysroot`
+  - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
+  - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
+  - if debug symbols cannot be bind-mounted to `sysroot/usr/lib/debug`,
+    - `set debug-file-direcotry <path-to-debug-symbols>` before `set sysroot sysroot`
