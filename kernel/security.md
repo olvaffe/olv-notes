@@ -3,14 +3,50 @@ Security
 
 ## seccomp
 
-- `CONFIG_SECCOMP` is default on
-- `seccomp()` or `prctl(PR_SET_SECCOMP)`
-- `SECCOMP_SET_MODE_STRICT`
-  - the only system calls allowed are `read`, `write`, `_exit`, and
-    `sigreturn`
-- `SECCOMP_SET_MODE_FILTER`
-  - system calls allowed are define by a caller-defined BPF program
-  - must be preceded by `prctl(PR_SET_NO_NEW_PRIVS, 1)`
+- kernel configs
+  - `CONFIG_SECCOMP` is default on
+  - `CONFIG_SECCOMP_FILTER` is also default on
+- syscalls
+  - `seccomp()` or the older/inferior `prctl(PR_SET_SECCOMP)`
+  - only the calling thread is affected, unless `SECCOMP_FILTER_FLAG_TSYNC` is
+    set
+  - child processes inherit the settings (when forking is allowed)
+  - new threads inherit the setting (when `clone` is allowed)
+  - `execve` preserves the setting (when `execve` is allowed)
+- operations
+  - `SECCOMP_SET_MODE_STRICT`
+    - the only system calls allowed are `read`, `write`, `_exit`, and
+      `sigreturn`
+    - no flags nor args
+  - `SECCOMP_SET_MODE_FILTER`
+    - must be preceded by `prctl(PR_SET_NO_NEW_PRIVS, 1)` unless root
+    - `args` is a pointer to a `struct sock_fprog`, to pass a BPF program to
+      the kernel for syscall filtering
+    - flags can be
+      - `SECCOMP_FILTER_FLAG_LOG` to log bpf return values specified by
+        `/proc/sys/kernel/seccomp/actions_logged`
+      - `SECCOMP_FILTER_FLAG_NEW_LISTENER` to return an fd to userspace which
+        the bpf program can send notifications to
+      - `SECCOMP_FILTER_FLAG_SPEC_ALLOW` to allow speculative store bypass
+        mitigation
+      - `SECCOMP_FILTER_FLAG_TSYNC` to change the filter for all threads
+        rather than just the calling thread
+    - bpf return values can be
+      - `SECCOMP_RET_KILL_PROCESS` to terminate the process of the offending
+        thread and send `SIGSYS`
+      - `SECCOMP_RET_KILL_THREAD` to terminate the offending thread and send
+        `SIGSYS`
+      - `SECCOMP_RET_TRAP` to send `SIGSYS`
+      - `SECCOMP_RET_ERRNO` to fail the syscall with the specified errno
+      - `SECCOMP_RET_USER_NOTIF` to send a notification through an fd
+      - `SECCOMP_RET_TRACE` to send  a notification to a `ptrace`-based tracer
+      - `SECCOMP_RET_LOG` to log and allow the syscall
+      - `SECCOMP_RET_ALLOW` to allow the syscall
+      - any other value is treated as `SECCOMP_RET_KILL_PROCESS`
+  - `SECCOMP_GET_ACTION_AVAIL`
+    - returns available filter return actions
+  - `SECCOMP_GET_NOTIF_SIZES`
+    - returns the size of notifications
 - a BPF program looks like
   - `BPF_STMT(BPF_LD | BPF_W | BPF_ABS, offsetof(struct seccomp_data, arch))`
     - load arch to accumulator
