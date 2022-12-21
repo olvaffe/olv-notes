@@ -88,3 +88,108 @@
   - it calls `alloc_file_pseudo`, which
     - calls `d_alloc_pseudo` to create a dentry with the given name
     - calls `alloc_file` to create a file and install the given fops
+
+## `mount`
+
+- the `mount` syscall takes
+  - `source` specifies a fs to be attached
+    - a string to dev, file, dir, or just a dummy one
+  - `target` specifies the location to attach the fs to
+    - a string to a file or dir
+  - `filesystemtype` specifies the type of the fs
+    - a string whose valid values are in `/proc/filesystems`
+  - `mountflags`
+  - `data` specifies fs-specific data
+    - usually a string of comma-separated fs-specific options
+- a call to `mount` conducts a sequence of operations in order
+  - if `MS_REMOUNT`, remount an existing mount
+  - if `MS_BIND`, create a bind mount
+  - if `MS_SHARED`/`MS_PRIVATE`/`MS_SLAVE`/`MS_UNBINDABLE`, change the
+    propagation type of an existing mount
+  - if `MS_MOVE`, move an existing mount
+  - if none of the above, create a new mount
+- remount an existing mount
+  - `source` and `filesystemtype` are ignored
+  - `target` specifies the existing mount
+  - `mountflags` and `data` can be modified
+- create a bind mount
+  - `source` and `target` can be file or dir
+  - when a dir is bind-mounted, only the dir is mounted
+    - submounts under the dire is not bind-mounted
+    - `MS_REC` to bind-mound submounts recursively
+- changing the propagation type of an existing mount
+  - `source`, `filesystemtype`, and `data` are ignored
+  - `target` specifies the existing mount
+  - only one of the propagation types can be specified
+    - `MS_SHARED`
+    - `MS_PRIVATE`
+    - `MS_SLAVE`
+    - `MS_UNBINDABLE`
+  - by default, only the mount is affected
+    - set `MS_REC` to affect submounts
+- move an existing mount
+  - `source` specifies the existing mount
+  - `target` specifies the new location
+  - `filesystemtype`, `mountflags` (execept for `MS_MOVE` of course) and
+    `data` are ignored
+- create a new mount
+  - all arguments are used
+- other flags
+  - `MS_DIRSYNC` makes dir change synchronous
+  - `MS_LAZYTIME` flushes atime/mtime/ctime changes to device lazily
+  - `MS_MANDLOCK` permits mandatory file locking
+  - `MS_NOATIME` stops updating atime
+  - `MS_NODEV` disallows dev special files
+  - `MS_NODIRATIME` stops updating atime for dirs
+  - `MS_NOEXEC` disallows executions
+  - `MS_NOSUID` ignores suid
+  - `MS_RDONLY` mounts read-only
+  - `MS_REC` is for use with bind mount and propagation type change
+  - `MS_RELATIME` updates atime when it is older than mtime/ctime
+    - this is the default behavior
+  - `MS_SILENT` suppresses some printks
+  - `MS_STRICTATIME` always updates atime on access
+  - `MS_SYNCHRONOUS` makes all writes synchronous
+  - `MS_NOSYMFOLLOW` stops following symlinks
+- peer group example
+  - on boot, all regular mounts are `MS_SHARED` and belong to different peer
+    groups
+  - `unshare -m --propagation unchanged`
+    - this creates a new mount namespace with all mounts and all propagation
+      types replicated
+    - all mounts in the new namespace belong to the same peer groups in the
+      original namespace
+  - `mount /dev/foo /mnt` in the either namespace shows up in another
+  - in other words, when a submount (`/mnt` in this example) is
+    created/destroyed, the parent mount (`/`) receives the event
+    - because `/` is shared in either namespace, it shares the event to its
+      peer group
+- peer groups
+  - `man mount_namespaces`
+  - all shared/slave mounts are members of peer groups
+    - a shared mount has `shared:X` in `cat /proc/self/mountinfo`
+      - `X` is the peer group id
+    - a slave mount has `master:X` instead
+  - peer group creation
+    - when a mount is created, and when it is shared, it becomes the sole
+      member of a newly created peer group
+      - this commonly happens when the mount's parent mount is shared
+    - when a private mount is made shared, it also becomes the sole member of
+      a newly created peer group
+  - peer group destruction
+    - when the last mount in a peer group is destroyed, the peer group is
+      destroyed
+  - how does a mount join a peer group?
+    - when a mount is a bind-mount, and the source mount is shared, the
+      bind-mount joins the peer group of the source mount
+    - when a mount is replicated in a new mount namespace, the mount joins the
+      peer group of the original mount
+- event propagation
+  - when a submount is created/destroyed, its parent mount receives the event
+  - if the parent mount is shared, it shares the event to all peers in its
+    peer group
+  - if the parent mount is private, there is no peer group for it to share
+    with
+  - if the parent mount is slave, it does not share events
+    - on the other hand, a peer that is shared will share events to this
+      parent mount
