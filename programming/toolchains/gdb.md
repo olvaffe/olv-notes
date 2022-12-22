@@ -39,6 +39,21 @@ GDB
     - `target` is the environment `program` executes in
     - `inferior` is the state of a program execution
       - usually a process, if `target` supports processes
+  - inferiors
+    - when gdb starts, there is 1 `inferior`
+      - `info inferiors`
+    - an inferior represents the state of a program
+      - `file` sets the program of the current inferior
+      - `target native` connects the current inferior to the native target
+        - because `show auto-connect-native-target` is on by default, this is
+          optional
+      - `run` starts the program in the native target
+    - not all targets support or require `run`
+      - `target core`
+      - `target remote`
+      - `run` might appear to work only because of
+        `auto-connect-native-target`
+    - more inferiors can be added with `add-inferior`
   - starting
     - `run`
     - `start`
@@ -93,19 +108,27 @@ GDB
   - `gcore`
 - 18 GDB Files
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/GDB-Files.html>
-  - `file`
-  - `exec-file`
-  - `symbol-file`
-  - `core-file`
-  - `add-symbol-file`
-  - `info files`
-  - `show auto-solib-add`
-  - `info sharedlibrary`
-  - `sharedlibrary` and `nosharedlibrary`
-  - `set sysroot`
-  - `set solib-search-path path`
-  - `show debug-file-directory`
-  - `show index-cache`
+  - program
+    - `file` is `exec-file` and `symbol-file`
+    - `exec-file` is `target exec`
+    - `symbol-file` loads program symbols from the specified file
+      - this clears the current symbols first
+    - `core-file` is `target core`
+    - `add-symbol-file` adds program symbols from the specified file
+      - this is intended to be used when the program can dynamically load code
+        through means other than dlopen
+    - `info files`
+  - shared libraries
+    - `show auto-solib-add` auto-loads symbols for shared libraries
+    - `info sharedlibrary`
+    - `sharedlibrary` and `nosharedlibrary` to force load/unload symbols for
+      shared libraries
+  - remote debug
+    - `set sysroot`
+    - `set solib-search-path path`
+    - `show debug-file-directory`
+  - `show index-cache` saves symbol index cache to speed up symbol loading
+    next time
 - 19 Specifying a Debugging Target
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Targets.html>
   - `target exec`
@@ -119,19 +142,21 @@ GDB
   - `gdbserver`
 - 21 Configuration-Specific Information
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Configurations.html>
-  - `info proc all`
+  - `info proc all` shows various info under `/proc/<pid>`
 - 22 Controlling GDB
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Controlling-GDB.html>
-  - `show history`
-  - `show commands`
-  - `show pagination`
-  - `show verbose`
-  - `show confirm`
-  - `show debug`
+  - command history
+    - `show history` saves command history to a file
+    - `show commands` shows command history of the current session, including
+      those loaded from the history file
+  - `show pagination` whether to disable paging
+  - `show confirm` whether to ask for confirmation
+  - `show verbose` be verbose about what gdb is doing internally
+  - `show debug` be more verbose about what gdb is doing internally
 - 23 Extending GDB
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Extending-GDB.html>
-  - `source`
-  - `alias`
+  - `source` reads gdb commands from the specified file
+  - `alias` defines a shortcut
 
 ## Symbols
 
