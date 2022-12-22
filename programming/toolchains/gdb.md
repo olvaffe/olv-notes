@@ -7,6 +7,31 @@ GDB
 
 ## Debugging with GDB
 
+- 2 Getting In and Out of GDB
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Invocation.html>
+  - choosing files
+    - `-s` is `symbol-file`
+    - `-e` is `exec-file`
+    - `-se` is `file`
+    - `-c` is `core-file`
+    - `-p` is `attach`
+  - executing commands
+    - `-eix` and `-eiex` for earlyinit commands
+    - `-ix` and `-iex` for init commands
+    - `-x` and `-ex` for commands (after file loading)
+  - init files
+    - `-nx` to skip all
+    - `-nh` to skip those in home dir
+  - `--args` stops arg parsing for gdb itself
+  - `show logging`
+    - save gdb output to a file
+- 3 GDB Commands
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Commands.html>
+  - `help`
+  - `apropos` to search through all commands
+  - `info` to show the state of the program
+  - `set`
+  - `show` to show the state of gdb
 - 4 Running Programs Under GDB
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Running.html>
   - terminology
@@ -14,21 +39,58 @@ GDB
     - `target` is the environment `program` executes in
     - `inferior` is the state of a program execution
       - usually a process, if `target` supports processes
-  - `run`
-  - `start`
-  - `starti`
-  - `set args ...`
+  - starting
+    - `run`
+    - `start`
+    - `starti`
+    - `show args`
   - `attach` and `detach`
     - `/proc/sys/kernel/yama/ptrace_scope`
+  - inferiors
+    - `info inferiors`
+    - `info connections`
+    - `inferior`
+  - threads
+    - `info threads`
+    - `thread`
+    - `thread apply all`
+    - `taas` is `thread apply all -s`
+  - forking
+    - `show follow-fork-mode`
+    - `show detach-on-fork`
+    - `show follow-exec-mode`
 - 5 Stopping and Continuing
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stopping.html>
-  - `catch load` and `catch unload`
+  - breakpoints
+  - watchpoints
+  - catchpoints
+    - `catch exec`
+    - `catch syscall`
+    - `catch fork`
+    - `catch load` and `catch unload`
+    - `catch signal`
+  - signals
+    - `info signals`
+    - `handle`
 - 8 Examining the Stack
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>
+  - frame
+    - `info frame`
+    - `info args`
+    - `info locals`
+    - `frame apply all`
+    - `faas` is `frame apply all -s`
 - 9 Examining Source Files
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Source.html>
 - 10 Examining Data
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/Data.html>
+  - `display`
+  - `show print`
+  - `show values`
+  - `info registers`
+  - `info auxv`
+  - `info os`
+  - `gcore`
 - 18 GDB Files
   - <https://sourceware.org/gdb/current/onlinedocs/gdb/GDB-Files.html>
   - `file`
@@ -66,6 +128,10 @@ GDB
   - `show verbose`
   - `show confirm`
   - `show debug`
+- 23 Extending GDB
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Extending-GDB.html>
+  - `source`
+  - `alias`
 
 ## Symbols
 
