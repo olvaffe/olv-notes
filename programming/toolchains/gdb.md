@@ -5,6 +5,68 @@ GDB
 
 - `gdb <prog>`, `gdb <prog> <pid>`, or `gdb <prog> <core>`
 
+## Debugging with GDB
+
+- 4 Running Programs Under GDB
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Running.html>
+  - terminology
+    - `program` is the binary to be debugged
+    - `target` is the environment `program` executes in
+    - `inferior` is the state of a program execution
+      - usually a process, if `target` supports processes
+  - `run`
+  - `start`
+  - `starti`
+  - `set args ...`
+  - `attach` and `detach`
+    - `/proc/sys/kernel/yama/ptrace_scope`
+- 5 Stopping and Continuing
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stopping.html>
+  - `catch load` and `catch unload`
+- 8 Examining the Stack
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>
+- 9 Examining Source Files
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Source.html>
+- 10 Examining Data
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Data.html>
+- 18 GDB Files
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/GDB-Files.html>
+  - `file`
+  - `exec-file`
+  - `symbol-file`
+  - `core-file`
+  - `add-symbol-file`
+  - `info files`
+  - `show auto-solib-add`
+  - `info sharedlibrary`
+  - `sharedlibrary` and `nosharedlibrary`
+  - `set sysroot`
+  - `set solib-search-path path`
+  - `show debug-file-directory`
+  - `show index-cache`
+- 19 Specifying a Debugging Target
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Targets.html>
+  - `target exec`
+  - `target core`
+  - `target remote`
+  - `target native`
+- 20 Debugging Remote Programs
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Debugging.html>
+  - `target remote`
+  - `target extended-remote`
+  - `gdbserver`
+- 21 Configuration-Specific Information
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Configurations.html>
+  - `info proc all`
+- 22 Controlling GDB
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Controlling-GDB.html>
+  - `show history`
+  - `show commands`
+  - `show pagination`
+  - `show verbose`
+  - `show confirm`
+  - `show debug`
+
 ## Symbols
 
 - `strip`
