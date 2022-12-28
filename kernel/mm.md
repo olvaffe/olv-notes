@@ -478,6 +478,105 @@ Kernel Memory Management
     lru
 - `shmem_read_mapping_page` also calls `shmem_getpage_gfp`
 
+## `/proc/meminfo`
+
+- `meminfo_proc_show`
+- `MemTotal`
+  - this shows `_totalram_pages`
+  - it is increased when free pages are handed over from memblock to buddy
+    allocator after early boot
+  - it can also be increased on memory hotplug
+- `MemFree`
+  - this shows `NR_FREE_PAGES`
+  - it is modified by `__mod_zone_freepage_state` called from the buddy
+    allocator
+- `MemAvailable`
+  - this shows `si_mem_available`, which is an estimation of memory available
+    to userspace before the kernel needs to swap
+  - e.g., free pages plus some pagecache plus some reclaimable
+- `Buffers`
+  - this shows `nr_blockdev_pages`, which is the amount of pagecache used for
+    block devices (rather than files)
+  - that is, pagecache used for direct blkdev io 
+    - e.g., when an fs accesses superblocks such as in `find / -name whatever`
+- `Cached`
+  - this shows the amount of pagecache used for files
+  - `NR_FILE_PAGES` minus `Buffers` minus `SwapCached`
+  - `NR_FILE_PAGES` is commonly modified by `__lruvec_stat_mod_folio` called
+    from pagecache (lru) or shmem
+- `SwapCached`
+  - this shows `NR_SWAPCACHE`
+  - swap cache consists of pages that have been written to the swap device but
+    also exist in page cache
+    - this can happen with pages shared by multiple processes
+    - when a page is swapped out in one address space, it can still be mapped
+      in another address space and must stay in page cache for a little longer
+- `Active`
+  - this is the sum of `LRU_ACTIVE_ANON` and `LRU_ACTIVE_FILE`
+- `Inactive`
+  - this is the sum of `LRU_INACTIVE_ANON` and `LRU_INACTIVE_FILE`
+- `Active(anon)` / `Inactive(anon)` / `Active(file)` / `Inactive(file)` / `Unevictable`
+  - they show `LRU_INACTIVE_ANON`, `LRU_ACTIVE_ANON`, `LRU_INACTIVE_FILE`,
+    `LRU_ACTIVE_FILE`, and `LRU_UNEVICTABLE`
+  - the pagecache (`struct lruvec`) maintains 5 lists for pages
+  - when pages are moved from one list to another, `update_lru_size` is called
+    to update the stats
+  - active pages are recently used and are less likely to be reclaimed
+- `Mlocked`
+  - this shows `NR_MLOCK`, pages that are `mlock`ed
+- `SwapTotal`
+  - this shows `total_swap_pages`
+  - it is increased/decreased when swaps are added/removed
+- `SwapFree`
+  - this shows `nr_swap_pages`, for swap space available
+- `Zswap` / `Zswapped`
+  - they how `zswap_pool_total_size` and `zswap_stored_pages`
+  - zswap receives pages to be swapped out, compresses and stores them in a
+    in-memory pool, and swaps compressed pages out when the pool gets full
+- `Dirty`
+  - this shows `NR_FILE_DIRTY`
+  - it is updated when `filemap_dirty_folio` marks pages dirty
+- `Writeback`
+  - this shows `NR_WRITEBACK`, which are pages being written back
+  - that is, pages between `__folio_start_writeback` and
+    `__folio_end_writeback`
+- `AnonPages`
+  - this shows `NR_ANON_MAPPED`
+  - it is updated by `page_add_anon_rmap` and `page_remove_rmap`
+- `Mapped`
+  - this shows `NR_FILE_MAPPED`
+  - it is updated by `page_add_file_rmap` and `page_remove_rmap`
+- `Shmem`
+  - this shows `NR_SHMEM`
+  - it is updated by `shmem_add_to_page_cache` and
+    `shmem_delete_from_page_cache`
+- `KReclaimable`
+- `Slab`
+- `SReclaimable`
+- `SUnreclaim`
+- `KernelStack`
+- `PageTables`
+- `NFS_Unstable`
+- `Bounce`
+- `WritebackTmp`
+- `CommitLimit`
+- `Committed_AS`
+- `VmallocTotal`
+- `VmallocUsed`
+- `VmallocChunk`
+- `Percpu`
+- `HardwareCorrupted`
+- `AnonHugePages`
+- `ShmemHugePages`
+- `ShmemPmdMapped`
+- `FileHugePages`
+- `FilePmdMapped`
+- `Hugepagesize`
+- `Hugetlb`
+- `DirectMap4k`
+- `DirectMap2M`
+- `DirectMap1G`
+
 ## stats
 
 - `malloc(512MB)` without touching it
