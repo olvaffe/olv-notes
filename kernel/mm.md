@@ -163,6 +163,20 @@ Kernel Memory Management
   - `zone_sizes_init`
 - free pages from memblock to buddy allocator
   - `memblock_free_all` called by `mem_init`
+- on a machine with 32G of memory,
+  - e820 reports about 31.7G usable
+  - `zone_sizes_init` reports a similar amount of memory
+  - `mem_init_print_info` reports a similar amount of memory
+    - `get_num_physpages()` is 31.7G but `totalram_pages()` is 30.8G
+    - the delta is reported as reserved and consists of
+      - kernel text, data, bss, and init sections
+      - `struct page` array
+      - hw carved-out regions
+  - `free_reserved_area` frees up some reserved memory
+    - init section, initrd, etc.
+    - this increases `totalram_pages()`
+  - `grep MemTotal /proc/meminfo` reports 31.06G
+    - it reports `totalram_pages()`
 
 ## x86-64
 
