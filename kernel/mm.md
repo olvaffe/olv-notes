@@ -172,6 +172,8 @@ Kernel Memory Management
       - kernel text, data, bss, and init sections
       - `struct page` array
       - hw carved-out regions
+    - free pages are limited to those in lowmem thanks to
+      `CONFIG_DEFERRED_STRUCT_PAGE_INIT`
   - `free_reserved_area` frees up some reserved memory
     - init section, initrd, etc.
     - this increases `totalram_pages()`
