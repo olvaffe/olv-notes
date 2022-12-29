@@ -455,6 +455,42 @@ Kernel Memory Management
   - then those pages are returned to the buddy allocator with
     `free_unref_page_list`
 
+## page cache
+
+- `struct file_operations` has `read_iter` and `write_iter` that are used when
+  a file descriptor is `read` or `write`
+  - for example, ext4 uses `ext4_file_read_iter` and `ext4_file_write_iter`
+- `struct address_space_operations` has `read_folio` and
+  `write_begin`/`write_end` that are used to interact with the page cache
+  - for example, ext4 uses `ext4_read_folio`, `ext4_write_begin`, and
+    `ext4_write_end`
+- when a file descriptor is read,
+  - `read_iter` op often calls down to `filemap_read`
+  - `filemap_get_pages` gets pages from page cache
+    - if the contents are in the page cache, it can return right away
+    - otherwise, `filemap_create_folio` uses `read_folio` op to populate the
+      page cache and get the pages
+    - it also uses readahead to populate the page cache
+- where is the page cache?
+  - every `struct inode` has `i_mapping` that points to `i_data`
+  - `i_data` is a `struct address_space`
+  - `address_space::i_pages` is an array of pages and is the page cache for
+    the inode
+
+## LRU
+
+- there is a global array of `typedef struct pglist_data pg_data_t`
+  - one `pg_data_t` for each NUMA node
+- insidie `pg_data_t`, there is a `struct lruvec`
+- inside `struct lruvec`, there are 5 lists
+  - `LRU_INACTIVE_ANON`
+  - `LRU_ACTIVE_ANON`
+  - `LRU_INACTIVE_FILE`
+  - `LRU_ACTIVE_FILE`
+  - `LRU_UNEVICTABLE`
+- `add_page_to_lru_list` adds a page to one of the lists
+  - it actually adds the folio containing the page to the list
+
 ## shmem
 
 - tmpfs is a pseudo-filesystem where files live on top of file page cache and
@@ -551,10 +587,18 @@ Kernel Memory Management
   - it is updated by `shmem_add_to_page_cache` and
     `shmem_delete_from_page_cache`
 - `KReclaimable`
+  - this shows `NR_SLAB_RECLAIMABLE_B` plus `NR_KERNEL_MISC_RECLAIMABLE`
+  - `NR_KERNEL_MISC_RECLAIMABLE` has no user anymore
 - `Slab`
+  - this shows `NR_SLAB_RECLAIMABLE_B` plus `NR_SLAB_UNRECLAIMABLE_B`
 - `SReclaimable`
+  - this shows `NR_SLAB_RECLAIMABLE_B`
 - `SUnreclaim`
+  - this shows `NR_SLAB_UNRECLAIMABLE_B`
 - `KernelStack`
+  - this shows `NR_KERNEL_STACK_KB`
+  - it is modified by `account_kernel_stack` called from `dup_task_struct`,
+    `do_exit`, etc.
 - `PageTables`
 - `NFS_Unstable`
 - `Bounce`
