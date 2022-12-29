@@ -97,35 +97,27 @@ Filesystem Hierarchy Standard
 - `/proc`
 - `/sys`
 
-## XDG
-
-- `$XDG_DATA_HOME` defaults to `$HOME/.local/share` 
-- `$XDG_DATA_DIRS` defaults to `/usr/local/share/:/usr/share/`
-  - for additional data search paths
-- `$XDG_CONFIG_HOME` defaults to `$HOME/.config` 
-- `$XDG_CONFIG_DIRS` defaults to `/etc/xdg`
-  - for additional config search paths
-- `$XDG_CACHE_HOME` defaults to `$HOME/.cache`
-- `$XDG_RUNTIME_DIR` has no default
-  - if exists, the directory must be owned by user and has access mode 0700
-
-## Base Directory Specification
+## XDG Base Directory Specification
 
 - <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+  - freedesktop.org was formerly known as X Desktop Group, XDG
 - `XDG_DATA_HOME`
-  - `$HOME/.local/share`
+  - defaults to `$HOME/.local/share`
 - `XDG_CONFIG_HOME`
-  - `$HOME/.config`
+  - defaults to `$HOME/.config`
 - `XDG_STATE_HOME`
-  - `$HOME/.local/state`
+  - defaults to `$HOME/.local/state`
 - `XDG_CACHE_HOME`
-  - `$HOME/.cache`
+  - defaults to `$HOME/.cache`
 - `XDG_DATA_DIRS`
-  - `/usr/local/share/:/usr/share/`
+  - defaults to `/usr/local/share/:/usr/share/`
+  - additional data search paths
 - `XDG_CONFIG_DIRS`
-  - `/etc/xdg`
+  - defaults to `/etc/xdg`
+  - additional config search paths
 - `XDG_RUNTIME_DIR`
-  - not set
+  - no default
+  - if exists, the directory must be owned by user and has access mode 0700
 
 ## `pam_systemd`
 

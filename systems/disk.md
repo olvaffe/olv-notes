@@ -1,6 +1,37 @@
 Distro Disk
 ===========
 
+## Partitioning
+
+- fdisk 
+  - `g` to use GPT
+  - partition 1: 260M, ESP
+  - partition 2: entire disk, Linux
+  - by default, fdisk reserves the first and the last 1MB of the disk for
+    primary and secondary GPT tables
+- mkfs
+  - partition 1: `mkfs.vfat -F32`
+  - partition 2: `mkfs.btrfs`
+- prepare btrfs
+  - mount partition 2
+  - `mkdir roots homes`
+  - `btrfs subvolume create roots/current`
+  - `mkdir roots/current/{boot,home}`
+  - `btrfs subvolume create homes/current`
+  - `btrfs subvolume set-default roots/current`
+  - umount
+- current disk usage on a small laptop
+  - /home: 55G
+  - /var: 8G (down to 3G after pacman -Sc)
+  - /usr: 5G
+  - rest: 1G
+
+## Mounting
+
+- mount partition 2 (uses `subvol=roots/current` by default)
+- mount partition 1 to boot
+- mount partition 2 to home with `subvol=homes/current`
+
 ## GPT
 
 - <https://en.wikipedia.org/wiki/GUID_Partition_Table>
@@ -67,7 +98,7 @@ Distro Disk
     want to align partitions to `8*63` sectors.
 - Partitioning for booting
   - UEFI requires ESP, EFI System Partition, to store boot loaders, drivers, and
-    other files.  Size should be 200MiB
+    other files.  Size should be 260MiB
   - BIOS+GRUB2 requires BIOS Boot Partition to store the second stage
     bootloader.  Size should be 1MiB
   - OSX requires a non-ESP partition to have 128MB unused space after it
@@ -85,44 +116,13 @@ Distro Disk
   - Windows 7 insists ESP to be FAT32.  So use it.
   - `efibootmgr` is a userspace tool to manipulate `EFI/`
 - Multi-boot
-  - ESP: 200MB
+  - ESP: 260MB
   - WIN MSR: 128MB
   - WIN SYS: 80GB
   - LIN SYS: 20GB
   - LIN HOME: 140GB
   - WIN DATA: 80GB
   - Windows should be installed first.  Ubuntu 11.04 wipes ESP so back up ESP.
-
-## Partitioning
-
-- fdisk 
-  - `g` to use GPT
-  - partition 1: 260M, ESP
-  - partition 2: entire disk, Linux
-  - by default, fdisk reserves the first and the last 1MB of the disk for
-    primary and secondary GPT tables
-- mkfs
-  - partition 1: `mkfs.vfat -F32`
-  - partition 2: `mkfs.btrfs`
-- prepare btrfs
-  - mount partition 2
-  - `mkdir roots homes`
-  - `btrfs subvolume create roots/current`
-  - `mkdir roots/current/{boot,home}`
-  - `btrfs subvolume create homes/current`
-  - `btrfs subvolume set-default roots/current`
-  - umount
-- current disk usage on a small laptop
-  - /home: 55G
-  - /var: 8G (down to 3G after pacman -Sc)
-  - /usr: 5G
-  - rest: 1G
-
-## Mounting
-
-- mount partition 2 (uses `subvol=roots/current` by default)
-- mount partition 1 to boot
-- mount partition 2 to home with `subvol=homes/current`
 
 ## dm-crypt / LUKS
 
