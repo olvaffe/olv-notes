@@ -91,13 +91,19 @@ Arch Linux
 - minimal packages
   - boot, `base linux linux-firmware`
     - also `btrfs-progs dosfstools`
+    - also `zram-generator`
+      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
+      - `systemctl daemon-reload`
+      - `zramctrl`
   - wifi, `iwd` or `wpa_supplicant`
+    - also `networkmanager`
   - tools, `sudo vim man-db`
   - devel, `gcc git ctags meson pkgconf`
     - also `gdb debuginfod perf strace man-pages`
   - gui, `sway swayidle swaylock i3status mako polkit`
     - `alacritty google-chrome noto-fonts noto-fonts-cjk`
-    - `light imv wl-clipboard wayland-utils`
+    - `light wl-clipboard wayland-utils`
+    - `imv grim slurp`
     - `mesa mesa-utils vulkan-radeon vulkan-tools`
   - bluetooth, `bluez bluez-utils`
   - printer, `cups samsung-unified-driver-printer`
