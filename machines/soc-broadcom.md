@@ -1,7 +1,7 @@
-Raspberry Pi
+Broadcom SoC
 ============
 
-## History
+## Raspberry Pi History
 
 - RPi 1 uses BCM2835
   - VideoCore IV, 250MHz

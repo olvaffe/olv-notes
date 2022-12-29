@@ -109,6 +109,35 @@ Filesystem Hierarchy Standard
 - `$XDG_RUNTIME_DIR` has no default
   - if exists, the directory must be owned by user and has access mode 0700
 
+## Base Directory Specification
+
+- <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+- `XDG_DATA_HOME`
+  - `$HOME/.local/share`
+- `XDG_CONFIG_HOME`
+  - `$HOME/.config`
+- `XDG_STATE_HOME`
+  - `$HOME/.local/state`
+- `XDG_CACHE_HOME`
+  - `$HOME/.cache`
+- `XDG_DATA_DIRS`
+  - `/usr/local/share/:/usr/share/`
+- `XDG_CONFIG_DIRS`
+  - `/etc/xdg`
+- `XDG_RUNTIME_DIR`
+  - not set
+
+## `pam_systemd`
+
+- `man pam_systemd`
+  - `XDG_SESSION_ID`
+  - `XDG_RUNTIME_DIR`
+  - `XDG_SESSION_TYPE`
+  - `XDG_SESSION_CLASS`
+  - `XDG_SESSION_DESKTOP`
+  - `XDG_SEAT`
+  - `XDG_VTNR`
+
 ## systemd
 
 - `man 7 file-hierarchy`

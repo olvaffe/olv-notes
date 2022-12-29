@@ -42,5 +42,5 @@ SSH
   - a pty is allocated if no command is specified
     - `ssh host` allocates a pty
     - `ssh host sh` does not
-  - `-T`, `-t, and `-tt` can explicit control whether a pty is allocated by
+  - `-T`, `-t`, and `-tt` can explicit control whether a pty is allocated by
     sshd
