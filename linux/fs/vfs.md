@@ -1,4 +1,20 @@
-# VFS
+VFS
+===
+
+## Path Resolution
+
+- the goal is use a filename to find the `struct dentry` from dcache
+- `getname` allocates a `struct filename` to hold the filename
+  - this copies the name from the userspace pointer
+- `filename_lookup` converts the filename to a `struct path`
+  - `path_lookupat` has a tight loop to call `link_path_walk` and
+    `lookup_last`
+  - `struct path` contains `struct vfsmount` and `struct dentry`
+- `statx` syscall as an example
+  - `strace stat /` shows that the command uses `statx` syscall
+  - it uses `filename_lookup` to get `path`
+  - `path` has a pointer to `dentry` which has a pointer to `struct inode`
+  - `vfs_getattr_nosec` reads the attrs from the inode
 
 ## Concepts
 
@@ -64,6 +80,16 @@
 - An inode object represents an object within the fs
 - there is `struct inode_operations` that tells the VFS how to manipulate the
   object, such as create/lookup/link/unlink/...
+- `statx` returns the attrs of a inode
+- an inode can be in one of the following types
+  _ `S_IFSOCK`, socket
+  _ `S_IFLNK`, symbolic link
+  _ `S_IFREG`, regular file
+  _ `S_IFBLK`, block device
+  _ `S_IFDIR`, directory
+  _ `S_IFCHR`, character device
+  _ `S_IFIFO`, FIFO
+  - filesystems use different `inode_operations` for inodes of different types
 
 ## Address Space
 
