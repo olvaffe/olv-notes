@@ -84,6 +84,7 @@ init main
   makes it pwd and /
   - it is called from `mnt_init` from `vfs_caches_init`
   - `rootfs` is a `tmpfs`
+  - it is usually empty at this moment
 - when kernel is fully initialized (`rest_init`), it spawns the first thread
   with pid 1 to execute `kernel_init`
 - pid 1 calls `populate_rootfs` or `default_rootfs` to populate rootfs
@@ -94,6 +95,10 @@ init main
   - otherwise, `populate_rootfs` is called to unpack cpio.  When no cpio is
     supplied at build time or by bootloader, it uses `usr/default_cpio_list`
     to create `/dev/console` and `/root` in rootfs
+    - see `Documentation/filesystems/ramfs-rootfs-initramfs.txt`
+
+## init
+
 - pid 1 calls `console_on_rootfs` to open `/dev/console` and dup it to fd 0,
   1, and 2
   - when initramfs cpio does not have the node, this is skipped
@@ -112,6 +117,52 @@ init main
 - pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in initramfs)
 
 ## initramfs
+
+- `CONFIG_BLK_DEV_INITRD` enables initramfs/initrd support
+- cpio archive
+  - `usr/initramfs_data.S` defines `__initramfs_size` in `.init.ramfs` section
+    - when `CONFIG_INITRAMFS_SOURCE` is specified, it includes the specified
+      cpio archive
+    - otherwise, it generates a cpio archive according to
+      `usr/default_cpio_list`
+    - the cpio archive is embedded in the kernel image
+  - `INIT_RAM_FS` defines `__initramfs_start` and includes `.init.ramfs` section
+    to help find the embedded archive
+- cmdline
+  - `initrd=` requests the bootloader to load an external cpio archive
+    - `initrd_start` and `initrd_end` are set to the address of the loaded
+      cpio archive in memory
+  - `init=` is handled by `init_setup` and updates `execute_command`
+    - default to `/sbin/init`
+  - `rdinit=` is handled by `rdinit_setup` and updates `ramdisk_execute_command`
+    - default to `/init`
+  - `root=` is handled by `root_dev_setup` and updates `saved_root_name`
+- `populate_rootfs` is called by `do_initcalls`
+  - it unpacks the built-in initramfs at `__initramfs_start`
+  - it then unpacks the external initramfs at `initrd_start`
+    - when initrd= is given, the bootloader loads an external initramfs and
+      updates `initrd_start` and `initrd_end`
+    - an external initiramfs can be unpacked using
+      `$ gunzip -c initramfs.img | cpio -idv`
+  - if unpack of `initrd_start` failed and `CONFIG_BLK_DEV_RAM` is set, it
+    assumes `initrd_start` points to a ramdisk image instead
+- without `CONFIG_BLK_DEV_INITRD`, `default_rootfs` instead of
+  `populate_rootfs` is called to populate a minimal rootfs
+- pid 1
+  - `kernel_init` kthread has pid 1 and runs `kernel_init`.  At the end, it
+    `do_execve` init and become the userspace pid 1.  Before that...
+  - `console_on_rootfs` opens `/dev/console` and dups to fd 0, 1, and 2
+  - if initramfs contains `/init`,  `ramdisk_execute_command` is set to `/init`
+    - otherwise, `prepare_namespace` sets `ROOT_DEV` according to `root=` and
+      mounts the real rootfs
+  - `run_init_process` calls `do_execve`
+- initramfs `/init` is executed.  It parses the kernel cmdline and does many
+  other things.  Among them,
+  - it mounts the root
+  - execs `/sbin/init` of the root device with the help of `switch_root`
+  - add break=premount or break=postmount to spawn a shell
+
+## packing initramfs
 
 - the kernel initramfs unpacker checks if the cpio starts with "070701", that
   is, the new portable format
