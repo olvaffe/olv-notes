@@ -1,4 +1,5 @@
-# Barrier
+Barrier
+=======
 
 ## Memory Model
 

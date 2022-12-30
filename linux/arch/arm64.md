@@ -165,7 +165,7 @@ ARM64
           - `bringup_nonboot_cpus`
           - `cpu_up`
           - `_cpu_up`
-          - `cpuhp_up_callbacks``
+          - `cpuhp_up_callbacks`
           - `cpuhp_invoke_callback`
           - `bringup_cpu`
           - `__cpu_up`

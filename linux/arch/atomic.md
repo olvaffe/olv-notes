@@ -1,4 +1,5 @@
-# Atomic
+Atomic
+======
 
 ## x86 atomic.h
 
