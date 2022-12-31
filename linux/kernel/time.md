@@ -1,36 +1,5 @@
-Time
-====
-
-## Boot (x86)
-
-- `setup_kernel`
-  - `setup_arch`
-    - `x86_wallclock_init`
-    - `register_refined_jiffies` to register (refined) jiffies as a clocksource
-  - `tick_init`
-    - `tick_broadcast_init`
-    - `tick_nohz_init`
-  - `init_timers`
-  - `hrtimers_init`
-  - `timekeeping_init`
-  - `time_init`
-  - `late_time_init`
-    - `x86_late_time_init`
-      - `hpet_time_init`
-      - `tsc_init`
-  - `sched_clock_init`
-- `do_initcalls`
-  - `init_jiffies_clocksource`
-  - `clocksource_done_booting`
-  - `hpet_late_init`
-  - `init_tsc_clocksource`
-
-## Wall clock
-
-- `x86_wallclock_init` actually disables `get_wallclock` and `set_wallclock`
-  on special platforms, which initially point to `mach_get_cmos_time` and
-  `mach_set_rtc_mmss`
-  - they read/set the wallclock from/to CMOS
+Kernel Time
+===========
 
 ## `clocksource`
 
@@ -64,6 +33,85 @@ Time
   - `tick_check_new_device` adds the device as the per-cpu or broadcast tick
     device
 - `clockevents_config_and_register` is a shortcut to config and register
+- whenever an interrupt is received, the device calls `event_handler` to feed
+  the interrupt into kernel tick subsystem
+  
+## Tick
+
+- the tick subsystem uses `clock_event_device`s
+  - a `clock_event_device` is a device that can fire time-based interrupts
+- broadcasting
+  - the tick subsystem prefers per-core `clock_event_device` 
+  - if there is no per-core clockevent dev, the subsystem uses whatever
+    clockevent dev as the broadcast device
+  - `tick_do_broadcast` calls arch-specific `tick_broadcast`
+    - on arm64, this sends `IPI_TIMER` to other cores
+  - `tick_receive_broadcast` is called when a core receives the broadcast
+    - on arm64, this is called when a core receives `IPI_TIMER`
+- `tick_check_new_device` checks if a new clockevent dev is a better fit for
+  the current cpu and switches to it for ticks
+  - if it is the first device, `tick_do_timer_cpu` is set to the cpu and the
+    mode is set to `TICKDEV_MODE_PERIODIC`
+  - `tick_setup_periodic` may switch the clockevent dev to
+    `CLOCK_EVT_STATE_PERIODIC` or `CLOCK_EVT_STATE_ONESHOT` regardless of
+    `TICKDEV_MODE_PERIODIC`, depending on what the clockevent dev is capable
+    - it can emulate one state using another anyway
+  - `clockevents_program_event` is called to arm the clockevent dev
+- `tick_handle_periodic` is called when the interrupt fires, and the mode is
+  `TICKDEV_MODE_PERIODIC`
+  - `tick_periodic` calls
+    - `do_timer` increments `jiffies_64`
+    - `update_wall_time` updates `timekeeper`
+    - `update_process_times` charges 1 tick to the current process
+      - `run_local_timers` raises `TIMER_SOFTIRQ` and others
+      - `scheduler_tick` adds the tick to the scheduler
+  - `clockevents_program_event` arms the clockevent dev again if it is in
+    `CLOCK_EVT_STATE_ONESHOT`
+- unless `CONFIG_HZ_PERIODIC`, `tick_handle_periodic` is only used briefly
+- for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_handler` or the
+  high-resolution `hrtimer_interrupt` is used
+  - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
+  - `tick_sched_handle` calls `update_process_times`
+
+## Timekeeping
+
+- `update_wall_time`
+- `ktime_get`
+- `clock_gettime(CLOCK_REALTIME)` calls `posix_get_realtime_timespec` which
+  calls `ktime_get_real_ts64`
+- `clock_gettime(CLOCK_MONOTONIC)` calls `posix_get_monotonic_timespec` which
+  calls `ktime_get_ts64`
+
+## Boot (x86)
+
+- `setup_kernel`
+  - `setup_arch`
+    - `x86_wallclock_init`
+    - `register_refined_jiffies` to register (refined) jiffies as a clocksource
+  - `tick_init`
+    - `tick_broadcast_init`
+    - `tick_nohz_init`
+  - `init_timers`
+  - `hrtimers_init`
+  - `timekeeping_init`
+  - `time_init`
+  - `late_time_init`
+    - `x86_late_time_init`
+      - `hpet_time_init`
+      - `tsc_init`
+  - `sched_clock_init`
+- `do_initcalls`
+  - `init_jiffies_clocksource`
+  - `clocksource_done_booting`
+  - `hpet_late_init`
+  - `init_tsc_clocksource`
+
+## Wall clock
+
+- `x86_wallclock_init` actually disables `get_wallclock` and `set_wallclock`
+  on special platforms, which initially point to `mach_get_cmos_time` and
+  `mach_set_rtc_mmss`
+  - they read/set the wallclock from/to CMOS
 
 ## Scheduling-Clock Interrupts
 
