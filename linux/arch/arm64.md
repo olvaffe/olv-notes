@@ -62,6 +62,25 @@ ARM64
     Matrix Extension)
   - and various exceptions causing the userspace to be killed by `SIGILL`
 
+## Generic Timer
+
+- <https://developer.arm.com/documentation/102379/0101/>
+- on arm, there is the generic timer that consists of a system counter and
+  per-core timers
+- system counter
+  - `CNTFREQ` is the system counter frequency in hz
+  - `CNTVCT_EL0` is the current value
+- the driver is `CONFIG_ARM_ARCH_TIMER`
+  - it relies on arch-specific `include/asm/arch_timer.h`
+  - `arch_timer_of_init` registers a `struct clocksource` for the system
+    counter
+    - the frequency is from `CNTFREQ`
+    - as cpus are brought up, it also registers a `struct clock_event_device`
+      for each per-core timer
+      - the type is `ARCH_TIMER_TYPE_CP15`
+  - it appears that the generic timer can also be accessed via mmio
+    - `arch_timer_mem_of_init`
+
 ## Booting (Raspberry Pi)
 
 - `kernel/head.S`
