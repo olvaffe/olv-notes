@@ -20,6 +20,17 @@ Kernel Time
 
 - a `clock_event_device` is a device that can deliver an interrupt in the
   specified future periodically or one-shot
+- x86 Hardware
+  - CMOS Clock.  Could be programmed to alarm.  IRQ 8.
+  - TSC: Time Stamp Counter, starting Pentium.  Same freq as the CPU.
+  - PIT: Programmable Interval Timer.  Issue periodic irq on IRQ 0.  HZ ticks per second.
+  - CPU local timer.  Part of local APIC.  Interupt only a local CPU.
+  - HPET.  Registers are memory mapped.  Expect to replace PIT.  Interrupt ?.
+  - ACPI PMT.
+  - is clock event device per-cpu?  No spin lock needed when implementing one?
+    - yes?
+  - could a per-cpu clock event device also be a broadcast one at the same time?
+    - no?
 - examples of `clock_event_device` on x86
   - hpet
     - when `HPET_ID_LEGSUP` is set, hpet supports legacy replacement mode.
@@ -28,6 +39,12 @@ Kernel Time
     - when `X86_FEATURE_ARAT` is set, no channel is in `HPET_MODE_CLOCKEVT`
     - unused channels are put in `HPET_MODE_DEVICE`
   - lapic, for each core
+  - `cat /proc/timer_list`
+    - On my 6-core amd laptop, i have 7 clock event devices
+    - a broadcast one, hpet, with `event_handler`
+      `tick_handle_oneshot_broadcast`
+    - two per-cpu ones, lapic, with `event_handler` `hrtimer_interrupt`
+    - acpi is checked and TSC could be marked unstable
 - `clockevents_config_device` updates the struct
 - `clockevents_register_device` adds the struct to `clockevent_devices` list
   - `tick_check_new_device` adds the device as the per-cpu or broadcast tick
@@ -41,7 +58,6 @@ Kernel Time
 - whenever an interrupt is received, the device driver calls `event_handler`
   to feed the interrupt into kernel tick subsystem
 
-  
 ## Tick
 
 - the tick subsystem uses `clock_event_device`s
@@ -59,6 +75,11 @@ Kernel Time
     - on arm64, this is called when a core receives `IPI_TIMER`
 - `tick_check_new_device` checks if a new clockevent dev is a better fit for
   the current cpu and switches to it for ticks
+  - `tick_check_replacement`
+    - clockevent dev can be cpu local or not, depending on its cpumask
+    - non-local device could be treated as a local one if it can set irq
+      affinity
+    - if a device is cpu local, and better than the current one, goes on
   - if it is the first device, `tick_do_timer_cpu` is set to the cpu and the
     mode is set to `TICKDEV_MODE_PERIODIC`
   - `tick_setup_periodic` may switch the clockevent dev to
@@ -87,9 +108,11 @@ Kernel Time
     - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
     - `tick_sched_handle` calls `update_process_times`
 - in `NO_HZ`,
-  - on any interrupt, `tick_irq_enter` is called to see if tick is disabled
-    and needs to be re-enabled
-  - `tick_nohz_update_jiffies` is called to catch up
+  - on any interrupt enter, `tick_irq_enter` is called to see if tick is
+    disabled and needs to be re-enabled
+    - `tick_nohz_update_jiffies` is called to catch up
+  - on any interrupt exit, `tick_irq_exit` is called
+    - `tick_nohz_irq_exit`
 
 ## Timekeeping
 
@@ -112,14 +135,27 @@ Kernel Time
   - `tick_init`
     - `tick_broadcast_init`
     - `tick_nohz_init`
+  - `init_IRQ`
   - `init_timers`
   - `hrtimers_init`
   - `timekeeping_init`
+    - `ntp_init`
+    - init current clocksource (`clocksource_jiffies`) for timekeeping purpose
+    - xtime is initialized from `read_persistent_wall_and_boot_offset`
+    - `wall_to_monotonic` initialized
+      - `xtime + wall_to_monotonic == monotonic time`
   - `time_init`
+  - `mem_init`
   - `late_time_init`
+    - portion of `time_init` is delayed because we need `mem_init` for
+      memory-mapped io
     - `x86_late_time_init`
       - `hpet_time_init`
-      - `tsc_init`
+        - `pit_timer_init` if could not `hpet_enable`
+          - In that case, `clockevent_i8253_init` registers `i8253_clockevent`
+            and `global_clock_event` is also set to `i8253_clockevent`
+        - `setup_default_timer_irq` calls `request_irq(0, timer_interrupt, ...)`
+      - `tsc_init` registers tsc clocksource
   - `sched_clock_init`
 - `do_initcalls`
   - `init_jiffies_clocksource`
@@ -129,206 +165,101 @@ Kernel Time
 
 ## Old
 
-nohz:
-- periodic interrupt could be disabled when idle
-- catch up jiffies when the system becomes busy again
-- interrupts should also start again when the nearest timer expires
-- it is easier to switch to oneshot mode and program to fire when the nearest timer expires
-- and with a event_handler which programs itself to emulate periodic interrupt
-
-hires:
-- periodic interrupt no longer (accurate) enough
-- oneshot interrupt for the next_event is needed
-- a hrtimer which fires every jiffy is installed, which does what the old mechanism does
-
-summary:
-- both nohz and hires requires oneshot mode
-- hires is more powerful than nohz
-
-## Timer Wheel
-
-- `kernel/time/timer.c`
-- CTW (cascade timer wheel)
-- the unit is jiffies
-- possible timer values in first category: 1, 2, 3, ..., 256 jiffies
-- second category: 257, 513, 769, ..., 16384 jiffies
-- on tick, timers might be moved, with IRQ disabled!
-- moving timers from second category to the first might be expensive
-- good performance, but has a bad worst case performance
-- suit the need of networking and filesystem
-
-## hrtimers
-
-- those usually not expired (e.g., timer handle io timeout) could still use CTW
-- the unit is nanosecond
-- timers are kept in a time-sorted, per-cpu, rb-tree
-- CLOCK_MONOTONIC and CLOCK_REALTIME
-- not really high resolution due to softirq
-
-Hrtimers and Beyond
-http://tglx.de/projects/hrtimers/ols2006-hrtimers.pdf
-
-GOAL: high-resolution timers, dynamic ticks
-OLD: (HW | Clock source | TOD (time of day)) <-> timekeeping
-OLD: (HW | Clock event source | ISR) -> tick
-
-Abstraction:
-
-- Clock Source Management
-  - abstract read-only clock sources
-  - each clock souce expresses the time as a monotonically increasing value
-  - helper functions exist to convert clock source's value into nanosecond
-  - possible to list or choose from available sources
-- Clock Synchronization
-  - reference time source (if available) is used to correct the monotonically increasing value
-  - the value is read-only and thus the correction is a offset to it
-- Time-of-day Representation
-- Clock Event Management
-  - currently, events defined to be periodic, with fixed period defined at compile time
-  - which event sources to use is hardwired arch-specific
-  - should abstract clock event sources
-- Removing Tick Dependencies
-  - current timers assumed a fixed-period periodic event source
-
-GTOD:
-- Clock Source Management
-- Clock Synchronization
-- Time-of-day Representation
-
-Clock Event Management:
-- foundation for high resolution timers and dynamic tick
-- clock event source describes its properties, per-cpu or global
-- framework decides which function(s) are provided by which clock event source
-- periodic or oneshot modes.  And emulated periodic mode
-- event is distributed to periodic tick, process acct., profiling, and next event interrupt (e.g. hi-res timers and dyn tick)
-
-- Documentation/rtc.txt
-- Documentation/timers/*
-
-Hardware:
-- CMOS Clock.  Could be programmed to alarm.  IRQ 8.
-- TSC: Time Stamp Counter, starting Pentium.  Same freq as the CPU.
-- PIT: Programmable Interval Timer.  Issue periodic irq on IRQ 0.  HZ ticks per second.
-- CPU local timer.  Part of local APIC.  Interupt only a local CPU.
-- HPET.  Registers are memory mapped.  Expect to replace PIT.  Interrupt ?.
-- ACPI PMT.
-
-
-
-- is clock event device per-cpu?  No spin lock needed when implementing one? yes?
-- could a per-cpu clock event device also be a broadcast one at the same time? no?
-
-Implementation:
-- during boot time (until dev_initcalls), the clocksource used is always jiffies.
-- after then (after clocksource_done_booting), update_wall_time checks for a new timesource and switch to it
-- clock source registration enqueues the clock source only
-- clock event device registration calls ->shutdown and ->set_mode
-- 
-
-my computer:
-- On my 2core laptop, i have 3 clock event devices
-- a broadcast one, hpet, with event_handler tick_handle_oneshot_broadcast
-- two per-cpu ones, lapic, with event_handler hrtimer_interrupt
-- cat /proc/timer_list
-- acpi is checked and TSC could be marked unstable
-
-On boot
-- ... tick_init ... init_IRQ ... init_timers ... hrtimers_init ... timekeeping_init ... time_init ... mem_init ... late_time_init ...
-- portion of time_init is delayed because we need mem_init for memory-mapped io
-
-- there are {lapic,hpet,pit}_clockevent and more: They are timers for tick
-- there are clocksource_{hpet,pit,tsc} and more: They are clocks for (high-accuracy) gettimeofday
-- there is a default, not-yet-registered, clocksource_jiffies with the lowest rating.
-
-timekeeping_init:
-- invokes ntp_init
-- init current clocksource (clocksource_jiffies) for timekeeping purpose
-- xtime is initialized from read_persistent_clock.
-- wall_to_monotonic initialized.  xtime + wall_to_monotonic == monotonic time
-
-time_init:
-- invokes tsc_init, which registers tsc clocksource.
-
-late_time_init:
-- usually points to hpet_time_init, which ...
-- invokes setup_pit_timer() if could not hpet_enable().
-- In that case, clockevents_register_device is invoked to register pit_clockevent.  global_clock_event also points to pit_clockevent.
-- invokes time_init_hook() which invokes setup_irq(0, &irq0), which set up timer_interrupt as the handler.
-
-tick_notify:
-- tick_init calls clockevents_register_notifier to register tick_notify
-- is invoked when, for example, pit_clockevent is registered.
-- invokes tick_check_new_device when new device is added.
-
-tick_check_new_device:
-- devices are cpu local or not, depending on its cpumask
-- non-local device could be treated as a local one if it can set irq affinity
-- if a device is cpu local, and better than the current one, tick_setup_device and tick_oneshot_notify
-- if no previous device on this cpu, and no tick_do_timer_cpu, it is used for tick_do_timer_cpu
-- if device is DUMMY (like lapic ones), event_handler is set to tick_handle_periodic...
-- and done.  it is shutdown and waiting for broadcast
-- tick_oneshot_notify sets first bit of tick_sched->check_clocks
-- for device that is not cpu local, tick_check_broadcast_device and tick_broadcast_start_periodic
-- if it is better than current broadcast device, replace it
-
-void tick_setup_periodic(struct clock_event_device *dev, int broadcast)
-- dev->event_handler is set to either tick_handle_periodic or tick_handle_periodic_broadcast
-- if dev is DUMMY, that's all
-- if broadcast device is in oneshot mode, or dev does not support PERIODIC, it is put in oneshot mode
-- with tick_next_period as next event
-- otherwise, periodic
-
-tick_handle_periodic:
-- if current cpu is tick_do_timer_cpu, invokes do_timer() to update jiffies_64 and xtime
-- invokes update_process_times() to, among others, raise_softirq() and scheduler_tick()
-
-tick_handle_periodic_broadcast:
-- if current cpu is in tick_broadcast_mask, remove from the mask and call evdev->event_handler
-- then evdev->broadcast on tick_broadcast_mask
-- periodically!
-
-summary before hrtimers:
-- at this stage, 2 lapic timer are shutdown with event_handler tick_handle_periodic
-- hpet fires periodically with event_handler tick_handle_periodic_broadcast
-- thus calling one of the lapic's event_handler
-
-hrtimers:
-- hrtimer_run_pending is called from timer's softirq and hrtimers is switched to hires mode through hrtimer_switch_to_hres, in which...
-- calls tick_init_highres, tick_setup_sched_timer, and retrigger_next_event
-- unless hires is disabled, then tick_nohz_switch_to_nohz
-
-tick_nohz_switch_to_nohz:
-- invokes tick_switch_to_oneshot with event_handler tick_nohz_handler
-- sets nohz_mode to NOHZ_MODE_LOWRES
-- updates last_jiffies_update
-- initializes sched_timer without activating (it is used to record expiracy)
-
-tick_nohz_stop_sched_tick:
-- invoked when cpu enters idle or irq_exit
-- invokes tick_nohz_start_idle to update the status of tick_sched
-- invokes get_next_timer_interrupt to get the jiffies of next timer or hrtimer event
-- if next_jiffies is more than one tick away, stop sched_tick
-- current cpu is set in nohz_cpu_mask
-- ts->idle_tick is set to last tick so that we can catch up when recovered
-- start sched_timer in hires mode; otherwise, invokes tick_program_event
-- clock_event_device could have a max_delta_ns for merely several seconds.  timer will fire prematurely.
-
-tick_check_idle:
-- invoked in irq_enter if cpu is idle
-
-tick_nohz_restart_sched_tick:
-- invoked when cpu leaves idle
-
-tick_init_highres:
-- turns current cpu's tick_device to oneshot mode with event_handler hrtimer_interrupt.
-- invokes tick_broadcast_switch_to_oneshot to turn broadcast event device to oneshot mode, with handler tick_handle_oneshot_broadcast.
-  The next_event is set to tick_next_period.
-
-tick_setup_sched_timer:
-- install a hrtimer to emulate ticks
-- in its callback, tick_do_update_jiffies64, update_process_times and profile_tick are called, and it returns HRTIMER_RESTART.
-
-tick_handle_oneshot_broadcast:
-- tick_do_broadcast is called on cpus with expired next_event.  If it is cpu-of-execution, its tick_device->evtdev->event_handler is called
-  for the rest, tick_device->evtdev->broadcast is called
-- If there is un-expired event, tick_broadcast_set_event is called to reprogram
+- `NO_HZ`
+  - periodic interrupt could be disabled when idle
+  - catch up jiffies when the system becomes busy again
+  - interrupts should also start again when the nearest timer expires
+  - it is easier to switch to oneshot mode and program to fire when the
+    nearest timer expires
+  - and with a `event_handler` which programs itself to emulate periodic
+    interrupt
+- `hrtimer`
+  - periodic interrupt no longer (accurate) enough
+  - oneshot interrupt for the next_event is needed
+  - a hrtimer which fires every jiffy is installed, which does what the old
+    mechanism does
+- IOW,
+  - both `NO_HZ` and `hrtimer` require oneshot mode
+  - `hrtimer` is more powerful than `NO_HZ`
+- `kernel/time/timer.c` is low-resolution timer
+- `kernel/time/hrtimer.c`
+  - timers that usually do not expire (e.g., timers to handle io timeout) can
+    keep using the low-resolution timer
+  - hrtimer unit is nanosecond
+  - timers are kept in a time-sorted, per-cpu, rb-tree
+  - not super high resolution due to softirq
+- <https://www.kernel.org/doc/html/latest/timers/highres.html>
+  - `Hrtimers and Beyond`
+  - Abstraction
+    - Clock Source Management
+      - abstract read-only clock sources
+      - each clock souce expresses the time as a monotonically increasing value
+      - helper functions exist to convert clock source's value into nanosecond
+      - possible to list or choose from available sources
+    - Clock Synchronization
+      - reference time source (if available) is used to correct the
+        monotonically increasing value
+      - the value is read-only and thus the correction is a offset to it
+    - Time-of-day Representation
+    - Clock Event Management
+      - currently, events defined to be periodic, with fixed period defined at
+        compile time
+      - which event sources to use is hardwired arch-specific
+      - should abstract clock event sources
+    - Removing Tick Dependencies
+      - current timers assumed a fixed-period periodic event source
+  - GTOD
+    - Clock Source Management
+    - Clock Synchronization
+    - Time-of-day Representation
+  - Clock Event Management
+    - foundation for high resolution timers and dynamic tick
+    - clock event source describes its properties, per-cpu or global
+    - framework decides which function(s) are provided by which clock event
+      source
+    - periodic or oneshot modes.  And emulated periodic mode
+    - event is distributed to periodic tick, process acct., profiling, and
+      next event interrupt (e.g. hi-res timers and dyn tick)
+- Implementation
+  - during boot time (until `device_initcall`), the clocksource used is always
+    jiffies.
+  - after then (after `clocksource_done_booting`), `clocksource_select` checks
+    for a new timesource and switch to it
+- `hrtimer_switch_to_hres`
+  - it is called to switch to high resolution mode when `hrtimer_run_queues` is called the first time
+  - it calls `tick_init_highres`, `tick_setup_sched_timer`, and `retrigger_next_event`
+  - if hres is disabled, `tick_check_oneshot_change` calls
+    `tick_nohz_switch_to_nohz`
+    - invokes `tick_switch_to_oneshot` with `event_handler`
+      `tick_nohz_handler`
+    - sets `nohz_mode` to `NOHZ_MODE_LOWRES`
+    - initializes `sched_timer` without activating (it is used to record
+      expiracy)
+- `tick_nohz_stop_sched_tick`
+  - invoked when cpu enters idle or `irq_exit`
+  - invokes `tick_nohz_start_idle` to update the status of `tick_sched`
+  - invokes `get_next_timer_interrupt` to get the jiffies of next timer or
+    hrtimer event
+  - if `next_jiffies` is more than one tick away, stop `tick_sched`
+  - `ts->last_tick` is set to last tick so that we can catch up when recovered
+  - start `sched_timer` in hires mode; otherwise, invokes `tick_program_event`
+  - `clock_event_device` could have a `max_delta_ns` for merely several
+    seconds.  timer may fire prematurely.
+- `tick_nohz_idle_restart_tick`
+  - invoked when cpu leaves idle
+- `tick_init_highres`
+  - turns current cpu's `tick_device` to oneshot mode with `event_handler`
+    `hrtimer_interrupt`
+  - invokes `tick_broadcast_switch_to_oneshot` to turn broadcast event device
+    to oneshot mode, with handler `tick_handle_oneshot_broadcast`
+  - The next_event is set to `tick_next_period`
+- `tick_setup_sched_timer`
+  - install a hrtimer to emulate ticks
+  - in its callback, `tick_sched_timer`, `tick_sched_do_timer` and
+    `tick_sched_handle` are called and `HRTIMER_RESTART` is returned
+- `tick_handle_oneshot_broadcast`
+  - `tick_do_broadcast` is called on cpus with expired `next_event`.  If it is
+    cpu-of-execution, its `tick_device->evtdev->event_handler` is called for the
+    rest, `tick_device->evtdev->broadcast` is called
+  - If there is un-expired event, `tick_broadcast_set_event` is called to
+    reprogram
