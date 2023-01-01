@@ -33,13 +33,22 @@ Kernel Time
   - `tick_check_new_device` adds the device as the per-cpu or broadcast tick
     device
 - `clockevents_config_and_register` is a shortcut to config and register
-- whenever an interrupt is received, the device calls `event_handler` to feed
-  the interrupt into kernel tick subsystem
+- `clockevents_switch_state` changes the state of the device
+  - `CLOCK_EVT_STATE_PERIODIC` calls `set_state_periodic`
+  - `CLOCK_EVT_STATE_ONESHOT` calls `set_state_oneshot`
+  - for hpet, `set_state_periodic` points to `hpet_clkevt_set_state_periodic`
+    - hpet interrupts are handled by `timer_interrupt`
+- whenever an interrupt is received, the device driver calls `event_handler`
+  to feed the interrupt into kernel tick subsystem
+
   
 ## Tick
 
 - the tick subsystem uses `clock_event_device`s
   - a `clock_event_device` is a device that can fire time-based interrupts
+  - a `tick_device` is a wrapper to `clock_event_device`
+  - there are per-cpu `tick_cpu_device`
+  - there is a global `tick_broadcast_device`
 - broadcasting
   - the tick subsystem prefers per-core `clock_event_device` 
   - if there is no per-core clockevent dev, the subsystem uses whatever
@@ -67,11 +76,20 @@ Kernel Time
       - `scheduler_tick` adds the tick to the scheduler
   - `clockevents_program_event` arms the clockevent dev again if it is in
     `CLOCK_EVT_STATE_ONESHOT`
-- unless `CONFIG_HZ_PERIODIC`, `tick_handle_periodic` is only used briefly
-- for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_handler` or the
-  high-resolution `hrtimer_interrupt` is used
-  - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
-  - `tick_sched_handle` calls `update_process_times`
+- there are 3 tick modes
+  - `CONFIG_HZ_PERIODIC` ticks periodically at constant rate
+  - `CONFIG_NO_HZ_IDLE` omits ticks on idle CPUs
+  - `CONFIG_NO_HZ_FULL` omits ticks on CPUs that are idle or have one runnable
+    task
+  - unless `CONFIG_HZ_PERIODIC`, `tick_handle_periodic` is only used briefly
+  - for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_handler` or the
+    high-resolution `hrtimer_interrupt` is used
+    - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
+    - `tick_sched_handle` calls `update_process_times`
+- in `NO_HZ`,
+  - on any interrupt, `tick_irq_enter` is called to see if tick is disabled
+    and needs to be re-enabled
+  - `tick_nohz_update_jiffies` is called to catch up
 
 ## Timekeeping
 
@@ -86,7 +104,10 @@ Kernel Time
 
 - `setup_kernel`
   - `setup_arch`
-    - `x86_wallclock_init`
+    - `x86_wallclock_init` disables `get_wallclock` and `set_wallclock` on
+      special platforms
+      - normally, they point to `mach_get_cmos_time` and `mach_set_cmos_time`
+        to get/set the wallclock from/to CMOS
     - `register_refined_jiffies` to register (refined) jiffies as a clocksource
   - `tick_init`
     - `tick_broadcast_init`
@@ -105,35 +126,6 @@ Kernel Time
   - `clocksource_done_booting`
   - `hpet_late_init`
   - `init_tsc_clocksource`
-
-## Wall clock
-
-- `x86_wallclock_init` actually disables `get_wallclock` and `set_wallclock`
-  on special platforms, which initially point to `mach_get_cmos_time` and
-  `mach_set_rtc_mmss`
-  - they read/set the wallclock from/to CMOS
-
-## Scheduling-Clock Interrupts
-
-- `CONFIG_HZ_PERIODIC` ticks periodically at constant rate
-- `CONFIG_NO_HZ_IDLE` omits ticks on idle CPUs
-- `CONFIG_NO_HZ_FULL` omits ticks on CPUs that are idle or have one runnable
-  task
-- a `tick_device` is a wrapper to `clock_event_device`
-  - there are per-cpu `tick_cpu_device`
-  - there is a global `tick_broadcast_device`
-- `tick_setup_periodic` is called to set up periodic tick
-  - `tick_set_periodic_handler` sets up the event handler
-  - `__clockevents_switch_state` calls `set_state_periodic` callback to put
-    the device in period mode
-    - for hpet, it calls `hpet_clkevt_set_state_periodic`
-    - the interrupts are handled by `timer_interrupt`
-  - `tick_periodic` is eventually called from `tick_handle_periodic`
-- `tick_periodic` is called in irq context
-  - it increments `jiffies_64` by 1
-  - it calls `update_process_times` and triggers timers
-- when in `NO_HZ` mode, `tick_nohz_irq_enter` is called for any interrupt.
-  - if tick was stopped, `tick_nohz_update_jiffies` is called to catch up
 
 ## Old
 
