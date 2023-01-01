@@ -82,6 +82,55 @@ ARM64
   - it appears that the generic timer can also be accessed via mmio
     - `arch_timer_mem_of_init`
 
+## Context Switches
+
+- current task
+  - `current` is defined to `get_current` which reads the current task pointer
+    from `SP_EL0`
+  - `SP_EL0` is initialized in cpu bringup
+    - `init_cpu_task` macro in `kernel/head.S` does the job
+    - for the boot cpu, `__primary_switched` initializes it to `init_task`
+      - `init_task` is defined in `init/init_task.c` and is static
+    - for secondary cpus, `__secondary_switched` initializes it to
+      `secondary_data.task`
+      - `__cpu_up` sets `secondary_data.task` to the per-cpu idle thread
+- task switch
+  - `__switch_to` switches from `prev` to `next`
+  - `entry_task_switch` saves `next` in per-cpu `__entry_task`
+  - `cpu_switch_to`
+    - saves the registers of `prev` in `prev->thread.cpu_context`
+      - this includes `sp` and `lr`
+      - `lr` is the link register and stores the return address of a
+        subroutine call
+    - retores the registers of `next` from `next->thread.cpu_context`
+    - sets `SP_EL0` to `next`
+- new task
+  - other than `init_task`, all tasks are created by `copy_process`
+  - `copy_process` calls the arch-specific `copy_thread`
+    - `copy_thread` sets `pc` to `ret_from_fork`
+    - when `cpu_switch_to` switches to the new task, it will return to
+      `ret_from_fork`
+  - `ret_from_fork`
+    - calls `schedule_tail` to set up the fresh new task
+    - if `x19` is set, this is a kernel thread and `x19` is the starting
+      function
+      - this is set up in `copy_thread`
+    - otherwise, this is a userspace task
+      - `get_current_task` reads `SP_EL0`
+        - `tsk` is `x28`, defined in `entry.S`
+      - `ret_to_user` restores the userspace context and returns to it
+- context switch
+  - `kernel_exit` macro is used in various return paths
+    - after switching to a kernel task or handling an EL1 exception,
+      `ret_to_kernel` returns back to the kernel task
+    - after switching to a userspace task or handling an EL0 exception,
+      `ret_to_user` returns back to the user task
+  - `kernel_entry` macro is used in reset vectors
+    - EL0 and EL1 exceptions both hit `kernel_entry`
+  - `kernel_entry` from EL0 (userspace)
+    - `SP_EL0` have been clobbered to point to userspace stack
+    - it is restored from `__entry_task`, which was set by `__switch_to`
+
 ## Booting (Raspberry Pi)
 
 - `kernel/head.S`
