@@ -39,9 +39,10 @@ ARM64
 ## Reset Vectors
 
 - reset vectors are defined with `kernel_ventry` in `kernel/entry.S`
-  - 64-bit userspace jumps to `el0t_64_*_handler`
-  - 32-bit userspace jumps to `el0t_32_*_handler`
-  - kernel space jumps to `el1h_64_*_handler`
+  - 64-bit userspace jumps to `el0t_64_*` (defined by `entry_handler`) and
+    then to `el0t_64_*_handler`
+  - 32-bit userspace jumps to `el0t_32_*` and then to `el0t_32_*_handler`
+  - kernel space jumps to `el1h_64_*` and then to `el1h_64_*_handler`
   - `el1t_64_*_handler` are defined by `UNHANDLED` and always panics
 - error handler
   - this is NMI, and if fatal, it panics
