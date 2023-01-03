@@ -47,13 +47,13 @@ virtio
   - 2.6 Split Virtqueues
     - each split virtqueue consists of
       - descriptor table
-        - (16*QueueSize) bytes in size
+        - `(16*QueueSize)` bytes in size
         - alignment 16
       - available ring
-        - (6+2*QueueSize) bytes in size
+        - `(6+2*QueueSize)` bytes in size
         - alignment 2
       - used ring
-        - (6+8*QueueSize) bytes in size
+        - `(6+8*QueueSize)` bytes in size
         - alignment 4
       - QueueSize is 16-bit and is power-of-2
         - usually read from configuration space
@@ -135,7 +135,7 @@ virtio
     - each packed virtqueue consists of
       - Descriptor Ring of a ring of buffer descriptors
         - alignment 4
-        - size (16*QueueSize)
+        - size `(16*QueueSize)`
       - Driver Event Suppression
         - a mechanism to reduce used buffer notifications
         - read-only by device
@@ -404,9 +404,9 @@ virtio
    - by the kernel (vhost) with userspace VMM's help
      - Using the information from KVM, VMM
        - tells vhost the memory mapping of the device
-       - registers to vhost a "kick" eventfd, which is for guest->host
+       - registers to vhost a "kick" eventfd, which is for `guest->host`
        	 notification known as ioeventfd 
-       - registers to vhost a "call" eventfd, which is for host->guest
+       - registers to vhost a "call" eventfd, which is for `host->guest`
        	 notification known as irqfd
    - by another process (vhost-user)
      - same as vhost, but talks to another process rather than kernel
