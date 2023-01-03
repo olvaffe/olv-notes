@@ -100,12 +100,3 @@ Scheduler
   `try_to_wake_up`
 - `wake_up_interruptible` calls the callback function, which calls
   `try_to_wake_up`
-
-## Context Switches
-
-- interrupt/signal/syscall/etc
-- on x86, `switch_to` calls `__switch_to_asm`
-  - push callee-preserved registers to stack (of prev)
-  - switch stack
-  - pop callee-preserved registers from stack (of next)
-

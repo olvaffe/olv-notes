@@ -36,9 +36,9 @@ ARM64
   - EL0 can only use `SP_EL0`
   - others can use their `SP_ELn` (ELnh) or use `SP_EL0` (ELnt)
 
-## Reset Vectors
+## Exception Vector Table
 
-- reset vectors are defined with `kernel_ventry` in `kernel/entry.S`
+- exception vectors are defined with `kernel_ventry` in `kernel/entry.S`
   - 64-bit userspace jumps to `el0t_64_*` (defined by `entry_handler`) and
     then to `el0t_64_*_handler`
   - 32-bit userspace jumps to `el0t_32_*` and then to `el0t_32_*_handler`
@@ -125,7 +125,7 @@ ARM64
       `ret_to_kernel` returns back to the kernel task
     - after switching to a userspace task or handling an EL0 exception,
       `ret_to_user` returns back to the user task
-  - `kernel_entry` macro is used in reset vectors
+  - `kernel_entry` macro is used in exception vectors
     - EL0 and EL1 exceptions both hit `kernel_entry`
   - `kernel_entry` from EL0 (userspace)
     - `SP_EL0` have been clobbered to point to userspace stack
