@@ -1,6 +1,30 @@
 Scheduler
 =========
 
+## Boot
+
+- per-cpu `current_task` is statically initialized to statically initialized
+  `init_task` defined in `init/init_task.c`
+  - `comm` is `INIT_TASK_COMM` (swapper)
+  - `active_mm` is `init_mm`
+  - `thread_pid` is `init_struct_pid` w/ pid 0
+- when `start_kernel` reaches `rest_init`, it spawns two threads
+  - `kernel_init` first, which has pid 1
+    - it will `execve("/sbin/init")` later
+  - `kthreadd` second, which has pid 2
+    - kthreadd will respond to future `kthread_create` requests
+- `kernel_init`
+  - after `workqueue_init`, workqueue queues start running which spawn a
+    kthread each
+    - `rcu_gp`, `rcu_par_gp`, etc.
+  - `init_mm_internals` starts `mm_percpu_wq`
+  - after `do_pre_smp_initcalls`, `early_initcall`s are executed.
+    - `rcu_spawn_core_kthreads` registers `rcu_cpu_thread_spec`
+    - `spawn_ksoftirqd` registers `softirq_threads`
+    - `cpu_stop_init` registers `cpu_stop_threads`
+    - `idle_inject_init` registers `idle_inject_threads`
+    - `rcu_spawn_gp_kthread` starts `rcu_gp_kthread` (comm is `rcu_preempt`)
+
 ## cpuidle
 
 - each task consists of a sequence of instructions to execute
@@ -14,36 +38,6 @@ Scheduler
   - it then asks the driver in cpuidle subsystem to enter the idle state
   - the CPU does not run when it is in the idle state
   - when the CPU starts running again, it exits the idle state
-
-## cpufreq
-
-- /sys/devices/system/cpu/cpufreq/policyX
-- cur, max, min freq of a CPU
-- cur, max, min freq set by the scaling driver
-- governor
-- benchmarks
-  - `dd if=/dev/zero of=/dev/null bs=1M count=10000`
-  - `sysbench --time=3 --threads=1 cpu run | grep total`
-- for example,
-  - `cd /sys/devices/system/cpu`
-  - `echo 0 | sudo tee cpu?/online` to bring all but cpu0 offline
-  - `cat cpufreq/policy0/cpuinfo_min_freq | sudo tee cpufreq/policy0/scaling_max_freq`
-  - this should make a big difference in benchmarks
-- <https://www.kernel.org/doc/Documentation/cpu-freq/intel-pstate.txt>
-  - `num_pstates` is 32, meaning there are 32 states
-  - `turbo_pct` is also 32, meaning there are `32%*num_pstates` in the turbo
-    range
-  - setting `no_turbo` to 1 makes pstates in the turbo change unavailable
-  - `max_perf_pct` is 100 meaning all available pstates can be used
-    - i.e., 32 states with turbo or 22 states without turbo
-  - `min_perf_pct` is 20 meaning the minimum pstate is 20% of non-turbo
-    states
-  - by default, it is in active mode with HWP
-    - `grep hwp /proc/cpuinfo`
-- except `intel_pstate` does not work on an intel machine
-  - changing `scaling_max_freq` has no effect
-  - changing `max_perf_pct` has no effect
-  - and it works now after a reboot....
 
 ## Init Idle Task (swapper)
 
