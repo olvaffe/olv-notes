@@ -1,5 +1,5 @@
-kobject
-=======
+Kernel sysfs
+============
 
 ## kernfs
 

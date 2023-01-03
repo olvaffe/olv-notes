@@ -1,5 +1,5 @@
-init main
-=========
+Kernel init
+===========
 
 ## `start_kernel`
 

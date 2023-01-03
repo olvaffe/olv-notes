@@ -1,24 +1,5 @@
-Kernel Debug
-============
-
-## Config
-
-- enable `CONFIG_DYNAMIC_DEBUG` for all `pr_debug` messages
-  - dynamically configurable
-  - `dyndbg="+p"` for cmdline
-  - `/sys/kernel/debug/dynamic_debug/control`
-- statically enabling `pr_debug` messages
-  - `CONFIG_DEBUG_DRIVER` for driver core
-  - `CONFIG_DEBUG_KOBJECT` for kobject
-  - `CONFIG_PCI_DEBUG` for PCI
-  - `CONFIG_DEBUG_GPIO` for GPIO
-  - `CONFIG_I2C_DEBUG_{CORE,ALGO,BUS}` for I2C
-  - `CONFIG_HWMON_DEBUG_CHIP` for hardware monitor
-  - `CONFIG_DEBUG_PINCTRL` for pin control
-  - `CONFIG_POWER_SUPPLY_DEBUG` for power supply
-  - `CONFIG_REGULATOR_DEBUG` for regulator
-  - `CONFIG_RTC_DEBUG` for RTC
-  - `CONFIG_SPI_DEBUG` for SPI
+Kernel module
+=============
 
 ## Parameters
 
@@ -42,11 +23,6 @@ Kernel Debug
   - `rdinit=/init`
   - `debug` sets console log level to 10
   - `quiet` sets console log level to `CONFIG_CONSOLE_LOGLEVEL_QUIET` (4)
-
-## netconsole
-
-- specify `netconsole=@192.168.0.2/,@192.168.0.1/` in cmdline
-- host does `nc -u -l 6666`
 
 ## configs and symbols
 
