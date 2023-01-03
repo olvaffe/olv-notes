@@ -131,6 +131,23 @@ ARM64
     - `SP_EL0` have been clobbered to point to userspace stack
     - it is restored from `__entry_task`, which was set by `__switch_to`
 
+## Secondary CPUs
+
+- with spin table approach, the secondary cpus loop inside
+  `secondary_holding_pen` on boot
+  - they wait for `secondary_holding_pen_release` to jump to
+    `secondary_startup`
+  - when the boot cpu calls `__cpu_up`, `smp_spin_table_cpu_boot` is called to
+    release secondary cpus
+- `secondary_startup`
+  - it enables mmu and jumps to `__secondary_switched`
+  - `init_cpu_task` initializes `SP_EL0` (what `get_current` returns) to
+    `secondary_data.task`
+    - the boot cpu has initialized `secondary_data.task` to the per-cpu idle
+      thread in `__cpu_up`
+  - `secondary_start_kernel` does post-boot setup and calls
+    `cpu_startup_entry` to enter idle
+
 ## Booting (Raspberry Pi)
 
 - `kernel/head.S`
