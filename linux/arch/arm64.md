@@ -148,6 +148,21 @@ ARM64
   - `secondary_start_kernel` does post-boot setup and calls
     `cpu_startup_entry` to enter idle
 
+## ARM MM
+
+- Kconfig
+  - `FLATMEM`
+- In `setup_arch`,
+  - `paging_init` sets up the page tables
+    - `map_lowmem` creates the linear map
+
+## ARM64 MM
+
+- Kconfig
+  - `SPARSEMEM_VMEMMAP`
+- In `setup_arch`,
+  - `paging_init` sets up the page tables
+
 ## Booting (Raspberry Pi)
 
 - `kernel/head.S`
