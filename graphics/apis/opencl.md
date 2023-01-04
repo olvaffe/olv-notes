@@ -17,7 +17,7 @@ OpenCL
   - all OpenCL 2.x and OpenCL 3.0 functionality is optional
   - replaced "OpenCL C++ Kernel Language" by "C++ for OpenCL", based on C++17
 
-# References
+## References
 
 - http://www.khronos.org/registry/cl/specs/opencl-1.0.48.pdf (obvious :) ),
 - http://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf (how NVIDIA does it in their tgsi equivalent),

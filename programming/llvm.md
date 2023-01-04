@@ -70,7 +70,7 @@ LLVM
   - instruction scheduling
   - register allocation
 
-# IR syntax
+## IR syntax
 
 - `@` global; `%` local
 - global variables are always pointers
@@ -101,7 +101,7 @@ LLVM
   - `module asm "blah"`
 
 
-# LLVM Tutorial
+## LLVM Tutorial
 
 - <http://www.llvm.org/docs/tutorial/>
 - Lexer
@@ -191,7 +191,7 @@ LLVM
   - but it is slow
   - run `mem2reg` pass to optimize it!
 
-# IR Overview
+## IR Overview
 
 - Type classifications
   - integer
@@ -228,14 +228,14 @@ LLVM
   - memory use marker:
   - general:
 
-# Passes
+## Passes
 
 - Classifications
   - Analysis
   - Transform
   - Utility
 
-# Libraries
+## Libraries
 
 - `VMCore` provides instructions and the type system
 - `Archive`, `AsmParser`, and `Bitcode` reads IR from files
@@ -253,7 +253,7 @@ LLVM
 - `CompilerDriver` helps build gcc-like executables
 - `Linker` provides linking functionality
 
-# ExecutionEngine
+## ExecutionEngine
 
 - In `libLLVMInterpreter.a`, there is a static variable with constructor.  If
   it is linked, the constructor is called and the interpreter is registered to
@@ -261,7 +261,7 @@ LLVM
   - same to `libLLVMJIT.a`.
 - An application uses `EngineBuilder` to create an `ExecutionEngine`.
 
-# CodeGen
+## CodeGen
 
 - target independent and target dependent
   - <http://llvm.org/docs/CodeGenerator.html>

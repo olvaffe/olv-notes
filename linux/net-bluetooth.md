@@ -394,7 +394,7 @@ Bluetooth
   - The buffer is parsed to form `skb`s.
   - `hci_recv_frame` is called to receive the `skb`s.
 
-# HCI packet formats
+## HCI packet formats
 
 - There are 4 types of packets
   - 0x01 for command

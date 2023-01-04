@@ -1,4 +1,5 @@
-# Locking
+Locking
+=======
 
 ## `spinlock_t`
 

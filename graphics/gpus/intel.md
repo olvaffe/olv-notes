@@ -1,4 +1,5 @@
-# Intel GPUs
+Intel GPUs
+==========
 
 ## uArchs
 

@@ -73,7 +73,7 @@ Mesa and EGL
 - A context can be current to at most one thread
 - An initialized display can be used by other threads.
 
-# Impl. Notes
+## Impl. Notes
 
 - rendering APIs or client APIs mean OpenGL ES or OpenVG.
 - native window systems or native rendering APIs mean X Window

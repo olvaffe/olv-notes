@@ -13,7 +13,7 @@ Mesa and Shader
   or blurring.
 - shaders are in `ctx->Shader`
 
-# Shader
+## Shader
 
 - shader calls into driver's `CreateProgram`, which calls into
   `_mesa_create_shader`.

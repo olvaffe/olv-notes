@@ -1,4 +1,5 @@
-# CPU
+CPU
+===
 
 ## Parallel Computer Architecture and Programming, CMU
 

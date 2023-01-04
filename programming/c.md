@@ -264,7 +264,7 @@ the sizeof(long) actually varies between the targets we care about.
           but yes at C spec?
       - the current thread does
         - `int *pval = atomic_load_explicit(&ptr, memory_order_consume)`
-        - `if (pval == &val) assert(*pval == 1);
+        - `if (pval == &val) assert(*pval == 1);`
   - `memory_order_acquire`: the load operation also performs an acquire
     operation
     - used in release-acquire ordering

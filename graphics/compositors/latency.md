@@ -1,4 +1,5 @@
-# Latency
+Latency
+=======
 
 ## Input
 
