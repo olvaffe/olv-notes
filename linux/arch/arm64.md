@@ -66,6 +66,10 @@ ARM64
 ## Generic Timer
 
 - <https://developer.arm.com/documentation/102379/0101/>
+  - Learn the architecture - Generic Timer
+  - Processing Element (PE) is a generic term for an implementation of the Arm
+    architecture. You can think of a PE as anything that has its own program
+    counter and can execute a program.
 - on arm, there is the generic timer that consists of a system counter and
   per-core timers
 - system counter
@@ -81,6 +85,43 @@ ARM64
       - the type is `ARCH_TIMER_TYPE_CP15`
   - it appears that the generic timer can also be accessed via mmio
     - `arch_timer_mem_of_init`
+
+## Generic Interrupt Controller
+
+- <https://developer.arm.com/documentation/198123/0302/>
+  - Learn the architecture - Arm Generic Interrupt Controller v3 and v4
+- on arm, there is the generic interrupt controller
+- the drivers are `CONFIG_ARM_GIC_V3` and `CONFIG_ARM_GIC_V3_ITS`
+  - ITS, Interrupt Translation Services, can route MSI to cpus
+  - `irq_domain_create_tree` creates an `irq_domain`
+  - `set_handle_irq` makes `gic_handle_irq` the root irq handler
+  - `irq_domain_set_info` sets `irq_desc::handle_irq` to one of
+    - `handle_percpu_devid_irq` for SGI/PPI
+    - `handle_fasteoi_irq` for SPI
+    - `handle_fasteoi_irq` for LPI
+- interrupt handling
+  - irq exception jumps to different handlers depending on where the cpu is
+    running in EL0 or EL1
+  - `el0t_64_irq_handler`
+    - `enter_from_user_mode`
+    - `irq_enter_rcu`
+    - `do_interrupt_handler`
+    - `irq_exit_rcu`
+    - `exit_to_user_mode`
+  - `el1h_64_irq_handler`
+    - `enter_from_kernel_mode`
+    - `irq_enter_rcu`
+    - `do_interrupt_handler`
+    - `arm64_preempt_schedule_irq`
+    - `irq_exit_rcu`
+    - `exit_to_kernel_mode`
+  - `do_interrupt_handler`
+    - calls `gic_handle_irq` on irq stack (use `call_on_irq_stack` if it is on
+      the kernel stack)
+    - this is done because the kernel stack might not have enough space
+- `gic_handle_irq` gets the hw irqnum and calls `__gic_handle_irq`
+  - it uses `generic_handle_domain_irq` to map hw irq to `irq_desc` and call
+    `desc->handle_irq`
 
 ## Context Switches
 
