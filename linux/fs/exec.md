@@ -16,7 +16,9 @@ Kernel exec
 - `arch/x86/kernel/process_32.c:sys_execve` ->
   `fs/exec.c:do_execve` -> copy argv, envp from userspace, read first
   `BINPRM_BUF_SIZE` bytes, etc.  And calls `search_binary_handler`.
-  - `bprm_mm_init` sets up a temporary stack
+  - `bprm_mm_init` sets up mm and the stack
+    - the stack is a vma ending at `STACK_TOP_MAX` and with `VM_GROWSDOWN`
+    - on page fault, `expand_stack` is called to grow the vma down
 - `load_elf_binary` is called to load the elf.
   the elf header is checked for consistency.
   the program header table is read
