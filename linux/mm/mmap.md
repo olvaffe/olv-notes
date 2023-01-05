@@ -12,6 +12,25 @@ Kernel mmap
   Accessing to the pages of the object goes through its `struct address_space`
   in its inode.
 
+## Adding a VMA
+
+- `vm_area_alloc` allocates a `vm_area_struct`
+- the caller sets up `vm_area_struct` manually, such as
+  - `vm_start` and `vm_end` for the addresses
+  - `vm_page_prot` and `vm_flags` for prot and flags
+  - `vm_ops` for accessing the vma
+    - according to `vma_is_anonymous`, it is non-null unless the vma is anon
+  - more
+- `insert_vm_struct` inserts the vma into mm
+  - `find_vma_intersection` makes sure the addr range is available
+  - `vma_link` adds the vma to the mm
+    - mm manages its vma using `mm->mm_mt`, a maple tree
+    - if the vma is file-backed, `__vma_link_file` adds the vma to the
+      `address_space` of the file
+      - `address_space` is the page cache backing the file
+      - `address_space` manages its vmas using
+        `vma->vm_file->f_mapping->i_mmap`
+
 ## userspace mmap
 
 - Call chain

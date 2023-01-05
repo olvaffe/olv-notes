@@ -44,6 +44,8 @@ Kernel fork
       - the allocation is often a page, `__get_free_page`
         - array size is thus `4096/8=512`
   - `mm_alloc_pgd` calls `pgd_alloc` to allocate `pgd_t` array
+- `__bprm_mm_init` inserts the first vma, the stack, to the mm with
+  `vm_area_alloc` and `insert_vm_struct`
 
 ## namespaces
 
