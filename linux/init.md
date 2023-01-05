@@ -149,6 +149,8 @@ Kernel init
     up the space (find -xdev / -exec rm '{}' ';'), overmount rootfs with the
     new root (cd /newmount; mount --move . /; chroot .), attach
     stdin/stdout/stderr to the new /dev/console, and exec the new init
+  - we can't see `rootfs` in `/proc/mounts` because it is outside of chroot
+    (the real root) and `show_vfsmnt` returns `SEQ_SKIP` for it
 
 ## initramfs
 
@@ -196,7 +198,7 @@ Kernel init
   - execs `/sbin/init` of the root device with the help of `switch_root`
   - add break=premount or break=postmount to spawn a shell
 
-## packing initramfs
+## packing/unpacking initramfs
 
 - the kernel initramfs unpacker checks if the cpio starts with "070701", that
   is, the new portable format
@@ -215,3 +217,10 @@ Kernel init
     - `export PATH=/bin`
 - and to create the cpio archive
   - `find . | cpio -o -H newc -R root:root > ../initramfs.cpio`
+- to unpack the cpio archive
+  - `cpio -idmv < ../initramfs.cpio`
+- unpack system initramfs
+  - system initramfs often consist of an uncompressed cpio archive and a
+    compressed cpio archive
+    - the first archive holds the cpu microcode
+  - `(cpio -idmv; zcat | cpio -idmv) < /boot/initramfs.img`
