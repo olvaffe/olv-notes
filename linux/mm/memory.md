@@ -27,3 +27,51 @@ Kernel memory
     allocator
   - it additionally `copy_user_highpage` from the original page to the COW
     page
+
+## Page Tables
+
+- there are 5 levels of page tables
+  - `pgd_t`, `p4d_t`, `pud_t`, `pmd_t`, and `pte_t`
+  - each type is arch-defined and represents an entry in a page table of the
+    level
+  - it is common that, on a 64-bit cpu,
+    - all types are 64-bit
+    - all tables are `PAGE_SIZE`
+    - IOW, at each level, a table takes up a page and has `PAGE_SIZE / 8`
+      entries
+- `pgd_alloc` allocates a pgd table
+  - it returns `pgd_t *`, which is a pointer to an array of `pgd_t`
+  - while arch-specific, it is commont to allocate with
+    - `(pgd_t *)get_zeroed_page(GFP_PGTABLE_USER)`
+    - that is, a pgd table takes up a page
+  - also arch-specific, but a `pgd_t` commonly contains the address of a p4d
+    table
+    - a p4d table also takes up a page
+    - the address is thus page-aligned and the lower `PAGE_SHIFT` bits are
+      flags of the entry
+- `p4d_alloc` allocates a p4d table
+  - the goal is to allocate a p4d table for a va, and update a pgd entry to
+    point to the p4d table
+  - `pgd_offset(mm, va)` can be used to find the pgd entry for the va
+  - arch-specific `p4d_alloc_one` allocates the table
+    - again, `(p4d_t *)get_zeroed_page` suffices
+- `pud_alloc`, `pmd_alloc`, and `pte_alloc` work similarly
+  - just remember they each allocates a table (an array of entries) of the
+    corresponding level
+- conversely, given a mm and a va, we can walk the tables to find the pte
+  entry for the va
+  - this is `follow_pte`
+  - `pgd_offset(mm, va)` returns the pgd entry containing the va
+  - `p4d_offset(pgd, va)` returns the p4d entry containing the va
+  - `pud_offset(p4d, va)` returns the pud entry containing the va
+  - `pmd_offset(pud, va)` returns the pmd entry containing the va
+  - `pte_offset_map(pmd, va)` returns the pte entry containing the va
+    - we need many pte tables and there was a time when we put pte tables in
+      highmem (`CONFIG_HIGHPTE`)
+    - that's why this function has a `_map` suffix, implying `kmap_atomic()`
+  - `pte_offset_map_lock` is a convenient function
+    - `pte_lockptr` returns `page->ptl`, where `page` is the page holding the
+      pte table
+      - `ptl` stands for page table lock
+    - the convenient function returns the pte entry and the page table lock,
+      with the lock locked
