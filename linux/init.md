@@ -32,10 +32,16 @@ Kernel init
   - `init_timers` initializes timers
   - `hrtimers_init` initializes high-resolution timers
   - `softirq_init` initializes softirq subsystem
-  - `timekeeping_init` initializes clocksource
-  - `time_init`
+  - `timekeeping_init` initializes timekeeping (for `ktime_get*`)
+  - `time_init` is arch-specific
+    - `of_clk_init` to initialize `clock_provider`
+    - `timer_probe` to scan devices and match drivers
+      - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
   - `console_init` initializes console (for printk)
+  - `acpi_early_init` initializes acpi
+  - `late_time_init` is late `time_init`
+  - `sched_clock_init` initializes jiffy-based clock
   - `pid_idr_init` initializes pid allocator
   - `anon_vma_init` initializes anon vma allocator
   - `fork_init` initializes task allocator
@@ -49,14 +55,30 @@ Kernel init
 ## `arch_call_rest_init`
 
 - `arch_call_rest_init` calls `rest_init` in the common kernel code
-- note that so far we run as pid 0 whose `task_struct` is statically-defined
-  in `init/init_task.c`
-  - it has comm `INIT_TASK_COMM`, which is `swapper`
-- `rest_init` forks off two processes
+- `rest_init` forks off two tasks
   - pid 1 runs `kernel_init`
   - pid 2 runs `kthreadd`, which forks off kthreads in response to
     `kthread_create`
 - it then calls `cpu_startup_entry` and enters `do_idle` loop
+  - and the scheduler switches to pid 1 task
+
+## `init_task`
+
+- note that so far we run as pid 0 whose `task_struct` is statically-defined
+  in `init/init_task.c`
+  - `get_current` is arch-specific and archs set things up so that
+    `get_current` returns `init_task` to this point
+- `init_task`
+  - `stack` is `init_stack`, which is in the data section (`INIT_TASK_DATA`)
+  - `active_mm` is `init_mm`
+  - `cred` and `real_cred` is `init_cred`
+  - `comm` is `INIT_TASK_COMM`, which is `swapper`
+  - `fs` is `init_fs`
+  - `files` is `init_files`
+  - `signal` is `init_signals`
+  - `sighand` is `init_sighand`
+  - `nsproxy` is `init_nsproxy`
+  - `thread_pid` is `init_struct_pid` w/ pid 0
 
 ## `kernel_init`
 
@@ -80,22 +102,23 @@ Kernel init
 
 ## rootfs
 
-- during early init (`start_kernel`), `init_mount_tree` mounts `rootfs` and
-  makes it pwd and /
-  - it is called from `mnt_init` from `vfs_caches_init`
-  - `rootfs` is a `tmpfs`
-  - it is usually empty at this moment
-- when kernel is fully initialized (`rest_init`), it spawns the first thread
-  with pid 1 to execute `kernel_init`
+- during `start_kernel`, a `mnt_namespace` is created and a tmpfs is mounted
+  - `vfs_caches_init` calls `mnt_init` which calls `init_mount_tree`
+  - `vfs_kern_mount` creates a mount for `rootfs_fs_type`
+    - `rootfs` is just a tmpfs and is empty
+  - `alloc_mnt_ns` creates a `mnt_namespace`
+  - `ns->root` is initialized to the rootfs mount
+  - `init_task.nsproxy->mnt_ns` is initialized to `ns`
+  - `set_fs_pwd` to chdir to the root inode of `rootfs`
+  - `set_fs_root` to chroot to the root inode of `rootfs`
 - pid 1 calls `populate_rootfs` or `default_rootfs` to populate rootfs
-  - called from `do_initcalls` from `do_basic_setup` from
-    `kernel_init_freeable`
-  - `default_rootfs` is called when `CONFIG_BLK_DEV_INITRD` is not set.  It
-    creates `/dev/console` and `/root` in rootfs
-  - otherwise, `populate_rootfs` is called to unpack cpio.  When no cpio is
-    supplied at build time or by bootloader, it uses `usr/default_cpio_list`
-    to create `/dev/console` and `/root` in rootfs
-    - see `Documentation/filesystems/ramfs-rootfs-initramfs.txt`
+  - `kernel_init_freeable -> do_basic_setup -> do_initcalls`
+  - if `CONFIG_BLK_DEV_INITRD` is defined, `populate_rootfs` unpacks initramfs
+    to `rootfs`
+    - when no initramfs is supplied at build time or by bootloader, there is a
+      default initramfs created from `usr/default_cpio_list` at build time
+  - otherwise, `default_rootfs` is called to create `/dev`, `/dev/console`,
+    and `/root` in `rootfs`
 
 ## init
 

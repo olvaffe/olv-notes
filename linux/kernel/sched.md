@@ -3,16 +3,6 @@ Scheduler
 
 ## Boot
 
-- per-cpu `current_task` is statically initialized to statically initialized
-  `init_task` defined in `init/init_task.c`
-  - `comm` is `INIT_TASK_COMM` (swapper)
-  - `active_mm` is `init_mm`
-  - `thread_pid` is `init_struct_pid` w/ pid 0
-- when `start_kernel` reaches `rest_init`, it spawns two threads
-  - `kernel_init` first, which has pid 1
-    - it will `execve("/sbin/init")` later
-  - `kthreadd` second, which has pid 2
-    - kthreadd will respond to future `kthread_create` requests
 - `kernel_init`
   - after `workqueue_init`, workqueue queues start running which spawn a
     kthread each
