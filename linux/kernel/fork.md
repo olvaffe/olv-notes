@@ -30,6 +30,21 @@ Kernel fork
     - `sched_core_enabled` is normally false; it was motivated mostly by cpu
       smt security issues
 
+## `mm_struct`
+
+- `mm_struct` is created in two ways
+  - when a task is forked, `copy_mm` calls `dup_mm` to duplicate from the
+    original task
+  - when exec, `bprm_mm_init` calls `mm_alloc` to allocate a new one
+- `mm_init` initializes a newly-allocated `mm_struct`
+  - `mm_alloc_pgd` calls `pgd_alloc` to allocate `pgd_t` array
+    - both `pgd_alloc` and `pgd_t` are arch-specific
+      - `pgd_t` is commonly a struct with a u64 inside
+        - the u64 is a entry descriptor
+      - the allocation is often a page, `__get_free_page`
+        - array size is thus `4096/8=512`
+  - `mm_alloc_pgd` calls `pgd_alloc` to allocate `pgd_t` array
+
 ## namespaces
 
 - `clone` is similiar to `fork` and has more controls

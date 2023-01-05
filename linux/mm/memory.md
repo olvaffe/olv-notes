@@ -3,10 +3,6 @@ Kernel memory
 
 ## Page Faulting
 
-- On x86, `X86_TRAP_PF` jumps to `page_fault` in `entry_64.S` which calls
-  `do_page_fault`
-  - for userspace fault, it calls `find_vma` to find the VMA and calls
-    `handle_mm_fault`
 - the mm code for fault starts in `handle_mm_fault`
 - a `vm_fault` is set up; page table until pte is set up
 - for true anonymous (`MAP_ANONYMOUS | MAP_PRIVATE`) vma, `do_anonymous_page`
