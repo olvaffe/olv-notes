@@ -138,6 +138,16 @@ Kernel init
   - `init_mount` move-mounts `/root` to `/`
   - `init_chroot` chroots
 - pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in initramfs)
+- `rootfs` is never unmounted
+  - without initramfs, we mount the real root over at `/`
+  - with initramfs, `Documentation/filesystems/ramfs-rootfs-initramfs.rst`
+    says
+    - When switching another root device, initrd would pivot_root and then
+      umount the ramdisk.  But initramfs is rootfs: you can neither pivot_root
+      rootfs, nor unmount it.  Instead delete everything out of rootfs to free
+      up the space (find -xdev / -exec rm '{}' ';'), overmount rootfs with the
+      new root (cd /newmount; mount --move . /; chroot .), attach
+      stdin/stdout/stderr to the new /dev/console, and exec the new init
 
 ## initramfs
 
