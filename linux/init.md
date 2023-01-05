@@ -149,6 +149,9 @@ Kernel init
     up the space (find -xdev / -exec rm '{}' ';'), overmount rootfs with the
     new root (cd /newmount; mount --move . /; chroot .), attach
     stdin/stdout/stderr to the new /dev/console, and exec the new init
+  - <https://git.kernel.org/pub/scm/libs/klibc/klibc.git/tree/usr/kinit/run-init>
+  - <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/tree/sys-utils/switch_root.c>
+  - <https://git.busybox.net/busybox/tree/util-linux/switch_root.c>
   - we can't see `rootfs` in `/proc/mounts` because it is outside of chroot
     (the real root) and `show_vfsmnt` returns `SEQ_SKIP` for it
 
