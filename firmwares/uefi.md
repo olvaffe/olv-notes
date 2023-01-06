@@ -22,3 +22,17 @@ UEFI
   - shim then implements its own chain of trust
     - it contains a distro key that is used to verify that the real bootloader
       is signed by the distro
+
+## GPT disk
+
+- ESP
+  - there should be a bootloader for each OS
+    - though some bootloaders can load multiple OS kernels
+  - Bootloaders should be in `EFI/` subdirectory
+  - Windows bootloader is at `EFI/Microsoft/bootmgfw.efi`
+  - EFI provides its own bootloader, which is a boot manager that allows one to
+    choose another bootloader
+    - rEFIt is a better choice for a boot manager
+  - Copy your bootloader to `EFI/Boot/bootx64.efi` to make it the default
+  - Windows 7 insists ESP to be FAT32.  So use it.
+  - `efibootmgr` is a userspace tool to manipulate `EFI/`

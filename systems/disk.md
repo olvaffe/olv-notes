@@ -32,6 +32,41 @@ Distro Disk
 - mount partition 1 to boot
 - mount partition 2 to home with `subvol=homes/current`
 
+## Windows
+
+- <https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions>
+- the device can have multiple disks
+  - both GPT and MBR are supported
+  - the disk containing the Windows partition must use GPT
+- types of partitions
+  - System partition (ESP)
+  - Microsoft reserved partition (MSR)
+  - OEM partitions
+  - Windows partition
+  - Recovery tools partition
+  - Data partitions
+- ESP
+  - must have at least 1 ESP
+  - minimum size is 100MB
+  - must be FAT32
+    - FAT32 requires a minimum size of 260MB on 4KB-sector disks
+- MSR
+  - 16MB
+  - each GPT disk should have a MSR partition
+- OEM partitions
+  - must locate before Windows/Resovery/Data partitions
+  - must set preserved bit
+- Windows partition
+  - minimum size is 20GB
+  - must be NTFS
+  - must be on a GPT disk
+- Recovery tools partition
+  - minimum size is 300MB
+  - should follow Windows partition immediately
+- Data partitions
+  - not recommended
+  - should follow Recovery tool partition immediately
+
 ## GPT
 
 - <https://en.wikipedia.org/wiki/GUID_Partition_Table>
@@ -79,50 +114,47 @@ Distro Disk
     - bit 52..55: tries remaining
     - bit 56: successful boot flag
 
-## GPT disk
+## MBR
 
-- <http://www.rodsbooks.com/gdisk/>
-- A GPT disk is a disk that uses GUID Partition Table
-  - instead of MBR
-- kernel should enable advanced partition table
-- GPT disk for data
-  - OS support is good
-- GPT disk for booting
-  - Windows requires UEFI (instead of BIOS) to boot from a GPT disk, and only
-    64-bit version supports it
-  - GRUB2 requires UEFI or a BIOS boot partition to boot from a GPT disk
-- Partition Alignment
-  - partitions are expressed by 512-byte sectors
-  - because physical sector size might be 4096-byte, align partition to 8 sectors
-  - traditionally, partitions should align to 63 sectors.  So one might also
-    want to align partitions to `8*63` sectors.
-- Partitioning for booting
-  - UEFI requires ESP, EFI System Partition, to store boot loaders, drivers, and
-    other files.  Size should be 260MiB
-  - BIOS+GRUB2 requires BIOS Boot Partition to store the second stage
-    bootloader.  Size should be 1MiB
-  - OSX requires a non-ESP partition to have 128MB unused space after it
-  - Windows requires ESP to be the first partition, followed by a MSR partition.
-    Size should be 128MiB.
-- ESP
-  - there should be a bootloader for each OS
-    - though some bootloaders can load multiple OS kernels
-  - Bootloaders should be in `EFI/` subdirectory
-  - Windows bootloader is at `EFI/Microsoft/bootmgfw.efi`
-  - EFI provides its own bootloader, which is a boot manager that allows one to
-    choose another bootloader
-    - rEFIt is a better choice for a boot manager
-  - Copy your bootloader to `EFI/Boot/bootx64.efi` to make it the default
-  - Windows 7 insists ESP to be FAT32.  So use it.
-  - `efibootmgr` is a userspace tool to manipulate `EFI/`
-- Multi-boot
-  - ESP: 260MB
-  - WIN MSR: 128MB
-  - WIN SYS: 80GB
-  - LIN SYS: 20GB
-  - LIN HOME: 140GB
-  - WIN DATA: 80GB
-  - Windows should be installed first.  Ubuntu 11.04 wipes ESP so back up ESP.
+- <https://en.wikipedia.org/wiki/Master_boot_record>
+- LBA 0: MBR
+  - off 0x0000: bootstrap code area
+  - off 0x00da: mbz
+  - off 0x00da: optional disk timestamp
+  - off 0x00e0: bootstrap code area
+  - off 0x01b8: optional disk signature
+  - off 0x01be: partition entry 1
+  - off 0x01ce: partition entry 2
+  - off 0x01de: partition entry 3
+  - off 0x01ee: partition entry 4
+  - off 0x01fe: boot signature
+- partition entries
+  - off 0x0: status (bit 7 is bootable)
+  - off 0x1: first sector in CHS
+  - off 0x4: type
+  - off 0x5: last sector in CHS
+  - off 0x8: first sector in LBA
+  - off 0xc: size
+- partition types
+  - 0x00: empty
+  - 0x07: NTFS/exFAT
+  - 0x0c: FAT32
+  - 0x0f: extended partition
+  - 0x82: linux swap
+  - 0x83: linux
+  - 0x85: linux extended partition
+  - 0x8e: linux LVM
+  - 0xa5: freebsd
+  - 0xa6: openbsd
+  - 0xa8: darwin
+  - 0xa9: netbsd
+  - 0xab: darwin boot
+  - 0xaf: HFS
+  - 0xee: GPT
+    - on a gpt disk, the first sector is protective mbr
+    - it should has a single partition of this type for the entire disk
+  - 0xef: ESP
+    - yeah, ESP can be on a MBR disk as well
 
 ## dm-crypt / LUKS
 
