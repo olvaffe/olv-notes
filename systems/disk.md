@@ -5,21 +5,23 @@ Distro Disk
 
 - fdisk 
   - `g` to use GPT
+    - by default, fdisk reserves the first and the last 1MB of the disk for
+      primary and secondary GPT tables
   - partition 1: 260M, ESP
-  - partition 2: entire disk, Linux
-  - by default, fdisk reserves the first and the last 1MB of the disk for
-    primary and secondary GPT tables
+  - partition 2: rest of the disk, Linux
+    - use two partitions if want to separate root and home
+  - no swap
+    - use zram instead
 - mkfs
   - partition 1: `mkfs.vfat -F32`
   - partition 2: `mkfs.btrfs`
-- prepare btrfs
-  - mount partition 2
-  - `mkdir roots homes`
-  - `btrfs subvolume create roots/current`
-  - `mkdir roots/current/{boot,home}`
-  - `btrfs subvolume create homes/current`
-  - `btrfs subvolume set-default roots/current`
-  - umount
+    - mount partition 2
+    - `mkdir roots homes`
+    - `btrfs subvolume create roots/current`
+    - `mkdir roots/current/{boot,home}`
+    - `btrfs subvolume create homes/current`
+    - `btrfs subvolume set-default roots/current`
+    - umount
 - current disk usage on a small laptop
   - /home: 55G
   - /var: 8G (down to 3G after pacman -Sc)
@@ -29,8 +31,8 @@ Distro Disk
 ## Mounting
 
 - mount partition 2 (uses `subvol=roots/current` by default)
-- mount partition 1 to boot
-- mount partition 2 to home with `subvol=homes/current`
+- mount partition 1 to `/boot`
+- mount partition 2 to `/home` with `subvol=homes/current`
 
 ## Windows
 
@@ -155,6 +157,24 @@ Distro Disk
     - it should has a single partition of this type for the entire disk
   - 0xef: ESP
     - yeah, ESP can be on a MBR disk as well
+
+## Bootable USB
+
+- <https://wiki.syslinux.org/wiki/index.php?title=Isohybrid>
+- ISO 9660 filesystem
+  - the first 32KB is unused
+  - that is enough space for MBR or GPT
+- a bootable iso
+  - an ISO 9660 image with MBR or GPT
+  - it is often MBR with 2 partitions
+    - first partition has type "empty" and takes up the entire iso
+    - second partition has type "esp" and is small
+  - bios can boot it as cdrom
+    - the bootloader is isolinux
+  - bios can boot it as usb
+    - the bootloader is isolinux
+  - uefi can find the esp partition, which cotains the bootloader
+    - often grub
 
 ## dm-crypt / LUKS
 
