@@ -20,6 +20,83 @@ ARM64
   - reserved memory
   - etc
 
+## Memory Initialization
+
+- by default
+  - `CONFIG_ARM64_VA_BITS_48=y`
+  - `CONFIG_ARM64_4K_PAGES=y`
+  - `CONFIG_PGTABLE_LEVELS=4`
+- `vmlinux.lds.S` reserves spaces for early page tables
+  - `init_idmap_pg_dir`
+    - this reserves `INIT_IDMAP_DIR_SIZE`, which is big enough for all levels
+      of page tables to cover the kernel image, fdt, and swapper block
+  - `init_pg_dir`
+    - this reserves `INIT_DIR_SIZE`, which is big enough for all levels of
+      page tables to cover the kernel image
+    - `INIT_MM_CONTEXT` statically sets `init_mm::pgd` to `init_pg_dir`
+  - `reserved_pg_dir` is used when no access is expected
+  - `swapper_pg_dir`
+  - `idmap_pg_dir`
+  - `tramp_pg_dir`
+- the kernel image header starts with` b primary_entry` to jump to
+  `primary_entry`
+- `init_kernel_el`
+  - loads `INIT_SCTLR_EL1_MMU_OFF` to `SCTLR_EL1` to disable MMU
+- `create_idmap` (in `head.S`)
+  - initializes `init_idmap_pg_dir` with identity read-only mapping for the pa
+    that covers the kernel image, fdt, and swapper block
+  - modifies `init_idmap_pg_dir` such that the mapping for `init_pg_dir`, fdt,
+    and swapper block is read-write
+- `__cpu_setup`
+  - loads `TCR_EL1` such that
+    - when va bit48..63 are 0, use `TTBR0_EL1` (for user addresses)
+    - when va bit48..63 are 1, use `TTBR1_EL1` (for kernel addresses)
+  - sets `x0` to `INIT_SCTLR_EL1_MMU_ON`
+- `__primary_switch`
+  - sets
+    - `x1` to `reserved_pg_dir`
+    - `x2` to `init_idmap_pg_dir`
+  - `__enable_mmu`
+    - loads `x2` `TTBR0_EL1` (`x2` is `init_idmap_pg_dir`)
+    - loads `x1` `TTBR1_EL1` (`x1` is `reserved_pg_dir`)
+    - loads `x0` `SCTLR_EL1` (`x0` is `INIT_SCTLR_EL1_MMU_ON`)
+  - `clear_page_tables` zeros out `init_pg_dir`
+  - `create_kernel_mapping` initializes `init_pg_dir` with lienar read-write
+    mapping for the pa that covers the kernel image
+  - loads `init_pg_dir` to `TTBR1_EL1`
+    - for a 48-bit va `xyz`, `0x0000xyz` is translated by `init_idmap_pg_dir`
+      and `0xfffffxyz` is translated `init_pg_dir`
+    - because the mappings are identity/linear, va `xyz` is translated to pa
+      `xyz`
+    - why do we need idmap?  because we use physical addresses before mmu and
+      must use idmap after mmu
+- `__primary_switched`
+  - `early_fdt_map` remaps the fdt to `early_fdt_ptr`
+    - `early_fixmap_init`
+      - fixmap is a small region (a few MBs) of va before `VMEMMAP_START`
+      - it can be used to map pa outside of the kernel image, such as fdt
+      - see `fixed_addresses`
+  - `start_kernel`
+- `setup_arch`
+  - `cpu_uninstall_idmap` switches `TTBR0_EL1` from `init_idmap_pg_dir` to
+    `reserved_pg_dir`
+  - `paging_init` migrates from `init_pg_dir` to `swapper_pg_dir`
+    - `swapper_pg_dir` is initialized by `map_kernel` and `map_mem`
+    - `cpu_replace_ttbr1` switches `TTBR1_EL1` from `init_pg_dir` to
+      `swapper_pg_dir`
+    - `init_mm.pgd` switches from `init_pg_dir` to `swapper_pg_dir`
+    - pages used by fixmap and `init_pg_dir` are freed
+    - `idmap_pg_dir` is intialized by `create_idmap`
+      - this is used rarely
+      - when a cpu starts up (e.g., a non-boot cpu or on cpu resume), mmu is
+        disabled and pa is used.  We need idmap when mmu is enabled, until we
+        stop using pa
+- it looks like, after boot initialization,
+  - kernel addresses are mapped by `swapper_pg_dir`
+  - user addresses are mapped by user page table
+    - but if there is no user context, user addresses are mapped by
+      `reserved_pg_dir`
+
 ## Exception Levels
 
 - exception levels
