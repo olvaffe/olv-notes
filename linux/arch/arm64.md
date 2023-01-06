@@ -10,6 +10,8 @@ ARM64
   - jump to kernel image
 - the kernel image has a 64-byte header
   - the first 8 bytes are instructions to jump to stext
+  - there is `text_offset` and the image must be loaded to any 2MB base plus
+    `text_offset`
 - before jumping to the kernel,
   - reg x0 must contain the address of the loaded dtb
   - MMU must be off
@@ -19,6 +21,24 @@ ARM64
   - machine revision
   - reserved memory
   - etc
+
+## Kernel Image Addresses
+
+- assembly
+  - `ldr` loads the an offset
+  - `adr` loads the addr of a PC-relative offset
+    - the offset must be small-ish
+  - `adrp` loads the addr of a PC-relative page-aligned offset
+    - the offset can be huge but should be page-aligned
+- `vmlinux.lds.S`
+  - `KERNEL_START` is the va of `_text` symbol
+  - `KERNEL_END` is the va of `_end` symbol
+- kernel image va
+  - `CONFIG_RELOCATABLE` is set and the bootloader can load the image to any
+    2MB-base
+  - `KIMAGE_VADDR` is the default va of `_text` symbol
+  - `kimage_vaddr` is the real va of `_text` symbol
+  - `kimage_voffset` is the offset from pa to va
 
 ## Memory Initialization
 
@@ -96,6 +116,38 @@ ARM64
   - user addresses are mapped by user page table
     - but if there is no user context, user addresses are mapped by
       `reserved_pg_dir`
+
+## Kernel Memory Layout
+
+- user va (bits 48..63 are 0) is mapped by `TTBR0_EL1`
+  - when there is a user context, this is the user mm
+  - when there is no user context, this is `reserved_pg_dir`
+  - idmap
+    - on cpu startup or resume, mmu is disabled and we work with pa, which is
+      in the user va region
+    - to be able to enable mmu, we must set up and use idmap (`idmap_pg_dir`
+      or `init_idmap_pg_dir`) first
+    - idmap covers at least code in `.idmap.text` section
+- kernel va (bits 48..63 are 1) is mapped by `TTBR1_EL1`
+  - the page table is `swapper_pg_dir` (or `init_pg_dir` when the boot cpu
+    starts)
+  - there are several regions, `Documentation/arm64/memory.rst`
+    - note that `VMALLOC_START` and `KIMAGE_VADDR` overlap
+  - pages that are managed by the buddy allocator are linearly mapped
+    - the region is `PAGE_OFFSET` and `PAGE_END`
+  - pages that are not (kernel image itself, vmalloc, etc.) are mapped
+    differently
+- `memstart_addr` is the pa of the start of the usable memory
+- addr types
+  - va can be stored in `void *`
+  - pa can be stored in `phys_addr_t`
+  - `__va` and `__pa` convert between va and pa
+  - `pfn_to_virt` and `virt_to_pfn` convert between va and pfn
+    - pfn is `pa >> PAGE_SHIFT`
+- `struct page`
+  - how the the buddy allocator manages memory
+  - `page_to_phys` and `phys_to_page` depend on the memory model
+    - arm64 uses `CONFIG_SPARSEMEM_VMEMMAP` and allows fast conversions
 
 ## Exception Levels
 
