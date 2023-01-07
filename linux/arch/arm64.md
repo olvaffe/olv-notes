@@ -133,6 +133,8 @@ ARM64
     starts)
   - there are several regions, `Documentation/arm64/memory.rst`
     - note that `VMALLOC_START` and `KIMAGE_VADDR` overlap
+    - when `map_kernel` initializes `swapper_pg_dir`, it calls
+      `vm_area_add_early` to add kernel mapping to vmalloc area as well
   - pages that are managed by the buddy allocator are linearly mapped
     - the region is `PAGE_OFFSET` and `PAGE_END`
   - pages that are not (kernel image itself, vmalloc, etc.) are mapped
