@@ -6,12 +6,15 @@ Git
 - remote branches
   - `git ls-remote --heads <url>` or `git ls-remote --heads <remote>`
   - head references in the remote repo
+  - there is an optional default branch, `HEAD`
 - remote-tracking branches
   - `git branch -r`
   - local head references that track remote head references
     - stored in `.git/refs/remotes/<name>`
-  - updated by `git fetch`
-    - `remote.<name>.fetch` is the default refspec
+    - updated by `git fetch`
+      - `remote.<name>.fetch` is the default refspec
+  - to set a default branch locally, `git remote set-head <name> -a`
+    - this creates `origin/HEAD` that tracks remote `HEAD`
 - local branches
   - `git branch`
   - local head references that may or may not track another branch
@@ -20,6 +23,9 @@ Git
   - local branches that track other branches
     - branches that are tracked are called upstream branches
     - upstream branches can be any (remote-tracking or local) branches
+    - stored in `.git/config`
+      - `branch.<name>.remote`
+      - `branch.<name>.merge`
   - `git branch --track` or `git branch --set-upstream-to`
     - implied when a branch is created from a remote-tracking branch
 
