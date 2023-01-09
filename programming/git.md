@@ -1,6 +1,28 @@
 Git
 ===
 
+## Branches
+
+- remote branches
+  - `git ls-remote --heads <url>` or `git ls-remote --heads <remote>`
+  - head references in the remote repo
+- remote-tracking branches
+  - `git branch -r`
+  - local head references that track remote head references
+    - stored in `.git/refs/remotes/<name>`
+  - updated by `git fetch`
+    - `remote.<name>.fetch` is the default refspec
+- local branches
+  - `git branch`
+  - local head references that may or may not track another branch
+    - stored in `.git/refs/heads`
+- tracking branches
+  - local branches that track other branches
+    - branches that are tracked are called upstream branches
+    - upstream branches can be any (remote-tracking or local) branches
+  - `git branch --track` or `git branch --set-upstream-to`
+    - implied when a branch is created from a remote-tracking branch
+
 ## The Object Database
 
 - <user-manual.txt>
