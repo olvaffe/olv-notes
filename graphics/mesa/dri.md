@@ -13,15 +13,17 @@ Mesa and DRI
     - `loader_get_driver_for_fd` returns the driver name using pci id mapping,
       kernel driver name, or `MESA_LOADER_DRIVER_OVERRIDE`
   - `driOpenDriver`
-  - `loader_open_driver`
+  - `loader_open_driver` dlopens `<name>_dri.so`, calls
+    `__driDriverGetExtensions_<name>`, and returns an array of
+    `__DRIextension *`
 - GBM
   - `gbm_create_device`
   - `_gbm_create_device`
+  - `find_backend`
   - `dri_device_create`
   - `dri_screen_create`, where `loader_get_driver_for_fd` is called on the
     user-provided fd
-  - `dri_screen_create_dri2`
-  - `dri_load_driver`
+  - `dri_screen_create_for_driver`
   - `dri_open_driver`
   - `loader_open_driver`
 - EGL
@@ -37,39 +39,97 @@ Mesa and DRI
     - `loader_open_driver`
   - or, `dri2_initialize_drm`
     - `gbm_create_device`
+- note that swrast (or wayland) uses different paths
 
 ## DRI driver extensions
 
-- negotiations
-  - `loader_open_driver` returns an array of driver extensions
-  - loaders (GLX/GBM/EGL) checks if the DRI driver provides all driver
-    extensions required
-  - loaders calls `createNewScreen2` with loader extensions and driver
-    extensions, to negotiate extensions and to create a screen
-- modern DRI drivers provide `driImageDriverExtension`
+- driver extensions
+  - `loader_bind_extensions` is called after `loader_open_driver`
+    - the loader (GLX, GBM, or EGL) provides a list of required and optional
+      extensions
+    - the function matches against the list of extensions returned by the DRI
+      driver
+  - GLX asks for `exts`
+    - `__DRI_CORE`
+    - `__DRI_IMAGE_DRIVER`
+    - `__DRI_MESA`
+  - GBM asks for `gbm_dri_device_extensions`
+    - `__DRI_CORE`
+    - `__DRI_MESA`
+    - `__DRI_DRI2`
+  - EGL asks for `dri3_driver_extensions`
+    - `__DRI_CORE`
+    - `__DRI_MESA`
+    - `__DRI_IMAGE_DRIVER`
+    - `__DRI_CONFIG_OPTIONS`
+- loader extensions
+  - loader provides a list of extensions to the driver in `createNewScreen`
+  - GLX provides `loader_extensions`
+    - `__DRI_IMAGE_LOADER`
+    - `__DRI_USE_INVALIDATE`
+    - `__DRI_BACKGROUND_CALLABLE`
+  - GBM provides `gbm_dri_screen_extensions`
+    - `__DRI_IMAGE_LOOKUP`
+    - `__DRI_USE_INVALIDATE`
+    - `__DRI_DRI2_LOADER`
+    - `__DRI_IMAGE_LOADER`
+    - `__DRI_SWRAST_LOADER`
+    - `__DRI_KOPPER_LOADER`
+  - EGL provides `dri3_image_loader_extensions`
+    - `__DRI_IMAGE_LOADER`
+    - `__DRI_IMAGE_LOOKUP`
+    - `__DRI_USE_INVALIDATE`
+    - `__DRI_BACKGROUND_CALLABLE`
+- screen extensions
+  - after a screen is created, `__DRIcoreExtensionRec::getExtensions` queries
+    the screen extensions
+  - GLX asks for `exts`
+    - `__DRI2_RENDERER_QUERY`
+    - `__DRI2_FLUSH`
+    - `__DRI_IMAGE`
+    - `__DRI2_INTEROP`
+    - `__DRI2_CONFIG_QUERY`
+  - GBM asks for `dri_core_extensions`
+    - `__DRI2_FLUSH`
+    - `__DRI_IMAGE`
+  - EGL asks for `dri2_core_extensions` and `optional_core_extensions`
+    - `__DRI2_FLUSH`
+    - `__DRI_TEX_BUFFER`
+    - `__DRI_IMAGE`
+    - `__DRI2_CONFIG_QUERY`
+    - `__DRI2_FENCE`
+    - `__DRI2_BUFFER_DAMAGE`
+    - `__DRI2_INTEROP`
+    - `__DRI_IMAGE`
+    - `__DRI2_FLUSH_CONTROL`
+    - `__DRI2_BLOB`
+    - `__DRI_MUTABLE_RENDER_BUFFER_DRIVER`
+    - `__DRI_KOPPER`
+- note that swrast uses different extensions
 
 ## Gallium DRI Megadriver
 
-- A megadriver has `megadriver_stub_init` as a static constructor
-  - it initializes the driver extension array based on the filename
-  - in `gallium/targets/dri`, it uses `DEFINE_LOADER_DRM_ENTRYPOINT` to define
-    the sub-driver function to be called by `megadriver_stub_init`, named
-    `__driDriverGetExtensions_foo`
-- for gallium dri megadriver,
-  - `galliumdrm_driver_extensions` is the driver extension array
-  - `galliumdrm_driver_api` is the driver api used by the common DRI interface
+- `src/gallium/targets/dri/target.c` defines `__driDriverGetExtensions_<name>`
+  for various drivers.  They return one of the following lists of extensions
+  - `galliumdrm_driver_extensions` for hw drivers
+  - `galliumsw_driver_extensions` for swrast
+  - `dri_swrast_kms_driver_extensions` for `kms_swrast`
+  - `galliumvk_driver_extensions` for zink
 - to create the `pipe_screen`,
   - `driCreateNewScreen2`
   - `dri2_init_screen`
     - `pipe_loader_drm_probe_fd` is called to dup the fd, probe, and determine
       the `drm_driver_descriptor`
-    - `drm_driver_descriptor`s are defined via `DRM_DRIVER_DESCRIPTOR` 
-    - it also sets `pipe_loader_ops` to `pipe_loader_drm_ops`
-  - `pipe_loader_create_screen`
-  - `pipe_loader_drm_create_screen`
-  - `pipe_iris_create_screen`
-  - `iris_drm_screen_create`
-  - `iris_screen_create`
+      - `loader_get_driver_for_fd` queries the driver name
+      - `get_driver_descriptor` looks up `drm_driver_descriptor` from a
+        statically-defined `driver_descriptors` array
+        - the descriptors are defined via `DRM_DRIVER_DESCRIPTOR` 
+      - it also sets `pipe_loader_ops` to `pipe_loader_drm_ops`
+    - `pipe_loader_create_screen` creates the pipe screen
+      - `pipe_loader_drm_create_screen`
+      - `pipe_iris_create_screen`
+      - `iris_drm_screen_create`
+      - `iris_screen_create`
 - kmsro
   - kmsro is used when the display uses one DRM driver and the GPU uses
     another DRM driver (e.g., mobile)
@@ -78,7 +138,11 @@ Mesa and DRI
   - `kmsro_drm_screen_create` calls the gallium driver's screen create
     function with `struct renderonly`
 - swrast
-  - the gallium dri megadriver provides `galliumsw_driver_extensions` and
-    `galliumsw_driver_api`, used by `swrast_dri.so`
-  - it also provides `dri_kms_driver_api`, used by `kms_swrast_dri.so`
-    - seems to be paired with KMS-only kernel drivers
+  - the gallium dri megadriver provides `galliumsw_driver_extensions`, used by
+    `swrast_dri.so`
+- `kms_swrast`
+  - the gallium dri megadriver provides  `dri_swrast_kms_driver_extensions`,
+    used by `kms_swrast_dri.so`
+  - this is preferred and is faster than `swrast_dri.so` by rendering to dumb
+    bos directly (as opposed to shms)
+    - this is also used with KMS-only kernel drivers, where mesa uses vgmem
