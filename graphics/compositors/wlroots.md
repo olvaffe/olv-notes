@@ -183,7 +183,6 @@ wlroots
     - `libseat_session_init`
     - `libseat_open_seat`
     - `noop_open_seat`
-      - there is a bug that `initial_setup` is not initialized to true
 - `WLR_DRM_DEVICES=/dev/dri/by-path/platform-vkms-card`
   - this envvar explicitly adds drm devices
   - call sequence
@@ -222,3 +221,7 @@ wlroots
     - `multi_backend_start`
     - `wlr_backend_start`
     - `backend_start`
+- bugs
+  - libseat `noop_open_seat` does not initialize `initial_setup` to true
+  - mesa `dri_swrast_kms_init_screen` does not initialize
+    `has_reset_status_query` to true
