@@ -164,3 +164,61 @@ wlroots
 - output power on and off
   - `wlr_output_state_set_enabled` controls output power state
   - when output is off, `wlr_output` does not ask for frames
+
+## vkms
+
+- `WLR_BACKENDS=drm`
+  - wlroots tries wayland backend, x11 backend, and then drm/libinput in order
+  - this envvar explicitly requests drm backend
+  - call sequence
+    - `wlr_backend_autocreate`
+- `LIBSEAT_BACKEND=noop`
+  - libseat tries `seatd` and `logind` backends
+  - this envvar explicitly requests noop backend
+    - because the session is noop, there is no input nor drm device
+  - call sequence
+    - `wlr_backend_autocreate`
+    - `session_create_and_wait`
+    - `wlr_session_create`
+    - `libseat_session_init`
+    - `libseat_open_seat`
+    - `noop_open_seat`
+      - there is a bug that `initial_setup` is not initialized to true
+- `WLR_DRM_DEVICES=/dev/dri/by-path/platform-vkms-card`
+  - this envvar explicitly adds drm devices
+  - call sequence
+    - `wlr_backend_autocreate`
+    - `attempt_drm_backend`
+    - `wlr_session_find_gpus`
+- `WLR_RENDER_DRM_DEVICE` can explicitly specify the rendernode
+  - it uses the primary node fd from the drm backend by default
+  - call sequence
+    - `wlr_renderer_autocreate`
+- `WLR_RENDERER=pixman`
+  - wlroots tries gles2, vulkan, and pixman backends in order
+    - it tries pixman only when the drm device has no rendernode
+  - the envvar explicitly requests pixman backend
+  - call sequence
+    - `wlr_renderer_autocreate`
+    - `renderer_autocreate_with_drm_fd`
+  - gles backend
+    - `EGL_EXT_platform_device` fails because swrast has no
+      `EGL_DRM_DEVICE_FILE_EXT`
+    - `EGL_KHR_platform_gbm` is used instead
+      - `gbm_create_device` tries these DRI drivers in order
+        - `vkms_dri.so`
+        - `zink_dri.so`
+        - `kms_swrast_dri.so` (it picks this)
+        - `swrast_dri.so`
+      - `eglInitialize` gets the DRI driver name from gbm and loads
+        `kms_swrast_dri.so` as well
+    - because it is swrast, wlroots rejects it unless
+      `WLR_RENDERER_ALLOW_SOFTWARE=1` is set
+- `WLR_LIBINPUT_NO_DEVICES=1`
+  - wlroots fails when there is no input device in the session
+  - the envvar explicitly allows it
+  - call sequence
+    - `wlr_backend_start`
+    - `multi_backend_start`
+    - `wlr_backend_start`
+    - `backend_start`

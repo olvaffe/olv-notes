@@ -205,4 +205,4 @@ Mesa and DRI
     used by `kms_swrast_dri.so`
   - this is preferred and is faster than `swrast_dri.so` by rendering to dumb
     bos directly (as opposed to shms)
-    - this is also used with KMS-only kernel drivers, where mesa uses vgmem
+  - this is only used with KMS-only kernel drivers, where mesa uses vgmem
