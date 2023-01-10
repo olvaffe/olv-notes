@@ -119,3 +119,16 @@ AMD CPUs
   - 2025?
   - Zen 5 uArch
   - desktop/mobile: Strix Point
+- APUs I have access to
+  - A6-9220C
+    - 2C2T
+    - pci 1002:98e4
+    - `CHIP_STONEY|AMD_IS_APU`
+  - Ryzen 5 4500U
+    - 6C6T
+    - pci 1002:1636
+    - `CHIP_RENOIR|AMD_IS_APU`
+  - Ryzen 5 5625C
+    - 6C6T
+    - pci 1002:15e7
+    - `CHIP_RENOIR|AMD_IS_APU`
