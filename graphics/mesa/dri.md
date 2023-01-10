@@ -137,6 +137,66 @@ Mesa and DRI
     `kmsro_driver_descriptor`
   - `kmsro_drm_screen_create` calls the gallium driver's screen create
     function with `struct renderonly`
+
+## swrast
+
+- GLX
+  - driver loading
+    - `__glXInitialize`
+    - `driswCreateDisplay`
+    - `driswCreateScreen`
+    - `driswCreateScreenDriver` (`swrast` or `zink`)
+    - `driOpenDriver`
+    - `loader_open_driver`
+  - asked driver extensions, `exts`
+    - `__DRI_CORE`
+    - `__DRI_SWRAST`
+    - `__DRI_KOPPER`
+    - `__DRI_COPY_SUB_BUFFER`
+    - `__DRI_MESA`
+  - provided loader extensions, `loader_extensions_shm`
+    - `__DRI_SWRAST_LOADER`
+    - `__DRI_KOPPER_LOADER`
+  - asked screen extensions, `exts`
+    - `__DRI_TEX_BUFFER`
+    - `__DRI2_RENDERER_QUERY`
+    - `__DRI2_FLUSH`
+    - `__DRI2_CONFIG_QUERY`
+- GBM
+  - driver loading
+    - `dri_device_create`
+    - `dri_screen_create_sw` (try `zink`, `kms_swrast`, and `swrast` in order)
+    - `dri_screen_create_for_driver`
+    - `dri_open_driver`
+    - `loader_open_driver`
+  - asked driver extensions, `gbm_swrast_device_extensions`
+    - same as hw
+  - provided loader extensions, `gbm_dri_screen_extensions`
+    - same as hw
+  - asked screen extensions, none
+- EGL
+  - driver loading
+    - `eglInitialize`
+    - `dri2_initialize`
+    - `dri2_initialize_x11`
+    - `dri2_initialize_x11_swrast` (`zink` or `swrast`)
+    - `dri2_load_driver_swrast`
+    - `dri2_load_driver_common`
+    - `dri2_open_driver`
+    - `loader_open_driver`
+  - asked driver extensions, `swrast_driver_extensions`
+    - `__DRI_CORE`
+    - `__DRI_MESA`
+    - `__DRI_SWRAST`
+    - `__DRI_CONFIG_OPTIONS`
+  - provided loader extensions, `swrast_loader_extensions`
+    - `__DRI_SWRAST_LOADER`
+    - `__DRI_IMAGE_LOOKUP`
+    - `__DRI_KOPPER_LOADER`
+  - asked screen extensions, `swrast_core_extensions` and
+    `optional_core_extensions`
+    - `__DRI_TEX_BUFFER`
+    - and optional ones
 - swrast
   - the gallium dri megadriver provides `galliumsw_driver_extensions`, used by
     `swrast_dri.so`
