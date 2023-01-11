@@ -58,7 +58,9 @@ QEMU
 
 ## Bootstrap
 
-- `./qemu-img create -f raw disk.img 32G`
+- `fallocate -l 32GiB disk.img`
+  - or, `./qemu-img create -f raw disk.img 32G`
+  - qcow2 was used when filesystems did not support sparse files
 - `MACHINE_OPTS="-machine q35 -cpu host -accel kvm -smp 2 -m 4G -nodefaults"`
 - `DISPLAY_OPTS="-display sdl,gl=core -device virtio-vga-gl"`
 - `BLOCK_OPTS="-hda disk.img"`
@@ -66,7 +68,24 @@ QEMU
 - `./qemu-system-x86_64 \
    $MACHINE_OPTS $DISPLAY_OPTS $BLOCK_OPTS $NETWORK_OPTS \
    -cdrom <cd>.iso -boot d`
-- Arch
+- common issues
+  - `-smp 2`, otherwise arch iso refuses to boot to kernel
+  - `ssh -p 2222 localhost` to ssh into the guest
+    - the guest eth must be up (with dhcp?) first
+- to bootstrap the disk image from the host,
+  - `losetup -f a.img`
+  - `fdisk /dev/loop0`
+    - if using bios with a gpt disk, grub expects the first partition to have
+      type `BIOS boot` and size 1MB
+    - followed by ESP and other partitions
+  - `mkfs.ext4 /dev/loop0p3`
+  - `mount /dev/loop0p3 /mnt`
+  - populate `/mnt`
+  - `mkfs.vfat -F32 /dev/loop0p2`
+  - `mount /dev/loop0p2 /mnt/boot`
+  - `grub-install --boot-directory=/mnt/boot --target=i386-pc /dev/loop0`
+  - `grub-mkconfig -o /mnt/boot/grub/grub.cfg`
+    - this might need chroot first?
 
 ## Tips
 
