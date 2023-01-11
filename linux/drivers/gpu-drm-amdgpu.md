@@ -4,6 +4,7 @@ DRM amdgpu
 ## Abbreviations
 
 - `cz_ih.c` is Carrizo Interrupt Handler
+- `amdgpu_amdkfd.c` is Kernel Fusion Driver for HSA
 - `si.c` is Sea Islands
 - `vi.c` is Volcanic Islands
 
@@ -135,16 +136,3 @@ DRM amdgpu
     - relevant log
       - `[drm] GART: num cpu pages 262144, num gpu pages 262144`
       - `[drm] PCIE GART of 1024M enabled.`
-  - radv
-    - radv sums visible VRAM (0.5GB) and GTT (3GB) and sets up two fake heaps
-      - first is non-local `RADV_HEAP_GTT` heap that gets 1.166GB
-      - second is local `RADV_HEAP_VRAM_VIS` heap that gets 2.333GB
-    - it also sets up 8 memory types
-      - 1st is `RADEON_DOMAIN_VRAM` and `RADEON_FLAG_NO_CPU_ACCESS` to
-        `RADV_HEAP_VRAM_VIS`
-      - 2nd is `RADEON_DOMAIN_GTT`, `RADEON_FLAG_GTT_WC`, and
-        `RADEON_FLAG_CPU_ACCESS` to `RADV_HEAP_GTT`
-      - 3rd is `RADEON_DOMAIN_VRAM` and `RADEON_FLAG_CPU_ACCESS` to
-        `RADV_HEAP_VRAM_VIS`
-      - 4th is `RADEON_DOMAIN_GTT` and `RADEON_FLAG_CPU_ACCESS` to
-        `RADV_HEAP_GTT`
