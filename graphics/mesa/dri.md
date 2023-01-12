@@ -206,3 +206,47 @@ Mesa and DRI
   - this is preferred and is faster than `swrast_dri.so` by rendering to dumb
     bos directly (as opposed to shms)
   - this is only used with KMS-only kernel drivers, where mesa uses vgmem
+
+## DRI gallium frontend
+
+- DRI gallium frontend implements DRI interface over gallium interface
+- swrast screen and context creation
+  - `mesa->createNewScreen`
+    - `driCreateNewScreen2`
+    - `drisw_init_screen`
+      - `pipe_loader_sw_probe_dri` calls `dri_create_sw_winsys` to create a
+        `sw_winsys` with `drisw_lf`.  This builds the call path from pipe
+        driver to winsys to dri frontend to the loader
+    - `pipe_loader_create_screen`
+    - `pipe_loader_create_screen_vk`
+    - `pipe_loader_sw_create_screen`
+    - `sw_screen_create_vk` uses the first of llvmpipe and softpipe
+    - `sw_screen_create_named`
+    - `llvmpipe_create_screen` creates a pipe screen from the winsys
+  - `mesa->createContext`
+    - `driCreateContextAttribs`
+    - `dri_create_context`
+    - `st_api_create_context`
+    - `llvmpipe_create_context`
+- swrast displaytarget creation
+  - `st_framebuffer_validate`
+  - `dri_st_framebuffer_validate`
+  - `drisw_allocate_textures`
+  - `llvmpipe_resource_create`
+  - `llvmpipe_resource_create_front`
+  - `llvmpipe_resource_create_all`
+  - `llvmpipe_displaytarget_layout`
+  - `dri_sw_displaytarget_create` allocates the backing storage either with
+    `malloc` or with `alloc_shm`, depending on
+    `drisw_loader_funcs::put_image_shm`
+- swrast swapbuffers
+  - `core->swapBuffers`
+    - `driSwapBuffers`
+    - `drisw_swap_buffers`
+    - `drisw_copy_to_front`
+    - `drisw_present_texture`
+    - `llvmpipe_flush_frontbuffer`
+    - `dri_sw_displaytarget_display`
+    - `drisw_put_image`
+    - `put_image`
+    - `loader->putImage` sends the data to the compositor
