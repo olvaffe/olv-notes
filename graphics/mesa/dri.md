@@ -210,43 +210,100 @@ Mesa and DRI
 ## DRI gallium frontend
 
 - DRI gallium frontend implements DRI interface over gallium interface
-- swrast screen and context creation
-  - `mesa->createNewScreen`
-    - `driCreateNewScreen2`
-    - `drisw_init_screen`
-      - `pipe_loader_sw_probe_dri` calls `dri_create_sw_winsys` to create a
-        `sw_winsys` with `drisw_lf`.  This builds the call path from pipe
-        driver to winsys to dri frontend to the loader
-    - `pipe_loader_create_screen`
-    - `pipe_loader_create_screen_vk`
-    - `pipe_loader_sw_create_screen`
-    - `sw_screen_create_vk` uses the first of llvmpipe and softpipe
-    - `sw_screen_create_named`
-    - `llvmpipe_create_screen` creates a pipe screen from the winsys
-  - `mesa->createContext`
-    - `driCreateContextAttribs`
-    - `dri_create_context`
-    - `st_api_create_context`
-    - `llvmpipe_create_context`
-- swrast displaytarget creation
-  - `st_framebuffer_validate`
-  - `dri_st_framebuffer_validate`
-  - `drisw_allocate_textures`
-  - `llvmpipe_resource_create`
-  - `llvmpipe_resource_create_front`
-  - `llvmpipe_resource_create_all`
-  - `llvmpipe_displaytarget_layout`
-  - `dri_sw_displaytarget_create` allocates the backing storage either with
-    `malloc` or with `alloc_shm`, depending on
-    `drisw_loader_funcs::put_image_shm`
-- swrast swapbuffers
-  - `core->swapBuffers`
-    - `driSwapBuffers`
-    - `drisw_swap_buffers`
-    - `drisw_copy_to_front`
-    - `drisw_present_texture`
-    - `llvmpipe_flush_frontbuffer`
-    - `dri_sw_displaytarget_display`
-    - `drisw_put_image`
-    - `put_image`
-    - `loader->putImage` sends the data to the compositor
+- `LIBGL_ALWAYS_SOFTWARE=1`
+  - screen and context creation
+    - `mesa->createNewScreen`
+      - `driCreateNewScreen2`
+      - `drisw_init_screen`
+        - `pipe_loader_sw_probe_dri` calls `dri_create_sw_winsys` to create a
+          `sw_winsys` with `drisw_lf`.  This builds the call path from pipe
+          driver to winsys to dri frontend to the loader
+      - `pipe_loader_create_screen`
+      - `pipe_loader_create_screen_vk`
+      - `pipe_loader_sw_create_screen`
+      - `sw_screen_create_vk` uses the first of llvmpipe and softpipe
+      - `sw_screen_create_named`
+      - `llvmpipe_create_screen` creates a pipe screen from the winsys
+    - `mesa->createContext`
+      - `driCreateContextAttribs`
+      - `dri_create_context`
+      - `st_api_create_context`
+      - `llvmpipe_create_context`
+  - displaytarget creation
+    - `st_framebuffer_validate`
+    - `dri_st_framebuffer_validate`
+    - `drisw_allocate_textures`
+    - `llvmpipe_resource_create`
+    - `llvmpipe_resource_create_front`
+    - `llvmpipe_resource_create_all`
+    - `llvmpipe_displaytarget_layout`
+    - `dri_sw_displaytarget_create` allocates the backing storage either with
+      `malloc` or with `alloc_shm`, depending on
+      `drisw_loader_funcs::put_image_shm`
+  - swapbuffers
+    - `core->swapBuffers`
+      - `driSwapBuffers`
+      - `drisw_swap_buffers`
+      - `drisw_copy_to_front`
+      - `drisw_present_texture`
+      - `llvmpipe_flush_frontbuffer`
+      - `dri_sw_displaytarget_display`
+      - `drisw_put_image`
+      - `put_image`
+      - `loader->putImage` sends the data to the compositor
+- `MESA_LOADER_DRIVER_OVERRIDE=kms_swrast`
+  - screen and context creation
+    - `mesa->createNewScreen`
+      - `driCreateNewScreen2`
+      - `dri_swrast_kms_init_screen`
+        - `pipe_loader_sw_probe_kms` calls `kms_dri_create_winsys` to create a
+          `sw_winsys` with drm fd.
+        - no `create_drawable` thus no drawable support
+      - `pipe_loader_create_screen`
+      - the rest is the same as swrast
+    - `mesa->createContext` is the same as swrast
+  - displaytarget creation
+    - `gbm_bo_create`
+      - `kms_swrast` has no drawable support, and this happens in gbm bo alloc
+      - there is also no modifier support because llvmpipe lacks
+        `resource_create_with_modifiers`
+    - `gbm_dri_bo_create`
+    - `loader_dri_create_image`
+    - `dri2_create_image`
+    - `dri2_create_image_common`
+    - `llvmpipe_resource_create`
+    - `llvmpipe_resource_create_front`
+    - `llvmpipe_resource_create_all`
+    - `llvmpipe_displaytarget_layout`
+    - `kms_sw_displaytarget_create`
+      - this uses `DRM_IOCTL_MODE_CREATE_DUMB` and requires a primary node
+  - displaytarget map
+    - `gbm_bo_map`
+    - `gbm_dri_bo_map`
+    - `dri2_map_image`
+    - `pipe_texture_map`
+    - `llvmpipe_transfer_map`
+    - `llvmpipe_transfer_map_ms`
+    - `llvmpipe_resource_map`
+    - `kms_sw_displaytarget_map`
+  - displaytarget unmap is similar
+  - displaytarget export
+    - `gbm_bo_get_fd_for_plane`
+    - `gbm_dri_bo_get_plane_fd`
+    - `dri2_query_image`
+    - `dri2_query_image_by_resource_param`
+    - `dri2_resource_get_param`
+    - `llvmpipe_resource_get_param`
+    - `llvmpipe_resource_get_handle`
+    - `kms_sw_displaytarget_get_handle`
+  - displaytarget import
+    - `eglCreateImage` with `EGL_LINUX_DMA_BUF_EXT`
+    - `_eglCreateImageCommon`
+    - `dri2_create_image`
+    - `dri2_create_image_khr`
+    - `dri2_create_image_dma_buf`
+    - `dri2_from_dma_bufs2`
+    - `dri2_create_image_from_fd`
+    - `dri2_create_image_from_winsys`
+    - `llvmpipe_resource_from_handle`
+    - `kms_sw_displaytarget_from_handle`
