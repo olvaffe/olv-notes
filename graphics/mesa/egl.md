@@ -44,6 +44,62 @@ Mesa and EGL
   - resources (contexts, surfaces, etc.) of a `EGLDisplay` are reference-counted
     - such that destroying a context that is still current does not lead to UAF
 
+## Platforms
+
+- `eglGetDisplay` guesses the platform of the native display
+  - it can check `EGL_PLATFORM` and inspect the native display pointer
+- `eglGetPlatformDisplay` specifies the platform explicitly
+- platforms that are window systems
+  - supported by `eglGetPlatformDisplay`
+    - `_EGL_PLATFORM_X11` where the native display type is `Display *`
+      - officially `EGL_PLATFORM_X11_EXT`
+      - default to `xcb_connect(NULL)`
+    - `_EGL_PLATFORM_XCB` where the native display type is `xcb_connection_t *`
+      - officially `EGL_PLATFORM_XCB_EXT`
+      - default to `xcb_connect(NULL)`
+    - `_EGL_PLATFORM_WAYLAND` where the native display type is `struct wl_display *`
+      - officially `EGL_PLATFORM_WAYLAND_EXT`
+      - default to `wl_display_connect(NULL)`
+    - `_EGL_PLATFORM_ANDROID` where the native display is `EGL_DEFAULT_DISPLAY`
+      - officially `EGL_PLATFORM_ANDROID_KHR`
+  - Mesa-specific
+    - `_EGL_PLATFORM_HAIKU` where the native display is `EGL_DEFAULT_DISPLAY`
+    - `_EGL_PLATFORM_WINDOWS` where the native display type is `HDC`
+- platforms that are bare-metal
+  - `_EGL_PLATFORM_DRM` where the native display type is `struct gbm_device *`
+    - officially `EGL_PLATFORM_GBM_KHR`
+    - default to `gbm_create_device` with `/dev/dri/card0`
+    - require gbm
+      - it gets some fields from `gbm_device` (e.g., the driver name, the
+        screen) and initializes some callbacks in `gbm_device`
+      - window surfaces are `gbm_surface`
+    - implements `wl_drm_interface`
+      - it is expected to be used by the compositor
+      - the gbm device should be the master of the primary node
+      - clients use `_EGL_PLATFORM_WAYLAND` and get authenticated
+  - `_EGL_PLATFORM_SURFACELESS` where the native display is `EGL_DEFAULT_DISPLAY`
+    - officially `EGL_PLATFORM_SURFACELESS_MESA`
+    - always supported
+    - decides device and driver
+      - use the first render node that has a hw driver
+      - if failed, use the first primary node with `kms_swrast`
+        - only for `vgem` and `virtio_gpu`
+      - if failed, pure swrast without drm fd
+  - `_EGL_PLATFORM_DEVICE` where the native display type is `EGLDeviceEXT *`
+    - officially `EGL_PLATFORM_DEVICE_EXT`
+    - user can enumerate devices
+      - there is always a sw dev
+      - enumerate adds only DRM render nodes
+      - devices added by platforms can be DRM render nodes or primary nodes
+    - user can query device attrs
+    - decides driver
+      - if device is sw, pure swrast without drm fd
+      - otherwise, use the render node of the device with hw driver
+      - if failed, use the render node of the device with `kms_swrast`
+        - only for `vgem` and `virtio_gpu`
+      - does not support primary node
+      - does not allow swrast fallback
+
 ## EGL
 
 - egl/main provides libEGL.so which implements EGL
