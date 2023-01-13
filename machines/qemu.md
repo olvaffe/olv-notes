@@ -83,21 +83,34 @@ QEMU
   - populate `/mnt`
   - `mkfs.vfat -F32 /dev/loop0p2`
   - `mount /dev/loop0p2 /mnt/boot`
-  - if arch bootstrap,
-    - edit mirrorlist
+  - if bootstrapping arch,
+    - edit `/mnt/etc/pacman.d/mirrorlist` and `/mnt/etc/resolv.conf`
     - chroot
       - `unshare -m chroot /mnt`
       - `mount -t proc none proc`
       - `mount -t devtmpfs none /dev`
+      - `mount -t sysfs none /sysfs`
     - install packages
       - `pacman-key --init`
       - `pacman-key --populate`
       - `pacman -Syu`
       - `pacman -S grub linux vim sudo`
-    - install grub
-      - outside chroot but does not work
+    - final touch
+      - `passwd`
+    - install grub (outside of chroot; do not work)
       - `grub-install --boot-directory=/mnt/boot --target=i386-pc /dev/loop0`
+        - this seems ok, but requires installing bios-version of grub in the
+          host
       - `grub-mkconfig -o /mnt/boot/grub/grub.cfg`
+        - this script does not work that way
+        - it should be run inside chroot and require `device.map`
+    - install grub (inside qemu)
+      - copy kernel and initramfs out of chroot
+      - umount chroot
+      - start qemu with
+        - `-nographic -kernel vmlinuz-linux -initrd initramfs-linux-fallback.img
+           -append 'console=ttyS0 loglevel=8 root=/dev/sda3 rw'`
+      - install grub
 
 ## Tips
 
