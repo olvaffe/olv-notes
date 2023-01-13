@@ -99,8 +99,8 @@ Arch Linux
     - also `networkmanager`
   - tools, `sudo vim man-db`
   - devel, `gcc git ctags meson pkgconf`
-    - also `gdb debuginfod perf strace man-pages`
-  - gui, `sway swayidle swaylock i3status mako polkit`
+    - also `gdb perf strace man-pages debuginfod`
+  - gui, `sway polkit i3status swayidle swaylock mako`
     - `alacritty google-chrome noto-fonts noto-fonts-cjk`
     - `light wl-clipboard wayland-utils`
     - `imv grim slurp`
@@ -110,7 +110,7 @@ Arch Linux
   - audio, `pipewire pipewire-pulse pavucontrol`
   - misc
     - `fakeroot` for makepkg
-    - `bison flex python-mako wayland-protocols` for mesa
+    - `bison flex python-mako wayland-protocols libxrandr llvm` for mesa
     - `cmake make` for cmake
     - `aarch64-linux-gnu-gcc` for cross-compile
       - also `qemu-user-static qemu-user-static-binfmt`
