@@ -117,3 +117,36 @@ Chrome OS Kernel
   - `sudo cp Image.vboot /dev/mmcblk1p4`
 - boot the new kernel once
   - `sudo cgpt add -i 4 -S 0 -T 1 -P15 /dev/mmcblk1`
+
+## `CONFIG_LOW_MEM_NOTIFY`
+
+- `get_available_mem_adj` returns the "available" memory in pages
+  - free pages (usually very low)
+  - clean file cache pages (usually very high and very quick to reclaim)
+  - anon pages divided by a weight (usually very high but need swapping out)
+- `low_mem_thresholds` is an array of thresholds in ascending order
+  - the kernel notifies the userspace whenever the avail mem decreases and
+    crosses thresholds
+  - the system is considered low-mem when the the avail mem is less than the
+    first/lowest threshold
+- `/sys/kernel/mm/chromeos-low_mem`
+  - `available` shows of `get_available_mem_adj` in MBs
+    - with a light load, this reports 2.6GB on a 4GB machine
+  - `margin` shows `low_mem_thresholds` in MBs
+    - it reports `201 1548` on a 4GB machine
+  - `ram_vs_swap_weight` reports 4
+- `low_mem_check` is called from `__alloc_pages` to check the current avail
+  mem against thresholds
+  - when the system enters low-mem, it prints `entering low_mem` and the
+    available ram
+  - userspace is notified, in the hope that userspace frees up memory before
+    the kernel oom-killer kicks in
+- oom score
+  - each task is assigned a score of badness
+    - 0 is never kill
+    - 1000 is always kill
+  - the score can be adjusted by `oom_score_adj`
+  - oom kills the one with high scores
+- sysrq-x
+  - kills the chrome session to trigger a crashdump
+  - prints `sysrq: Cros dump and crash`
