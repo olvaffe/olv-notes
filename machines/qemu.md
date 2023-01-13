@@ -56,7 +56,7 @@ QEMU
     - enables `-vga virtio`
 - `ninja`
 
-## Bootstrap
+## Bootstrap with ISO
 
 - `fallocate -l 32GiB arch.img`
   - or, `./qemu-img create -f raw arch.img 32G`
@@ -72,7 +72,10 @@ QEMU
   - `-smp 2`, otherwise arch iso refuses to boot to kernel
   - `ssh -p 2222 localhost` to ssh into the guest
     - the guest eth must be up (with dhcp?) first
-- to bootstrap the disk image from the host,
+
+## Bootstrap with chroot
+
+- partition and format
   - `fdisk arch.img`
     - if using bios with a gpt disk, grub expects the first partition to have
       type `BIOS boot` and size 1MB
@@ -83,34 +86,48 @@ QEMU
   - populate `/mnt`
   - `mkfs.vfat -F32 /dev/loop0p2`
   - `mount /dev/loop0p2 /mnt/boot`
-  - if bootstrapping arch,
-    - edit `/mnt/etc/pacman.d/mirrorlist` and `/mnt/etc/resolv.conf`
-    - chroot
-      - `unshare -m chroot /mnt`
-      - `mount -t proc none proc`
-      - `mount -t devtmpfs none /dev`
-      - `mount -t sysfs none /sysfs`
-    - install packages
-      - `pacman-key --init`
-      - `pacman-key --populate`
-      - `pacman -Syu`
-      - `pacman -S grub linux vim sudo`
-    - final touch
-      - `passwd`
-    - install grub (outside of chroot; do not work)
-      - `grub-install --boot-directory=/mnt/boot --target=i386-pc /dev/loop0`
-        - this seems ok, but requires installing bios-version of grub in the
-          host
-      - `grub-mkconfig -o /mnt/boot/grub/grub.cfg`
-        - this script does not work that way
-        - it should be run inside chroot and require `device.map`
-    - install grub (inside qemu)
-      - copy kernel and initramfs out of chroot
-      - umount chroot
-      - start qemu with
-        - `-nographic -kernel vmlinuz-linux -initrd initramfs-linux-fallback.img
-           -append 'console=ttyS0 loglevel=8 root=/dev/sda3 rw'`
-      - install grub
+- chroot
+  - edit `/mnt/etc/pacman.d/mirrorlist` and maybe `/mnt/etc/resolv.conf`
+  - `unshare -m chroot /mnt`
+  - `mount -t proc none proc`
+  - `mount -t devtmpfs none /dev`
+  - `mount -t sysfs none /sys`
+- install packages
+  - `pacman-key --init`
+  - `pacman-key --populate`
+  - `pacman -Syu`
+  - `pacman -S grub linux vim openssh`
+- prepare network
+  - `cat > /etc/systemd/network/ether.network <<EOF`
+
+    [Match]
+    Type=ether
+    [Network]
+    DHCP=yes
+    EOF
+  - `systemctl enable sshd`
+- final touch
+  - `passwd`
+  - `useradd -m -G wheel olv`
+  - `passwd olv`
+  - `visudo`
+  - `pkill gpg-agent`
+- install grub (outside of chroot; do not work)
+  - `grub-install --boot-directory=/mnt/boot --target=i386-pc /dev/loop0`
+    - this seems ok, but requires installing bios-version of grub in the
+      host
+  - `grub-mkconfig -o /mnt/boot/grub/grub.cfg`
+    - this script does not work that way
+    - it should be run inside chroot and require `device.map`
+- install grub (using qemu)
+  - copy kernel and initramfs out of chroot
+  - umount chroot and take down loop0
+    - if chroot or loop0 is busy, see if pacman's `gpg-agent` is still alive
+  - start qemu with
+    - `-nographic -kernel vmlinuz-linux -initrd initramfs-linux-fallback.img
+       -append 'console=ttyS0 loglevel=8 root=/dev/sda3 rw'`
+  - `mkinitcpio -P`
+  - `grub-install` and `grub-mkconfig`
 
 ## Tips
 
