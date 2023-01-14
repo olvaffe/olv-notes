@@ -513,3 +513,10 @@ DRM msm
   - `a6xx_gpu_state_get` collects important gpu state info `msm_gpu_state`
   - `msm_gpu_crashstate_get_bo` add dumpable submit bos into `msm_gpu_state`
   - it also calls `dev_coredumpm` to integrate with dev coredump
+- `a6xx_gpu_state_get`
+  - `a6xx_get_indexed_registers` dumps 4 internal FIFOs
+    - `CP_SQE_STAT`
+    - `CP_DRAW_STATE`
+    - `CP_UCODE_DBG_DATA`
+    - `CP_ROQ`
+    - `CP_MEMPOOL`

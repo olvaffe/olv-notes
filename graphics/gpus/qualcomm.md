@@ -92,9 +92,10 @@ Qualcomm Adreno
     set nicknamed afuc
 - since a6xx, CP is a microcontroller called SQE
   - SQE uses afuc instruction set
+  - SQE has no direct memory access.  It relies on GPU core or ROQ for memory
+    access
   - when idle, SQE executes `waitin` waiting for packets to arrive at ROQ
-  - ROQ (or may be SQE firmware itself) peaks the packets and put them onto
-    different ROQ queues
+  - ROQ peaks the packets and put them onto different ROQ queues
     - RB
     - IB1 
     - IB2
@@ -458,6 +459,48 @@ Qualcomm Adreno
   - `FLUSH_PER_OVERLAP_AND_OVERWRITE` addtionally keeps CCU and UCHE in sync
     - this is needed when there is a feedback loop and we are doing sysmem
       rendering
+
+## Pipeline Clusters
+
+- the pipeline is splitted into clusters (stages) running independently
+  - `FE`
+  - `SP_VS`
+  - `PC_VS`
+  - `GRAS`
+  - `SP_FS`
+  - `PS`
+- draws and computes are pipelined
+  - earlier stages can run draw N+1 while later stages still run draw N
+  - WFI is a full pipeline stall, used when earlier stages need the results of
+    later stages
+- each cluster has a pair of register banks
+  - CP can update bank A while the cluster uses bank B
+  - not all registers are banked
+- CP can access gpu registers immediately or pipelined
+  - it can read/write gpu registers immediately
+  - it can write gpu registers pipelined
+    - `CP_MEMPOOL` has 6 queues for each clusters
+    - pipelined writes are pushed into the corresponding queues
+    - clusters will fetch the writes from the queues
+- CP uses pipelined register writes to control clusters
+  - a write to `CP_EVENT_START` clears the done bit of the current context
+    (bank)
+  - a write to `{PC,HLSQ}_DRAW_CMD` kicks start a draw
+  - a write to `{PC,HLSQ}_EVENT` kicks start a event
+    - `vgt_event_type` is the types of events
+    - a `CONTEXT_DONE` event waits for the previous work and sets the done bit
+  - a write to `CP_EVENT_END` waits on the done bit for the other context,
+    copies dirtied registers over, and switches to the other context
+- IOW, a cluter sees this sequence of commands from its queue
+  - context A: state updates
+  - context A: `CP_EVENT_START`
+  - context A: draw
+  - context A: `CP_EVENT_END` to wait for context B (whose registers might still be used
+               for drawing) and switch over
+  - context B: state updates
+  - context B: `CP_EVENT_START`
+  - context B: draw
+  - context B: `CP_EVENT_END` to wait for context A and switch
 
 ## VFD, vertex fetch and decode
 
