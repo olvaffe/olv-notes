@@ -1,6 +1,25 @@
 Kernel shmem
 ============
 
+## initialization and configs
+
+- call sequence
+  - `start_kernel`
+  - `vfs_caches_init`
+  - `mnt_init`
+  - `shmem_init`
+- `shmem_init` always registers a `file_system_type` named `tmpfs`, but the
+  implementation depends on configs
+  - it is always on because kernel uses this filesystem to manage shared
+    memory
+  - when `CONFIG_SHMEM` is not set, this filesystem calls into
+    `ramfs_init_fs_context` and is effectively the same as `ramfs`
+  - when `CONFIG_SHMEM` is set, this filesystem calls into
+    `shmem_init_fs_context` and is the (full or partial) `tmpfs` we know
+    - when `CONFIG_TMPFS` is not set, only enough fs features are implemented
+      to support managing shared memory
+    - only when `CONFIG_TMPFS` is set, a full-fledged fs is implemented
+
 ## shmem
 
 - tmpfs is a pseudo-filesystem where files live on top of file page cache and
