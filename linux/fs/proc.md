@@ -108,6 +108,53 @@ Kernel proc
 - `DirectMap2M`
 - `DirectMap1G`
 
+## `/proc/<pid>/status`
+
+- `/proc/<pid>/status`
+  - this is human-readable form of `/proc/<pid>/stat`
+  - `VmSize` is `mm->total_vm`
+    - `VmData` is `mm->data_vm`
+      - sum of vmas that are `VM_WRITE & ~VM_SHARED & ~VM_STACK`
+    - `VmStk` is `mm->stack_vm`, size of `VM_STACK` vma
+  - `VmRSS` is sum of non-swap `mm->rss_stat` counters
+    - sum of `RssAnon`, `RssFile`, and `RssShmem`
+  - `VmExe` and `VmLib` sum up to `mm->exec_vm`
+    - sum of vmas that are `VM_EXEC & ~VM_WRITE & ~VM_STACK`
+  - `VmPTE` is `mm_pgtables_bytes`
+  - `VmSwap` is `MM_SWAPENTS` of `rss_stat`
+- `pgtables_bytes` in `mm_struct`
+  - as page tables are allocated, such as in `pud_alloc`, `mm_inc_nr_*`
+    increases `pgtables_bytes`
+  - as page tables are freed, such as in `free_pud_range`, `mm_dec_nr_*`
+    decreases `pgtables_bytes`
+- `rss_stat` in `mm_struct`
+  - there are these counters
+    - `MM_FILEPAGES`, for file-backed pages
+    - `MM_ANONPAGES`, for anonymous pages (e.g., mallocs)
+    - `MM_SWAPENTS`, for swapped-out pages
+    - `MM_SHMEMPAGES`, for shmem-backed pages
+  - the counters are updated by
+    - `inc_mm_counter`
+    - `dec_mm_counter`
+    - `add_mm_rss_vec`
+    - `add_mm_counter`
+  - as pages are mapped into the mm, `inc_mm_counter` increments the counters
+    - `do_set_pte`, which is called on the faulting path, calls
+      `inc_mm_counter`
+      - if the vma is private, `MM_ANONPAGES` is incremented
+      - if the page is swap-backed, `MM_SHMEMPAGES` is incremented
+        - shmem has no file-backing and can only be swapped out
+      - otherwise, the page is file-backed and `MM_FILEPAGES` is incremented
+    - `do_swap_page`, which is called to swap a page in, increments
+      `MM_ANONPAGES` and decrements `MM_SWAPENTS`
+  - as pages are unmapped from the mm, `dec_mm_counter` decrements the
+    counters
+    - `try_to_unmap_one`, which is called to unmap a page, calls
+      `dec_mm_counter`
+      - if the page is anonymous, it can only be swapped out.  `MM_ANONPAGES`
+      - if the page is shmem-based, `MM_SHMEMPAGES` is decremented
+      - otherwise, the page is file-backed and `MM_FILEPAGES` is decremented
+
 ## stats
 
 - `malloc(512MB)` without touching it

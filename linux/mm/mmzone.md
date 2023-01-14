@@ -1,0 +1,73 @@
+Kernel mmzone
+=============
+
+## memory model
+
+- arch configs
+  - common between x86 and arm64 by default
+    - `CONFIG_NUMA=y`
+    - `CONFIG_NUMA_BALANCING=y`
+    - `CONFIG_SPARSEMEM=y`
+    - `CONFIG_SPARSEMEM_EXTREME=y`
+    - `CONFIG_SPARSEMEM_VMEMMAP=y`
+    - `CONFIG_ZONE_DMA=y`
+    - `CONFIG_ZONE_DMA32=y`
+  - x86 by default
+    - `CONFIG_NR_CPUS=64`
+    - `CONFIG_PGTABLE_LEVELS=5`
+    - `CONFIG_NODES_SHIFT=6`
+  - arm64 by default
+    - `CONFIG_NR_CPUS=256`
+    - `CONFIG_PGTABLE_LEVELS=4`
+    - `CONFIG_NODES_SHIFT=4`
+    - `CONFIG_ARM64_4K_PAGES=y`
+    - `CONFIG_ARM64_PA_BITS_48=y`
+    - `CONFIG_ARM64_VA_BITS_48=y`
+- arch defines
+  - x86 by default
+    - `MAX_PHYSMEM_BITS` is 52
+    - `SECTION_SIZE_BITS` is 27
+  - arm64 by default
+    - `MAX_PHYSMEM_BITS` is 48
+    - `SECTION_SIZE_BITS` is 27
+- in the sparsemem model, physical memory is a collection of `mem_section`
+  - each section has size 128MB (`2^SECTION_SIZE_BITS`)
+  - there are tens of thousands of sections (`NR_MEM_SECTIONS`)
+  - sections are managed as an array of arrays because they are sparse
+    - `NR_SECTION_ROOTS` and `SECTIONS_PER_ROOT`
+- in numa, there are multiple nodes
+  - there are at most `2^CONFIG_NODES_SHIFT` nodes
+- there are 4 or 5 (`__MAX_NR_ZONES`) zones
+- page flags layout
+  - page flags use slightly less than 32 (`__NR_PAGEFLAGS`) bits
+  - zone is in page flags and takes 2 or 3 (`ZONES_WIDTH`) bits
+  - section is not in page flags and takes 0 (`SECTIONS_WIDTH`) bits
+  - node is in page flags and takes 4 or 6 (`NODES_WIDTH`) bits
+  - last cpu id is in page flags and takes 14 or 16 (`LAST_CPUPID_SHIFT`) bits
+  - as a result, from the top bits to the bottom bits, we have
+    - node at the top bits
+    - zone
+    - last cpupid
+    - page flags at the bottom bits
+
+## NUMA Nodes
+
+- there is a `struct pglist_data *node_data[MAX_NUMNODES];` array
+  - one `pglist_data` for each node
+- a `pglist_data` has many fields
+  - `node_zones` are zones in this node
+  - `__lruvec` is lruvec in this node
+  - `vm_stat`
+    - there are `NR_VM_NODE_STAT_ITEMS` items
+
+## Zones
+
+- a `zone` has many fields
+  - `vm_stat`
+    - there are `NR_VM_ZONE_STAT_ITEMS` items
+
+## LRU
+
+- a `lruvec` has many fields
+  - `lists`
+    - there are `NR_LRU_LISTS` lists
