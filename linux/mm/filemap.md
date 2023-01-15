@@ -31,7 +31,10 @@ Kernel filemap
     allocate the page and initialize it from the backing storage
   - `filemap_alloc_folio` allocates a 0-order `folio` (i.e., a single `page`)
   - `filemap_add_folio` adds the folio to the xarray
+    - and lru with `folio_add_lru`
   - `filemap_read_folio` reads the contents from the backing storage
+- when a page that is from page cache, not from `alloc_page`, the page should
+  be freed with `folio_put`, `put_page`, or `pagevec_release`
 
 ## reads
 

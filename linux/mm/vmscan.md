@@ -1,6 +1,46 @@
 Kernel vmscan
 =============
 
+## Reclaims
+
+- `node_reclaim` is a fast path
+  - `may_writepage` is 0 by default
+  - `may_unmap` is 0 by default
+  - `may_swap` is 1
+  - `priority` is 4 (`NODE_RECLAIM_PRIORITY`)
+  - `shrink_node` is called to reclaim a node
+    - `shrink_lruvec` reclaims from the lru
+    - `shrink_slab` reclaims from the slab
+- `try_to_free_pages` is a slow path
+  - `may_writepage` is 1 by default
+  - `may_unmap` is 1
+  - `may_swap` is 1
+  - `priority` is 12 (`DEF_PRIORITY`)
+  - `shrink_zones` is called to reclaim zones
+    - it just calls `shrink_node` like in the fast path, with a more
+      aggressive `scan_control`
+- `shrink_lruvec` reclaims pages in lru
+  - `shrink_active_list` moves some folios from the specified active list to
+    the corresponding inactive list
+  - `shrink_inactive_list` reclaims folios on the specified inactive list
+    - it calls `isolate_lru_folios` to move some folios on the specified
+      inactive list (`LRU_INACTIVE_ANON` or `LRU_INACTIVE_FILE`) to a
+      temporary list and calls `shrink_folio_list` on the temp list to reclaim
+    - `move_folios_to_lru` moves those that are not reclaimed back to lru
+- `shrink_folio_list` reclaims the specified folios
+  - it locks the folio with `folio_trylock`
+  - it checks `folio_evictable`
+  - if `folio_test_anon` and `folio_test_swapbacked`, `add_to_swap` adds the
+    folio to the swapcache
+  - if `folio_mapped`, `try_to_unmap` unmaps the folio from all vmas
+  - if `folio_test_dirty`, `pageout` writes the dirty page back using
+    `writepage`
+  - if the folio is in a page cache, and have no other references, removing it
+    from the page cache and taking away the last references in
+    `__remove_mapping`
+  - if all good, the folios are added to `free_folios` and are returned to the
+    buddy allocator in `free_unref_page_list`
+
 ## LRU
 
 - there is a global array of `typedef struct pglist_data pg_data_t`
@@ -15,39 +55,7 @@ Kernel vmscan
 - `add_page_to_lru_list` adds a page to one of the lists
   - it actually adds the folio containing the page to the list
 
-## page, page cache, and swap
+## kswapd
 
-- pages are allocated with `alloc_page` or `alloc_pages`
-  - they are freed with `__free_page` or `__free_pages`
-- in fs, pages are allocated the same way, but they are also added to the page
-  cache, `add_to_page_cache`, and to the swap lru cache, `lru_cache_add`
-  - it turns out pages are refcounted: `page_ref_xxx`
-    - page cache owns references to the managed pages
-    - swap cache also owns references to the managed pages
-  - when a driver has a page that is from fs, not from `alloc_page`, the page
-    should be freed with `put_page` or `pagevec_release`
-  - it also has a `_mapcount` which is the number vmas the page is mapped
-    - when a pte is taken down in `zap_pte_range`, `page_remove_rmap` is called
-      to reduce `_mapcount`.  The referernce to the page is transferred to tlb
-      in `__tlb_remove_page`
-- amazingly, it also embeds a 1-bit semaphore
-  - `lock_page` indicates down
-  - `unlock_page` indicates up
-- when a page is allocated, it can specify the reclaim flags
-  - `__GFP_DIRECT_RECLAIM` means the caller would rather wait than failing the
-    allocation
-  - `___GFP_KSWAPD_RECLAIM` means the allocation can fail, but please wake up
-    kswapd
 - kswapd thread calls `kswapd_shrink_node` to reclaim pages from various
   sources to the buddy allocator
-- specifically, `shrink_page_list` is given a list of pages to reclaim
-  - it locks the page with `lock_page`
-  - it checks `mapping_unevictable`
-  - it `try_to_unmap` the pages from all vmas
-  - if the page is in a page cache, and have no other references, removing it
-    from the page cache and taking away the last references in
-    `__remove_mapping`
-  - it does many other things; if all good, the pages are added to
-    `free_pages`
-  - then those pages are returned to the buddy allocator with
-    `free_unref_page_list`
