@@ -21,3 +21,8 @@ Kernel swap
   - `pageout` calls `writepage` to write a dirty folio back to the backing
     storage
   - `folio_free_swap` removes the folio from the swapcache
+- swapping in happens in `do_swap_page`
+  - `swap_cache_get_folio` tries to get the folio from the swapcache
+  - if readback is required, `swap_readpage` or `swapin_readahead` perform the
+    readback
+- `swap_writepage` and `swap_readpage` submit bios
