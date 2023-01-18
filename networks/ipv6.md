@@ -83,4 +83,29 @@ IPv6
 
 ## DHCPv6
 
-- 
+- ISPs usually use DHCPv6 to configure home routers
+- handshake
+  - the client (home router) uses its link-local address and udp port 546
+  - the server (usually a relay) listens on the link-local multicast address
+    `ff02::1:2` and udp port 547
+  - the client sends a `SOLICIT` meesage to the multicast address
+    - it includes configuration options
+  - server(s) replies a `ADVERTISE` meesage(s)
+    - it includes requested information (prefix delecation, nameserver, etc.)
+  - the client sends a `REQUEST` meesage to the multicast address
+    - this message identifies the server that the client prefers
+  - the server replies a `REPLY` meesage
+- the client has the information it requests
+  - gateway: usually a link-local address
+  - prefix delegation: a network that the client can use
+    - IPS router will route all traffic sent to the network to the client
+- with the information at hand, the client (home router) can 
+  - use SLAAC to configure its address
+    - or, if an address is assigned by DHCPv6, use that address
+  - use Router Advertisement to configure its clients (home devices)
+    - similar to DHCPv6, the info includes the network prefix and the gateway
+      (another link-local address of the home router)
+    - home devices use SLAAC to configure themselves
+    - the home router can also use DHCPv6 if it chooses to
+- in this setup, the client and its clients usually use globally unique
+  addresses
