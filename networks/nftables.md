@@ -28,6 +28,36 @@ nftables
     - `nft add chain <family> <table_name> <chain_name>`
     - a regular chain is like a helper function
 
+## Address Families
+
+- concept
+  - kernel processes network packets
+  - there are different types of packets
+    - nft address families match different types of packets
+  - there are different stages in the processing paths of different types of
+    packets
+    - nft hooks are called at the stages
+- `ip`, `ip6`, and `inet` address families
+  - `prerouting` hook
+    - all packets entering the system are processed by this hook
+  - `input` hook
+    - packets delivered to the local system are processed by this hook
+  - `forward` hook
+    - packets forwarded to a different host are processed by this hook
+  - `output` hook
+    - packets sent by local processes are processed by this hook
+  - `postrouting` hook
+    - all packets leaving the system are processed by this hook
+  - `ingress` hook
+    - all packets entering the system are processed by this hook
+    - called before `prerouting` hook
+- `arp` address family
+  - `input` and `output` hooks
+- `bridge` address family
+  - same hooks as `ip`/`ip6`/`inet`
+- `netdev` address family
+  - `ingress` and `egress` hooks
+
 ## SNAT
 
 - `sysctl net.ipv4.ip_forward=1`
