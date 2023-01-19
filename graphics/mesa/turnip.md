@@ -1073,4 +1073,33 @@ Mesa Turnip
       - it should set the marker to `RM6_RESOLVE`
       - there is one `CP_EVENT_WRITE(BLIT)` for each attachment store
     - the pattern should repeat for one or many times for each tile
-  - 
+
+## LRZ
+
+- `tu_disable_lrz` clears the lrz buffer for an image
+  - `tu6_emit_lrz_buffer` updates `A6XX_GRAS_LRZ_BUFFER_BASE` and
+    `A6XX_GRAS_LRZ_FAST_CLEAR_BUFFER_BASE` to point to the image
+  - `tu6_disable_lrz_via_depth_view` clears/initializes the lrz buffer
+    - it sets up an invalid `A6XX_GRAS_LRZ_DEPTH_VIEW`
+    - it enables lrz (to clear it)
+    - it emits `LRZ_CLEAR` and `LRZ_FLUSH`
+- `tu6_calculate_lrz_state` decides the lrz state for a draw call
+  - `disable_lrz` disables lrz for the rest of the renderpass if the lrz
+    buffer is invalid or will be invalidated by the draw
+  - `temporary_disable_lrz` disables lrz for this draw
+- `tu_lrz_sysmem_begin` and `tu_lrz_sysmem_end`
+  - we don't use lrz in sysmem
+  - on begin, `tu_disable_lrz` clears the lrz buffer and force-disables lrz
+    with a incompatible depth view
+  - on end, `LRZ_FLUSH` but that seems pointless
+- `tu_lrz_tiling_begin` and `tu_lrz_tiling_end`
+  - if lrz is disabled for the renderpass,
+    - `tu6_disable_lrz_via_depth_view` initialize the lrz buffer
+  - otherwise, lrz is enabled and the lrz buffer is initialized with
+    `LRZ_CLEAR`
+  - on end, restore `A6XX_GRAS_LRZ_CNTL` and `LRZ_FLUSH`
+- `tu_lrz_begin_renderpass` is called on renderpass begin
+  - it initializes `cmd->state.lrz`
+  - `cmd->state.lrz.valid` is true only when the depth load op is LOAD or
+    CLEAR
+- `tu6_emit_lrz` is called on draws if lrz state is dirty

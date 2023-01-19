@@ -1003,6 +1003,78 @@ Qualcomm Adreno
   - images are covered by macrotiles in a very unique order
     - it is a strange-looking space filling curve
 
+## LRZ
+
+- depth test
+  - depth test, or late-z, conceptually happens after fs
+  - if fs does not modify the depth value, has no side effect, and does not
+    kill, depth test can be performed before fs transparently
+    - this is known as early-z and is huge because fs tends to be expensive
+- lrz
+  - lrz stands for low-resolution z
+  - a value in lrz represents the minimum (or maximum) value for all values in
+    the corresponding block in the original depth buffer
+  - at binning pass, if enabled, lrz is updated and is used to speed up
+    binning
+  - at early-z, if enabled, lrz can be used as a pre-pass to reject blocks
+    before using the full-resolution depth buffer
+- depth image layout
+  - depth buffer
+  - lrz buffer
+    - each pixel in the lrz buffer represents a 8x8 block in the original
+      depth buffer
+    - the format is always `VK_FORMAT_D16_UNORM`
+  - fc buffer (always 512 bytes)
+    - each bit in the fc buffer represents a 16x4 block in the lrz buffer
+      - a value of 0 means the corresponding lrz block is fast-cleared (to 0.0
+        or 1.0 depending on the direction)
+      - a value of 1 means the corresponding lrz block is not fast-cleared
+        (i.e., has been modified)
+    - 512 bytes are enough for a 4096x4096 depth buffer
+  - state tracking (always 6 bytes)
+    - 1 byte for dir tracking
+      - `CUR_DIR_DISABLED` (0x0): lrz is force-disabled because the dir is
+        wrong
+      - `CUR_DIR_GE` (0x1): the current direction is GE
+      - `CUR_DIR_LE` (0x2): the current direction is LE
+      - `CUR_DIR_UNSET` (0x3): `LRZ_CLEAR` event clears to this value, and the
+        next access determines the current direction
+    - 4 bytes for the depth view that lrz buffer is for
+      - they are used to compare with `GRAS_LRZ_DEPTH_VIEW`, and if they
+        differ, lrz is force-disabled
+    - 1 byte for padding
+- `GRAS_LRZ_CNTL`
+  - `ENABLE` enables lrz in both binning and early-z
+  - `LRZ_WRITE` enables lrz writes in the binning pass
+  - `GREATER` updates max values instead of min values
+  - `FC_ENABLE` enables fast-clear
+    - this is always on in turnip unless hw limit is exceeded or `nolrzfc`
+  - `Z_TEST_ENABLE`
+  - `Z_BOUNDS_ENABLE`
+  - `DIR` specifies the current dir
+    - `LRZ_DIR_LE`
+    - `LRZ_DIR_GE`
+    - `LRZ_DIR_INVALID` (to invalidate the dir tracking byte)
+  - `DIR_WRITE` updates the dir tracking byte
+  - `DISABLE_ON_WRONG_DIR` force-disables lrz if the current dir differs from
+    the dir tracking byte
+    - this is always on on gen3+ in turnip
+- lrz events
+  - `LRZ_CLEAR` clears the fc buffer (when `FC_ENABLE`) and/or the dir
+    tracking byte (when `DISABLE_ON_WRONG_DIR`) and/or the depth view bytes
+  - `LRZ_FLUSH` flushes the lrz cache to the lrz buffer
+- gen differences
+  - turnip has 3 params
+    - `enable_lrz_fast_clear` is set on all a6xx
+    - `has_lrz_dir_tracking` is set on a6xx gen3+
+    - `lrz_track_quirk` is set on a6xx gen3
+  - fast-clear is available on all gens, but both turnip and blob use it on
+    gen3+
+  - on gen3 and only on gen3, `CP_REG_WRITE` with `TRACK_LRZ` must be used to
+    write lrz registers
+  - dir tracking is introduced to support lrz in secondary command buffers and
+    dynamic rendering
+
 ## Misc Blocks
 
 - RBBM: ring buffer status?
