@@ -48,6 +48,11 @@ IPv6
   - `fc00::/7`: unique local addresses
   - `fe80::/64` from `fe80::/10`: link local address
   - `ff00::/8`: multicast
+    - `ff01::/16`: node-local
+    - `ff02::/16`: link-local
+      - `ff02::1` all nodes
+      - `ff02::2` all routers
+      - `ff02::1:2` all DHCP servers
 - my eth0 has 3 IPv6 addresses (and 1 IPv4 address)
   - one is in `fe80::/64` and is link local
   - the other two are in the same `/64` network
@@ -109,3 +114,29 @@ IPv6
     - the home router can also use DHCPv6 if it chooses to
 - in this setup, the client and its clients usually use globally unique
   addresses
+
+## Router Advertisement
+
+- they are ICMPv6 messages
+- the client sends a RS (Router Solicitation) message from its link-local
+  address to `ff02::2` (all routers)
+- routers send a RA (Router Advertisement) message from its link-local address
+  to `ff02::1` (all nodes)
+  - the mssage includes several options
+  - option 3: prefix info, which is the network prefix for SLAAC
+
+## Configuration
+
+- experiments with systemd-networkd
+- `LinkLocalAddressing=` defaults to `ipv6`
+  - it uses EUI-64 (extended unique identifier) to generate the link-local
+    address
+  - with mac addr `11:22:33:44:55:66`, it first generates
+    `1122:33ff:fe44:5566` and flips bit 7 to become `1322:33ff:fe44:5566`
+  - the network prefix is `fe80::/64`
+  - if set to `ipv4`, it aasigns `169.254.0.0/16`
+- `IPv6AcceptRA=` defaults to `yes`
+  - it uses ICMPv6 RA for configuration data
+  - it depends on `LinkLocalAddressing` for ICMPv6 to work
+- `DHCP=` defaults to `no`
+  - it does not use DHCPv4 nor DHCPv6 for configuration data
