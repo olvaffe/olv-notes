@@ -188,6 +188,17 @@ DRM i915
   - objects that are modified (has write domain) are moved to flushing list
   - the others are moved to inactive
 
+## GPU hang
+
+- <https://gitlab.freedesktop.org/drm/intel/-/wikis/How-to-file-i915-bugs>
+- `CONFIG_DRM_I915_CAPTURE_ERROR`
+  - `intel_gt_handle_error` is called on gpu hang
+  - `i915_capture_error_state` captures a coredump if this is the first hang
+- `/sys/class/drm/card0/error`
+  - `i915_first_error_state` returns the coredump
+  - `i915_gpu_coredump_copy_to_buffer` copies the coredump to userspace buffer
+  - `/sys/kernel/debug/dri/0/i915_error_state` is the older name and works
+    similarly
 
 ## Old
 

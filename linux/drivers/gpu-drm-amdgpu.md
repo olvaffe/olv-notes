@@ -206,3 +206,14 @@ DRM amdgpu
 - `amdgpu_debugfs_pm_init` registers `amdgpu_pm_info`
   - it shows all interesting metrics (freqs, voltage, watts, temp, load,
     gating) in human-readable form
+
+## GPU Hang
+
+- `amdgpu_job_timedout` is called when a job takes too long and times out
+  - if `amdgpu_device_should_recover_gpu` returns true, `amdgpu_gpu_recovery`
+    is called to recover the GPU
+    - `CHIP_STONEY` does not support recovery?
+- `amdgpu_gpu_recovery` recovers the gpu after a hang
+  - `amdgpu_do_asic_reset` resets the gpu
+    - `amdgpu_reset_capture_coredumpm` is added since v6.0
+      - it calls `dev_coredumpm` to generate a coredump
