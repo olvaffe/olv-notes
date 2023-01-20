@@ -5,6 +5,7 @@ DRM amdgpu
 
 - `cz_ih.c` is Carrizo Interrupt Handler
 - `amdgpu_amdkfd.c` is Kernel Fusion Driver for HSA
+- `amdgpu_ras.c` is Reliability, Availability, Serviceability
 - `si.c` is Sea Islands
 - `vi.c` is Volcanic Islands
 
@@ -217,3 +218,7 @@ DRM amdgpu
   - `amdgpu_do_asic_reset` resets the gpu
     - `amdgpu_reset_capture_coredumpm` is added since v6.0
       - it calls `dev_coredumpm` to generate a coredump
+- it looks like amdgpu does not support post-mortem-style hang reports
+  - use `RADV_DEBUG=hang` to dumps gpu states to home dir
+    - it works better with <https://gitlab.freedesktop.org/tomstdenis/umr>
+      installed
