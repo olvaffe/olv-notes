@@ -136,3 +136,73 @@ DRM amdgpu
     - relevant log
       - `[drm] GART: num cpu pages 262144, num gpu pages 262144`
       - `[drm] PCIE GART of 1024M enabled.`
+
+## PM sysfs
+
+- `amdgpu_pm_sysfs_init` and `amdgpu_debugfs_pm_init`
+- `hwmon_device_register_with_groups` with `hwmon_attributes`
+  - temperature
+    - `temp*_input`: on-die gpu temperature in millidegrees Celcius
+    - `temp*_label`: channel label (edge, junction, and mem)
+    - `temp*_crit`
+    - `temp*_crit_hyst`
+    - `temp*_emergency`
+  - voltage
+    - `in0_input` and `in0_label`: millivolts on gpu
+    - `in1_input` and `in1_label`: millivolts on northbridge
+  - power
+    - `power*_average`: average power used by gpu in micro-watts
+    - `power*_cap_max`: max cap
+    - `power*_cap_min`: min cap
+    - `power*_cap`: selected cap
+    - `power*_cap_default`: default cap
+    - `power*_label`: requested power (slowPPT or fastPPT)
+  - fan
+    - `pwm1`: fan level (0-255)
+    - `pwm1_enable`: fan control (0 is no control; 1 manual; 2 auto)
+    - `pwm1_min`: min level (0)
+    - `pwm1_max`: max level (0)
+    - `fan1_input`: cur rpm
+    - `fan1_min`: min rpm
+    - `fan1_max`: max rpm
+    - `fan1_target`: target rpm
+    - `fan1_enable`: enable or disable sensor
+  - frequency
+    - `freq*_input`: gpu (sclk) or mem (mclk) freq in hz
+    - `freq*_label`: sclk or mclk
+- `amdgpu_device_attr_create_groups` with `amdgpu_device_attrs`
+  - `power_dpm_state`: legacy interface
+  - `power_dpm_force_performance_level`
+    - `auto`
+    - `low` forces clocks to lowest freqs
+    - `high` forces clocks to highest freqs
+    - `manual` allows manual adjs through `pp_dpm_{mclk,sclk,pcie}` and
+      `pp_power_profile_mode`
+    - `profile_*` disables clock gating and is for profiling
+  - `pp_num_states`, `pp_cur_state`, and `pp_force_state`
+    - default, battery, balanced, and performance
+    - pp stands for PowerPlay
+  - `pp_table` sets or shows the current powerplay table
+  - `pp_dpm_sclk`, `pp_dpm_mclk`, `pp_dpm_socclk`, `pp_dpm_fclk`,
+    `pp_dpm_vclk`, `pp_dpm_dclk`, `pp_dpm_dcefclk`, `pp_dpm_pcie`
+    - shows available power levels in the current power state and the freq
+    - set `power_dpm_force_performance_level` to `manual` to set
+  - `pp_sclk_od`
+  - `pp_mclk_od`
+  - `pp_power_profile_mode` shows/sets power profiles
+    - `3D_FULL_SCREEN`, `VIDEO`, `VR`, `COMPUTE`, `CUSTOM`
+  - `pp_od_clk_voltage`
+  - `gpu_busy_percent` shows how busy the gpu is
+  - `mem_busy_percent` shows how busy VRAM is
+  - `pcie_bw` shows pcie bandwidth used
+  - `pp_features` shows/sets powerplay features
+  - `unique_id` shows the unique id for the gpu
+  - `thermal_throttling_logging` logs thermal throttle
+  - `gpu_metrics` gives a snapshot of all gpu metrics (temp, freq,
+    utilization, etc)
+  - `smartshift_apu_power` shows apu power shift in percent
+  - `smartshift_dgpu_power` shows dgpu power shift in percent
+  - `smartshift_bias` is between -100 (max for apu) to 100 (max for dgpu)
+- `amdgpu_debugfs_pm_init` registers `amdgpu_pm_info`
+  - it shows all interesting metrics (freqs, voltage, watts, temp, load,
+    gating) in human-readable form
