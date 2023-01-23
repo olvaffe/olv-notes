@@ -1,7 +1,7 @@
 dEQP
 ====
 
-## Build and Run
+## Build
 
 - Build
   - `python3 external/fetch_sources.py`
@@ -17,7 +17,10 @@ dEQP
   - `strip deqp-*`
   - `cd ..`
   - `tar zchf deqp-dist.tar.gz deqp-dist`
-- Run Vulkan
+
+## Run
+
+- Vulkan
   - `external/vulkancts/modules/vulkan/deqp-vk \
        --deqp-caselist-file=../external/vulkancts/mustpass/master/vk-default.txt \
        --deqp-log-images=disable \
@@ -35,24 +38,22 @@ dEQP
       - Revisions: to see the commits
       - Platforms: pick desired platform such as gen9
       - Group: dEQP-VK
-
-## EGL/GLES
-
-- set `DEQP_TARGET` to one of the desired targets under `targets/`
-  - e.g., `x11_egl`
-- force disable GLESv1
-  - edit `targets/x11_egl/x11_egl.cmake`
-  - I have to do this because my cross-compile sysroot has GLESv1 but my
-    target machine does not
-- Run GLES
-  - `EGL_PLATFORM=surfaceless
-     external/modules/gles2/deqp-gles2 \
-       --deqp-surface-type=pbuffer \
-       --deqp-gl-config-name=rgba8888d24s8ms0 \
-       --deqp-surface-width=256 \
-       --deqp-surface-height=256`
-  - all arguments required becaues of surfaceless?
-  - replace gles2 by gles3 and gles31
+- EGL/GLES
+  - set `DEQP_TARGET` to one of the desired targets under `targets/`
+    - e.g., `x11_egl`
+  - force disable GLESv1
+    - edit `targets/x11_egl/x11_egl.cmake`
+    - I have to do this because my cross-compile sysroot has GLESv1 but my
+      target machine does not
+  - Run GLES
+    - `EGL_PLATFORM=surfaceless
+       external/modules/gles2/deqp-gles2 \
+         --deqp-surface-type=pbuffer \
+         --deqp-gl-config-name=rgba8888d24s8ms0 \
+         --deqp-surface-width=256 \
+         --deqp-surface-height=256`
+    - all arguments required becaues of surfaceless?
+    - replace gles2 by gles3 and gles31
 
 ## Android
 
@@ -72,8 +73,15 @@ dEQP
   - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
     --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
     --deqp-log-filename=/sdcard/dEQP-Log.qpa"'`
+- mustpass
+  - android mustpass is under `android/cts/master`
+  - `scripts/build_android_mustpass.py` generates the mustpass files
+    - it imports `scripts/mustpass.py` which is used by android and
+      non-android
+    - `android/cts/master/mustpass.xml` is not used by android cts
+  - `android/cts/AndroidTest.xml` is what android cts uses
 
-## qpa
+## `TestResults.qpa`
 
 - browse to `scripts/qpa_image_viewer.html` and open the qpa file
 - or, <https://android.googlesource.com/platform/external/cherry/+/master>
@@ -84,7 +92,7 @@ dEQP
   - `GO111MODULE=off go run server.go`
   - browse to `http://127.0.0.1:8080`
 
-## Overview
+## Build System
 
 - CMakeLists.txt `add_subdirectory`
   - `frameworks/delib/debase`
@@ -106,6 +114,36 @@ dEQP
   - `modules`
   - `external/vulkancts/modules/vulkan`
   - `external/openglcts`
+- `DEQP_TARGET=surfaceless`
+  - `targets/surfaceless/surfaceless.cmake`
+    - requires EGL/GLES2/GLES3 headers/libraries
+  - `framework/platform/surfaceless`
+    - `createPlatform` creates `tcu::surfaceless::Platform` which registers
+      `ContextFactory`
+    - no `getEGLPlatform` and thus no `deqp-egl` support
+    - `getGLPlatform` is supported through `glu`
+      - `ContextFactory::createContext` calls `eglGetDisplay(NULL)`
+    - `getVulkanPlatform` is supported
+      - it dlopens
+- `DEQP_TARGET=x11_egl`
+  - `targets/x11_egl/x11_egl.cmake`
+    - does not require EGL/GLES2/GLES3 headers/libraries
+  - `framework/platform/lnx`
+    - `createPlatform` creates `tcu::lnx::LinuxPlatform` which registers
+      `eglu::GLContextFactory`
+    - `getEGLPlatform` is supported through `eglu`
+    - `getGLPlatform` is supported through `glu`
+      - `GLContextFactory::createContext` creates a `RenderContext` where
+        calls `eglGetPlatformDisplay` or `eglGetDisplay`
+    - `getVulkanPlatform` is supported
+- `add_deqp_module` is a macro that adds a module
+  - if `DE_OS_IS_ANDROID`, it skips the executable
+    - we can comment this out, edit `scripts/android/build_apk.py` to build
+      `deqp-vk`, and define `createPlatform` with a dummy `NativeActivity` in
+      `framework/platform/android/tcuAndroidPlatform.cpp`
+
+## Vulkan Test Initialization
+
 - `main` is defined by `framework/platform/tcuMain.cpp`
 - `tcu::App` has a `TestSessionExecutor` to manage the test session
 - `tcu::TestSessionExecutor::iterate`
@@ -117,9 +155,6 @@ dEQP
   - `enterTestCase`
     - picks a test case such as `dEQP-VK.info.build`
   - `iterateTestCase`
-
-## Vulkan CTS
-
 - from `tcu::TestSessionExecutor::enterTestPackage`
   - `vkt::BaseTestPackage::createExecutor`
   - `vkt::TestCaseExecutor::TestCaseExecutor`
@@ -137,7 +172,7 @@ dEQP
 - `external/vulkancts/modules/vulkan/api/vktApiTests.cpp`
   - `createApiTests` adds the test groups
 
-## GLES CTS
+## EGL/GLES Test Initialization
 
 - from `tcu::DefaultHierarchyInflater::enterTestPackage`
   - `deqp::gles2::TestPackage::init`
