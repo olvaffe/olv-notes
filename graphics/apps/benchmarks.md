@@ -126,3 +126,22 @@ GPU Benchmarks
     - `Scene::average_fps` calculates the fps which is added to `score_`
       - fps is calculated as `currentFrame_ / realTime_.elapsed()`
     - `log_scene_result` prints fps, etc to stdout
+- scenes
+  - `buffer` updates and draws a 100x20 mesh
+    - `update-method` is `map` by default which causes stalls
+  - `build` draws a rotating model
+  - `bump` draws a rotating model with normal mapping
+  - `desktop` draws a few textured rectangles
+  - `effect2d` draws an image with a convolution kernel
+  - `clear` draws nothing
+  - `ideas` draws "Ideas in Motion" animation from 90's
+  - `jellyfish` draws a translucent animating jellyfish
+  - `pulsar` draws "pulsar" xscreensaver
+  - `refract` draws a model with refraction
+  - `shading` draws a model with gouraud shading by default
+  - `shadow` draws a model with shadow mapping
+  - `terrain` draws a terrain with a heightmap
+  - `texture` draws a textured cube
+  - `conditionals` draws a 32x32 grid whose vs/fs has `if`s
+  - `function` draws a 32x32 grid whose vs/fs has a function
+  - `loop` draws a 32x32 grid whose vs/fs has a loop
