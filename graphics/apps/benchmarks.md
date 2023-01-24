@@ -96,3 +96,33 @@ GPU Benchmarks
 - <https://gravitymark.tellusim.com/>
   - Android
   - Linux x86-64 and arm64
+
+## glmark2
+
+- <https://github.com/glmark2/glmark2>
+  - `./src/glmark2-es2-wayland --data-path ~/projects/glmark2/data -b build:model=bunny`
+  - `-l` to see all scenes (e.g., `build`) and scene options (e.g., `model`)
+- `MainLoop::step`
+  - `do_benchmark` enters the mainloop and keeps calling `step`
+  - on scene begin,
+    - `before_scene_setup` deletes `fps_renderer_` and `title_renderer_`
+    - `CanvasGeneric::reset`
+      - reset gl state
+      - create a new window
+      - create a new context and make current
+      - ensure an fbo if offscreen
+      - `glViewport`, `glClear`, etc.
+    - `Benchmark::setup_scene` loads resources, builds vbos, etc.
+    - `after_scene_setup` checks if `show-fps` and `title` options are set
+      - they display title and fps on screen
+    - `log_scene_info` prints scene info to stdout
+  - `MainLoop::draw`
+    - `CanvasGeneric::clear` to clear
+    - `scene_->draw` to render
+    - `scene_->update` to update state
+    - `CanvasGeneric::update` to swap or `glFinish`
+  - on scene end,
+    - `Benchmark::teardown_scene` to unload resources, etc.
+    - `Scene::average_fps` calculates the fps which is added to `score_`
+      - fps is calculated as `currentFrame_ / realTime_.elapsed()`
+    - `log_scene_result` prints fps, etc to stdout
