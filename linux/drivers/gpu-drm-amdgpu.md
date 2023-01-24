@@ -207,6 +207,19 @@ DRM amdgpu
 - `amdgpu_debugfs_pm_init` registers `amdgpu_pm_info`
   - it shows all interesting metrics (freqs, voltage, watts, temp, load,
     gating) in human-readable form
+- force a frequency for SCLK,
+  - echo `manual` to `power_dpm_force_performance_level`
+  - cat `pp_dpm_sclk` to see valid power levels and echo the level to select
+    - on renoir, `force_clock_level` points to `smu_force_ppclk_levels` which
+      calls `renoir_force_clk_levels` to set `SMU_MSG_SetSoftMaxGfxClk`
+      `SMU_MSG_SetHardMinGfxClk`
+    - there are only 3 levels: hw max, hw min, and 700
+      (`RENOIR_UMD_PSTATE_GFXCLK`)
+  - or, cat `pp_od_clk_voltage` and echo to reprogram the table
+    - on renoir, `set_fine_grain_clk_vol` is NULL, `odn_edit_dpm_table` points
+      to `smu_od_edit_dpm_table` which calls `renoir_od_edit_dpm_table` to set
+      `SMU_MSG_SetSoftMaxGfxClk` and `SMU_MSG_SetHardMinGfxClk`
+    - the values are arbitrary, as long as they are between hw min/max
 
 ## GPU Hang
 
