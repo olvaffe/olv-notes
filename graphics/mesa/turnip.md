@@ -1073,6 +1073,7 @@ Mesa Turnip
       - it should set the marker to `RM6_RESOLVE`
       - there is one `CP_EVENT_WRITE(BLIT)` for each attachment store
     - the pattern should repeat for one or many times for each tile
+- `meld <(cffdump --once -s good.rd) <(cffdump --once -s bad.rd)`
 
 ## LRZ
 
