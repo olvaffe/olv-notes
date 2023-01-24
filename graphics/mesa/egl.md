@@ -611,3 +611,18 @@ Mesa and EGL
     - on freedreno, there is semi-native support and requires a format
       translation
       - the two resources have format `PIPE_FORMAT_R8_G8B8_420_UNORM`
+
+## Sync Objects
+
+- EGL
+  - `eglCreateSync` calls into DRI's `dri2_create_fence`
+    - `st_context_flush` is called without any flag to flush
+  - `eglClientWaitSync` calls into DRI's `dri2_client_wait_sync`
+    - `EGL_SYNC_FLUSH_COMMANDS_BIT` is translated to
+      `__DRI2_FENCE_FLAG_FLUSH_COMMANDS`, which is ignored
+    - `screen->fence_finish` is called to wait
+- GL
+  - `_mesa_FenceSync` calls `pipe->flush`
+    - `PIPE_FLUSH_DEFERRED` is set only if the gl context is not shared
+  - `_mesa_ClientWaitSync` calls `screen->fence_finish`
+    - `GL_SYNC_FLUSH_COMMANDS_BIT` is ignored
