@@ -36,6 +36,28 @@ Mesa Freedreno
 - when the time comes to flush, `fd_gmem_render_tiles` emits to `gmem` and
   submits
 
+## Batch Reordering
+
+- app draws to a texture and draws the texture to rt
+  - for an imr, it can draw to the texture and then draw to the rt
+  - as a tiler, we would like to consider them as a renderpass to draw to gmem
+    and to sample from gmem.  The renderpass is not ended until flush.
+- `ctx->batch`
+  - upon fb change, `fd_set_framebuffer_state` resets `ctx->batch`
+  - `fd_context_batch` returns `ctx->batch`
+    - if it is null, `fd_batch_from_fb` looks up the batch for the fb
+  - iow, `ctx->batch` is the current batch for the current fb, and there can
+    be multiple batches before flushing
+- `fd_context_flush`
+  - `fd_bc_flush` calls `fd_batch_flush` on all batches
+    - this is like ending a renderpass
+    - `fd_gmem_render_tiles` and `fd_submit_flush` are called for each batch
+- `fd_submit_flush`
+  - `fd_submit_sp_flush` is used on modern kernels
+  - it defers submits such that it can merge them
+  - `flush_deferred_submits` submits all deferred submits at once to the `sq`
+    thread pool
+
 ## GMEM Layout
 
 - `calc_nbins`
