@@ -52,11 +52,13 @@ Mesa Freedreno
   - `fd_bc_flush` calls `fd_batch_flush` on all batches
     - this is like ending a renderpass
     - `fd_gmem_render_tiles` and `fd_submit_flush` are called for each batch
-- `fd_submit_flush`
-  - `fd_submit_sp_flush` is used on modern kernels
-  - it defers submits such that it can merge them
-  - `flush_deferred_submits` submits all deferred submits at once to the `sq`
-    thread pool
+  - `fd_submit_flush` calls `fd_submit_sp_flush` on modern kernels
+    - it defers submits such that it can merge them
+    - `flush_deferred_submits` submits all deferred submits at once to the `sq`
+      thread pool
+- `fd_pipe_fence_finish`
+  - it calls `fence_flush` to flush deferred submits
+    - `fd_fence_flush` calls `fd_pipe_sp_flush` on modern kernels
 
 ## GMEM Layout
 
