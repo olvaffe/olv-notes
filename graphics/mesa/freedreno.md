@@ -59,6 +59,16 @@ Mesa Freedreno
 - `fd_pipe_fence_finish`
   - it calls `fence_flush` to flush deferred submits
     - `fd_fence_flush` calls `fd_pipe_sp_flush` on modern kernels
+- when combined with tc (threaded context), things can be a bit annoying
+  - when the main thread `glFlush`, mesa often calls `tc_flush` with
+    `PIPE_FLUSH_ASYNC`.  Prior gallium commands and the pipe flush is queued
+    to tc's `gdrv` thread
+  - if the main thread renders the next frame and does another `glFlush`, it
+    can still be queued up for `gdrv`
+  - when `gdrv` runs, it calls `fd_submit_sp_flush` twice and could defer both
+    submits
+  - the two submits will be submitted to the kernel together and will be
+    signaled together
 
 ## GMEM Layout
 
