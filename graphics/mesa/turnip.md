@@ -1104,3 +1104,79 @@ Mesa Turnip
   - `cmd->state.lrz.valid` is true only when the depth load op is LOAD or
     CLEAR
 - `tu6_emit_lrz` is called on draws if lrz state is dirty
+
+## Commands of a Simplest Steady Frame
+
+- this draws a textured cube with simplications
+  - load and store ops are don't care
+  - `gmem` and `nobin` are forced
+- prolog
+  - `CACHE_INVALIDATE` from `tu6_init_hw`
+  - `CP_WAIT_FOR_IDLE`
+  - `CP_SET_DRAW_STATE`
+  - `CP_SKIP_IB2_ENABLE_GLOBAL` from `tu6_tile_render_begin`
+  - `PC_CCU_FLUSH_COLOR_TS` from `tu_emit_cache_flush_ccu`
+  - `PC_CCU_FLUSH_DEPTH_TS`
+  - `PC_CCU_INVALIDATE_COLOR`
+  - `PC_CCU_INVALIDATE_DEPTH`
+  - `CP_WAIT_FOR_IDLE`
+- tile
+  - `CP_SET_MARKER` from `tu6_emit_tile_select`
+  - `CP_REG_TEST`
+  - `CP_SET_VISIBILITY_OVERRIDE`
+  - `CP_SET_MODE`
+  - `CP_INDIRECT_BUFFER` from `tu6_render_tile` for `cmd->draw_cs`
+  - `CP_SKIP_IB2_ENABLE_GLOBAL`
+  - `CP_INDIRECT_BUFFER` for `cmd->tile_store_cs`
+- epilog
+  - `LRZ_FLUSH` from `tu_lrz_tiling_end`
+  - `PC_CCU_RESOLVE_TS` from `tu6_tile_render_end`
+  - `CP_SET_DRAW_STATE` from `tu_disable_draw_states`
+  - `PC_CCU_FLUSH_COLOR_TS` from `tu_subpass_barrier`
+  - `PC_CCU_FLUSH_DEPTH_TS`
+- `cmd->draw_cs`
+  - `CP_COND_REG_EXEC` from `tu_emit_renderpass_begin`
+  - `CP_COND_REG_EXEC`
+  - `CP_COND_REG_EXEC` from `tu6_emit_render_cntl`
+  - `CP_REG_WRITE`
+  - `CP_SET_DRAW_STATE` from `tu_set_input_attachments`
+  - `CP_SET_DRAW_STATE` from `tu6_draw_common`
+  - `CP_DRAW_INDX_OFFSET` from `tu_CmdDraw`
+- `cmd->tile_store_cs`
+  - `CP_SET_MARKER` from `tu6_emit_tile_store`
+- freedreno
+  - prolog
+    - `PC_CCU_INVALIDATE_COLOR` from `fd6_cache_inv`
+    - `PC_CCU_INVALIDATE_DEPTH`
+    - `CACHE_INVALIDATE`
+    - `CP_WAIT_FOR_IDLE` from `fd6_emit_restore`
+    - `CP_SET_DRAW_STATE`
+    - `LRZ_FLUSH` from `fd6_emit_lrz_flush`
+    - `PC_CCU_INVALIDATE_COLOR` from `fd6_cache_inv`
+    - `PC_CCU_INVALIDATE_DEPTH`
+    - `CACHE_INVALIDATE`
+    - `CP_SKIP_IB2_ENABLE_GLOBAL` from `fd6_emit_tile_init`
+    - `CP_SKIP_IB2_ENABLE_LOCAL`
+    - `CP_WAIT_FOR_IDLE`
+    - `CP_REG_WRITE` from `update_render_cntl`
+    - `ZPASS_DONE` from `emit_common_init`
+  - tile
+    - `CP_SET_MARKER` from `fd6_emit_tile_prep`
+    - `CP_SET_VISIBILITY_OVERRIDE`
+    - `CP_SET_MODE`
+    - `CP_INDIRECT_BUFFER` from `fd6_emit_tile` for `batch->draw`
+    - `CP_SET_DRAW_STATE` from `fd6_emit_tile_gmem2mem`
+    - `CP_SKIP_IB2_ENABLE_LOCAL`
+    - `CP_SET_MARKER`
+    - `CP_INDIRECT_BUFFER` for `batch->tile_fini`
+  - epilog
+    - `ZPASS_DONE` from `emit_common_fini`
+    - `CACHE_FLUSH_TS`
+    - `LRZ_FLUSH` from `fd6_emit_lrz_flush`
+    - `PC_CCU_RESOLVE_TS` from `fd6_emit_tile_fini`
+    - `CACHE_FLUSH_TS` from `fd_pipe_emit_fence`
+  - `batch->draw`
+    - `CP_SET_DRAW_STATE` from `fd6_state_emit`
+    - `CP_DRAW_INDX_OFFSET` from `draw_emit`
+  - `batch->tile_fini`
+    - no action except reg write from `set_blit_scissor`
