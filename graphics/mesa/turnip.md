@@ -1120,7 +1120,7 @@ Mesa Turnip
   - `PC_CCU_INVALIDATE_COLOR`
   - `PC_CCU_INVALIDATE_DEPTH`
   - `CP_WAIT_FOR_IDLE`
-- tile
+- for each tile
   - `CP_SET_MARKER` from `tu6_emit_tile_select`
   - `CP_REG_TEST`
   - `CP_SET_VISIBILITY_OVERRIDE`
@@ -1160,7 +1160,7 @@ Mesa Turnip
     - `CP_WAIT_FOR_IDLE`
     - `CP_REG_WRITE` from `update_render_cntl`
     - `ZPASS_DONE` from `emit_common_init`
-  - tile
+  - for each tile
     - `CP_SET_MARKER` from `fd6_emit_tile_prep`
     - `CP_SET_VISIBILITY_OVERRIDE`
     - `CP_SET_MODE`

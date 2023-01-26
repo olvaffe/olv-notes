@@ -251,7 +251,11 @@ Chrome OS Firmwares
   - `reboot`
   - `ccd testlab` should print `CCD test lab mode enabled`
   - `ccd` should have `State: Opened`
+    - if not, `ccd open` to open it
+    - testlab allows it to be opened anytime
   - `wp` should have `force disabled`
+- if the ap firmware says "something went wrong", try entering developer mode
+  again
 
 ## `gsctool`
 
