@@ -47,15 +47,15 @@ ANGLE
   - to verify, `adb logcat -d | grep ANGLE`
 - cross compile
   - `./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64`
-  - `gn args out/AArch64`, same as android except
+  - `gn args out/aarch64`, same as android except
     - `target_os = "linux"`
     - `is_official_build = false`
-  - `autoninja -C out/AArch64`
+  - `autoninja -C out/aarch64`
   - package
     - `cd out`
     - `angledir=angle-aarch64-$(date +%Y%m%d)`
-    - `find out/AArch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
-    - `find out/AArch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/AArch64,$angledir,"`
+    - `find out/aarch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
+    - `find out/aarch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/aarch64,$angledir,"`
     - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt`
     - `zstd $angledir.tar`
     - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
