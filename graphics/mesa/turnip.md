@@ -500,6 +500,29 @@ Mesa Turnip
   - `CP_SET_MARKER(RM6_ENDVIS)` after `draw_cs`
   - `tu6_emit_tile_store` has slightly different commands, mainly to skip
     storing when the tile is not covered
+- VSC streams
+  - initial pitches
+    - `vsc_draw_strm_pitch` is initially `0x1000 + VSC_PAD`
+    - `vsc_prim_strm_pitch` is initially `0x4000 + VSC_PAD`
+    - we will double the pitches when overflows are detected
+  - `tu6_lazy_emit_vsc` writes VSC regs once in each cmdbuf
+    - `vsc_bo` consists of
+      - primitive streams, size `vsc_prim_strm_pitch * MAX_VSC_PIPES`
+      - draw streams, size `vsc_draw_strm_pitch * MAX_VSC_PIPES`
+      - draw stream sizes, size `4 * MAX_VSC_PIPES`
+        - looks like draw streams are dynamically sized
+    - if any cmdbuf fails to bin due to overflow (after they are submitted and
+      completed), the pitches are doubled
+  - `update_vsc_pipe`
+    - pitch is padded and limit is un-padded
+    - the hw can write slightly past limit thus needing `VSC_PAD`
+  - `emit_vsc_overflow_test`
+    - `REG_A6XX_VSC_DRAW_STRM_SIZE_REG` and `REG_A6XX_VSC_PRIM_STRM_SIZE_REG`
+      have the draw/prim stream sizes
+    - when they are equal to or larger than `vsc_draw_strm_pitch - VSC_PAD` or
+      `vsc_prim_strm_pitch - VSC_PAD`, `vsc_draw_overflow` or
+      `vsc_prim_overflow` are written, which causes `tu6_lazy_emit_vsc` to
+      double the pitches
 
 ## Tracepoints
 
