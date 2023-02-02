@@ -530,6 +530,23 @@ Qualcomm Adreno
   - context B: `CP_EVENT_START`
   - context B: draw
   - context B: `CP_EVENT_END` to wait for context A and switch
+- `CP_EXEC_CS`
+  - writes `0x3` to `EVENT_CMD` pipe reg
+    - `0x3` means `DISPATCH`
+  - writes the lower 8 bits of `$13` to `CP_EVENT_START`
+    - normally 0
+  - calls `fxn01`
+    - reads `MARKER` immediately
+    - clears some bits
+    - writes `MARKER` immediately
+    - writes `PC_MARKER` pipelined
+  - writes the lower 8 bits of `$13` to `HLSQ_DISPATCH_CMD`
+  - writes the lower 8 bits of `$13` to `PC_DISPATCH_CMD`
+  - calls `fxn02`
+    - writes `CONTEXT_DONE` to `HLSQ_EVENT_CMD`
+    - writes `CONTEXT_DONE` to `PC_EVENT_CMD`
+    - writes to `PC_MARKER`
+    - writes to `CP_EVENT_END`
 
 ## VFD, vertex fetch and decode
 
@@ -1031,6 +1048,20 @@ Qualcomm Adreno
     - at cpp 4, it covers 16x4 pixels in z-order
   - images are covered by macrotiles in a very unique order
     - it is a strange-looking space filling curve
+- UBWC
+  - there is 1 byte for each 256-byte macrotile
+    - there are also padding bytes for alignment
+  - if bit 4 is set, the macrotile is not fast-cleared
+    - the lower 4 bits plus 1 is the compressed size of the macrotile in 16
+      bytes units
+    - i.e., 0x11 means 32 bytes
+  - if bit 4 is cleared, the macrotile is fast-cleared
+    - the lower 4 bits encode the clear values (0 or 1) for color and alpha
+    - for `VK_FORMAT_B8G8R8A8_UNORM` and `VK_FORMAT_D24_UNORM_S8_UINT`,
+      - bit 0 is always 1
+      - bit 1 is always 0
+      - bit 2 is alpha value
+      - bit 3 is color value
 
 ## Depth Formats
 

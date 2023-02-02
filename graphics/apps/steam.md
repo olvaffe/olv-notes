@@ -1,51 +1,47 @@
 Steam
 =====
 
-## Directory Structure
+## Official `steam_latest.deb`
 
-- `steam_latest.deb`
-  - it installs `/usr/bin/steam` which is a symlink to
-    `/usr/lib/steam/bin_steam.sh`
-  - `setup_variables`
-    - `STEAMSCRIPT=/usr/lib/steam/bin_steam.sh`
-    - `STEAMPACKAGE=steam`
-    - `STEAMCONFIG=~/.steam`
-    - `STEAMDATALINK="$STEAMCONFIG/$STEAMPACKAGE"`
-    - `LAUNCHSTEAMBOOTSTRAPFILE=/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz`
-    - `STEAM_DATA_HOME="$HOME/.local/share"`
-    - `DEFAULTSTEAMDIR="$STEAM_DATA_HOME/Steam"`
-  - `install_bootstrap`
-    - untar `bootstraplinux_ubuntu12_32.tar.xz` to `~/.local/share/Steam`
-      - this untars `steam.sh`
-    - link `~/.steam/steam` to `~/.local/share/Steam`
-    - `setup_variables` again
-      - `LAUNCHSTEAMDIR=~/.local/share/Steam`
-  - `cp $LAUNCHSTEAMBOOTSTRAPFILE $LAUNCHSTEAMDIR/bootstrap.tar.xz`
-  - `exec ~/.local/share/Steam/steam.sh`
+- `/usr/bin/steam` is a symlink to `/usr/lib/steam/bin_steam.sh`
+  - it bootstraps `~/.local/share/Steam`
+    - `install_bootstrap` untars
+      `/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz` to the directory
+    - the tarball is also copied over (and can be used to re-bootstrap)
+  - it creates `~/.steam`
+    - `~/.steam/steam` is a symlink to `~/.local/share/Steam`
+  - it runs `~/.local/share/Steam/steam.sh`
 - `/usr/bin/steam` execs `~/.local/share/Steam/steam.sh`
-  - `STEAMROOT=~/.local/share/Steam`
-  - `STEAMDATA=~/.local/share/Steam`
-  - `STEAMEXE=steam`
-  - `PLATFORM=ubuntu12_32`
-  - `PLATFORM32=ubuntu12_32`
-  - `PLATFORM64=ubuntu12_64`
-  - `STEAMEXEPATH=ubuntu12_32/steam`
-  - on first launch, it invokes `steamdeps steamdeps.txt` to install dependent
-    distro packages
-  - `STEAM_RUNTIME=$STEAMROOT/ubuntu12_32/steam-runtime`
-    - built from `https://github.com/ValveSoftware/steam-runtime`
-    - `setup.sh` is installed by bootstrap
-  - it finally invokes `$STEAMROOT/ubuntu12_32/steam`
+  - it checks host package dependencies
+    - `/usr/bin/steamdeps ~/.local/share/Steam/steamdeps.txt`
+  - it creates various symlinks in `~/.steam`
+  - it sets up steam runtime
+    - `STEAM_RUNTIME=~/.local/share/Steam/ubuntu12_32/steam-runtime`
+    - the runtime is unpacked from the bootstrap tarball
+      - source at <https://github.com/ValveSoftware/steam-runtime>
+    - `setup.sh` uses `zenity` to display a `Updating Steam runtime
+      environment...` dialog
+  - it sets up `LD_LIBRARY_PATH` to use the libraries from the runtime
+    - with the help of
+      `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh --print-steam-runtime-library-paths`
+  - it finally invokes `~/.local/share/Steam/ubuntu12_32/steam`
 - `~/.local/share/Steam/ubuntu12_32/steam`
-  - is the proprietary steam client
-  - for command line options
-    - <https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29>
-    - `-silent` starts steam client in the background
-    - `-shutdown` kills steam client
-    - `-login`
-    - `-install`
-    - `-console`
-    - `-applaunch`
+  - it is the proprietary steam client
+  - if `DEBUGGER=gdb` is set, it is run under gdb
+  - it downloads/updates all packages
+    - bootstrap is a minimal environment to run the client
+    - the client downloads more packages to `~/.local/share/Steam/package`
+
+## steam client
+
+- for command line options
+  - <https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29>
+  - `-silent` starts steam client in the background
+  - `-shutdown` kills steam client
+  - `-login`
+  - `-install`
+  - `-console`
+  - `-applaunch`
 
 ## Run a Game
 
@@ -76,3 +72,10 @@ Steam
 ## steamrt
 
 - <https://gitlab.steamos.cloud/steamrt>
+
+## proton
+
+- `cd /.local/share/Steam/steamapps/common/Proton\ - \ Experimental`
+- `proton` is a python script
+  - `STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam`
+  - `STEAM_COMPAT_DATA_PATH`
