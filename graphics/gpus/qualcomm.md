@@ -1044,6 +1044,8 @@ Qualcomm Adreno
     - `VK_FORMAT_X8_D24_UNORM_PACK32`
     - `VK_FORMAT_D24_UNORM_S8_UINT` if depth aspect
     - I guess it returns `(D, 0, 0, 1)` despite the format name
+      - `FMT6_Z24_UNORM_S8_UINT` (0xa0) used to be called
+        `RB6_Z24_UNORM_S8_UINT` / `TFMT6_X8Z24_UNORM`.
   - `FMT6_Z24_UINT_S8_UINT` is for `VK_FORMAT_D24_UNORM_S8_UINT` if stencil
     aspect
     - this returns `(D, S, 0, 1)` and requires a swizzle to get `(S, 0, 0, 1)`
