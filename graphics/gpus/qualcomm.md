@@ -1003,6 +1003,72 @@ Qualcomm Adreno
   - images are covered by macrotiles in a very unique order
     - it is a strange-looking space filling curve
 
+## Depth Formats
+
+- vk has these formats
+  - `VK_FORMAT_D16_UNORM`
+  - `VK_FORMAT_X8_D24_UNORM_PACK32`
+    - this is supported as z24s8
+  - `VK_FORMAT_D32_SFLOAT`
+  - `VK_FORMAT_S8_UINT`
+  - `VK_FORMAT_D16_UNORM_S8_UINT`
+    - this is unsupported
+  - `VK_FORMAT_D24_UNORM_S8_UINT`
+  - `VK_FORMAT_D32_SFLOAT_S8_UINT`
+- depth/stencil buffer
+  - `REG_A6XX_RB_DEPTH_BUFFER_INFO` specifies the depth/stencil buffer
+    - `DEPTH6_16` is for `VK_FORMAT_D16_UNORM`
+    - `DEPTH6_24_8` is for
+      - `VK_FORMAT_X8_D24_UNORM_PACK32`
+      - `VK_FORMAT_D24_UNORM_S8_UINT`
+    - `DEPTH6_32` is for the rest
+      - `VK_FORMAT_D32_SFLOAT`
+      - `VK_FORMAT_D32_SFLOAT_S8_UINT`
+      - `VK_FORMAT_S8_UINT`
+        - why?
+    - `DEPTH6_NONE` is no depth buffer
+  - `REG_A6XX_RB_STENCIL_INFO` specifies the separate stencil buffer
+    - this is for `VK_FORMAT_D32_SFLOAT_S8_UINT` or `VK_FORMAT_S8_UINT`
+- to sample from the depth/stencil buffer,
+  - vk can only sample either the depth or the stencil aspect
+    - it returns `(D, 0, 0, 1)` or `(S, 0, 0, 1)`
+    - if depth compare is enabled, `D` is replaced by `1.0` or `0.0`
+  - `FMT6_16_UNORM` is for `VK_FORMAT_D16_UNORM`
+  - `FMT6_32_FLOAT` is for
+    - `VK_FORMAT_D32_SFLOAT`
+    - `VK_FORMAT_D32_SFLOAT_S8_UINT` if depth aspect
+  - `FMT6_8_UINT` is for
+    - `VK_FORMAT_S8_UINT`
+    - `VK_FORMAT_D32_SFLOAT_S8_UINT` if stencil aspect
+  - `FMT6_Z24_UNORM_S8_UINT` is for
+    - `VK_FORMAT_X8_D24_UNORM_PACK32`
+    - `VK_FORMAT_D24_UNORM_S8_UINT` if depth aspect
+    - I guess it returns `(D, 0, 0, 1)` despite the format name
+  - `FMT6_Z24_UINT_S8_UINT` is for `VK_FORMAT_D24_UNORM_S8_UINT` if stencil
+    aspect
+    - this returns `(D, S, 0, 1)` and requires a swizzle to get `(S, 0, 0, 1)`
+    - this is supported on gen2+
+      - `FMT6_8_8_8_8_UINT` is used on gen1 and a swizzle is applied
+      - because they are not ubwc-compatible, UBWC must be disabled
+- image storage
+  - it is similar to sampling, except the depth/stencil buffer can be
+    loaded/stored
+  - not all implementations support this
+- event blit
+  - this is the fast path to clear/load/store gmem when supported
+  - `RB_BLIT_DST_INFO` specifies the format and the writemask (among others)
+  - when clearing, the format is
+    - `FMT6_16_UNORM`
+    - `FMT6_32_FLOAT`
+    - `FMT6_8_UINT`
+    - `FMT6_Z24_UNORM_S8_UINT`
+      - writemask controls d and/or s are cleared
+  - when blitting, the format is almost the same as when sampling
+    - except `FMT6_Z24_UNORM_S8_UINT_AS_R8G8B8A8` is used in place of
+      `FMT6_Z24_UNORM_S8_UINT` and `FMT6_Z24_UINT_S8_UINT`
+- 2d clear/blit
+- 3d clear/blit
+
 ## LRZ
 
 - depth test
