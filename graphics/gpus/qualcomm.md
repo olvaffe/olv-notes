@@ -399,6 +399,35 @@ Qualcomm Adreno
     - write fence seqno to `CP_SCRATCH_REG(2)` (for hang debug)
     - `CP_EVENT_WRITE(CACHE_FLUSH_TS)` w/ interrupt and writing seqno to
       `msm_rbmemptrs::fence` 
+- more `a630_sqe.fw`
+  - `fxn08` is essentially `CP_WAIT_FOR_ME`
+  - `fxn09` writes some bits of `$13` to control reg `0x0a01`
+  - `fxn10`
+    - cwrites `$00` (i.e., 0) to control reg `0x05b`
+    - moves `$08` (i.e., where reg addr is stored) `$usraddr` with bit 20 set
+    - moves `$09` (i.e., where count is stored) `$data`
+    - keeps creading `0x05b` to `$02` until bit 0 is set
+    - cwrites `$00` to control reg `0x05b` again
+    - I think this checks if all regs in `$08` to `$09` are accessible
+      - bit 0 in `$02` means done
+      - bit 2 in `$02` means error
+      - if bit 2 is not set, `$02` is cleared
+  - `l098`
+    - cwrites `CP_PROTECT_CNTL` to `REG_READ_ADDR`
+    - cwrites `0x10` to `0x064`
+    - jumps to `CP_NOP`
+  - `CP_REG_TO_SCRATCH`
+    - calls `fxn08` for WFM
+    - calls `fxn10` to validate regs
+    - jumps to `l098` if validation fails
+    - cwrites to `REG_READ_DWORDS` and `REG_READ_ADDR`
+    - cwrites `$regdata` to `@SCRATCH_REG0` count times
+  - `CP_SCRATCH_TO_REG`
+    - `$08` is reg addr
+    - `$usraddr` is reg addr with bit 18 potentially set
+    - `$02` is count
+    - `$03` is scratch reg offset
+    - creads `@SCRATCH_REG0` to `$data`
 
 ## Caches
 
