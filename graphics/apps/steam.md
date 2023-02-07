@@ -70,26 +70,19 @@ Steam
   - <https://gitlab.steamos.cloud/steamrt>
     - it is installed as an app, <https://steamdb.info/app/1391110/>
   - v2 is container-based
+  - manual
+    - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run
+      ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
+      <arguments>`
 
-## Run a Game
+## Proton
 
-- BELOW IS UNVERIFIED
-- to run a game using steam runtime 1 (scout)
-    ~/.steam/steam/ubuntu12_32/steam-runtime/run.sh \
-      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
-- to run a game using steam runtime 2 (soldier)
-    ~/.steam/steam/stramapps/common/SteamLinuxRuntime_soldier/_v2-entry-point
-      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
-- to run a game using proton 5.0
-    STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/<appid> \
-    ~/.steam/steam/stramapps/common/Proton\ 5.0/proton waitforexitandrun \
-      ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
-- to run a game using proton 5.13
-  - run the game under proton under soldier?
-
-## proton
-
-- `cd /.local/share/Steam/steamapps/common/Proton\ - \ Experimental`
-- `proton` is a python script
-  - `STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam`
-  - `STEAM_COMPAT_DATA_PATH`
+- since proton 5.13, it should be run under steam runtime v2
+- manual
+  - `STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
+     STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/<appid>
+     ~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run
+     ~/.local/share/Steam/steamapps/common/Proton\ -\ Experimental/proton
+     waitforexitandrun
+     ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
+      <arguments>`
