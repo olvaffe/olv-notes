@@ -42,19 +42,37 @@ Steam
   - `-install`
   - `-console`
   - `-applaunch`
+- apps are downloaded to `~/.local/share/Steam/steamapps`
+- app database
+  - the database is at `~/.local/share/Steam/appcache/appinfo.vdf`
+  - VDF stands for Valve Data Format
+  - `pip install steam` to get a parser
+    - or, simply visit `https://steamdb.info/app/<appid>/config/`
+  - take appid 570 for example
+    - 'installdir': 'dota 2 beta'
+    - 'executable': 'game/dota.sh'
+    - 'arguments': '+engine_experimental_drop_frame_ticks 1 +@panorama_min_comp_layer_dimension 0 -prewarm_panorama'
+- user data
+  - `userdata/<userid>/config/localconfig.vdf` contains user configs
+  - e.g., custom launch options
+
+## Steam Runtimes
+
+- v1, scout
+  - <https://github.com/ValveSoftware/steam-runtime>
+  - v1 is `LD_LIBRARY_PATH`-based
+  - manual
+    - `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh
+      ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
+      <arguments>`
+    - `installdir`, `executable`, and `arguments` are from the app database
+- v2, soldier
+  - <https://gitlab.steamos.cloud/steamrt>
+    - it is installed as an app, <https://steamdb.info/app/1391110/>
+  - v2 is container-based
 
 ## Run a Game
 
-- `appcache/appinfo.vdf` contains all app info
-  - VDF stands for Valve Data Format
-  - `pip install steam` to get a parser
-  - or, simply visit `https://steamdb.info/app/<appid>/config/`
-  - take appid 570 for example
-    'installdir': 'dota 2 beta'
-    'executable': 'game/dota.sh'
-    'arguments': '+engine_experimental_drop_frame_ticks 1 +@panorama_min_comp_layer_dimension 0 -prewarm_panorama'
-- `userdata/<userid>/config/localconfig.vdf` contains user configs
-  - e.g., launch options
 - BELOW IS UNVERIFIED
 - to run a game using steam runtime 1 (scout)
     ~/.steam/steam/ubuntu12_32/steam-runtime/run.sh \
@@ -68,10 +86,6 @@ Steam
       ~/.steam/steam/steamapps/common/<installdir>/<executable> <arguments>
 - to run a game using proton 5.13
   - run the game under proton under soldier?
-
-## steamrt
-
-- <https://gitlab.steamos.cloud/steamrt>
 
 ## proton
 
