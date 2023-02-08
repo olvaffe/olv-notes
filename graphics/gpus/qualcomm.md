@@ -434,6 +434,9 @@ Qualcomm Adreno
     - bit 7
     - bit 8: skip ib2 local
     - bit 9: skip ib2 global
+    - bit 10: predicate
+      - `CP_REG_TEST` sets/clears the bit (true/false)
+      - `CP_COND_REG_EXEC` tests the bit
 
 ## Caches
 
