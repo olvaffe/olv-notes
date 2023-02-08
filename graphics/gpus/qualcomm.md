@@ -430,6 +430,10 @@ Qualcomm Adreno
     - creads `@SCRATCH_REG0` to `$data`
   - `$12` appears to shadow `IB_LEVEL`
   - `$13`
+    - bit 0-3: conditional rendering
+      - `CP_DRAW_PRED_ENABLE_GLOBAL` sets it to `b1110` or 0
+      - `CP_DRAW_PRED_ENABLE_LOCAL` sets/clears bit 3
+      - `CP_DRAW_PRED_SET` sets/clears bit 0 and 1
     - bit 6
     - bit 7
     - bit 8: skip ib2 local
