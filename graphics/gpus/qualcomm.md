@@ -428,6 +428,12 @@ Qualcomm Adreno
     - `$02` is count
     - `$03` is scratch reg offset
     - creads `@SCRATCH_REG0` to `$data`
+  - `$12` appears to shadow `IB_LEVEL`
+  - `$13`
+    - bit 6
+    - bit 7
+    - bit 8: skip ib2 local
+    - bit 9: skip ib2 global
 
 ## Caches
 
