@@ -94,7 +94,7 @@ Arch Linux
     - also `zram-generator`
       - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
       - `systemctl daemon-reload`
-      - `zramctrl`
+      - `zramctl`
   - wifi, `iwd` or `wpa_supplicant`
     - also `networkmanager`
   - tools, `sudo vim man-db`
