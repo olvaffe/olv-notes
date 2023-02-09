@@ -88,7 +88,7 @@ Chrome OS Kernel
                 };
         };
     };
-- vboot image
+- vboot image (arm64)
   - dummy bootloader
     - `dd if=/dev/zero of=Image.bl bs=512 count=1`
   - edit `Image.cmdline`
@@ -105,6 +105,11 @@ Chrome OS Kernel
        --arch aarch64 \
        --keyblock /usr/share/vboot/devkeys/kernel.keyblock \
        --signprivate /usr/share/vboot/devkeys/kernel_data_key.vbprivk`
+- vboot image (x86)
+  - kernel is `arch/x86/boot/bzImage`
+  - bootloader must be `bootstub.efi`
+    - <https://chromium.googlesource.com/chromiumos/third_party/bootstub>
+  - arch is `x86-64`
 - module tarball
   - `tar zcf Image.modules.tar.gz -C DUT/MODULES lib/modules`
 
