@@ -51,6 +51,7 @@ ALSA Userspace
   - `-l` lists hw pcm devices
     - this seems to scan `/dev/snd` which requires `audio` group
   - `-L` lists all pcm devices including userspace-defined ones
+    - this seems to scan `/etc/alsa/conf.d` and add the userspace-defined ones
 - `amixer`
   - `controls` lists hw controls
     - this calls `snd_hctl_open`, which is `snd_ctl_open` with caching
