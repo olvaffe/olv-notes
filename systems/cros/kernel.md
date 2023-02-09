@@ -31,6 +31,13 @@ Chrome OS Kernel
     - `$arch/common.config` is common between those of the same arch
     - `$arch/chromiumos-$soc.flavour.config` is common between those of the
       same soc
+- to boot cros kernel with regular distro,
+  - `CONFIG_SERIAL_8250=y`
+  - `CONFIG_SERIAL_8250_CONSOLE=y`
+  - `CONFIG_SERIAL_8250_DW=y`
+  - `CONFIG_MODULE_COMPRESS=y`
+  - `CONFIG_FW_LOADER_COMPRESS=y`
+  - deselect `CONFIG_SECURITY` and `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
 
 ## Build Kernel
 
