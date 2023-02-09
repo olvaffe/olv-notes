@@ -49,6 +49,7 @@ ALSA Userspace
 
 - `aplay`
   - `-l` lists hw pcm devices
+    - this seems to scan `/dev/snd` which requires `audio` group
   - `-L` lists all pcm devices including userspace-defined ones
 - `amixer`
   - `controls` lists hw controls
