@@ -83,20 +83,25 @@ Chrome OS Kernel
 
 ## Linux Distro: Config
 
-- to boot cros kernel with regular distro,
-  - enables
-    - `CONFIG_SERIAL_8250=y`
-    - `CONFIG_SERIAL_8250_CONSOLE=y`
-    - `CONFIG_SERIAL_8250_DW=y`
-    - `CONFIG_MODULE_COMPRESS=y`
-    - `CONFIG_FW_LOADER_COMPRESS=y`
-    - `CONFIG_VT`
-    - `CONFIG_DRM_FBDEV_EMULATION`
-    - `CONFIG_FRAMEBUFFER_CONSOLE`
-    - `CONFIG_F2FS_FS`
-  - disables
-    - `CONFIG_SECURITY`
-    - `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
+- to boot cros kernel with regular distro, there are a few caveats
+- enable serial console, vt, and fbcon
+  - `CONFIG_SERIAL_8250=y`
+  - `CONFIG_SERIAL_8250_CONSOLE=y`
+  - `CONFIG_SERIAL_8250_DW=y`
+  - `CONFIG_VT`
+  - `CONFIG_DRM_FBDEV_EMULATION`
+  - `CONFIG_FRAMEBUFFER_CONSOLE`
+- enable compressed modules and firmwares
+  - `CONFIG_MODULE_COMPRESS=y`
+  - `CONFIG_FW_LOADER_COMPRESS=y`
+- enable more filesystems
+  - `CONFIG_BTRFS_FS`
+  - `CONFIG_F2FS_FS`
+  - `CONFIG_AUTOFS_FS` for systemd
+    - <https://github.com/systemd/systemd/blob/main/README>
+- disable security for simplicity
+  - `CONFIG_SECURITY`
+  - `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
 
 ## Linux Distro: Build
 
