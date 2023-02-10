@@ -348,9 +348,13 @@ Kernel Config
         - select `ELAN I2C Touchpad support`
   - select `Character devices`
     - deselect `Legacy (BSD) PTY support`
-    - select `Serial drivers` if msm
-      - select `QCOM on-chip GENI based serial port support`
-      - select `QCOM GENI Serial Console support`
+    - select `Serial drivers`
+      - if x86
+        - select `8250/16550 and compatible serial support`
+        - select `Console on 8250/16550 and compatible serial port`
+      - if msm
+        - select `QCOM on-chip GENI based serial port support`
+        - select `QCOM GENI Serial Console support`
     - select `Hardware Random Number Generator Core support`
       - deselect all but the desired drivers
     - select `TPM Hardware Support`
@@ -602,9 +606,6 @@ Kernel Config
   - select `Network device support`
     - select `Virtio network driver`
   - select `Character devices`
-    - select `Serial drivers`
-      - select `8250/16550 and compatible serial support`
-      - select `Console on 8250/16550 and compatible serial port`
     - select `Virtio console`
   - select `Graphics support`
     - select `Virtio GPU driver`
