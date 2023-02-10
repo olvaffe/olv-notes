@@ -299,6 +299,8 @@ Kernel Config
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
+      - select `Build named firmware blobs into the kernel binary` if built-in amdgpu
+        - to include amdgpu firmwares
       - select `Enable compressed firmware support`
   - select `Firmware Drivers`
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
@@ -352,6 +354,7 @@ Kernel Config
       - if x86
         - select `8250/16550 and compatible serial support`
         - select `Console on 8250/16550 and compatible serial port`
+        - select `Support for Synopsys DesignWare 8250 quirks`
       - if msm
         - select `QCOM on-chip GENI based serial port support`
         - select `QCOM GENI Serial Console support`
