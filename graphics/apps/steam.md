@@ -1,6 +1,12 @@
 Steam
 =====
 
+## Troubleshooting
+
+- `pacman -S steam`
+  - `pacman -S ttf-liberation` if ui text is garbled
+  - `pacman -S lib32-systemd` if no network
+
 ## Official `steam_latest.deb`
 
 - `/usr/bin/steam` is a symlink to `/usr/lib/steam/bin_steam.sh`

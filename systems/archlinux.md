@@ -121,9 +121,6 @@ Arch Linux
   - uncomment the `[multilib]` section in `/etc/pacman.conf`
   - `pacman -S multilib-devel`
   - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
-  - `pacman -S steam`
-    - `pacman -S ttf-liberation` if ui text is garbled
-    - `pacman -S lib32-systemd` if no network
 
 ## Installation in crosvm
 

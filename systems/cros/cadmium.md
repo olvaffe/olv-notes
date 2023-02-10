@@ -1,21 +1,6 @@
 Cadmium
 =======
 
-## Dependencies
-
-- to create disk image
-  - `parted`
-  - AUR `vboot-utils`
-    - uprev to the latest branch (e.g., 109.15236)
-    - no `trousers`
-    - append `SDK_BUILD=1 USE_FLASHROM=0` to all make invocations
-- to download and build kernel,
-  - `curl patch aarch64-linux-gnu-gcc`
-- to boostrap root,
-  - `f2fs-tools qemu-user-static arch-install-scripts wget`
-- to package kernel,
-  - `uboot-tools dtc`
-
 ## Manual Steps
 
 - cadmium builds a bootable usb disk that can install a linux distro on the
@@ -33,12 +18,14 @@ Cadmium
   - `mkfs.f2fs /dev/loop0p3`
   - `mount /dev/loop0p3 /mnt`
   - `bsdtar -xpf ArchLinuxARM-aarch64-latest.tar.gz -C /mnt`
+    - untar archlinux bootstrap tarball if x86
   - `mount -t proc none /mnt/proc`
   - `chroot /mnt`
   - `rm /etc/resolv.conf`
   - `echo "nameserver 8.8.8.8" > /etc/resolv.conf`
   - `pacman-key --init`
   - `pacman-key --populate archlinuxarm`
+    - `pacman-key --populate archlinux` if x86
   - `pacman -R linux-aarch64`
   - `pacman -Syu`
   - `pacman -S vim vboot-utils f2fs-tools linux-firmware-qcom networkmanager rmtfs-git`
@@ -53,6 +40,7 @@ Cadmium
   - pack the kernel with `vbutil_kernel`
   - `cp Image.vboot /dev/loop0p1`
   - `make INSTALL_MOD_PATH=/mnt modules_install`
+    - in the chroot, `depmod -a <version`
 - clean up and flash
   - `umount /mnt/proc`
   - `umount /mnt`
@@ -62,13 +50,29 @@ Cadmium
 - installation
   - boot dut from the usb
   - partition the dut disk similar to partitioning the disk image
-  - `cp /dev/sda1 /mnt/mmcblk0p1`
+  - `cp /dev/sda1 /dev/mmcblk0p1`
+    - `/dev/nvme0n1p1` if nvme
     - this does not work if the kernel cmdline has hardcoded `root=`
-  - `cp /dev/sda3 /mnt/mmcblk0p3`
+  - `cp /dev/sda3 /dev/mmcblk0p3`
   - `resize.f2fs /dev/mmcblk0p3`
   - `reboot`
 
-## `build-all`
+## Cadmium Dependencies
+
+- to create disk image
+  - `parted`
+  - AUR `vboot-utils`
+    - uprev to the latest branch (e.g., 109.15236)
+    - no `trousers`
+    - append `SDK_BUILD=1 USE_FLASHROM=0` to all make invocations
+- to download and build kernel,
+  - `curl patch aarch64-linux-gnu-gcc`
+- to boostrap root,
+  - `f2fs-tools qemu-user-static arch-install-scripts wget`
+- to package kernel,
+  - `uboot-tools dtc`
+
+## Cadmium `build-all`
 
 - the script builds a bootable usb image
   - first partition is a vboot kernel image
@@ -146,7 +150,7 @@ Cadmium
 - `make -C tmp/linux-arm64 modules_install` to chroot
 - `losetup -d /dev/loop0`
 
-## `/root/install`
+## Cadmium `/root/install`
 
 - `INSTMED="emmc"`
 - `CADMIUMROOT="/CdFiles"`

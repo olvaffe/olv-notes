@@ -67,7 +67,7 @@ Kernel Config
   - `echo 0x1ff > /sys/module/drm/parameters/debug`
   - `[drm:vc5_hdmi_init_resources [vc4]] ERROR Failed to get HDMI state machine clock`
     - make sure `vc4` is loaded after `raspberrypi-clk`
-  - `[drm:vc4_hdmi_bind [vc4]] Failed to get ddc i2c adapter by node
+  - `[drm:vc4_hdmi_bind [vc4]] Failed to get ddc i2c adapter by node`
     - make sure `vc4` is loaded after `i2c-brcmstb`
 
 ## Config: First Pass
@@ -291,7 +291,7 @@ Kernel Config
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `PCI controller drivers`
       - select `DesignWare PCI Core Support`
-        - select Qualcomm PCIe controller` if newer msm
+        - select `Qualcomm PCIe controller` if newer msm
       - select `Broadcom Brcmstb PCIe host controller` if rpi
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
