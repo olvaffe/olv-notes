@@ -207,6 +207,8 @@ Kernel Config
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
 - select `Cryptographic API`
+  - select `Compression`
+    - select `LZO` (for zram)
   - if iwd,
     - select `User-space interface for hash algorithms`
     - and many others as indicated by the log
@@ -305,6 +307,7 @@ Kernel Config
   - select `Memory Technology Device (MTD) support` if intel/cros
     - select `SPI NOR device support`
   - select `Block devices`
+    - select `Compressed RAM block device support`
     - select `Loopback device support`
   - select `NVME Support` if any
     - select `NVM Express block device`
