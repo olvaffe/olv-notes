@@ -13,6 +13,8 @@ Chrome OS Firmwares
   - without CCD open, we can only flash RW sections and the RO sections will
     refuse to boot
   - after CCD open, they might refuse to boot as well
+    - looks like the device exits developer mode after CCD open
+    - re-entering fixes it
   - have suzyq ready and be prepared to flash from host
 - getting firmwares
   - one should use known-good versions for CR50, EC and AP instead
