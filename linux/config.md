@@ -348,6 +348,8 @@ Kernel Config
       - select `Mice`
         - deselect `PS/2 mouse`
         - select `ELAN I2C Touchpad support`
+      - select `Touchscreens`
+        - select `Elan eKTH I2C touchscreen`
   - select `Character devices`
     - deselect `Legacy (BSD) PTY support`
     - select `Serial drivers`
