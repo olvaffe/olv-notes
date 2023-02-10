@@ -12,6 +12,16 @@ Chrome OS Kernel
 
 ## Config
 
+- <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel>
+  - these are mainly for use with upstream kernels
+- <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-5.15/chromeos/>
+  - these are what cros uses
+  - which branch is board-dependent
+  - `CHROMEOS_KERNEL_FAMILY=chromeos ./chromeos/scripts/prepareconfig chromiumos-qualcomm`
+    cats these 3 files
+    - `chromeos/config/chromeos/base.config`
+    - `chromeos/config/chromeos/arm64/common.config`
+    - `chromeos/config/chromeos/arm64/chromiumos-qualcomm.flavour.config`
 - to change kernel config
   - `chromeos/config/*/*.config`
 - to update kernel cmdline
@@ -32,12 +42,19 @@ Chrome OS Kernel
     - `$arch/chromiumos-$soc.flavour.config` is common between those of the
       same soc
 - to boot cros kernel with regular distro,
-  - `CONFIG_SERIAL_8250=y`
-  - `CONFIG_SERIAL_8250_CONSOLE=y`
-  - `CONFIG_SERIAL_8250_DW=y`
-  - `CONFIG_MODULE_COMPRESS=y`
-  - `CONFIG_FW_LOADER_COMPRESS=y`
-  - deselect `CONFIG_SECURITY` and `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
+  - enables
+    - `CONFIG_SERIAL_8250=y`
+    - `CONFIG_SERIAL_8250_CONSOLE=y`
+    - `CONFIG_SERIAL_8250_DW=y`
+    - `CONFIG_MODULE_COMPRESS=y`
+    - `CONFIG_FW_LOADER_COMPRESS=y`
+    - `CONFIG_VT`
+    - `CONFIG_DRM_FBDEV_EMULATION`
+    - `CONFIG_FRAMEBUFFER_CONSOLE`
+    - `CONFIG_F2FS_FS`
+  - disables
+    - `CONFIG_SECURITY`
+    - `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
 
 ## Build Kernel
 

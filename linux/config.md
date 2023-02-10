@@ -52,22 +52,6 @@ Kernel Config
   - `config.txt`
     - `arm_64bit=1`
     - `kernel=Image`
-- for cros,
-  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel>
-    - these are mainly for use with upstream kernels
-  - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-5.15/chromeos/>
-    - these are what cros uses
-    - which branch is board-dependent
-    - `CHROMEOS_KERNEL_FAMILY=chromeos ./chromeos/scripts/prepareconfig chromiumos-qualcomm`
-      cats these 3 files
-      - `chromeos/config/chromeos/base.config`
-      - `chromeos/config/chromeos/arm64/common.config`
-      - `chromeos/config/chromeos/arm64/chromiumos-qualcomm.flavour.config`
-    - configs to enable/disable
-      - `CONFIG_VT`
-      - `CONFIG_DRM_FBDEV_EMULATION`
-      - `CONFIG_F2FS_FS`
-      - `CONFIG_SECURITY`
 
 ## Tips
 
