@@ -31,7 +31,7 @@ Mesa utrace
     - perfetto can enable/disable `u_trace` on-demand
     - when the env vars above are specified, `u_trace` is never disabled
 
-## Example
+## Example: turnip
 
 - using turnip's `start_render_pass` as an example
 - `u_trace_context_init` is called per `VkDevice`
@@ -42,3 +42,19 @@ Mesa utrace
     and insert a GPU timestamp read cmd to `VkCommandBuffer`
   - `traceq` waits for GPU execution.  When the timestamp is finally
     available, it calls `tu_start_render_pass` which calls `stage_start`
+
+## Example: anv
+
+- `anv_device_utrace_init` calls `u_trace_context_init` per-device
+- `anv_create_cmd_buffer` (and `anv_cmd_buffer_reset`) calls `u_trace_init`
+  per-cmdbuf
+- `genX(CmdDraw)` calls `trace_intel_begin_draw` per-draw
+  - if the tracepoint is enabled, `u_trace_append` is called to add the
+    payload to `u_trace`
+- `anv_device_utrace_flush_cmd_buffers` calls `u_trace_flush`
+  - this happens at queue submit time
+  - it moves tracepoint payloads from `u_trace` to `u_trace_context`
+  - if a cmdbuf does not have `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`,
+    its tracepoint payloads need to be copied
+- `anv_device_utrace_finish` and `anv_QueuePresentKHR` call
+  `u_trace_context_process`
