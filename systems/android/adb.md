@@ -75,6 +75,8 @@ Android ADB
   - <https://android.googlesource.com/platform/system/core.git/+/refs/heads/master/run-as/run-as.cpp>
 - `appops`
 - `pm`
+  - `list packages`
+  - `dump <package>`
 - `am`
   - `start-activity <INTENT>`
   - `broadcast <INTENT>`

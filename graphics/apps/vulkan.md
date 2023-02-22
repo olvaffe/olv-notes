@@ -101,9 +101,15 @@ Vulkan Loader
     - `adb push <layer.so> /data/local/tmp`
     - `adb shell run-as <com.example.app> cp /data/local/tmp/<layer.so> .`
     - `adb shell run-as <com.example.app> ls <layer.so>`
-    - `adb shell setprop debug.vulkan.layers <layer>`
+    - `adb shell setprop debug.vulkan.layers <layer>`, or
+      - `adb shell settings put global enable_gpu_debug_layers 1`
+      - `adb shell settings put global gpu_debug_app <com.example.app>`
+      - `adb shell settings put global gpu_debug_layers <layer>`
     - note, this does NOT work for me.  The loader does not search under
       `/data/data/com.example.app`
+      - it appears that the app must be debuggable
+      - copy the layer to
+        `/data/app/<package>-<hash>/lib/x86_64` works
   - On Android 10+, the app can additionally load an external layer from
     another apk
     - `adb shell settings put global enable_gpu_debug_layers 1`
@@ -122,6 +128,21 @@ Vulkan Loader
           `GPU_DEBUG_LAYER_APP`
   - looking at the source code, the loader also searches
     `/data/local/debug/vulkan`
+- validation layers android
+  - `~/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-26'`
+  - `cd build-android`
+  - edit `jni/Application.mk` and `jni/shaderc/Application.mk`
+    - set `APP_ABI` to the desired abis
+    - set `APP_STL` to `c++_static`
+  - `ANDROID_SDK_HOME=~/android/sdk ANDROID_NDK_HOME=~/android/sdk/ndk/25.1.8937393 PATH=~/android/sdk/ndk/25.1.8937393:$PATH ./build_all.sh`
+  - `./install_all.sh` installs the apk for Android 10+
+  - for Android 9,
+    - `adb push bin/libs/lib/x86_64/libVkLayer_khronos_validation.so /data/local/tmp`
+    - `adb shell run-as com.example.VkCube cp /data/local/tmp/libVkLayer_khronos_validation.so .`
+    - `adb shell run-as com.example.VkCube ls`
+    - `adb shell settings put global enable_gpu_debug_layers 1`
+    - `adb shell settings put global gpu_debug_app com.example.VkCube`
+    - `adb shell settings put global gpu_debug_layers VK_LAYER_KHRONOS_validation`
 - gfxreconstruct android
   - to build,
     - `cd android`
@@ -154,7 +175,7 @@ Vulkan Loader
   - `ANDROID_SDK_HOME=<sdk-top> ANDROID_NDK_HOME=<ndk-top>
     PATH=$PATH:<ndk-top> ./build_all.sh`
   - `adb install ../cube/android/cube/bin/vkcube.apk`
-  - `adb shell am start -W -S \
+  - `adb shell am start-activity -W -S \
      -n com.example.VkCube/android.app.NativeActivity \
      -a android.intent.action.MAIN \
      -c android.intent.category.LAUNCHER \
