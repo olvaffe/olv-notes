@@ -77,6 +77,8 @@ Android ADB
 - `pm`
   - `list packages`
   - `dump <package>`
+  - `grant <package> <permission>`
+    - `dump <package>` to see `requested permissions`
 - `am`
   - `start-activity <INTENT>`
   - `broadcast <INTENT>`

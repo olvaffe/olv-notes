@@ -145,8 +145,20 @@ Vulkan Loader
     - `adb shell settings put global gpu_debug_layers VK_LAYER_KHRONOS_validation`
 - gfxreconstruct android
   - to build,
+    - if x86, add pre-compiled lz4
+      - `git clone https://github.com/lz4/lz4.git`
+      - create `jni/Android.mk` and `jni/Application.mk`
+        - see `git show 27351d2978dfd4f2f934be6bbc4982bbc5099b9e`
+      - `PATH=~/android/sdk/ndk/25.1.8937393:$PATH ndk-build`
     - `cd android`
-    - `ANDROID_SDK_ROOT=<path-to-sdk-top-dir> sh gradlew assembleDebug`
+    - edit `gradle/wrapper/gradle-wrapper.properties`
+      - use a newer version (e.g., 7.6) if openjdk is too new (e.g., 17)
+      - <https://docs.gradle.org/current/userguide/compatibility.html>
+    - edit `build.gradle`
+      - update the android gradle plugin version (e.g., 7.4.1)
+      - <https://developer.android.com/studio/releases/gradle-plugin#updating-gradle>
+    - edit `layer/build.gradle` and `tools/replay/build.gradle`
+      - update `abiFilters`
   - to install,
     - `adb install -g -t -r
       ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
@@ -158,8 +170,9 @@ Vulkan Loader
     - permissions
       - `adb shell pm grant com.name.app android.permission.READ_EXTERNAL_STORAGE`
       - `adb shell pm grant com.name.app android.permission.WRITE_EXTERNAL_STORAGE`
-      - this does NOT work
-        - i have to use `/data/local/debug/blah.gfxr` I created
+      - this requires app's manifest to request those permissions first
+      - alternatively,
+        - `adb shell setprop debug.gfxrecon.capture_file /data/data/<package>/abc.gfxr"`
     - settings
       - `adb push vk_layer_settings.txt /sdcard`
       - `adb shell setprop debug.gfxrecon.settings_path /sdcard/vk_layer_settings.txt`
