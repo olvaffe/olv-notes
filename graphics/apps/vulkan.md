@@ -164,6 +164,8 @@ Vulkan Loader
       ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
     - `adb shell mkdir -p /data/local/debug/vulkan`
     - `adb push <path-to>/libVkLayer_gfxreconstruct.so /data/local/debug/vulkan`
+      - this does not work
+      - use `/data/app/<package>-<hash>/lib/x86_64` instead
   - to trace,
     - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_gfxreconstruct`
       - the loader will always implicitly load the layer
