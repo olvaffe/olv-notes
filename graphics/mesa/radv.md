@@ -110,3 +110,10 @@ Mesa RADV
     - `RADEON_MICRO_MODE_STANDARD` prefers `ADDR_SW_*_S`
     - `RADEON_MICRO_MODE_DEPTH` prefers `ADDR_SW_*_Z`
     - `RADEON_MICRO_MODE_RENDER` prefers `ADDR_SW_*_R`
+- `radv_GetImageSubresourceLayout`
+  - GFX9+
+    - `ac_surface_get_plane_offset` for offset
+    - `surface->u.gfx9.surf_pitch` or `surface->u.gfx9.pitch` for pitch
+  - GFX8-
+    - `surface->u.legacy.level[level].offset` for offset
+    - `surface->u.legacy.level[level].nblk_x` for pitch
