@@ -54,3 +54,14 @@ Mesa RADV
     `RADV_HEAP_VRAM_VIS`
   - 4th is `RADEON_DOMAIN_GTT` and `RADEON_FLAG_CPU_ACCESS` to
     `RADV_HEAP_GTT`
+- `radv_get_memory_budget_properties`
+  - `RADEON_ALLOCATED_VRAM`, `RADEON_ALLOCATED_VRAM_VIS`, and
+    `RADEON_ALLOCATED_GTT` are tracked by winsys and are the sums of
+    - `RADEON_DOMAIN_VRAM + RADEON_FLAG_NO_CPU_ACCESS` bos,
+    - `RADEON_DOMAIN_VRAM + !RADEON_FLAG_NO_CPU_ACCESS` bos, and
+    - `RADEON_DOMAIN_GTT` bos respectively
+  - `RADEON_VRAM_USAGE`, `RADEON_VRAM_VIS_USAGE`, and `RADEON_GTT_USAGE` are
+    tracked by kernel and are `AMDGPU_INFO_VRAM_GTT` plus
+    - `AMDGPU_INFO_VRAM_USAGE`,
+    - `AMDGPU_INFO_VIS_VRAM_USAGE`, and
+    - `AMDGPU_INFO_GTT_USAGE` respectively
