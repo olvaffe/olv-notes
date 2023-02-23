@@ -1,6 +1,96 @@
 GBM
 ===
 
+## API
+
+- device functions
+  - `gbm_create_device` creates a device from a drm fd (no ownership transfer)
+  - `gbm_device_destroy`
+  - `gbm_device_get_backend_name` returns `drm`
+  - `gbm_device_get_fd` returns the drm fd
+  - `gbm_device_is_format_supported` returns true if format/usage combo is supported
+  - `gbm_device_get_format_modifier_plane_count` returns the plane count for a
+    format/modifier combo
+    - X11 uses this to skip intel compressed modifiers for scanout
+    - `GBM_BO_USE_FRONT_RENDERING` solves a similar issue for freedreno
+- bo creation functions
+  - `gbm_bo_create` creates a bo with a format/flags combo
+    - format is any fourcc, but the backend only supports a small set of
+      non-planar formats
+    - `GBM_BO_USE_SCANOUT` and `GBM_BO_USE_CURSOR` are for kms overlays
+    - `GBM_BO_USE_RENDERING` is for gpu rendering
+    - `GBM_BO_USE_WRITE` was for intel pwrite but is no longer used
+    - `GBM_BO_USE_LINEAR` forces linear tiling
+    - `GBM_BO_USE_PROTECTED` is for protected contents
+    - `GBM_BO_USE_FRONT_RENDERING` disables compressions
+    - note that there is
+      - no media/camera support (only for display servers)
+      - no texturing support (the bos cannot be sampled from?)
+      - implied linear mapping support (was cheap with `I915_MMAP_OFFSET_GTT`
+        which is not supported on newer intel hw)
+  - `gbm_bo_create_with_modifiers` creates a bo with a format/modifier combo
+    - no flags is a mistake
+  - `gbm_bo_create_with_modifiers2` creates a bo with a format/modifier/flags combo
+  - `gbm_bo_import` imports a bo with a format/modifier/flags combo
+    - format is any fourcc, including planar ones
+  - `gbm_bo_destroy`
+- bo query functions
+  - `gbm_bo_get_width`
+  - `gbm_bo_get_height`
+  - `gbm_bo_get_format`
+  - `gbm_bo_get_modifier`
+  - `gbm_bo_get_bpp` returns the bpp for a bo format
+    - returns 0 if the format is planar
+  - `gbm_bo_get_device`
+  - `gbm_bo_set_user_data`
+  - `gbm_bo_get_user_data`
+  - plane functions
+    - as noted in `gbm_bo_create`, this was designed for metadata planes, but
+      can be repurposed for planar formats
+    - `gbm_bo_get_plane_count` returns the plane count
+      - up to 4 and includes metadata plane
+    - `gbm_bo_get_fd_for_plane`
+    - `gbm_bo_get_handle_for_plane`
+    - `gbm_bo_get_stride_for_plane`
+    - `gbm_bo_get_offset`
+  - single-plane variants
+    - `gbm_bo_get_fd`
+    - `gbm_bo_get_handle`
+    - `gbm_bo_get_stride`
+- bo map functions
+  - `gbm_bo_map` returns a linear view of a region of a bo
+    - might require blit to readback / de-tile
+      - as such, must set `GBM_BO_TRANSFER_READ` for the region to be
+        initialized
+    - all bos are assumed to be mappable
+  - `gbm_bo_unmap`
+  - `gbm_bo_write` was designed for cursor bo
+- surface functions
+  - for use with `EGL_PLATFORM_GBM_KHR`
+  - `gbm_surface_create`
+  - `gbm_surface_create_with_modifiers`
+  - `gbm_surface_create_with_modifiers2`
+  - `gbm_surface_destroy`
+  - `gbm_surface_has_free_buffers`
+  - `gbm_surface_lock_front_buffer`
+  - `gbm_surface_release_buffer`
+- global query functions
+  - `gbm_format_get_name` returns the fourcc string of a fourcc format
+- minigbm extensions
+  - not always abi / api compatible
+  - true disjoint bo support
+    - `gbm_bo_map2` maps a regoin of a plane
+      - useful when planes are in different gem bos
+    - `gbm_bo_get_plane_size` is useless?
+  - gralloc-like features
+    - can allocate with planar formats
+    - many more usage flags
+      - media / camera
+      - texturing
+      - cpu mapping
+      - ssbo
+      - sensors
+
 ## GBM over DRI over Gallium
 
 - To summarize,
