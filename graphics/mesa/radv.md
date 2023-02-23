@@ -65,3 +65,48 @@ Mesa RADV
     - `AMDGPU_INFO_VRAM_USAGE`,
     - `AMDGPU_INFO_VIS_VRAM_USAGE`, and
     - `AMDGPU_INFO_GTT_USAGE` respectively
+
+## Image Creation
+
+- a `radv_image` has an array of `radv_image_plane`
+- each `radv_image_plane` has a `radeon_surf`
+  - radv fills in `flags` and `modifier`
+  - `radv_amdgpu_winsys_surface_init` calls `ac_compute_surface` to initialize
+    the rest
+- `radeon_surf::flags`
+  - bit 0..7: type
+    - e.g., `RADEON_SURF_TYPE_2D`
+  - bit 8..15: mode
+    - `RADEON_SURF_MODE_LINEAR_ALIGNED` if linear
+    - `RADEON_SURF_MODE_2D` if tiled
+  - bit 16: `RADEON_SURF_SCANOUT` if scanout
+  - bit 17: `RADEON_SURF_ZBUFFER` if depth
+  - bit 18: `RADEON_SURF_SBUFFER` if stencil
+  - bit 21: `RADEON_SURF_FMASK` is unused
+  - bit 22: `RADEON_SURF_DISABLE_DCC` disables compression
+  - bit 23: `RADEON_SURF_TC_COMPATIBLE_HTILE` uses TC-compatible HTILE (for
+    sampling)
+  - bit 24: `RADEON_SURF_IMPORTED` is imported, unused by radv
+  - bit 25: `RADEON_SURF_CONTIGUOUS_DCC_LAYERS` is always set
+  - bit 26: `RADEON_SURF_SHAREABLE` is shareable, unused by radv
+  - bit 27: `RADEON_SURF_NO_RENDER_TARGET` disables render target
+  - bit 28: `RADEON_SURF_FORCE_SWIZZLE_MODE` forces swizzle mode, unused by
+    radv
+  - bit 29: `RADEON_SURF_NO_FMASK` disables FMASK
+  - bit 30: `RADEON_SURF_NO_HTILE` disables HTILE (a tiling?)
+  - bit 31: `RADEON_SURF_FORCE_MICRO_TILE_MODE` forces micro tile mode, unused
+    by radv
+  - bit 32: `RADEON_SURF_PRT` is an layout for sparse images
+- `ac_compute_surface`
+  - radv is resposible to initialize `ac_surf_info` and these fields in
+    `radeon_surf`
+    - `flags`
+    - `modifier`
+    - `blk_w`, block width
+    - `blk_h`, block height
+    - `bpe`, block size in bytes
+  - a micro tile mode specifies the preferred swizzle
+    - `RADEON_MICRO_MODE_DISPLAY` prefers `ADDR_SW_*_D`
+    - `RADEON_MICRO_MODE_STANDARD` prefers `ADDR_SW_*_S`
+    - `RADEON_MICRO_MODE_DEPTH` prefers `ADDR_SW_*_Z`
+    - `RADEON_MICRO_MODE_RENDER` prefers `ADDR_SW_*_R`

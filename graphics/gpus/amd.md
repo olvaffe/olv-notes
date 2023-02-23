@@ -191,3 +191,36 @@ AMD
   - `WAIT_REG_MEM` can be executed on PFP or ME
     - it stalls until reg/mem meets the condition
   - `COPY_DATA` can be executed on ME or CE
+
+## Terms
+
+- R600 pipeline
+  - CP & GRBM
+    - command processor
+  - VGT
+    - vertex grouper / tesselator
+  - PA
+    - primitive assembly
+  - SC
+    - scan converter
+  - SPI
+    - shader pipe interpolator
+  - shader
+    - TC, texture cache
+    - VC, vertex cache
+    - SMX, shader memory exchange
+  - SX
+  - DB
+    - depth buffer
+  - CB
+    - color buffer
+- HTILE
+  - a separate surface that holds the metadata for compression and
+    hierarchical optimization
+  - for hiz?
+- CMASK
+  - for fast clear and for msaa
+- FMASK
+  - for msaa
+- DCC
+  - color compression
