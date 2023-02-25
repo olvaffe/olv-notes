@@ -188,6 +188,8 @@ Kernel Config
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
   - select `RF switch subsystem support`
 - select `File systems`
+  - select `The Extended 4 (ext4) filesystem`
+  - select `Ext4 POSIX Access Control Lists`
   - select `Btrfs filesystem support`
   - select `Btrfs POSIX Access Control Lists`
   - deselect `Dnotify support`
@@ -200,7 +202,10 @@ Kernel Config
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
     - select `Tmpfs POSIX Access Control Lists`
-  - deselect `Miscellaneous filesystems`
+  - select `Miscellaneous filesystems`
+    - select `Persistent store support`
+    - select `Log kernel console messages`
+    - select `Log panic/oops to a RAM buffer`
   - deselect `Network File Systems`
   - select `Native language support`
     - select `Codepage 437 (United States, Canada)`
@@ -515,6 +520,8 @@ Kernel Config
   - select `Staging drivers`
     - select `Broadcom VideoCore support` if rpi
       - select all
+  - select `Platform support for Chrome hardware` if cros
+    - select `Chrome OS pstore support`
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
     - select `Dell X86 Platform Specific Device Drivers` if dell
