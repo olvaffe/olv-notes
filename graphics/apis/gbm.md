@@ -152,3 +152,42 @@ GBM
 - to build,
   - `VERBOSE=1 CFLAGS=-DDRV_I915 MODE=dbg OUT=out DESTDIR=out/install make install`
   - for amdgpu, `CFLAGS="-DDRV_AMDGPU -DDRI_DRIVER_DIR=/usr/lib/dri"`
+- android common formats and flags 
+  - surfaceflinger
+    - all layers have `GraphicBuffer::USAGE_HW_TEXTURE` consumer usage
+      - also `GraphicBuffer::USAGE_HW_COMPOSER`
+      - potentially `GraphicBuffer::USAGE_PROTECTED` and
+        `GraphicBuffer::USAGE_CURSOR`
+    - composition engine asks for
+      - requested format
+      - `GRALLOC_USAGE_HW_RENDER`
+      - `GRALLOC_USAGE_PROTECTED` if protected
+    - framebuffers have
+      - requested format
+      - `GRALLOC_USAGE_HW_FB`
+      - `GRALLOC_USAGE_HW_RENDER`
+      - `GRALLOC_USAGE_HW_COMPOSER`
+    - virtual displays have
+      - requested format
+      - `GRALLOC_USAGE_HW_COMPOSER`
+    - refresh rate overlay asks for
+      - `HAL_PIXEL_FORMAT_RGBA_8888`
+      - `GRALLOC_USAGE_SW_WRITE_RARELY`
+      - `GRALLOC_USAGE_HW_COMPOSER`
+      - `GRALLOC_USAGE_HW_TEXTURE`
+    - region sampling thread asks for
+      - `PIXEL_FORMAT_RGBA_8888`
+      - `GRALLOC_USAGE_SW_READ_OFTEN`
+      - `GRALLOC_USAGE_HW_RENDER`
+    - screen capture asks for
+      - requested format
+      - `GRALLOC_USAGE_SW_READ_OFTEN`
+      - `GRALLOC_USAGE_SW_WRITE_OFTEN`
+      - `GRALLOC_USAGE_HW_RENDER`
+      - `GRALLOC_USAGE_HW_TEXTURE`
+  - libgui
+    - cpu consumer asks for `GRALLOC_USAGE_SW_READ_OFTEN`
+    - gl consumer asks for `GraphicBuffer::USAGE_HW_TEXTURE`
+    - surface asks for, when locking for cpu access,
+      - `GRALLOC_USAGE_SW_READ_OFTEN`
+      - `GRALLOC_USAGE_SW_WRITE_OFTEN`
