@@ -136,3 +136,46 @@ ARC
 - to get arcvm cid,
   - `concierge_client --cryptohome_id=<hash> --name=arcvm --get_vm_cid`
   - should work for `termina` and `borealis` as well
+
+## Modify Vendor Image
+
+- container method 1
+  - <https://docs.mesa3d.org/android.html#replacing-android-drivers-on-chrome-os>
+  - `cd /opt/google/containers/android`
+  - `mkdir tmp`
+  - `mount vendor.raw.img tmp`
+  - `cp -a tmp vendor`
+    - do exactly this to make sure `vendor` has the right selinux context
+    - `ls -lZ` to double-chek
+  - `umount tmp`
+  - `rmdir tmp`
+  - edit `config.json` to modify `/vendor` mountpoint
+    - `type` is `bind`
+    - `source` is `vendor`
+    - `options` should have `bind` and `rw`
+  - `restart ui`
+  - modifications to `/opt/google/containers/android/vendor` will be reflected
+    in the container
+- container method 2
+  - `scp dut:/opt/google/containers/android/vendor.raw.img .`
+  - `scp dut:/etc/selinux/arc/contexts/files/android_file_contexts .`
+  - `mkdir chroot`
+  - `sudo unsquashfs -no-xattrs -d chroot/vendor vendor.raw.img`
+  - modify `chroot/vendor`
+  - `rm -f repack.img`
+  - `sudo mksquashfs chroot/vendor repack.img -comp gzip -context-file android_file_contexts -mount-point /vendor`
+  - `scp repack.img dut:/opt/google/containers/android/vendor.raw.img`
+- vm method 1
+  - use userdebug image
+  - `adb root`
+  - overlayfs
+  - this is good until vm reboot/crash
+- vm method 2
+  - `scp dut:/opt/google/vms/android/vendor.raw.img .`
+  - `scp dut:/etc/selinux/arc/contexts/files/android_file_contexts_vm .`
+  - `mkdir chroot`
+  - `sudo unsquashfs -no-xattrs -d chroot/vendor vendor.raw.img`
+  - modify `chroot/vendor`
+  - `rm -f repack.img`
+  - `sudo mksquashfs chroot/vendor repack.img -comp lz4 -Xhc -b 256K -context-file android_file_contexts_vm -mount-point /vendor`
+  - `scp repack.img dut:/opt/google/vms/android/vendor.raw.img`
