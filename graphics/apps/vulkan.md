@@ -265,7 +265,7 @@ Vulkan Loader
   - exports `vkGetInstanceProcAddr`, which loads the ICD and forward all calls
     to the ICD
   - can be bypassed completely if an app looks up `vkGetInstanceProcAddr` using
-    loader's `vkGetInstanceProcAddr'
+    loader's `vkGetInstanceProcAddr`
 
 ## Platforms with no layer library but multiple ICDs
 
@@ -411,3 +411,35 @@ Vulkan Loader
   `vkEnumerateInstanceExtensionProperties`
 - device layers must export `vkEnumerateDeviceLayerProperties` and
   `vkEnumerateDeviceExtensionProperties`
+
+## GFXReconstruct
+
+- replay `vkCreateDevice`
+  - `Application::Run`
+  - `Application::PlaySingleFrame`
+  - `FileProcessor::ProcessNextFrame`
+  - `FileProcessor::ProcessBlocks`
+  - `FileProcessor::ProcessFunctionCall`
+  - `VulkanDecoder::Decode_vkCreateDevice`
+  - `VulkanReplayConsumer::Process_vkCreateDevice`
+  - `VulkanReplayConsumerBase::OverrideCreateDevice`
+  - `vkCreateDevice`
+  - ICD `CreateDevice`
+- replay `vkCreateXcbSurfaceKHR`
+  - `Application::Run`
+  - `Application::PlaySingleFrame`
+  - `FileProcessor::ProcessNextFrame`
+  - `FileProcessor::ProcessBlocks`
+  - `FileProcessor::ProcessFunctionCall`
+  - `VulkanDecoder::Decode_vkCreateXcbSurfaceKHR`
+  - `VulkanReplayConsumer::Process_vkCreateXcbSurfaceKHR`
+  - `VulkanReplayConsumerBase::OverrideCreateXcbSurfaceKHR`
+  - `VulkanReplayConsumerBase::CreateSurface`
+  - `XcbWindow::CreateSurface`
+  - ICD `vkCreateXcbSurfaceKHR`
+  - if `--wsi xlib` is speficied, it can
+    - `VulkanReplayConsumerBase::CreateSurface`
+    - `XlibWindow::CreateSurface`
+    - ICD `vkCreateXlibSurfaceKHR`
+  - `--wsi wayland` uses the deprecated `wl_shell` and is not supported by
+    modern compositors
