@@ -212,3 +212,34 @@ dEQP
   - for some widths
     - 1..128, 256, 512; total 130 iterations
     - draw `width` vertices
+
+## Test Case: `dEQP-VK.api.copy_and_blit.core.resolve_image.diff_layout_copy_before_resolving.4_bit_general_general`
+
+- `external/vulkancts/modules/vulkan/api/vktApiCopiesAndBlittingTests.cpp`
+- `ResolveImageToImage::ResolveImageToImage`
+  - it creates 3 64x64 `VK_FORMAT_R8G8B8A8_UNORM` images
+    - `m_multisampledImage` has `VK_SAMPLE_COUNT_4_BIT`
+    - `m_multisampledCopyImage` has `VK_SAMPLE_COUNT_4_BIT`
+    - `m_destination` has `VK_SAMPLE_COUNT_1_BIT`
+  - it draws a triangle
+    - both `m_multisampledImage` and `m_multisampledCopyImage` are
+      transitioned to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL` by barriers
+    - renderpass transitions `m_multisampledImage` to
+      `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` for clearing/rendering and
+      back to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+- `ResolveImageToImage::iterate`
+  - `generateBuffer` and `uploadImage` fills out `m_destination` with
+    `FILL_MODE_GRADIENT`
+  - `copyMSImageToMSImage` copies `m_multisampledImage` to
+    `m_multisampledCopyImage`
+    - `m_multisampledImage` and `m_multisampledCopyImage` are transitioned to
+      `VK_IMAGE_LAYOUT_GENERAL` by barriers
+    - `vkCmdCopyImage`
+  - finally
+    - `m_destination` is transitioned to `VK_IMAGE_LAYOUT_GENERAL` by barriers
+    - `vkCmdResolveImage`
+  - `checkIntermediateCopy`
+    - it creates a fb with `m_multisampledImage` and `m_multisampledCopyImage`
+    - it draws a fullscreen quad, compares the results in fs, and writes
+      results to an ssbo
+    - it verifies the ssbo
