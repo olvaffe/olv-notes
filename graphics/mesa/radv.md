@@ -117,3 +117,47 @@ Mesa RADV
   - GFX8-
     - `surface->u.legacy.level[level].offset` for offset
     - `surface->u.legacy.level[level].nblk_x` for pitch
+- RETILE
+  - when RETILE is false, DCC may or may not be aligned
+  - when RETILE is true, there are two DCC surfaces
+    - one is unaligned (but displayable)
+    - one is aligned
+
+## Image Layout
+
+- the goal of layout transition is to
+  - resolve DCC/FMASK/CMASK for color buffers
+    - DCC is for compression
+    - FMASK is for fast clear and msaa
+    - CMASK is for msaa
+  - resolve HTILE for depth buffers
+    - HTILE is for hiz
+- from `VK_IMAGE_LAYOUT_UNDEFINED`
+  - `radv_init_color_image_metadata` initializes DCC/FMASK/CMASK
+  - `radv_initialize_htile` initializes HTILE
+- `radv_layout_is_htile_compressed` determines which layouts can use HTILE
+  - most layouts can use HTILE as long as HTILE is TC-compatible, as
+    returned by `radv_image_is_tc_compat_htile`
+  - but if HTILE is not tc-compat, only ds optimal layouts and xfer dst can
+    use HTILE (I guess it uses 3d pipeline for xfer dst)
+- `radv_expand_depth_stencil` resolves HTILE when transitioning away from
+  HTILE
+  - on `RADV_QUEUE_GENERAL`, `radv_process_depth_stencil` resolves using the
+    3d pipeline
+  - otherwise, `radv_expand_depth_stencil_compute` resolves using the compute
+    pipeline
+- `radv_layout_dcc_compressed` determines which layouts can use DCC
+  - most layouts use DCC as long as the image supports DCC
+- `radv_decompress_dcc` resolves DCC when transitioning away from DCC
+  - on `RADV_QUEUE_GENERAL`, `radv_process_color_image` resolves using the
+    3d pipeline
+  - otherwise, `radv_decompress_dcc_compute` resolves using the compute
+    pipeline
+- `radv_layout_can_fast_clear` determines which layouts can use fast clear
+  - only optimal attachment layouts can use fast clear
+- `radv_fast_clear_flush_image_inplace` resolves fast clear when transitioning
+  away from fast clear
+  - `radv_fast_clear_eliminate` resolves CMASK
+  - `radv_fmask_decompress` resolves FMASK
+- `radv_layout_fmask_compressed`
+- `radv_expand_fmask_image_inplace`
