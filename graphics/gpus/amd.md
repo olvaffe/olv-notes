@@ -192,6 +192,47 @@ AMD
     - it stalls until reg/mem meets the condition
   - `COPY_DATA` can be executed on ME or CE
 
+## FMASK
+
+- FMASK is optional and is used for MSAA compression up to GFX10
+  - it is removed from GFX11+
+- <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_AMD_shader_fragment_mask.html>
+  - each pixel has N samples
+  - when two samples share the same value, the value is stored only once
+  - a fragment mask (FMASK) is used to map samples to stored values
+  - to fetch sample 0,
+    - `fragmentFetchAMD(tex, coord, (fragmentMaskFetchAMD(tex, coord) & 0x4)`
+- `Addr2ComputeFmaskInfo` computes FMASK layout
+  - it is clear that FMASK is just another texture
+    - it can be tiled and compressed
+  - `pIn->numSamples` is number of samples
+  - `pIn->numFrags` is number of samples to store
+- `V_028808_CB_FMASK_DECOMPRESS` decompresses FMASK
+  - I guess CMASK stores metadata about FMASK to compress FMASK
+  - this op resolves CMASK to FMASK, such that `fragmentMaskFetchAMD` works
+    - this also implies `V_028808_CB_ELIMINATE_FAST_CLEAR`
+  - this op is unnecessary when CMASK is TC-compatible
+- I guess `V_028808_CB_DECOMPRESS` "expands" FMASK
+  - it is not used by drivers
+  - instead, drivers can "expand" FMASK using a compute shader which I guess
+    does the same thing
+  - what this does is to resolve FMASK to the main MSAA surface
+
+## CMASK
+
+- CMASK is used for fast clear and FMASK up to GFX10
+  - it is only used for FMASK on GFX10
+  - it is removed from GFX11+
+- `Addr2ComputeCmaskInfo` computes CMASK layout
+
+## DCC
+
+- DCC is used for fast clear and compression
+  - it replaces FMASK and CMASK completely on GFX11+
+  - FMASK and CMASK are internal to drivers
+  - DCC, on the other hand, is shared externally
+- `Addr2ComputeDccInfo` computes DCC layout
+
 ## Terms
 
 - R600 pipeline
@@ -214,13 +255,30 @@ AMD
     - depth buffer
   - CB
     - color buffer
-- HTILE
-  - a separate surface that holds the metadata for compression and
-    hierarchical optimization
-  - for hiz?
-- CMASK
-  - for fast clear and for msaa
-- FMASK
-  - for msaa
-- DCC
-  - color compression
+- image compression
+  - MSAA can be compressed or uncompressed
+    - when compressed, it requires CMASK and FMASK
+  - fast clear requires CMASK
+    - FMASK is not required
+  - HTILE
+    - a separate surface that holds the metadata for compression and
+      hierarchical optimization
+    - for hiz?
+  - CMASK
+    - for fast clear and for msaa compression
+  - FMASK
+    - for msaa compression
+  - DCC
+    - color compression
+- `R_028808_CB_COLOR_CONTROL`
+  - `V_028808_CB_DISABLE` disables color write
+  - `V_028808_CB_NORMAL` enables color write
+  - `V_028808_CB_ELIMINATE_FAST_CLEAR` eliminates fast clear
+    - FCE, fast clear eliminate
+  - GFX10-
+    - `V_028808_CB_RESOLVE` resolves MSAA
+    - `V_028808_CB_DECOMPRESS` is unused
+    - `V_028808_CB_FMASK_DECOMPRESS` decompresses FMASK
+    - `V_028808_CB_DCC_DECOMPRESS_GFX8` decompresses DCC
+  - GFX11+
+    - `V_028808_CB_DCC_DECOMPRESS_GFX11` decomresses DCC
