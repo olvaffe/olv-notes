@@ -440,6 +440,7 @@ Kernel Config
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
     - select `AMD GPU` if amd
+    - select `Always enable userptr write support` if amd
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
     - select `MSM DRM` if msm
     - select `Broadcom VC4 Graphics` if rpi
