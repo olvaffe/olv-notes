@@ -52,3 +52,7 @@ Chrome OS DLC
     `/dev/mapper/encstateful`
   - `/dev/mapper/encstateful` targets `/dev/loop0`
   - `/dev/loop0` is `/mnt/stateful_partition/encrypted.block`
+
+## cmd
+
+- `dlcservice_util --install --id=borealis-dlc`

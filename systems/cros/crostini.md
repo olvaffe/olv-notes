@@ -129,3 +129,7 @@ Crostini
   - `--wayland-sock /run/chrome/wayland-0`
   - `--wayland-dmabuf`
   - `--gpu`
+
+## vmc
+
+- `vmc start --enable-vulkan --no-start-lxd --enable-big-gl --dlc-id=borealis-dlc --extra-disk=disk.img borealis`
