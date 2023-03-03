@@ -78,3 +78,13 @@ ALSA Userspace
 - `aplay -D plug:dmix`
   - `pcm.plug` with `dmix` as the slave
   - this uses the `dmix` mixer which can have multiple active clients
+
+## Hardware Interfaces
+
+- mobile
+  - I2S
+  - SLIMbus
+- pc
+  - AC97
+  - HDA
+- SoundWire
