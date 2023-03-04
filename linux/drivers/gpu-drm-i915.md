@@ -1,6 +1,30 @@
 DRM i915
 ========
 
+## sysfs
+
+- `/sys/class/drm/card0`
+  - `gt_act_freq_mhz` is the current actual freq
+  - `gt_cur_freq_mhz` is the current selected freq
+  - `gt_RP0_freq_mhz` is the max non-boost freq (render p-state 0)
+  - `gt_RP1_freq_mhz` is the most efficient freq (render p-state 1)
+  - `gt_RPn_freq_mhz` is the lowest possible freq (render p-state n)
+  - writables
+    - `gt_boost_freq_mhz` is the requested boost freq
+    - `gt_max_freq_mhz` is the requested max freq
+    - `gt_min_freq_mhz` is the requested min freq
+  - `rps_work` handles freq change
+    - if there is any waiter, it picks `boost_freq`
+    - if `GEN6_PM_RP_UP_THRESHOLD`, it increases the freq until
+      `max_freq_softlimit`
+    - if `GEN6_PM_RP_DOWN_THRESHOLD`, it decreases the freq until
+      `min_freq_softlimit`
+    - if `GEN6_PM_RP_DOWN_TIMEOUT`, it picks `efficient_freq` and then
+      `min_freq_softlimit`
+- `/sys/kernel/debug/dri/0`
+  - `i915_frequency_info`
+    - `Up threshold` is 95% and `Down threshold` is 85%
+
 ## i915 modeset
 
 - `intel_modeset_init`
