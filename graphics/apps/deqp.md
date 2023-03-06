@@ -243,3 +243,32 @@ dEQP
     - it draws a fullscreen quad, compares the results in fs, and writes
       results to an ssbo
     - it verifies the ssbo
+- `dEQP-VK.api.copy_and_blit.core.resolve_image.layer_copy_before_resolving.4_bit`
+  - this is similar except it uses xfer layouts and `COPY_MS_IMAGE_LAYER_TO_MS_IMAGE`
+  - 1st cmdbuffer
+    - both `m_multisampledImage` and `m_multisampledCopyImage` are
+      transitioned to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL` by barriers
+    - clear `m_multisampledImage` to black and clear `m_multisampledCopyImage`
+      to white
+    - draw a triangle to layer 2 of `m_multisampledImage`
+  - 2nd cmdbuffer
+    - fills in `m_destination` with `FILL_MODE_GRADIENT`
+    - transition `m_destination` to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+  - 3rd cmdbuffer
+    - transition `m_multisampledImage` to
+      `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL` by barrier
+    - `vkCmdCopyImage` from layer 2 of `m_multisampledImage` to layer 4 of
+      `m_multisampledCopyImage`
+    - transition `m_multisampledCopyImage` to `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+  - 4th cmdbuffer
+    - `vkCmdResolveImage` all 5 layers from `m_multisampledCopyImage` to
+      `m_destination`
+  - 5th cmdbuffer
+    - transition `m_destination` to `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+      with a barrier
+    - `vkCmdCopyImageToBuffer` all 5 layers from `m_destination` to a buffer
+      for readback
+    - transition `m_destination` to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+      with a barrier
+  - 6th cmdbuffer
+    - draw a quad to verify `m_multisampledCopyImage`
