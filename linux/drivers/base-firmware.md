@@ -3,13 +3,33 @@ Kernel and Firmware
 
 ## `request_firmware`
 
-- `request_firmware` loads the firmware directly from `/lib/firmware`
+- `_request_firmware_prepare` calls `firmware_request_builtin_buf` to search
+  built-in firmwares first
+- `fw_get_filesystem_firmware` tries to load from `/lib/firmware`
+  - `kernel_read_file_from_path_initns` reads the entire file into a buffer
+  - if compressed, the firmware is decompressed
+- `firmware_fallback_platform`
+  - this finds firmwares embedded in efi code
 - `firmware_fallback_sysfs` is deprecated
   - e100 asks for `e100/d101m_ucode.bin`
   - udev receives an event and
     - `echo 1 > /sys/$DEVPATH/loading`
     . `cat $FIRMWARE > /sys/$DEVPATH/data`
     - `echo 0 > /sys/$DEVPATH/loading`
+
+## `CONFIG_EXTRA_FIRMWARE`
+
+- `CONFIG_EXTRA_FIRMWARE=foo.bin`
+  - it generates `foo.bin.S` using `filechk_fwbin` macro
+    - `incbin` is used to include `/lib/firmware/foo.bin`
+    - a `struct builtin_fw` is emitted in `.builtin_fw` section
+  - the ld script has `FW_LOADER_BUILT_IN_DATA` to collect all `struct
+    builtin_fw` into an array denoted by `__start_builtin_fw` and
+    `__end_builtin_fw`
+- `firmware_request_builtin` goes through the `builtin_fw` array to find a
+  match
+  - the data is a direct pointer to the embedded firmware binary; no
+    compression is allowed
 
 ## Firmware and KBuild
 
