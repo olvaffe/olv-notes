@@ -249,6 +249,8 @@ AMD
 
 - FMASK is optional and is used for MSAA compression up to GFX10
   - it is removed from GFX11+
+  - as a color buffer, it requires `S_028C70_COMPRESSION`
+  - as a texture, it requires a separate descriptor
 - <https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_AMD_shader_fragment_mask.html>
   - each pixel has N samples
   - when two samples share the same value, the value is stored only once
@@ -276,6 +278,14 @@ AMD
 - CMASK is used for fast clear and FMASK up to GFX10
   - it is only used for FMASK on GFX10
   - it is removed from GFX11+
+  - as a color buffer, it requires `S_028C70_FAST_CLEAR`
+    - if tc-compatible, it requires `S_028C70_FMASK_COMPRESS_1FRAG_ONLY` as
+      well
+  - as a texture, it requires `S_00A018_COMPRESSION_EN` or
+    `S_008F28_COMPRESSION_EN`
+    - it is not enabled for single-sampled textures
+    - it is only enabled for the FMASK texture descriptors of multi-sampled
+      textures that are TC-compatible
 - `Addr2ComputeCmaskInfo` computes CMASK layout
 - each tile has 4 bits in CMASK
   - if there is also DCC,
@@ -323,9 +333,13 @@ AMD
     - depth buffer
   - CB
     - color buffer
+  - RB
+    - render backend
 - more terms
   - ACE
     - Asynchronous Compute Engines
+  - RB+
+    - reder backend plus (GFX10.3 or GFX9 APU or GFX8 stoneyridge)
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
