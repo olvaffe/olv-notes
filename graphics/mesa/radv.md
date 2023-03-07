@@ -83,7 +83,9 @@ Mesa RADV
   - bit 17: `RADEON_SURF_ZBUFFER` if depth
   - bit 18: `RADEON_SURF_SBUFFER` if stencil
   - bit 21: `RADEON_SURF_FMASK` is unused
-  - bit 22: `RADEON_SURF_DISABLE_DCC` disables compression
+  - bit 22: `RADEON_SURF_DISABLE_DCC` disables DCC compression
+    - see `radv_use_dcc_for_image_early` and `radv_use_dcc_for_image_late` for
+      reasons to enable/disable DCC
   - bit 23: `RADEON_SURF_TC_COMPATIBLE_HTILE` uses TC-compatible HTILE (for
     sampling)
   - bit 24: `RADEON_SURF_IMPORTED` is imported, unused by radv
@@ -93,7 +95,8 @@ Mesa RADV
   - bit 28: `RADEON_SURF_FORCE_SWIZZLE_MODE` forces swizzle mode, unused by
     radv
   - bit 29: `RADEON_SURF_NO_FMASK` disables FMASK
-  - bit 30: `RADEON_SURF_NO_HTILE` disables HTILE (a tiling?)
+    - see `radv_use_fmask_for_image` for reasons to enable/disable FMASK
+  - bit 30: `RADEON_SURF_NO_HTILE` disables HTILE (hiz)
   - bit 31: `RADEON_SURF_FORCE_MICRO_TILE_MODE` forces micro tile mode, unused
     by radv
   - bit 32: `RADEON_SURF_PRT` is an layout for sparse images
