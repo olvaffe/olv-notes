@@ -224,6 +224,21 @@ AMD
   - it is only used for FMASK on GFX10
   - it is removed from GFX11+
 - `Addr2ComputeCmaskInfo` computes CMASK layout
+- each tile has 4 bits in CMASK
+  - if there is also DCC,
+    - the higher 2 bits must be 1's, to indicate no cmask fast clear
+      - there can still be dcc fast clear
+    - the lower 2 bits indicate compression level
+      - 0 means full compression
+      - 3 means no compression
+  - if there is no DCC,
+    - if the higher 2 bits are 1's, it indicates no cmask fast clear
+      - the lower 2 bits means
+        - 0 is unused?
+        - 1 means 2 samples
+        - 2 means 4 samples
+        - 3 means 8 samples or 1 sample
+    - otherwise, it indicates cmask fast clear
 
 ## DCC
 
