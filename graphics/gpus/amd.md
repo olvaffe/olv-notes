@@ -191,6 +191,59 @@ AMD
   - `WAIT_REG_MEM` can be executed on PFP or ME
     - it stalls until reg/mem meets the condition
   - `COPY_DATA` can be executed on ME or CE
+- all commands used by radv
+  - `PKT3_ACQUIRE_MEM` is for semaphore?
+  - `PKT3_ATOMIC_MEM` performs an atomic op to addr
+  - `PKT3_CLEAR_STATE` is for dev init
+  - `PKT3_COND_EXEC` executes the following N dwords only if addr is non-zero
+  - `PKT3_CONTEXT_CONTROL` is for dev init
+  - `PKT3_COPY_DATA` copies data from src to dst
+    - src can be imm, reg, addr, etc.
+    - dst can be addr, etc.
+  - `PKT3_CP_DMA` is GFX6-only
+  - `PKT3_DISPATCH_DIRECT` is for compute
+  - `PKT3_DISPATCH_INDIRECT` is for compute
+  - `PKT3_DISPATCH_MESH_INDIRECT_MULTI` is for mesh
+  - `PKT3_DISPATCH_TASKMESH_DIRECT_ACE` is for mesh
+  - `PKT3_DISPATCH_TASKMESH_GFX` is for mesh
+  - `PKT3_DISPATCH_TASKMESH_INDIRECT_MULTI_ACE` is for mesh
+  - `PKT3_DISPATCH_TASK_STATE_INIT` is for cmdbuf init
+  - `PKT3_DMA_DATA` is dma between two addrs
+  - `PKT3_DRAW_INDEX_2` is for draw
+  - `PKT3_DRAW_INDEX_AUTO` is for draw
+  - `PKT3_DRAW_INDEX_INDIRECT` is for draw is for draw
+  - `PKT3_DRAW_INDEX_INDIRECT_MULTI` is for draw
+  - `PKT3_DRAW_INDEX_OFFSET_2` is for draw
+  - `PKT3_DRAW_INDIRECT` is for draw
+  - `PKT3_DRAW_INDIRECT_MULTI` is for draw
+  - `PKT3_EVENT_WRITE` is for misc events
+  - `PKT3_EVENT_WRITE_EOP` is for GFX6-8
+    - end-of-pipeline?
+  - `PKT3_EVENT_WRITE_EOS` is for GFX6-8
+  - `PKT3_INDEX_BASE` sets the index buffer
+  - `PKT3_INDEX_BUFFER_SIZE` sets the index buffer size
+  - `PKT3_INDEX_TYPE` sets the index type (before GFX9)
+  - `PKT3_INDIRECT_BUFFER_CIK` is for `VK_NV_device_generated_commands`
+  - `PKT3_LOAD_CONTEXT_REG_INDEX` loads ctx reg from addr (since newer GFX8)
+    - same as `PKT3_COPY_DATA` followed by `PKT3_PFP_SYNC_ME`
+  - `PKT3_LOAD_SH_REG_INDEX` loads sh reg from addr (since newer GFX8)
+  - `PKT3_NOP` is nop
+  - `PKT3_NUM_INSTANCES` sets the draw instance count
+  - `PKT3_PFP_SYNC_ME` lets PFP waits for ME
+    - e.g., `PKT3_COPY_DATA` or `PKT3_DMA_DATA` are executed by ME but index
+      buffer is read by PFP
+  - `PKT3_RELEASE_MEM` is for semaphore?
+  - `PKT3_SET_BASE` is for indirect draw/dispatch/mesh
+  - `PKT3_SET_CONFIG_REG` is for GFX6
+  - `PKT3_SET_CONTEXT_REG` sets a ctx reg
+  - `PKT3_SET_PREDICATION` is for conditional rendering
+  - `PKT3_SET_SH_REG` sets a sh reg
+  - `PKT3_SET_SH_REG_INDEX` sets a sh reg (since GFX10)
+  - `PKT3_SET_UCONFIG_REG` sets a uconfig reg
+  - `PKT3_STRMOUT_BUFFER_UPDATE` is for transform feedback
+  - `PKT3_SURFACE_SYNC` is deprecated by `PKT3_ACQUIRE_MEM`
+  - `PKT3_WAIT_REG_MEM` waits until reg or addr matches the ref val
+  - `PKT3_WRITE_DATA` inline-writes vals to addr
 
 ## FMASK
 
@@ -270,6 +323,9 @@ AMD
     - depth buffer
   - CB
     - color buffer
+- more terms
+  - ACE
+    - Asynchronous Compute Engines
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK

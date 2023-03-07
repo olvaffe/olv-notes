@@ -161,3 +161,30 @@ Mesa RADV
   - `radv_fmask_decompress` resolves FMASK
 - `radv_layout_fmask_compressed`
 - `radv_expand_fmask_image_inplace`
+
+## Command Processor
+
+- `radeon_set_config_reg`
+  - GFX6-only
+  - reg range is `[SI_CONFIG_REG_OFFSET, SI_CONFIG_REG_END]`, 12KB
+  - op is `PKT3_SET_CONFIG_REG`
+- `radeon_set_context_reg`
+  - reg range is `[SI_CONTEXT_REG_OFFSET, SI_CONTEXT_REG_END]`, 32KB
+  - op is `PKT3_SET_CONTEXT_REG`
+- `radeon_set_sh_reg`
+  - reg range is `[SI_SH_REG_OFFSET, SI_SH_REG_END]`, 4KB
+  - op is `PKT3_SET_SH_REG` or `PKT3_SET_SH_REG_INDEX` (since GFX10)
+- `radeon_set_uconfig_reg`
+  - reg range is `[CIK_UCONFIG_REG_OFFSET, CIK_UCONFIG_REG_END]`, 64KB
+  - op is `PKT3_SET_UCONFIG_REG` or `PKT3_SET_UCONFIG_REG_INDEX` (since newer
+    GFX9)
+
+## Command Buffer
+
+- most `radv_CmdSetFoo` saves the state and marks the dirty bits
+  - e.g., `radv_CmdSetDepthBiasEnable` saves the bool and marks
+    `RADV_CMD_DIRTY_DYNAMIC_DEPTH_BIAS_ENABLE`
+- from `radv_before_draw`, `radv_emit_all_graphics_states` emits all dirty
+  states
+  - e.g., if `RADV_CMD_DIRTY_DYNAMIC_DEPTH_BIAS_ENABLE` (or some other dirty
+    bits) is set, `radv_emit_culling` sets `R_028814_PA_SU_SC_MODE_CNTL` reg
