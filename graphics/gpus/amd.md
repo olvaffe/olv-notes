@@ -276,7 +276,8 @@ AMD
 ## CMASK
 
 - CMASK is used for fast clear and FMASK up to GFX10
-  - it is only used for FMASK on GFX10
+  - for non-msaa surfaces, it can be enabled for fast clears up to GFX9
+  - for msaa surfaces, it can be enabled for fmask compression up to GFX10
   - it is removed from GFX11+
   - as a color buffer, it requires `S_028C70_FAST_CLEAR`
     - if tc-compatible, it requires `S_028C70_FMASK_COMPRESS_1FRAG_ONLY` as
