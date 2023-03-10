@@ -272,3 +272,62 @@ dEQP
       with a barrier
   - 6th cmdbuffer
     - draw a quad to verify `m_multisampledCopyImage`
+
+## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
+
+- renderpass
+  - two attachments
+    - first
+      - `VK_FORMAT_D24_UNORM_S8_UINT`
+      - `VK_SAMPLE_COUNT_2_BIT`
+      - `VK_ATTACHMENT_LOAD_OP_CLEAR`
+      - `VK_ATTACHMENT_STORE_OP_DONT_CARE`
+      - final layout `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+    - second
+      - `VK_FORMAT_D24_UNORM_S8_UINT`
+      - `VK_SAMPLE_COUNT_1_BIT`
+      - `VK_ATTACHMENT_LOAD_OP_CLEAR`
+      - `VK_ATTACHMENT_STORE_OP_STORE`
+      - final layout `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+  - 1 subpass
+    - `pDepthStencilAttachment` is att 0 with
+      `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
+    - `pDepthStencilResolveAttachment` is att 1 with
+      `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
+      - `depthResolveMode` is `VK_RESOLVE_MODE_NONE`
+      - `stencilResolveMode` is `VK_RESOLVE_MODE_SAMPLE_ZERO_BIT`
+- pipeline
+  - `quad-vert` uses `gl_VertexIndex` to set `gl_Position` to the corners
+  - `quad-frag` does
+    - `if(gl_SampleID != pushConstants.sampleID) discard;`
+    - `gl_FragDepth = 0.5;`
+  - viewport is 49x13
+  - scissor is the quad
+    - offset `(10, 5)`
+    - extent `(20, 8)`
+  - stencil test always writes `1`
+    - `VK_STENCIL_OP_REPLACE` and `VK_COMPARE_OP_ALWAYS`
+- draw
+  - a barrier from `VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT` to
+    `VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT`
+  - begin a render pass for the entire 49x13 area
+    - clear value is `(1.0, 5)`
+  - for each sample,
+    - bind the pipeline
+    - push the sample id as push const
+    - set the stencil ref value
+      - first sample is 1
+      - second sample is 255
+    - draw with a rectangle from `(10, 5)` to `(20, 8)`
+  - end the render pass
+- copy image to buffer
+  - a barrier to make `m_singlesampleImage`'s
+    `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT` available to
+    `VK_ACCESS_TRANSFER_READ_BIT`
+  - copy the entire 49x13 `m_singlesampleImage` to `m_buffer`
+  - a barrier to make `m_buffer`'s `VK_ACCESS_TRANSFER_WRITE_BIT` available to
+    `VK_ACCESS_HOST_READ_BIT`
+- verify stencil
+  - for each pixel,
+    - if outside of the draw rectangle, it should be the clear value `5`
+    - if inside of the draw rectangle, it should be `1`
