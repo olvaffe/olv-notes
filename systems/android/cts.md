@@ -74,6 +74,7 @@ Android CTS
 - `CtsMediaTestCases`
   - `--module-arg 'CtsMediaTestCases:include-filter:android.media.cts.DecodeAccuracyTest*'`
     - 5m
+  - `--module-arg 'CtsMediaTestCases:include-filter:android.media.cts.EncodeDecodeTest*'`
 - `CtsCameraTestCases`
   - `--module-arg 'CtsCameraTestCases:include-filter:android.hardware.cts.CameraGLTest#*'`
     - 2m
