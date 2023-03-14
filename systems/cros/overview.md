@@ -256,3 +256,9 @@ Chrome OS Overview
     - one `--type=-broker`
     - one `--type=renderer`
       - each tab is rendered by a renderer process
+
+## Debug Buttons
+
+- <https://chromium.googlesource.com/chromiumos/docs/+/main/debug_buttons.md>
+  - on prototypes, might require `dut-control power_state:rec` to enter the
+    recovery mode
