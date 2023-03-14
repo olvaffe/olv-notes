@@ -368,3 +368,25 @@ AMD
     - `V_028808_CB_DCC_DECOMPRESS_GFX8` decompresses DCC
   - GFX11+
     - `V_028808_CB_DCC_DECOMPRESS_GFX11` decomresses DCC
+
+## addrlib
+
+- `addrinterface.h` is the public interface
+  - `AddrCompute*` is for GFX8-
+  - `Addr2Compute*` is for GFX9+
+- `AddrCreate` calls `Lib::Create`
+  - for GFX6, `SiHwlInit`
+  - for GFX7-8, `CiHwlInit`
+  - for GFX9, `Gfx9HwlInit`
+  - for GFX10, `Gfx10HwlInit`
+  - for GFX11, `Gfx11HwlInit`
+- `AddrComputeSurfaceInfo` calls `V1::Lib::ComputeSurfaceInfo`
+  - on GFX8, it calls `CiLib::HwlComputeSurfaceInfo`
+    - which calls `SiLib::HwlComputeSurfaceInfo`
+    - which calls `EgBasedLib::HwlComputeSurfaceInfo`
+  - `EgBasedLib::ComputeSurfaceAlignmentsLinear` returns 3 alignments for
+    base, pitch, and height respectively
+- `Addr2ComputeSurfaceInfo` calls `V2::Lib::ComputeSurfaceInfo`
+  - on GFX9, it calls `Gfx9Lib::HwlComputeSurfaceInfoLinear` or
+    `Gfx9Lib::HwlComputeSurfaceInfoTiled`
+    - it requires 256-byte alignment
