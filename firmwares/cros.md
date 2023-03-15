@@ -201,7 +201,7 @@ Chrome OS Firmwares
 
 ## Servo
 
-- <https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4.md>
+- <https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4p1.md>
   - `emerge hdctools`, hardware debug and control tools
   - `servod -b $BOARD` to start the servo daemon
   - `dut-control` to talk to `servod`
@@ -221,6 +221,21 @@ Chrome OS Firmwares
       <https://chromium.googlesource.com/chromiumos/platform/ec>
       - `make BOARD=servo_v4p1`
     - `sudo servo_updater -b servo_v4p1` to update the firmware
+    - if servo v4.1 keeps rebooting and the usb device keeps reconnecting, the
+      usb firmware needs to be updated first
+      - `sudo systemctl stop fwupd`
+        - this should fix the rebooting issue
+      - `sudo fwupdtool get-devices`
+        - this should show a `Servo Dock` device
+          - if no, and if you get `no CFI device found` instead, make sure
+            fwupd is at least 1.8.9
+        - if the firmware version is below 64.17, it is too old
+      - `sudo fwupdtool update`
+        - or visit
+          <https://fwupd.org/lvfs/devices/tw.com.genesyslogic.gl3590.firmware>
+        - `wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab -O gl3590_64.17.cab`
+        - `sudo fwupdtool install gl3590_64.17.cab`
+- `servod` usage
   - others
     - servo micro: 18d1:501a
     - servo v1: 18d1:5001
