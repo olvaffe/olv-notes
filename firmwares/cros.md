@@ -195,31 +195,38 @@ Chrome OS Firmwares
   - third TTY is EC console
     - `minicom -D /dev/ttyUSB2` for EC console
     - read-only unless CCD is opened
-- `servod`
+- Cr50 also implements servo and ccd protocols
+  - this allows `servod` to work over Cr50
+  - requires CCD open first
+
+## Servo
+
+- <https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4.md>
   - `emerge hdctools`, hardware debug and control tools
-    - `servod -b $BOARD` to start the servo daemon
-    - `dut-control` to talk to `servod`
-      - `dut-control cr50_uart_pty` for cr50 uart
-      - `dut-control ec_uart_pty` for ec uart
-      - `dut-control cpu_uart_pty` for cpu uart
-        - non-dev bios does not output to cpu uart
-        - kernel might output to cpu uart
-  - `servod` supports a wide range of interfaces
-    - cr50 ccd: 18d1:5014
-      - GSC's cr50 firmware implements ccd and servo protocol
-      - requires CCD open first
+  - `servod -b $BOARD` to start the servo daemon
+  - `dut-control` to talk to `servod`
+    - `dut-control cr50_uart_pty` for cr50 uart
+    - `dut-control ec_uart_pty` for ec uart
+    - `dut-control cpu_uart_pty` for cpu uart
+      - non-dev bios does not output to cpu uart
+      - kernel might output to cpu uart
+- `servod` supports a wide range of interfaces
+  - cr50 ccd: 18d1:5014
+    - GSC's cr50 firmware implements ccd and servo protocol
+    - requires CCD open first
+  - servo v4.1: 18d1:520d
+    - Servo v4.1 itself has three USB endpoints that are TTY devices
+      - don't get confused with the cr50/ap/ec consoles
+    - the firmware is also built from
+      <https://chromium.googlesource.com/chromiumos/platform/ec>
+      - `make BOARD=servo_v4p1`
+    - `sudo servo_updater -b servo_v4p1` to update the firmware
+  - others
     - servo micro: 18d1:501a
     - servo v1: 18d1:5001
     - servo v2: 18d1:5002
     - servo v3: 18d1:5004
     - servo v4: 18d1:501b
-      - Servo v4 itself has three USB endpoints that are TTY devices
-      - don't get confused with the cr50/ap/ec consoles
-      - the firmware is also built from
-        <https://chromium.googlesource.com/chromiumos/platform/ec>
-        - `make BOARD=servo_v4`
-      - `sudo servo_updater -b servo_v4` to update the firmware
-    - servo v4.1: 18d1:520d
     - c2d2: 18d1:5041
     - more
 - long time ago, there was no GSC/Cr50 but only EC
