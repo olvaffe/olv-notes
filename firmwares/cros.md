@@ -235,7 +235,6 @@ Chrome OS Firmwares
           <https://fwupd.org/lvfs/devices/tw.com.genesyslogic.gl3590.firmware>
         - `wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab -O gl3590_64.17.cab`
         - `sudo fwupdtool install gl3590_64.17.cab`
-- `servod` usage
   - others
     - servo micro: 18d1:501a
     - servo v1: 18d1:5001
