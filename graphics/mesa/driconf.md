@@ -50,3 +50,36 @@ Mesa driconf
   - EGL uses `__DRIconfigOptionsExtension` to implement
     `EGL_MESA_query_driver`
     - this returns the merged XML string, which can be used by GUI app
+
+## `driParseConfigFiles`
+
+- `driParseConfigFiles` also uses `execname` is from
+    - `MESA_DRICONF_EXECUTABLE_OVERRIDE`
+    - `MESA_PROCESS_NAME`
+    - `program_invocation_name`
+- sample xml
+
+    <driconf>
+      <device>
+        <application>
+          <option/>
+        </application>
+        <engine>
+          <option/>
+        </engine>
+      </device>
+    </driconf>
+- `optConfStartElem` and `optConfEndElem` are the element handlers
+- when `<device>` is parsed,
+  - `parseDeviceAttr` parses the attributes
+  - only one of these attributes are used, in order of priority
+    - `driver`
+    - `kernel_driver`
+    - `device`
+    - `screen`
+  - the attribute is used for device maching
+    - `ignoringDevice` is set if not matched and the entire element is skipped
+- when `<application>` is parsed,
+  - `parseAppAttr` parses the attributes
+  - only one of the attributes are used for matching
+    - `name` attr is ignored
