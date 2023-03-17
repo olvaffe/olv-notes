@@ -252,3 +252,23 @@ DRM amdgpu
   - it starts a kthread running `drm_sched_main`
   - the kthread calls `sched_set_fifo_low` to become `SCHED_FIFO` with low
     static rt priority
+  - `sched` is per-ring `ring->sched`
+  - `ops` is shared `amdgpu_sched_ops`
+  - `hw_submission` is per-ring `ring->num_hw_submission`
+    - it seems to default to `amdgpu_sched_hw_submission` (2) for most rings
+      and at least 256 for SDMA
+  - `hang_limit` is `amdgpu_job_hang_limit`
+    - default is 0
+  - `timeout` is shared `adev->xxx_timeout`
+     - default timeout for compute is 60s (or unlimited on older kernels) and
+       10s for others
+     - can be changed via `amdgpu.lockup_timeout=...`
+  - `timeout_wq` is shared `adev->reset_domain->wq`
+  - `score` is per-ring `ring->sched_score`
+    - usually NULL unless newer VCN rings
+- timeout
+  - when `drm_sched_job_begin` begins a job, it also starts a delayed work
+    with `drm_sched_start_timeout`
+  - if the job takes too long, `drm_sched_job_timedout` removes the job and
+    calls back into amdgpu
+  - `amdgpu_job_timedout` attemps to do a soft recovery before a hw reset
