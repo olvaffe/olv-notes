@@ -1,6 +1,38 @@
 GBM
 ===
 
+## Origin
+
+- GBM was created for EGL on DRM
+  - main users were wayland compositors and xserver
+  - compositors wanted to
+    - allocate gbm bos and assign them to hw planes
+    - use EGL/GLES to render to gbm bos
+    - for client shms, upload them as texutres
+    - for client dma-bufs, import them as texutres or assign them to hw planes
+  - xserver additionally wanted to
+    - use EGL/GLES to accelerate 2D rendering
+- EGL integration
+  - `EGL_PLATFORM_GBM_KHR`
+    - a native window is a `gbm_surface`
+      - this is for apps, not for compositors
+    - a nativep pixmap is `gbm_bo`
+  - to import a client dma-buf to EGL,
+    - `gbm_bo_import` and then `eglCreateImage(EGL_NATIVE_PIXMAP_KHR)`
+    - this was before `EGL_EXT_image_dma_buf_import`
+- designed for compositors
+  - `gbm_bo_create` can only allocate RGBA bos in DRI implementation
+  - `gbm_bo_import` supports YUV formats on the other hand
+  - has use flags for
+    - scanout and cursor, to assign bos to hw planes
+    - gpu rendering, which is almost always set
+      - unless the compositor is sw-based
+    - linear, which was added for prime
+  - no use flags for
+    - cpu mapping, which is assumed
+    - gpu texturing, which is assumed by the gpu rendering flag?
+    - other hw ips such as codec, camera, sensor, etc.
+
 ## API
 
 - device functions
