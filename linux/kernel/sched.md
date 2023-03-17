@@ -90,3 +90,66 @@ Scheduler
   `try_to_wake_up`
 - `wake_up_interruptible` calls the callback function, which calls
   `try_to_wake_up`
+
+## man 7 sched
+
+- conceptually,
+  - the scheduler maintains a wait list of runnable tasks for each possible
+    `sched_priority`
+  - to determine which task to run next, it always picks the first task of the
+    first non-empty wait list that has the highest `sched_priority`
+- `sched_setscheduler` changes the policy and `sched_priority` of the
+  specified task
+  - real-time policies always have non-zero `sched_priority`
+    - use `sched_get_priority_max` and `sched_get_priority_min` to find the
+      valid range
+  - normal policies always have zero `sched_priority`
+  - the policy determines how a task is inserted or moved within its wait list
+- scheduling is preemptive
+  - if a task of higher `sched_priority` is ready to run, the current task is
+    preemptied and returned to the wait list it belongs to
+- `SCHED_FIFO` is a real-time policy
+  - if a task of this policy is preemptied (by another task that has higher
+    `sched_priority`), it is returned to the head of its wait list
+  - if a task of this policy becomes runnable, it is added to the end of its
+    wait list
+  - if the task calls `sched_yield`, it is moved to the end of its wait list
+  - a task of this policy runs until one of these conditions
+    - it is blocked by io
+    - it is preemptied by a task of higher `sched_priority`
+    - it calls `sched_yield`
+- `SCHED_RR` is a real-time policy
+  - a task of this policy is the same as a task of `SCHED_FIFO`, with one
+    exception/improvement: after running for a fixed time, it is moved to the
+    end of its wait list
+  - `sched_rr_get_interval` returns the fixed time limit
+    - `cat /proc/sys/kernel/sched_rr_timeslice_ms` returns `90`
+- `SCHED_OTHER` is a normal policy
+  - it is called `SCHED_NORMAL` in the kernel
+  - the task to run is based on the dynamic priority
+    - the dynamic priority of a task is calculated from the nice value and is
+      increased each time the task is ready to run but is not picked
+  - `nice -n VAL cmd` calls `setpriority(PRIO_PROCESS, 0, VAL)` and
+    `execve(cmd)`
+  - `setpriority` sets the priority of the specified entity
+    - `-20` is the highest
+    - `19` is the lowest
+    - `0` is the default
+    - negative numbers require root
+- `SCHED_BATCH` is a normal policy
+  - it is the same as `SCHED_OTHER`, except it is assumed to be cpu-intensive
+    and non-interactive
+  - I guess it is less likely to be scheduled and has a longer time slice once
+    scheduled
+- `SCHED_IDLE` is a normal policy
+  - it does not use the nice value
+  - lower priority than nice 19
+- RT throttling
+  - a task of a real-time policy can occupy a cpu forever if it does
+    `while (true);`
+  - `/proc/sys/kernel/sched_rt_period_us` is the length of a period
+    - it is 1 second by default
+  - `/proc/sys/kernel/sched_rt_runtime_us` is the length of cpu time all RT
+    tasks can use
+    - it is 0.95 second by default, meaning 5% of cpu time is reserved for
+      normal tasks
