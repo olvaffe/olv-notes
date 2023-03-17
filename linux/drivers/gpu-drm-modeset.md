@@ -338,3 +338,20 @@ DRM Modesetting
   - on flip signal, the driver calls `drm_crtc_send_vblank_event`
   - the driver can also make use of `drm_crtc_arm_vblank_event`, to send the
     event automatically on vblank signal
+
+## Modeset Fences
+
+- `drm_mode_atomic_ioctl` does
+  - `prepare_signaling`
+    - for each crtc, if flip event or `OUT_FENCE_PTR` is requested,
+      - `create_vblank_event` creates a `drm_pending_vblank_event`
+      - `drm_crtc_create_fence` creates a out fence for the modeset
+      - `drm_crtc_send_vblank_event` is called after flip to deliver the
+        vblank event and/or signal the out fence
+    - for each connector, if writeback is requested and a
+      `WRITEBACK_OUT_FENCE_PTR` is requested,
+      - `drm_writeback_get_out_fence` creates a out fence for the writeback
+      - `drm_writeback_signal_completion` is called after the writeback
+        completes to signal the out fence
+  - `drm_atomic_nonblocking_commit` or `drm_atomic_commit`
+  - `complete_signaling` returns the out fences as fds
