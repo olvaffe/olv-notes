@@ -235,3 +235,20 @@ DRM amdgpu
   - use `RADV_DEBUG=hang` to dumps gpu states to home dir
     - it works better with <https://gitlab.freedesktop.org/tomstdenis/umr>
       installed
+
+## DRM scheduler
+
+- `amdgpu_device_init_schedulers` is called from `amdgpu_device_ip_init` to
+  init schedulers
+  - this initializes per-ring `drm_gpu_scheduler`
+  - on a GFX9 APU, there are these rings
+    - 1x `gfx`, initialized by `gfx_v9_0_sw_init`
+    - 8x `comp_x.y.z`, initialized by `gfx_v9_0_compute_ring_init`
+    - 1x `sdma0`, initialized by `sdma_v4_0_sw_init` I guess
+    - 1x `vcn_dec` and 2x `vcn_encX`, initialized by `vcn_v2_0_sw_init` I guess
+    - 1x `jpeg_dec`, initialized by `jpeg_v2_0_sw_init`
+      - on older kernel this is `vcn_jpeg` and is a part of `vcn_v2_0_sw_init`
+- `drm_sched_init` initializes `drm_gpu_scheduler`
+  - it starts a kthread running `drm_sched_main`
+  - the kthread calls `sched_set_fifo_low` to become `SCHED_FIFO` with low
+    static rt priority

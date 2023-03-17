@@ -59,6 +59,10 @@ Kernel and IRQ
 - the `irqaction` is added to `irq_desc`
   - when hw interrupt fires, `handle_irq_event` calls all actions of the
     `irq_desc`
+- `request_threaded_irq`
+  - `__setup_irq` calls `setup_irq_thread` to create a kthread `irq/%d-%s`
+  - the thread executes `irq_thread` which calls `sched_set_fifo`
+    - this makes the thread `SCHED_FIFO` with `sched_priority` of 50
 
 ## Preempt count
 
