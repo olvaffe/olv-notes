@@ -100,13 +100,19 @@ GBM
     - sometimes aux bo is required to be separated
   - ycbcr and modifier don't combine well
 - `gbm_bo_create`
+  - `gbm_format_to_dri_format` maps fourcc to dri format
+    - it only maps rgba formats and has no ycbcr support
   - `__DRIimageExtension::createImage` to create a `__DRIimage`
+    - `dri2_create_image` uses `dri2_get_mapping_by_format` to map the dri
+      format which does not support ycbcr either
   - `pipe_screen::resource_create` to create a `pipe_resource`
+    - while `resource_create` can be used to allocate ycbcr resources, gbm
+      does not suppor them
     - for ycbcr, it might or might not be chained depending on the driver
-    - chained or not, all `pipe_resource` points to the same bo
     - that is format planes; modifiers might require memory planes
       - when they do, each `pipe_resource` in the chain might have a second or
       	even third bo for the metadata
+        - which drivers?
       - drivers tend to limit modifiers to non-planar format to avoid
       	plane explosion
 - `gbm_bo_create_with_modifiers`
