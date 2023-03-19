@@ -48,3 +48,28 @@ Codecs
   - encode and decode
   - supported drivers
     - proprietary nvidia
+
+## VA-API: Intel
+
+- public symbols are exported by `MEDIAAPI_EXPORT`
+  - `VA_DRV_INIT_FUC_NAME` expands to the driver entrypoint
+  - the other public symbols extensions specific to intel
+- driver initialization
+  - `DdiMedia__Initialize` is called from the driver entrypoint
+  - `DdiMedia_InitMediaContext` sets `apoDdiEnabled`
+    - this seems to be a pretty new feature
+  - `DdiMedia_LoadFuncion` or `MediaLibvaInterface::LoadFunction` initializes
+    the vtable depending on `apoDdiEnabled`
+- `mos_bufmgr_gem_init` inits a `mos_bufmgr` over DRM fd
+  - `bo_alloc` points to `mos_gem_bo_alloc`
+  - `bo_alloc_for_render` points to `mos_gem_bo_alloc_for_render`
+  - `bo_alloc_userptr` points to `mos_gem_bo_alloc_userptr`
+  - `bo_alloc_tiled` points to `mos_gem_bo_alloc_tiled`
+  - public methods
+    - `mos_bo_alloc`
+    - `mos_bo_alloc_for_render`
+    - `mos_bo_alloc_userptr`
+    - `mos_bo_alloc_tiled`
+    - `mos_gem_bo_alloc_internal`
+    - `mos_bo_gem_create_from_prime`
+    - `mos_bo_gem_export_to_prime`
