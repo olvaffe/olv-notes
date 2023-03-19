@@ -341,6 +341,8 @@ AMD
     - Asynchronous Compute Engines
   - RB+
     - reder backend plus (GFX10.3 or GFX9 APU or GFX8 stoneyridge)
+  - SE
+    - shader engine
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
@@ -380,6 +382,57 @@ AMD
   - for GFX9, `Gfx9HwlInit`
   - for GFX10, `Gfx10HwlInit`
   - for GFX11, `Gfx11HwlInit`
+  - `m_se` is the number of shader engines (pipelines)
+  - `m_rbPerSe` is the number of render backends per shader engine
+  - `m_pipes`
+  - `m_banks`
+- `AddrSwizzleMode` enumerates all swizzle modes for GFX9+
+  - they can be classifed by block types
+    - `AddrBlockLinear` is linear
+    - `AddrBlockMicro` uses 256B block
+    - `AddrBlockThin4KB` uses thin 4KB block
+    - `AddrBlockThick4KB` uses thick 4KB block
+    - `AddrBlockThin64KB` thin 64KB block
+    - `AddrBlockThick64KB` uses thick 64KB block
+    - `AddrBlockThinVar` uses thin var block
+    - `AddrBlockThickVar` uses thick var block
+  - they can be classifed by swizzle modes
+    - `sw_Z` is for z/s/fmask
+    - `sw_S` is a standard swizzle defined by MS (microsoft?)
+    - `sw_D` is compatible with display
+    - `sw_R` is compatible with display rotation on GFX9 and is for render
+      targers on GFX9+
+- `Addr2GetPreferredSurfaceSetting` calls
+  `V2::Lib::Addr2GetPreferredSurfaceSetting`
+  - this is called to guess the optimal tiling
+  - for a plain `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `flags` has `color`, `texture`, and `opt4space`
+    - `resourceType` is `ADDR_RSRC_TEX_2D`
+    - `format` is `ADDR_FMT_32`
+      - it is derived from cpp
+    - `resourceLoction` is `ADDR_RSRC_LOC_INVIS`
+      - invisible gpu heap
+      - it seems unused and mesa always use it
+    - `forbiddenBlock` has `micro`
+      - this disallows micro (256b) blocks
+      - the other blocks are linear or macro (4kb, 64kb, 256kb, etc.)
+    - `numSamples` and `numFrags` are both 1
+      - AMD has a tech called EQAA that allows the storage samples
+        (`numFrags`) to be less than the rasterization samples (`numSamples`)
+      - EQAA can be enabled with apps knowing about it
+      - in radv, `numFrags` is always equal to `numSamples`
+  - on GFX9, it calls `Gfx9Lib::HwlGetPreferredSurfaceSetting`
+    - `ADDR2_SWMODE_SET` is mapped from `ADDR2_BLOCK_SET` 
+      - `Gfx9LinearSwModeMask` from `linear`
+      - `Gfx9Blk256BSwModeMask` from `micro`
+      - `Gfx9Blk4KBSwModeMask` from `macroThin4KB`
+      - `Gfx9Blk64KBSwModeMask` from `macroThin64KB`
+      - it looks like thin is for any dim but thick is only for 3D
+    - the allowed swizzle mask is masked by `Gfx9Rsrc2dSwModeMask`
+      - `Gfx9Rsrc2dSwModeMask` should be the valid swizzles for 2d
+    - if there are more than 1 block types allowed, pick the largest block
+      type (e.g., 64KB on GFX9)
+    - if there are more than 2 swizzle types allowed, prefer D over S over Z
 - `AddrComputeSurfaceInfo` calls `V1::Lib::ComputeSurfaceInfo`
   - on GFX8, it calls `CiLib::HwlComputeSurfaceInfo`
     - which calls `SiLib::HwlComputeSurfaceInfo`
@@ -390,3 +443,19 @@ AMD
   - on GFX9, it calls `Gfx9Lib::HwlComputeSurfaceInfoLinear` or
     `Gfx9Lib::HwlComputeSurfaceInfoTiled`
     - it requires 256-byte alignment
+  - for a plain `VK_FORMAT_B8G8R8A8_UNORM`,
+    - note that `Addr2GetPreferredSurfaceSetting` should have been called to
+      determine the swizzle mode
+    - `ComputeBlockDimensionForSurf` returns the swizzle block dimension
+      - for example, for 64KB block types and 32cpp formats, it picks 128x128
+        for the block size (`128*128*4` is 64KB)
+    - `pOut`
+      - `blockWidth`, `blockHeight`, and `blockSlices` are the dimension of
+        the swizzle block
+      - `pitch` is in pixels and is aligned to at least `blockWidth`
+      - `height` is in pixels and is aligned to `blockHeight`
+      - `pMipInfo` is for the entire mipmap
+      - `surfSize` is the size of the surface (entire mipmap0
+      - `baseAlign` is the alignment of the memory base addr
+        - if `ADDR_SW_*_X`, where X stands for XOR, the alignment is the
+          swizzle block size

@@ -833,3 +833,18 @@ Vulkan
         treat the stored sample as the midpoint of the 2x2 samples
       - we can store the top-left sample of each 2x2 samples, in this case we
         want to treat the stored sample as co-sited with the top-left Y aample
+
+## Sparse Resources
+
+- sparse binding
+  - create the resource with `VK_IMAGE_CREATE_SPARSE_BINDING_BIT` or
+    `VK_BUFFER_CREATE_SPARSE_BINDING_BIT`
+  - use `vkQueueBindSparse` to bind memories
+  - a resource is backed 1 or more memories
+  - when a resource is active, it must be fully resident
+  - when a resource is idle, memories can be unbound/rebound/moved
+- sparse residency
+  - create the resource with `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT` or
+    `VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT`
+  - when a resource is active, it can be partially resident
+  - mip tail is the tail levels of a mipmap that cannot be partially resident
