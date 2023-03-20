@@ -73,3 +73,28 @@ Codecs
     - `mos_gem_bo_alloc_internal`
     - `mos_bo_gem_create_from_prime`
     - `mos_bo_gem_export_to_prime`
+- surface creation
+  - `vaCreateSurfaces`
+  - `DdiMedia_CreateSurfaces2`
+  - `DdiMedia_CreateRenderTarget`
+  - `DdiMediaUtil_CreateSurface`
+  - `DdiMediaUtil_AllocateSurface`
+    - `mos_bo_gem_create_from_prime`
+    - `mos_bo_alloc_userptr`
+    - `mos_bo_alloc`
+    - `mos_bo_alloc_tiled`
+- surface export
+  - `vaExportSurfaceHandle`
+  - `DdiMedia_ExportSurfaceHandle`
+  - `mos_bo_gem_export_to_prime`
+- image creation
+  - `vaCreateImage`
+  - `DdiMedia_CreateImage`
+  - `DdiMediaUtil_CreateBuffer`
+  - `DdiMediaUtil_AllocateBuffer`
+  - `mos_bo_alloc`
+- buffer creation
+  - `vaCreateBuffer`
+  - `DdiMedia_CreateBuffer`
+  - `DdiDecode_CreateBuffer`, `DdiEncode_CreateBuffer`, or
+    `DdiVp_CreateBuffer`
