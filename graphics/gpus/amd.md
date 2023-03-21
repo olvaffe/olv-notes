@@ -343,6 +343,8 @@ AMD
     - reder backend plus (GFX10.3 or GFX9 APU or GFX8 stoneyridge)
   - SE
     - shader engine
+  - PRT
+    - partially resident texture
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
@@ -459,3 +461,25 @@ AMD
       - `baseAlign` is the alignment of the memory base addr
         - if `ADDR_SW_*_X`, where X stands for XOR, the alignment is the
           swizzle block size
+- tilings
+  - gfx8- uses `AddrTileMode` and gfx9+ uses `AddrSwizzleMode`
+  - there is linear
+    - `ADDR_TM_LINEAR_ALIGNED` on gfx8- or `ADDR_SW_LINEAR` on gfx9+
+  - there are micro tiles
+    - such as `ADDR_TM_1D_TILED_THIN1` on gfx8- or `ADDR_SW_256B_S` on gfx9+
+    - each micro tile is 256 bytes
+    - the micro tile size is
+      - 8x8 on gfx8-
+      - dynamic on gfx9+
+    - there are also micro tile modes
+      - S is standard
+      - D is displayable
+      - R is rotated (gfx9) or renderable (gfx10+)
+      - Z is mainly for depth/stencil/fmask
+    - there are also variations
+      - X is xor
+      - T is prt (partially resident texture)
+  - there are macro tiles
+    - such as `ADDR_TM_2D_TILED_THIN1` on gfx8- or `ADDR_SW_4KB_S` on gfx9+
+    - each macro tile is 4KB, 64KB, 256KB, or variable
+    - within each macro tile, there are micro tiles that are 256 bytes
