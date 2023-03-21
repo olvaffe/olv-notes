@@ -139,9 +139,13 @@ Mesa RADV
       - only one of `AddrSurfInfoIn.flags.depth` and
         `AddrSurfInfoIn.flags.stencil` is set in each call
     - `AddrSurfInfoIn.flags.noStencil` is set when there is no stencil
-      - on gfx8, depth and/or stencil can be TC-incompatible
-      - when `noStencil` is set, the depth is TC-compatible
-      - if the stencil is TC-incompatible, `stencil_adjusted ` is set
+      - on gfx8, when there are both depth and stencil, the stencil can be
+        TC-incompatible
+      - to decrease the chance of TC-incompatible stencil, addrlib pads the
+        depth at the cost of wasted memory
+        - the stencil can still be incompatible.  When that happens,
+          `stencil_adjusted ` is set
+      - `noStencil` disables the padding
 
 ## Image Layout
 
