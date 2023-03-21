@@ -276,3 +276,22 @@ Mesa RADV
   states
   - e.g., if `RADV_CMD_DIRTY_DYNAMIC_DEPTH_BIAS_ENABLE` (or some other dirty
     bits) is set, `radv_emit_culling` sets `R_028814_PA_SU_SC_MODE_CNTL` reg
+
+## Timestamps
+
+- `timestampValidBits` is 64
+- `timestampPeriod` is `1000000 / clock_crystal_freq`
+  - `clock_crystal_freq` is from `drm_amdgpu_info_device::gpu_counter_freq` in
+    khz
+  - 100mhz on renoir, 25mhz on raven, 48mhz on stoney
+- timestamp is queried with `DRM_AMDGPU_INFO(AMDGPU_INFO_TIMESTAMP)`
+  - `gfx_v8_0_get_gpu_clock_counter`
+    - writes `mmRLC_CAPTURE_GPU_CLOCK_COUNT`
+    - reads `mmRLC_GPU_CLOCK_COUNT_LSB` and `mmRLC_GPU_CLOCK_COUNT_MSB`
+  - `gfx_v9_0_get_gpu_clock_counter`
+    - if `GC_HWIP` is 9.3.0,
+      - reads `mmGOLDEN_TSC_COUNT_LOWER_Renoir` and
+        `mmGOLDEN_TSC_COUNT_UPPER_Renoir`
+    - if `GC_HWIP` is 9.0.1,
+      - writes `mmRLC_CAPTURE_GPU_CLOCK_COUNT`
+      - reads `mmRLC_GPU_CLOCK_COUNT_LSB` and `mmRLC_GPU_CLOCK_COUNT_MSB`
