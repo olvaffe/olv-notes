@@ -138,14 +138,42 @@ Mesa RADV
       - this is similiar to gfx9+
       - only one of `AddrSurfInfoIn.flags.depth` and
         `AddrSurfInfoIn.flags.stencil` is set in each call
-    - `AddrSurfInfoIn.flags.noStencil` is set when there is no stencil
-      - on gfx8, when there are both depth and stencil, the stencil can be
-        TC-incompatible
-      - to decrease the chance of TC-incompatible stencil, addrlib pads the
-        depth at the cost of wasted memory
-        - the stencil can still be incompatible.  When that happens,
-          `stencil_adjusted ` is set
-      - `noStencil` disables the padding
+    - there are two special flags for depth+stencil before gfx9
+      - before gfx9, DB uses the same pitch and the same tile mode for
+        depth+stencil
+      - we need two flags to make depth+stencil TC-compatible, where depth and
+        stencil use separate descriptors
+        - `noStencil` disables (when set) or enables (when unset) depth pitch
+          padding
+          - without the padding, DB uses the unpadded pitch for both depth and
+            stencil and causes the stencil to be TC-incompatible
+          - with the padding, DB uses the padded pitch for both depth and
+            stencil and causes the depth to be TC-incompatible if mipmapped
+        - `matchStencilTileCfg` potentially downgrades the depth tile mode
+          such that it matches the stencil's tile mode
+          - this is known to be required only when the depth is mipmapped or
+            when `CHIP_STONEY`
+      - when depth only, we want to set `noStencil` and unset
+        `matchStencilTileCfg`
+        - `noStencil` avoids unnecessary depth pitch padding that wastes
+          memory
+        - no `matchStencilTileCfg` avoids picking a suboptimal tile mode for
+          the depth
+      - when depth+stencil without mipmapping, we want to unset `noStencil`
+        and unset `matchStencilTileCfg`
+        - no `noStencil` pads the depth pitch to match stencil's
+          - there is no mipmapping so TC is still happy
+        - no `matchStencilTileCfg` picks an optimal depth tile mode, which is
+          known to match stencil's when not mipmapping
+        - except on `CHIP_STONEY`, we still unset `noStencil` but we set
+          `matchStencilTileCfg`
+          - `CHIP_STONEY` requires `matchStencilTileCfg` to pick matching
+            tile mode
+      - when depth+stencil with mipmapping, we want to set `noStencil`
+        and set `matchStencilTileCfg`
+        - with both set, we make the depth TC-compatible and the stencil
+          potentially TC-incompatible
+        - if the stencil is indeed TC-incompatible, `stencil_adjusted` is set
 
 ## Image Layout
 
