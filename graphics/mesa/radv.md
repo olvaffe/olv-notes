@@ -174,6 +174,42 @@ Mesa RADV
         - with both set, we make the depth TC-compatible and the stencil
           potentially TC-incompatible
         - if the stencil is indeed TC-incompatible, `stencil_adjusted` is set
+- `gfx6_compute_surface`
+  - `tileMode` is determined first
+  - `tileType` is determined next
+  - `gfx6_compute_level` is called on each level
+    - for the main surface, `AddrComputeSurfaceInfo` is called
+      - `surf->surf_size` is increased for each level
+      - slices of a level are packed together
+    - if dcc, `AddrComputeDccInfo` is called
+      - `surf->meta_size` is increased for each level if `subLvlCompressible`
+    - if htile, `AddrComputeHtileInfo` is called
+      - `surf->meta_size` is set
+  - if stencil, `gfx6_compute_level` is called on each level
+    - if d+s, stencil is completey separated from depth
+  - if fmask, `AddrComputeFmaskInfo` is called
+    - `surf->fmask_size` is set
+  - if dcc and mipmapped, `surf->meta_size` is overridden
+    - it looks like each 1 byte in dcc covers a 256-byte microtile
+  - if htile and mipmapped, `surf->meta_size` is overridden
+    - it looks like each dword in htile covers a 8x8 tile
+  - if cmask, `ac_compute_cmask` is called
+    - `surf->cmask_size` is set
+- `gfx9_compute_surface`
+  - `swizzleMode` is determined
+  - `gfx9_compute_miptree` is called
+    - for the main surface, `Addr2ComputeSurfaceInfo` is called
+      - `surf->surf_size` is set
+    - if htile, `Addr2ComputeHtileInfo` is called
+      - `surf->meta_size` is set
+    - if dcc, `Addr2ComputeDccInfo` is called
+      - `surf->meta_size` is set
+    - if fmask, `Addr2ComputeFmaskInfo` is called
+      - `surf->fmask_size` is set
+    - if cmask, `Addr2ComputeCmaskInfo` is called
+      - `surf->cmask_size` is set
+  - if stencil, `gfx9_compute_miptree` is called again
+    - if d+s, stencil is completey separated from depth
 
 ## Image Layout
 

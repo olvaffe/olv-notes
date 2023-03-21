@@ -472,10 +472,10 @@ AMD
       - 8x8 on gfx8-
       - dynamic on gfx9+
     - there are also micro tile modes
-      - S is standard
-      - D is displayable
-      - R is rotated (gfx9) or renderable (gfx10+)
-      - Z is mainly for depth/stencil/fmask
+      - S is standard, or `ADDR_NON_DISPLAYABLE` on gfx8-
+      - D is displayable, or `ADDR_DISPLAYABLE` on gfx8-
+      - R is rotated (gfx9) or renderable (gfx10+), or `ADDR_ROTATED` on gfx8-
+      - Z is for depth/stencil/fmask, or `ADDR_DEPTH_SAMPLE_ORDER` on gfx8-
     - there are also variations
       - X is xor
       - T is prt (partially resident texture)
