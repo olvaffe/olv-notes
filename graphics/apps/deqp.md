@@ -331,3 +331,37 @@ dEQP
   - for each pixel,
     - if outside of the draw rectangle, it should be the clear value `5`
     - if inside of the draw rectangle, it should be `1`
+
+## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.calibrated.*`
+
+- properties and features
+  - `VkQueueFamilyProperties::timestampValidBits` gives the timestamp bits of
+    a queue family
+  - `VkPhysicalDeviceLimits::timestampPeriod` gives the hw clock period in ns
+    - if 1000ns, the hw clock freq is 1mhz
+  - `vkGetPhysicalDeviceCalibrateableTimeDomainsEXT` returns the available
+    domains
+    - radv supports `VK_TIME_DOMAIN_DEVICE_EXT`,
+      `VK_TIME_DOMAIN_CLOCK_MONOTONIC_EXT`, and
+      `VK_TIME_DOMAIN_CLOCK_MONOTONIC_RAW_EXT`
+- test ctor
+  - `vkCmdWriteTimestamp` to write the timestamp of
+    `VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT`
+- `dev_domain_test`
+  - `vkGetCalibratedTimestampsEXT` to get the before timestamp
+  - submit the `vkCmdWriteTimestamp`
+  - `vkGetCalibratedTimestampsEXT` to get the after timestamp
+  - the 3 timestamps must be in order
+- `host_domain_test`
+  - `clock_gettime` to get the before timestamp
+  - `vkGetCalibratedTimestampsEXT` to get the before timestamp in the same
+    domain
+  - `clock_gettime` to get the after timestamp
+  - the 3 timestamps must be in order
+- `calibration_test`
+  - `vkGetCalibratedTimestampsEXT` to get the before timestamp for both the
+    dev and host domains
+  - sleep 200ms
+  - `vkGetCalibratedTimestampsEXT` to get the after timestamp for both domains
+  - in the dev domain, before and after should be ~200ms
+  - in the host domain, before and after should be ~200ms
