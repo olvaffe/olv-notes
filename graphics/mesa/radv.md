@@ -125,6 +125,23 @@ Mesa RADV
   - when RETILE is true, there are two DCC surfaces
     - one is unaligned (but displayable)
     - one is aligned
+- depth/stencil
+  - `RADEON_SURF_ZBUFFER` is set when there is depth
+  - `RADEON_SURF_SBUFFER` is set when there is stencil
+  - `gfx9_compute_surface`
+    - `gfx9_compute_miptree` is called for depth and stencil separately
+      - called twice if both surfaces exist
+      - only one of `AddrSurfInfoIn.flags.depth` and
+        `AddrSurfInfoIn.flags.stencil` is set in each call
+  - `gfx6_compute_surface`
+    - `gfx6_compute_level` is called for depth and stencil separately
+      - this is similiar to gfx9+
+      - only one of `AddrSurfInfoIn.flags.depth` and
+        `AddrSurfInfoIn.flags.stencil` is set in each call
+    - `AddrSurfInfoIn.flags.noStencil` is set when there is no stencil
+      - on gfx8, depth and/or stencil can be TC-incompatible
+      - when `noStencil` is set, the depth is TC-compatible
+      - if the stencil is TC-incompatible, `stencil_adjusted ` is set
 
 ## Image Layout
 
