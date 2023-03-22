@@ -1,6 +1,31 @@
 Kernel sys
 ==========
 
+## `uname`
+
+- `init_uts_ns`
+  - `sysname` is `Linux`
+  - `nodename` is `(none)`
+    - it can be customized by `CONFIG_DEFAULT_HOSTNAME` or kernel cmdline
+  - `release` is something like `6.2.2+`
+    - it is generated at `include/generated/utsrelease.h` and can be
+      customized
+  - `version` is something like `#34 SMP PREEMPT_DYNAMIC Wed Mar  8 15:24:05 PST 2023`
+    - it is generated at `include/generated/utsversion.h` and can be
+      customized
+  - `machine` is something like `x86_64`
+    - it is defined by arch
+  - `domainname` is `(none)`
+- `uname` copies `utsname` to userspace buf
+  - `gethostname` calls `utsname` and copies only `nodename` to userspace buf
+    - it is not used by userspace anymore
+- `sethostname` calls `utsname` and updates `nodename`
+  - the length cannot exceed `__NEW_UTS_LEN` (64)
+  - on boot, userspace parses `/etc/hostname` and calls `sethostname`
+  - systemd recommends to not include dots
+- `setdomainname` calls `utsname` and updates `domainname`
+  - this is NIS domain name and is no longer relevant
+
 ## IDs of a process
 
 - Example
