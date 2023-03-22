@@ -174,6 +174,32 @@ Mesa RADV
         - with both set, we make the depth TC-compatible and the stencil
           potentially TC-incompatible
         - if the stencil is indeed TC-incompatible, `stencil_adjusted` is set
+      - for example, on `CHIP_STONEY`, a plain 8x16 `VK_FORMAT_D16_UNORM_S8_UINT` has
+        - `ADDR_COMPUTE_SURFACE_INFO_INPUT`
+          - `tileMode` is `ADDR_TM_2D_TILED_THIN1` (that is, macro tiled)
+          - `tileType` is `ADDR_DEPTH_SAMPLE_ORDER` (that is, Z tiled)
+          - `matchStencilTileCfg` is set
+          - `noStencil` is set
+            - This is a bug.  It should be set iff mipmapping.
+        - `OptimizeTileMode` forces `ADDR_TM_1D_TILED_THIN1` (micro tiled)
+          because the surface is too small
+        - `HwlGetSizeAdjustmentMicroTiled`
+          - on gfx8, this function padds pitch such that slice size is aligned
+            to `baseAlign` which is 256 (`m_pipeInterleaveBytes`)
+          - in our case, the depth is `8*16*2=256` bytes and the stencil will
+            be `8*16*1=128` bytes
+          - if `noStencil` is unset, because stencil pitch will be padded to
+            16, the depth pitch is also padded to 16
+            - note that pitch is in pixels and `baseAlign` is in bytes
+        - IOW,
+          - if `noStencil` is set, depth pitch is 8 and stencil pitch is 16
+            - DB `S_028058_PITCH_TILE_MAX` will be 8, and DB assumes stencil
+              is also 8
+            - stencil texture descriptor `S_008F20_PITCH` will be 16 and
+              stencil sampling will break
+          - if `noStencil` is unset, depth pitch is 16 and stencil pitch is 16
+            - DB `S_028058_PITCH_TILE_MAX` will be 16
+            - depth sampling will break if mipmapping
 - `gfx6_compute_surface`
   - `tileMode` is determined first
   - `tileType` is determined next
