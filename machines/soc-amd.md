@@ -17,6 +17,34 @@ AMD CPUs
 
 ## Product Lines
 
+- 2023 Numbering System
+  - 7640U
+  - first number is model year
+    - 7 is 2023
+    - 8 is 2024
+  - second number is market segment
+    - 1 is athlon silver
+    - 2 is athlon gold
+    - 3/4 are ryzen 3
+    - 5/6 are ryzen 5
+    - 7 is ryzen 7
+    - 8 is ryzen 7/9
+    - 9 is ryzen 9
+  - third number is architecture
+    - 1 is zen 1/1+
+    - 2 is zen 2
+    - 3 is zen 3/3+
+    - 4 is zen 4
+    - 5 is zen 5
+  - fourth number is feature isolation
+    - 0 is lower end within the segment
+    - 5 is higher end within the segment
+  - the letter is form factor / TDP
+    - HX is 55W+ (extreme gaming/creator)
+    - HS is 35W-45W (gaming/creator)
+    - U is 18W-28W (thin and light)
+    - C is 18W-28W (chromebook)
+    - e is 9W (fanless variant of U)
 - Ryzen 7 PRO 5850U 
 - product family (Ryzen 7)
   - 3 entry level
@@ -111,10 +139,13 @@ AMD CPUs
   - RDNA2 GPU
   - desktop/mobile: Rembrandt
 - Ryzen 7000 series APUs
-  - 2022
+  - 2023
   - Zen 4 uArch (5nm)
-  - RDNA2 GPU
+  - RDNA2/3 GPU
+  - performance: Dragon Range
   - desktop/mobile: Phoenix
+  - entry: Mendocino
+    - Zen 2 CPU and RDNA2 GPU
 - Ryzen 8000 series APUs?
   - 2025?
   - Zen 5 uArch
