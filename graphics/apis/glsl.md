@@ -183,6 +183,27 @@ GLSL
 
 ## Chapter 7. Built-In Variables
 
+- compute
+  - `in uvec3 gl_NumWorkGroups;`
+    - the numbers of work groups in each dimension, as specified by
+      `vkCmdDispatch`
+  - `const uvec3 gl_WorkGroupSize;`
+    - the sizes of a work group in each dimension, as specified by
+      `local_size_[xyz]`
+  - `in uvec3 gl_WorkGroupID;`
+    - the work group of the current invocation
+    - range is `[0, gl_NumWorkGroups)` for each dimension
+  - `in uvec3 gl_LocalInvocationID;`
+    - the work item in the work group of the current invocation
+    - range is `[0, gl_WorkGroupSize)` for each dimension
+  - `in uvec3 gl_GlobalInvocationID;`
+    - this is `gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID` which
+      uniquely identify the work item of the current invocation
+  - `in uint gl_LocalInvocationIndex;`
+    - this is `gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+      gl_LocalInvocationID.y * gl_WorkGroupSize.x + gl_LocalInvocationID.x`
+      which is the 1D representation of `gl_LocalInvocationID`
+
 ## Chapter 8. Built-In Functions
 
 - to sample a texture-compined sampler, `texture()`

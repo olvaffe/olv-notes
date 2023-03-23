@@ -365,3 +365,47 @@ dEQP
   - `vkGetCalibratedTimestampsEXT` to get the after timestamp for both domains
   - in the dev domain, before and after should be ~200ms
   - in the host domain, before and after should be ~200ms
+
+## Test Case: `dEQP-VK.glsl.builtin.precision.fract.highp.*`
+
+- `addBuiltinPrecisionTests` adds all test cases
+  - `DEFINE_DERIVED_FLOAT1(Fract, fract, x, x - app<Floor32Bit>(x))` defines
+    `class Fract : public DerivedFunc`
+  - `addScalarFactory<Fract>` adds a `GenFuncCaseFactory` factory
+  - `createFuncGroup` adds the test cases for the factory
+    - the shader type is `glu::SHADERTYPE_COMPUTE`
+  - `GenFuncCaseFactory::createCase` calls `createFuncCase` to create
+    `FuncCase`
+- `FuncCase::buildTest` calls `PrecisionCase::testStatement` to initialize
+  `ShaderSpec`
+  - the statement is `out0 = fract(in0);`
+- `FuncCase::createInstance` calls `BuiltinPrecisionCaseTestInstance` to
+  create a `TestInstance`
+  - `vkt::shaderexecutor::createExecutor` creates a `ComputeShaderExecutor`
+- `PrecisionCase::initPrograms` generates the GLSL compute code according to
+  `ShaderSpec`
+
+    precision highp float;
+    layout(local_size_x = 1) in;
+    struct Inputs { highp float in0; };
+    struct Outputs { highp float out0; };
+    layout(set = 0, binding = 0, std430) buffer InBuffer { Inputs inputs[]; };
+    layout(set = 0, binding = 1, std430) buffer OutBuffer { Outputs outputs[]; };
+    void main (void)
+    {
+            uint invocationNdx = gl_NumWorkGroups.x*gl_NumWorkGroups.y*gl_WorkGroupID.z
+                               + gl_NumWorkGroups.x*gl_WorkGroupID.y + gl_WorkGroupID.x;
+            float in0 = float(inputs[invocationNdx].in0);
+            float out0;
+            out0 = fract(in0);
+            outputs[invocationNdx].out0 = out0;
+    }
+- `BuiltinPrecisionCaseTestInstance::iterate` executes the test
+  - it prepares inputs and outputs
+  - it calls `ShaderExecutor::execute` to execute the test on the gpu
+  - it calls `Statement::execute` to execute the test on the cpu
+    - that in turn calls `Expr::evaluate`
+    - the expression is `x - app<Floor32Bit>(x)`
+    - `operator-` applies `Sub` on the two operands
+    - `Sub::doApply` calls `TCU_SET_INTERVAL_BOUNDS` to calculate the interval
+      - I am seeing bugs on some versions of clang with `-O2`
