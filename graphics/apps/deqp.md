@@ -409,3 +409,19 @@ dEQP
     - `operator-` applies `Sub` on the two operands
     - `Sub::doApply` calls `TCU_SET_INTERVAL_BOUNDS` to calculate the interval
       - I am seeing bugs on some versions of clang with `-O2`
+
+## Test Case: `dEQP-VK.api.external.fence.sync_fd.export_multiple_times_temporary`
+
+- `testFenceMultipleExports`
+  - `vkCreateDevice`
+  - `vkCreateFence` with `VK_EXTERNAL_FENCE_HANDLE_TYPE_OPAQUE_FD_BIT`
+- it then loops for `exportCount` (1024) times
+  - `submitAtomicCalculationsAndGetFenceNative` does everything
+    - create a cmd pool, cmd buf, event, buffer, shader, pipeline, descriptor,
+      etc.
+  - `tuneWorkSizeYAndPrepareCommandBuffer` records a compute dispatch with the
+    right workgroup count
+    - it picks a workgroup count that takes the gpu 9ms to execute
+    - it then records the same command again
+  - submit and get the sync fd
+  - wait for queue idle
