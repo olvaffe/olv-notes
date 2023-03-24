@@ -121,9 +121,9 @@ Vulkan
       that creates another object
       - they can be destroyed after the create command returns, without
         worrying about dangling pointers
-      - VkShaderModule and vkCreate*Pipeline
-      - VkPipelineCache and vkCreate*Pipeline
-      - VkRenderPass and vkCreate*Pipeline
+      - VkShaderModule and `vkCreate*Pipeline`
+      - VkPipelineCache and `vkCreate*Pipeline`
+      - VkRenderPass and `vkCreate*Pipeline`
       - VkRenderPass and vkCreateFramebuffer
       - VkDescriptorSetLayout and vkCreatePipelineLayout
         - not true for some impls
@@ -680,6 +680,11 @@ Vulkan
   - layout transition makes sure the format metadata is resolved to the format
     data for the destination operation
   - tiling specifies whether the format data is tiled or not
+  - Image layout is per-image subresource.  Separate image subresources of the
+    same image can be in different layouts at the same time, with the
+    exception that depth and stencil aspects of a given image subresource can
+    only be in different layouts if the `separateDepthStencilLayouts` feature
+    is enabled.
 - DRM modifiers
   - `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT` mixes tiling and layout
     together.  Format data and format metadata reside on different memory
