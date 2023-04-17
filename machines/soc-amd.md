@@ -9,15 +9,38 @@ AMD CPUs
 - Excavator   - 2015 - 28nm
 - Zen         - 2017 - 14nm
 - Zen+        - 2018 - 12nm
-- Zen 2       - 2019 - 7nm
-- Zen 3       - 2020 - 7nm
-- Zen 3+      - 2022 - 6nm (APU only)
-- Zen 4       - 2022 - 5nm
-- Zen 5       - 2024 - 3nm??
+- Zen 2
+  - 2019
+  - 7nm
+  - desktop: matisse, renoir
+  - mobile: renoir, lucienne, mendocino
+  - server: rome
+- Zen 3
+  - 2020
+  - 7nm
+  - desktop: vermeer, cezanne, chagall
+  - mobile: cezanne, barcelo
+  - server: milan
+- Zen 3+ (APU only)
+  - 2022
+  - 6nm
+  - mobile: rembrandt
+- Zen 4
+  - 2022
+  - 5nm
+  - desktop: raphael
+  - mobile: phoenix, dragon range
+  - server: genoa
+- Zen 5?
+  - 2024
+  - 3nm
+  - desktop: granite ridge
+  - mobile: strix point
+  - server: turin
 
 ## Product Lines
 
-- 2023 Numbering System
+- 2023 Mobile Numbering System
   - 7640U
   - first number is model year
     - 7 is 2023
@@ -46,23 +69,23 @@ AMD CPUs
     - C is 18W-28W (chromebook)
     - e is 9W (fanless variant of U)
 - Ryzen 7 PRO 5850U 
-- product family (Ryzen 7)
-  - 3 entry level
-  - 5 mid-range
-  - 7 high end
-  - 9 ehthusiast
-- modifier (PRO)
-  - PRO business
-  - (none) consumer
-- generation (5)
-- perfomrance level (8)
-- model (50)
-- product line (U)
-  - U ultra-thin mobile (TDP 15W)
-  - H high-performance slim mobile (TDP 35W)
-  - H high-performance mobile (TDP 45W)
-  - GE energy-efficient deskop (TDP 35W)
-  - G deskop (TDP 65W)
+  - product family (Ryzen 7)
+    - 3 entry level
+    - 5 mid-range
+    - 7 high end
+    - 9 ehthusiast
+  - modifier (PRO)
+    - PRO business
+    - (none) consumer
+  - generation (5)
+  - perfomrance level (8)
+  - model (50)
+  - product line (U)
+    - U ultra-thin mobile (TDP 15W)
+    - H high-performance slim mobile (TDP 35W)
+    - H high-performance mobile (TDP 45W)
+    - GE energy-efficient deskop (TDP 35W)
+    - G deskop (TDP 65W)
 
 ## CPUs
 
@@ -98,6 +121,7 @@ AMD CPUs
   - 2022
   - Zen 4 uArch
   - Raphael
+    - there is an RDNA2 2CU GPU which is mostly for display only
 - Ryzen 8000 series?
   - 2024?
   - Zen 5 uArch
@@ -143,7 +167,11 @@ AMD CPUs
   - Zen 4 uArch (5nm)
   - RDNA2/3 GPU
   - performance: Dragon Range
+    - Zen 4 CPU (and RDNA2 2CU GPU)
+    - a discrete GPU is usually used and the 2CU GPU is usually
+      unused/display-only
   - desktop/mobile: Phoenix
+    - Zen 4 CPU and RDNA3 GPU
   - entry: Mendocino
     - Zen 2 CPU and RDNA2 GPU
 - Ryzen 8000 series APUs?
