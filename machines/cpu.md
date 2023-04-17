@@ -167,3 +167,18 @@ CPU
   - ARM I$
 - PIPT, physically indexed and physically tagged
   - ARM D$
+
+## Power Dissipation
+
+- <https://en.wikipedia.org/wiki/Processor_power_dissipation>
+  - dynamic power consumption is proportional to `V^2 * freq`
+  - assuming `V` is proportional(!?) to `freq`, dynamic power consumption is
+    proportional to `freq^3`
+  - since runtime is inversely proportional to `freq`, the total power
+    consumption is proportional to `freq^2`
+- e.g.,
+  - `Ryzen 7 7700X` runs at 4.5GHz and TDP is 105W
+  - `Ryzen 7 7700` runs at 3.8GHz and TDP is 65W
+- e.g.,
+  - `i5-13400` runs at 2.5/1.8GHz and TDP is 65W
+  - `i5-13400T` runs at 1.3/1.0GHz and TDP is 35W
