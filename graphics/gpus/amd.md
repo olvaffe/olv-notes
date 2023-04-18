@@ -76,6 +76,36 @@ AMD
     - chiplet
     - `GFX11`
 
+## Naming
+
+- e.g., `Radeon RX 7900 XTX`
+- `Radeon RX`
+  - `RX` is in the name since 2017
+    - it stands for `Radeon Experience`
+  - ancient
+    - `Rage` before 2000
+    - `7000`, `8000`, `9000` in early 2000s
+    - `X200`, `X300`, ... around 2005
+    - `HD 2000` to `HD 8000` until early 2013
+    - `200`, `300`, `400`, `500` until 2017
+- generations
+  - the first number is generation
+  - `5000` is RDNA1
+  - `6000` is RDNA2
+  - `7000` is RDNA3
+- performances
+  - the last 3 numbers are performance levels
+  - `6600 < 6650 < 6700`
+  - `500` is entry-level, $2xx
+  - `600` is mid-range, $3xx
+  - `700` and `800` are high-end, $5xx
+  - `900` is enthusiast, $9xx
+- suffices
+  - `XT` is faster
+    - it stands for `Extreme`
+    - `6700 < 6700 XT < 6800`
+  - `XTX` is even faster
+
 ## RDNA
 
 - AMD Navi Radeon RX 5700 XT

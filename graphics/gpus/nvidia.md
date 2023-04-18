@@ -121,6 +121,35 @@ nVidia
   - cuda cores
   - raytracing cores
   - tensor cores
+- GA10x released in 2020
+  - GeForce 30
+  - Direct3D 12.0 Ultimate with `12_2` feature level
+  - Ampere architecture
+- AD10x released in 2020
+  - GeForce 40
+  - Direct3D 12.0 Ultimate with `12_2` feature level
+  - Ada Lovelace architecture
+
+## Naming
+
+- e.g., `GeForce RTX 4070 Ti`
+- `GeForce RTX`
+  - before `20` series, it was `GTX`
+  - since `20` series, it is `RTX` and indicates raytracing
+- generations
+  - it was `1xx`, `2xx`, until `9xx`
+  - it is `10xx`, `20xx`, and is `40xx` currently
+- performances
+  - within a generation, the last 2 numbers indicate the performance levels
+  - `50` is entry-level, $2xx
+  - `60` is mid-range, $3xx
+  - `70` is high-end, $6xx
+  - `80` and `90` are enthusiast, $1xxx
+- suffices
+  - `Ti` is the faster variant
+    - it stands for `Titanium`
+    - `4070 < 4070 Ti < 4080`
+  - `Super` is similar but is slower than `Ti`
 
 ## Turing
 
