@@ -38,6 +38,121 @@ AMD CPUs
   - mobile: strix point
   - server: turin
 
+## CPUs and APUs
+
+- 2016: A 9000 series
+  - Bristol Ridge
+    - desktop/mobile
+    - Excavator+ and GCN3
+  - Stoney Ridge
+    - ultra mobile
+    - Excavator+ and GCN3
+    - cros grunt
+- 2017: Ryzen 1000 series
+  - Summit Ridge
+    - desktop
+    - Zen and no gpu
+  - Whitehaven
+    - workstation
+    - Zen and no gpu
+- 2018: Ryzen 2000 series
+  - Pinnacle Ridge
+    - desktop
+    - Zen+ and no gpu
+  - Colfax
+    - workstation
+    - Zen+ and no gpu
+  - Raven Ridge
+    - desktop/mobile
+    - Zen and GCN5
+- 2019: Ryzen 3000 series
+  - Matisse
+    - desktop
+    - Zen 2 and no gpu
+  - Castle Peak
+    - workstation
+    - Zen 2 and no gpu
+  - Picasso
+    - desktop/mobile
+    - Zen+ and GCN5
+    - cros zork
+  - Dali, Pollock (2020)
+    - ultra mobile
+    - Zen and GCN5
+    - cros zork
+- 2020: Ryzen 4000 series
+  - Renoir
+    - desktop/mobile
+    - Zen 2 and GCN5
+- 2021: Ryzen 5000 series
+  - Vermeer
+    - desktop
+    - Zen 3 and no gpu
+  - Chagall
+    - workstation
+    - Zen 3 and no gpu
+  - Cezanne
+    - desktop/mobile
+    - Zen 3 and GCN5
+  - Barcelo (2022 refresh of Cezanne)
+    - mobile
+    - Zen 3 and GCN5
+    - cros guybrush
+  - Lucienne
+    - ultra mobile
+    - Zen 2 and GCN5
+- 2022: Ryzen 6000 series
+  - Rembrandt
+    - mobile
+    - Zen 3+ and RDNA2
+- 2023: Ryzen 7000 series
+  - Raphael
+    - desktop
+    - Zen 4 (and RDNA2)
+      - the gpu has only 2 CUs and is mostly for display
+  - Dragon Range
+    - mobile
+    - Zen 4 (and RDNA2)
+      - the gpu has only 2 CUs and is mostly for display
+      - this is used on high-end mobile with discrete gpu
+  - Phoenix
+    - mobile
+    - Zen 4 and RDNA3
+  - Mendocino
+    - mobile
+    - Zen 2 and RDNA2
+  - Rembrandt-R
+    - mobile
+    - Zen 3+ and RDNA2
+  - Barcelo-R
+    - mobile
+    - Zen 3 and GCN5
+- 2024: Ryzen 8000 series?
+  - Granite Ridge
+    - desktop
+    - Zen 5
+  - Strix Point
+    - desktop/mobile
+    - Zen 5
+
+## Chromebooks
+
+- grunt
+  - A6-9220C
+  - 2C2T
+  - gpu `1002:98e4`
+  - `CHIP_STONEY|AMD_IS_APU`
+- zork
+  - Ryzen 7 3700C
+  - 4C8T
+  - gpu `1002:15d8`
+  - `CHIP_RAVEN|AMD_IS_APU`
+- guybrush
+  - Ryzen 5 5625C
+  - 6C12T
+  - gpu `1002:15e7`
+  - `CHIP_RENOIR|AMD_IS_APU`
+
 ## Product Lines
 
 - 2023 Mobile Numbering System
@@ -86,108 +201,3 @@ AMD CPUs
     - H high-performance mobile (TDP 45W)
     - GE energy-efficient deskop (TDP 35W)
     - G deskop (TDP 65W)
-
-## CPUs
-
-- Ryzen 1000 series
-  - 2017
-  - Zen uArch
-  - Ryzen 3/5/7
-    - Summit Ridge
-  - Ryzen Threadripper
-    - Whitehaven
-- Ryzen 2000 series
-  - 2018
-  - Zen+ uArch
-  - Ryzen 3/5/7
-    - Pinnacle Ridge
-  - Ryzen Threadripper
-    - Colfax
-- Ryzen 3000 series
-  - 2019
-  - Zen 2 uArch
-  - Ryzen 3/5/7/9
-    - Matisse
-  - Ryzen Threadripper
-    - Castle Peak
-- Ryzen 5000 series
-  - 2020
-  - Zen 3 uArch
-  - Ryzen 5/7
-    - Vermeer
-  - Ryzen 9/Threadripper
-    - Genesis
-- Ryzen 7000 series
-  - 2022
-  - Zen 4 uArch
-  - Raphael
-    - there is an RDNA2 2CU GPU which is mostly for display only
-- Ryzen 8000 series?
-  - 2024?
-  - Zen 5 uArch
-  - Granite Ridge
-
-## APUs
-
-- A 9000 series APUs
-  - 2016
-  - Excavator+ uArch
-  - GCN3
-  - desktop/mobile: Bristol Ridge
-  - ultra mobile: Stoney Ridge
-- Ryzen 2000 series APUs
-  - 2018
-  - Zen uArch
-  - GCN5
-  - desktop/mobile: Raven Ridge
-- Ryzen 3000 series APUs
-  - 2019
-  - Zen+ uArch
-  - GCN5
-  - desktop/mobile: Picasso
-  - ultra mobile: Dali, Pollock (2020)
-- Ryzen 4000 series APUs
-  - 2020
-  - Zen 2 uArch
-  - GCN5
-  - desktop/mobile: Renoir
-- Ryzen 5000 series APUs
-  - 2021
-  - Zen 3 uArch
-  - GCN5
-  - desktop/mobile: Cezanne
-  - desktop/mobile: Barcelo (2022 refresh)
-- Ryzen 6000 series APUs
-  - 2022
-  - Zen 3+ uArch (6nm)
-  - RDNA2 GPU
-  - desktop/mobile: Rembrandt
-- Ryzen 7000 series APUs
-  - 2023
-  - Zen 4 uArch (5nm)
-  - RDNA2/3 GPU
-  - performance: Dragon Range
-    - Zen 4 CPU (and RDNA2 2CU GPU)
-    - a discrete GPU is usually used and the 2CU GPU is usually
-      unused/display-only
-  - desktop/mobile: Phoenix
-    - Zen 4 CPU and RDNA3 GPU
-  - entry: Mendocino
-    - Zen 2 CPU and RDNA2 GPU
-- Ryzen 8000 series APUs?
-  - 2025?
-  - Zen 5 uArch
-  - desktop/mobile: Strix Point
-- APUs I have access to
-  - A6-9220C
-    - 2C2T
-    - pci 1002:98e4
-    - `CHIP_STONEY|AMD_IS_APU`
-  - Ryzen 5 4500U
-    - 6C6T
-    - pci 1002:1636
-    - `CHIP_RENOIR|AMD_IS_APU`
-  - Ryzen 5 5625C
-    - 6C6T
-    - pci 1002:15e7
-    - `CHIP_RENOIR|AMD_IS_APU`
