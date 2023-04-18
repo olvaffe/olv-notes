@@ -22,17 +22,146 @@ Intel CPUs
   - Tremont       - 2020 - 10nm
   - Gracemont     - 2021 - Intel 7
 
+## CPUs
+
+- 11Q4~: Core 2xxx
+  - Sandy Bridge
+    - desktop/mobile
+    - Gen6 GPU
+- 12Q4~: Core 3xxx
+  - Ivy Bridge
+    - desktop/mobile
+    - Gen7 GPU
+- 13Q4~: Core 4xxx
+  - Haswell
+    - desktop/mobile
+    - Gen7.5 GPU
+  - Atom: Bay Trail (Valleyview)
+    - Silvermont and Gen7 GPU
+- 14Q4~: Core 5xxx
+  - Broadwell
+    - desktop/mobile
+    - Gen8 GPU
+  - Atom: Braswell (Cherry Trail, Cherryview)
+    - ultra mobile
+    - Airmont and Gen8 GPU
+- 15Q4~: Core 6xxx
+  - Skylake
+    - desktop/mobile
+    - Gen9 GPU
+- 16Q4~: Core 7xxx
+  - Kaby Lake
+    - desktop/mobile
+    - Skylake and Gen9.5 GPU
+  - Skylake X
+    - desktop
+    - Skylake and Gen9.5 GPU
+  - Atom: Apollo Lake
+    - ultra mobile
+    - Goldmont and Gen9.5 GPU
+- 17Q4~: Core 8xxx
+  - Coffee Lake
+    - desktop/mobile
+    - Skylake and Gen9.5 GPU
+  - Whiskey Lake
+    - mobile
+    - Skylake and Gen9.5 GPU
+  - Kaby Lake R
+    - mobile
+    - Skylake and Gen9.5 GPU
+  - Amber Lake Y
+    - ultra mobile
+    - Skylake and Gen9.5 GPU
+  - Atom: Gemini Lake
+    - ultra mobile
+    - Goldmont Plus and Gen9.5 GPU
+- 18Q4~: Core 9xxx
+  - Coffee Lake Refresh
+    - desktop
+    - Skylake and Gen9.5 GPU
+  - Cannon Lake (skipped)
+    - Palm Cove and Gen10 GPU
+- 19Q4~: Core 10xxx
+  - Ice Lake SP and W
+    - server/workstation
+    - Sunny Cove and Gen11 GPU
+  - Ice Lake
+    - mobile
+    - Sunny Cove and Gen11 GPU
+  - Comet Lake S and W
+    - desktop/workstation
+    - Skylake and Gen9.5 GPU
+  - Comet Lake H and U
+    - mobile
+    - Skylake and Gen9.5 GPU
+  - Amber Lake Y
+    - ultra mobile
+    - Skylake and Gen9.5 GPU
+- 20Q4~: Core 11xxx
+  - Rocket Lake
+    - desktop
+    - Cypress Cove and Gen12 GPU
+  - Tiger Lake
+    - mobile
+    - Willow Cove and Gen12 GPU
+  - Atom: Jasper Lake
+    - ultra mobile
+    - Tremont and Gen11 GPU
+- 21Q4~: Core 12xxx
+  - Alder Lake
+    - desktop/mobile
+    - Golden Cove, Gracemont, and Gen12.5 GPU
+- 22Q4~: Core 13xxx
+  - Raptor Lake
+    - desktop
+    - Raptor Cove, Gracemont, and Gen12.5 GPU
+- 23Q4~: Core 14xxx?
+  - Meteor Lake
+- 24Q4~: Core 15xxx?
+  - Arrow Lake
+- 25Q4~: Core 16xxx?
+  - Lunar Lake
+
 ## Product Lines
 
-- Desktop
+- Intel Core Numbering System
+  - e.g., `Intel Core i7-13700K`
+  - Brand
+    - `Intel Core`
+  - Brand Modifier
+    - `i7`
+  - Generation Indicator
+    - `13`
+  - SKU
+    - `700`
+    - in general, the larger the more features within the same generator
+  - Product Line Suffix
+    - `K`
+- Since 12th gen, there are P-cores and E-cores
+- Desktop Suffices
   - TDP 35W-150W
-- Mobile
-  - H
-    - high-performance mobile workstations
+  - K, High performance, unlocked
+  - F, Requires discrete graphics
+  - S, Special edition
+  - T, Power-optimized lifestyle
+  - X/XE, Highest performance, unlocked
+- Mobile Suffices
+  - HX, Highest performance, all SKUs unlocked
+  - HK, High performance, unlocked
+  - H, High performance
     - TDP >=45W
-  - P
-    - perfomrance laptop
+  - P, Performance for thin & light
     - TDP <=28W
+  - U, Power efficient
+  - Y, Extremely low-power efficient
+  - G1-G7, Graphics level (processors with newer integrated graphics technology)
+- Embedded Suffices
+  - E, Embedded
+  - UE, Power efficient
+  - HE, High performance
+  - UL, Power efficient, in LGA package
+  - HL, High performance, in LGA package
+- other product line suffices
   - U (UP3)
     - ultra-thin laptop
     - TDP <=15W
@@ -42,79 +171,6 @@ Intel CPUs
   - N
     - ultra-mobile
     - TDP >=6W
-
-## Platforms
-
-- Hybrid Platforms
-  - Alder Lake
-    - 2021
-    - Golden Cove / Gracemont uArch
-    - Gen12.5 GPU
-  - Raptor Lake
-    - 2022
-    - Raptor Cove / Gracemont uArch
-    - Gen12.5 GPU
-  - Meteor Lake
-  - Arrow Lake
-  - Lunar Lake
-- Big Platforms
-  - Sandy Bridge
-    - Gen6 GPU
-  - Ivy Bridge
-    - Gen7 GPU
-  - Haswell
-    - Gen7.5 GPU
-  - Broadwell
-    - Gen8 GPU
-  - Skylake
-    - Gen9 GPU
-  - Kaby Lake
-    - 2016
-    - Skylake uArch
-    - Gen9.5 GPU
-    - Kaby Lake R (2017 refresh)
-    - Amber Lake (2018 refresh)
-  - Coffee Lake
-    - 2017
-    - Skylake uArch
-    - Gen9.5 GPU
-    - Whiskey Lake (2018 refresh?)
-  - Cannon Lake (skipped)
-    - 2018
-    - Palm Cove
-    - Gen10 GPU
-  - Comet Lake
-    - 2019
-    - Skylake uArch
-    - Gen9.5 GPU
-  - Ice Lake
-    - 2019
-    - Sunny Cove uArch
-    - Gen11 GPU
-    - this is for mobile
-      - there is Rocket Lake for desktops
-  - Tiger Lake
-    - 2020
-    - Willow Cove uArch
-    - Gen12 GPU
-    - this is also for mobile
-      - there is Rocket Lake for desktops
-- Little Platforms
-  - Bay Trail (Valleyview)
-    - 2013
-    - Silvermont uArch
-  - Braswell (Cherry Trail, Cherryview)
-    - 2014
-    - Airmont uArch
-  - Apollo Lake
-    - 2016
-    - Goldmont uArch
-  - Gemini Lake
-    - 2017
-    - Goldmont Plus uArch
-  - Jasper Lake
-    - 2020
-    - Tremont uArch
 
 ## Intel SoC design
 
