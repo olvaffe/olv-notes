@@ -62,6 +62,13 @@ PC DIY
   - CPU
     - 2x DDR4 3200 DIMMs
     - 1x PCIe 3.0 x16
+      - 5600G has a total of 24 PCIe 3.0 lanes
+      - 16 lanes are usually for graphics
+      - 4 lanes are usually for M.2
+      - the rest 4 lanes are for the chipset
+        - B550 has 10 PCIe 3.0 lanes as well by itself
+        - but when communicating to the cpu, it has to use the 4 lanes
+          provided by the cpu
     - 1x M.2 PCIe 3.0 x4
     - 1x DisplayPort 1.4
     - 2x HDMI 2.1
