@@ -321,3 +321,24 @@ Mesa RADV
     - if `GC_HWIP` is 9.0.1,
       - writes `mmRLC_CAPTURE_GPU_CLOCK_COUNT`
       - reads `mmRLC_GPU_CLOCK_COUNT_LSB` and `mmRLC_GPU_CLOCK_COUNT_MSB`
+
+## AHB
+
+- export
+  - `radv_android_gralloc_supports_format` (and others) are used to limit the
+    support
+  - `vk_image_init` initializes `ahardware_buffer_format` and
+    `android_external_format` to 0
+  - `radv_ahb_format_for_vk_format` is used set `ahardware_buffer_format`
+    - in this path, the formats are limited by
+      `radv_android_gralloc_supports_format`
+  - `radv_create_ahb_memory` is used to allocate the memory
+    - what it does is to allocate an ahb and import
+  - export returns the allocated ahb
+- import
+  - `vk_format_from_android` is used to get the vk format
+    - external format is also the vk format
+    - the vk format may not have a matching public ahb format
+- allocate externally and import
+  - `vk_image_usage_to_ahb_usage` is used to initialize
+    `VkAndroidHardwareBufferUsageANDROID`
