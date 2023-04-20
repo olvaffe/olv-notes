@@ -853,3 +853,27 @@ Vulkan
     `VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT`
   - when a resource is active, it can be partially resident
   - mip tail is the tail levels of a mipmap that cannot be partially resident
+
+## `VK_ANDROID_external_memory_android_hardware_buffer`
+
+- export ahb
+  - `vkGetPhysicalDeviceImageFormatProperties2` with
+    `VkPhysicalDeviceExternalImageFormatInfo` to query support
+  - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` to create the image
+  - `vkAllocateMemory` with `VkExportMemoryAllocateInfo` to allocate the
+    memory
+  - `vkGetMemoryAndroidHardwareBufferANDROID` to export the AHB
+  - in this path, only the public AHB formats are supported
+- import ahb
+  - `vkGetAndroidHardwareBufferPropertiesANDROID` with
+    `VkAndroidHardwareBufferPropertiesANDROID` and
+    `VkAndroidHardwareBufferFormatPropertiesANDROID` to query ahb
+  - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` and optionally
+    `VkExternalFormatANDROID` to create the image
+  - `vkAllocateMemory` with `VkImportAndroidHardwareBufferInfoANDROID` to
+    import the ahb
+  - in this path, ahb can have implemetation-defined formats
+- allocate externally and import
+  - `vkGetPhysicalDeviceImageFormatProperties2` with
+    `VkAndroidHardwareBufferUsageANDROID` to get the optimal ahb usage
+  - in this path, vk is consulted for the ahb usage
