@@ -3,6 +3,8 @@ Android CTS
 
 ## CTS
 
+- `adb shell settings put global verifier_verify_adb_installs 0`
+- `adb shell settings put global package_verifier_enable 0`
 - `./cts-tradefed run commandAndExit cts-dev -m <module> -t <CLASS>#<METHOD>`
   - this runs the primary abi
     - for other abis, specify `--abi` or `-a`
