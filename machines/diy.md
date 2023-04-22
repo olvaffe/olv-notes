@@ -55,7 +55,7 @@ PC DIY
     - 37mm cpu cooler
     - dgpu in sandwich layout
     - flex psu
-- others
+- sub-20L
   - lian li A4-H2O: 11L
     - aio cpu cooler
     - dqpu in sandwich layout
@@ -65,6 +65,8 @@ PC DIY
     - dgpu in dual-chamber
     - sfx/sfx-l psu
   - nr200p: 18.5L
+- 20L+
+  - <https://www.reddit.com/r/mffpc/>
 
 ## PSUs
 
