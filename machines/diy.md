@@ -37,6 +37,34 @@ PC DIY
   - $100 ~ $200
 - mini-itx
   - $100 ~ $300
+- sub-5L
+  - deskmini x300: 1.92L
+    - 46mm cpu cooler
+    - igpu only
+    - builtin psu
+    - builtin mb
+  - chopin max: 3.3L
+    - 54mm cpu cooler
+    - igpu only
+    - builtin psu
+  - Densium APU: 4L
+    - 67mm cpu cooler
+    - igpu only
+    - pico/gan/flex psu
+  - velka 5: 4.9L
+    - 37mm cpu cooler
+    - dgpu in sandwich layout
+    - flex psu
+- others
+  - lian li A4-H2O: 11L
+    - aio cpu cooler
+    - dqpu in sandwich layout
+    - sfx/sfx-l psu
+  - fractal ridge: 12.6L
+    - 70mm cpu cooler
+    - dgpu in dual-chamber
+    - sfx/sfx-l psu
+  - nr200p: 18.5L
 
 ## PSUs
 
