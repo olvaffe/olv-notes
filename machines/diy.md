@@ -9,8 +9,17 @@ PC DIY
 - Ryzen
   - 5: $100 ~ $200
   - 7: $200 ~ $500
-- Coolers
-  - $30 ~ $80
+
+## CPU Coolers
+
+- $30 ~ $80
+- fan 90x90mm
+  - height 37mm: 61W
+  - height 65mm: 67W
+  - other heights: 47mm, 53mm
+- fan 120x120mm
+  - height 70mm: 88W
+  - other heights: 65mm, 67mm
 
 ## Motherboards
 
