@@ -9,17 +9,39 @@ PC DIY
 - Ryzen
   - 5: $100 ~ $200
   - 7: $200 ~ $500
+- TDP
+  - OEMs design the cooler to handle TDP watts
+    - this is the sustainable watts that cpu can draw
+  - cpu draws peak watts when all cores run at boost freq
+    - this is not sustainable
+  - when cpu draws peak watts, it keeps getting hotter due to the difference
+    of `(peak - tdp)` watts
+  - until cpu thermal-trottles itself
+    - 100C on Core
+    - 95C on Ryzen
+  - when OEMs design the cooler to handle a specific TDP, high-end and low-end
+    cpus having the same TDP have roughly the same sustainable performance
+    - the big difference between high-end and low-end is before
+      thermal-throttle
 
 ## CPU Coolers
 
 - $30 ~ $80
-- fan 90x90mm
-  - height 37mm: 61W
-  - height 65mm: 67W
-  - other heights: 47mm, 53mm
-- fan 120x120mm
-  - height 70mm: 88W
-  - other heights: 65mm, 67mm
+- low-profile coolers with 90x90mm fan:
+  - 37mm: 61W
+  - 47mm
+  - 53mm
+  - 65mm: 67W
+  - IOW, 90x90mm is good enough to sustain cpus with TDP 65W
+- low-profile coolers with 120x120mm fan:
+  - 65mm
+  - 67mm
+  - 70mm: 88W
+  - IOW, 120x120mm may allow cpus with TDP 65W to stay at boost freq longer
+- considerations
+  - small builds can only handle cpus with TDP 65W
+  - 120x120mm might not fit on many motherboards / memory dimms
+  - cases might have a lower cpu height clearance
 
 ## Motherboards
 
@@ -27,6 +49,12 @@ PC DIY
   - $100 ~ $300
 - AM5
   - $100 ~ $300
+- front panel headers
+  - buttons / leds
+  - audio jack
+  - USB-As
+  - USB-Cs
+    - some motherboards miss this header
 
 ## Memories
 
@@ -34,6 +62,10 @@ PC DIY
   - $80 ~ $400
 - DDR4 32GB
   - $40 ~ $200
+- considerations
+  - frequency
+  - CAS latency
+  - height clearance can be limited by cases or cpu coolers
 
 ## Storage
 
@@ -46,22 +78,37 @@ PC DIY
   - $100 ~ $200
 - mini-itx
   - $100 ~ $300
+- <https://caseend.com/>
 - sub-5L
   - deskmini x300: 1.92L
     - 46mm cpu cooler
     - igpu only
     - builtin psu
     - builtin mb
-  - chopin max: 3.3L
-    - 54mm cpu cooler
-    - igpu only
-    - builtin psu
+    - like a mini pc
   - Densium APU: 4L
     - 67mm cpu cooler
     - igpu only
     - pico/gan/flex psu
+  - lzmod a24 v4: 4.3L
+    - 66mm cpu cooler
+    - lp gpu
+    - flex psu
+  - chopin max: 4.4L
+    - 54mm cpu cooler
+    - igpu only
+    - builtin psu
+  - cooj mq4: 4.9L
+    - 69mm cpu cooler
+    - igpu only
+    - flex psu
   - velka 5: 4.9L
     - 37mm cpu cooler
+    - dgpu in sandwich layout
+    - flex psu
+- sub-10L
+  - cooj mq6: 6.8L
+    - 72mm cpu cooler
     - dgpu in sandwich layout
     - flex psu
 - sub-20L
