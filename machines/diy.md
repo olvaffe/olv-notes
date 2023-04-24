@@ -3,10 +3,10 @@ PC DIY
 
 ## CPUs
 
-- Core
+- Intel Core
   - i5: $200 ~ $300
   - i7: $300 ~ $500
-- Ryzen
+- AMD Ryzen
   - 5: $100 ~ $200
   - 7: $200 ~ $500
 - TDP
@@ -27,21 +27,23 @@ PC DIY
 ## CPU Coolers
 
 - $30 ~ $80
-- low-profile coolers with 90x90mm fan:
-  - 37mm: 61W
-  - 47mm
-  - 53mm
-  - 65mm: 67W
-  - IOW, 90x90mm is good enough to sustain cpus with TDP 65W
-- low-profile coolers with 120x120mm fan:
-  - 65mm
-  - 67mm
-  - 70mm: 88W
-  - IOW, 120x120mm may allow cpus with TDP 65W to stay at boost freq longer
-- considerations
-  - small builds can only handle cpus with TDP 65W
-  - 120x120mm might not fit on many motherboards / memory dimms
-  - cases might have a lower cpu height clearance
+- clearances
+  - cases have cooler height clearances
+    - small cases require low-profile coolers
+  - coolers may have ram and io clearances
+    - 90x90mm coolers are fine
+    - 120x120mm coolers on itx have either ram clearnace or back panel io
+      clearnace
+- low-profile performance
+  - 90x90mm is good enough to sustain TDP 65W cpus
+    - height clearance: 37mm - 65mm
+  - 120x120mm is needed for 65W cpus to stay at boost freq longer
+    - height clearance: 65mm - 70mm
+- for small builds emphasizing cpu performance,
+  - pick 65W cpu
+  - pick 120x120mm cooler
+  - pick cases with high cooler height clearance
+  - pick low-profile ram or mb with low-profile back io
 
 ## Motherboards
 
@@ -63,14 +65,31 @@ PC DIY
 - DDR4 32GB
   - $40 ~ $200
 - considerations
-  - frequency
-  - CAS latency
-  - height clearance can be limited by cases or cpu coolers
+  - for ddr5, cpus support 5200MHz/5600MHz officially
+    - no need to go beyond 6000MHz and CL 32
+  - for ddr4, cpus support 3200MHz officially
+    - no need to go beyond 3600MHz and CL 16
+  - height can be limited by cases or cpu coolers
 
 ## Storage
 
 - m2 1TB
   - $40 ~ $100
+- m.2 standard
+  - form factors
+    - 2280, 22x80mm
+  - interfaces
+    - pcie + nvme
+      - 3.0 x4: 4GB/s
+      - 4.0 x4: 8GB/s
+      - 5.0 x4: 16GB/s
+    - sata + ahci
+- m.2 ssd components
+  - controller
+  - dram as cache
+  - nand for storage
+    - SLC/TLC/QLC: affect speed and durability
+    - TBW: terabytes written
 
 ## Cases
 
@@ -131,6 +150,15 @@ PC DIY
 - SFX
   - $80 ~ $200
 - <https://cultists.network/140/psu-tier-list/>
+- form factors
+  - ATX: 150x86mm, depth is 140mm but can vary
+  - SFX: about 125x64mm, depth is 100mm
+  - TFX: about 85x65mm, depth is 175mm
+  - flex: 81.5x40.5mm, depth is 150mm
+  - 1U: less than 1.75in (44.45mm) in height
+    - comparing to flex, usually wider, deeper, noisier, and more powerful
+  - gan: 55x25mm, depth is 170mm
+  - pico: requires external ac-dc adapter
 
 ## GPUs
 
@@ -141,8 +169,8 @@ PC DIY
 
 - CPU: Ryzen 5 5600G
   - $140
-- CPU Cooler: Thermalright AXP90-X53
-  - $75
+- CPU Cooler: Thermalright AXP120-X67
+  - $50
 - MB: GIGABYTE B550I AORUS PRO AX
   - $200
   - CPU
@@ -182,20 +210,15 @@ PC DIY
   - $90
   - 2 x 16GB
   - DDR4 3600
-  - C16
+  - CL16
 - Storage: Samsung 980 PRO M.2 2280 2TB PCIe Gen 4.0 x4
   - $140
-- Case: InWin Chopin MAX
-  - $130
-  - 3.3L
-  - other cases
-    - ASRock DeskMini X300: 2L
-      - comes with an STX MB and a 120W PSU
-    - Cooler Master MasterBox NR200: 18.25L
-      - need to purchase SFX PSU
-      - has room for dGPU
-- PSU: 200W included
+- Case: Cooj Sparrow-MQ4 4.9L
+  - $169
+  - 4.9L
+- PSU: EnhanceENP-7025B 250W
+  - $60
 - WLAN Antenna:
   - $20
 - Total
-  - `$140+$75+$200+$90+$140+$130+$20 = $795`
+  - `$140+$50+$200+$90+$140+$169+$60+$20 = $869`
