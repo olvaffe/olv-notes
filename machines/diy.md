@@ -23,6 +23,54 @@ PC DIY
     cpus having the same TDP have roughly the same sustainable performance
     - the big difference between high-end and low-end is before
       thermal-throttle
+- Ryzen 7 7700
+  - <https://www.amd.com/en/product/12751>
+  - Arch: Zen 4, 5nm
+  - Clock: 3.8GHz
+  - TDP: 65W
+  - RAM: DDR5-5200
+  - GPU: RDNA2, 2CU, 2200MHz
+  - Connectivity:
+    - PCIe
+      - 5.0: 28 lanes
+        - 4 lanes are reserved for chipset, which also caps the bandwidth of
+          the chipset
+      - chipset provides more lanes
+    - USB
+      - 3.2 Gen2 (10Gbps): x4
+      - 2.0 (480Mbps): x1
+      - chipset provides more ports
+- Ryzen 5 5600G
+  - <https://www.amd.com/en/product/11176>
+  - Arch: Zen 3, 7nm
+  - Clock: 3.9GHz
+  - TDP: 65W
+  - RAM: DDR4-3200
+  - GPU: GCN5, 7CU, 1900MHz
+  - Connectivity:
+    - PCIe
+      - 4.0: 24 lanes
+        - 4 lanes are reserved for chipset
+      - chipset provides more lanes
+    - USB
+      - 3.2 Gen1 (5Gbps): x4
+      - chipset provides more ports
+- AMD Ryzen 9 6900HX
+  - <https://www.amd.com/en/product/11541>
+  - Arch: Zen 3+, 6nm
+  - Clock: 3.3GHz
+  - TDP: 45W
+  - RAM: LPDDR5-6400
+  - GPU: RDNA2, 12CU, 2400MHz
+  - Connectivity:
+    - PCIe
+      - 4.0: 20 lanes
+        - 4 lanes are reserved for chipset
+      - chipset provides more lanes
+    - USB
+      - 3.2 Gen2 (10Gbps): x2
+      - 2.0 (480Mbps): x4
+      - chipset provides more ports
 
 ## CPU Coolers
 
