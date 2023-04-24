@@ -92,6 +92,24 @@ PC DIY
   - pick 120x120mm cooler
   - pick cases with high cooler height clearance
   - pick low-profile ram or mb with low-profile back io
+- decibels
+  - office background
+    - meditation: 30dB
+    - desk: 40dB
+    - kitchen: 55dB
+  - x1 carbon gen 9 fan
+    - 0rpm / background: 30dB
+    - 4500rpm: 30dB (noticeable)
+    - 5500rpm: 35dB (acceptable)
+    - 6500rpm: 40dB (a bit annoying)
+  - white noise
+    - muted / background: 30dB
+    - 35dB: noticeable
+    - 40dB: acceptable
+    - 45dB: a bit annoying
+    - 50dB: annoying
+  - it seems frequencies and background decibels both play a role
+    - for fan noises in a 30dB room, 45dB from a distance is acceptable
 
 ## Motherboards
 
