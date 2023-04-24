@@ -257,6 +257,9 @@ PC DIY
     - comparing to flex, usually wider, deeper, noisier, and more powerful
   - gan: 55x25mm, depth is 170mm
   - pico: requires external ac-dc adapter
+- flex psu noise levels:
+  - Enhance ENP-7520B: 57dB at 200W
+  - Enhance ENP-7660B: 33dB at 400W
 
 ## GPUs
 
@@ -313,9 +316,9 @@ PC DIY
 - Case: Cooj Sparrow-MQ4 4.9L
   - $169
   - 4.9L
-- PSU: EnhanceENP-7025B 250W
-  - $60
+- PSU: Enhance ENP-7660B 600W
+  - $170
 - WLAN Antenna:
   - $20
 - Total
-  - `$140+$50+$200+$90+$100+$169+$60+$20 = $829`
+  - `$140+$50+$200+$90+$100+$169+$170+$20 = $939`
