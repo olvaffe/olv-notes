@@ -88,8 +88,40 @@ PC DIY
   - controller
   - dram as cache
   - nand for storage
-    - SLC/TLC/QLC: affect speed and durability
+    - SLC/MLC/TLC/QLC: 1/2/3/4-bit cells
+      - SLC is fastest and the most durable, but costs more
     - TBW: terabytes written
+- Samsung
+  - 960 EVO vs PRO
+    - controller: polaris, pcie 3.0 x4, nvme 1.2
+    - dram: 1GB LPDDR3 / TB
+    - nand: tlc
+    - TBW: 400 vs 800
+    - warranty: 3yr vs 5yr
+  - 970 EVO vs PRO
+    - controller: phoenix, pcie 3.0 x4, nvme 1.3
+    - cache: 1GB LPDDR4 / TB
+    - nand: tlc vs mlc
+    - TBW: 600 vs 1200
+    - warranty: 5 years
+  - 980
+    - controller: in-house, pcie 3.0 x4, nvme 1.4
+    - cache: HMB (uses system ram)
+    - nand: tlc
+    - TBW: 600
+    - warranty: 5 years
+  - 980 PRO
+    - controller: elpis, pcie 4.0 x4, nvme 1.3c
+    - cache: 1GB LPDDR4 / TB
+    - nand: v6 tlc
+    - TBW: 600
+    - warranty: 5 years
+  - 990 PRO
+    - controller: pascal, pcie 4.0 x4, nvme 2.0
+    - cache: 1GB LPDDR4 / TB
+    - nand: v7 tlc
+    - TBW: 600
+    - warranty: 5 years
 
 ## Cases
 
@@ -206,13 +238,12 @@ PC DIY
     - 2x system fan headers
     - 2x LED headers
     - 1x front panel, audio, usb
-- RAM: G.SKILL Ripjaws 32GB
+- RAM: CORSAIR Vengeance LPX 32GB
   - $90
   - 2 x 16GB
-  - DDR4 3600
-  - CL16
-- Storage: Samsung 980 PRO M.2 2280 2TB PCIe Gen 4.0 x4
-  - $140
+  - DDR4 3600 / CL16
+- Storage: Samsung 990 PRO 1TB
+  - $100
 - Case: Cooj Sparrow-MQ4 4.9L
   - $169
   - 4.9L
@@ -221,4 +252,4 @@ PC DIY
 - WLAN Antenna:
   - $20
 - Total
-  - `$140+$50+$200+$90+$140+$169+$60+$20 = $869`
+  - `$140+$50+$200+$90+$100+$169+$60+$20 = $829`
