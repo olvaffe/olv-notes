@@ -23,8 +23,47 @@ PC DIY
     cpus having the same TDP have roughly the same sustainable performance
     - the big difference between high-end and low-end is before
       thermal-throttle
-- Ryzen 7 7700
-  - <https://www.amd.com/en/product/12751>
+- binning
+  - after a die is manufactured, it goes through qa
+  - each core is tested to see if
+    - it can work pre-defined clocks/voltages
+    - how is the current leakage
+    - if a core is defective, the core is disabled
+  - if the cores meet the criteria of a sku, the die is binned to the sku
+    - under the same design and process, the difference of the best sku and
+      the worst sku can just be manufacturing variances
+- what is a good deal?
+  - 5600
+    - 6C@3.5GHz - 32MB L3 - 65W
+    - $140
+      - this is the base
+  - 5600X
+    - 6C@3.7GHz - 32MB L3 - 65W
+    - $150
+      - perf x1.057
+      - cost x1.071
+  - 5700X
+    - 8C@3.4GHz - 32MB L3 - 65W
+    - $190
+      - perf x1.295
+      - cost x1.357
+  - 5800X
+    - 8C@3.8GHz - 32MB L3 - 105W
+    - $240
+      - perf x1.447
+      - cost x1.714
+  - 5900X
+    - 12C@3.7GHz - 64MB L3 - 105W
+    - $300
+      - perf x2.114 plus bigger L3
+      - cost x2.142
+  - 5950X
+    - 16C@3.4GHz - 64MB L3 - 105W
+    - $470
+      - perf x2.588 plus bigger L3
+      - cost x3.357
+- Ryzen 5 7600
+  - <https://www.amd.com/en/product/12756>
   - Arch: Zen 4, 5nm
   - Clock: 3.8GHz
   - TDP: 65W
@@ -33,8 +72,8 @@ PC DIY
   - Connectivity:
     - PCIe
       - 5.0: 28 lanes
-        - 4 lanes are reserved for chipset, which also caps the bandwidth of
-          the chipset
+        - 4 lanes are reserved for chipset, which cap the bandwidth of the
+          chipset
       - chipset provides more lanes
     - USB
       - 3.2 Gen2 (10Gbps): x4
@@ -303,12 +342,12 @@ PC DIY
       - 92% at 375W: 30W heat, 8dB
       - 87% at 750W: 97.5W heat, 25dB
   - sfx efficiency and noise
-    - CORSAIR SF750
+    - CORSAIR SF600
     - efficiency and noise
-      - 88% at 75W: 9W heat, 0dB
-      - 92% at 150W: 12W heat, 0dB
-      - 93% at 375W: 26W heat, 14dB
-      - 90% at 750W: 75W heat, 30dB
+      - 87% at 60W: 8W heat, 0dB
+      - 91% at 120W: 11W heat, 0dB
+      - 92% at 300W: 24W heat, 11dB
+      - 90% at 600W: 60W heat, 28dB
   - flex efficiency and noise
     - SilverStone FX600
       - <https://www.cybenetics.com/d/cybenetics_FPL.pdf>
