@@ -259,7 +259,11 @@ PC DIY
   - pico: requires external ac-dc adapter
 - flex psu noise levels:
   - Enhance ENP-7520B: 57dB at 200W
-  - Enhance ENP-7660B: 33dB at 400W
+  - Enhance ENP-7660B
+    - <https://reviewer.co/psu/enp-7660b>
+    - 32.5dB at 100W
+    - 33dB at 200W
+    - 33.5dB at 400W
 
 ## GPUs
 
