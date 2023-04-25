@@ -72,57 +72,40 @@ PC DIY
       - 2.0 (480Mbps): x4
       - chipset provides more ports
 
-## CPU Coolers
-
-- $30 ~ $80
-- clearances
-  - cases have cooler height clearances
-    - small cases require low-profile coolers
-  - coolers may have ram and io clearances
-    - 90x90mm coolers are fine
-    - 120x120mm coolers on itx have either ram clearnace or back panel io
-      clearnace
-- low-profile performance
-  - 90x90mm is good enough to sustain TDP 65W cpus
-    - height clearance: 37mm - 65mm
-  - 120x120mm is needed for 65W cpus to stay at boost freq longer
-    - height clearance: 65mm - 70mm
-- for small builds emphasizing cpu performance,
-  - pick 65W cpu
-  - pick 120x120mm cooler
-  - pick cases with high cooler height clearance
-  - pick low-profile ram or mb with low-profile back io
-- decibels
-  - office background
-    - meditation: 30dB
-    - desk: 40dB
-    - kitchen: 55dB
-  - x1 carbon gen 9 fan
-    - 0rpm / background: 30dB
-    - 4500rpm: 30dB (noticeable)
-    - 5500rpm: 35dB (acceptable)
-    - 6500rpm: 40dB (a bit annoying)
-  - white noise
-    - muted / background: 30dB
-    - 35dB: noticeable
-    - 40dB: acceptable
-    - 45dB: a bit annoying
-    - 50dB: annoying
-  - it seems frequencies and background decibels both play a role
-    - for fan noises in a 30dB room, 45dB from a distance is acceptable
-
 ## Motherboards
 
 - LGA 1700
   - $100 ~ $300
 - AM5
   - $100 ~ $300
-- front panel headers
-  - buttons / leds
-  - audio jack
-  - USB-As
-  - USB-Cs
-    - some motherboards miss this header
+- considerations
+  - chipset
+    - e.g., AMD B550
+    - 1x M.2 PCIe 3.0 x4
+    - 4x SATA
+    - 1x USB-C 3.2 Gen2
+    - 1x USB-A 3.2 Gen2
+    - 2x USB-A 3.2 Gen1 (front)
+    - 2x USB-A 2.0 (front)
+    - 1x USB-C 3.2 Gen1
+      - some motherboards miss this header
+    - note that it is capped by the 4-lane PCIE 3.0 interconnect with the cpu
+  - wireless
+    - e.g., Realtek MT7921K / AMD RZ608
+    - 802.11ax
+    - BT 5.2
+  - audio
+    - e.g., Realtek ALC1220-VB hda codec
+  - lan
+    - e.g., Realtek RTL8125
+    - 2.5Gb
+  - internal connectors
+    - 1x 24-pin main power
+    - 1x 8-pin cpu power
+    - 1x CPU fan header
+    - 2x system fan headers
+    - 2x LED headers
+    - 1x front panel, audio, usb
 
 ## Memories
 
@@ -150,13 +133,21 @@ PC DIY
       - 4.0 x4: 8GB/s
       - 5.0 x4: 16GB/s
     - sata + ahci
-- m.2 ssd components
+- m.2 nvme components
   - controller
-  - dram as cache
-  - nand for storage
+    - pcie 3.0, 4.0, 5.0
+    - nvme 1.2, 1.3, 1.4, 2.0
+  - dram
+    - as cache
+    - nvme 1.2 supports HMB, which uses system ram as cache instead
+  - nand
+    - as storage
     - SLC/MLC/TLC/QLC: 1/2/3/4-bit cells
       - SLC is fastest and the most durable, but costs more
-    - TBW: terabytes written
+      - TLC is the most common
+    - TBW
+      - terabytes written
+      - endurance rating
 - Samsung
   - 960 EVO vs PRO
     - controller: polaris, pcie 3.0 x4, nvme 1.2
@@ -241,12 +232,52 @@ PC DIY
 - 20L+
   - <https://www.reddit.com/r/mffpc/>
 
+## CPU Coolers
+
+- $30 ~ $80
+- clearances
+  - cases have cooler height clearances
+    - small cases require low-profile coolers
+  - coolers may have ram and io clearances
+    - 90x90mm coolers are fine
+    - 120x120mm coolers on itx have either ram clearnace or back panel io
+      clearnace
+- low-profile performance
+  - 90x90mm is good enough to sustain TDP 65W cpus
+    - height clearance: 37mm - 65mm
+  - 120x120mm is needed for 65W cpus to stay at boost freq longer
+    - height clearance: 65mm - 70mm
+- for small builds emphasizing cpu performance,
+  - pick 65W cpu
+  - pick 120x120mm cooler
+  - pick cases with high cooler height clearance
+  - pick low-profile ram or mb with low-profile back io
+- decibels
+  - midnight background
+    - outdoor: 30dB
+    - bedroom: 25dB
+  - office background
+    - meditation: 30dB
+    - desk: 40dB
+    - kitchen: 55dB
+  - x1 carbon gen 9 fan
+    - 0rpm / background: 30dB
+    - 4500rpm: 30dB (noticeable)
+    - 5500rpm: 35dB (acceptable)
+    - 6500rpm: 40dB (a bit annoying)
+  - white noise
+    - muted / background: 30dB
+    - 35dB: noticeable
+    - 40dB: acceptable
+    - 45dB: a bit annoying
+    - 50dB: annoying
+  - it seems frequencies and background decibels both play a role
+    - for fan noises in a 25dB room, 40dB from a distance is acceptable
+
 ## PSUs
 
 - 750W
   - $100 ~ $180
-- SFX
-  - $80 ~ $200
 - <https://cultists.network/140/psu-tier-list/>
 - form factors
   - ATX: 150x86mm, depth is 140mm but can vary
@@ -257,60 +288,68 @@ PC DIY
     - comparing to flex, usually wider, deeper, noisier, and more powerful
   - gan: 55x25mm, depth is 170mm
   - pico: requires external ac-dc adapter
-- flex psu noise levels:
-  - Enhance ENP-7520B: 57dB at 200W
-  - Enhance ENP-7660B
-    - <https://reviewer.co/psu/enp-7660b>
-    - 32.5dB at 100W
-    - 33dB at 200W
-    - 33.5dB at 400W
+- considerations
+  - noise level
+    - psus need big heatsinks and big fans which take up space
+      - high-efficiency psus reduce wasted heat
+    - smaller form factors use smaller heatsinks and smaller fans, which
+      require higher rpms
+  - atx efficiency and noise
+    - CORSAIR RM750e
+    - efficiency and noise
+      - 72% at 15W: 4.2W heat, 0dB
+      - 87% at 75W: 9.8W heat, 0dB
+      - 91% at 150W: 13.5W heat, 8dB
+      - 92% at 375W: 30W heat, 8dB
+      - 87% at 750W: 97.5W heat, 25dB
+  - sfx efficiency and noise
+    - CORSAIR SF750
+    - efficiency and noise
+      - 88% at 75W: 9W heat, 0dB
+      - 92% at 150W: 12W heat, 0dB
+      - 93% at 375W: 26W heat, 14dB
+      - 90% at 750W: 75W heat, 30dB
+  - flex efficiency and noise
+    - SilverStone FX600
+      - <https://www.cybenetics.com/d/cybenetics_FPL.pdf>
+    - efficiency and noise
+      - 72% at 20W: 5.6W heat
+      - 87% at 60W: 7.8W heat
+      - 90% at 120W: 12W heat
+      - 92% at 300W: 24W heat, 33dB
+      - 89% at 600W: 66W heat, 48dB
+    - FX600 is said to be ENP-7660B rebranded
+      - <https://reviewer.co/psu/silverstone-fx600>
+      - <https://reviewer.co/psu/enp-7660b>
+      - fan: D40BM-12C vs ADO412XB-C51
+      - 50W: 31.5 vs 32.5dB
+      - 100W: 32 vs 32.5dB
+      - 200W: 32.5 vs 33dB
+      - 300W: 33 vs 33dB
+      - 600W: 48 vs 52dB
+    - FX60 is said to be much more quieter than FX350-G
+    - Enhance ENP-7520B
+      - 50W: 38dB
+      - 100W: 45dB
+      - 200W: 57dB
 
 ## GPUs
 
-- mainstream
-  - $300 ~ $600
+- nVidia GeForce
+  - mid-end: $300 ~ $500
+    - 3060, 3060 Ti
+- AMD Radeon
+  - mid-end: $200 ~ $400
+    - 6600, 6600 XT
+- TDP
+  - mid-end: 160W - 200W
 
 ## Example
 
 - CPU: Ryzen 5 5600G
   - $140
-- CPU Cooler: Thermalright AXP120-X67
-  - $50
 - MB: GIGABYTE B550I AORUS PRO AX
   - $200
-  - CPU
-    - 2x DDR4 3200 DIMMs
-    - 1x PCIe 3.0 x16
-      - 5600G has a total of 24 PCIe 3.0 lanes
-      - 16 lanes are usually for graphics
-      - 4 lanes are usually for M.2
-      - the rest 4 lanes are for the chipset
-        - B550 has 10 PCIe 3.0 lanes as well by itself
-        - but when communicating to the cpu, it has to use the 4 lanes
-          provided by the cpu
-    - 1x M.2 PCIe 3.0 x4
-    - 1x DisplayPort 1.4
-    - 2x HDMI 2.1
-    - 4x USB 3.2 Gen1
-  - AMD B550
-    - 1x M.2 PCIe 3.0 x4
-    - 4x SATA
-    - 1x USB-C 3.2 Gen2
-    - 1x USB-A 3.2 Gen2
-    - 2x USB-A 3.2 Gen1 (front)
-    - 2x USB-A 2.0 (front)
-  - Realtek MT7921K / AMD RZ608
-    - 802.11ax
-    - BT 5.2
-  - Realtek ALC1220-VB hda codec
-  - Realtek RTL8125 nic
-  - other internal connectors
-    - 1x 24-pin main power
-    - 1x 8-pin cpu power
-    - 1x CPU fan header
-    - 2x system fan headers
-    - 2x LED headers
-    - 1x front panel, audio, usb
 - RAM: CORSAIR Vengeance LPX 32GB
   - $90
   - 2 x 16GB
@@ -318,14 +357,14 @@ PC DIY
 - Storage: Samsung 990 PRO 1TB
   - $100
 - Case: Cooj Sparrow-MQ4 4.9L
-  - $169
-  - 4.9L
-- PSU: Enhance ENP-7660B 600W
   - $170
-- WLAN Antenna:
-  - $20
+  - 4.9L
+- CPU Cooler: Thermalright AXP120-X67
+  - $50
+- PSU: SilverStone FX600
+  - $170
 - Total
-  - `$140+$50+$200+$90+$100+$169+$170+$20 = $939`
+  - `$140+$50+$200+$90+$100+$170+$170 = $920`
 - update cpu/mb/ram for am5
   - am4 cost `$140+$200+$90 = $430`
   - am5 cost `$230+$260+$120 = $610`

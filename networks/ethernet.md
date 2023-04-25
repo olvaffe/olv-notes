@@ -39,6 +39,11 @@ Ethernet
     - up to 40m
     - Cat 6a
   - there are also fiber optic cable variants
+- 2.5 gigabit and 5 gigabit ethernet, 2.5Gb/s 5Gb/s
+  - 2.5GBASE-T and 5GBASE-T
+    - 802.3bz-2016
+    - up to 100m
+    - Cat 5e and 6
 - 10 gigabit ethernet, 10Gb/s
   - 10GBASE
     - 802.3ae-2002
