@@ -240,11 +240,11 @@ PC DIY
 - sub-5L (dgpu)
   - captain s v8: 4.3L
     - 75mm cpu cooler
-    - lp gpu
+    - lp gpu in traditional layout
     - flex psu
   - lzmod a24 v4: 4.3L
     - 66mm cpu cooler
-    - lp gpu
+    - lp gpu in traditional layout
     - flex psu
   - velka 5: 4.9L
     - 37mm cpu cooler
@@ -255,9 +255,9 @@ PC DIY
     - 72mm cpu cooler
     - dgpu in sandwich layout
     - flex psu
-  - captain s v6: 7.4L
+  - captain s v6: 7.3L
     - 72mm cpu cooler
-    - lp gpu
+    - dgpu in sandwich layout
     - sfx/sfx-l psu
   - lzmod f1-sfx: 7.5L
     - 74mm cpu cooler
