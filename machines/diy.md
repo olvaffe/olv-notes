@@ -326,3 +326,9 @@ PC DIY
   - $20
 - Total
   - `$140+$50+$200+$90+$100+$169+$170+$20 = $939`
+- update cpu/mb/ram for am5
+  - am4 cost `$140+$200+$90 = $430`
+  - am5 cost `$230+$260+$120 = $610`
+    - Ryzen 5 7600: $230
+    - GIGABYTE B650I AORUS ULTRA: $260
+    - G.SKILL Ripjaws S5 32GB: $120
