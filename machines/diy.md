@@ -166,15 +166,18 @@ PC DIY
   - asrock
     - B650E: high-end atx/eatx, pcie 5.0, thunderbolt
       - Taichi, Steel Legend, PG Riptide
-    - B650: atx
-    - B650M: matx
-    - B650E PG-ITX: itx
+    - B650: atx, pcie 4.0
+    - B650M: matx, pcie 4.0
+    - B650E PG-ITX: itx, pcie 5.0
   - gigabyte
-    - B650E: atx/eatx
-      - aorus tachyon, aorus master
-    - B650: atx
-    - B650M: matx
-    - B650I: iatx
+    - B650E: atx/eatx, pcie 5.0
+    - B650: atx, pcie 4.0
+    - B650M: matx, pcie 4.0
+    - B650I: iatx, pcie 4.0
+  - msi
+    - B650: atx, pcie 4.0
+    - B650M: matx, pcie 4.0
+    - B650I: itx, pcie 4.0
 
 ## Memories
 
