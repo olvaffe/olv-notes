@@ -142,6 +142,31 @@ Arch Linux
     - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
     - but can still partition, format, and bootstrap normally for qemu
 
+## Installation in Another Distro
+
+- boostrap a disk image
+  - `fallocate -l 32G arch.img`
+  - `mkfs.ext4 arch.img`
+  - `mkdir arch`
+  - `sudo mount arch.img arch`
+  - `sudo tar xf archlinux-bootstrap-x86_64.tar.gz -C arch --strip 1`
+  - `sudo vim arch/etc/pacman.d/mirrorlist`
+  - `sudo umount arch`
+  - `rmdir arch`
+- installation
+  - `sudo systemd-nspawn -i arch.img`
+  - `pacman-key --init`
+  - `pacman-key --populate`
+  - `pacman -R arch-install-scripts`
+  - `pacman -Syu`
+  - `pacman -S sudo vim`
+  - `visudo`
+  - `useradd -m -G wheel,video olv`
+  - `passwd -d olv`
+- boot
+  - `sudo systemd-nspawn -i arch.img -b`
+
+
 ## Tidy Up an Existing Installation
 
 - `pacman -Qeq` to get explicitly packages
