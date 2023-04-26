@@ -1,0 +1,153 @@
+Buses
+=====
+
+## PCIe
+
+- PCIe 1.0
+  - 2003
+  - 2.5 GT/s
+  - 8b/10b (encode 8-bit words to 10-bit symbols)
+  - x1: `2.5 GT/s * 8 / 10 = 2 Gb/s = 0.25 GB/s`
+  - x16: 4 GB/s
+- PCIe 1.1
+  - 2005
+  - 2.5 GT/s
+- PCIe 2.0
+  - 2007
+  - 5 GT/s
+  - 8b/10b
+  - x1: 0.5 GB/s
+  - x16: 8 GB/s
+- PCIe 2.1
+  - 2009
+  - 5 GT/s
+- PCIe 3.0
+  - 2010
+  - 8 GT/s
+  - 128b/130b
+  - x1: `8 GT/s * 128 / 130 = 7.877 Gb/s = 0.985 GB/s`
+  - x16: 15.754 GB/s
+- PCIe 3.1
+  - 2014
+  - 8 GT/s
+- PCIe 4.0
+  - 2017
+  - 16 GT/s
+  - 128b/130b
+  - x1: 1.969 GB/s
+  - x16: 31.508 GB/s
+- PCIe 5.0
+  - 2019
+  - 32 GT/s
+  - 128b/130b
+  - x1: 3.938 GB/s
+  - x16: 63.015 GB/s
+- PCIe 6.0
+  - 2022
+  - 64 GT/s
+  - each 256-byte block carries 242 bytes of data
+  - x1: `64 GT/s * 242 / 256 = 60.5 Gb/s = 7.563 GB/s`
+  - x16: 121.000 GB/s
+- PCIe 7.0
+  - 2025
+  - 128 GT/s
+  - each 256-byte block carries 242 bytes of data
+  - x1: 15.125 GB/s
+  - x16: 242.000 GB/s
+- Power
+  - +3.3V: up to 3A (9.9W)
+  - +12V
+    - x1: up to 0.5A (6W), 10W combined
+    - x4: up to 2.1A (25W), 25W combined
+    - x16: up to 5.5A (66W), 75W combined
+  - optional +12V connectors
+    - 6-pin: 75W
+    - 8-pin: 150W
+
+## USB
+
+- USB 1.0
+  - 1996
+  - Low Speed: 1.5Mbit/s
+  - Connectors: Type {A,B}
+- USB 1.1
+  - 1998
+  - Full Speed: 12Mbit/s
+  - Connectors: Type {A,B} and Mini-{A,B}
+- USB 2.0
+  - 2000
+  - High Speed: 480Mbit/s
+  - Connectors: Type {A,B,C}, Mini-{A,B,AB} and Micro-{A,B,AB}
+  - On-The-Go 1.3
+  - Battery Charging Spec 1.1 and 1.2
+- USB 3.0
+  - 2008
+  - SuperSpeed: 5Gbit/s
+    - Type {A,B} are blue connectors with SS initials
+  - Connectors: Type {A,B,C}, Micro-{A,B,AB}
+- USB 3.1
+  - 2013
+  - Gen1: USB 3.0 rebranded
+  - Gen2: SuperSpeed+: 10Gbit/s
+  - Connectors: Type {A,B,C}, Micro-{A,B,AB}
+  - USB PD
+- USB 3.2
+  - 2017
+  - Gen 1x1: 5Gbit/s
+  - Gen 1x2: 10Gbit/s (two lanes)
+  - Gen 2x1: 10Gbit/s
+  - Gen 2x2: 20Gbit/s (two lanes)
+  - Connector: Type C only
+- USB4
+  - 2019
+    - based on Thunderbolt 3
+  - can tunnel
+    - USB 3.2
+    - DisplayPort 1.4a
+    - PCIe
+  - Gen 3x1: 20Gbit/s
+  - Gen 3x2: 40Gbit/s (two lanes)
+  - Thunderbolt 4
+    - USB4 plus all optional USB4 functionality is TB4 without optional TB4
+      functionality
+- USB4 V2
+  - 2022
+  - Gen 4x1: 40Gbit/s
+  - Gen 4x2: 80Gbit/s (two lanes)
+- Power
+  - Low Power: 5V * 0.1A = 0.5W
+  - High Power: up to 5V * 0.5A = 2.5W
+  - Low Power SuperSpeed: 5V * 0.15A = 0.75W
+  - High Power SuperSpeed: up to 5V * 0.9A = 4.5W
+  - Two-Lane SuperSpeed (3.2 Gen2x2): up to 5V * 1.5A = 7.5W
+  - BC 1.2: 5V * 1.5A = 7.5W
+  - USB-C: 5V * 1.5A = 7.5W
+           5V * 3A = 15W
+- Power Delivery
+  - 1.0
+    - 5V: 2A
+    - 12V: 1.5A, 3A, 5A
+    - 20V: 3A, 5A
+  - 2.0/3.0
+    - 5V: 0.1A ~ 3A
+    - 9V: 1.67A ~ 3A
+    - 15V: 1.8A ~ 3A
+    - 20V: 2.25A ~ 5A
+  - 3.1
+    - 28V
+    - 36V
+    - 48V: 5A
+- Connectors
+  - most common: type A, type C
+  - was common: mini B, micro B
+  - less common: type B
+  - rare: mini A and micro A
+- USB-C
+  - Cable
+    - SuperSpeed is optional
+    - alternate mode is optional
+    - PD is optional
+- Chargers
+  - MacBook: 87W
+  - Laptop: 65W, 45W
+  - Phone: 18W, 30W
