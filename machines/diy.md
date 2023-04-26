@@ -145,6 +145,36 @@ PC DIY
     - 2x system fan headers
     - 2x LED headers
     - 1x front panel, audio, usb
+- amd b650 mobos
+  - asus
+    - prime: entry-level
+      - b650m-a: micro-atx
+        - WIFI: wifi/bt
+        - II: more memory OC clocks
+        - CSM: corporate stable model
+        - AX: wifi/bt, more sata, more pcie
+    - tuf gaming: budget gamer
+      - aio cooler, more cpu power connector
+      - b650m: micro-atx
+    - rog strix: gamer
+      - b650e-e: atx, two pcie 5.0 slots and m2 (the highest-end)
+      - b650e-f: atx, one pcie 5.0 slot and m2
+      - b650e-i: itx
+      - b650-a: atx, pcie 4.0
+    - proart: non-gaming
+      - more usb, pcie, m2, and lan ports/slots
+  - asrock
+    - B650E: high-end atx/eatx, pcie 5.0, thunderbolt
+      - Taichi, Steel Legend, PG Riptide
+    - B650: atx
+    - B650M: matx
+    - B650E PG-ITX: itx
+  - gigabyte
+    - B650E: atx/eatx
+      - aorus tachyon, aorus master
+    - B650: atx
+    - B650M: matx
+    - B650I: iatx
 
 ## Memories
 
