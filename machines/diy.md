@@ -185,12 +185,18 @@ PC DIY
   - $80 ~ $400
 - DDR4 32GB
   - $40 ~ $200
-- considerations
-  - for ddr5, cpus support 5200MHz/5600MHz officially
-    - no need to go beyond 6000MHz and CL 32
-  - for ddr4, cpus support 3200MHz officially
-    - no need to go beyond 3600MHz and CL 16
-  - height can be limited by cases or cpu coolers
+- module height can be limited by cases or cpu coolers
+- DDR4
+  - JEDEC defines up to DDR4-3200
+    - Core and Ryzen both support DDR4-3200
+  - Intel XMP 2.0 and AMD DOCP can overclock
+    - the sweet spot is said to be 3600MHz and CL 16
+- DDR5
+  - JEDEC defines up to DDR5-6400
+    - Core supports DDR5-5600
+    - Ryzen supports DDR5-5200
+  - Intel XMP 3.0 and AMD EXPO can overclock
+    - the sweet spot is said to be 6000MHz and CL 30
 
 ## Storage
 
@@ -258,6 +264,22 @@ PC DIY
   - $100 ~ $200
 - mini-itx
   - $100 ~ $300
+- theoretical sizes
+  - components
+    - itx: 170x170mm
+    - flex: 82x41x150mm
+    - cooler: 70mm
+  - buffers
+    - 10mm to case
+    - 10mm between itx/flex(/gpu)
+  - size
+    - `(170+41+10+10+10)x(170+10+10)x(70+10+10)`
+    - `241x190x90 = 4.12L`
+  - plus 10mm-thick half-height gpu
+    - `241x(190+10)x90 = 4.33L`
+  - plus 40mm-thick full-height gpu
+    - `241x(190+40)x(125+10+10) = 8.03L`
+    - if in sandwich layout, `241x190x(90+10+40) = 6.41L`
 - <https://caseend.com/>
 - sub-2L (mini pc-like)
   - deskmini x300: 1.92L
@@ -424,31 +446,55 @@ PC DIY
     - 6600, 6600 XT
 - TDP
   - mid-end: 160W - 200W
+- pcie card sizes
+  - standard
+    - height: 107mm
+    - half-length: 175.26mm
+    - full-length: 312mm
+      - this is uncommon
+  - low-profile
+    - height: 64.41mm
+    - MD1 length: 119.91mm
+    - MD2 length: 167.64mm
+  - bracket
+    - height: 120mm
+    - low-profile: 79.2mm
+- gaming gpus tend to be larger
+  - high end example,
+    - length: 304mm
+    - height: 137mm
+    - take up 3 slots to accommodate for the heat sink
+  - mid end example,
+    - length: 172mm
+    - height: 125mm
+    - take up 2 slots (43mm)
+  - low-profile example,
+    - length: 149.9mm
+    - height: 68.9mm
+    - thick: 14.7mm
 
 ## Example
 
-- CPU: Ryzen 5 5600G
-  - $140
-- MB: GIGABYTE B550I AORUS PRO AX
-  - $200
-- RAM: CORSAIR Vengeance LPX 32GB
-  - $90
-  - 2 x 16GB
-  - DDR4 3600 / CL16
+- CPU: Ryzen 9 7900
+  - $430
+- MB: GIGABYTE B650I AORUS ULTRA
+  - $260
+- RAM: G.SKILL Ripjaws S5 6000 CL30 32GB
+  - $120
 - Storage: Samsung 990 PRO 1TB
   - $100
 - Case: Cooj Sparrow-MQ4 4.9L
   - $170
-  - 4.9L
 - CPU Cooler: Thermalright AXP120-X67
   - $50
 - PSU: SilverStone FX600
   - $170
 - Total
-  - `$140+$50+$200+$90+$100+$170+$170 = $920`
-- update cpu/mb/ram for am5
+  - `$430+$260+$120+$100+$170+$50+$170 = $1300`
+- no apu unless downgrade to am4
+  - am5 cost `$430+$260+$120 = $810`
+    - or Ryzen 5 7600 to save $200
   - am4 cost `$140+$200+$90 = $430`
-  - am5 cost `$230+$260+$120 = $610`
-    - Ryzen 5 7600: $230
-    - GIGABYTE B650I AORUS ULTRA: $260
-    - G.SKILL Ripjaws S5 32GB: $120
+    - Ryzen 5 5600G: $140
+    - GIGABYTE B550I AORUS PRO AX: $200
+    - CORSAIR Vengeance LPX 32GB: $90
