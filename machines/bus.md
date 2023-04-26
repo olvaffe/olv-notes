@@ -100,17 +100,13 @@ Buses
   - Connector: Type C only
 - USB4
   - 2019
-    - based on Thunderbolt 3
   - can tunnel
     - USB 3.2
     - DisplayPort 1.4a
     - PCIe
   - Gen 3x1: 20Gbit/s
   - Gen 3x2: 40Gbit/s (two lanes)
-  - Thunderbolt 4
-    - USB4 plus all optional USB4 functionality is TB4 without optional TB4
-      functionality
-- USB4 V2
+- USB4 2.0
   - 2022
   - Gen 4x1: 40Gbit/s
   - Gen 4x2: 80Gbit/s (two lanes)
@@ -123,7 +119,26 @@ Buses
   - BC 1.2: 5V * 1.5A = 7.5W
   - USB-C: 5V * 1.5A = 7.5W
            5V * 3A = 15W
-- Power Delivery
+- USB Type-C
+  - revisions
+    - 1.0, 2014
+    - 1.1, 2015
+    - 1.2, 2016
+    - 1.3, 2017
+    - 1.4, 2019
+    - 2.0, 2019
+    - 2.1, 2021, USB PD up to 240W
+    - 2.2, 2022, USB4 2.0
+  - alternate mode
+    - this is different from USB4 / TB3 tunnelling
+    - DisplayPort 1.2, 1.4, 2.0
+    - Thunderbolt 3
+    - HDMI 1.4b
+  - Cable
+    - SuperSpeed is optional
+    - alternate mode is optional
+    - PD is optional
+- USB Power Delivery
   - 1.0
     - 5V: 2A
     - 12V: 1.5A, 3A, 5A
@@ -142,12 +157,53 @@ Buses
   - was common: mini B, micro B
   - less common: type B
   - rare: mini A and micro A
-- USB-C
-  - Cable
-    - SuperSpeed is optional
-    - alternate mode is optional
-    - PD is optional
 - Chargers
   - MacBook: 87W
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
+
+## Thunderbolt
+
+- Thunderbolt 1
+  - 2011
+  - Speed: 2 channels, 10 Gb/s each
+  - Connector: Mini DisplayPort
+  - tunnelling
+    - PCIe 2.0 x4
+    - DisplayPort 1.1a
+- Thunderbolt 2
+  - 2013
+  - Speed: 20 Gb/s with channel aggregation
+  - Connector: Mini DisplayPort
+  - tunnelling
+    - PCIe 2.0 x4
+    - DisplayPort 1.2
+- Thunderbolt 3
+  - 2015
+  - Speed: 40 Gb/s
+  - Connector: USB-C
+  - tunnelling
+    - PCIe 3.0 x4
+    - DisplayPort 1.2
+    - USB 3.1 Gen2
+  - USB4 is based on TB3
+- Thunderbolt 4
+  - 2020
+  - Speed: 40 Gb/s
+  - Connector: USB-C
+  - tunnelling
+    - PCIe 3.0 x4
+    - DisplayPort 2.0
+    - USB4
+  - USB4 plus all optional USB4 functionality is TB4 without optional TB4
+    functionality
+- Thunderbolt 5
+  - 2023
+    - aligned with USB4 2.0
+  - Speed: 80 Gb/s
+  - Connector: USB-C
+  - tunnelling
+    - PCIe 3.0 x4
+    - DisplayPort 2.1
+    - USB4
+  - alternate mode
