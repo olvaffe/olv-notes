@@ -435,6 +435,32 @@ PC DIY
       - 50W: 38dB
       - 100W: 45dB
       - 200W: 57dB
+- phones and laptops
+  - pixel 3 xl
+    - battery
+      - 3430mAh @ 3.85V
+      - 13.2Wh
+    - consumptions
+      - suspended + airplane mode: 5mA
+      - idle + screen off + airplane mode: 10mA
+      - idle + screen off: 15mA
+      - idle + black screen: 100mA
+      - idle + white screen: 300mA
+      - video: 200mA
+      - game: 400mA
+      - camera: 600mA
+      - SD855 TDP: 5W
+  - thinkpad x1 carbon gen9
+    - battery
+      - 3610mAh @ 15.44V
+      - 56Wh
+    - consumptions
+      - `/sys/class/power_supply/BAT0/uevent`
+        - `POWER_SUPPLY_VOLTAGE_NOW` is current voltage in uV
+        - `POWER_SUPPLY_POWER_NOW` is current consumption in uW
+        - `POWER_SUPPLY_ENERGY_NOW` is current charge in uW
+      - idle + screen off: 10W
+      - i7-1185G7 TDP: 12-28W
 
 ## GPUs
 
