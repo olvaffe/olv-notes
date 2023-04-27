@@ -166,8 +166,8 @@ Arch Linux
 - boot
   - `sudo systemd-nspawn -i arch.img -b --bind /dev/dri --private-users=identity`
     - note that user namespace drops all capabilities in the previous user namespace
-    - because of systemd cgroups,
-      `systemctl set-property machine-arch.scope DeviceAllow='/dev/dri/renderD128 rwm'`
+    - man `systemd.resource-control`
+      - `systemctl set-property machine-arch.scope DeviceAllow='char-drm rwm'`
 
 ## Tidy Up an Existing Installation
 
