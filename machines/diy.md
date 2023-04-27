@@ -280,10 +280,11 @@ PC DIY
   - plus 40mm-thick full-height gpu
     - `241x(190+40)x(125+10+10) = 8.03L`
     - if in sandwich layout, `241x190x(90+10+40) = 6.41L`
-  - if sfx (125x64x100) instead of flex,
+  - if sfx-l (125x64x125) instead of flex,
     - `(170+64+10+10+10)x(170+10+10)x(125+10+10)`
     - `264x190x145 = 7.2L`
 - <https://caseend.com/>
+- <https://www.zhihu.com/column/yiluka>
 - sub-2L (mini pc-like)
   - deskmini x300: 1.92L
     - 46mm cpu cooler
@@ -388,6 +389,7 @@ PC DIY
 - form factors
   - ATX: 150x86mm, depth is 140mm but can vary
   - SFX: about 125x64mm, depth is 100mm
+  - SFX-L: about 125x64mm, depth is 125mm
   - TFX: about 85x65mm, depth is 175mm
   - flex: 81.5x40.5mm, depth is 150mm
   - 1U: less than 1.75in (44.45mm) in height
