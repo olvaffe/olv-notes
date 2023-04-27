@@ -158,14 +158,16 @@ Arch Linux
   - `pacman-key --init`
   - `pacman-key --populate`
   - `pacman -R arch-install-scripts`
-  - `pacman -Syu`
-  - `pacman -S sudo vim`
+  - `pacman -Syu sudo vim`
   - `visudo`
   - `useradd -m -G wheel,video olv`
+    - fix up `/etc/groups` in the chroot
   - `passwd -d olv`
 - boot
-  - `sudo systemd-nspawn -i arch.img -b`
-
+  - `sudo systemd-nspawn -i arch.img -b --bind /dev/dri --private-users=identity`
+    - note that user namespace drops all capabilities in the previous user namespace
+    - because of systemd cgroups,
+      `systemctl set-property machine-arch.scope DeviceAllow='/dev/dri/renderD128 rwm'`
 
 ## Tidy Up an Existing Installation
 
