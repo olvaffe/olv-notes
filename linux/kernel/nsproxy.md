@@ -21,6 +21,13 @@ Kernel nsproxy
     - capabilities
       - the process loses all capabilities in the parent user namespace
       - the process gains all capabilities in the new user namespace
+      - for example,
+        - `sudo mknod /dev/test c 1 3 && sudo rm /dev/test`
+        - `sudo unshare -U -r`
+        - `touch /dev/test && rm /dev/test`
+          - this works because we are root in the parent namespace
+        - `mknod /dev/test c 1 3 && sudo rm /dev/test`
+          - this fails because we have lost all caps
       - note that `execve` will drop all capabilities in the new user
         namespace again unless the uid is 0
         - this is unrelated to namespace but the behavior of `execve`

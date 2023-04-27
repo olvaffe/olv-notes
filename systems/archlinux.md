@@ -98,7 +98,7 @@ Arch Linux
   - wifi, `iwd` or `wpa_supplicant`
     - also `networkmanager`
   - tools, `sudo vim man-db`
-  - devel, `gcc git ctags meson pkgconf`
+  - devel, `base-devel git ctags meson`
     - also `gdb perf strace man-pages debuginfod`
   - gui, `sway polkit i3status swayidle swaylock mako`
     - `alacritty google-chrome noto-fonts noto-fonts-cjk`
@@ -109,9 +109,8 @@ Arch Linux
   - printer, `cups samsung-unified-driver-printer`
   - audio, `pipewire pipewire-pulse pavucontrol`
   - misc
-    - `fakeroot` for makepkg
-    - `bison flex python-mako wayland-protocols libxrandr llvm` for mesa
-    - `cmake make` for cmake
+    - `python-mako wayland-protocols libxrandr llvm` for mesa
+    - `cmake` for cmake
     - `aarch64-linux-gnu-gcc` for cross-compile
       - also `qemu-user-static qemu-user-static-binfmt`
 - x11
@@ -154,20 +153,26 @@ Arch Linux
   - `sudo umount arch`
   - `rmdir arch`
 - installation
-  - `sudo systemd-nspawn -i arch.img`
+  - `sudo systemd-nspawn -i arch.img --private-users=identity`
   - `pacman-key --init`
   - `pacman-key --populate`
   - `pacman -R arch-install-scripts`
   - `pacman -Syu sudo vim`
   - `visudo`
   - `useradd -m -G wheel,video olv`
-    - fix up `/etc/groups` in the chroot
   - `passwd -d olv`
 - boot
-  - `sudo systemd-nspawn -i arch.img -b --bind /dev/dri --private-users=identity`
-    - note that user namespace drops all capabilities in the previous user namespace
+  - `sudo systemd-nspawn -i arch.img --private-users=identity -b --bind /dev/dri --bind /dev/input --bind /dev/snd`
     - man `systemd.resource-control`
-      - `systemctl set-property machine-arch.scope DeviceAllow='char-drm rwm'`
+      - `systemctl set-property machine-arch.img.scope DeviceAllow='char-drm rw'`
+      - also `char-alsa` and `char-input`
+    - fix up `/etc/groups` in the chroot
+    - `--network-veth`
+    - <https://systemd.io/CONTAINER_INTERFACE/>
+  - THIS DOES NOT WORK
+    - sway, libinput, pipewire rely on udev for device discovery
+    - systemd-udev is not running
+  - the more common way is to bind-mount wayland/x11/pipewire sockets
 
 ## Tidy Up an Existing Installation
 
