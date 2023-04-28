@@ -283,61 +283,23 @@ PC DIY
   - if sfx-l (125x64x125) instead of flex,
     - `(170+64+10+10+10)x(170+10+10)x(125+10+10)`
     - `264x190x145 = 7.2L`
-- <https://caseend.com/>
-- <https://www.zhihu.com/column/yiluka>
-- sub-2L (mini pc-like)
-  - deskmini x300: 1.92L
-    - 46mm cpu cooler
-    - special psu and mb
-- sub-5L (igpu only)
-  - Densium APU: 4L
-    - 67mm cpu cooler
-    - flex/gan psu
-  - cooj mq4: 4.9L
-    - 69mm cpu cooler
-    - flex psu
-- sub-5L (dgpu)
-  - captain s v8: 4.3L
-    - 75mm cpu cooler
-    - lp gpu in traditional layout
-    - flex psu
-  - lzmod a24 v4: 4.3L
-    - 66mm cpu cooler
-    - lp gpu in traditional layout
-    - flex psu
-  - velka 5: 4.9L
-    - 37mm cpu cooler
-    - dgpu in sandwich layout
-    - flex psu
-- sub-8L
-  - cooj mq6: 6.8L
-    - 72mm cpu cooler
-    - dgpu in sandwich layout
-    - flex psu
-  - captain s v6: 7.3L
-    - 72mm cpu cooler
-    - dgpu in sandwich layout
-    - sfx/sfx-l psu
-  - lzmod f1-sfx: 7.5L
-    - 74mm cpu cooler
-    - dgpu in sandwich layout
-    - sfx/sfx-l psu
-- sub-20L
-  - formd t1 v2: 9.9L
-    - 115mm cpu cooler
-    - dgpu in traditional or sandwich layout
-    - sfx/sfx-l psu
-  - lian li A4-H2O: 11L
-    - aio cpu cooler
-    - dqpu in sandwich layout
-    - sfx/sfx-l psu
-  - fractal ridge: 12.6L
-    - 70mm cpu cooler
-    - dgpu in dual-chamber
-    - sfx/sfx-l psu
-  - nr200p: 18.5L
-- 20L+
-  - <https://www.reddit.com/r/mffpc/>
+- SFF Case and Parts List
+  - <https://docs.google.com/spreadsheets/d/1AddRvGWJ_f4B6UC7_IftDiVudVc8CJ8sxLUqlxVsCz4/edit>
+  - sub-2L (mini pc-like)
+    - deskmini x300: 1.92L, 46mm cpu cooler
+  - sub-5L (igpu only)
+    - Densium APU: 4L, 67mm cpu cooler
+    - ZS-D2: 4.2L, 75mm cpu cooler
+    - cooj mq4: 4.9L, 69mm cpu cooler
+  - sub-5L (dgpu)
+    - captain s v8: 4.3L, 75mm cpu cooler
+    - velka 5: 4.9L, 37mm cpu cooler
+  - sub-8L
+    - AKLLA A1: 5.6L, 90mm cpu cooler
+    - lzmod f1-sfx: 7.5L, 74mm cpu cooler
+  - sub-12L
+    - formd t1 v2: 9.9L, 115mm cpu cooler
+    - lian li A4-H2O: 11L, aio cpu cooler
 
 ## CPU Coolers
 
@@ -514,14 +476,14 @@ PC DIY
   - $120
 - Storage: Samsung 990 PRO 1TB
   - $100
-- Case: Cooj Sparrow-MQ4 4.9L
-  - $170
+- Case: AKLLA A1 5.6L
+  - $110
 - CPU Cooler: Thermalright AXP120-X67
   - $50
 - PSU: SilverStone FX600
   - $170
 - Total
-  - `$430+$260+$120+$100+$170+$50+$170 = $1300`
+  - `$430+$260+$120+$100+$110+$50+$170 = $1240`
 - no apu unless downgrade to am4
   - am5 cost `$430+$260+$120 = $810`
     - or Ryzen 5 7600 to save $200

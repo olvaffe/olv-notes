@@ -36,6 +36,80 @@ GNU Toolchain
 - `inhibit_libc`: when configuring cross compiler without `--with-headers`, if
   `--with-newlib` or no `--with-sysroot` is given, libc is inhibited
 
+## gcc search dirs
+
+- c/c++ header search dirs
+  - experiment
+    - `gcc -xc++ -v -E /dev/null -o /dev/null`
+    - create nonexistent directories to see the final order
+    - add `-I`, `-isystem`, and `--sysroot`
+  - interesting dirs and their order are
+    - `-I`s
+    - `-isystem`s
+    - `/usr/include/c++/12`
+    - `/usr/include/x86_64-linux-gnu/c++/12`
+    - `/usr/include/c++/12/backward`
+    - `/usr/lib/gcc/x86_64-linux-gnu/12/include`
+    - `$sysroot/usr/local/include/x86_64-linux-gnu`
+    - `$sysroot/usr/local/include`
+    - `/usr/x86_64-linux-gnu/include`
+    - `$sysroot/usr/include/x86_64-linux-gnu`
+    - `$sysroot/usr/include`
+  - `aarch64-linux-gnu-gcc`
+    - `-I`s
+    - `-isystem`s
+    - `/usr/aarch64-linux-gnu/include/c++/12`
+    - `/usr/aarch64-linux-gnu/include/c++/12/aarch64-linux-gnu`
+    - `/usr/aarch64-linux-gnu/include/c++/12/backward`
+      - these 3 are from libstdc++, which is a part of gcc
+    - `/usr/lib/gcc-cross/aarch64-linux-gnu/12/include`
+      - this is from gcc (intrinsics, extensions, low-level libc, etc.)
+    - `$sysroot/usr/local/include/aarch64-linux-gnu`
+    - `/usr/aarch64-linux-gnu/include`
+      - this is for extra gcc headers which is unused on debian
+    - `$sysroot/usr/include/aarch64-linux-gnu`
+    - `$sysroot/usr/include`
+- library search dirs
+  - experiment
+    - `gcc -print-search-dirs | grep libraries | cut -d= -f2 | tr : \\n | xargs realpath -m`
+  - interesting dirs and their order are
+    - `/usr/lib/gcc/x86_64-linux-gnu/12`
+    - `/usr/x86_64-linux-gnu/lib/x86_64-linux-gnu/12`
+    - `/usr/x86_64-linux-gnu/lib/x86_64-linux-gnu`
+    - `/usr/x86_64-linux-gnu/lib`
+    - `/usr/lib/x86_64-linux-gnu/12`
+    - `/usr/lib/x86_64-linux-gnu`
+    - `/usr/lib`
+    - `$sysroot/lib/x86_64-linux-gnu/12`
+    - `$sysroot/lib/x86_64-linux-gnu`
+    - `$sysroot/lib`
+    - `$sysroot/usr/lib/x86_64-linux-gnu/12`
+    - `$sysroot/usr/lib/x86_64-linux-gnu`
+    - `$sysroot/usr/lib`
+    - `/usr/x86_64-linux-gnu/lib`
+    - `/usr/lib`
+    - `$sysroot/lib`
+    - `$sysroot/usr/lib`
+  - `aarch64-linux-gnu-gcc`
+    - `/usr/lib/gcc-cross/aarch64-linux-gnu/12`
+      - this is from gcc (low-level stuff)
+    - `/usr/aarch64-linux-gnu/lib/aarch64-linux-gnu/12`
+    - `/usr/aarch64-linux-gnu/lib/aarch64-linux-gnu`
+    - `/usr/aarch64-linux-gnu/lib`
+      - this is from gcc, libstdc++, and libc
+    - `$sysroot/lib/aarch64-linux-gnu/12`
+    - `$sysroot/lib/aarch64-linux-gnu`
+    - `$sysroot/lib`
+    - `$sysroot/usr/lib/aarch64-linux-gnu/12`
+    - `$sysroot/usr/lib/aarch64-linux-gnu`
+    - `$sysroot/usr/lib`
+    - `/usr/aarch64-linux-gnu/lib`
+      - this is extra gcc
+    - `$sysroot/lib`
+    - `$sysroot/usr/lib`
+- `libc.so` is a linker script
+  - `/usr/aarch64-linux-gnu/lib/libc.so` hard-codes a wrong library on arch
+
 ## gcc specs
 
 - `gcc -dumpspecs` to show built-in specs.
