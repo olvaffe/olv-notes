@@ -276,16 +276,71 @@ Chromium Browser
     `BrowserMainRunner::{Initialize,Run}`
   - `browser_main_runner_impl.cc` defines
     `BrowserMainRunnerImpl::{Initialize,Run}`
+  - `GpuDataManagerImpl` defines how to launch the gpu process
+    - `InitializeGpuModes` initializes the possible modes
+      - `gpu::GpuMode::HARDWARE_GL` is always on
+      - `gpu::GpuMode::HARDWARE_VULKAN` is based on
+        `ParseVulkanImplementationName`, which checks
+        `features::IsUsingVulkan` (`--enable-features=Vulkan`)
   - `GpuProcessHost::Get` launches the gpu process on demand
     - I guess this executes `chrome` again (or use the zygote) with
       `--type=gpu-process`.  `ContentMainRunnerImpl::Run` calls
       `RunOtherNamedProcessTypeMain` which calls `GpuMain`
 - `content/gpu` defines the gpu process
-  - `gpu_main.cc` defines `GpuMain`
+  - `gpu_main.cc` defines `GpuMain` and calls `GpuInit::InitializeAndStartSandbox`
+  - stack on cros
+    - `base::RunLoop::Run()`
+    - `content::GpuMain()`
+    - `content::RunZygote()`
+    - `content::RunOtherNamedProcessTypeMain()`
+    - `content::ContentMainRunnerImpl::Run()`
+    - `content::RunContentProcess()`
+    - `content::ContentMain()`
+    - `ChromeMain`
+- `gpu/ipc` defines the `GpuInit` class
+  - `service/gpu_init.cc` defines `GpuInit::InitializeAndStartSandbox`
+
+## GPU Memory
+
+- `CreateSharedImageFactory` or `LazyCreateSharedImageFactory` creates the gpu
+  memory allocator
+  - there can be multiple factories such as
+  - `WrappedSkImageBackingFactory`
+  - `OzoneImageBackingFactory`
+- `SharedImageFactory::CreateSharedImage`
+  - `GetFactoryByUsage` picks a factory based on buffer usage
+  - `OzoneImageBackingFactory::CreateSharedImage` calls
+    `GbmSurfaceFactory::CreateNativePixmap` on drm
+    - `DrmThreadProxy::CreateBuffer`
+    - `DrmThread::CreateBuffer`
+      - `window->GetController()` may be null and there will be no modifier
+      - otherwise, on zork, `modetest` says `AR24` supports
+        - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=0`
+        - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_RETILE,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=1,PIPE_2`
+        - `AMD_GFX9,GFX9_64K_S_X,PIPE_XOR_BITS=2,BANK_XOR_BITS=0`
+        - `AMD_GFX9,GFX9_64K_S`
+        - `LINEAR`
+      - I've seen `0x200000440417901` which is the second modifier one above
+        - because of `DCC` and `DCC_RETILE`, there are 3 planes
+        - plane 0 is the main surface
+        - plane 1 is the displayable dcc surface
+        - plane 2 is the pipe-aligned dcc surface
+    - `CreateBufferWithGbmFlags`
+    - `GbmDevice::CreateBufferWithModifiers`
+  - `WrappedSkImageBackingFactory::CreateSharedImage` calls
+    `WrappedSkImageBacking::Initialize`
+    - this calls skia's `createBackendTexture`
 
 ## Vulkan
 
 - `gpu/ipc`
+  - `GpuInit::InitializeAndStartSandbox`
+    - it calls `ComputeGpuFeatureInfo` to parse the command line and the
+      preference into `GpuFeatureInfo`
+      - `--enable-features=Vulkan` forces vulkan
+    - if `GPU_FEATURE_TYPE_VULKAN`, `GpuInit::InitializeVulkan` initializes vk
+      - `gpu::CreateVulkanImplementation` calls
+        `GbmSurfaceFactory::CreateVulkanImplementation` if using ozone drm
 - `chrome/browser`
   - `kFeatureEntries`
   - `kEnableVulkanName`
