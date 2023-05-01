@@ -1,6 +1,94 @@
 Chromium Browser
 ================
 
+## Build for Linux
+
+- <https://chromium.googlesource.com/chromium/src/+/HEAD/docs/linux/build_instructions.md>
+- download
+  - `mkdir ~/chromium && cd ~/chromium`
+  - `fetch --nohooks chromium`
+  - `cd src`
+  - `./build/install-build-deps.sh`
+  - `gclient runhooks`
+- update
+  - `git pull --rebase`
+  - `gclient sync`
+- setup
+  - `gn gen out/Default`
+    - the default will be a debug component build
+      - `is_debug = true`
+      - `is_component_build = true`
+        - many shared libraries
+  - faster build
+    - disable nacl: `enable_nacl=false`
+    - less debug symbols
+      - `symbol_level=1`
+      - `blink_symbol_level=0`
+      - `v8_symbol_level=0`
+  - release build
+    - `is_debug = false`
+    - `dcheck_always_on = false`
+    - `is_official_build = true`
+- build
+  - `autoninja -C out/Default chrome`
+- run
+  - `out/Default/chrome`
+
+## Build for ChromeOS
+
+- <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/simple_chrome_workflow.md>
+- download
+  - `gsutil.py config`
+  - edit `.gclient`
+    - `target_os = ["chromeos"]`
+    - `custom_vars`
+      - `"cros_boards": "$BOARD"`
+      - internal code
+  - `gclient sync`
+- setup
+  - `gn gen out_$BOARD/Release`
+    - the default will be a release component build
+  - goma
+- build
+  - `autoninja -C out_$BOARD/Release chrome nacl_helper`
+- deploy
+  - `./third_party/chromite/bin/deploy_chrome --build-dir=out_${BOARD}/Release --device=$DUT`
+  - `ssh $DUT /usr/local/autotest/bin/autologin.py --url chrome://version`
+
+## `chrome://`
+
+- `chrome://version`
+- `chrome://gpu`
+- `chrome://policy`
+- `chrome://flags`
+
+## Command Line Options
+
+- edit `/etc/chrome_dev.conf`
+- logging
+  - `--log-level=0`
+  - `--enable-logging=stderr`
+  - `--v=1`
+- `--enable-features=vulkan`
+- `--no-sandbox`
+
+## Logs
+
+- <https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chrome_os_logging.md>
+- `/var/log/ui/ui.LATEST`
+  - early stdout/stderr from chrome and session manager
+- `/var/log/chrome/chrome`
+  - chrome log after its logging subsystem has been initialized
+- `base/logging.h`
+  - `LOG(severity)` is enabled when `LOG_IS_ON(severity)` returns true
+    - `--log-level=0` to enable `LOGGING_INFO`
+  - `VLOG(verbosity)` is enabled when `VLOG_IS_ON(verbosity)` returns true
+    - `--v=1` to enable verbosity 1
+    - cros does not support runtime verbosity and rely on
+      `ENABLED_VLOG_LEVEL=1` to be defined for each file/target
+  - `DLOG` and `DVLOG` are enabled when `DCHECK_ALWAYS_ON` is enabled at
+    compile time and the respective sevrity/verbosity is enabled at runtime
+
 ## Build system
 
 - chromium uses `gclient` from `depot_tools` for source control
@@ -170,3 +258,47 @@ Chromium Browser
 - every process is an instance of `chrome`, the executable/dll
 - the type (browser/render/gpu/...) of a process is determined by its command
   line switch, `-type <type>`
+
+## Startup
+
+- `chrome/app` defines the entrypoint
+  - `chrome_exe_main_aura.cc` defines `main` and calls `ChromeMain`
+  - `chrome_main.cc` defines `ChromeMain` and calls `ContentMain` with a
+    `ChromeMainDelegate`
+- `content/app` defines the app process
+  - `content_main.cc` defines `ContentMain` and calls `RunContentProcess`
+  - `RunContentProcess` calls `ContentMainRunner::{Initialize,Run}`
+  - `content_main_runner_impl.cc` defines `ContentMainRunnerImpl::{Initialize,Run}`
+    - because `process_type.empty()`, it enters `RunBrowser`,
+      `RunBrowserProcessMain`, and `BrowserMain`
+- `content/browser` defines the browser process
+  - `browser_main.cc` defines `BrowserMain` and calls
+    `BrowserMainRunner::{Initialize,Run}`
+  - `browser_main_runner_impl.cc` defines
+    `BrowserMainRunnerImpl::{Initialize,Run}`
+  - `GpuProcessHost::Get` launches the gpu process on demand
+    - I guess this executes `chrome` again (or use the zygote) with
+      `--type=gpu-process`.  `ContentMainRunnerImpl::Run` calls
+      `RunOtherNamedProcessTypeMain` which calls `GpuMain`
+- `content/gpu` defines the gpu process
+  - `gpu_main.cc` defines `GpuMain`
+
+## Vulkan
+
+- `gpu/ipc`
+- `chrome/browser`
+  - `kFeatureEntries`
+  - `kEnableVulkanName`
+- `ui/ozone`
+- `ui/gl`
+  - angle-on-vulkan
+- `services/viz`
+- `media`
+- `gpu/command_buffer`
+- `gpu/config`
+- `gpu/vulkan`
+- `content/browser`
+- `content/gpu`
+- `content`
+- `components/exo`
+- `components/viz`
