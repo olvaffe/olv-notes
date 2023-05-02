@@ -330,6 +330,18 @@ Chromium Browser
   - `WrappedSkImageBackingFactory::CreateSharedImage` calls
     `WrappedSkImageBacking::Initialize`
     - this calls skia's `createBackendTexture`
+- when skia-vk imports a shared image for composition,
+  - there is this stack
+    - `gpu::VulkanImage::InitializeFromGpuMemoryBufferHandle()`
+    - `gpu::VulkanImage::CreateFromGpuMemoryBufferHandle()`
+    - `ui::VulkanImplementationGbm::CreateImageFromGpuMemoryHandle()`
+    - `gpu::OzoneImageBacking::ProduceSkiaGanesh()`
+    - `gpu::SharedImageBacking::ProduceSkia()`
+    - `gpu::SharedImageManager::ProduceSkia()`
+    - `gpu::SharedImageRepresentationFactory::ProduceSkia()`
+    - `viz::SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass()`
+  - skia-gl instead uses `GLOzoneEGLGbm::ImportNativePixmap`
+    - this calls `eglCreateImageKHR(EGL_LINUX_DMA_BUF_EXT)`
 
 ## Vulkan
 

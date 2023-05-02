@@ -123,6 +123,35 @@ WiFi
     channels
   - although clients are commonly limited to 2x2
 
+## Roaming
+
+- when two APs have the same SSID and credential, clients can roam from one to
+  another
+  - the APs should be in the same network.  They should be in AP mode (to
+    provide wireless connections to the same network) rather than in router
+    mode (to provide wireless connections to their own subnets)
+- clients handle roaming
+  - APs do not necessarily need to do anything
+- fast/seamless roaming
+  - 802.11k
+    - clients can send Neighbor Report requests to the current AP to
+      understand the RF environment, reducing the time spent on scanning
+  - 802.11v
+    - APs can additionally direct clients to the best one in response to
+      Neighbor Report requests
+  - 802.11r
+    - it reduces the time for wireless auth of WPA2-PSK and WPA2-Enterprise
+  - all three require both APs' and clients' support
+- wired backhaul
+  - APs are connected together using ethernet
+- wireless backhaul (mesh)
+  - benefits
+    - flexible: no cabling required
+    - self-forming: each AP in the mesh can automatically calculate the
+      possible paths to the router and pick the best one
+    - self-healing: each AP in the mesh can switch the path when one fails
+  - 802.11s is an open standard
+
 ## `iw`
 
 - `iw dev <dev> link` shows the current link

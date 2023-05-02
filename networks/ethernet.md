@@ -55,13 +55,15 @@ Ethernet
 - cables
   - Cat5e
     - 100mhz
-    - up to 1Gb/s
+    - up to 2.5Gb/s
   - Cat6
     - 250mhz
-    - up to 1Gb/s
+    - up to 10Gb/s at 37 to 55 meters
   - Cat6A
     - 500mhz
-    - up to 10Gb/s
+    - up to 10Gb/s at 100 meters
+      - thicker and harder to run
+      - handle heat dissipation better for PoE++
   - Cat7
     - 600mhz
     - up to 10Gb/s
@@ -80,6 +82,29 @@ Ethernet
   - `Speed: 1000Mb/s`
   - `Duplex: Full`
 - or, `cat /sys/class/net/<dev>/speed`
+
+## Home Network
+
+- at each node,
+  - performance
+    - for modem, it should be able to handle ISP bandwidth
+    - for ethernet, each node should be able to handle 1g/2.5g/10g
+  - power consumption
+    - passive/active cooling
+    - electricity bill
+- modem
+- router
+  - pfsense netgate advertises L3 forwarding, firewall, and vpn numbers
+- switch
+  - managed (for vlan, 802.1x, etc.) or not
+  - number of ports and their speeds
+  - unlike hub, a switch inspects the mac addrress and forwards packets to the
+    right ports
+- ap
+- cabling
+  - moca adapters for coax
+  - Cat6 is good enough
+    - Cat6A is more future proof but harder to run
 
 ## Link
 
