@@ -22,7 +22,7 @@ Chromium Browser
       - `is_component_build = is_debug`
         - many shared libraries
       - `dcheck_always_on = (build_with_chromium && !is_official_build)`
-        - `build_with_chromium = false` is from
+        - `build_with_chromium = true` is from
           `build/config/gclient_args.gni`
   - faster build
     - disable nacl: `enable_nacl=false`
@@ -44,11 +44,11 @@ Chromium Browser
 - <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/simple_chrome_workflow.md>
 - download
   - edit `.gclient`
-    - `target_os = ["chromeos"]`
     - `custom_vars`
-      - `"cros_boards": "$BOARD"`
-      - internal code
+      - `"cros_boards": "board1:board2"`
+      - `"checkout_src_internal": True`
         - might require `gsutil.py config`
+    - `target_os = ["chromeos"]`
   - `gclient sync`
 - setup
   - `gn gen out_$BOARD/Release`
@@ -65,7 +65,7 @@ Chromium Browser
     - `is_chrome_branded = true` to enable internal code?
       - is it more than branding?
     - debug component build
-      - `is_debug = false`
+      - `is_debug = true`
       - `symbol_level = 1`
       - `blink_symbol_level = 0`
       - `v8_symbol_level = 0`
@@ -80,6 +80,8 @@ Chromium Browser
         is gone)
     - specify `--deploy-test-binaries` to deploy
       `/usr/local/libexec/chrome-binary-tests`
+    - `--nostrip` to avoid stripping
+    - `--nostartui` to avoid restarting ui
 - run
   - `ssh $DUT /usr/local/autotest/bin/autologin.py --url chrome://version`
 
@@ -97,6 +99,11 @@ Chromium Browser
     - `0` is `LOGGING_INFO` and is the lowest severity
   - `--v=1`
     - `VlogInfoFromCommandLine`
+  - `--disable-logging-redirect`
+    - `RedirectChromeLogging`
+    - this is the default (set by the session manager) on a test build
+    - otherwise, logging is redirected to `/home/chronos/user/log/chrome`
+      after user login
 - gpu
   - `--no-sandbox`
   - `--enable-features=Vulkan`
