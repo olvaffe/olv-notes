@@ -16,9 +16,14 @@ Chromium Browser
 - setup
   - `gn gen out/Default`
     - the default will be a debug component build
-      - `is_debug = true`
-      - `is_component_build = true`
+      - see `build/config/BUILDCONFIG.gn`
+      - `is_official_build = false`
+      - `is_debug = !is_official_build`
+      - `is_component_build = is_debug`
         - many shared libraries
+      - `dcheck_always_on = (build_with_chromium && !is_official_build)`
+        - `build_with_chromium = false` is from
+          `build/config/gclient_args.gni`
   - faster build
     - disable nacl: `enable_nacl=false`
     - less debug symbols
@@ -38,22 +43,63 @@ Chromium Browser
 
 - <https://chromium.googlesource.com/chromiumos/docs/+/HEAD/simple_chrome_workflow.md>
 - download
-  - `gsutil.py config`
   - edit `.gclient`
     - `target_os = ["chromeos"]`
     - `custom_vars`
       - `"cros_boards": "$BOARD"`
       - internal code
+        - might require `gsutil.py config`
   - `gclient sync`
 - setup
   - `gn gen out_$BOARD/Release`
-    - the default will be a release component build
-  - goma
+    - the default will be a release monolithic build
+      - see `build/args/chromeos/$BOARD.gni`
+      - `is_debug = false`
+      - `is_component_build = is_debug`
+      - `use_runtime_vlog = true`
+  - interesting args
+    - `use_goma = true` to enable goma
+      - require goma setup
+    - `is_component_build = true` to enable component build
+      - faster link and deploy
+    - `is_chrome_branded = true` to enable internal code?
+      - is it more than branding?
+    - debug component build
+      - `is_debug = false`
+      - `symbol_level = 1`
+      - `blink_symbol_level = 0`
+      - `v8_symbol_level = 0`
 - build
   - `autoninja -C out_$BOARD/Release chrome nacl_helper`
 - deploy
   - `./third_party/chromite/bin/deploy_chrome --build-dir=out_${BOARD}/Release --device=$DUT`
+    - specify `--mount` to deploy to `/usr/local/opt/google/chrome` and bind
+      mount to `/opt/google/chrome`
+      - this is required when the rootfs is out of space
+      - reboot will roll back to the original version (because the bind mount
+        is gone)
+    - specify `--deploy-test-binaries` to deploy
+      `/usr/local/libexec/chrome-binary-tests`
+- run
   - `ssh $DUT /usr/local/autotest/bin/autologin.py --url chrome://version`
+
+## Command Line Options and Environment Variables
+
+- edit `/etc/chrome_dev.conf`
+- switches
+  - `find -name '*_switches.cc'`
+- logging
+  - `--enable-logging=stderr`
+    - `DetermineLoggingDestination`
+    - logging is enabled by default only on debug builds
+  - `--log-level=0`
+    - `InitChromeLogging`
+    - `0` is `LOGGING_INFO` and is the lowest severity
+  - `--v=1`
+    - `VlogInfoFromCommandLine`
+- gpu
+  - `--no-sandbox`
+  - `--enable-features=Vulkan`
 
 ## `chrome://`
 
@@ -62,19 +108,9 @@ Chromium Browser
 - `chrome://policy`
 - `chrome://flags`
 
-## Command Line Options
-
-- edit `/etc/chrome_dev.conf`
-- logging
-  - `--log-level=0`
-  - `--enable-logging=stderr`
-  - `--v=1`
-- `--enable-features=vulkan`
-- `--no-sandbox`
-
 ## Logs
 
-- <https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chrome_os_logging.md>
+- <https://chromium.googlesource.com/chromium/src/+/main/docs/chrome_os_logging.md>
 - `/var/log/ui/ui.LATEST`
   - early stdout/stderr from chrome and session manager
 - `/var/log/chrome/chrome`
@@ -84,8 +120,6 @@ Chromium Browser
     - `--log-level=0` to enable `LOGGING_INFO`
   - `VLOG(verbosity)` is enabled when `VLOG_IS_ON(verbosity)` returns true
     - `--v=1` to enable verbosity 1
-    - cros does not support runtime verbosity and rely on
-      `ENABLED_VLOG_LEVEL=1` to be defined for each file/target
   - `DLOG` and `DVLOG` are enabled when `DCHECK_ALWAYS_ON` is enabled at
     compile time and the respective sevrity/verbosity is enabled at runtime
 
@@ -320,11 +354,12 @@ Chromium Browser
         - `AMD_GFX9,GFX9_64K_S_X,PIPE_XOR_BITS=2,BANK_XOR_BITS=0`
         - `AMD_GFX9,GFX9_64K_S`
         - `LINEAR`
-      - I've seen `0x200000440417901` which is the second modifier one above
+      - I've seen `0x200000440417901` which is the second modifier above
         - because of `DCC` and `DCC_RETILE`, there are 3 planes
         - plane 0 is the main surface
         - plane 1 is the displayable dcc surface
         - plane 2 is the pipe-aligned dcc surface
+      - also `0x200000000401901` which is the third modifier above
     - `CreateBufferWithGbmFlags`
     - `GbmDevice::CreateBufferWithModifiers`
   - `WrappedSkImageBackingFactory::CreateSharedImage` calls
@@ -342,6 +377,18 @@ Chromium Browser
     - `viz::SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass()`
   - skia-gl instead uses `GLOzoneEGLGbm::ImportNativePixmap`
     - this calls `eglCreateImageKHR(EGL_LINUX_DMA_BUF_EXT)`
+- Formats
+  - ui format `BGRA_8888` or `RGBA_8888`, modifiers are
+    - `0x200000000401901`, 1 plane (amd without dcc)
+    - `0x200000440417901`, 3 planes (amd with dcc)
+    - `0x100000000000001`, 1 plane (`I915_FORMAT_MOD_X_TILED`)
+    - `0x100000000000006`, 2 planes (`I915_FORMAT_MOD_Y_TILED_GEN12_RC_CCS`)
+      - before gen12, it was `0x100000000000002` (`I915_FORMAT_MOD_Y_TILED`)
+  - video format `YUV_420_BIPLANAR`, modifiers are
+    - `0`, 2 planes (linear)
+    - `0x100000000000002`, 2 planes (`I915_FORMAT_MOD_Y_TILED`)
+  - camera format `YUV_420_BIPLANAR`, modifiers are
+    - `0`, 2 planes (linear)
 
 ## Vulkan
 
