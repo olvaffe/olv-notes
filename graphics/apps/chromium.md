@@ -122,6 +122,7 @@ Chromium Browser
 - `chrome://policy`
 - `chrome://flags`
 - gpu
+  - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
   - `--no-sandbox`
   - `--enable-features=Vulkan`
 - logging
@@ -253,6 +254,49 @@ Chromium Browser
 - `SurfaceFactoryOzone::CreateVulkanImplementation`
   - on wayland, `VulkanImplementationWayland` is returned
   - on cros, `VulkanImplementationGbm` is returned
+- `SurfaceFactoryOzone::CreateOffscreenGLSurface`
+  - with `EGL_KHR_surfaceless_context`, this creates nothing
+  - this is called from `gpu::CollectContextGraphicsInfo` and is used for
+    `GpuInit::default_offscreen_surface_`
+- `SurfaceFactoryOzone::CreateSurfacelessViewGLSurface`
+  - this creates almost nothing and is used when we want to render to
+    `NativePixmap`
+  - this is called from `SkiaOutputSurfaceDependencyImpl::CreatePresenter`
+- `SurfaceFactoryOzone::CreateNativePixmap`
+  - this allocates a `NativePixmap`, which is a `gbm_bo`
+  - example call stack
+    - `ui::WaylandSurfaceFactory::CreateNativePixmap()`
+    - `gpu::OzoneImageBackingFactory::CreateSharedImageInternal()`
+    - `gpu::OzoneImageBackingFactory::CreateSharedImage()`
+    - `gpu::SharedImageFactory::CreateSharedImage()`
+    - `viz::OutputPresenter::Image::Initialize()`
+    - `viz::OutputPresenterGL::AllocateImages()`
+    - `viz::SkiaOutputDeviceBufferQueue::RecreateImages()`
+    - `viz::SkiaOutputDeviceBufferQueue::Reshape()`
+    - `viz::SkiaOutputSurfaceImplOnGpu::Reshape()`
+    - ...
+    - `viz::SkiaOutputSurfaceImpl::FlushGpuTasksWithImpl()::$_0::operator()()`
+  - other places such as
+    `viz::SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage` also call
+    `gpu::SharedImageFactory::CreateSharedImage`
+- `SurfaceFactoryOzone::ImportNativePixmap`
+  - this imports a `NativePixmap`, which is a `gbm_bo`, as a GL texture and
+    returns `NativePixmapGLBinding`
+  - example call stack
+    - `ui::(anonymous namespace)::GLOzoneEGLWayland::ImportNativePixmap()`
+    - `gpu::GLOzoneImageRepresentationShared::GetBinding()`
+    - `gpu::GLOzoneImageRepresentationShared::CreateTextureHolderPassthrough()`
+    - `gpu::GLOzoneImageRepresentationShared::CreateShared()`
+    - `gpu::GLTexturePassthroughOzoneImageRepresentation::Create()`
+    - `gpu::OzoneImageBacking::ProduceGLTexturePassthrough()`
+    - `gpu::OzoneImageBacking::ProduceSkiaGanesh()`
+    - `gpu::SharedImageBacking::ProduceSkia()`
+    - `gpu::SharedImageManager::ProduceSkia()`
+    - `gpu::SharedImageRepresentationFactory::ProduceSkia()`
+    - `viz::OutputPresenter::Image::Initialize()`
+    - `viz::OutputPresenterGL::AllocateImages()`
+  - other places such as `OzoneImageBacking::UploadFromMemory` call
+    `ProduceSkiaGanesh` which also import the native pixmap
 
 ## GPU and viz
 
