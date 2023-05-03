@@ -219,6 +219,80 @@ Chromium Browser
 - `gpu/ipc` defines the `GpuInit` class
   - `service/gpu_init.cc` defines `GpuInit::InitializeAndStartSandbox`
 
+## GPU and Initialization
+
+- `GpuMain` is the entrypoint of the gpu process
+  - `GpuPreferences` is parsed from `--gpu-preferences` passed in by the
+    browser process
+- `GpuInit::InitializeAndStartSandbox` initializes the gpu
+  - if `--gpu-sandbox-start-early`, sandbox is started before gpu
+    initializaton
+    - `EnsureSandboxInitialized` calls `StartSandboxLinux` to start the
+      sandbox
+  - `OzonePlatform::InitializeForGPU` initializes ozone
+    - `EnsureInstance` creates `OzonePlatform`
+      - `PlatformObject<T>::Create` calls `GetOzonePlatformId` to determine
+        the platform
+      - on linux/wayland, `CreateOzonePlatformWayland`
+        - `WAYLAND_GBM` is usually defined
+      - on cros, `CreateOzonePlatformDrm`
+    - `OzonePlatformWayland::InitializeGPU`
+      - `GetDrmRenderNodePath` returns the render node path
+      - `WaylandBufferManagerGpu` is created
+      - `WaylandSurfaceFactory` is created
+      - `WaylandOverlayManager` is created
+    - `OzonePlatformDrm::InitializeGPU`
+      - `DrmThreadProxy` is created
+      - `GbmSurfaceFactory` is created
+      - `DrmOverlayManagerGpu` is created
+- `GpuChildThread` starts the gpu thread
+  - `GpuChildThread` has a `VizMainImpl`
+- `SurfaceFactoryOzone::GetGLOzone`
+  - on wayland, `GLOzoneEGLWayland` is returned
+  - on cros, `GLOzoneEGLGbm` is returned
+- `SurfaceFactoryOzone::CreateVulkanImplementation`
+  - on wayland, `VulkanImplementationWayland` is returned
+  - on cros, `VulkanImplementationGbm` is returned
+
+## GPU and viz
+
+- <https://chromium.googlesource.com/chromium/src.git/+/main/components/viz/README.md>
+- `GpuServiceImpl`
+  - it is created from `VizMainImpl::CreateGpuService`
+  - the ctor creates a `GpuMemoryBufferFactory`
+  - `GpuServiceImpl::InitializeWithHost` creates a `GpuChannelManager`
+- `GpuMemoryBufferFactory` is the GMB allocator
+  - `gpu::GpuMemoryBufferFactory::CreateNativeType` creates
+    `GpuMemoryBufferFactoryNativePixmap`
+  - `GpuMemoryBufferFactory::CreateGpuMemoryBuffer` calls ozone's
+    `SurfaceFactoryOzone::CreateNativePixmap` and the returned
+    `gfx::GpuMemoryBufferHandle` wraps `gfx::NativePixmap`
+- `GpuChannelManager` is the gpu context
+  - `GetSharedContextState` creates the gpu context and initializes skia
+  - `gl::init::CreateGLContext` creates the GL context and makes it current
+  - `SharedContextState::InitializeSkia` initializes skia
+- life of a pixel
+  - chrome comopsitor (cc) in the renderer processes generates
+    `CompositorFrame`s and calls `SubmitCompositorFrame` to submit them to viz
+  - `Display::DrawAndSwap`
+    - calls `SurfaceAggregator::Aggregate` to aggregate `CompositorFrame` into
+      a `AggregatedFrame`
+    - calls `DirectRenderer::DrawFrame` to draw the aggregated frame
+    - calls `SkiaRenderer::SwapBuffers` to swap
+    - I think this can also promote some frames to hw overlays and skip gpu
+      composition for them
+  - `display_embedder` contains platform-specific code for display
+
+## GPU and Skia
+
+- `SharedContextState::InitializeSkia` initializes skia
+  - `InitializeGanesh` supports `GrContextType::kGL` and
+    `GrContextType::kVulkan`
+- if `GrContextType::kGL`, `GrDirectContext::MakeGL` is called
+- if `GrContextType::kVulkan`,
+  `VulkanInProcessContextProvider::InitializeGrContext` is called
+  - which calls `GrDirectContext::MakeVulkan`
+
 ## GPU and WebGL
 
 - WebKit expects the renderer to create a `WebKitClient`
