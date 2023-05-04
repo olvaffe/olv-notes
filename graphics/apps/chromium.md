@@ -518,6 +518,75 @@ Chromium Browser
   - camera format `YUV_420_BIPLANAR`, modifiers are
     - `0`, 2 planes (linear)
 
+## GPU and Fences
+
+- a `gfx::GpuFenceHandle` is a sync fd on linux
+- a `gfx::GpuFence` wraps a `gfx:GpuFenceHandle` and supports a few sync fd
+  operations on linux
+  - `GpuFence::Wait` calls `sync_wait`
+  - `GpuFence::GetStatusChangeTime` calls `sync_fence_info` and `sync_pt_info`
+- examples
+  - `HardwareDisplayController::SchedulePageFlip` does an atomic commit
+    - `HardwareDisplayPlaneManagerAtomic::Commit` returns the out fence
+    - when the submit callback is `GbmSurfaceless::OnSubmission`, the out
+      fence is returned to viz in `gfx::SwapCompletionResult`
+  - `gl::GLFence::CreateForGpuFence` is called after submitting GL work
+    - well, only if `gl::GLFence::IsGpuFenceSupported` returns true
+    - on android, it uses `EGL_SYNC_NATIVE_FENCE_ANDROID` and
+      `eglDupNativeFenceFDANDROID`
+    - on linux, it relies on implicit fencing
+  - in exo, `linux_surface_synchronization_set_acquire_fence` gets the
+    in-fence from clients
+    - `Surface::SetAcquireFence` updates `pending_state_.acquire_fence`
+    - `Buffer::Texture::UpdateSharedImage` sends an ipc which is handled by
+      `SharedImageStub::OnUpdateSharedImage`
+    - on ozone, `OzoneImageBacking::Update` saves the in-fence to
+      `external_write_fence_`
+- `OzoneImageBacking` maintains fences for the shared image
+  - `write_fence_` is the fence of the writer
+  - `external_write_fence_` is the fence of an external writer (from exo, that
+    is, wayland clients)
+  - `read_fences_` are fences of the readers
+  - `BeginAccess` returns the fences to the caller
+  - `EndAccess` adds fences to the shared image
+- `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+  - `output_device_` is `SkiaOutputDeviceBufferQueue`
+  - this calls `SkiaOutputDevice::Submit` which calls
+    `GrDirectContext::submit` to submit the work to gpu
+  - in `SkiaOutputSurfaceImplOnGpu::PostSubmit`,
+    - `SkiaOutputDeviceBufferQueue::ScheduleOverlays` is called to schedule
+      overlays
+      - `gl::GLFence::CreateForGpuFence` is called to get the gpu fence
+    - `SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane` is called to
+      schedule the primary plane
+      - `PresenterImageGL::BeginPresent` gets an acquire fence
+      - `OutputPresenterGL::SchedulePrimaryPlane` passes down the acquire
+        fence
+  - in `SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers`,
+    `SwapCompletionResult::release_fence` is the release fence
+    - `PresenterImageGL::EndPresent` is called with the release fence
+- on vulkan,
+  - `SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame` calls
+    `viz::SkiaOutputDevice::BeginScopedPaint`
+    - `viz::OutputPresenter::Image::BeginWriteSkia` gets the begin and end
+      semaphores; adds the begin semaphores to `SkSurface`; saves the end
+      semaphores created by
+      - `ui::VulkanImplementationWayland::CreateExternalSemaphore()`
+      - `gpu::SkiaVkOzoneImageRepresentation::BeginAccess()`
+      - `gpu::SkiaVkOzoneImageRepresentation::BeginWriteAccess()`
+      - `gpu::SkiaGaneshImageRepresentation::BeginScopedWriteAccess()`
+      - `gpu::SkiaGaneshImageRepresentation::BeginScopedWriteAccess()`
+      - `viz::OutputPresenter::Image::BeginWriteSkia()`
+    - `viz::OutputPresenter::Image::EndWriteSkia` submits the end semaphores
+      to skia; `scoped_skia_write_access_.reset()` exports the end semaphores
+      and add them to the external image
+      - `ui::VulkanImplementationWayland::GetSemaphoreHandle()`
+      - `gpu::SkiaVkOzoneImageRepresentation::EndAccess()`
+      - `gpu::SkiaVkOzoneImageRepresentation::EndWriteAccess()`
+      - `gpu::SkiaImageRepresentation::ScopedWriteAccess::~ScopedWriteAccess()`
+      - `gpu::SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::~ScopedGaneshWriteAccess()`
+      - `gpu::SkiaGaneshImageRepresentation::ScopedGaneshWriteAccess::~ScopedGaneshWriteAccess()`
+
 ## GPU and Vulkan
 
 - `gpu/ipc`
