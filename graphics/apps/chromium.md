@@ -125,6 +125,7 @@ Chromium Browser
   - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
   - `--no-sandbox`
   - `--enable-features=Vulkan`
+  - `--disable-gpu-process-crash-limit`
 - logging
   - `--enable-logging=stderr`
     - `DetermineLoggingDestination`
@@ -431,35 +432,67 @@ Chromium Browser
 
 ## GPU and Memory
 
-- `CreateSharedImageFactory` or `LazyCreateSharedImageFactory` creates the gpu
-  memory allocator
-  - there can be multiple factories such as
-  - `WrappedSkImageBackingFactory`
-  - `OzoneImageBackingFactory`
-- `SharedImageFactory::CreateSharedImage`
-  - `GetFactoryByUsage` picks a factory based on buffer usage
-  - `OzoneImageBackingFactory::CreateSharedImage` calls
-    `GbmSurfaceFactory::CreateNativePixmap` on drm
-    - `DrmThreadProxy::CreateBuffer`
-    - `DrmThread::CreateBuffer`
-      - `window->GetController()` may be null and there will be no modifier
-      - otherwise, on zork, `modetest` says `AR24` supports
-        - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=0`
-        - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_RETILE,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=1,PIPE_2`
-        - `AMD_GFX9,GFX9_64K_S_X,PIPE_XOR_BITS=2,BANK_XOR_BITS=0`
-        - `AMD_GFX9,GFX9_64K_S`
-        - `LINEAR`
-      - I've seen `0x200000440417901` which is the second modifier above
-        - because of `DCC` and `DCC_RETILE`, there are 3 planes
-        - plane 0 is the main surface
-        - plane 1 is the displayable dcc surface
-        - plane 2 is the pipe-aligned dcc surface
-      - also `0x200000000401901` which is the third modifier above
-    - `CreateBufferWithGbmFlags`
-    - `GbmDevice::CreateBufferWithModifiers`
-  - `WrappedSkImageBackingFactory::CreateSharedImage` calls
-    `WrappedSkImageBacking::Initialize`
-    - this calls skia's `createBackendTexture`
+- note that only the gpu process has access to the gpu
+  - other processes can still receive/send gpu bos
+  - on linux, they also have cpu access in the form of `ClientNativePixmap`
+- a `gfx::NativePixmap` is a gpu bo in the gpu process on linux
+  - alloc
+    - `GbmDevice::CreateBuffer` allocates a `GbmBuffer` (a `gbm_bo`)
+    - `GbmBuffer::ExportHandle` exports a `gfx::NativePixmapHandle`
+    - a `gfx::NativePixmap` can be created from the handle by
+      `NativePixmapDmaBuf()`
+  - import
+    - when the gpu process gets an external memory, such as
+      `VADRMPRIMESurfaceDescriptor` returned from `vaExportSurfaceHandle`, it
+      wraps the external memory in a `gfx::NativePixmapHandle`
+  - export
+    - `NativePixmap::ExportHandle` exports a `gfx::NativePixmapHandle`
+- a `gfx::GpuMemoryBuffer` is a platform-agnostic gpu bo
+  - no direct alloc
+  - import
+    - a `gfx::GpuMemoryBufferHandle` of type `gfx::NATIVE_PIXMAP` can wrap a
+      `gfx::NativePixmapHandle`
+    - a `gfx::GpuMemoryBuffer` can be created from the handle by
+      `GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle`
+  - export
+    - `GpuMemoryBuffer::CloneHandle` exports a `gfx::GpuMemoryBufferHandle`
+- a `SharedImageBacking` is an external gpu resource (gl texture, vk image,
+  etc.)
+  - a factory is used for alloc/import
+    - `CreateSharedImageFactory` creates the factory, `SharedImageFactory`
+    - internally, there is an array of factories, `factories_`
+      - `OzoneImageBackingFactory`
+      - `WrappedSkImageBackingFactory`
+      - `ExternalVkImageBackingFactory`
+      - `EGLImageBackingFactory`
+      - `GLTextureImageBackingFactory`
+  - `SharedImageFactory::CreateSharedImage` internally allocs/imports a
+    `SharedImageBacking`
+    - `GetFactoryByUsage` picks a factory based on buffer usage
+    - `OzoneImageBackingFactory::CreateSharedImage` calls
+      `GbmSurfaceFactory::CreateNativePixmap` or
+      `GbmSurfaceFactory::CreateNativePixmapFromHandle` on drm
+      - `DrmThreadProxy::CreateBuffer`
+      - `DrmThread::CreateBuffer`
+        - `window->GetController()` may be null and there will be no modifier
+        - otherwise, on zork, `modetest` says `AR24` supports
+          - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=0`
+          - `AMD_GFX9,GFX9_64K_S_X,DCC,DCC_RETILE,DCC_INDEPENDENT_64B,DCC_MAX_COMPRESSED_BLOCK=64B,PIPE_XOR_BITS=2,BANK_XOR_BITS=0,RB=1,PIPE_2`
+          - `AMD_GFX9,GFX9_64K_S_X,PIPE_XOR_BITS=2,BANK_XOR_BITS=0`
+          - `AMD_GFX9,GFX9_64K_S`
+          - `LINEAR`
+        - I've seen `0x200000440417901` which is the second modifier above
+          - because of `DCC` and `DCC_RETILE`, there are 3 planes
+          - plane 0 is the main surface
+          - plane 1 is the displayable dcc surface
+          - plane 2 is the pipe-aligned dcc surface
+        - also `0x200000000401901` which is the third modifier above
+      - `CreateBufferWithGbmFlags`
+      - `GbmDevice::CreateBufferWithModifiers`
+    - `WrappedSkImageBackingFactory::CreateSharedImage` calls
+      `WrappedSkImageBacking::Initialize`
+      - this calls skia's `createBackendTexture`
+      - there is no import support in this factory
 - when skia-vk imports a shared image for composition,
   - there is this stack
     - `gpu::VulkanImage::InitializeFromGpuMemoryBufferHandle()`
