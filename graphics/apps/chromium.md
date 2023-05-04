@@ -140,6 +140,82 @@ Chromium Browser
     - otherwise, logging is redirected to `/home/chronos/user/log/chrome`
       after user login
 
+## Directory Structure
+
+- browsers
+  - `//android_webview` provides Android's `WebView`
+  - `//chrome` provides chrome browser on all platforms but ios
+  - `//chromecast` provides Chrome Cast Receiver
+  - `//content/shell` provides `content_shell`
+    - this is a minimal browser mainly to develop `content`
+  - `//fuchsia_web` provides Fuchsia's `WebEngine`
+  - `//ios` provides chrome browser on ios
+      - note that chrome on ios uses webkit rather than `//content`
+  - `//weblayer` is `WebEngine`
+    - this is a wrapper of `//content` and some browser extras
+    - this is how apps embed chrome
+- browser extras
+  - `//apps` provides chrome app support
+  - `//ash` provides cros's Aura Shell (system ui)
+  - `//chromeos` provides cros-specific features
+  - `//courgette` provides binary compress/delta for updates
+  - `//extensions` provides chrome extension support
+  - `//google_apis` provides google services
+  - `//google_update` provides chrome updates
+  - `//headless` provides headless support
+  - `//native_client` provides NaCL support
+  - `//native_client_sdk` provides NaCL SDK
+  - `//pdf` provides pdf support
+  - `//ppapi` provides ppapi support
+  - `//printing` provides printer support
+  - `//remoting` provides remote desktop support
+  - `//rlz` provides some kind of fingerprinting?
+  - `//sql` provides sql support
+  - `//storage` provides storage support
+- web platform
+  - `//content` provides the web platform to build browsers
+    - it is multi-process and sandboxed
+    - it is unused on ios because ios requires all browsers to use webkit
+- internal components
+  - `//cc` provides chrome compositor
+    - it organizes rectangular contents into a tree `LayerTreeHost` and
+      converts the tree into a frame `CompositorFrame`
+    - in the renderer process, it is used by `//third_party/blink`
+    - in the browser process, it is used by `//ui`
+  - `//components` provides utils useful for multiple subsystems
+  - `//gin` provides a v8 binding
+  - `//ipc` provides old ipc support
+  - `//mojo` privodes new ipc support
+  - `//net` provides network support
+    - fetch a resource over http/ftp/etc.
+  - `//services` provides foundation services
+  - `//third_party/blink` provides the blink renderer
+  - `//third_party/dawn` provides webgpu support
+  - `//url` provides url parsing support
+  - `//v8` provides v8 javascript engine
+- low-level internal components
+  - `//base` provides utils useful for the entire source tree
+  - `//crypto` provides crypto support
+  - `//dbus` provides dbus support
+  - `//device` provides hw (bt, fido, gamepad, vr, etc.) support
+  - `//gpu` provides gpu support
+  - `//media` provides media (audio, video, camera, etc.) support
+  - `//sandbox` provides sandboxing support
+  - `//skia` provides skia with extensions
+  - `//ui` provides ui support
+    - `//ui/ozone` provides window system support
+- misc
+  - `//build` contains GN templates and configuration
+  - `//build_overrides` contains GN rules to build chrome differently
+  - `//buildtools` contains toolchain versions to download
+  - `//codelabs` provides Chrome 101
+  - `//docs` provides docs
+  - `//infra` provides chrome infra
+  - `//styleguide` provides the style guide
+  - `//testing` provides testing tools
+  - `//third_party` consists of third-party projects
+  - `//tools` provides dev tools
+
 ## Multi-process architecture
 
 - every process is an instance of `chrome`, the executable/dll
