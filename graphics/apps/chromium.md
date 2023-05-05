@@ -517,6 +517,38 @@ Chromium Browser
     - `0x100000000000002`, 2 planes (`I915_FORMAT_MOD_Y_TILED`)
   - camera format `YUV_420_BIPLANAR`, modifiers are
     - `0`, 2 planes (linear)
+- on wayland,
+  - when chrome draws and presents,
+    - `viz::SkiaOutputDeviceBufferQueue::RecreateImages` creates a few
+      `SharedImageBacking`
+      - it allocates a few `NativePixmap` from gbm
+    - skia draws to the shared image
+    - `viz::SkiaOutputDeviceBufferQueue::ScheduleOverlays` presents
+      - it reaches `GbmSurfacelessWayland::ScheduleOverlayPlane` and then
+        `GbmPixmapWayland::ScheduleOverlayPlane`
+      - `GbmPixmapWayland::CreateDmabufBasedWlBuffer` exports dmabuf for
+        `wl_buffer`
+  - when sw decode a video stream,
+    - when an encoded buffer is ready,
+      `media::DecoderStream<>::OnBufferReady` calls down to
+      `media::FFmpegVideoDecoder::Decode` to decode the buffer
+    - after decoding, `media::FFmpegVideoDecoder::OnNewFrame` calls
+      `media::DecoderStream<>::OnDecodeOutputReady` to add the decoded buffer
+      back to the decoder stream
+    - because a gmb pool is enabled,
+      `GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame` allocates a
+      `GpuMemoryBuffer` and copies the decoded buffer to the gmb
+      - the allocation goes through
+        `GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer`,
+        `ClientGpuMemoryBufferManager::CreateGpuMemoryBuffer`
+      - the client side uses `viz::Gpu` and the service side uses
+        `viz::GpuServiceImpl`
+      - `gpu::GpuMemoryBufferFactoryNativePixmap` allocates through ozone
+    - after copying to gmb,
+      `GpuMemoryBufferVideoFramePool::PoolImpl::BindAndCreateMailboxesHardwareFrameResources` creates a shared image
+      - the client side uses `gpu::ClientSharedImageInterface`
+      - the service side uses `gpu::SharedImageStub` and `gpu::SharedImageFactory`
+        - this is an import operation
 
 ## GPU and Fences
 
@@ -613,3 +645,51 @@ Chromium Browser
 - `content`
 - `components/exo`
 - `components/viz`
+
+## Media
+
+- <https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/media/README.md#playback>
+  - `<video>` and `<audio>`
+    - each `blink::HTMLMediaElement` owns a `blink::WebMediaPlayerImpl`, with
+      call stack
+      - `blink::WebMediaPlayerImpl`
+      - `content::MediaFactory::CreateMediaPlayer`
+      - `content::RenderFrameImpl::CreateMediaPlayer`
+      - `blink::HTMLMediaElement`
+  - `blink::WebMediaPlayerImpl`
+    - owns a `media::PipelineController` to coordinate
+      - `media::DataSource`
+      - `media::Demuxer`
+      - `media::Renderer`
+    - calls `DemuxerManager::CreateDemuxer` to create a `media::Demuxer`
+      - `media::FFmpegDemuxer` demuxes the video file into
+        `media::DemuxerStream`s
+    - `CreateRenderer` is called when the pipeline needs a renderer
+      - calls `media::RendererFactorySelector::GetCurrentFactory` to get the
+        current factory
+      - usually reaches `media::RendererImplFactory::CreateRenderer` to
+        create a `media::RendererImpl`
+        - `AudioRendererImpl`,
+        - `VideoRendererImpl`
+        - `GpuMemoryBufferVideoFramePool`
+  - `media::RendererImpl`
+    - owns a `media::AudioRenderer` and a `media::VideoRenderer` to decode
+      `media::DecoderStream`s
+- from `--v=3` log,
+  - `DecoderSelector<>::SelectDecoderInternal` tries all decoders one by one
+  - once a decoder is selected, `DecoderStream<>::OnDecoderSelected` is called
+  - when an encoded buffer is ready,
+    `DecoderStream<StreamType>::OnBufferReady` calls
+    `DecoderStream<StreamType>::Decode`
+- ffmpeg
+  - gn
+    - `proprietary_codecs = true`
+    - `ffmpeg_branding = "Chrome"`
+- vaapi
+  - it seems to be enabled by default on x11
+    - `use_vaapi_x11`
+    - `use_vaapi`
+    - `VaapiVideoDecoder` feature is enabled by default and
+      `VaapiVideoDecodeLinuxGL` feature is disabled by default
+  - cmdline
+    - `--ignore-gpu-blocklist`
