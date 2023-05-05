@@ -553,6 +553,27 @@ Chromium Browser
 ## GPU and Fences
 
 - a `gfx::GpuFenceHandle` is a sync fd on linux
+  - on x11, it is unsued
+  - on wayland, it is a sync fd
+    - present in-fence
+      - `GbmSurfacelessWayland::ScheduleOverlayPlane` gets the in-fence from viz
+      - `GbmPixmapWayland::ScheduleOverlayPlane` forwards the in-fence to
+        `GbmSurfacelessWayland::QueueWaylandOverlayConfig` in
+        `WaylandOverlayConfig`
+      - the acquire fence is passed to the compositor using
+        `zwp_linux_explicit_synchronization_v1`
+    - present out-fence
+      - `WaylandSurface::FencedRelease` handles the `fenced_release` event and
+        calls `WaylandFrameManager::OnExplicitBufferRelease`
+      - the out-fence is merged to `WaylandFrame::merged_release_fence_fd`
+      - `GbmSurfacelessWayland::OnSubmission` passes the out-fence to viz in
+        `SwapCompletionResult`
+  - on drm, it is also a sync fd
+- a `gpu::SemaphoreHandle` is an fd on linux
+  - it is used with winsys and must be sync fds
+  - it is also used in `gpu::ExternalSemaphore` for vk-gl interop and must be
+    opaque fds
+  - boom!
 - a `gfx::GpuFence` wraps a `gfx:GpuFenceHandle` and supports a few sync fd
   operations on linux
   - `GpuFence::Wait` calls `sync_wait`
