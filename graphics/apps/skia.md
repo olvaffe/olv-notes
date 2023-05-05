@@ -168,3 +168,98 @@ Skia
 - CTS run
   - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases
        --module-arg 'CtsSkQPTestCases:include-filter:org.skia.skqp.SkQPRunner#gles_imageblur*'`
+
+## `sk_app`
+
+- `main`
+  - it calls `sk_app::Application::Create` first, which is expected to
+    - optionally call `SkGraphics::Init` to init skia
+    - call `Window::CreateNativeWindow` to create a (hidden) native window
+    - call `Window::pushLayer` to register for callbacks
+    - call `Window::attach` to create a `SkSurface`
+    - return an `Application`
+  - it enters the main loop to dispatch events
+    - if the window is resized, `Layer::onResize`
+    - if the window is dirtied, `Layer::onPaint`
+    - if there is mouse event, `Layer::onMouse` or `Layer::onMouseWheel`
+    - if there is keyboard event, `Layer::onChar` or `Layer::onKey`
+    - if there is touch event, `Layer::onTouch`, `Layer::onFling`, or
+      `Layer::onPinch`
+    - if there is no event, `Layer::onIdle`
+  - it exits the main loop and calls `Application::~Application`, which is
+    expected to
+    - call `Window::detach` to destroy the `SkSurface`
+    - delete the native window
+- every time `Winwdow::attach` is called, `Layer::onBackendCreated` is called
+  - app is expected to show the window and mark the window dirty
+- every time repaint is needed, `Layer::onPaint` is called
+  - app is expectd to repaint
+  - `SkSurface::getCanvas` to get a `SkCanvas`
+  - `SkCanvas::clear` to clear the surface
+  - `SkCanvas::drawRect` to draw to the surface
+  - `SkCanvas::drawSimpleText` to draw a string to the surface
+- internally, if sw raster,
+  - `Window::attach` creates a `SkSurface` before `Layer::onBackendCreated`
+    - `SkImageInfo::Make(w, h, color, alpha)` to initialize a `SkImageInfo`
+    - `SkSurface::MakeRaster` to create a sw `SkSurface`
+  - after `Layer::onPaint`,
+    - `SkSurface::flushAndSubmit` flushes and submits the gpu job (nop because
+      sw raster)
+    - `SkSurface::peekPixels` reads back the pixel data as a `SkBitmap`
+    - sends the pixel data to the window system
+- internally, if gl,
+  - `Window::attach` creates a `GrGLInterface` and a `GrDirectContext` before
+    `Layer::onBackendCreated`
+    - it creates and makes a GL context current (this happens outside of skia)
+    - `GrGLMakeNativeInterface` allocs a `GrGLInterface` using the current GL
+      context
+    - `GrDirectContext::MakeGL` creates a `GrDirectContext` using the
+      `GrGLInterface`
+      - this queries gpu caps, creates caches, etc.
+  - before `Layer::onPaint`, a `SkSurface` is created on demand
+    - it is cached until resize, etc.
+    - a `GrBackendRenderTarget` is initialized
+    - `SkSurface::MakeFromBackendRenderTarget` creates the `SkSurface`
+      - the surface wraps a `skgpu::ganesh::Device`
+      - canvas draw calls call into the device to record the command
+  - after `Layer::onPaint`,
+    - `SkSurface::flushAndSubmit` flushes and submits the gpu job
+      - `GrDirectContext::flush`
+      - `GrDirectContext::submit`
+    - `glXSwapBuffers`
+- internally, if vk,
+  - `Window::attach` creates a `GrVkBackendContext`, a `GrDirectContext`, a
+    `VkSwapchainKHR`, and multiple `SkSurface` before
+    `Layer::onBackendCreated`
+    - it initializes vk all the way outside of skia until it has a `VkQueue`
+    - it fills in `GrVkBackendContext`
+    - `GrDirectContext::MakeVulkan` creates a `GrDirectContext` using the
+      `GrVkBackendContext`
+      - this queries gpu caps, creates caches, etc.
+    - a swapchain is created and `VkImage`s are quried back
+    - `SkSurface::MakeFromBackendTexture` or
+      `SkSurface::MakeFromBackendRenderTarget` are called to wrap `VkImage` in
+      `SkSurface`
+  - before `Layer::onPaint`, `vkAcquireNextImageKHR` is called to decide the
+    next `VkSurface`
+    - the aqcuire returns a in-`VkSemaphore`
+    - `GrBackendSemaphore::initVulkan` and `SkSurface::wait` passes the
+      in-semaphore to the surface
+  - after `Layer::onPaint`,
+    - `SkSurface::flushAndSubmit` flushes and submits the gpu job
+      - `GrDirectContext::flush`
+      - `GrDirectContext::submit`
+    - it calls `SkSurface::flush` again and requests to signal an
+      out-semaphore
+    - it calls `GrDirectContext::submit` to really submit
+    - it calls `vkQueuePresentKHR` with the out-sempahore
+
+## Basics
+
+- `SkSurface` is the drawing destination
+  - `SkSurface::MakeRaster` creates a raster (sw) surface for the surface
+- `SkCanvas` is the drawing context to a `SkSurface`
+- `SkPicture` holds recorded `SkCanvas` drawing commands for playback later
+- `SkImage` holds ro pixel data in some storage
+- `SkBitmap`
+- `SkPixmap`
