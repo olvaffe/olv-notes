@@ -263,3 +263,56 @@ Skia
 - `SkImage` holds ro pixel data in some storage
 - `SkBitmap`
 - `SkPixmap`
+- `SkImageInfo` describes a 2D RGBA image
+  - `SkISize` for the width/height
+  - `SkColorInfo`
+    - `SkColorSpace` for the color space (srgb, p3, etc.)
+    - `SkColorType` for pixel encoding (rgba 8888, etc.)
+    - `SkAlphaType` for alpha interpretation (pre-multiplied, etc.)
+- `SkYUVAInfo` describes a 2D YUVA image
+  - `SkISize` for the width/height
+  - `PlaneConfig` for planes (packed, bi-planar, tri-planar, etc.)
+  - `Subsampling` for the subsampling (422, 420, etc.)
+  - `SkYUVColorSpace` for the color space (rec 601, 709, etc.)
+  - `SkEncodedOrigin` for the origin (top-left, etc.)
+  - `Siting` for chroma siting (centered)
+
+## GPU
+
+- ganesh is the current gpu backend
+  - graphite is the in-dev new gpu backend
+- `GrDirectContext`
+  - `GrDirectContext::MakeGL` creates GL-based direct context
+    - clients can optionally provide `GrGLInterface` to choose an alternative
+      GL driver
+  - `GrDirectContext::MakeVulkan` creates a VK-based direct context
+    - clients must provide `GrVkBackendContext` which specifies the `VkQueue`
+      and others
+- `SkSurface`
+  - `SkSurface::MakeFromBackendTexture` creates a surface from a
+    `GrBackendTexture`
+  - `SkSurface::MakeFromBackendRenderTarget` creates a surface from a
+    `GrBackendRenderTarget`
+  - `SkSurface::MakeRenderTarget` creates a surface by allocating a rt
+- `SkImage`
+  - `BorrowTextureFrom` creates an image from a `GrBackendTexture`
+  - `TextureFromYUVATextures` creates an image from a `GrYUVABackendTextures`
+  - `PromiseTextureFrom` creates a promise image from `GrBackendFormat`
+    - a promise image is an image whose backend texture is requested on-demand
+    - it is useful because, when drawing to a `SkDeferredDisplayListRecorder`,
+      no backend texture is requested
+  - `PromiseTextureFromYUVA` creates a promise image from
+    `GrYUVABackendTextureInfo`
+- `GrBackendTexture` describes a backend (gl, vk, etc.) texture
+  - `GrGLTextureInfo` consists of GL target, id, and format
+  - `GrVkImageInfo` consists of
+    - `VkImage`
+    - `GrVkYcbcrConversionInfo`
+    - vk image tiling, layout, format, usage, etc.
+- `GrBackendRenderTarget` describes a backend rt
+  - `GrGLFramebufferInfo` consists of GL fbo id and format
+  - `GrVkBackendSurfaceInfo` consists of `GrVkImageInfo`
+- `GrBackendFormat` describes a backend format
+  - `GrBackendFormat:MakeGL` initializes from GL format and target
+  - `GrBackendFormat:MakeVk` initializes from `VkFormat` or
+    `GrVkYcbcrConversionInfo`
