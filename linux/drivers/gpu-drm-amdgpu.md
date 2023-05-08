@@ -272,3 +272,34 @@ DRM amdgpu
   - if the job takes too long, `drm_sched_job_timedout` removes the job and
     calls back into amdgpu
   - `amdgpu_job_timedout` attemps to do a soft recovery before a hw reset
+
+## ioctls
+
+- `DRM_IOCTL_AMDGPU_INFO` queries various info about a device
+- `DRM_IOCTL_AMDGPU_CTX` allocs/frees/queries a context
+  - radv creates a ctx for each `VkQueue`
+- `DRM_IOCTL_AMDGPU_VM` reserves the vmid
+  - it is used for shader debugging
+- `DRM_IOCTL_AMDGPU_GEM_CREATE` creates a gem bo
+- `DRM_IOCTL_AMDGPU_GEM_USERPTR` creates a gem bo from userptr
+- `DRM_IOCTL_AMDGPU_GEM_MMAP` returns the magic mmap offset for cpu mapping
+- `DRM_IOCTL_AMDGPU_GEM_METADATA` sets/gets the bo metadata
+- `DRM_IOCTL_AMDGPU_GEM_OP` queries/updates gem bo info
+- `DRM_IOCTL_AMDGPU_GEM_VA` maps/unmaps/replaces gem bo va
+- `DRM_IOCTL_AMDGPU_CS` submits a job
+  - `drm_amdgpu_cs_out::handle` is the seqno of the job
+- `DRM_IOCTL_AMDGPU_WAIT_CS` waits for a job
+- somewhat legacy
+  - `DRM_IOCTL_AMDGPU_SCHED` changes the priority of any context
+    - master only
+    - no user?
+  - `DRM_IOCTL_AMDGPU_BO_LIST` creates/destroys/updates a bo list
+    - deprecated by `DRM_IOCTL_AMDGPU_CS` in favor of
+      `AMDGPU_CHUNK_ID_BO_HANDLES`
+  - `DRM_IOCTL_AMDGPU_GEM_WAIT_IDLE` waits on the implicit fence of a bo
+    - only used by radeonsi
+  - `DRM_IOCTL_AMDGPU_FENCE_TO_HANDLE` converts a `drm_amdgpu_fence` to a
+    syncobj, syncobj fd, or sync file fd
+    - only used by radeonsi
+  - `DRM_IOCTL_AMDGPU_WAIT_FENCES` waits an array of `drm_amdgpu_fence`s
+    - no user
