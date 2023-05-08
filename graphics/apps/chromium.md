@@ -15,29 +15,45 @@ Chromium Browser
   - `gclient sync`
 - setup
   - `gn gen out/Default`
-    - the default will be a debug component build
-      - see `build/config/BUILDCONFIG.gn`
-      - `is_official_build = false`
-      - `is_debug = !is_official_build`
-      - `is_component_build = is_debug`
-        - many shared libraries
-      - `dcheck_always_on = (build_with_chromium && !is_official_build)`
-        - `build_with_chromium = true` is from
-          `build/config/gclient_args.gni`
-  - faster build
-    - disable nacl: `enable_nacl=false`
-    - less debug symbols
-      - `symbol_level=1`
-      - `blink_symbol_level=0`
-      - `v8_symbol_level=0`
-  - release build
-    - `is_debug = false`
-    - `dcheck_always_on = false`
-    - `is_official_build = true`
+  - the default will be a debug component build
 - build
   - `autoninja -C out/Default chrome`
 - run
   - `out/Default/chrome`
+- gn args
+  - `build_with_chromium = true`
+    - this is defined in `build/config/gclient_args.gni` generated from `DEPS`
+  - defaults can be seen with `gn args out/Default --list`
+    -  `is_official_build = false` and `is_debug = !is_official_build`
+      - these control the optimization levels: debug, release, and official
+    - `symbol_level = -1`, `v8_symbol_level = symbol_level`, and
+      `blink_symbol_level = -1`
+      - these control the debug symbols: auto (-1), none, min, full
+    - `is_component_build = is_debug`
+      - this controls shared or static libraries
+      - set to true for faster linking and deploying
+    - `dcheck_always_on = (build_with_chromium && !is_official_build)`
+      - this controls whether `DLOG` and `DCHECK` are compiled in
+    - `enable_nacl = true`
+      - set to false for faster build
+    - `use_goma = false`
+      - set to true for faster build
+    - `is_chrome_branded = false`
+      - set to true for chrome branding
+      - no functional difference?
+  - release build
+    - `is_official_build = true`
+  - recommended dev args
+    - `is_debug = false`
+    - `symbol_level = 1`
+    - `v8_symbol_level = 0`
+    - `blink_symbol_level = 0`
+    - `is_component_build = true`
+    - `enable_nacl = false` (cros requires nacl?)
+    - `use_goma = true`
+  - enable sw proprietary codecs
+    - `proprietary_codecs = true'`
+    - `ffmpeg_branding = "Chrome"'`
 
 ## Build for ChromeOS
 
@@ -52,23 +68,7 @@ Chromium Browser
   - `gclient sync`
 - setup
   - `gn gen out_$BOARD/Release`
-    - the default will be a release monolithic build
-      - see `build/args/chromeos/$BOARD.gni`
-      - `is_debug = false`
-      - `is_component_build = is_debug`
-      - `use_runtime_vlog = true`
-  - interesting args
-    - `use_goma = true` to enable goma
-      - require goma setup
-    - `is_component_build = true` to enable component build
-      - faster link and deploy
-    - `is_chrome_branded = true` to enable internal code?
-      - is it more than branding?
-    - debug component build
-      - `is_debug = true`
-      - `symbol_level = 1`
-      - `blink_symbol_level = 0`
-      - `v8_symbol_level = 0`
+  - the default will be a release monolithic build
 - build
   - `autoninja -C out_$BOARD/Release chrome nacl_helper`
 - deploy
@@ -702,10 +702,6 @@ Chromium Browser
   - when an encoded buffer is ready,
     `DecoderStream<StreamType>::OnBufferReady` calls
     `DecoderStream<StreamType>::Decode`
-- ffmpeg
-  - gn
-    - `proprietary_codecs = true`
-    - `ffmpeg_branding = "Chrome"`
 - vaapi
   - it seems to be enabled by default on x11
     - `use_vaapi_x11`
