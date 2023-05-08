@@ -115,32 +115,6 @@ Chromium Browser
   - `--enable-native-gpu-memory-buffers`
   - `--video-capture-use-gpu-memory-buffer`
 
-## `chrome://`
-
-- `chrome://version`
-- `chrome://gpu`
-- `chrome://policy`
-- `chrome://flags`
-- gpu
-  - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
-  - `--no-sandbox`
-  - `--enable-features=Vulkan`
-  - `--disable-gpu-process-crash-limit`
-- logging
-  - `--enable-logging=stderr`
-    - `DetermineLoggingDestination`
-    - logging is enabled by default only on debug builds
-  - `--log-level=0`
-    - `InitChromeLogging`
-    - `0` is `LOGGING_INFO` and is the lowest severity
-  - `--v=1`
-    - `VlogInfoFromCommandLine`
-  - `--disable-logging-redirect`
-    - `RedirectChromeLogging`
-    - on cros, this is the default (set by the session manager) on a test build
-    - otherwise, logging is redirected to `/home/chronos/user/log/chrome`
-      after user login
-
 ## Directory Structure
 
 - browsers
@@ -223,17 +197,7 @@ Chromium Browser
 - the type (browser/render/gpu/...) of a process is determined by its command
   line switch, `-type <type>`
 
-## Logging
-
-- `base/logging.h`
-  - `LOG(severity)` is enabled when `LOG_IS_ON(severity)` returns true
-    - `--log-level=0` to enable `LOGGING_INFO`
-  - `VLOG(verbosity)` is enabled when `VLOG_IS_ON(verbosity)` returns true
-    - `--v=1` to enable verbosity 1
-  - `DLOG` and `DVLOG` are enabled when `DCHECK_ALWAYS_ON` is enabled at
-    compile time and the respective sevrity/verbosity is enabled at runtime
-
-## Switches and Features
+## Switches, Features, and Flags
 
 - switches
   - switches are defined everywhere
@@ -255,6 +219,41 @@ Chromium Browser
     - `OVERRIDE_USE_DEFAULT` uses the feature's `default_state`
       - `FEATURE_ENABLED_BY_DEFAULT` defaults to enabled
       - `FEATURE_DISABLED_BY_DEFAULT` defaults to disabled
+- flags
+  - flags are defined in `chrome/browser/about_flags.cc`
+  - each flag is associated with a switch or a feature
+    - it provides a means to set switches/features persistently
+    - not all switches/features have associated flags
+- `chrome://about`
+  - `chrome://version`
+  - `chrome://gpu`
+  - `chrome://policy`
+  - `chrome://flags`
+- gpu
+  - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
+  - `--no-sandbox`
+  - `--enable-features=Vulkan`
+  - `--disable-gpu-process-crash-limit`
+- logging
+  - `--enable-logging=stderr`
+    - `DetermineLoggingDestination`
+    - logging is enabled by default only on debug builds
+  - `--log-level=0`
+    - `InitChromeLogging`
+    - `0` is `LOGGING_INFO` and is the lowest severity
+    - `LOG(severity)` is enabled when `LOG_IS_ON(severity)` returns true
+      - `--log-level=0` to enable `LOGGING_INFO`
+  - `--v=1`
+    - `VlogInfoFromCommandLine`
+    - `VLOG(verbosity)` is enabled when `VLOG_IS_ON(verbosity)` returns true
+      - `--v=1` to enable verbosity 1
+  - `--disable-logging-redirect`
+    - `RedirectChromeLogging`
+    - on cros, this is the default (set by the session manager) on a test build
+    - otherwise, logging is redirected to `/home/chronos/user/log/chrome`
+      after user login
+  - `DLOG` and `DVLOG` are enabled when `DCHECK_ALWAYS_ON` is enabled at
+    compile time and the respective sevrity/verbosity is enabled at runtime
 
 ## Startup
 
@@ -374,6 +373,39 @@ Chromium Browser
     - `viz::OutputPresenterGL::AllocateImages()`
   - other places such as `OzoneImageBacking::UploadFromMemory` call
     `ProduceSkiaGanesh` which also import the native pixmap
+
+## GPU and GL
+
+- GL is initialized in `GpuInit::InitializeAndStartSandbox`
+- `gl::init::InitializeStaticGLBindingsOneOff` loads GL
+  - `GetRequestedGLImplementation` returns the `GLImplementationParts`
+    - `GetAllowedGLImplementations` returns allowed implementations and is
+      platform-specific on ozone
+    - because angle and cmd passthrough are both enabled, angle
+      implementations are moved to the head of the vector
+    - if `--use-gl=foo` is specified,
+      `GetRequestedGLImplementationFromCommandLine` return `foo` impl
+    - otherwise, it falls back to the first implementation
+      - on drm, it is `kGLImplementationEGLANGLE` and
+        `ANGLEImplementation::kDefault`
+      - on wayland, it is `kGLImplementationEGLANGLE` and
+        `gl::ANGLEImplementation::kOpenGL`
+  - `InitializeStaticGLBindingsImplementation`
+    - this calls `GLOzoneEGL::InitializeStaticGLBindings` on drm and wayland
+    - on both platforms, `LoadDefaultEGLGLES2Bindings` is used to dlopen
+      angle's `libEGL.so` and `libGLESv2.so`
+- `gl::init::InitializeGLNoExtensionsOneOff` initializes GL
+  - on ozone, `InitializeGLOneOffPlatform` calls
+    - `GetDisplayInitializationParams` to collect supported `DisplayType`s
+      - it often returns `ANGLE_OPENGL`, `ANGLE_OPENGLES`, and `ANGLE_VULKAN`
+      - it checks for allowed implementations and angle's EGL client
+        extensions
+        - `EGL_ANGLE_platform_angle`
+        - `EGL_ANGLE_platform_angle_opengl`
+        - `EGL_ANGLE_platform_angle_vulkan`
+        - `EGL_ANGLE_platform_angle_device_type_egl_angle`
+    - `GLOzoneEGL::InitializeGLOneOffPlatform` to initialize a display
+      - it calls `GLDisplayEGL::Initialize` which calls `eglInitialize`
 
 ## GPU and viz
 
