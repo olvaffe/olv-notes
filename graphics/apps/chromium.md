@@ -114,6 +114,19 @@ Chromium Browser
     - enable exo wayland server
   - `--enable-native-gpu-memory-buffers`
   - `--video-capture-use-gpu-memory-buffer`
+- if for whatever reasons emerge is used,
+  - `cros_sdk --chrome-root ~/chromium`
+    - this binds mount chromium to `$HOME/chrome_root` in the chroot
+  - `CHROME_ORIGIN=LOCAL_SOURCE USE="-cros-debug -debug" FEATURES="noclean" emerge-$BOARD chromeos-chrome`
+    - `USE_GOMA=true` complains that gomacc is missing?
+  - diffing `$HOME/chrome_root/src/build/args/chromeos/zork.gni` and
+    `/var/cache/chromeos-chrome/chrome-src/src/out_zork/Release/args.gn`,
+    these are the main differences
+    - `dcheck_always_on = false`
+    - `enable_hevc_parser_and_hw_decoder = false`
+    - `is_cfi = true`
+    - `is_official_build = true`
+    - `use_thin_lto = true`
 
 ## Directory Structure
 

@@ -262,3 +262,4 @@ Chrome OS Overview
 - <https://chromium.googlesource.com/chromiumos/docs/+/main/debug_buttons.md>
   - on prototypes, might require `dut-control power_state:rec` to enter the
     recovery mode
+- to reset EC, press `Refresh` and then `Power`
