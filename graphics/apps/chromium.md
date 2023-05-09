@@ -247,6 +247,7 @@ Chromium Browser
   - `chrome://flags`
 - gpu
   - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
+  - `--disable-gpu-sandbox`
   - `--no-sandbox`
   - `--enable-features=Vulkan`
   - `--disable-gpu-process-crash-limit`
