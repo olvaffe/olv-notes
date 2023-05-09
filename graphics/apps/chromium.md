@@ -115,15 +115,18 @@ Chromium Browser
   - `--enable-native-gpu-memory-buffers`
   - `--video-capture-use-gpu-memory-buffer`
 - if for whatever reasons emerge is used,
-  - `cros_sdk --chrome-root ~/chromium`
-    - this binds mount chromium to `$HOME/chrome_root` in the chroot
-  - `CHROME_ORIGIN=LOCAL_SOURCE USE="-cros-debug -debug" FEATURES="noclean" emerge-$BOARD chromeos-chrome`
-    - `USE_GOMA=true` complains that gomacc is missing?
+  - `cros_sdk --chrome-root ~/chromium --goma-dir ~/depot_tools/.cipd_bin`
+    - this bind-mounts `~/chromium` to `$HOME/chrome_root` and
+      `~/depot_tools/.cipd_bin` to `$HOME/goma` in the chroot
+    - `goma_ctl goma_dir` reports the goma dir
+  - `USE_GOMA=true CHROME_ORIGIN=LOCAL_SOURCE USE="-cros-debug -debug chrome_internal" FEATURES="noclean" emerge-$BOARD chromeos-chrome`
   - diffing `$HOME/chrome_root/src/build/args/chromeos/zork.gni` and
     `/var/cache/chromeos-chrome/chrome-src/src/out_zork/Release/args.gn`,
     these are the main differences
     - `dcheck_always_on = false`
     - `enable_hevc_parser_and_hw_decoder = false`
+    - `internal_gles2_conform_tests = true`
+    - `is_chrome_branded = true`
     - `is_cfi = true`
     - `is_official_build = true`
     - `use_thin_lto = true`
