@@ -3,75 +3,123 @@ Mesa Vulkan WSI
 
 ## Overview
 
-- it provides 1:1 helpers for most WSI entrypoints
+- it provides most WSI entrypoints
 - `VK_KHR_wayland_surface`
   - `vkCreateWaylandSurfaceKHR`
-    - `wsi_create_wl_surface`
-    - allocates and initializes `VkIcdSurfaceWayland` as required by the
-      loader
+    - `wsi_CreateWaylandSurfaceKHR`
+    - allocates and initializes `wsi_wl_surface`, which inherits from
+      `VkIcdSurfaceWayland` as required by the loader
   - `vkGetPhysicalDeviceWaylandPresentationSupportKHR`
-    - `wsi_wl_get_presentation_support`
-    - checks if `wl_drm` (old) or `zwp_linux_dmabuf_v1` (new) is working
+    - `wsi_GetPhysicalDeviceWaylandPresentationSupportKHR`
+    - calls `wsi_wl_display_init` to check if `zwp_linux_dmabuf_v1` v3 is
+      supported
+      - or `wl_shm` if swrast
 - `VK_KHR_xcb_surface`
   - `vkCreateXcbSurfaceKHR`
-    - `wsi_create_xcb_surface`
+    - `wsi_CreateXcbSurfaceKHR`
     - allocates and initializes `VkIcdSurfaceXcb` as required by the loader
   - `vkGetPhysicalDeviceXcbPresentationSupportKHR`
-    - `wsi_get_physical_device_xcb_presentation_support`
-    - checks for DRI3 and if the screen depth is 24/32 bits
+    - `wsi_GetPhysicalDeviceXcbPresentationSupportKHR`
+    - calls `wsi_x11_check_for_dri3` to check if DRI3 is supported
+      - skipped if swrast
+    - calls `visual_supported` to check if the visual is
+      `XCB_VISUAL_CLASS_TRUE_COLOR` or `XCB_VISUAL_CLASS_DIRECT_COLOR`
 - `VK_KHR_surface`
   - `vkDestroySurfaceKHR`
-    - no helper; just free the struct
+    - `wsi_DestroySurfaceKHR`
+    - if wayland, calls `wsi_wl_surface_destroy`
+    - free the struct
   - `vkGetPhysicalDeviceSurfaceSupportKHR`
-    - `wsi_common_get_surface_support`
-    - for wayland, always true
-    - for xcb, checks for DRI3 and if the window depth is 24/32 bits
+    - `wsi_GetPhysicalDeviceSurfaceSupportKHR`
+    - `wsi_wl_surface_get_support` always returns true on wayland
+    - `x11_surface_get_support` performs the same check as
+      `wsi_GetPhysicalDeviceXcbPresentationSupportKHR` does
   - `vkGetPhysicalDeviceSurfaceCapabilitiesKHR`
-    - `wsi_common_get_surface_capabilities`
-    - for wayland,
+    - `wsi_GetPhysicalDeviceSurfaceCapabilitiesKHR`
+    - `wsi_wl_surface_get_capabilities2`
       - current/min/max extents are set `UINT32_MAX`/1x1/gpu max extent
-      - `minImageCount` is 4
-    - for xcb
+      - `minImageCount` is determined by `wsi_wl_surface_get_min_image_count`
+        - it returns 2 or 4
+    - `x11_surface_get_capabilities2`
       - current/min/max extents are set to the current window geometry
-      - `minImageCount` is 3
+      - `minImageCount` is determined by `x11_get_min_image_count` or
+        `x11_get_min_image_count_for_present_mode`
+        - they return 3, 4, or 5
     - in both cases, the images support these usage flags
-      - transfer src/dst
-      - sampled
-      - storage
-      - color attachment
+      - `VK_IMAGE_USAGE_TRANSFER_SRC_BIT`
+      - `VK_IMAGE_USAGE_TRANSFER_DST_BIT`
+      - `VK_IMAGE_USAGE_SAMPLED_BIT`
+      - `VK_IMAGE_USAGE_STORAGE_BIT`
+      - `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
+      - `VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT`
   - `vkGetPhysicalDeviceSurfaceFormatsKHR`
-    - `wsi_common_get_surface_formats`
-    - for wayland, return formats advertised by `wl_drm` or
-      `zwp_linux_dmabuf_v1`
-    - for x11, return `VK_FORMAT_B8G8R8A8_UNORM` and `VK_FORMAT_B8G8R8A8_SRGB`
+    - `wsi_GetPhysicalDeviceSurfaceFormatsKHR`
+    - `wsi_wl_surface_get_formats` returns formats advertised by
+      `zwp_linux_dmabuf_v1` or `wl_shm`
+    - `x11_surface_get_formats` returnsformats compatible with the visual
+      - `VK_FORMAT_R5G6B5_UNORM_PACK16` for depth 16
+      - `VK_FORMAT_B8G8R8A8_SRGB` and `VK_FORMAT_B8G8R8A8_UNORM` for depth 24
+      - `VK_FORMAT_A2R10G10B10_UNORM_PACK32` for depth 30
   - `vkGetPhysicalDeviceSurfacePresentModesKHR`
-    - `wsi_common_get_surface_present_modes`
-    - for wayland, return mailbox and fifo
-    - for x11, return all present modes: immediate, mailbox, fifo, fifo
-      relaxed
+    - `wsi_GetPhysicalDeviceSurfacePresentModesKHR`
+    - `wsi_wl_surface_get_present_modes` returns
+      - `VK_PRESENT_MODE_MAILBOX_KHR`
+      - `VK_PRESENT_MODE_FIFO_KHR`
+    - `x11_surface_get_present_modes` returns
+      - `VK_PRESENT_MODE_IMMEDIATE_KHR`
+      - `VK_PRESENT_MODE_MAILBOX_KHR`
+      - `VK_PRESENT_MODE_FIFO_KHR`
+      - `VK_PRESENT_MODE_FIFO_RELAXED_KHR`
 - `VK_KHR_get_surface_capabilities2`
   - `vkGetPhysicalDeviceSurfaceCapabilities2KHR`
-    - `wsi_common_get_surface_capabilities2`
+    - `wsi_GetPhysicalDeviceSurfaceCapabilities2KHR`
   - `vkGetPhysicalDeviceSurfaceFormats2KHR`
-    - `wsi_common_get_surface_formats2`
+    - `wsi_GetPhysicalDeviceSurfaceFormats2KHR`
 - `VK_KHR_swapchain`
   - `vkCreateSwapchainKHR`
-    - `wsi_common_create_swapchain`
+    - `wsi_CreateSwapchainKHR`
+    - `wsi_wl_surface_create_swapchain` calls `wsi_wl_image_init` to allocate
+      swapchain images
+    - `x11_surface_create_swapchain` calls `x11_image_init` to allocate
+      swapchain images
   - `vkDestroySwapchainKHR`
-    - `wsi_common_destroy_swapchain`
+    - `wsi_DestroySwapchainKHR`
+    - `wsi_wl_swapchain_destroy` frees the images and the swapchain
+    - `x11_swapchain_destroy` frees the images and the swapchain
   - `vkGetSwapchainImagesKHR`
-    - `wsi_common_get_images`
+    - `wsi_GetSwapchainImagesKHR`
+    - `wsi_wl_swapchain_get_wsi_image`
+    - `x11_get_wsi_image`
   - `vkAcquireNextImageKHR`
+    - `wsi_AcquireNextImageKHR`
+    - `wsi_wl_swapchain_acquire_next_image` returns the next image that is not
+      busy
+    - `x11_acquire_next_image` returns the next image that is not busy
   - `vkQueuePresentKHR`
-    - `wsi_common_queue_present`
+    - `wsi_QueuePresentKHR`
+      - some drivers provide their entrypoints
+    - `wsi_wl_swapchain_queue_present` calls `wl_surface_commit`
+    - `x11_queue_present` calls `xcb_present_pixmap_checked`
   - `vkGetDeviceGroupPresentCapabilitiesKHR`
+    - `wsi_GetDeviceGroupPresentCapabilitiesKHR`
   - `vkGetDeviceGroupSurfacePresentModesKHR`
+    - `wsi_GetDeviceGroupSurfacePresentModesKHR`
   - `vkGetPhysicalDevicePresentRectanglesKHR`
-    - `wsi_common_get_present_rectangles`
-    - for wayland, return `UINT32_MAX`
-    - for x11, return the current window geometry
+    - `wsi_GetPhysicalDevicePresentRectanglesKHR`
+    - `wsi_wl_surface_get_present_rectangles` returns `UINT32_MAX`
+    - `x11_surface_get_present_rectangles` returns the current window geometry
   - `vkAcquireNextImage2KHR`
-    - `wsi_common_acquire_next_image2`
+    - `wsi_AcquireNextImage2KHR`
+- `VK_EXT_swapchain_maintenance1`
+  - `vkReleaseSwapchainImagesEXT`
+    - `wsi_ReleaseSwapchainImagesEXT`
+    - `wsi_wl_swapchain_release_images` marks all images not busy
+    - `x11_release_images` marks all images not busy
+- `VK_KHR_present_wait`
+  - `vkWaitForPresentKHR`
+    - `wsi_WaitForPresentKHR`
+    - `wsi_wl_swapchain_wait_for_present` uses `wp_presentation` protocol
+    - `x11_wait_for_present` uses `XCB_PRESENT_EVENT_COMPLETE_NOTIFY`
 
 ## Swapchains
 
@@ -305,10 +353,14 @@ Mesa Vulkan WSI
     - used only when there is no modifier
       - anv uses it to force linear or X tiling
       - radv uses it to mark for scanout and disable DCC
+      - turnip uses it to force `DRM_FORMAT_MOD_LINEAR`
   - `wsi_memory_allocate_info`
     - chained to `VkMemoryAllocateInfo` for swapchain images
     - specifies that the bo should enable implicit sync
-    - used by radv to set `RADEON_FLAG_IMPLICIT_SYNC`
+    - used by radv to set `RADEON_FLAG_IMPLICIT_SYNC` for the bo
+    - used by turnip to set `MSM_SUBMIT_NO_IMPLICIT` for all submits
+  - `wsi_surface_supported_counters`
+    - chained to `VkSurfaceCapabilities2KHR` for display surface
   - `wsi_memory_signal_submit_info`
     - chained to empty (or blit) `VKQueueSubmit` just before presentation
     - gives driver a chance to set up implicit sync for the bo
@@ -359,3 +411,33 @@ Mesa Vulkan WSI
     - as such, `wsi_GetDisplayPlaneSupportedDisplaysKHR` always returns 1
       `VkDisplayKHR`
     - `wsi_GetDisplayPlaneCapabilities2KHR` just lies
+
+## Implicit Fencing
+
+- mesa assumes compositors require implicit fencing
+- on modern kernels, wsi uses dma-buf sync file import/export to bridge vk
+  drivers (explicit fencing) and compositors (implicit fencing)
+  - on present, `wsi_common_queue_present` makes a empty or blit queue submit
+    - `wsi_prepare_signal_dma_buf_from_semaphore` creates
+      `chain->dma_buf_semaphore` once
+    - the empty or blit queue submit signals `chain->dma_buf_semaphore`
+    - `wsi_signal_dma_buf_from_semaphore` exports the sync fd from
+      `chain->dma_buf_semaphore` and imports the sync fd into
+      `image->dma_buf_fd`
+  - on acquire, `wsi_common_acquire_next_image2` calls
+    `wsi_signal_semaphore_for_image` and `wsi_signal_fence_for_image` to
+    signal the `VkSemaphore` and the `VkFence`
+    - they call to `wsi_create_sync_for_dma_buf_wait` exports the sync fd from
+      `image->dma_buf_fd`, wraps it in a `vk_sync`, and update
+      `semaphore->temporary` and `fence->temporary`
+- on older kernels, wsi uses vk driver callbacks to set up implicit fencing
+  - on present, `wsi_common_queue_present` chains
+    `wsi_memory_signal_submit_info` into the empty or blit submit
+    - this is only used by anv and allows anv to add an implicit fence to the
+      bo
+    - other drivers marks the bo for implicit fencing on bo allocation
+  - on acquire, `wsi_common_acquire_next_image2` can call
+    `dev->create_sync_for_memory` to create a `vk_sync` for the bo's implicit
+    fence set up by the compositor
+    - this is only used by anv
+    - other drivers marks the bo for implicit fencing on bo allocation
