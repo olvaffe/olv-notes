@@ -40,9 +40,12 @@ Mesa RADV
 
 ## Winsys
 
-- `radv_amdgpu_winsys_create`
+- `radv_amdgpu_winsys_create` is called for each physical device
   - libdrm's `amdgpu_device_initialize` is called to initialize
     `amdgpu_device_handle`
+    - internally, it calls `drmGetPrimaryDeviceNameFromFd` on the fd and make
+      sure there is a 1:1 mapping between primary nodes and
+      `amdgpu_device_handle`
     - `dev->dev_info` is from kernel's `AMDGPU_INFO_DEV_INFO`
     - `dev->vamgr{,_32,_high,_high_32}` are initialized
       - on a renoir apu,
@@ -51,6 +54,8 @@ Mesa RADV
         - `vamgr_high_32` and `vamgr_high` are similarly sized but the higher
           16 bits are all 1's (that is, about 128TB near the end of 64-bit
           address space)
+  - there is a 1:1 mapping between `amdgpu_device_handle` and
+    `radv_amdgpu_winsys`
   - `ac_query_gpu_info` is called to initialize `radeon_info`
     - `meminfo` is from kernel's `AMDGPU_INFO_MEMORY`
       - on a renoir apu,
@@ -59,6 +64,25 @@ Mesa RADV
         - `gtt.total_heap_size` is near 4GB (kernel uses half of usable system
           memory in `amdgpu_ttm_init`)
     - `fix_vram_size` aligns vram size to 256MB
+  - `debug_all_bos` is false unless `RADV_DEBUG=allbos`
+  - `debug_log_bos` is false unless `RADV_DEBUG=hang`
+  - `use_ib_bos` is true unless `RADV_DEBUG=noibs`
+- `radv_amdgpu_ctx_create` is called for each vk queue
+  - `amdgpu_cs_ctx_create2` makes an `DRM_AMDGPU_CTX` ioctl
+  - a fence bo is created
+- `radv_amdgpu_winsys_bo_create` is calloed for each alloc
+  - `amdgpu_bo_alloc` makes a `DRM_AMDGPU_GEM_CREATE` ioctl
+  - `amdgpu_bo_va_op_raw` makes a `DRM_AMDGPU_GEM_VA` ioctl
+  - when `debug_log_bos`, `radv_amdgpu_log_bo` logs for bo allocs
+  - when `debug_all_bos`, all bos are added to `global_bo_list` automatically
+    and their VAs are dumped on gpu hang
+- `radv_amdgpu_cs_create` is called for each vk cmd (and internally)
+  - `ib_buffer` is the current bo; when it gets full, `radv_amdgpu_cs_grow` is
+    called to move it to `old_ib_buffers` and a new bo is allocated
+  - `handles` are all bos referenced by the cs; `radv_amdgpu_cs_add_buffer` is
+    used to add a bo to `handles`
+  - when `use_ib` is true, `radv_amdgpu_cs_grow` emits `PKT3_INDIRECT_BUFFER`
+    to jump from the old bo to the new one
 
 ## memory types
 
@@ -379,3 +403,38 @@ Mesa RADV
 - allocate externally and import
   - `vk_image_usage_to_ahb_usage` is used to initialize
     `VkAndroidHardwareBufferUsageANDROID`
+
+## Sampling
+
+- when a shader samples a simple image...
+- `image_sample` is the instruction used
+  - the operands are
+    - dst, to specify the destination
+    - coords, to specify the coords
+    - resource, to specify the image
+    - sampler, to specify the sampler
+  - stack
+    - `aco::(anonymous namespace)::emit_mimg`
+    - `aco::(anonymous namespace)::visit_tex`
+    - `aco::(anonymous namespace)::visit_block`
+    - `aco::(anonymous namespace)::visit_cf_list`
+    - `aco::select_program`
+    - `aco_compile_shader` - `shader_compile`
+    - `radv_shader_nir_to_asm`
+- there is an image descriptor
+  - `radv_image_view_make_descriptor` initializes the image descriptor
+    - `radv_make_texture_descriptor`
+    - `si_set_mutable_tex_desc_fields`
+- there is a sampler descriptor
+  - `radv_init_sampler` initializes the sampler descriptor
+- `VK_EXT_image_2d_view_of_3d`
+  - `image2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+    descriptor can be a 2D image view of a 3D image
+  - `sampler2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+    descriptor can be a 2D image view of a 3D image
+  - `VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT` must be specified when
+    creating the 3D image
+  - differences from `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` in core
+    - the core bit is for rendering, and is similar to
+      `glFramebufferTextureLayer`
+    - the ext bit is for sampling, and is similar to `glBindImageTexture`
