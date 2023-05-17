@@ -430,6 +430,31 @@ AMD
   - `m_rbPerSe` is the number of render backends per shader engine
   - `m_pipes`
   - `m_banks`
+
+## addrlib Tilings
+
+- tilings
+  - gfx8- uses `AddrTileMode` and gfx9+ uses `AddrSwizzleMode`
+  - there is linear
+    - `ADDR_TM_LINEAR_ALIGNED` on gfx8- or `ADDR_SW_LINEAR` on gfx9+
+  - there are micro tiles
+    - such as `ADDR_TM_1D_TILED_THIN1` on gfx8- or `ADDR_SW_256B_S` on gfx9+
+    - each micro tile is 256 bytes
+    - the micro tile size is
+      - 8x8 on gfx8-
+      - dynamic on gfx9+
+    - there are also micro tile modes
+      - S is standard, or `ADDR_NON_DISPLAYABLE` on gfx8-
+      - D is displayable, or `ADDR_DISPLAYABLE` on gfx8-
+      - R is rotated (gfx9) or renderable (gfx10+), or `ADDR_ROTATED` on gfx8-
+      - Z is for depth/stencil/fmask, or `ADDR_DEPTH_SAMPLE_ORDER` on gfx8-
+    - there are also variations
+      - X is xor
+      - T is prt (partially resident texture)
+  - there are macro tiles
+    - such as `ADDR_TM_2D_TILED_THIN1` on gfx8- or `ADDR_SW_4KB_S` on gfx9+
+    - each macro tile is 4KB, 64KB, 256KB, or variable
+    - within each macro tile, there are micro tiles that are 256 bytes
 - `AddrSwizzleMode` enumerates all swizzle modes for GFX9+
   - they can be classifed by block types
     - `AddrBlockLinear` is linear
@@ -477,12 +502,9 @@ AMD
     - if there are more than 1 block types allowed, pick the largest block
       type (e.g., 64KB on GFX9)
     - if there are more than 2 swizzle types allowed, prefer D over S over Z
-- `AddrComputeSurfaceInfo` calls `V1::Lib::ComputeSurfaceInfo`
-  - on GFX8, it calls `CiLib::HwlComputeSurfaceInfo`
-    - which calls `SiLib::HwlComputeSurfaceInfo`
-    - which calls `EgBasedLib::HwlComputeSurfaceInfo`
-  - `EgBasedLib::ComputeSurfaceAlignmentsLinear` returns 3 alignments for
-    base, pitch, and height respectively
+
+## addrlib layout
+
 - `Addr2ComputeSurfaceInfo` calls `V2::Lib::ComputeSurfaceInfo`
   - on GFX9, it calls `Gfx9Lib::HwlComputeSurfaceInfoLinear` or
     `Gfx9Lib::HwlComputeSurfaceInfoTiled`
@@ -499,29 +521,61 @@ AMD
       - `pitch` is in pixels and is aligned to at least `blockWidth`
       - `height` is in pixels and is aligned to `blockHeight`
       - `pMipInfo` is for the entire mipmap
-      - `surfSize` is the size of the surface (entire mipmap0
+      - `surfSize` is the size of the surface (entire mipmap)
       - `baseAlign` is the alignment of the memory base addr
         - if `ADDR_SW_*_X`, where X stands for XOR, the alignment is the
           swizzle block size
-- tilings
-  - gfx8- uses `AddrTileMode` and gfx9+ uses `AddrSwizzleMode`
-  - there is linear
-    - `ADDR_TM_LINEAR_ALIGNED` on gfx8- or `ADDR_SW_LINEAR` on gfx9+
-  - there are micro tiles
-    - such as `ADDR_TM_1D_TILED_THIN1` on gfx8- or `ADDR_SW_256B_S` on gfx9+
-    - each micro tile is 256 bytes
-    - the micro tile size is
-      - 8x8 on gfx8-
-      - dynamic on gfx9+
-    - there are also micro tile modes
-      - S is standard, or `ADDR_NON_DISPLAYABLE` on gfx8-
-      - D is displayable, or `ADDR_DISPLAYABLE` on gfx8-
-      - R is rotated (gfx9) or renderable (gfx10+), or `ADDR_ROTATED` on gfx8-
-      - Z is for depth/stencil/fmask, or `ADDR_DEPTH_SAMPLE_ORDER` on gfx8-
-    - there are also variations
-      - X is xor
-      - T is prt (partially resident texture)
-  - there are macro tiles
-    - such as `ADDR_TM_2D_TILED_THIN1` on gfx8- or `ADDR_SW_4KB_S` on gfx9+
-    - each macro tile is 4KB, 64KB, 256KB, or variable
-    - within each macro tile, there are micro tiles that are 256 bytes
+  - for a mipmapped `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `pIn->numMipLevels > 1`
+    - `Gfx9Lib::HwlComputeSurfaceInfoTiled`
+      - `Gfx9Lib::GetMipChainInfo` computes the mip chain info
+        - `inTail` is set to true when the level is smaller than `tailMaxDim`
+          - when that happens, the level is aligned to `tailMaxDim`
+          - all levels smaller than 256 bytes are aligned to `Block256_2d`
+        - the layout of each level is saved to `pMipInfo`
+        - `offset` is incremented after each level
+        - `mipPitch` and `mipHeight` are reduced in half after each level 
+      - `Gfx9Lib::GetMipStartPos` computes the starting position of each
+        level
+        - mip1+ is on the right of mip0 when `ADDR_MAJOR_Y`
+        - mip1+ is on the bottom of mip0 when `ADDR_MAJOR_X`
+  - for an array `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `pIn->numSlices > 1`
+    - `Gfx9Lib::HwlComputeSurfaceInfoTiled`
+      - the levels of the mipchain are tightly packed and each slice consists
+        of a complete mipchain
+  - for a 3d `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `pIn->resourceType == ADDR_RSRC_TEX_3D` and `pIn->numSlices > 1`
+    - `Gfx9Lib::HwlComputeSurfaceInfoTiled`
+      - `pIn->numSlices` and `pOut->numSlices` is the depth of the 3d surface
+      - `Gfx9Lib::GetMipChainInfo` packs slices of a level together
+  - for a msaa `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `pIn->numSamples > 1`
+      - `pIn->numFrags` is equal to `pIn->numSamples` and is the number of
+        samples stored in memory
+    - `pOut->sliceSize` is multipled by `pIn->numFrags`
+      - that is, for each sample N, the levels of the mipchain of sample N are
+        tightly packed to form a subslice
+      - subslices are packed together to form a slice
+- `AddrComputeSurfaceInfo` calls `V1::Lib::ComputeSurfaceInfo`
+  - note that it computes a single level of the mip chain at a time
+    - `ADDR_COMPUTE_SURFACE_INFO_INPUT::numMipLevels` is 0 and only
+      `ADDR_COMPUTE_SURFACE_INFO_INPUT::mipLevel` is set to the current level
+    - this is different from GFX9+, where
+      `ADDR2_COMPUTE_SURFACE_INFO_INPUT::numMipLevels` is set to compute the
+      entire mipchain
+  - on GFX8, it calls `CiLib::HwlComputeSurfaceInfo`
+    - which calls `SiLib::HwlComputeSurfaceInfo`
+    - which calls `EgBasedLib::HwlComputeSurfaceInfo`
+  - `EgBasedLib::ComputeSurfaceAlignmentsLinear` returns 3 alignments for
+    base, pitch, and height respectively
+  - for a plain `VK_FORMAT_B8G8R8A8_UNORM`,
+  - for a mipmapped `VK_FORMAT_B8G8R8A8_UNORM`,
+    - the caller should call this function on each level manually
+  - for an array `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `pOut->surfSize` is multiplied by `expNumSlices`
+  - for a 3d `VK_FORMAT_B8G8R8A8_UNORM`,
+    - addrlib does not know if the surface is 2d or 3d, and a 3d surface is
+      the same as an 2d array
+  - for a msaa `VK_FORMAT_B8G8R8A8_UNORM`,
+    - `bytesPerSlice` is multiplied by `numSamples`
