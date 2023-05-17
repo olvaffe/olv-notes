@@ -309,3 +309,39 @@ wlroots
     - `sd_bus_get_fd`
   - `seat_impl::dispatch`
     - `sd_bus_process`
+
+## Renderer
+
+- init stack
+  - `dri2_initialize_device`
+  - `dri2_initialize`
+  - `eglInitialize`
+  - `egl_init_display`
+  - `egl_init`
+  - `wlr_egl_create_with_drm_fd`
+  - `wlr_gles2_renderer_create_with_drm_fd`
+  - `renderer_autocreate_with_drm_fd`
+  - `wlr_renderer_autocreate`
+  - `server_init`
+  - `main`
+- surface commit stack
+  - `import_aux_info`
+  - `iris_resource_finish_aux_import`
+  - `iris_resource_from_handle`
+  - `dri2_create_image_from_winsys`
+  - `dri2_create_image_from_fd`
+  - `dri2_from_dma_bufs2`
+  - `dri2_create_image_dma_buf`
+  - `dri2_create_image_khr`
+  - `dri2_create_image`
+  - `_eglCreateImageCommon`
+  - `eglCreateImageKHR`
+  - `wlr_egl_create_image_from_dmabuf`
+  - `gles2_texture_from_dmabuf`
+  - `gles2_texture_from_dmabuf_buffer`
+  - `gles2_texture_from_buffer`
+  - `wlr_texture_from_buffer`
+  - `wlr_client_buffer_create`
+  - `surface_apply_damage`
+  - `surface_commit_state`
+  - `surface_handle_commit`

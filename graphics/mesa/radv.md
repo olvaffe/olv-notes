@@ -1,6 +1,43 @@
 Mesa RADV
 =========
 
+## Environment Variables
+
+- `RADV_DEBUG` for radv debug flags
+  - `RADV_DEBUG=hang` dumps a report after a GPU hang
+    - `radv_check_gpu_hangs` is called after each queue submit.  If the submit
+      hangs, a report is written to `$HOME/radv_dumps`
+  - `RADV_DEBUG=shaders` dumps shader disassembly
+- `RADV_PERFTEST` for radv perf flags
+- `ACO_DEBUG` for compiler debug flags
+- `RADV_THREAD_TRACE*` generates SQTT trace data for RGP (radeon gpu profiler)
+  - `RADV_THREAD_TRACE=100` dumps the SQTT trace for frame #100
+    - `radv_handle_sqtt` is called after each successful `sqtt_QueuePresentKHR`
+      - `radv_begin_sqtt` is called before frame #100
+      - `radv_end_sqtt` is called after frame #100
+      - `radv_get_sqtt_trace` is called to retrieve the trace
+      - `ac_dump_rgp_capture` saves the trace to `/tmp/*.rgp`
+- `RADV_RRA_TRACE*` generates trace data for RRA (radeon raytrace
+  analyzer)
+- `MESA_VK_MEMORY_TRACE*` generates trace data for RMV (radeon memory
+  visualizer)
+- `RADV_FORCE_VRS` and `RADV_FORCE_VRS_CONFIG_FILE` control VRS (variable-rate
+  shading)
+- `RADV_TRAP_HANDLER` installs a trap handle on GFX8
+  - it sets up a trap handler that is invoked when a shader traps
+  - after each queue submit, `radv_check_trap_handler` checks if there is any
+    fault
+- `RADV_TEX_ANISO` forces anisotropy filter
+- `RADV_FORCE_FAMILY` enables the null winsys
+- `AMD_CU_MASK` can be used to disable CUs
+- `AMD_PARSE_IB` can parse the specified binary IB file
+
+## Tools
+
+- umr
+  - <https://gitlab.freedesktop.org/tomstdenis/umr.git>
+- RGP
+
 ## Winsys
 
 - `radv_amdgpu_winsys_create`
