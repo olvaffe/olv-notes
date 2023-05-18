@@ -579,3 +579,71 @@ AMD
       the same as an 2d array
   - for a msaa `VK_FORMAT_B8G8R8A8_UNORM`,
     - `bytesPerSlice` is multiplied by `numSamples`
+
+## Image Descriptors
+
+- an image descriptor is called a `SQ_IMG_RSRC`
+- hw limits
+  - mipmapping: 1d, 2d, 3d
+  - array: 1d, 2d
+  - msaa: 2d
+    - no mipmapping and no filtering (`texture`)
+    - only sample fetching (`texelFetch`)
+- according to `gfx10-rsrc.json`, gfx10.3 has
+  - `SQ_IMG_RSRC_WORD0`: lo addr
+  - `SQ_IMG_RSRC_WORD1`:
+    - bit0..7: hi addr (40-bit addr)
+    - bit8..19: min lod
+    - bit20..28: format
+    - bit30..31: lo width
+  - `SQ_IMG_RSRC_WORD2`:
+    - bit0..11: hi width
+    - bit14..27: height
+    - bit30: unused
+    - bit31: resource level
+  - `SQ_IMG_RSRC_WORD3`:
+    - bit0..2: dst sel x (channel swizzle)
+    - bit3..5: dst sel y
+    - bit6..8: dst sel z
+    - bit9..11: dst sel w
+    - bit12..15: base level (view first level)
+      - if msaa, unused and mbz
+    - bit16..19: last level (view last level)
+      - if msaa, `log2(samples)` instead
+    - bit20..24: sw mode (tiling)
+    - bit25..27: bc swizzle (border color channel swizzle)
+    - bit28..31: type (1d, 2d, cube, array, msaa, etc.)
+  - `SQ_IMG_RSRC_WORD4`:
+    - bit0..12: depth
+      - if not 3d and not array, it's 0 or lo pitch
+      - if not 3d, it's view last layer
+      - if 3d, it's image depth instead (there is no 3d array)
+    - bit13: hi pitch
+    - bit16..28: base array (view first layer)
+  - `SQ_IMG_RSRC_WORD5`:
+    - bit0..3: array pitch
+      - 0: base array and depth are wrt to mip 0 and cover the entire miptree
+      - 1: base array and depth are wrt to base level and cover just the level
+      - we want to use 0 in most cases
+      - we want to use 1 only for 3D UAV or 2d-view-of-3d
+    - bit4..7: max mip (image last level)
+      - if msaa, `log2(samples)` instead
+    - bit8..19: min lod warn
+    - bit20..22: perf mod
+    - bit23: corner samples
+    - bit25: lod hdw cnt en
+    - bit26: prt default
+    - bit31: big page
+  - `SQ_IMG_RSRC_WORD6`:
+    - bit0..7: counter bank id
+    - bit8..9: llc noalloc
+    - bit10: iterate 256
+    - bit15..16: max uncompressed block size (for dcc)
+    - bit17..18: max compressed block size (for dcc)
+    - bit19: meta pipe aligned (for fmask)
+    - bit20: write compress en (for storage image dcc)
+    - bit21: compression en (for dcc or cmask)
+    - bit22: alpha is on msb
+    - bit23: color transform
+    - bit24..31: lo metadata addr (for dcc or cmask)
+  - `SQ_IMG_RSRC_WORD7`: hi metadata addr
