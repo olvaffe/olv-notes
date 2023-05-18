@@ -438,3 +438,15 @@ Mesa RADV
     - the core bit is for rendering, and is similar to
       `glFramebufferTextureLayer`
     - the ext bit is for sampling, and is similar to `glBindImageTexture`
+  - amdvlk
+    - xgl
+      - commit `997225355d7fce7392a9e32fe9f0a515f5736d0f`
+      - when `VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT` is set,
+        `VkToPalImageCreateFlags` sets `view3dAs2dArray`
+      - when a 2d image view is created for a 3d image,
+        `info.flags.zRangeValid` and `info.zRange` are set
+      - the vk spec has some requirements in this case
+        - `VUID-VkImageViewCreateInfo-image-04970` says `levelCount` must be 1
+        - `VUID-VkImageViewCreateInfo-imageViewType-04973` says `layerCount`
+          must be 1 if non-array
+    - pal
