@@ -877,3 +877,52 @@ Vulkan
   - `vkGetPhysicalDeviceImageFormatProperties2` with
     `VkAndroidHardwareBufferUsageANDROID` to get the optimal ahb usage
   - in this path, vk is consulted for the ahb usage
+
+## Image Views
+
+- a `VkImageView` can be created fro a `VkImage`
+  - `VkImageViewType` and `VkImageType` can differ under conditions
+    - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD` 
+    - `VK_IMAGE_VIEW_TYPE_xD_ARRAY` is always compatible with `VK_IMAGE_TYPE_xD` 
+    - `VK_IMAGE_VIEW_TYPE_CUBE` and `VK_IMAGE_VIEW_TYPE_CUBE_ARRAY` are
+      compatible with `VK_IMAGE_TYPE_2D` if
+      - `imageCubeArray` feature is supported and enabled
+      - the image was created with `VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT`
+      - view `layerCount` must be 6 or multiples of 6
+    - `VK_IMAGE_VIEW_TYPE_2D` and `VK_IMAGE_VIEW_TYPE_2D_ARRAY` are compatible
+      with `VK_IMAGE_TYPE_3D` if
+      - `imageView2DOn3DImage` feature is supported and enabled
+      - the image was created with `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT`
+    - there is also `VK_EXT_image_2d_view_of_3d`
+  - view `format` and image `format` can differ if
+    - the image was created with `VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT`
+  - view `subresourceRange` specifies a subset of the miptree accessible to
+    the view
+    - `baseMipLevel` and `levelCount` select the mip levels
+    - `baseArrayLayer` and `layerCount` select the array layers
+    - note that 3D images have only a single array layer
+      - `VK_EXT_image_sliced_view_of_3d` allows selecting slices at a mip level
+- VUIDs
+  - VUID-VkImageViewCreateInfo-image-04970
+    - `levelCount` must be 1 when creating a 2D view from a 3D image
+  - VUID-VkImageViewSlicedCreateInfoEXT-None-07870
+    - `levelCount` must be 1 when creating a sliced 3D view from a 3D image
+- core
+  - `imageView2DOn3DImage` feature indicates
+    `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` support, permitting a 2D or 2D
+    array image view of a 3D image
+  - `VkFramebufferCreateInfo` does not allow 3D views.  The bit allows 3D
+    images to be used as color buffers
+  - it is designed for rendering, and is similar to
+    `glFramebufferTextureLayer`
+- `VK_EXT_image_2d_view_of_3d`
+  - `image2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+    descriptor can be a 2D image view of a 3D image
+  - `sampler2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+    descriptor can be a 2D image view of a 3D image
+  - `VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT` must be specified when
+    creating the 3D image
+  - the bit is for sampling, and is similar to `glBindImageTexture`
+- `VK_EXT_image_sliced_view_of_3d`
+  - `imageSlicedViewOf3D` indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+    descriptor can be a sliced 3D image view of a 3D image
