@@ -425,3 +425,69 @@ dEQP
     - it then records the same command again
   - submit and get the sync fd
   - wait for queue idle
+
+## Test Case: `dEQP-VK.ycbcr.plane_view.memory_alias.*`
+
+- `populateViewTypeGroup` loops through all ycbcr formats
+  - size is `32x58`
+  - only multi-planar ycbcr formats are considered
+  - image flags are
+    - `VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT`
+    - `VK_IMAGE_CREATE_ALIAS_BIT`
+    - `VK_IMAGE_CREATE_DISJOINT_BIT`
+  - `addPlaneViewCase` is called for each plane of each ycbcr format
+    - take `VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM` for example, it creates
+      - `g8_b8_r8_3plane_420_unorm_plane_0`
+      - `g8_b8_r8_3plane_420_unorm_plane_1`
+      - `g8_b8_r8_3plane_420_unorm_plane_2`
+    - it also creates a test for each compatible formats such as
+      - `g8_b8_r8_3plane_420_unorm_plane_0_compatible_format_r4g4_unorm_pack8`
+      - `g8_b8_r8_3plane_420_unorm_plane_0_compatible_format_r8_uint`
+      - `g8_b8_r8_3plane_420_unorm_plane_0_compatible_format_r8_sint`
+- `getShaderSpec` returns a fs spec that looks like
+
+    #version 450
+    layout(binding = 1, set = 1) uniform highp sampler2D u_image;
+    layout(binding = 0, set = 1) uniform highp sampler2D u_planeView;
+    layout(location=0) flat in highp vec2 vtx_out_texCoord;
+    layout(location=0) out highp vec4 o_result0;
+    layout(location=1) out highp vec4 o_result1;
+    void main (void) {
+            highp vec2 texCoord = vtx_out_texCoord;
+            highp vec4 result0;
+            highp vec4 result1;
+            result0 = texture(u_image, texCoord);
+            result1 = vec4(texture(u_planeView, texCoord));
+            o_result0 = result0;
+            o_result1 = result1;
+    }
+- `testPlaneView` setup
+  - creates two images
+    - `image` is the entire ycbcr disjoint image
+    - `imageAlias` is a plane image with compatible format
+    - `allocateAndBindImageMemory` allocates and bind memories for each plane of
+      `image`
+    - `imageAlias` aliases one of the memories
+  - creates two image views
+    - `wholeView` is a `VK_IMAGE_ASPECT_COLOR_BIT` view of `image` with ycbcr conversion
+    - `planeView` is a `VK_IMAGE_ASPECT_COLOR_BIT` view of `imageAlias`
+  - creates two samplers
+    - `wholeSampler` is a sampler for `wholeView` with ycbcr conversion
+    - `planeSampler` is a sampler for `planeView`
+  - `descLayout`
+    - binding 0 is a combined sampler
+    - binding 1 is an immutable combined sampler of `wholeSampler`
+  - `descSet`
+    - binding 0 is `planeViewSampler` and `planeView`
+    - binding 1 is `wholeViewSampler` and `wholeView`
+  - `imageData` contains random data
+  - `imageAlias` is transitioned to `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`
+  - `uploadImage` initializes `image`
+    - it transitions `image` to `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+    - `vkcmdCopyBufferToImage` to copy `imageData` to `image`
+    - another transition to `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`
+- `testPlaneView` run
+  - it picks random 500 points
+  - it executes the shader to get the values at those 500 points
+  - it computes reference values in `referenceWhole` and `referencePlane`
+  - it compares the values against the reference values
