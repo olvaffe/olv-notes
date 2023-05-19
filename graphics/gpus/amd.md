@@ -106,8 +106,57 @@ AMD
     - `6700 < 6700 XT < 6800`
   - `XTX` is even faster
 
+## RDNA 3
+
+- Radeon RX 7900 XTX
+- $999
+- there is 1 GCD and 6 MCDs
+  - GCD, Graphics Chiplet Die, is 5nm
+  - each MCD, Memory Chiplet Die, is 6nm and provides 16MB of infinity cache
+  - GCD and MCDs are interconnected with infinity fabric
+- inside the GCD,
+  - 1 PCIe Gen4 block
+  - 24 256KB L2 for a total of 6MB
+  - 1 fixed-function block
+  - 6 programmable shader engines
+  - 1 multimedia engine
+  - 1 display engine
+- Command Processor probably lives in the PCIe Gen4 block
+  - it parses the command stream and dispatches commands
+  - media comamnds are dispatched to multimedia engine
+  - graphics and compute commands are dispatched to the fixed-function block
+- L2 is shared by all blocks
+- inside the fixed-function block,
+  - 1 graphics command processor that supports graphics and compute
+  - 4 ACEs (async compute engines) that support compute only
+  - 1 DMA that supports 2D
+  - 1 geometry processor that does geometry processing
+  - 1 HWS for hardware scheduling?
+- inside each shader engine,
+  - 1 prim unit
+  - 1 rasterizer
+  - 2 shader arrays, I guess, and each shader array has
+    - 1 128KB L1s
+    - 2 RB+
+    - 4 WCPs/DCUs (Workgroup Processor or Dual Compute Unit)
+- inside each WCP/DCU,
+  - 1 32KB instruction cache
+  - 1 16KB scalar cache
+  - 1 shared memory
+  - 2 CUs
+- inside each CU,
+  - 1 32KB L0
+  - 1 texture filter
+  - 1 ld/st/tex addr
+  - 1 ray accelerator
+  - 1 scheduler
+  - ? scalar ALUs and scalar GPRs
+  - ? vecor ALUs and vector GPRs
+- there is a total of `1 (gcd) * 6 (se) * 2 (sa) * 4 (wcp) * 2 (cu) = 96` CUs
+
 ## RDNA
 
+- <https://www.amd.com/system/files/documents/rdna-whitepaper.pdf>
 - AMD Navi Radeon RX 5700 XT
 - $399
 - 2 Shader Engines, each has
@@ -387,6 +436,8 @@ AMD
     - shader engine
   - PRT
     - partially resident texture
+  - SA
+    - shader array
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
