@@ -522,6 +522,13 @@ AMD
     - `sw_D` is compatible with display
     - `sw_R` is compatible with display rotation on GFX9 and is for render
       targers on GFX9+
+  - `_X` and `_T` ones support "tile swizzle"
+    - when the swizzle mode is `_X` or `_T`, it further supports tile swizzle,
+      or "pipe/bank xor"
+    - the "tile swizzle" is specified in the lower bits of the va address, and
+      picks a different pipe xor and bank xor
+    - basically when doing MRTs, we want all MRTs to be `_X`/`_T` and have
+      differnent tile swizzles to maximize memory throughput
 - `Addr2GetPreferredSurfaceSetting` calls
   `V2::Lib::Addr2GetPreferredSurfaceSetting`
   - this is called to guess the optimal tiling
