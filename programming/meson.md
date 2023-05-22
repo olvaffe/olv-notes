@@ -79,6 +79,31 @@ Meson
 - `ninja install` to install
   - `DESTDIR` is supported
 
+## Dependencies
+
+- to find an external dependency,
+  - `dependency('zlib', version : '>=1.2.8')`
+- to declare a dependency,
+  - `declare_dependency(link_with : my_lib, include_directories : my_inc)`
+- to be able to fall back to a subproject,
+  - `dependency('foo', fallback : ['foo', 'foo_dep'])`
+  - if `foo` is not available as an externaly dependency but available as a
+    subproject, build `foo` and use `foo_dep` dependency from the subproject
+    - `foo` must be a meson subproject with
+      `foo_dep = declare_dependency(...)`
+- detection methods
+  - the default is `auto`
+    - meson has special logics for certain external dependencies such as `dl`,
+      `llvm`, `python3`, `qt5`, `sdl2`, `threads`, `zlib`, etc.
+    - otherwise, meson tries `pkg-config` and then `cmake`
+  - `pkg-config` uses `pkg-config`
+  - `cmake` uses cmake's `find_package`
+  - `system` uses `compiler.find_library()`
+  - `builtin` checks if the external depenency is a compiler builtin
+  - `config-tool` uses dependency-specific tools such as `llvm-config`
+  - `sysconfig` uses python3's `sysconfig`
+  - `qmake` uses qt's `qmake`
+
 ## Machine Files
 
 - machine files are used with `--native-file` or `--cross-file` to describe

@@ -53,6 +53,16 @@ LLVM
 - build stage2 compiler
   - to build the same stuff using the stage1 compiler
 
+## Debian Packaging
+
+- `libllvm$ver` for `libLLVM-$ver.so.1`
+- `llvm-$ver-dev` for c++ headers, c headers, cmake rules, static libraries,
+  shared library links
+- `llvm-$ver` for tools such as `llc-$ver`, `llvm-config-$ver`, etc.
+- `llvm-$ver-linker-tools` for linker plugins
+- `llvm-$ver-runtime` for tools such as `lli-$ver`
+- `llvm-$ver-tools` for tools such as `FileCheck-$ver`
+
 ## Compiler Steps
 
 - source to AST
