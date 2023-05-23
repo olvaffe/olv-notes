@@ -13,16 +13,20 @@ DRM amdgpu
 
 - `amdgpu_init` registers `amdgpu_kms_pci_driver`
   - `amdgpu_pci_probe` calls `amdgpu_driver_load_kms` to inialize the device
+  - `driver_data` is from `pciidlist`, and on latest gens, it is `CHIP_IP_DISCOVERY`
 - `amdgpu_driver_load_kms` is the main init function
   - `amdgpu_device_init` initializes `struct amdgpu_device`
     - `asic_type` is from `pciidlist` pci table
     - I have `CHIP_STONEY` and `CHIP_RENOIR`
   - `amdgpu_device_ip_early_init` discovers the ip blocks
-    - if older like `CHIPSET_RENOIR`
+    - if older like `CHIPSET_STONEY`
       - `family` is set to `AMDGPU_FAMILY_CZ`
       - `vi_set_ip_blocks` adds some ip blocks 
     - if newer like `CHIP_RENOIR`, `amdgpu_discovery_set_ip_blocks` calls
       `amdgpu_discovery_reg_base_init` to discover the ip blocks
+    - `amdgpu_get_bios` reads bios to `adev->bios` from various possible
+      locations
+      - `adev->is_atom_fw` is set since `CHIP_VEGA10`
   - `amdgpu_device_ip_init` initializes the ip blocks
 - IP blocks
   - ip blocks are discovered and added with `amdgpu_device_ip_block_add`
@@ -276,6 +280,16 @@ DRM amdgpu
 ## ioctls
 
 - `DRM_IOCTL_AMDGPU_INFO` queries various info about a device
+  - `AMDGPU_INFO_FW_VERSION` queries firmware versions
+    - mesa is interested in `AMDGPU_INFO_FW_GFX_{ME,MEC,PFP}` and
+      `AMDGPU_INFO_FW_{UVD,VCE}`
+  - `AMDGPU_INFO_HW_IP_INFO` queries ip info
+    - `hw_ip_version_*` is from `adev->ip_blocks[x].version`
+    - `ip_discovery_version` is from `adev->ip_versions[x][0]` and is used for
+      newer gens
+    - mesa uses
+      `AMD_IP_GFX`/`AMDGPU_HW_IP_GFX`/`AMD_IP_BLOCK_TYPE_GFX`/`GC_HWIP` to
+      determine the gen
 - `DRM_IOCTL_AMDGPU_CTX` allocs/frees/queries a context
   - radv creates a ctx for each `VkQueue`
 - `DRM_IOCTL_AMDGPU_VM` reserves the vmid
