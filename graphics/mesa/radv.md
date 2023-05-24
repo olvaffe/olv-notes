@@ -427,3 +427,76 @@ Mesa RADV
     - `si_set_mutable_tex_desc_fields`
 - there is a sampler descriptor
   - `radv_init_sampler` initializes the sampler descriptor
+
+## Pipelines
+
+- `radv_CreateGraphicsPipelines` calls `radv_graphics_pipeline_create` for
+  each pipeline
+- `radv_graphics_pipeline_init` initializes a pipeline
+  - `radv_pipeline_import_graphics_info` parses `VkGraphicsPipelineCreateInfo`
+  - `radv_generate_graphics_pipeline_key` generates `radv_pipeline_key`
+  - `radv_graphics_pipeline_compile` compiles the pipeline
+  - `radv_pipeline_emit_pm4` emits the pm4 packets
+- `radv_graphics_pipeline_compile`
+  - `radv_pipeline_get_nir` calls `radv_shader_spirv_to_nir` to convert spirv
+    to nir
+  - `radv_graphics_pipeline_link` calls `radv_pipeline_link_shaders` on all
+    shader paris to link their ios
+  - `radv_fill_shader_info` calls `radv_nir_shader_info_pass` and
+    `radv_nir_shader_info_link` to initialize `radv_shader_info`
+  - `radv_declare_pipeline_args`
+  - `radv_postprocess_nir` post-processes each stage
+  - `radv_pipeline_nir_to_asm` calls `radv_shader_nir_to_asm` to convert nir
+    to asm
+- `radv_shader_nir_to_asm`
+  - `radv_fill_nir_compiler_options` initializes `radv_nir_compiler_options`
+  - `radv_aco_convert_opts` converts `radv_nir_compiler_options` to
+    `aco_compiler_options`
+  - `radv_aco_convert_shader_info` converts `radv_shader_info` to
+    `aco_shader_info`
+  - `aco_compile_shader` (or `llvm_compile_shader`) compiles nir to asm
+- prolog and epilog
+  - I guess
+    - vs can get inputs from fixed-function or from a "prolog" shader
+      - the inputs are known as
+        `VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT`
+    - rb can get outputs from fixed-function or from a "epilog" shader
+      - the outputs are known as
+        `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT`
+    - `radv_generate_graphics_pipeline_key` determines `vs.has_prolog` and
+      `ps.has_epilog`
+  - `key.vs.has_prolog` means the pipeline needs a vs epilog
+    - it is true when VI is dynamic (`RADV_DYNAMIC_VERTEX_INPUT`)
+    - `radv_emit_vertex_input` will create and emit the vs prolog at draw time
+  - `key.ps.has_epilog` means the pipeline needs a ps epilog
+    - it is true when color output states are dynamic
+      (`radv_pipeline_needs_dynamic_ps_epilog`)
+    - `radv_emit_all_graphics_states` emits the ps epilog at draw time
+      - when `key.ps.dynamic_ps_epilog` is cleared, the pipeline comes with a
+        ps epilog created by `radv_pipeline_create_ps_epilog`
+      - otherwise, the ps epilog is created at draw time
+- at the end of pipeline compilation, `radv_emit_vertex_shader` emits the pm4
+  packets
+  - `as_es` is set when the consumer is gs
+    - it emits vs as "ES"
+  - `as_ls` is set when the consumer is tcs
+    - it emits vs as "LS"
+  - `use_ngg` is set on gfx10+
+    - ngg stands for Next-Gen Geometry
+    - it is introduced in gfx10 and is the only supported mechanism in gfx11
+
+## Vertex Prolog
+
+- `VK_DYNAMIC_STATE_VERTEX_INPUT_EXT`
+  makes `VkPipelineVertexInputStateCreateInfo` fully dynamic
+  - it is translated to `RADV_DYNAMIC_VERTEX_INPUT` internally
+  - it sets `key.vs.has_prolog`
+    - `gather_shader_info_vs` will set `info->vs.has_prolog` and
+      `info->vs.dynamic_inputs`
+  - `radv_CmdSetVertexInputEXT` sets up VI dynamically
+    - `state->dynamic_vs_input` is initialized
+    - `RADV_CMD_DIRTY_DYNAMIC_VERTEX_INPUT` is set
+  - at draw time, `radv_emit_vertex_input` emits vi state
+    - it is nop when no prolog is needed
+- `radv_nir_lower_vs_inputs` calls lowers `lower_load_vs_input` or
+  `lower_load_vs_input_from_prolog` depending on whether there is a vs prolog
