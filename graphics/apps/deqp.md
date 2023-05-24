@@ -521,3 +521,69 @@ dEQP
     a cpu buffer
 - `CopyImageToImage::checkTestResult` checks that the final pixel data written
   by the gpu copy match those emulated by cpu copy
+
+## Test Case: `dEQP-GLES31.functional.vertex_attribute_binding.usage.single_binding.unaligned_offset_elements_1_aligned_elements`
+
+- the test is `SingleBindingCase` with `FLAG_BUF_UNALIGNED_OFFSET` and
+  `FLAG_ATTRIB_ALIGNED`
+  - this is the only test with `FLAG_BUF_UNALIGNED_OFFSET`
+  - `m_unalignedData` is false
+  - `spec.bufferOffset` is 19
+    - this is the offset of the first usable byte and is intentionally
+      unaligned
+  - `spec.bufferStride` is 20
+    - this is the size of the vertex data of a vertex
+  - `spec.positionAttrOffset` is 1
+    - this is the offset from `spec.bufferOffset` to valid vertex data, to
+      keep vertex data aligned
+  - `spec.colorAttrOffset` is -1
+  - `spec.hasColorAttr` is false
+- `BindingRenderCase::init`
+  - `m_vao` is from `glGenVertexArrays`
+  - `m_buffer` is from `SingleBindingCase::createBuffers`
+    - there are `GRID_SIZE`x`GRID_SIZE` (20x20) squares
+    - each square takes 2 triangles, or 6 vertices,
+    - vertex data starts at `m_spec.bufferOffset + m_spec.positionAttrOffset`
+      and each takes up `m_spec.bufferStride`
+  - `m_program` is from `SingleBindingCase::createShader`
+
+    in highp vec4 a_position;
+    uniform highp vec4 u_color;
+    out highp vec4 v_color;
+    void main (void)
+    {
+            gl_Position = a_position;
+            v_color = u_color;
+    }
+    
+    in mediump vec4 v_color;
+    layout(location = 0) out mediump vec4 fragColor;
+    void main (void)
+    {
+            fragColor = v_color;
+    }
+  - `m_program` is from `SingleBindingCase::createShader`
+- `BindingRenderCase::iterate`
+  - it uses a `TEST_RENDER_SIZE`x`TEST_RENDER_SIZE` (64x64) surface
+    - a `tcu::Surface` is an image with storage in cpu memory
+  - `SingleBindingCase::renderTo` is straightforward
+    - it clears to black
+    - `glBindVertexBuffer` with `m_spec.bufferOffset` and `m_spec.bufferStride`
+    - `glVertexAttribFormat` with `m_spec.positionAttrOffset` as the relative
+      offset
+    - `glUniform4f` to provide the uniform color green
+    - `glDrawArrays` all vertices
+    - `glReadPixels` to read back
+- angle
+  - `VkPipelineVertexInputStateCreateInfo` with 1 buffer and 1 attr
+    - buffer stride will be provided dynamically because of
+      `VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE`
+    - attr offset is 1 (from `spec.positionAttrOffset`)
+  - `vkCmdBindVertexBuffers2EXT`
+    - offset 19 (from `spec.bufferOffset`)
+    - stride 20 (from `spec.bufferStride`)
+  - `vkCmdPushConstants` of size 32 bytes
+  - `vkCmdBindDescriptorSets` with 1 descriptor set
+    - the descriptor set has two `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC`
+      of size 16 bytes
+    - the uniform buffer sizes are 67584 and 2064 respectively
