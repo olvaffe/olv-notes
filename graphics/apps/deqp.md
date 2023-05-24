@@ -491,3 +491,33 @@ dEQP
   - it executes the shader to get the values at those 500 points
   - it computes reference values in `referenceWhole` and `referencePlane`
   - it compares the values against the reference values
+
+## Test Case: `dEQP-VK.api.copy_and_blit.core.image_to_image.3d_images.2d_to_3d_whole`
+
+- `addImageToImage3dImagesTests`
+  - `params2DTo3D.src.image` is 2d, r8g8b8a8 uint, 32x32x16
+  - `params2DTo3D.dst.image` is 3d, r8g8b8a8 uint, 32x32x16
+  - `params2DTo3D.regions` has extent 32x32x16, with layer count 16 for 2d and
+    layer count 1 for 3d
+- `CopyImageToImage::CopyImageToImage`
+  - `m_source` is the src image, 32x32x1 and 16 layers
+  - `m_destination` is the dst image, 32x32x16 and 1 layer
+- `CopyImageToImage::iterate`
+  - `m_sourceTextureLevel` and `m_destinationTextureLevel` are
+    `tcu::TextureLevel` for src and dst
+    - `tcu::TextureLevel` holds the pixel data of a single level in a
+      `deAlignedMalloc`ed buffer
+    - `tcu::TextureLevel::getAccess` returns a `tcu::PixelBufferAccess` for
+      the buffer
+  - `CopiesAndBlittingTestInstance::generateBuffer` fills in the pixel data
+    with `FILL_MODE_GRADIENT` pattern
+  - `CopiesAndBlittingTestInstance::generateExpectedResult` calls
+    `CopyImageToImage::copyRegionToTextureLevel` to emulate gpu copy
+  - `CopiesAndBlittingTestInstance::uploadImage` allocates a vk buffer, copies
+    the pixel data into vk buffer, and uses `vkCmdCopyBufferToImage` to
+    initialize the vk image
+  - it uses `vkCmdCopyImage` to copy from the src 2d image to the dst 3d image
+  - `CopiesAndBlittingTestInstance::readImage` reads from the dst 3d image to
+    a cpu buffer
+- `CopyImageToImage::checkTestResult` checks that the final pixel data written
+  by the gpu copy match those emulated by cpu copy
