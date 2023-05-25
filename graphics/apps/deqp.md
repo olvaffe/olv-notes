@@ -587,3 +587,51 @@ dEQP
     - the descriptor set has two `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC`
       of size 16 bytes
     - the uniform buffer sizes are 67584 and 2064 respectively
+
+## Test Case: `dEQP-GLES31.functional.shaders.sample_variables.sample_mask_in.bit_count_per_two_samples.multisample_texture_4`
+
+- `SampleMaskCountCase` with `SampleMaskCountCase::RUN_PER_TWO_SAMPLES`
+- `SampleMaskCountCase::init` calls all the way up to
+  `MultisampleRenderCase::init`
+  - `SampleMaskCountCase::genFragmentSource` returns fs
+
+    #extension GL_OES_sample_variables : require
+    layout(location = 0) out mediump vec4 fragColor;
+    uniform highp int u_minBitCount;
+    uniform highp int u_maxBitCount;
+    void main (void)
+    {
+            mediump int maskBitCount = 0;
+            for (int i = 0; i < 32; ++i)
+                    if (((gl_SampleMaskIn[0] >> i) & 0x01) == 0x01)
+                            ++maskBitCount;
+            if (maskBitCount < u_minBitCount || maskBitCount > u_maxBitCount)
+                    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            else
+                    fragColor = vec4(0.0, 1.0, 0.0, 1.0);
+    }
+- `SampleMaskCountCase::preDraw`
+  - it sets `minBitCount` to 1 and `maxBitCount` to 3
+    - `(m_numTargetSamples + 1) / 2`
+  - `SampleMaskBaseCase::preDraw`
+    - `gl.enable(GL_SAMPLE_SHADING)`
+    - `gl.minSampleShading(0.5f)`
+    - this invokes the fs for "0.5" of the samples
+      - in this case, the spec requires at least `max(ceil(4 * 0.5),1) = 2`
+        invocations
+    - for each invocation, only the active sample is set in `gl_SampleMaskIn` 
+- `gl_SampleMaskIn`
+  - Bit n of element w in the array is set if and only if the sample numbered
+    32w + n is considered covered for this fragment shader invocation.
+  - When rendering to a non-multisample buffer, or if multisample
+    rasterization is disabled, all bits are zero except for bit zero of the
+    first array element. That bit will be one if the pixel is covered and zero
+    otherwise.
+  - Bits in the sample mask corresponding to covered samples that will be
+    killed due to SAMPLE_COVERAGE or SAMPLE_MASK will not be set.
+  - When per-sample shading is active due to the use of a fragment input
+    qualified by sample or due to the use of the gl_SampleID or
+    gl_SamplePosition variables, only the bit for the current sample is set in
+    gl_SampleMaskIn.
+  - When state specifies multiple fragment shader invocations for a given
+    fragment, the bit correspondi
