@@ -528,12 +528,13 @@ Mesa RADV
   - `EmitLoadParameters` describes the limitations of the load instruction
     - `callback` is a function that emits the load instruction
     - `byte_align_loads` is true if the load instruction requires
-      dword-aligned addr
-      - eg, when reading 1 byte from offset 1, the load instruction will read
-        2 bytes from offset 0; the result needs to be right-shifted
+      dword-aligned addr for dword+ loads
+      - eg, when reading 4 bytes from offset 1, the load instruction will read
+        8 bytes from offset 0; the result needs to be right-shifted
     - `supports_8bit_16bit_loads` is true if the load instruction supports 8b
       and 16b loads
       - smem is the only load instruction that does not support 8b/16b loads
+      - 8b and 16b loads are naturally aligned
     - `max_const_offset_plus_one` is the max supported immed offset
     - pre-defined `EmitLoadParameters`
       - `lds_load_params` false
