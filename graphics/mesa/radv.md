@@ -527,6 +527,8 @@ Mesa RADV
     - more
   - `EmitLoadParameters` describes the limitations of the load instruction
     - `callback` is a function that emits the load instruction
+      - `align` is the alignment of the effective load addr with all things
+        considered
     - `byte_align_loads` is true if the load instruction requires
       dword-aligned addr for dword+ loads
       - eg, when reading 4 bytes from offset 1, the load instruction will read
