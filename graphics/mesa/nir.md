@@ -407,6 +407,34 @@ NIR
     - `nir_compact_varyings`
     - `st_nir_vectorize_io` re-vectorizes the varyings
 
+## Optimizations
+
+- `nir_opt_load_store_vectorize`
+  - it looks at all loads/stores and tries to combine them
+    - e.g., two consecutive 16-bit loads can potentially be combined into a
+      single 32-bit load
+  - `create_entry` creates an entry for each load/store
+  - `vectorize_entries` sorts entries by offsets and tries to combine them
+    - `sort_entries` sorts them
+    - `vectorize_sorted_entries` combines them
+  - `try_vectorize` tries to comine `high` into `low`
+    - `new_size` is larger enough to cover both `low` and `high`
+    - `new_bitsize_acceptable` checks if `low` can use a new bit size
+      - a backend-provided callback is used, to see if `low` can use the new
+        bit size and the new component count, given the `align_mul` and
+        `align_offset` requirement
+  - `align_mul` and `align_offset` are defined and documented in
+    `nir_intrinsics.py`
+    - for example, a 16-bit load might have 2 for `align_mul` and 0 for
+      `align_offset`
+    - if a backend requires a 32-bit load to be 4-byte aligned, two such
+      16-bit loads cannot be combined
+    - what is `align_offset` for?
+      - for a member of a struct, `align_mul` is the size of the struct and
+        `align_offset` is the offset of the member
+      - a misaligned `uint32_t` array could have `align_mul` 4 and
+        `align_offse` 2
+
 ## Subgroup
 
 - `GL_ARB_shader_group_vote`
