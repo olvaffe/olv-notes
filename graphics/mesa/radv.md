@@ -404,6 +404,36 @@ Mesa RADV
   - `vk_image_usage_to_ahb_usage` is used to initialize
     `VkAndroidHardwareBufferUsageANDROID`
 
+## MSAA and Sample Shading
+
+- `VkPipelineMultisampleStateCreateInfo` is translated to
+  `vk_multisample_state`
+  - `rasterizationSamples` to `rasterization_samples`
+    - sets `key.ps.num_samples` which affects the ps interp instruction
+    - `radv_emit_default_sample_locations` emits the default sample locs
+    - `radv_emit_msaa_state` emits
+      - `R_028804_DB_EQAA`
+      - `R_028BE0_PA_SC_AA_CONFIG`
+      - `R_028A48_PA_SC_MODE_CNTL_0`
+  - `sampleShadingEnable` to `sample_shading_enable`
+    - sets `key.ps.sample_shading_enable` which affects
+      `nir_intrinsic_load_sample_mask_in`
+    - `radv_get_ps_iter_samples` returns a `ps_iter_samples` higher than 1
+    - `radv_emit_rasterization_samples` emits
+      - `R_0286E0_SPI_BARYC_CNTL`
+      - `R_028A4C_PA_SC_MODE_CNTL_1`
+  - `minSampleShading` to `min_sample_shading`
+      - it uses `rasterization_samples` and `color_samples` to determine the
+        sample count
+      - then `util_next_power_of_two(ceilf(sample_count * min_sample_shading))`
+  - `pSampleMask` to `sample_mask`
+    - `radv_emit_sample_mask` emits the sample mask
+  - `alphaToCoverageEnable` to `alpha_to_coverage_enable`
+    - sets `ps_epilog.need_src_alpha` for mrt0
+    - sets `key.ps.alpha_to_coverage_via_mrtz` on gfx11+
+  - `alphaToOneEnable` to `alpha_to_one_enable`
+    - radv does not support `alphaToOne` feature
+
 ## Sampling
 
 - when a shader samples a simple image...
