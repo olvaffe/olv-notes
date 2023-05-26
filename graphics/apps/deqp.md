@@ -678,6 +678,7 @@ dEQP
   - render with cpu
   - resolve from `m_fbo` to `m_resolveFbo`
   - read pixels back and compare
+  - repeat for 5 iterations
 - angle
   - barrier to transition both msaa and resolve images from
     `VK_IMAGE_LAYOUT_UNDEFINED` to `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
@@ -700,4 +701,13 @@ dEQP
   - barrier to transition resolve image from
     `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` to
     `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
-  - copy resolve image to buffer
+  - copy resolve image to buffer and compare
+  - note that this repeats 5 iterations and the barriers are different since
+    the second iteration
+    - the pre-pass barrier transitions the msaa image from
+      `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL` to
+      `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+    - an additional barrer before the first draw to make
+      `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT/VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
+      visible to
+      `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT/VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
