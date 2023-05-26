@@ -355,3 +355,17 @@ Mesa and Its Main Context
   - `Window` is X window
   - `GLXWindow` is Window plus dri driver drawable
   - `DRIDrawable` is merely a buffer
+
+## `GL_KHR_blend_equation_advanced`
+
+- gallium support
+  - when `PIPE_CAP_FBFETCH` and/or `PIPE_CAP_FBFETCH_COHERENT` are supported,
+    it is emulated on top of `GL_EXT_shader_framebuffer_fetch`
+  - there is `PIPE_CAP_BLEND_EQUATION_ADVANCED` for native hw support, but
+    only virgl uses it
+- `lower_blend_equation_advanced` is always called from `link_shader`, to do
+  the emulation
+- `glBlendBarrier` (and `glFramebufferFetchBarrierEXT`) calls
+   `pipe_context::texture_barrier(PIPE_TEXTURE_BARRIER_FRAMEBUFFER)`
+  - on radeonsi, it sets a few cache flush bits.  At draw time,
+    `sctx->emit_cache_flush` emits the flush cmds before the draw cmds

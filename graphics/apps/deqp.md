@@ -635,3 +635,46 @@ dEQP
     gl_SampleMaskIn.
   - When state specifies multiple fragment shader invocations for a given
     fragment, the bit correspondi
+
+## Test Case: `dEQP-GLES31.functional.blend_equation_advanced.msaa.multiply`
+
+- `AdvancedBlendCase` and
+  - `m_blendMode` is `GL_MULTIPLY`
+  - `m_overdrawCount` is 1
+    - that is, overdraw once and blend
+  - `m_coherentBlending` is false
+  - `m_rtType` is `RENDERTARGETTYPE_MSAA_FBO`
+  - render with is 256x256 while viewport is 128x128
+- `AdvancedBlendCase::init`
+  - the shader is simple
+
+    in highp vec4 a_position;
+    in mediump vec4 a_color;
+    out mediump vec4 v_color;
+    void main()
+    {
+            gl_Position = a_position;
+            v_color = a_color;
+    }
+
+    in mediump vec4 v_color;
+    layout(blend_support_multiply) out;
+    layout(location = 0) out mediump vec4 o_color;
+    void main()
+    {
+            o_color = v_color;
+    }
+  - `m_referenceRenderer` is a `ReferenceQuadRenderer`
+  - `m_refColorBuffer` is a `TextureLevel`
+    - it's a cpu memory of the size of the viewport
+    - `TextureFormat::RGBA` and `TextureFormat::UNORM_INT8`
+  - `m_fbo` is a msaa fbo
+  - `m_resolveFbo` is a resolved fbo
+- `AdvancedBlendCase::iterate`
+  - render with GL
+    - clear and draw a quad
+    - `glBlendBarrier`
+    - draw a quad again to blend
+  - render with cpu
+  - resolve from `m_fbo` to `m_resolveFbo`
+  - read pixels back and compare
