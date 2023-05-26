@@ -678,3 +678,26 @@ dEQP
   - render with cpu
   - resolve from `m_fbo` to `m_resolveFbo`
   - read pixels back and compare
+- angle
+  - barrier to transition both msaa and resolve images from
+    `VK_IMAGE_LAYOUT_UNDEFINED` to `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+  - render pass
+    - 2 attachments
+      - att0 is msaa img with initial and final layout
+        `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+      - att1 is resolve img with initial and final layout
+        `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+    - 1 subpass
+      - 1 input att with `VK_IMAGE_LAYOUT_GENERAL` for att0
+      - 1 color att with `VK_IMAGE_LAYOUT_GENERAL` for att0
+      - 1 resolve att with `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` for att1
+    - draw a quad
+    - memory barrier to make
+      `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT/VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
+      visible to
+      `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT/VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
+    - draw another quad to blend
+  - barrier to transition resolve image from
+    `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` to
+    `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+  - copy resolve image to buffer
