@@ -926,3 +926,34 @@ Vulkan
 - `VK_EXT_image_sliced_view_of_3d`
   - `imageSlicedViewOf3D` indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
     descriptor can be a sliced 3D image view of a 3D image
+
+## `VK_EXT_attachment_feedback_loop_layout`
+
+- feedback loop
+  - when a subpass accesses a subresource as a color/depth/stencil attachment,
+    and at the same time as an input attachment or an image resource, a
+    feedback loop is formed
+    - unless the subresource is not written to as a color/depth/stencil
+      attachment
+  - a subpass containing a feedback loop causes a data race, unless
+    - a memory dependency between the read/write
+    - `VK_EXT_rasterization_order_attachment_access`
+- `VK_EXT_attachment_feedback_loop_layout`
+  - this extension allows a feedback loop between a color/depth/stencil
+    attachment and an image resource
+    - that is, the extension replaces `VUID-vkCmdDraw-None-06538` by
+      `VUID-vkCmdDraw-None-08753`
+    - `VUID-vkCmdDraw-None-06538` states: If any recorded command in the
+      current subpass writes to an image subresource as an attachment, this
+      command must not read from the memory backing that image subresource in
+      any other way than as an attachment
+  - the device must have been created with `attachmentFeedbackLoopLayout`
+  - the image must have been created with
+    `VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
+  - the pipeline must have been created with
+    `VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT` or
+    `VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
+  - the render pass must have been created with
+    `VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT`
+  - the image must have been transitioned to
+    `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT`
