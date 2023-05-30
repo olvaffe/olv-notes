@@ -5,6 +5,9 @@ Mesa Vulkan Runtime
 
 - the runtime has a default render pass implementation that is built upon
   dynamic rendering
+  - dynamic rendering still has load/store/resolve ops, but does not have the
+    render passes, subpasses, subpass dependencies
+  - this default implementation must insert barriers implied by render passes
 - `vk_common_CreateRenderPass2`
   - allocs a `vk_render_pass` and multiple `vk_render_pass_attachment`,
     `vk_subpass`, `vk_subpass_dependency`, and `vk_subpass_attachment`,
@@ -32,9 +35,9 @@ Mesa Vulkan Runtime
     `vk_subpass_dependency` or to insert image barriers to transition to the
     initial layouts
     - there is an optimization using
-      `VkRenderingAttachmentInitialLayoutInfoMESA` instead when the image is
-      `VK_IMAGE_LAYOUT_UNDEFINED` and the load op is
-      `VK_ATTACHMENT_LOAD_OP_CLEAR`
+      `VkRenderingAttachmentInitialLayoutInfoMESA` instead when the attachment
+      is the entire image and the load op is `VK_ATTACHMENT_LOAD_OP_CLEAR`
+    - it allows anv to hit a fast path called `will_full_fast_clear`
   - calls `load_attachment` that calls `CmdBeginRendering`/`CmdEndRendering`
     if an att is `VK_ATTACHMENT_LOAD_OP_CLEAR`
   - calls `CmdBeginRendering`
