@@ -369,3 +369,35 @@ Mesa and Its Main Context
    `pipe_context::texture_barrier(PIPE_TEXTURE_BARRIER_FRAMEBUFFER)`
   - on radeonsi, it sets a few cache flush bits.  At draw time,
     `sctx->emit_cache_flush` emits the flush cmds before the draw cmds
+
+## ASTC
+
+- `st_create_context_priv`
+  - `transcode_astc` is by default false
+    - when true, astc is transcoded to dxt5
+  - `has_astc_2d_ldr` means `PIPE_FORMAT_ASTC_4x4_SRGB` support
+  - `has_astc_5x5_ldr` means `PIPE_FORMAT_ASTC_5x5_SRGB` support
+  - if transcoding, `st_init_texcompress_compute` is called
+- `st_init_texcompress_compute`
+  - `bc1_endpoint_buf` is a `pipe_buffer` containing dxt tables
+  - `astc_luts` are `pipe_sampler_view`s for astc luts
+  - `astc_partition_tables` is a hash table of `pipe_sampler_view`s
+- `st_destroy_texcompress_compute` destroys all the resources
+- texture upload
+  - when `st_compressed_format_fallback` returns true, `st_MapTextureImage`
+    returns a pointer to a temporary cpu buffer
+  - `st_UnmapTextureImage` maps the `pipe_resource` and "copies" the texture
+    data into the pipe resource
+    - it can decompress directly into the pipe resource using cpu
+    - it can decompress to a temporary buffer, compress to a different
+      format, copies the transcoded data into the pipe resource using cpu
+    - it can call `st_compute_transcode_astc_to_dxt5` to transcode from astc
+      to dxt5 using gpu
+- `st_compute_transcode_astc_to_dxt5`
+  - `cs_decode_astc` decodes astc to rgba8
+    - the shader source is in `astc_decoder.glsl`
+    - a sampler view is created on demand, holding the partition table of the
+      given block size
+    - another sampler view is created on demand, holding the astc data
+    - a compute job is dispatched
+  - `cs_encode_bc3` encodes rgba8 to bc3
