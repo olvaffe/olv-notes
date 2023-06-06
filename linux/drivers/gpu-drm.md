@@ -1,6 +1,56 @@
 Kernel DRM
 ==========
 
+## Repos
+
+- <https://drm.pages.freedesktop.org/maintainer-tools/>
+- pull flow
+  - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/>
+    - this is the upstream repo
+  - <https://cgit.freedesktop.org/drm/drm>
+    - Dave Airlie sends out the main pull request, `[git pull] drm for X.Y-rc1`,
+      to Linus Torvalds to pull from
+      `git://anongit.freedesktop.org/drm/drm tags/drm-next-YYYY-MM-DD`
+    - Smaller fixes, `[git pull] drm fixes for X.Y-rcZ`, follow to
+      pull from `git://anongit.freedesktop.org/drm/drm tags/drm-fixes-YYYY-MM-DD`
+  - <https://cgit.freedesktop.org/drm/drm-intel>
+    - Intel sends out the main pull request, `[PULL] drm-intel-next`,
+      to Dave Airlie to pull from
+      <git://anongit.freedesktop.org/drm/drm-intel tags/drm-intel-next-YYYY-MM-DD>
+    - Smaller fixes, `[PULL] drm-intel-next-fixes`, follow to pull from
+      `git://anongit.freedesktop.org/drm/drm-intel tags/drm-intel-next-fixes-YYYY-MM-DD`
+  - <https://gitlab.freedesktop.org/agd5f/linux>
+    - Alex Deucher sends out the main pull request, `[pull] amdgpu, amdkfd drm-next-X.Y`,
+      to Dave Airlie to pull from
+      `https://gitlab.freedesktop.org/agd5f/linux.git tags/amd-drm-next-X.Y-YYYY-MM-DD`
+    - Smaller fixes, `[pull] amdgpu drm-fixes-X.Y`, follow to pull from
+      `https://gitlab.freedesktop.org/agd5f/linux.git tags/amd-drm-fixes-X.Y-YYYY-MM-DD`
+  - <https://gitlab.freedesktop.org/drm/msm>
+    - Rob Clark sends out the main pull request, `[pull] drm/msm: drm-msm-next-YYYY-MM-DD for vX.Y`
+      to Dave Airlie to pull from
+      <https://gitlab.freedesktop.org/drm/msm.git tags/drm-msm-next-2023-04-10>
+    - Smaller fixes, `[pull] drm/msm: drm-msm-fixes-YYYY-MM-DD for vX.Y-rcZ`, follow to pull from
+      `https://gitlab.freedesktop.org/drm/msm.git tags/drm-msm-fixes-2023-05-17`
+  - <https://cgit.freedesktop.org/drm/drm-misc>
+    - Maarten Lankhorst sends out the main pull request, `[PULL] drm-misc-next`,
+      to Dave Airlie to pull from
+      `git://anongit.freedesktop.org/drm/drm-misc tags/drm-misc-next-YYYY-MM-DD`
+    - Smaller fixes, `[PULL] drm-misc-next-fixes`, follow to pull from
+      `git://anongit.freedesktop.org/drm/drm-misc tags/drm-misc-next-fixes-YYYY-MM-DD`
+- drm
+  - `drm/drm-next` branch is reset to `vX.Y-rc2` tag once the tag is created.
+    The branch is then open for `Y+1` pull requests.
+  - `drm/drm-fixes` branch is reset to `vX.Y-rcZ` tag once the tag is created.
+    The branch is then open for `Y` fixes.
+- drm-amd
+  - `drm-amd/drm-next` branch is always open for `Y+1` changes
+  - `drm-amd/amd-staging-drm-next` branch is always open for `Y` fixes
+- drm-msm
+  - `drm-msm/msm-next` branch is always open for `Y+1` changes.  It rebases
+    against `drm/drm-next` occasionally.
+  - `drm-msm/msm-fixes` branch is always open for `Y` fixes.  It rebases
+    against `drm/drm-next` occasionally.
+
 ## DRM core and /dev and /sys
 
 - sysfs
