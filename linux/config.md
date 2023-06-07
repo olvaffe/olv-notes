@@ -219,6 +219,7 @@ Kernel Config
     - and many others as indicated by the log
   - select `Hardware crypto devices` if amd
     - select `Support for AMD Secure Processor`
+    - deselect `Encryption and hashing offload support` if raven
   - select `Hashes, digests, and MACs` if newer msm
     - select `Michael MIC`
 - select `Library routines`
