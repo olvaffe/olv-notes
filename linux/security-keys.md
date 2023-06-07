@@ -29,3 +29,10 @@ Kernel Keyrings
 - `keyctl show`
   - on normal Linux system, there will be a session keyring and a user keyring
     linked together
+
+## APIs
+
+- `register_key_type` registers a new key type
+  - `key_type_keyring` is special and is not registered this way
+- `keyring_alloc` allocates a key ring, which is a key of type `keyring`
+- `key_create` creates a key of the specified type in a keyring
