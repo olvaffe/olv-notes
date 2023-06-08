@@ -292,6 +292,11 @@ DRM amdgpu
       determine the gen
 - `DRM_IOCTL_AMDGPU_CTX` allocs/frees/queries a context
   - radv creates a ctx for each `VkQueue`
+  - radv uses `AMDGPU_CTX_OP_QUERY_STATE2` for gpu hang check
+    - `AMDGPU_CTX_QUERY2_FLAGS_RESET` and `AMDGPU_CTX_QUERY2_FLAGS_GUILTY` are
+      sticky and the context should be re-created
+  - radv uses `AMDGPU_CTX_OP_SET_STABLE_PSTATE` to force peak performance in
+    `vkAcquireProfilingLockKHR`
 - `DRM_IOCTL_AMDGPU_VM` reserves the vmid
   - it is used for shader debugging
 - `DRM_IOCTL_AMDGPU_GEM_CREATE` creates a gem bo
