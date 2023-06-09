@@ -307,6 +307,13 @@ Kernel Config
     - select `Firmware loader`
       - select `Build named firmware blobs into the kernel binary` if built-in amdgpu
         - to include amdgpu firmwares
+        - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel2.eclass>
+          - grunt: `builtin_fw_amdgpu_stoney`
+          - zork: `builtin_fw_amdgpu_picasso` and `builtin_fw_amdgpu_raven2`
+          - guybrush: `builtin_fw_amdgpu_green_sardine` and
+                      `builtin_fw_amdgpu_renoir`
+          - skyrim: `builtin_fw_amdgpu_gc_10_3_7` and
+                    `builtin_fw_amdgpu_yellow_carp`
       - select `Enable compressed firmware support`
   - select `Firmware Drivers`
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
