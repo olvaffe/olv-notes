@@ -403,6 +403,27 @@ AMD
   - DCC, on the other hand, is shared externally
 - `Addr2ComputeDccInfo` computes DCC layout
 
+## HTILE
+
+- HTILE is used for
+  - hiz
+  - stencil?
+- TC compat
+  - HTILE can be TC-compat on GFX8+
+  - TC supports a subset of swizzles on GFX8/GFX9
+  - TC supports all swizzles on GFX10+
+- DB
+  - `DB_Z_INFO`'s `TILE_SURFACE_ENABLE` controls whether htile is enabled for
+    depth
+  - `DB_STENCIL_INFO`'s `TILE_STENCIL_DISABLE` controls whether htile is
+    disabled for stencil
+    - this allocates the entire htile to hiz, allowing higher z-range
+      precision
+  - in general, we want to set `TILE_STENCIL_DISABLE` only when the image is
+    depth-only
+    - on gfx8, there is a hw bug and TC does not support higher z-range
+      precision; we want additionally check that htile is not TC-compat
+
 ## Terms
 
 - R600 pipeline
