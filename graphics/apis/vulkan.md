@@ -762,6 +762,58 @@ Vulkan
   - aspect mask can be specified in `VkClearAttachment`
   - valid aspect masks are color, depth, stencil, or depth+stencil
 
+## `VkImageLayout`
+
+- 1.0
+  - `VK_IMAGE_LAYOUT_UNDEFINED`
+  - `VK_IMAGE_LAYOUT_GENERAL`
+  - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_PREINITIALIZED`
+- 1.1
+  - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL`
+- 1.2
+  - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
+- 1.3
+  - `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`
+  - `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`
+
+## Depth and Stencil
+
+- assume
+  - `VK_KHR_maintenance2`
+    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR`
+    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR`
+  - `VK_KHR_separate_depth_stencil_layouts`
+    - `separateDepthStencilLayouts` feature
+    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR`
+    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR`
+    - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR`
+    - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR`
+  - `VK_KHR_dynamic_rendering`
+- in `VkRenderingInfo`, `pDepthAttachment` and `pStencilAttachment` are
+  specified separately with some requirements
+  - if both specify a image view, they must specify the same image view
+  - `pDepthAttachment`'s image view must include a depth component
+    - its layout must not be
+      - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+      - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
+      - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
+      - IOW, must use depth
+  - `pStencilAttachment`'s image view must include a stencil component
+      - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+      - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
+      - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
+      - IOW, must use stencil
+
 ## Point and Line Rasterization
 
 - `VkPhysicalDeviceFeatures`
