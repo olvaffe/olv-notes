@@ -423,6 +423,22 @@ AMD
     depth-only
     - on gfx8, there is a hw bug and TC does not support higher z-range
       precision; we want additionally check that htile is not TC-compat
+- HTILE format
+  - each dword covers a block
+    - block size depends on several factors
+  - when `TILE_STENCIL_DISABLE`, the dword consists of
+    - bit0..3: zmask
+    - bit4..17: min z
+    - bit18..31: max z
+  - otherwise, if vrs is disabled,
+    - bit0..3: zmask
+    - bit4..5: sr0 for stencil result
+    - bit6..7: sr1 for stencil result
+    - bit8..9: smem
+    - bit10..11: unused
+    - bit12..31: zrange
+- addrlib
+  - `Addr2ComputeHtileInfo` computes the htile info
 
 ## Terms
 

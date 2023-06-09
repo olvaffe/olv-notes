@@ -319,8 +319,22 @@ Mesa RADV
   HTILE
   - on `RADV_QUEUE_GENERAL`, `radv_process_depth_stencil` resolves using the
     3d pipeline
+    - `radv_get_depth_pipeline` returns a pipeline
+      - vs is passthrough
+      - fs is nop
+      - `DB_RENDER_CONTROL` has special bits
+        - `depth_compress_disable` sets `DEPTH_COMPRESS_DISABLE`
+        - `stencil_compress_disable` sets `STENCIL_COMPRESS_DISABLE`
+    - draw a rectlist
+    - the aspect mask is ignored even when expanding depth and stencil
+      separately
+      - should we change `depth_compress_disable` / `stencil_compress_disable`?
   - otherwise, `radv_expand_depth_stencil_compute` resolves using the compute
     pipeline
+    - it sets up the image for load and store
+    - load respects htile
+      - this requires a tc-compat htile
+    - store ignores htile
 - `radv_layout_dcc_compressed` determines which layouts can use DCC
   - most layouts use DCC as long as the image supports DCC
 - `radv_decompress_dcc` resolves DCC when transitioning away from DCC
