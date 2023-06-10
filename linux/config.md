@@ -305,8 +305,7 @@ Kernel Config
     - select `Maintain a devtmpfs filesystem to mount at /dev` for systemd
     - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
-      - select `Build named firmware blobs into the kernel binary` if built-in amdgpu
-        - to include amdgpu firmwares
+      - select `Build named firmware blobs into the kernel binary` if built-in i915/amdgpu
         - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel2.eclass>
           - grunt: `builtin_fw_amdgpu_stoney`
           - zork: `builtin_fw_amdgpu_picasso` and `builtin_fw_amdgpu_raven2`
@@ -314,6 +313,8 @@ Kernel Config
                       `builtin_fw_amdgpu_renoir`
           - skyrim: `builtin_fw_amdgpu_gc_10_3_7` and
                     `builtin_fw_amdgpu_yellow_carp`
+          - brya: `builtin_fw_guc_adl`, `builtin_fw_huc_adl`,
+                  `builtin_fw_x86_adl_ucode`, and `builtin_fw_x86_rpl_ucode`
       - select `Enable compressed firmware support`
   - select `Firmware Drivers`
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
