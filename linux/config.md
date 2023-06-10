@@ -99,6 +99,7 @@ Kernel Config
   - select `Platform support for Chrome hardware` if cros
     - select `ChromeOS Embedded Controller`
     - select `ChromeOS Embedded Controller (SPI)`
+    - select `ChromeOS Embedded Controller (LPC)`
   - select `Hardware Spinlock drivers` if msm
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
@@ -431,6 +432,9 @@ Kernel Config
     - select `Intel TCO Timer/Watchdog` if intel
     - select `QCOM watchdog` if msm
     - select `Broadcom BCM2835 hardware watchdog` if rpi
+  - select `Multifunction device drivers`
+    - select `ChromeOS Embedded Controller multifunction device` if cros
+    - select `Intel Low Power Subsystem support in PCI mode` if intel
   - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
     - select `ChromeOS EC regulators` if cros
@@ -506,6 +510,8 @@ Kernel Config
       - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
       - select `UCSI ACPI Interface Driver` if x86
+      - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
+        - select `Intel PMC mux control` if intel
     - select `Onboard USB hub support` if msm
   - select `MMC/SD/SDIO card support`
     - select `Secure Digital Host Controller Interface support`
@@ -523,6 +529,7 @@ Kernel Config
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros
   - select `DMA Engine support`
+    - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel LPSS
     - select `BCM2835 DMA engine support` if rpi
   - deselect `Virtio drivers`
@@ -536,14 +543,18 @@ Kernel Config
     - select `WMI`
     - select `Dell X86 Platform Specific Device Drivers` if dell
     - select `Lenovo IdeaPad Laptop Extras` if lenovo ideapad
+    - select `Intel PMC Core driver` if intel
+    - select `Intel Vendor Specific Extended Capabilities Driver` if intel
+    - select `Intel SCU platform driver` if intel
   - select `Common Clock Framework` if arm
     - select `Support for Qualcomm's clock controllers` if msm
       - select `RPMh Clock Driver`
       - select SC7180*
       - select SC7280*
     - select `Raspberry Pi firmware based clock support` if rpi
-  - select `IOMMU Hardware Support` if msm
-    - select `ARM Ltd. System MMU (SMMU) Support`
+  - select `IOMMU Hardware Support`
+    - select `ARM Ltd. System MMU (SMMU) Support` if msm
+    - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
@@ -577,6 +588,7 @@ Kernel Config
     - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd
+  - select `Unified support for USB4 and Thunderbolt`
   - select `NVMEM Support`
     - select `QCOM QFPROM Support` if msm
   - select `Trusted Execution Environment support` if arm
