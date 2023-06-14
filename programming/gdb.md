@@ -8,7 +8,7 @@ GDB
 ## Debugging with GDB
 
 - 2 Getting In and Out of GDB
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Invocation.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Invocation.html>
   - choosing files
     - `-s` is `symbol-file`
     - `-e` is `exec-file`
@@ -26,14 +26,14 @@ GDB
   - `show logging`
     - save gdb output to a file
 - 3 GDB Commands
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Commands.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Commands.html>
   - `help`
   - `apropos` to search through all commands
   - `info` to show the state of the program
   - `set`
   - `show` to show the state of gdb
 - 4 Running Programs Under GDB
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Running.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Running.html>
   - terminology
     - `program` is the binary to be debugged
     - `target` is the environment `program` executes in
@@ -75,7 +75,7 @@ GDB
     - `show detach-on-fork`
     - `show follow-exec-mode`
 - 5 Stopping and Continuing
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stopping.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Stopping.html>
   - breakpoints
   - watchpoints
   - catchpoints
@@ -88,7 +88,7 @@ GDB
     - `info signals`
     - `handle`
 - 8 Examining the Stack
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Stack.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Stack.html>
   - frame
     - `info frame`
     - `info args`
@@ -96,9 +96,9 @@ GDB
     - `frame apply all`
     - `faas` is `frame apply all -s`
 - 9 Examining Source Files
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Source.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Source.html>
 - 10 Examining Data
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Data.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Data.html>
   - `display`
   - `show print`
   - `show values`
@@ -107,7 +107,7 @@ GDB
   - `info os`
   - `gcore`
 - 18 GDB Files
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/GDB-Files.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/GDB-Files.html>
   - program
     - `file` is `exec-file` and `symbol-file`
     - `exec-file` is `target exec`
@@ -130,21 +130,21 @@ GDB
   - `show index-cache` saves symbol index cache to speed up symbol loading
     next time
 - 19 Specifying a Debugging Target
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Targets.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Targets.html>
   - `target exec`
   - `target core`
   - `target remote`
   - `target native`
 - 20 Debugging Remote Programs
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Remote-Debugging.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Remote-Debugging.html>
   - `target remote`
   - `target extended-remote`
   - `gdbserver`
 - 21 Configuration-Specific Information
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Configurations.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Configurations.html>
   - `info proc all` shows various info under `/proc/<pid>`
 - 22 Controlling GDB
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Controlling-GDB.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Controlling-GDB.html>
   - command history
     - `show history` saves command history to a file
     - `show commands` shows command history of the current session, including
@@ -154,7 +154,7 @@ GDB
   - `show verbose` be verbose about what gdb is doing internally
   - `show debug` be more verbose about what gdb is doing internally
 - 23 Extending GDB
-  - <https://sourceware.org/gdb/current/onlinedocs/gdb/Extending-GDB.html>
+  - <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Extending-GDB.html>
   - `source` reads gdb commands from the specified file
   - `alias` defines a shortcut
 
@@ -168,13 +168,31 @@ GDB
   - DWARF, aka debug symbols
   - `.symtab` symbol table
   - `.dynsym` dynamic symbol table
-- <https://sourceware.org/gdb/current/onlinedocs/gdb/Files.html>
+- <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Files.html>
   - `set sysroot` and `show sysroot`
     - `solib-absolute-prefix` is an alias for `sysroot`
   - `set solib-search-path` and `show solib-search-path`
     - additionaly paths to search when `sysroot` fails
-- <https://sourceware.org/gdb/current/onlinedocs/gdb/Separate-Debug-Files.html>
+- <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Separate-Debug-Files.html>
   - `set debug-file-directory` and `show debug-file-directory`
+- experiment with `set debug separate-debug-file on`,
+  - `$sysroot` is expanded to the value of `sysroot`
+  - `$debugdir` is expanded to the value of `debug-file-directory`
+  - assume gdb finds `$sysroot/usr/lib/libfoo.so.1` for `libfoo.so.1`
+  - gdb looks for symbols in `$sysroot/usr/lib/libfoo.so.1` itself
+  - if no symbols, gdb looks for symbols using the build-id
+    - the build id is given by the `.note.gnu.build-id` section
+    - `$debugdir/.build-id/<hash1>/<hash2>.debug`
+    - `$sysroot/$debugdir/.build-id/<hash1>/<hash2>.debug`
+  - if still no symbols, gdb looks for symbols using the debug link
+    - the debug link is given by the `.gnu_debuglink` section
+      - `readelf -wk $sysroot/usr/lib/libfoo.so.1` dumps the section, which
+        gives a name such as `libfoo.so.1.2.3.debug`
+    - `$sysroot/usr/lib/libfoo.so.1.2.3.debug`
+    - `$sysroot/usr/lib/.debug/libfoo.so.1.2.3.debug`
+    - `$debugdir/$sysroot/usr/lib/libfoo.so.1.2.3.debug`
+    - `$debugdir/usr/lib/libfoo.so.1.2.3.debug`
+    - `$sysroot/$debugdir/usr/lib/libfoo.so.1.2.3.debug`
 
 ## Source Path
 
@@ -184,7 +202,7 @@ GDB
     - `DW_AT_name("../main.c")`
   - various symbols have
     - `DW_AT_decl_file("/home/olv/projects/vkcube/out/../main.c")`
-- <https://sourceware.org/gdb/current/onlinedocs/gdb/Source-Path.html>
+- <https://sourceware.org/gdb/current/onlinedocs/gdb.html/Source-Path.html>
   - `set directories` and `show directories`
     - by default, `$cdir:$cwd`
       - `$cdir` is `DW_AT_comp_dir`
