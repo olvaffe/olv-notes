@@ -16,6 +16,60 @@ Display
 
 ## DisplayPort
 
+- DisplayPort 1.0
+  - 2006
+  - 10.8 Gb/s (HBR x 4 lanes)
+  - DPCP (DisplayPort Content Protection)
+- DisplayPort 1.1
+  - 2007
+  - alternative link layers such as fiber optic
+  - HDCP (High-bandwidth Digital Content Protection) 1.3
+  - DisplayPort Dual-Mode (DP++), allowing DVI and HDMI adapters
+  - stereoscopic 3D
+- DisplayPort 1.1a
+  - 2008
+- DisplayPort 1.2
+  - 2010
+  - 21.6 Gb/s (HBR2 x 4 lanes)
+  - 4K at 60 Hz at 10 bpc
+  - MST (Multi-Stream Transport)
+  - more color spaces (sRGB, scRGB, DCI-P3)
+  - compatible with Mini DisplayPort connector
+- DisplayPort 1.2a
+  - 2013
+  - HDCP 2.2
+  - optional Adaptive Sync
+- DisplayPort 1.3
+  - 2014
+  - 32.4 Gb/s (HBR3 x 4 lanes)
+  - 8K at 30 Hz
+  - BT.2020
+- DisplayPort 1.4
+  - 2016
+  - DSC (Display Stream Compression) 1.2
+  - HDR10 with static and dynamic metadata
+- DisplayPort 1.4a
+  - 2018
+  - DSC 1.2a
+- DisplayPort 2.0
+  - 2019
+  - 80.0 Gb/s (UHBR 20 x 4 lanes)
+- DisplayPort 2.1
+  - 2022
+- eDP
+  - eDP 1.0, 2008
+  - eDP 1.1/1.1a, 2009
+  - eDP 1.2, 2010
+  - eDP 1.3, 2011
+    - PSR (Panel Self-Refresh)
+  - eDP 1.4, 2013
+    - based on DP 1.2
+  - eDP 1.4a, 2015
+    - based on DP 1.3
+  - eDP 1.4b, 2015
+  - eDP 1.5, 2021
+- DisplayID, an EDID replacement
+
 ## HDMI
 
 - HDMI 1.0
