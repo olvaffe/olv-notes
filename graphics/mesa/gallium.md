@@ -642,3 +642,24 @@ Mesa Gallium
 - `st_update_fragment_textures`
   - `pipe_context::set_sampler_views` indices are the driver-generated
     sequential indices of glsl sampler uniforms
+
+## Threaded Context
+
+- pipe drivers can call `threaded_context_create` to create a
+  `threaded_context` to wrap their `pipe_context`
+  - it is nop if `util_get_cpu_caps()->nr_cpus <= 1`
+    - `GALLIUM_THREAD` can override
+  - `util_queue_init` creates a `gdrv` thread to process jobs
+- `threaded_context` handles different context functions differently
+  - some functions are passed through
+    - e.g., `tc_create_sampler_view` calls `pipe->create_sampler_view`
+      directly
+  - some functions are batched
+    - e.g., `tc_set_sampler_views` calls `tc_add_slot_based_call` to record
+      the call into the current batch
+  - some functions require synchronization
+    - e.g., `tc_texture_map` calls `tc_sync_msg` to wait the current batch
+- `tc_batch_flush` calls `util_queue_add_job` to submit the current batch
+  - `gdrv` thread calls `tc_batch_execute` to execute the batch
+- `_tc_sync` waits for `gdrv` and also calls `tc_batch_execute` to execute the
+  current batch directly

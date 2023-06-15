@@ -401,3 +401,17 @@ Mesa and Its Main Context
     - another sampler view is created on demand, holding the astc data
     - a compute job is dispatched
   - `cs_encode_bc3` encodes rgba8 to bc3
+
+## GLThread
+
+- glthread
+  - `_mesa_glthread_init` spawns a `gl` thread to execute GL commands
+  - `_mesa_glthread_flush_batch` submits the current batch to the `gl` thread
+  - `_mesa_glthread_finish` waits for the `gl` thread to become idle
+  - `gl_marshal.py` generates the marshal/unmarshal functions
+- `dri_create_context` optionally calls `_mesa_glthread_init` to enable
+  glthread
+  - `mesa_glthread` envvar overrides the decision
+  - otherwise, `mesa_glthread_app_profile` driconf overrides the decision
+  - otherwise, `mesa_glthread_driver` driconf plus cpu core count make the
+    decision
