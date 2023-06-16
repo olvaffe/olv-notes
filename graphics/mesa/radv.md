@@ -591,3 +591,66 @@ Mesa RADV
       - `scratch_flat_load_params` false
       - `global_load_params` true
 
+## Clears
+
+- vk has 3 ways to clear
+  - `radv_CmdBeginRendering` calls `radv_cmd_buffer_clear_rendering` to clear
+    attachments
+    - it calls `radv_subpass_clear_attachment` for each attachment which calls
+      `emit_clear`
+  - `radv_CmdClearAttachments` calls `emit_clear` to clear an attachment
+  - `radv_CmdClearColorImage` and `radv_CmdClearDepthStencilImage` call
+    `radv_cmd_clear_image` to clear an image
+    - it calls `radv_clear_image_layer` which calls `emit_clear`
+- `emit_clear` is called by all 3 methods
+  - `radv_fast_clear_color` or `emit_color_clear` for color buffers
+  - `radv_fast_clear_depth` or `emit_depthstencil_clear` for zs
+- `radv_can_fast_clear_color`
+  - the image view must support fast clear
+    - `radv_image_view_can_fast_clear` requires the image to support fast
+      clear and the view covers the entire image
+    - `radv_image_can_fast_clear` requires
+      - dcc or cmask for colors
+      - htile for zs
+  - the image layout must support fast clear
+    - `radv_layout_can_fast_clear` for colors
+    - `radv_layout_is_htile_compressed` for zs
+  - the clear must cover the whole image
+  - the clear value must be supported
+  - more
+- `radv_can_fast_clear_depth` is similar
+  - the image view must support fast clear
+  - the image layout must support fast clear
+  - the clear must cover the whole image
+  - the clear value must be supported
+    - `radv_is_fast_clear_depth_allowed` requires 1.0 or 0.0
+    - `radv_is_fast_clear_stencil_allowed` requires 0
+- `radv_fast_clear_depth` fast clears a depth attachment
+  - `radv_get_htile_fast_clear_value` returns the htile value
+    - `zmask` is 0, meaning the depth is fast-cleared
+    - `smem` is 0, meaning the stencil is fast-cleared
+  - `radv_clear_htile` clears the htile buffer
+  - `radv_update_ds_clear_metadata` updates the clear value
+    - `radv_set_ds_clear_metadata` writes the clear value to the image
+      metadata
+      - there are 2 dwords per miplevel of metadata following the image data
+      - `radv_get_ds_clear_value_va` returns the va
+    - `radv_update_tc_compat_zrange_metadata` writes a special value to the
+      image metadata
+      - the special value is 0 or `UINT32_MAX`, and is for a hw bug workaround
+      - `radv_get_tc_compat_zrange_va` returns the va
+    - `radv_update_bound_fast_clear_ds` writes the clear value to the
+      `DB_STENCIL_CLEAR` and `DB_DEPTH_CLEAR` registers
+      - `radv_update_zrange_precision` applies the hw bug workaround
+  - `radv_load_ds_clear_metadata` is called at draw time
+    - it loads the fast clear value from the image metadata to the registers
+- `emit_depthstencil_clear` slow clears a depth attachment
+  - it draws a rect using an internal pipeline
+  - `create_depthstencil_pipeline` creates the pipeline
+    - `use_rectlist` is always set, to draw a rect
+    - `db_depth_clear` and `db_stencil_clear` are set if the depth attachment
+      supports fast clear
+      - they translate to `DEPTH_CLEAR_ENABLE` and `STENCIL_CLEAR_ENABLE`
+      - I guess when those bits are set, the clear value from the
+        `DB_STENCIL_CLEAR` and `DB_DEPTH_CLEAR` registers rather than from the
+        fs

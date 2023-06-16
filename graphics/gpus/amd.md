@@ -106,6 +106,23 @@ AMD
     - `6700 < 6700 XT < 6800`
   - `XTX` is even faster
 
+## Documentations
+
+- Radeon R3xx 3D Register Reference Guide
+  - <https://www.amd.com/system/files/TechDocs/R3xx_3D_Registers.pdf>
+- Radeon R6xx/R7xx Acceleration and 3D Register Reference Guide
+  - <https://www.amd.com/system/files/TechDocs/R6xx_R7xx_3D.pdf>
+  - <https://www.amd.com/system/files/TechDocs/R6xx_3D_Registers.pdf>
+- Radeon Evergreen/Northern Islands Acceleration and 3D Register Reference
+  Guide
+  - <https://www.amd.com/system/files/TechDocs/evergreen_cayman_programming_guide.pdf>
+  - <https://www.amd.com/system/files/TechDocs/evergreen_3D_registers_v2.pdf>
+- Radeon Southern Islands Acceleration and 3D/Compute Register Reference Guide
+  - <https://www.amd.com/system/files/TechDocs/si_programming_guide_v2.pdf>
+  - <https://www.amd.com/system/files/TechDocs/SI_3D_registers.pdf>
+- Radeon Sea Islands 3D/Compute Register Reference Guide
+  - <https://www.x.org/docs/AMD/old/CIK_3D_registers_v2.pdf>
+
 ## RDNA 3
 
 - Radeon RX 7900 XTX
@@ -432,11 +449,24 @@ AMD
     - bit18..31: max z
   - otherwise, if vrs is disabled,
     - bit0..3: zmask
-    - bit4..5: sr0 for stencil result
+    - bit4..5: sr0 for stencil result (b11 is unknown)
     - bit6..7: sr1 for stencil result
     - bit8..9: smem
     - bit10..11: unused
     - bit12..31: zrange
+  - when a d+s image is initialized, htile is initialized to 0xfffff3ff
+    - zmsk is 0xf
+    - sr is 0xf (unknown)
+    - smem is 0x3
+    - z range is 0xfffff
+- HTILE-related registers
+  - `DB_DEPTH_CLEAR` is the depth fast clear value, which is used only when
+    `ZMASK` of the htile is 0
+  - `DB_STENCIL_CLEAR` is the stencil fast clear value, which is used when
+    `SMEM` of the htile is 0
+  - `DB_Z_INFO`
+    - `ZRANGE_PRECISION`: when 0, `zrange` means `zmin`; when 1, `zrange`
+      means `zmax`
 - addrlib
   - `Addr2ComputeHtileInfo` computes the htile info
 
