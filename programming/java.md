@@ -22,13 +22,18 @@ Java
     - <https://openjdk.org/projects/jdk7/>
   - Java SE 8, 2014
     - <https://openjdk.org/projects/jdk8/>
+    - LTS, with active support until 2022 and security support until 2030
   - Java SE 9, 2017
     - <https://openjdk.org/projects/jdk9/>
   - Java SE 10 & 11, 2018
     - <https://openjdk.org/projects/jdk/>
+    - 11 is LTS, with active support until 2023 and security support until
+      2026
   - Java SE 12 & 13, 2019
   - Java SE 14 & 15, 2020
   - Java SE 16 & 17, 2021
+    - 17 is LTS, with active support until 2026 and security support until
+      2029
   - Java SE 18 & 19, 2022
   - Java SE 20 & 21, 2023
 
