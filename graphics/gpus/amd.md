@@ -454,11 +454,18 @@ AMD
     - bit8..9: smem
     - bit10..11: unused
     - bit12..31: zrange
+      - bit12..17: delta
+      - bit18..31: min or max z (depending on `ZRANGE_PRECISION`)
   - when a d+s image is initialized, htile is initialized to 0xfffff3ff
     - zmsk is 0xf
     - sr is 0xf (unknown)
     - smem is 0x3
     - z range is 0xfffff
+  - when clearing to 0.5f on d16s8, htile becomes 0x800011f1
+    - zmsk is 0x1
+    - sr is 0xf (unknown)
+    - smem is 0x1
+    - z range is 0x80001
 - HTILE-related registers
   - `DB_DEPTH_CLEAR` is the depth fast clear value, which is used only when
     `ZMASK` of the htile is 0
