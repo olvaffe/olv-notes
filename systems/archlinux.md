@@ -121,6 +121,63 @@ Arch Linux
   - `pacman -S multilib-devel`
   - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
 
+## Installation on USB drive
+
+- <https://wiki.archlinux.org/title/Install_Arch_Linux_on_a_removable_medium>
+- bootstrap a disk image
+  - `fallocate -l 4G arch.img`
+  - `fdisk arch.img`
+    - esp, cros kernel a/b, arch
+    - label esp and arch
+  - `sudo losetup -f -P arch.img`
+  - `sudo mkfs.vfat -F32 /dev/loop0p1`
+  - `sudo mkfs.f2fs -O extra_attr,compression /dev/loop0p4`
+  - `mkdir arch`
+  - `sudo mount /dev/loop0p4 arch`
+  - `sudo tar -xf archlinux-bootstrap-x86_64.tar.gz -C arch --strip 1`
+  - `sudo rm arch/pkglist.x86_64.txt arch/version`
+  - `sudo vim arch/etc/pacman.d/mirrorlist`
+  - `sudo umount arch`
+  - `rmdir arch`
+  - `losetup -D`
+- install packages
+  - `sudo systemd-nspawn -i arch.img --private-users=identity`
+    - it is smart enough to mount esp and root automatically
+  - `pacman-key --init`
+  - `pacman-key --populate`
+  - `pacman -R arch-install-scripts`
+  - `pacman -Syu linux linux-firmware dosfstools f2fs-tools zram-generator \
+                 iwd sudo vim man-db base-devel git sway polkit i3status \
+                 swayidle swaylock mako alacritty noto-fonts wayland-utils \
+                 mesa mesa-utils vulkan-tools`
+  - `pacman -Scc`
+- setup
+  - `passwd`
+  - `vim arch/etc/fstab`
+  - `vim /etc/locale.gen`
+  - `locale-gen`
+  - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
+  - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
+  - `echo usb > /etc/hostname`
+  - `echo -e '[zram0]\nzram-size = ram' > /etc/systemd/zram-generator.conf`
+- create a normal user
+  - `useradd -m -G wheel,video olv`
+  - `passwd olv`
+  - `visudo`
+    - allow wheel to sudo
+  - `su - olv`
+  - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
+  - `rm .bashrc .bash_profile`
+  - `./olv-etc/create-links`
+  - `exit`
+- install bootloader
+  - `bootctl install`
+  - `echo 'default arch.conf' >> /boot/loader/loader.conf`
+  - `vim /boot/loader/entries/arch.conf`
+- update
+  - `pacman -Syu`
+  - `pacman -Scc`
+
 ## Installation in crosvm
 
 - create disk image
