@@ -116,11 +116,8 @@ Kernel Config
         - select `IPv4 nf_tables support`
     - select `802.1d Ethernet Bridging`
     - select `Virtual Socket protocol`
-    - select `virtio transport for Virtual Sockets` if guest, depending on
-      `PCI` and `VIRTIO_PCI`
+    - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
   - select `Bluetooth subsystem support`
-    - select `Bluetooth device drivers`
-      - select `HCI USB driver`, depending on `USB`
   - select `Wireless`
     - select `cfg80211 - wireless configuration API`
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
@@ -207,7 +204,7 @@ Kernel Config
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations`
   - select `IA32 Emulation`
-- select `Virtualization`
+- select `Virtualization` if desired
   - select `Kernel-based Virtual Machine (KVM) support`
   - select `KVM for Intel processors support` if intel
   - select `KVM for AMD processors support` if amd
@@ -296,14 +293,16 @@ Kernel Config
     - select `Qualcomm IPC Router support`
     - select `SMD IPC Router channels`
     - select `TUN device for Qualcomm IPC Router`
-  - select `Bluetooth subsystem support`
-    - select `Bluetooth device drivers`
-      - select `HCI UART driver`
-        - select `Qualcomm Atheros protocol support` if msm
-        - select `Broadcom protocol support` if rpi
 
 ## Config: Device Drivers
 
+- select `Networking support`
+  - select `Bluetooth subsystem support`
+    - select `Bluetooth device drivers`
+      - select `HCI USB driver` if x86, depending on `USB`
+      - select `HCI UART driver` if arm
+        - select `Qualcomm Atheros protocol support` if msm
+        - select `Broadcom protocol support` if rpi
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support` if pcie
@@ -343,7 +342,7 @@ Kernel Config
   - select `Serial ATA and Parallel ATA drivers (libata)` if needed
     - select `AHCI SATA support`
     - deselect `ATA SFF support (for legacy IDE and PATA)`
-  - select `Multiple devices driver support (RAID and LVM)` if needed
+  - select `Multiple devices driver support (RAID and LVM)` if desired
   - select `Network device support`
     - select `Universal TUN/TAP device driver support`
     - select `Virtual ethernet pair device`
@@ -500,6 +499,11 @@ Kernel Config
         - select `Build HDMI/DisplayPort HD-audio codec support` if needed
       - select `ALSA for SoC audio support`
         - select `AMD Audio Coprocessor - Renoir support` if amd
+        - deselect `Intel ASoC SST drivers`
+        - select `Sound Open Firmware Support`
+          - select `SOF PCI enumeration support`
+          - select `SOF support for Intel audio DSPs` if intel
+            - deselect all but desired drivers
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`
@@ -507,21 +511,21 @@ Kernel Config
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
-  - select `HID support`
+  - select `HID bus support`
     - select `Special HID drivers`
       - deselect all but the desired drivers, such as
+      - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
       - select `HID Multitouch panels`
-      - select `Google Hammer Keyboard` if cros
       - select `Wacom Intuos/Graphire tablet support (USB)`
-      - select `HID Sensors framework support` for sensors
+      - select `HID Sensors framework support`
     - select `I2C HID support`
-      - select `HID over I2C transport layer ACPI driver` if x86 for I2C touchpads
+      - select `HID over I2C transport layer ACPI driver` if x86 (for I2C touchpads)
       - select `HID over I2C transport layer Open Firmware driver` if arm
-      - select `Driver for Goodix hid-i2c based devices on OF systems` if
-        needed
+      - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
     - select `AMD SFH HID Support` if amd
       - select `AMD Sensor Fusion Hub`
   - select `USB support`
+    - select `Support for Host-side USB`
     - select `xHCI HCD (USB 3.0) support`
     - select `EHCI HCD (USB 2.0) support`
     - select `USB Printer support`
@@ -532,7 +536,7 @@ Kernel Config
       - select `USB Type-C Connector System Software Interface driver`
       - select `UCSI ACPI Interface Driver` if x86
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
-        - select `Intel PMC mux control` if intel
+        - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
     - select `Onboard USB hub support` if msm
   - select `MMC/SD/SDIO card support`
     - select `Secure Digital Host Controller Interface support`
@@ -540,34 +544,49 @@ Kernel Config
       - select `SDHCI platform and OF driver helper`
       - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
       - select `Qualcomm SDHCI Controller Support` if msm
-    - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed
-  - select `LED Support` if newer msm
-    - select `LED Multicolor Class Support`
-    - select `LED support for Qualcomm LPG`
-  - select `EDAC (Error Detection And Correction) reporting (NEW)` if msm
+    - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
+  - select `LED Support`
+    - select `LED Class Support`
+    - select `LED support for Qualcomm LPG` if newer msm, depending on `LEDS_CLASS_MULTICOLOR`
+  - select `EDAC (Error Detection And Correction) reporting (NEW)` if msm, depending on `RAS`
     - deselect `EDAC legacy sysfs`
     - select `QCOM EDAC Controller`
   - select `Real Time Clock`
-    - select `Chrome OS EC RTC driver` if cros
+    - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
   - select `DMA Engine support`
     - select `Intel integrated DMA 64-bit support` if intel
-    - select `Synopsys DesignWare AHB DMA platform driver` if intel LPSS
+    - select `Synopsys DesignWare AHB DMA platform driver` if intel
     - select `BCM2835 DMA engine support` if rpi
-  - deselect `Virtio drivers`
-  - deselect `VHOST drivers`
+  - select `DMABUF options`
+    - select `userspace dmabuf misc driver`
+  - select `Virtio drivers` if guest
+    - select `PCI driver for virtio devices`
+    - select `Virtio input driver`
+  - select `VHOST drivers` if kvm
+    - select `Host kernel accelerator for virtio net`
+    - select `vhost virtio-vsock driver`
   - select `Staging drivers`
     - select `Broadcom VideoCore support` if rpi
       - select all
   - select `Platform support for Chrome hardware` if cros
+    - select `Chrome OS Laptop`
     - select `Chrome OS pstore support`
+    - select `ChromeOS Tablet Switch Controller`
+    - select `ChromeOS Embedded Controller`
+    - select `ChromeOS Embedded Controller (LPC)`
+    - select `Backlight LED support for Chrome OS keyboards`
+    - select `ChromeOS Privacy Screen support`
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
     - select `Dell X86 Platform Specific Device Drivers` if dell
-    - select `Lenovo IdeaPad Laptop Extras` if lenovo ideapad
+    - select `Lenovo IdeaPad Laptop Extras` if ideapad
+    - select `ThinkPad ACPI Laptop Extras` if thinkpad
+    - select `Lenovo WMI-based systems management driver` if thinkpad
     - select `Intel PMC Core driver` if intel
+    - select `Intel HID Event` if intel
     - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Intel SCU platform driver` if intel
-  - select `Common Clock Framework` if arm
+  - select `Common Clock Framework`
     - select `Support for Qualcomm's clock controllers` if msm
       - select `RPMh Clock Driver`
       - select SC7180*
@@ -576,23 +595,24 @@ Kernel Config
   - select `IOMMU Hardware Support`
     - select `ARM Ltd. System MMU (SMMU) Support` if msm
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
+    - select `Support for Interrupt Remapping` if kvm
+    - select `Virtio IOMMU driver` if guest
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
     - select `DEVFREQ-Event device Support`
   - select `Industrial I/O support`
     - select `Accelerometers`
-      - select `HID Accelerometers 3D` if accelerometers (tablets, 2-in-1s)
+      - select `HID Accelerometers 3D` if desired (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if msm
-    - if cros
-      - select `ChromeOS EC Sensors Core`
-      - select `ChromeOS EC Contiguous Sensors`
-      - select `ChromeOS EC Sensor for lid angle`
-      - select `Proximity and distance sensors`
-        - select `ChromeOS EC MKBP Proximity sensor`
-        - select `SX9310/SX9311 Semtech proximity sensor`
-        - select `SX9324 Semtech proximity sensor`
+    - select `ChromeOS EC Sensors Core` if cros
+    - select `ChromeOS EC Contiguous Sensors` if cros
+    - select `ChromeOS EC Sensor for lid angle` if cros
+    - select `Proximity and distance sensors` if cros
+      - select `ChromeOS EC MKBP Proximity sensor`
+      - select `SX9310/SX9311 Semtech proximity sensor`
+      - select `SX9324 Semtech proximity sensor`
   - select `Pulse-Width Modulation (PWM) Support` if arm
     - select `ChromeOS EC PWM driver` if cros
     - select `BCM2835 PWM support` if rpi
@@ -609,36 +629,18 @@ Kernel Config
     - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd
-  - select `Unified support for USB4 and Thunderbolt`
+  - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support`
     - select `QCOM QFPROM Support` if msm
   - select `Trusted Execution Environment support` if arm
   - select `TEE drivers` if arm
     - select `OP-TEE`
 - select `Cryptographic API`
-  - select `Hardware crypto devices` if amd
-    - select `Support for AMD Secure Processor`
-    - deselect `Encryption and hashing offload support` if raven
   - select `Hashes, digests, and MACs` if newer msm
     - select `Michael MIC`
-
-## Config: KVM Host
-
-- select `Device Drivers`
-  - select `VHOST drivers`
-    - select `Host kernel accelerator for virtio net`
-    - select `vhost virtio-vsock driver`
-  - select `IOMMU Hardware Support`
-    - select `Support for Intel IOMMU using DMA Remapping Devices`
-    - select `Support for Interrupt Remapping`
-
-## Config: KVM Guest
-
-- select `Device Drivers`
-  - select `Virtio drivers`
-    - select `PCI driver for virtio devices`
-    - select `Virtio input driver`
-- deselect virtualization, host drivers, EFI, etc.
+  - select `Hardware crypto devices`
+    - select `Support for AMD Secure Processor` if amd
+    - deselect `Encryption and hashing offload support` if amd raven (boot issue)
 
 ## Config: Chromebook
 
