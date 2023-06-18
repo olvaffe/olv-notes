@@ -23,6 +23,39 @@ UEFI
     - it contains a distro key that is used to verify that the real bootloader
       is signed by the distro
 
+## shim
+
+- <https://github.com/rhboot/shim>
+- first stage loader
+  - `efi_main` of `shim.c` is the entrypoint
+  - `shim_init` picks the compile-time `DEFAULT_LOADER` as the second stage
+    loader
+    - `DEFAULT_LOADER` is `grubx64.efi` by default
+  - `init_grub` calls `start_image` to start the second stage loader
+    - if the second stage loader is trusted, the first try succeeds
+    - otherwise, `init_grub` calls `start_image` to start the compile-time
+      `MOK_MANAGER` and then tries again
+      - `MOK_MANAGER` is `mmx86.efi`
+- mok (machine owner key) manager
+  - it has a ui to enroll keys or hashes
+  - hashes
+    - use the ui to enroll the hashes of the second stage bootloader and the
+      kernel image
+  - keys
+    - use the ui to enrol the mok key used to sign the second stage bootloader
+      and the kernel image
+  - to generates a mok key,
+    - `openssl req -newkey rsa:4096 -nodes -keyout mok.key -new -x509 -sha256 -days 3650 -subj "/CN=my mok" -out mok.crt`
+    - this generates `mok.key` and `mok.crt`
+    - `mok.crt` needs to be copied to esp for enrollment
+  - to sign a second stage bootloader or a kernel image,
+    - `sbsign --key mok.key --cert mok.crt --output <dst> <src>`
+  - there is also `mokutil` to enroll keys or hashes from userspace
+- in arch linux,
+  - the official iso is unsigned
+  - the official `shim` package is unsigned
+  - only aur `shim-signed` package is signed
+
 ## GPT disk
 
 - ESP
