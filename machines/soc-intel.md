@@ -202,11 +202,24 @@ Intel CPUs
     - thunderbolt controller
   - PCH is connected to CPU via DMI and has
     - everything that southbridge has
-- there are still CPU and PCH for desktop; but there is only CPU for mobile
+- there is only CPU now
   - system-in-package design
   - CPU die contains CPU core and system agent
   - PCH is integrated into the CPU package as a PCH die
   - PCH die is connected to the CPU die via OPI
+  - FWIW, wafers are "diced" into many "die"
+- Chiplets
+  - on Meteor Lake, there are 4 chiplets (called tiles)
+    - SOC tile
+    - CPU/Compute tile
+    - GPU tile
+    - IOE (IO expander) tile
+  - interconnect between tiles
+    - traditionally, tiles are side-by-side with interconnects on the same
+      surface (2D)
+    - in EMIB, tiles are side-by-side with interconnects below the tiles
+      (2.5D stacking)
+    - in Faveros, tiles are face-to-face (3D stacking)
 
 ## PCI devices
 
@@ -219,3 +232,14 @@ Intel CPUs
   - USB xHCI controller
   - USB EHCI controller
   - MEI controller
+
+## Boot Process
+
+- on power up,
+  - PMC starts execution; the rest is held in reset state
+    - Power Management Controller
+  - then CSME starts execution
+    - Converged Security and Management Engine
+    - it is an i468 and it executes the CSME firmware on the ROM
+    - root-of-trust
+  - then CPU starts execution
