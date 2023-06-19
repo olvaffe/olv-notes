@@ -242,27 +242,27 @@ Kernel Config
 - select `CPU Power Management`
   - select `CPU Idle`
     - select `CPU idle PM support`
-    - select `ARM CPU Idle Drivers`
-      - select `PSCI CPU idle Driver`
+      - select `ARM CPU Idle Drivers`
+        - select `PSCI CPU idle Driver`
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
-    - select `Generic DT based cpufreq driver`
-    - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
-    - select `QCOM CPUFreq HW driver` if msm
+      - select `Generic DT based cpufreq driver`
+      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
+      - select `QCOM CPUFreq HW driver` if msm
 
 ## Config: Device Drivers
 
 - select `Networking support`
   - select `Networking options` if msm
     - select `Qualcomm IPC Router support`
-    - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
-    - select `TUN device for Qualcomm IPC Router`
+      - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
+      - select `TUN device for Qualcomm IPC Router`
   - select `Bluetooth subsystem support` if desired
     - select `Bluetooth device drivers`
       - select `HCI USB driver` if x86, depending on `USB`
       - select `HCI UART driver` if arm
-        - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
-        - select `Qualcomm Atheros protocol support` if msm, depending on `SERIAL_DEV_BUS`
+      - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
+      - select `Qualcomm Atheros protocol support` if msm, depending on `SERIAL_DEV_BUS`
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support` if pcie
@@ -313,8 +313,9 @@ Kernel Config
       - select `Virtual ethernet pair device`
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
-      - deselect all but the desired drivers
-      - select `Broadcom GENET internal MAC support` if rpi
+      - deselect all but the desired drivers, such as
+      - select `Broadcom devices` if rpi
+        - select `Broadcom GENET internal MAC support`
     - select `Qualcomm IPA support` if msm modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
@@ -324,7 +325,7 @@ Kernel Config
         - select `Atheros 802.11ac wireless cards support`
         - select `Qualcomm ath10k SNOC support`
         - select `Qualcomm Technologies 802.11ax chipset support`, depending on `CRYPTO_MICHAEL_MIC`
-        - select `Atheros ath11k AHB support`, depending on `REMOTEPROC`
+          - select `Atheros ath11k AHB support`, depending on `REMOTEPROC`
       - select `Broadcom devices` if rpi
         - select `Broadcom FullMAC WLAN driver`
       - select `Intel devices` if intel
@@ -351,8 +352,7 @@ Kernel Config
         - select `8250/16550 and compatible serial support` if x86
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86
-        - if msm
-          - select `QCOM on-chip GENI based serial port support`, depending on `QCOM_GENI_SE`
+        - select `QCOM on-chip GENI based serial port support` if msm, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
@@ -479,11 +479,10 @@ Kernel Config
             - select `SOF support for Tigerlake`
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
-        - select `CODEC drivers`
-          - if msm
-            - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
-            - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
-            - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
+        - select `CODEC drivers` if msm
+          - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID bus support`
     - select `HID bus core support`
       - select `Special HID drivers`
@@ -515,10 +514,9 @@ Kernel Config
         - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
   - select `MMC/SD/SDIO card support` if desired
     - select `Secure Digital Host Controller Interface support`
-    - if arm
-      - select `SDHCI platform and OF driver helper`
-      - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
-      - select `Qualcomm SDHCI Controller Support` if msm
+      - select `SDHCI platform and OF driver helper` if arm
+    - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
+    - select `Qualcomm SDHCI Controller Support` if msm
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
   - select `LED Support`
     - select `LED Class Support`
@@ -549,9 +547,9 @@ Kernel Config
     - select `Chrome OS pstore support`
     - select `ChromeOS Tablet Switch Controller`
     - select `ChromeOS Embedded Controller`
-    - select `ChromeOS Embedded Controller (rpmsg)` if msm
-    - select `ChromeOS Embedded Controller (SPI)` if arm
-    - select `ChromeOS Embedded Controller (LPC)` if x86
+      - select `ChromeOS Embedded Controller (rpmsg)` if msm
+      - select `ChromeOS Embedded Controller (SPI)` if arm
+      - select `ChromeOS Embedded Controller (LPC)` if x86
     - select `Backlight LED support for Chrome OS keyboards`
     - select `ChromeOS Privacy Screen support`
   - select `X86 Platform Specific Device Drivers` if x86
@@ -573,7 +571,7 @@ Kernel Config
     - select `Raspberry Pi firmware based clock support` if rpi
   - select `Hardware Spinlock drivers` if msm
     - select `Qualcomm Hardware Spinlock device`
-  - select `Mailbox Hardware Support` if arm
+  - select `Mailbox Hardware Support`
     - select `Qualcomm APCS IPC driver` if msm
     - select `Qualcomm Technologies, Inc. IPCC driver` if msm
     - select `BCM2835 Mailbox` if rpi
@@ -584,11 +582,13 @@ Kernel Config
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if msm
     - select `Support for Remote Processor subsystem`
-    - select `Qualcomm Technology Inc ADSP Peripheral Image Loader`
-    - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support`
-    - select `Qualcomm sysmon driver`
+      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader`
+      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support`
+      - select `Qualcomm sysmon driver`
+      - select `Qualcomm WCNSS Peripheral Image Loader` if modem
   - select `Rpmsg drivers` if msm
     - select `Qualcomm SMEM Glink driver`
+    - select `Qualcomm Shared Memory Driver` if modem
   - select `SoundWire support` if msm
     - select `Qualcomm SoundWire Master driver`
   - select `SOC (System On Chip) specific Drivers`
