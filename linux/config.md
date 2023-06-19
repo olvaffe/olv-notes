@@ -197,7 +197,8 @@ Kernel Config
     - select `Enable paravirtualization code`
   - select `Processor family (Core 2/newer Xeon)` if intel
   - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd
-  - select `AMD microcode loading support` if amd
+  - select `CPU microcode loading support`
+    - select `AMD microcode loading support` if amd
   - select `EFI runtime service support` if uefi
     - select `EFI stub support`
   - select `Timer frequency (1000 HZ)`
@@ -206,8 +207,9 @@ Kernel Config
     - select `ACPI Time and Alarm (TAD) Device Support`
     - select `Processor Aggregator`
   - select `CPU Frequency scaling`
-    - select `AMD Processor P-State driver` if amd
-    - select `ACPI Processor P-States driver` if amd
+    - select `CPU Frequency scaling`
+      - select `AMD Processor P-State driver` if amd
+      - select `ACPI Processor P-States driver` if amd
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations`
   - select `IA32 Emulation`
@@ -378,7 +380,7 @@ Kernel Config
     - select `AMD GPIO pin control` if amd
     - select `Intel pinctrl drivers` if intel
       - select desired drivers such as
-      - `Intel Tiger Lake pinctrl and GPIO driver`
+      - select `Intel Tiger Lake pinctrl and GPIO driver`
     - if msm
       - select `Qualcomm core pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
@@ -436,7 +438,7 @@ Kernel Config
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
     - select `AMD GPU` if amd
-      - select `Always enable userptr write support` if amd
+      - select `Always enable userptr write support`
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
     - select `MSM DRM` if msm
     - select `Virtio GPU driver` if guest
@@ -640,7 +642,9 @@ Kernel Config
 - select `Cryptographic API`
   - select `Hardware crypto devices`
     - select `Support for AMD Secure Processor` if amd
-    - deselect `Encryption and hashing offload support` if amd raven (boot issue)
+      - select `Secure Processor device driver`
+        - select `Cryptographic Coprocessor device`
+          - deselect `Encryption and hashing offload support` if raven (boot issue)
 
 ## Config: Built-in Firmwares
 
