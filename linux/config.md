@@ -316,11 +316,13 @@ Kernel Config
       - deselect all but the desired drivers, such as
       - select `Broadcom devices` if rpi
         - select `Broadcom GENET internal MAC support`
+      - select `Intel devices`
+        - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
     - select `Qualcomm IPA support` if msm modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
     - select `Wireless LAN` if needed
-      - deselect all but the desired drivers
+      - deselect all but the desired drivers, such as
       - select `Atheros/Qualcomm devices` if msm
         - select `Atheros 802.11ac wireless cards support`
         - select `Qualcomm ath10k SNOC support`
@@ -331,6 +333,8 @@ Kernel Config
       - select `Intel devices` if intel
         - select `Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi)`
           - select `Intel Wireless WiFi MVM Firmware support`
+      - select `MediaTek devices`
+        - select `MediaTek MT7921E (PCIe) support`
   - select `Input device support`
     - select `Generic input layer (needed for keyboard, mouse, ...)`
       - select `Event interface`
@@ -465,7 +469,10 @@ Kernel Config
         - select `Build Realtek HD-audio codec support` if needed
         - select `Build HDMI/DisplayPort HD-audio codec support` if needed
       - select `ALSA for SoC audio support` if desired
-        - select `AMD Audio Coprocessor - Renoir support` if amd
+        - select `AMD Audio Coprocessor-v6.x Yellow Carp support` if amd
+          - select `AMD YC support for DMIC`
+        - select `AMD Audio ACP Common support` if amd
+          - select `AMD ACP ASOC Rembrandt Support`
         - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
           - select `Skylake+ with HDA Codecs`, depending on `SND_SOC_SOF_HDA_AUDIO_CODEC`
@@ -474,6 +481,8 @@ Kernel Config
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
         - select `Sound Open Firmware Support` if x86
           - select `SOF PCI enumeration support`
+          - select `SOF support for AMD audio DSPs` if amd
+            - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
             - deselect all but desired drivers such as
             - select `SOF support for Tigerlake`
@@ -488,6 +497,9 @@ Kernel Config
       - select `Special HID drivers`
         - deselect all but the desired drivers, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
+        - select `Logitech devices`
+          - select `Logitech receivers full support`, depending on `HIDRAW`
+          - select `Logitech HID++ devices support`
         - select `HID Multitouch panels`
         - select `Nintendo Joy-Con and Pro Controller support`
         - select `Wacom Intuos/Graphire tablet support (USB)`
