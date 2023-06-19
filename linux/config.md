@@ -203,6 +203,7 @@ Kernel Config
   - select `Timer frequency (1000 HZ)`
 - select `Power management and ACPI options`
   - select `ACPI (Advanced Configuration and Power Interface) Support`
+    - select `ACPI Time and Alarm (TAD) Device Support`
     - select `Processor Aggregator`
   - select `CPU Frequency scaling`
     - select `AMD Processor P-State driver` if amd
@@ -293,6 +294,7 @@ Kernel Config
     - select `NVM Express block device`
   - select `Misc devices`
     - select `Intel Management Engine Interface` if intel
+    - select `Intel HDCP2.2 services of ME Interface` if intel, depending on `DRM_I915`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if sata or usb mass storage
     - select `SCSI device support`
@@ -336,6 +338,9 @@ Kernel Config
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
       - select `Touchscreens`
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
+      - select `Miscellaneous devices`
+        - select `PC Speaker support` if desired
+        - select `Windows-compatible SoC Button Array` if desired, depending on `KEYBOARD_GPIO`
   - select `Character devices`
     - select `Enable TTY`
       - deselect `Legacy (BSD) PTY support`
@@ -460,17 +465,23 @@ Kernel Config
       - select `ALSA for SoC audio support` if desired
         - select `AMD Audio Coprocessor - Renoir support` if amd
         - deselect `Intel ASoC SST drivers`
+        - select `Intel Machine drivers` if intel
+          - select `Skylake+ with HDA Codecs`, depending on `SND_SOC_SOF_HDA_AUDIO_CODEC`
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
         - select `Sound Open Firmware Support` if x86
           - select `SOF PCI enumeration support`
           - select `SOF support for Intel audio DSPs` if intel
-            - deselect all but desired drivers
-        - select `CODEC drivers` if msm
-          - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
-          - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
-          - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
+            - deselect all but desired drivers such as
+            - select `SOF support for Tigerlake`
+            - select `SOF support for HDA Links(HDA/HDMI)`
+              - select `SOF support for HDAudio codecs`
+        - select `CODEC drivers`
+          - if msm
+            - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
+            - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
+            - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID bus support`
     - select `HID bus core support`
       - select `Special HID drivers`
@@ -510,9 +521,10 @@ Kernel Config
   - select `LED Support`
     - select `LED Class Support`
     - select `LED support for Qualcomm LPG` if newer msm, depending on `LEDS_CLASS_MULTICOLOR`
-  - select `EDAC (Error Detection And Correction) reporting (NEW)` if msm, depending on `RAS`
+  - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
-    - select `QCOM EDAC Controller`, depending on `QCOM_LLCC`
+    - select `Intel client SoC Integrated MC` if intel
+    - select `QCOM EDAC Controller` if msm, depending on `QCOM_LLCC`
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
   - select `DMA Engine support`
@@ -614,7 +626,7 @@ Kernel Config
     - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd
-  - select `Reliability, Availability and Serviceability (RAS) features` if msm
+  - select `Reliability, Availability and Serviceability (RAS) features`
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support`
     - select `QCOM QFPROM Support` if msm
