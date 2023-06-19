@@ -214,13 +214,10 @@ Kernel Config
 
 ## Config: arm64
 
-- quick first pass to reveal more options
-  - select `Device Drivers`
-    - select `Firmware Drivers` if rpi
-      - select `Raspberry Pi Firmware Driver`
 - select `Platform selection` if arm
+  - select `Broadcom SoC Support` if rpi
+    - select `Broadcom BCM2835 family`
   - select `Qualcomm Platforms` if msm
-  - select `Broadcom BCM2835 family` if rpi
 - select `Kernel Features`
   - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)`
@@ -242,7 +239,7 @@ Kernel Config
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
     - select `Generic DT based cpufreq driver`
-    - select `Raspberry Pi cpufreq support` if rpi
+    - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
     - select `QCOM CPUFreq HW driver` if msm
 
 ## Config: Device Drivers
@@ -274,6 +271,7 @@ Kernel Config
       - select `Enable compressed firmware support`
   - select `Firmware Drivers`
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
+    - select `Raspberry Pi Firmware Driver` if rpi
     - select `Google Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `Coreboot Table Access`
@@ -360,12 +358,10 @@ Kernel Config
       - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
       - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
-    - if rpi
-      - select `BCM2835 SPI controller`
-      - select `BCM2835 SPI auxiliary controller`
-    - if msm
-      - select `QTI QSPI controller`
-      - select `Qualcomm GENI based SPI controller`
+    - select `BCM2835 SPI controller` if rpi
+    - select `BCM2835 SPI auxiliary controller` if rpi
+    - select `QTI QSPI controller` if msm
+    - select `Qualcomm GENI based SPI controller` if msm
   - select `SPMI support` if msm
   - select `Pin controllers`
     - select `AMD GPIO pin control` if amd
@@ -424,16 +420,16 @@ Kernel Config
         - select `USB Video Class (UVC)`
       - select `Media platform devices` if arm
         - select `Memory-to-memory multimedia devices`
-        - select `Qualcomm Venus V4L2 encoder/decoder driver`
+        - select `Qualcomm Venus V4L2 encoder/decoder driver` if msm
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
     - select `AMD GPU` if amd
     - select `Always enable userptr write support` if amd
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
     - select `MSM DRM` if msm
-    - select `Broadcom VC4 Graphics` if rpi
-      - it requires `CMA` and `DMA_CMA` to work
     - select `Virtio GPU driver` if guest
+    - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
+      - it requires `CMA` and `DMA_CMA` to work
     - select `Display Panels` if arm
       - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
@@ -550,6 +546,7 @@ Kernel Config
       - select `RPMh Clock Driver`
       - select SC7180*
       - select SC7280*
+    - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
   - select `Hardware Spinlock drivers` if msm
     - select `Qualcomm Hardware Spinlock device`
@@ -572,10 +569,10 @@ Kernel Config
   - select `SoundWire support` if msm
     - select `Qualcomm SoundWire Master driver`
   - select `SOC (System On Chip) specific Drivers`
-    - select `Qualcomm SoC drivers` if msm
-      - select all
     - select `Broadcom SoC drivers` if rpi
       - select `Raspberry Pi power domain driver`
+    - select `Qualcomm SoC drivers` if msm
+      - select all
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
@@ -624,9 +621,10 @@ Kernel Config
     - select `Support for AMD Secure Processor` if amd
     - deselect `Encryption and hashing offload support` if amd raven (boot issue)
 
-## Config: Chromebook
+## Config: Built-in Firmwares
 
-- <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel2.eclass>
+- chromebooks
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel2.eclass>
   - grunt: `builtin_fw_amdgpu_stoney`
   - zork: `builtin_fw_amdgpu_picasso` and `builtin_fw_amdgpu_raven2`
   - guybrush: `builtin_fw_amdgpu_green_sardine` and
