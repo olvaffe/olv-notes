@@ -348,6 +348,10 @@ Arch Linux
   - add `quiet` such that kernel does not print messages before `plymouth`
     takes over
   - add `splash` such that `plymouth` shows the theme
+kernel
+  - i915 has a "fastboot" mode that is enabled by default since skylake and
+    can be forced elsewhere with `i915.fastboot=1`
+  - amdgpu has a "seamless" mode that is only enabled for vangogh
 - systemd
   - add `/etc/systemd/system/getty@tty1.service.d/autologin.conf` to override
     `getty@tty1.service`
