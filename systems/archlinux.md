@@ -333,3 +333,22 @@ Arch Linux
   - lspci
 - licenses
 - pacman
+
+## Big Picture Mode
+
+- `pacman -S plymouth`
+  - use `plymouth-set-default-theme` to set/get the default theme or list all
+    available themes
+  - edit `/etc/mkinitcpio.conf` to add `plymouth` before `autodetect` hook
+  - `mkinitcpio -p linux` to regenerate initramfs
+- kernel cmdline
+  - edit `/boot/loader/entries/arch.conf`
+  - add `quiet` such that kernel does not print messages before `plymouth`
+    takes over
+  - add `splash` such that `plymouth` shows the theme
+- getty
+  - add `/etc/systemd/system/getty@tty1.service.d/autologin.conf` to override
+    `getty@tty1.service`
+  - `[Service]`
+  - `ExecStart=`
+  - `ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin username %I $TERM`
