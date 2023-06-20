@@ -467,31 +467,33 @@ Kernel Config
       - select `HD-Audio` if x86
         - select `HD Audio PCI`
         - select `Build Realtek HD-audio codec support` if needed
-        - select `Build HDMI/DisplayPort HD-audio codec support` if needed
-      - select `ALSA for SoC audio support` if desired
-        - select `AMD Audio Coprocessor-v6.x Yellow Carp support` if amd
-          - select `AMD YC support for DMIC`
+        - select `Build HDMI/DisplayPort HD-audio codec support`
+      - select `ALSA for SoC audio support`
         - select `AMD Audio ACP Common support` if amd
-          - select `AMD ACP ASOC Rembrandt Support`
-        - deselect `Intel ASoC SST drivers`
+          - select `AMD SOF Machine Driver Support`
+        - select `Intel ASoC SST drivers` if intel
+          - deselect `ACPI HiFi2 (Baytrail, Cherrytrail) Platforms`
+          - select `Skylake Platforms`
+          - select `HDAudio codec support`
         - select `Intel Machine drivers` if intel
-          - select `Skylake+ with HDA Codecs`, depending on `SND_SOC_SOF_HDA_AUDIO_CODEC`
+          - select `Skylake+ with HDA Codecs`
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
         - select `Sound Open Firmware Support` if x86
           - select `SOF PCI enumeration support`
           - select `SOF support for AMD audio DSPs` if amd
+            - select `SOF support for RENOIR`
             - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
             - deselect all but desired drivers such as
             - select `SOF support for Tigerlake`
-            - select `SOF support for HDA Links(HDA/HDMI)`
-              - select `SOF support for HDAudio codecs`
-        - select `CODEC drivers` if msm
-          - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
-          - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
-          - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
+        - select `CODEC drivers`
+          - select `Generic Digital Microphone CODEC` if x86
+          - if msm
+            - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
+            - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
+            - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID bus support`
     - select `HID bus core support`
       - select `Special HID drivers`

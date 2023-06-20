@@ -34,7 +34,7 @@ Kernel ALSA
 
 - Intel High Definition Audio, developed by intel and codec suppliers in 2004
   - host controller is on the pci bus and bridges cpu and codecs
-    - suppliers include intel, nvidia, etc.
+    - suppliers include intel, amd, nvidia, via, creative, etc.
   - codecs sit behind the host controller
     - suppliers include realtek, etc
   - `CPU <-> Controller <-> Codecs <-> Inputs/Outputs`
@@ -97,3 +97,24 @@ Kernel ALSA
     - `CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH`
       - depends on `CONFIG_SND_SOC_INTEL_SKL` and
         `CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC`
+
+## ASoC: AMD
+
+- on my renoir,
+  - `snd_hda_intel` binds to the hda device
+    - `CONFIG_SND_HDA_INTEL`
+    - because the driver has `PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_ANY_ID)`
+    - it creates a subdevice `hdaudioC0D0` whose driver is
+      `snd_hda_codec_hdmi`
+      - `CONFIG_SND_HDA_CODEC_HDMI`
+  - `snd_pci_acp3x` supports `0x15e2` but only revision 0x0
+    - `CONFIG_SND_SOC_AMD_ACP3x`
+  - `snd_acp_pci` supports `0x15e2` but only for `FLAG_AMD_LEGACY` devices
+    - `CONFIG_SND_SOC_AMD_ACP_PCI`
+  - `snd_sof_amd_renoir` binds to `0x15e2`
+    - `CONFIG_SND_SOC_SOF_AMD_RENOIR`
+    - it creates multiple subdevices
+      - `dmic-codec` whose driver is `dmic-codec`
+        - `CONFIG_SND_SOC_DMIC`
+      - `rt5682s-rt1019` whose driver is `sof_mach`
+        - `CONFIG_SND_SOC_AMD_SOF_MACH`
