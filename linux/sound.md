@@ -39,6 +39,7 @@ Kernel ALSA
     - suppliers include realtek, etc
   - `CPU <-> Controller <-> Codecs <-> Inputs/Outputs`
 - `snd_intel_dsp_driver_probe` determines which driver to use
+  - <https://thesofproject.github.io/latest/getting_started/intel_debug/introduction.html>
   - if not intel or before skylake, `SND_INTEL_DSP_DRIVER_ANY`
   - if intel skylake+ without dsp, `SND_INTEL_DSP_DRIVER_LEGACY`
   - otherwise, it uses a table to determine the driver
@@ -68,3 +69,31 @@ Kernel ALSA
     code
   - a codec driver targets a codec and must have no machine-specific or
     platform-specific code
+
+## ASoC: Intel
+
+- Intel SST (Intel Smart Sound Technology) is a DSP
+  - sst is the original driver for the dsp
+  - avs (Audio-Voice-Speech) is the new driver for the dsp
+- the devid is 0xa0c8 on my tigerlake
+  - both `snd_sof_pci_intel_tgl_driver` and `azx_driver` support the device
+  - because it is connected to DMIC on my machine,
+    `snd_intel_dsp_driver_probe` picks `SND_INTEL_DSP_DRIVER_SOF`
+  - `snd_sof_pci_intel_tgl_driver` uses `tgl_desc` as the device description
+    - `tgl_desc` supports `SOF_IPC` and `SOF_INTEL_IPC4`
+    - `SOF_IPC` uses the current `sof-tgl.ri` firmware
+    - `SOF_INTEL_IPC4` uses the newer `dsp_basefw.bin` firmware
+- after `sof-audio-pci-intel-tgl` binds to my `0xa0c8`, it creates multiple
+  subdevices
+  - `dmic-codec` is on the platform bus and needs `dmic-codec`
+  - `ehdaudio0D0` is on the hdaudio bus and needs `snd_hda_codec_realtek`
+  - `ehdaudio0D2` is on the hdaudio bus and needs `snd_hda_codec_hdmi`
+  - `skl_hda_dsp_generic` is on the platform bus and needs `skl_hda_dsp_generic`
+  - configs
+    - `CONFIG_SND_SOC_SOF_TIGERLAKE`
+    - `CONFIG_SND_SOC_DMIC`
+    - `CONFIG_SND_HDA_CODEC_REALTEK`
+    - `CONFIG_SND_HDA_CODEC_HDMI`
+    - `CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH`
+      - depends on `CONFIG_SND_SOC_INTEL_SKL` and
+        `CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC`
