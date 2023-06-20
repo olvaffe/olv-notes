@@ -100,6 +100,24 @@ Kernel ALSA
 
 ## ASoC: AMD
 
+- all the soc pci drivers match `PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x15e2)`
+  - `git grep module_pci_driver sound/soc/{amd,sof/amd}` lists all of them
+  - `snd_amd_acp_find_config` determines which driver to use
+    - if chromebook, return `FLAG_AMD_SOF`
+    - else, return 0
+    - `FLAG_AMD_LEGACY` is never set
+  - these drivers require `FLAG_AMD_SOF`
+    - `snd_sof_pci_amd_rmb_driver`
+    - `snd_sof_pci_amd_rn_driver`
+  - these drivers require `FLAG_AMD_LEGACY`
+    - `snd_amd_acp_pci_driver`
+  - these drivers require 0
+    - `acp3x_driver` is for rev 0x00
+    - `rn_acp_driver` is for rev 0x01
+    - `acp5x_driver` is for rev 0x50
+    - `yc_acp6x_driver` is for rev 0x60 and 0x6f
+    - `rpl_acp6x_driver` is for rev 0x62
+    - `ps_acp63_driver` is for rev 0x63
 - on my renoir,
   - `snd_hda_intel` binds to the hda device
     - `CONFIG_SND_HDA_INTEL`
@@ -107,10 +125,6 @@ Kernel ALSA
     - it creates a subdevice `hdaudioC0D0` whose driver is
       `snd_hda_codec_hdmi`
       - `CONFIG_SND_HDA_CODEC_HDMI`
-  - `snd_pci_acp3x` supports `0x15e2` but only revision 0x0
-    - `CONFIG_SND_SOC_AMD_ACP3x`
-  - `snd_acp_pci` supports `0x15e2` but only for `FLAG_AMD_LEGACY` devices
-    - `CONFIG_SND_SOC_AMD_ACP_PCI`
   - `snd_sof_amd_renoir` binds to `0x15e2`
     - `CONFIG_SND_SOC_SOF_AMD_RENOIR`
     - it creates multiple subdevices
