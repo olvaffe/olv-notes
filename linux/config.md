@@ -139,7 +139,7 @@ Kernel Config
   - select `Overlay filesystem support` if desired
   - select `DOS/FAT/NT Filesystems`
     - select `VFAT (Windows-95) fs support` if uefi
-    - select `Enable FAT UTF-8 option by default`
+    - select `Enable FAT UTF-8 option by default` if uefi
     - select `exFAT filesystem support` if desired
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
@@ -149,7 +149,7 @@ Kernel Config
     - select `Persistent store support`
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
-  - select `Native language support`
+  - select `Native language support` if uefi
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
@@ -456,8 +456,8 @@ Kernel Config
       - select `TI SN65DSI86 DSI to eDP bridge`
     - select `Simple framebuffer driver` if desired
     - select `Frame buffer Devices`
-      - select `Support for frame buffer devices`
-        - select `Simple framebuffer support` if legacy driver is desired
+      - select `Support for frame buffer devices` (for vt)
+        - select `Simple framebuffer support` if legacy driver is desired instead
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
@@ -643,7 +643,7 @@ Kernel Config
     - select `Qualcomm QUSB2 PHY Driver`
     - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
-    - select `Intel RAPL Support via MSR Interface` if intel/amd
+    - select `Intel RAPL Support via MSR Interface` if intel/amd, depending on `IOSF_MBI`
   - select `Reliability, Availability and Serviceability (RAS) features`
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support`
