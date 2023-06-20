@@ -560,7 +560,9 @@ Kernel Config
     - select `ChromeOS Tablet Switch Controller`
     - select `ChromeOS Embedded Controller`
       - select `ChromeOS Embedded Controller (rpmsg)` if msm
-      - select `ChromeOS Embedded Controller (SPI)` if arm
+      - select `ChromeOS Embedded Controller (I2C)` if x86
+      - select `ChromeOS Embedded Controller (SPI)`
+      - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
     - select `Backlight LED support for Chrome OS keyboards`
     - select `ChromeOS Privacy Screen support`
