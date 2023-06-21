@@ -38,28 +38,24 @@ Kernel ALSA
   - codecs sit behind the host controller
     - suppliers include realtek, etc
   - `CPU <-> Controller <-> Codecs <-> Inputs/Outputs`
-- `snd_intel_dsp_driver_probe` determines which driver to use
-  - <https://thesofproject.github.io/latest/getting_started/intel_debug/introduction.html>
-  - if not intel or before skylake, `SND_INTEL_DSP_DRIVER_ANY`
-  - if intel skylake+ without dsp, `SND_INTEL_DSP_DRIVER_LEGACY`
-  - otherwise, it uses a table to determine the driver
-    - older chromebooks use `SND_INTEL_DSP_DRIVER_SST`
-    - the rest uses `SND_INTEL_DSP_DRIVER_SOF` if it has dmic or soundwire
-    - there is also `SND_INTEL_DSP_DRIVER_AVS` that is not auto-detected?
-  - `azx_driver` is the original driver
-    - `azx_probe` continues only if `SND_INTEL_DSP_DRIVER_ANY` or
-      `SND_INTEL_DSP_DRIVER_LEGACY`
-  - `snd_sof_pci_intel_tgl_driver` is the new driver for tigerlake
-    - `hda_pci_intel_probe` continues only if `SND_INTEL_DSP_DRIVER_ANY` or
-      `SND_INTEL_DSP_DRIVER_SOF`
-  - this section is about the original driver
-- `module_hda_codec_driver` registers a codec driver
-  - it calls `__hda_codec_driver_register` to register a `hda_codec_driver` on
-    `snd_hda_bus_type` bus
+- `azx_driver` is the pci driver
+  - it probes any pci device of `PCI_CLASS_MULTIMEDIA_HD_AUDIO`
+  - `snd_intel_dsp_driver_probe` determines if this driver should be used
+    - this driver only supports proper HDA controllers
+    - if non-intel (amd, nvidia, etc.), the device is a proper HDA controller
+    - if intel, the device might have a dsp and this driver might not work
+      - skylake+ has a dsp but it may or may not be enabled
+      - certain older atoms has a dsp as well
 - `azx_probe_codecs` is called from the host controller drivers
   - it enumerates codecs connected to the host controller
   - it calls `snd_hda_codec_new` for each codec
     - this adds them as devices on the hda bus for driver binding
+- `module_hda_codec_driver` registers a codec driver
+  - it calls `__hda_codec_driver_register` to register a `hda_codec_driver` on
+    `snd_hda_bus_type` bus
+  - note that even when `azx_driver` is not used, other hda drivers still have
+    their ways to discover codecs on the hda bus and these codec drivers are
+    reused
 
 ## ASoC
 
@@ -79,6 +75,8 @@ Kernel ALSA
 ## ASoC: Case Study
 
 - take `CONFIG_SND_SOC_AMD_ACP6x` for example
+  - note that it only supports capture
+  - playback on amd devices often goes through the HDA controller
 - `yc_acp6x_driver` binds to pci device with devid `ACP_DEVICE_ID`
   - `snd_acp6x_probe` probes the pci device and registers 3 platform devices
     - `acp_yc_pdm_dma`
@@ -114,31 +112,87 @@ Kernel ALSA
 
 ## ASoC: Intel
 
-- Intel SST (Intel Smart Sound Technology) is a DSP
-  - sst is the original driver for the dsp
-  - avs (Audio-Voice-Speech) is the new driver for the dsp
-- the devid is 0xa0c8 on my tigerlake
-  - both `snd_sof_pci_intel_tgl_driver` and `azx_driver` support the device
-  - because it is connected to DMIC on my machine,
-    `snd_intel_dsp_driver_probe` picks `SND_INTEL_DSP_DRIVER_SOF`
-  - `snd_sof_pci_intel_tgl_driver` uses `tgl_desc` as the device description
-    - `tgl_desc` supports `SOF_IPC` and `SOF_INTEL_IPC4`
-    - `SOF_IPC` uses the current `sof-tgl.ri` firmware
-    - `SOF_INTEL_IPC4` uses the newer `dsp_basefw.bin` firmware
-- after `sof-audio-pci-intel-tgl` binds to my `0xa0c8`, it creates multiple
-  subdevices
-  - `dmic-codec` is on the platform bus and needs `dmic-codec`
-  - `ehdaudio0D0` is on the hdaudio bus and needs `snd_hda_codec_realtek`
-  - `ehdaudio0D2` is on the hdaudio bus and needs `snd_hda_codec_hdmi`
-  - `skl_hda_dsp_generic` is on the platform bus and needs `skl_hda_dsp_generic`
-  - configs
-    - `CONFIG_SND_SOC_SOF_TIGERLAKE`
-    - `CONFIG_SND_SOC_DMIC`
-    - `CONFIG_SND_HDA_CODEC_REALTEK`
-    - `CONFIG_SND_HDA_CODEC_HDMI`
-    - `CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH`
-      - depends on `CONFIG_SND_SOC_INTEL_SKL` and
-        `CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC`
+- intel aDSP (audio DSP)
+  - <https://thesofproject.github.io/latest/getting_started/intel_debug/introduction.html>
+  - <https://docs.zephyrproject.org/latest/boards/xtensa/intel_adsp_cavs25/doc/intel_adsp_generic.html>
+  - first gen: SST (smart sound technology)
+    - Xtensa HiFi2 EP
+    - used on bay trail, cherry trail, braswell, and broadwell
+    - discovered via acpi
+    - can be enabled/disabled in bios
+      - when enabled, must use the asoc driver
+      - when disabled, the original `azx_driver` can be used
+    - does not handle hdmi/dp
+  - second gen: cAVS (Converged Audio Voice Speech)
+    - Xtensa HiFi3
+    - used on
+      - cAVS 1.5: skylake, kaby lake, apollo lake, gemini lake
+      - cAVS 1.8: cannon lake, whiskey lake, comet lake
+      - cAVS 2.0: ice lake
+      - cAVS 2.5: tiger lake
+    - discovered via pci
+    - can be enabled/disabled in bios
+      - if a dcim is attached, or if i2c/i2s/soundwire is used, must be
+        enabled
+  - third gen: ACE (Audio Capture Engine)
+    - Xtensa
+    - used on
+      - ACE 1.5: meteor lake
+      - ACE 2.0: lunar lake
+  - intel requires the dsp firmware to be signed
+    - unless it's chromebook
+- `snd_intel_dsp_driver_probe` determines which driver to use
+  - `SND_INTEL_DSP_DRIVER_ANY` means any driver
+  - `SND_INTEL_DSP_DRIVER_LEGACY` means the original `azx_driver`
+  - `SND_INTEL_DSP_DRIVER_SST` means
+    - `sst_acpi_driver` for bay trail, cherry trail
+    - `catpt_acpi_driver` for braswell, broadwell
+    - `skl_driver` for skylake to comet lake on closed-source firmware
+  - `SND_INTEL_DSP_DRIVER_AVS` is a rewrite of `skl_driver`
+  - `SND_INTEL_DSP_DRIVER_SOF` means any adsp on SoF firmware
+    - `snd_sof_acpi_intel_byt_driver` for bay trail, cherry trail
+    - `snd_sof_acpi_intel_bdw_driver` for broadwell
+    - `snd_sof_pci_intel_skl_driver` for skylake, kaby lake
+    - `snd_sof_pci_intel_apl_driver` for apollo lake, gemini lake
+    - `snd_sof_pci_intel_cnl_driver` for cannon lake, comet lake
+    - `snd_sof_pci_intel_icl_driver` for ice lake
+    - `snd_sof_pci_intel_tgl_driver` for tiger lake, alder lake, raptor lake
+    - `snd_sof_pci_intel_mtl_driver` for meteor lake
+- my tigerlake has devid 0xa0c8
+  - `azx_driver` binds, probes, and bails because `snd_intel_dsp_driver_probe`
+    picks `SND_INTEL_DSP_DRIVER_SOF`
+    - `DSP detected with PCI class/subclass/prog-if info 0x040380`
+    - `Digital mics found on Skylake+ platform, using SOF driver`
+  - `snd_sof_pci_intel_tgl_driver` calls `hda_pci_intel_probe` to probe and
+    succeeds
+    - `tgl_desc` is the device description
+      - it supports `SOF_IPC` and `SOF_INTEL_IPC4`
+      - `SOF_IPC` uses the current `sof-tgl.ri` firmware
+      - `SOF_INTEL_IPC4` uses the newer `dsp_basefw.bin` firmware based on
+        zephyr rtos
+    - `sof_pci_probe` does many initializations.  Among them, these are called
+      from `snd_sof_device_probe`
+      - `sof_ops_init` calls `sof_tgl_ops_init`
+        - it initializes `sof_tgl_ops` from `sof_hda_common_ops`
+      - `snd_sof_probe` calls `hda_dsp_probe`
+        - this creates the `dmic-codec` platform device
+      - `sof_machine_check` calls `snd_sof_machine_select` which calls
+        `hda_machine_select`
+        - it ends up in `hda_generic_machine_select` and selects
+          `snd_soc_acpi_intel_hda_machines` 
+  - there are these subdevices and drivers
+    - `dmic-codec` is on the platform bus and with `dmic_driver`
+    - `ehdaudio0D0` is on the hdaudio bus and with `realtek_driver`
+    - `ehdaudio0D2` is on the hdaudio bus and with `hdmi_driver`
+    - `skl_hda_dsp_generic` is on the platform bus with `skl_hda_audio`
+    - configs
+      - `CONFIG_SND_SOC_SOF_TIGERLAKE`
+      - `CONFIG_SND_SOC_DMIC`
+      - `CONFIG_SND_HDA_CODEC_REALTEK`
+      - `CONFIG_SND_HDA_CODEC_HDMI`
+      - `CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH`
+        - depends on `CONFIG_SND_SOC_INTEL_SKL` and
+          `CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC`
 
 ## ASoC: AMD
 
