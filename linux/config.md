@@ -473,12 +473,10 @@ Kernel Config
       - select `ALSA for SoC audio support`
         - select `AMD Audio ACP Common support` if amd
           - select `AMD SOF Machine Driver Support`
-        - select `Intel ASoC SST drivers` if intel
-          - deselect `ACPI HiFi2 (Baytrail, Cherrytrail) Platforms`
-          - select `Skylake Platforms`
-          - select `HDAudio codec support`
+        - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
           - select `Skylake+ with HDA Codecs`
+          - select `SOF with nau8825 codec in I2S Mode` if needed
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
@@ -490,6 +488,9 @@ Kernel Config
           - select `SOF support for Intel audio DSPs` if intel
             - deselect all but desired drivers such as
             - select `SOF support for Tigerlake`
+            - select `SOF support for Alderlake`
+            - select `SOF support for HDA Links(HDA/HDMI)`
+              - select `SOF support for HDAudio codecs`
         - select `CODEC drivers`
           - select `Generic Digital Microphone CODEC` if x86
           - if msm
