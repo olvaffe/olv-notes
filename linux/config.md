@@ -195,8 +195,8 @@ Kernel Config
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
-  - select `Processor family (Core 2/newer Xeon)` if intel
-  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd
+  - select `Processor family (Core 2/newer Xeon)` if intel and desired
+  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd and desired
   - select `CPU microcode loading support`
     - select `AMD microcode loading support` if amd
   - select `EFI runtime service support` if uefi
@@ -524,7 +524,6 @@ Kernel Config
     - select `DesignWare USB3 DRD Core Support` if msm
     - select `Onboard USB hub support` if msm
     - select `USB Type-C Support`
-      - select `USB Type-C Port Controller Manager`
       - select `USB Type-C Connector System Software Interface driver`
         - select `UCSI ACPI Interface Driver` if x86
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
