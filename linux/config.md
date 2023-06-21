@@ -218,6 +218,7 @@ Kernel Config
     - select `KVM for Intel processors support` if intel
     - select `KVM for AMD processors support` if amd
 - select `General architecture-dependent options`
+  - select `Optimize very unlikely/likely branches`
   - select `Provide system calls for 32-bit time_t`
 
 ## Config: arm64
@@ -266,6 +267,7 @@ Kernel Config
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support` if pcie
+      - select `PCI Express Advanced Error Reporting support`
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `PCI controller drivers` if arm
       - select `DesignWare PCI Core Support` if newer msm
@@ -496,6 +498,7 @@ Kernel Config
             - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID bus support`
     - select `HID bus core support`
+      - select `Battery level reporting for HID devices`
       - select `Special HID drivers`
         - deselect all but the desired drivers, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
@@ -648,8 +651,9 @@ Kernel Config
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support`
     - select `QCOM QFPROM Support` if msm
-  - select `Trusted Execution Environment support` if arm
-    - select `OP-TEE`
+  - select `Trusted Execution Environment support`
+    - select `OP-TEE` if arm
+    - select `AMD-TEE` if amd
   - select `On-Chip Interconnect management support` if msm
     - select `Qualcomm Network-on-Chip interconnect drivers`
     - select `Qualcomm OSM L3 interconnect driver`
