@@ -69,6 +69,48 @@ Kernel ALSA
     code
   - a codec driver targets a codec and must have no machine-specific or
     platform-specific code
+- a machine driver defines a `struct snd_soc_card`
+  - the machine driver calls `devm_snd_soc_register_card` to register its
+    `snd_soc_card`
+- codec drivers are under `sound/soc/codecs`
+  - each codec driver must define a `snd_soc_dai_driver`, which is a means to
+    communicate with the codec
+
+## ASoC: Case Study
+
+- take `CONFIG_SND_SOC_AMD_ACP6x` for example
+- `yc_acp6x_driver` binds to pci device with devid `ACP_DEVICE_ID`
+  - `snd_acp6x_probe` probes the pci device and registers 3 platform devices
+    - `acp_yc_pdm_dma`
+    - `dmic-codec`
+    - `acp_yc_pdm_dma`
+- `acp6x_pdm_dma_driver` binds to `acp_yc_pdm_dma`
+  - this is an asoc platform driver
+  - `acp6x_pdm_audio_probe` calls `devm_snd_soc_register_component` to
+    register `acp6x_pdm_component` and `acp6x_pdm_dai_driver`
+- `dmic_driver` binds to `dmic-codec`
+  - this is an asoc codec driver
+  - `dmic_dev_probe` calls `devm_snd_soc_register_component` to register
+    `soc_dmic` and `dmic_dai`
+- `acp6x_mach_driver` binds to `acp_yc_mach`
+  - this is an asoc machine driver
+  - `acp6x_probe` calls `devm_snd_soc_register_card` to register `acp6x_card`
+  - `acp_dai_pdm` is the only `snd_soc_dai_link` of the card
+    - `acp_pdm` is the cpu component of the link
+    - `dmic_codec` is the codec component of the link
+    - `platform` is the platform component of the link
+  - as a part of card registration, `snd_soc_add_pcm_runtime` processes the
+    dai link
+    - it calls `soc_new_pcm_runtime` to create a `snd_soc_pcm_runtime`
+    - it looks up all cpu components, codec components, and platform
+      components and adds them to the `snd_soc_pcm_runtime`
+- it seems
+  - the physical link is `ACP <- DMIC <- input`
+  - the asoc representation is `CPU DAI <- CODEC DAI`
+  - the data flow is `mem <- CPU DAI <- CODEC DAI <- input`
+    - that is, all components on the link have DAIs to connect them together
+    - the CPU DAI is different from CODEC DATA in that it additionally
+      supports DMA to write the input data to the system memory
 
 ## ASoC: Intel
 
