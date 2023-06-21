@@ -573,6 +573,7 @@ Kernel Config
     - select `ChromeOS Privacy Screen support`
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
+    - select `AMD SoC PMC driver` if amd
     - select `Dell X86 Platform Specific Device Drivers` if dell
     - select `Lenovo IdeaPad Laptop Extras` if ideapad
     - select `ThinkPad ACPI Laptop Extras` if thinkpad
