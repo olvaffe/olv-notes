@@ -193,6 +193,13 @@ Kernel ALSA
       - `CONFIG_SND_SOC_INTEL_SKL_HDA_DSP_GENERIC_MACH`
         - depends on `CONFIG_SND_SOC_INTEL_SKL` and
           `CONFIG_SND_SOC_INTEL_SKYLAKE_HDAUDIO_CODEC`
+- my brya has devid 0x51c8
+  - `adl_desc` is used
+  - there are also these acpi devices
+    - `10508825:00`
+    - `MX98360A:00`
+  - `snd_soc_acpi_find_machine` picks `adl_mx98360a_8825` from
+    `snd_soc_acpi_intel_adl_machines`
 
 ## ASoC: AMD
 
