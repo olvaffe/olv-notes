@@ -1009,3 +1009,27 @@ Vulkan
     `VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT`
   - the image must have been transitioned to
     `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT`
+
+## `VK_KHR_shader_float_controls`
+
+- it has been promoted to 1.2
+- `VkShaderFloatControlsIndependence`
+  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY`: float16/float64 share
+    the same control
+  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL`: float16, float32, and float64
+    are independent
+  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE`: float16/float32/float64
+    share the same control
+- `VkPhysicalDeviceFloatControlsProperties`
+  - `denormBehaviorIndependence`
+  - `roundingModeIndependence`
+  - `shaderSignedZeroInfNanPreserveFloat{16,32,64}` indicates whether
+    `SignedZeroInfNanPreserve` is supported
+  - `shaderDenormPreserveFloat{16,32,64}` indicates whether `DenormPreserve`
+    is supported
+  - `shaderDenormFlushToZeroFloat{16,32,64}` indicates whether
+    `DenormFlushToZero` is supported
+  - `shaderRoundingModeRTEFloat{16,32,64}` indicates whether
+    `RoundingModeRTE` is supported
+  - `shaderRoundingModeRTZFloat{16,32,64}` indicates whether
+    `RoundingModeRTZ` is supported

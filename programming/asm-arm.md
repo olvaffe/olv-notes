@@ -60,3 +60,5 @@ ARM Assembly
   - `lsl Xn, Xm, #s`
 - `lsl (register)`
   - `lsl Xn, Xm, Xl`
+- `bic`: bit clear
+  - e.g., `bic r0, r1, #0x1`

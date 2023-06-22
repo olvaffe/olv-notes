@@ -365,6 +365,47 @@ the sizeof(long) actually varies between the targets we care about.
   - special numbers follow the same rules
     - arm supports "alternative half-precision" format where 0x1f exponent
       bits are treated normally and does not represent infinity/nan
+- `man fenv`
+  - exceptions
+    - aarch64
+      - `fpsr` is Floating-point Status Register
+        - bit0: IOC, invalid operation
+        - bit1: DZC, divide-by-zero
+        - bit2: OFC, overflow
+        - bit3: UFC, underflow
+        - bit4: IXC, inexact
+      - `mrs`/`msr` can load/store the status reg
+      - `feclearexcept`: `mrs`, `bic`, and `msr`
+      - `feraiseexcept`: `mrs`, `orr`, and `msr`
+      - `fetestexcept`: `mrs` and `and`
+      - `fegetexceptflag`: alias to `fetestexcept`
+      - `fesetexceptflag`: `feclearexcept` followed by `feraiseexcept`
+  - rounding mode
+    - aarch64
+      - `fpcr` is Floating-point Control Register
+      - bit22..23:
+        - 0b00: RN (round to nearest)
+        - 0b01: RP (round towards plus infinity)
+        - 0b10: RM (round towards minus infinity)
+        - 0b11: RZ (round towards zero)
+      - `fegetround`: `mrs` and `and`
+      - `fesetround`: `mrs`, `bic`, `orr`, and `msr`
+  - floating-point environment
+    - aarch64
+      - `fegetenv`: `mrs` both `fpsr` and `fpcr`
+      - `fesetenv`: `msr` both `fpsr` and `fpcr`
+      - `feholdexcept`: `fegetenv` followed by `feclearexcept`
+      - `feupdateenv`: `fegetexceptflag`, `fesetenv`, and `feraiseexcept`
+  - rounding functions
+    - `rint`/`nearbyint` respects `fesetround`
+      - when round-to-nearest, halfway cases round to nearest event
+        - `1.5` rounds to `2.0`
+        - `2.5` rounds to `2.0`
+    - `round` ignores `fesetround`
+      - always round-to-nearest, and halfway cases round away from zero
+        - `1.5` rounds to `2.0`
+        - `2.5` rounds to `3.0`
+        - `-1.5` rounds to `-2.0`
 
 ## Inline
 
