@@ -176,6 +176,10 @@ Kernel ALSA
         - it initializes `sof_tgl_ops` from `sof_hda_common_ops`
       - `snd_sof_probe` calls `hda_dsp_probe`
         - this creates the `dmic-codec` platform device
+        - `hda_init_caps`
+          - `hda_dsp_ctrl_init_chip` calls `hda_codec_detect_mask` to init
+            `bus->codec_mask`
+          - `hda_codec_probe_bus` probes codecs and loads codec drivers
       - `sof_machine_check` calls `snd_sof_machine_select` which calls
         `hda_machine_select`
         - it ends up in `hda_generic_machine_select` and selects
