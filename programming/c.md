@@ -406,6 +406,10 @@ the sizeof(long) actually varies between the targets we care about.
         - `1.5` rounds to `2.0`
         - `2.5` rounds to `3.0`
         - `-1.5` rounds to `-2.0`
+    - aarch64
+      - `round`: `frinta`
+      - `nearbyint`: `frinti`
+      - `rint`: `frintx`
 
 ## Inline
 
