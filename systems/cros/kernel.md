@@ -94,6 +94,7 @@ Chrome OS Kernel
 - enable compressed modules and firmwares
   - `CONFIG_MODULE_COMPRESS=y`
   - `CONFIG_FW_LOADER_COMPRESS=y`
+  - `CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware"`
 - enable more filesystems
   - `CONFIG_BTRFS_FS`
   - `CONFIG_F2FS_FS`
@@ -102,6 +103,8 @@ Chrome OS Kernel
 - disable security for simplicity
   - `CONFIG_SECURITY`
   - `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
+- disable werror
+  - `CONFIG_WERROR`
 
 ## Linux Distro: Build
 
