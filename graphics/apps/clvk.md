@@ -5,12 +5,8 @@ clvk
 
 - steps
   - `git clone https://github.com/kpet/clvk.git`
+  - `cd clvk`
   - `git submodule update --init --recursive`
-    - `https://github.com/KhronosGroup/OpenCL-Headers.git`
-    - `https://github.com/KhronosGroup/SPIRV-Headers.git`
-    - `https://github.com/KhronosGroup/SPIRV-LLVM-Translator`
-    - `https://github.com/KhronosGroup/SPIRV-Tools.git`
-    - `https://github.com/google/clspv.git`
   - `./external/clspv/utils/fetch_sources.py --deps llvm`
     - this helps `clspv` fetches `llvm`
   - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLVK_CLSPV_ONLINE_COMPILER=ON -DCLVK_ENABLE_SPIRV_IL=OFF`
@@ -44,3 +40,24 @@ clvk
 - tests
   - `api_test`
   - `simple_test`
+
+## Build CTS
+
+- steps
+  - `git clone https://github.com/KhronosGroup/OpenCL-CTS.git`
+  - `cd OpenCL-CTS`
+  - `git clone https://github.com/KhronosGroup/OpenCL-Headers.git`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCL_INCLUDE_DIR=OpenCL-Headers -DCL_LIB_DIR=../clvk/out -DOPENCL_LIBRARIES=OpenCL`
+    - for simplicity, we don't use `OpenCL-ICD-Loader`
+  - `ninja -C out`
+    - this builds various test executables from `test_conformance/*`
+    - `find out/test_conformance -type f -executable`
+- options
+  - `-DCL_INCLUDE_DIR=OpenCL-Headers`
+    - it's used in `include_directories(SYSTEM ${CL_INCLUDE_DIR})` which adds
+      `-I`
+  - `-DCL_LIB_DIR=../clvk/out`
+    - it's used in `link_directories(${CL_LIB_DIR})` which adds `-L` and
+      `-Wl,-rpath`
+  - `-DOPENCL_LIBRARIES=OpenCL`
+    - it's added to `TARGET_LINK_LIBRARIES`
