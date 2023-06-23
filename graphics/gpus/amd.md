@@ -897,6 +897,7 @@ AMD
 - 12.11. VINTERP Instructions
 - 12.12. VOP3A & VOP3B Instructions
   - `V_MED3_F32` Return median single precision value of three inputs.
+  - `V_LSHL_ADD_U32`: `D.u = (S0.u << S1.u[4:0]) + S2.u.`
 - 12.13. LDS & GDS Instructions
 - 12.14. MUBUF Instructions
   - Buffer instructions (MTBUF and MUBUF) allow the shader program to read
