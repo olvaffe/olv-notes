@@ -406,10 +406,39 @@ the sizeof(long) actually varies between the targets we care about.
         - `1.5` rounds to `2.0`
         - `2.5` rounds to `3.0`
         - `-1.5` rounds to `-2.0`
+    - cast respects `fesetround`
+      - consider 4 ints
+        - `(1<<24)+0b000`
+        - `(1<<24)+0b001`
+        - `(1<<24)+0b010`
+        - `(1<<24)+0b011`
+      - casting them to doubles, the bit 23 and 24 of the significand bits
+        (the msb is bit 1) are
+        - `0b000`
+        - `0b001`
+        - `0b010`
+        - `0b011`
+      - casting them to floats require rounding because floats only have 23
+        significand bits
+        - bit 24 and after are considered to be after the decimal point for
+          rounding purposes
+        - `0b000` and `0b010` can be represented exactly because bit 24 is 0
+        - `0b001` and `0b011` cannot be represented exactly because bit 24 is 1
+          - `FE_UPWARD` rounds them up to `0b010` and `0b100`
+          - `FE_DOWNWARD` rounds them down to `0b000` and `0b010`
+          - `FE_TOWARDZERO` is the same as `FE_DOWNWARD` because the sign bit
+            is cleared
+          - `FE_TONEAREST` rounds them to `0b000` and `0b100`
+            - the full name is `Round to nearest, ties to even`
+              - when it's a tie, round to even numbers
+            - because bit 24 is 1 and all bits are it are 0, it is a tie
+            - it rounds up or down depending on whether bit 23 is 1 or not
+      - similarly, casting doubles to floats goes through the same rounding
     - aarch64
       - `round`: `frinta`
       - `nearbyint`: `frinti`
       - `rint`: `frintx`
+      - cast: `fcvt`
 
 ## Inline
 
