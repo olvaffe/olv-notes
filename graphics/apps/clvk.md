@@ -61,3 +61,24 @@ clvk
       `-Wl,-rpath`
   - `-DOPENCL_LIBRARIES=OpenCL`
     - it's added to `TARGET_LINK_LIBRARIES`
+
+## CTS: `test_conversions`
+
+- `InitCL`, among other things, queries and prints device info
+  - `CL_DEVICE_PROFILE` can be `FULL_PROFILE` or `EMBEDDED_PROFILE`
+    - if `EMBEDDED_PROFILE`, int64 support is optional and depends on
+      `cles_khr_int64` extension
+  - `CL_DEVICE_EXTENSIONS` contains all extensions
+    - check for `cl_khr_fp64` for `double` support
+  - `CL_DEVICE_SINGLE_FP_CONFIG` (and `CL_DEVICE_DOUBLE_FP_CONFIG` and
+    `CL_DEVICE_HALF_FP_CONFIG`)
+    - `CL_FP_DENORM` supports denorms
+    - `CL_FP_INF_NAN` supports inf/nan
+    - `CL_FP_ROUND_TO_NEAREST` supports RTE
+    - `CL_FP_ROUND_TO_ZERO` supports RTZ
+    - `CL_FP_ROUND_TO_INF` supports RTP and RTN (positive and negative
+      infinity)
+    - `CL_FP_FMA` supports FMA
+    - `CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT` supports correct rounding for
+      divide and sqrt
+    - `CL_FP_SOFT_FLOAT` uses software impl

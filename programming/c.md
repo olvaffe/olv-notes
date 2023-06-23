@@ -365,6 +365,14 @@ the sizeof(long) actually varies between the targets we care about.
   - special numbers follow the same rules
     - arm supports "alternative half-precision" format where 0x1f exponent
       bits are treated normally and does not represent infinity/nan
+- revisions
+  - IEEE 754-1985
+  - IEEE 754-2008
+    - new round-to-nearest rule
+      - the original rule is round-to-nearest, ties to even
+      - added optional round-to-nearest, ties away from zero
+    - added fma
+  - IEEE 754-2019
 - `man fenv`
   - exceptions
     - aarch64

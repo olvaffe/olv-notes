@@ -3,6 +3,8 @@ SPIR-V
 
 ## Tools
 
+- spec
+  - <https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html>
 - SPIRV-Headers
   - <https://github.com/KhronosGroup/SPIRV-Headers>
   - `spirv.h` defines enums for opcodes, scopes, semantics, etc.
@@ -149,3 +151,31 @@ SPIR-V
 - load
   - `OpAccessChain` on the variable to get a pointer to a struct member
   - `OpLoad` to load
+
+## Rounding
+
+- Conversion Instructions
+  - `OpConvertFToU` converts floating point to unsigned int numerically with
+    RTZ
+  - `OpConvertFToS` converts floating point to signed int numerically with RTZ
+  - `OpConvertSToF` converts signed int to floating point numerically
+  - `OpConvertUToF` converts unsigned int to floating point numerically
+  - `OpUConvert` converts unsigned width with truncation or zero-extension
+  - `OpSConvert` converts signed width with truncation or signed-extension
+  - `OpFConvert` converts floating-point width numerically
+  - more
+- `FPRoundingMode` is very limited
+  - The FPRoundingMode decoration must be applied only to a width-only
+    conversion instruction whose only uses are Object operands of OpStore
+    instructions storing through a pointer to a 16-bit floating-point object
+    in the StorageBuffer, PhysicalStorageBuffer, Uniform, or Output Storage
+    Classes.
+  - basically only on `OpFConvert` to halfs what are used in `OpStore`
+- `RoundingModeRTE` and `RoundingModeRTZ`
+  - new capabilities and execution modes introduced in 1.4 or
+    `SPV_KHR_float_controls`
+  - apply to `OpEntryPoint`
+  - they specify the default rounding mode for an entrypoint
+  - they are ignored when an instruction has an implied rounding mode (e.g.,
+    `OpConvertFToU`) or is decorated with `FPRoundingMode` (e.g.,
+    `OpFConvert`)
