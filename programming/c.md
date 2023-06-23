@@ -63,6 +63,12 @@ C
     - `__LINE__`
     - `__DATE__`
     - `__TIME__`
+- `_Pragma(arg)` operator
+  - there is already `#pragma` directive before c99
+  - c99 also standardizes 3 pragmas
+    - `#pragma STDC FENV_ACCESS arg`
+    - `#pragma STDC FP_CONTRACT arg`
+    - `#pragma STDC CX_LIMITED_RANGE arg`
 
 ## Standard Library Headers
 
@@ -374,6 +380,9 @@ the sizeof(long) actually varies between the targets we care about.
     - added fma
   - IEEE 754-2019
 - `man fenv`
+  - implementation-defined behaviors
+    - implmentations are allowed to ignore changes to fenv
+    - use `#pragma STDC FENV_ACCESS ON` (or `-frounding-math`)
   - exceptions
     - aarch64
       - `fpsr` is Floating-point Status Register

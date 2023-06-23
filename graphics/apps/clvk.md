@@ -82,3 +82,23 @@ clvk
     - `CL_FP_CORRECTLY_ROUNDED_DIVIDE_SQRT` supports correct rounding for
       divide and sqrt
     - `CL_FP_SOFT_FLOAT` uses software impl
+  - clvk
+    - incorrectly assumes `VkPhysicalDeviceFeatures::shaderInt64`
+    - if `VkPhysicalDeviceFeatures::shaderFloat64`, advertises `cl_khr_fp64`
+    - correctly assumes `CL_FP_ROUND_TO_NEAREST` and never advertises
+      `CL_FP_ROUND_TO_ZERO`
+- `MakeProgram`
+  - for `float_long` test case, the kernel is something like
+
+    __kernel void test_implicit_float_long( __global long *src, __global float *dest )
+    {
+       size_t i = get_global_id(0);
+       dest[i] =  src[i]; // or with explicit convert_float
+    }
+- `InitData` initializes input data
+  - for `float_long` test case,
+    - `init_long` generates various bit patterns
+- `PrepareReference` calculates the reference values
+  - for `float_long` test case,
+    - `set_round` calls `fesetround(FE_TONEAREST)`
+    - `long2float_many` simply casts `cl_long` to `double`
