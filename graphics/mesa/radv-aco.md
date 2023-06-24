@@ -47,3 +47,35 @@ Mesa RADV ACO
       - `scratch_flat_load_params` false
       - `global_load_params` true
 
+## int64
+
+- `nir_lower_int64_options`
+  - radv enables
+    - `nir_lower_divmod64`
+    - `nir_lower_iabs64`
+    - `nir_lower_iadd_sat64`
+    - `nir_lower_imul_2x32_64`
+    - `nir_lower_imul64`
+    - `nir_lower_imul_high64`
+    - `nir_lower_minmax64`
+  - these are not enabled
+    - `nir_lower_bit_count64`
+    - `nir_lower_extract64`
+    - `nir_lower_find_lsb64`
+    - `nir_lower_iadd64`
+    - `nir_lower_icmp64`
+    - `nir_lower_ineg64`
+    - `nir_lower_isign64`
+    - `nir_lower_logic64`
+    - `nir_lower_mov64`
+    - `nir_lower_scan_reduce_bitwise64`
+    - `nir_lower_scan_reduce_iadd64`
+    - `nir_lower_shift64`
+    - `nir_lower_subgroup_shuffle64`
+    - `nir_lower_ufind_msb64`
+    - `nir_lower_usub_sat64`
+    - `nir_lower_vote_ieq64`
+- `nir_op_iadd`
+  - `nir_lower_int64` would lower it with `lower_iadd64`
+    - unpack, two additions with carry, repack
+  - `visit_alu_instr` is similar?
