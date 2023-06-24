@@ -374,6 +374,7 @@ Kernel Config
         - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if x86
         - select `Broadcom BCM2835 I2C controller` if rpi
         - select `Synopsys DesignWare Platform` if x86, depending on `COMMON_CLK`
+          - select `AMD PSP I2C semaphore support` if amd
         - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
