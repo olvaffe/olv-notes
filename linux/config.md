@@ -471,7 +471,9 @@ Kernel Config
         - select `Build Realtek HD-audio codec support` if needed
         - select `Build HDMI/DisplayPort HD-audio codec support`
       - select `ALSA for SoC audio support`
-        - select `AMD Audio ACP Common support` if amd
+        - select `AMD Audio Coprocessor - Renoir support` if amd
+          - select `AMD Renoir support for DMIC`
+        - select `AMD Audio ACP Common support` if amd and cros
           - select `AMD SOF Machine Driver Support`
         - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
@@ -480,7 +482,7 @@ Kernel Config
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
-        - select `Sound Open Firmware Support` if x86
+        - select `Sound Open Firmware Support` if intel or cros
           - select `SOF PCI enumeration support`
           - select `SOF support for AMD audio DSPs` if amd
             - select `SOF support for RENOIR`
