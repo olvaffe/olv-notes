@@ -31,7 +31,7 @@ SPIR-V
   - `-g` to include debug info
   - `-H` to print human-readable form of spirv
 
-## Basics
+## Example
 
 - `cat a.frag`
 
@@ -93,7 +93,10 @@ SPIR-V
                    OpStore %out_val %16
                    OpReturn
                    OpFunctionEnd
-- physical layout of a spir-v module
+
+## Spec
+
+- 2.3. Physical Layout of a SPIR-V Module and Instruction
   - header
     - word 0: magic number 0x07230203
     - word 1: version
@@ -106,7 +109,7 @@ SPIR-V
       - optional instruction type id
       - optional instruction result id
     - word X..(count-1): optional operands
-- logical layout of a spir-v module
+- 2.4. Logical Layout of a Module
   - instructions must be in the following order
   - all `OpCapability` instructions
     - declare what caps the module uses
@@ -137,6 +140,24 @@ SPIR-V
       - all `OpVariable` must have a storage class of `Function`
       - ended with a termination instruction
     - `OpFunctionEnd`
+- 3.7. Storage Class
+  - used by
+    - `OpTypePointer`
+    - `OpVariable`
+    - more
+  - `UniformConstant`: GL uniform or CL constant memory
+  - `Input`: Input from pipeline
+  - `Uniform`: GL UBO
+  - `Output`: Output to pipeline
+  - `Workgroup`: GL shared qualifier or CL local memory
+  - `CrossWorkgroup`: CL global memory
+  - `Private`: Regular global memory
+  - `Function`: Regular function memory.
+  - `Generic`:
+  - `PushConstant`: VK push-constant memory
+  - `AtomicCounter`: Atomic counter-specific memory
+  - `Image`: For holding image memory
+  - `StorageBuffer` GL SSBO
 
 ## UBOs
 

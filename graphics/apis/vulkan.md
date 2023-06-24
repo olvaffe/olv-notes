@@ -1033,3 +1033,27 @@ Vulkan
     `RoundingModeRTE` is supported
   - `shaderRoundingModeRTZFloat{16,32,64}` indicates whether
     `RoundingModeRTZ` is supported
+
+## Shader Data Type Widths
+
+- `VkPhysicalDeviceFeatures` has
+  - `shaderFloat64` specifies support for 64-bit floats
+  - `shaderInt64` specifies support for 64-bit ints
+  - `shaderInt16` specifies support for 16-bit ints
+- `VkPhysicalDeviceVulkan11Features` has
+  - `storageBuffer16BitAccess` specifies support for 16-bit load/store on
+    ssbo, as well as width-only conversions of 16-bit types
+  - `uniformAndStorageBuffer16BitAccess` is the same as above but on ubo
+  - `storagePushConstant16` ditto
+  - `storageInputOutput16` ditto
+- `VkPhysicalDeviceVulkan12Features` has
+  - `storageBuffer8BitAccess` specifies support for 8-bit load/store on ssbo,
+    as well as width-only conversions of 8-bit types
+  - `uniformAndStorageBuffer8BitAccess` is the same as above but on ubo
+  - `storagePushConstant8` ditto
+  - `shaderBufferInt64Atomics` specifies support for 64-bit int atomic
+    operations on buffers
+  - `shaderSharedInt64Atomics` specifies support for 64-bit int atomic
+    operations on shared and payload memory
+  - `shaderFloat16` specifies support for 16-bit floats
+  - `shaderInt8` specifies support for 8-bit ints
