@@ -471,3 +471,35 @@ NIR
   - `nir_intrinsic_reduce`
   - `nir_intrinsic_inclusive_scan`
   - `nir_intrinsic_exclusive_scan`
+
+## int64
+
+- `nir_lower_int64`
+- `should_lower_int64_instr` returns true when the instruction is an alu
+  involving 64-bit integers and its lowering is enabled in
+  `nir_lower_int64_options`
+  - for `nir_op_i2i*` and `nir_op_u2*`, true if the src is 64-bit
+  - for `nir_op_bcsel`, true if the two branches are 64-bit
+  - for `nir_op_i{eq,ne,lt,...}` and `nir_op_u{eq,ne,lt,...}`, true if the
+    two srcs are 64-bit
+  - for `nir_op_find_lsb` and `nir_op_bitcount`, true if the src is 64-bit
+  - for `nir_op_amul`, true if the dst is 64-bit
+  - for the rest alu, true if the dst is 64-bit
+    - because the rest of the instructions does not change integer widthds and
+      it suffices to check the dst
+- setting `nir_lower_mov64` enables lowering of these instructions
+  - these instructions might have 64-bit src
+    - `nir_op_i2i*` is lowered by `lower_i2i*`
+    - `nir_op_u2u*` is lowered by `lower_u2u*`
+    - `nir_op_i2f*` and `nir_op_u2f*` are lowered by `lower_2f`
+  - these instructions have or might have 64-bit dst
+    - `nir_op_bcsel` is lwoered by `lower_bcsel64`
+    - `nir_op_b2i64` is lowered by `lower_b2i64`
+    - `nir_op_f2i64` and `nir_op_f2u64` is lowered by `lower_f2`
+  - `lower_i2i*` and `lower_u2u*` uses `nir_unpack_64_2x32_split_x` to unpack
+    a 64-bit int to 2 32-bit ints and returns the lower 32-bit one
+  - `lower_bcsel64` unpacks both branches, does two `nir_bcel`, and repacks
+  - `lower_b2i64` uses `nir_pack_64_2x32_split` to pack the bool and zero as
+    64-bit int
+  - `lower_2f` is very complex
+  - `lower_f2` uses `nir_ftrunc`, `nir_fdiv`, `nir_frem`, etc.
