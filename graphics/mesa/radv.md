@@ -463,7 +463,8 @@ Mesa RADV
     - `aco::(anonymous namespace)::visit_block`
     - `aco::(anonymous namespace)::visit_cf_list`
     - `aco::select_program`
-    - `aco_compile_shader` - `shader_compile`
+    - `aco_compile_shader`
+    - `shader_compile`
     - `radv_shader_nir_to_asm`
 - there is an image descriptor
   - `radv_image_view_make_descriptor` initializes the image descriptor
@@ -499,6 +500,13 @@ Mesa RADV
   - `radv_aco_convert_shader_info` converts `radv_shader_info` to
     `aco_shader_info`
   - `aco_compile_shader` (or `llvm_compile_shader`) compiles nir to asm
+- `aco_compile_shader`
+  - `aco::select_program` translates nir to aco ir
+  - `aco_postprocess_shader` schedules aco ir, performs reg alloc, optimizes,
+    eliminates pseudo ops, etc.
+  - `aco::emit_program` emits the binary
+  - `radv_aco_build_shader_binary` allocs a `radv_shader_binary_legacy` to
+    hold the binary
 - prolog and epilog
   - I guess
     - vs can get inputs from fixed-function or from a "prolog" shader
@@ -544,52 +552,6 @@ Mesa RADV
     - it is nop when no prolog is needed
 - `radv_nir_lower_vs_inputs` calls lowers `lower_load_vs_input` or
   `lower_load_vs_input_from_prolog` depending on whether there is a vs prolog
-
-## ACO
-
-- `emit_load` emits load instructions
-  - `LoadEmitInfo` describes the load
-    - `offset` is an `Operand` which refers to a `Temp` or a immed value
-    - `const_offset` is an immed offset
-    - `soffset` is a `Temp` that holds yet another offset in sgpr
-    - `dst` is a `Temp`
-    - `num_components` is the number of components to load
-    - `component_size` is the size of a component in bytes
-    - `resource` is a `Temp` that holds the buffer resource descriptor
-    - `idx` is a `Temp` that holds the buffer index
-      - the descriptor defines a base and a stride
-      - the addr is `base + stride * idx + offset`
-    - `align_mul` and `align_offset` have the same meanings as nir intrinsic
-      alignment
-      - see `NIR_INTRINSIC_ALIGN_MUL` and `NIR_INTRINSIC_ALIGN_OFFSET`
-      - this is a guarantee on the address alignment
-    - when the buffer is swizzled (tiled),
-      - `split_by_component_stride` defaults to true and emits multiple load
-        instructions to load a component at a time
-      - `component_stride` is the stride between components
-      - `swizzle_component_size` is the size of a component
-    - more
-  - `EmitLoadParameters` describes the limitations of the load instruction
-    - `callback` is a function that emits the load instruction
-      - `align` is the alignment of the effective load addr with all things
-        considered
-    - `byte_align_loads` is true if the load instruction requires
-      dword-aligned addr for dword+ loads
-      - eg, when reading 4 bytes from offset 1, the load instruction will read
-        8 bytes from offset 0; the result needs to be right-shifted
-    - `supports_8bit_16bit_loads` is true if the load instruction supports 8b
-      and 16b loads
-      - smem is the only load instruction that does not support 8b/16b loads
-      - 8b and 16b loads are naturally aligned
-    - `max_const_offset_plus_one` is the max supported immed offset
-    - pre-defined `EmitLoadParameters`
-      - `lds_load_params` false
-      - `smem_load_params` true
-      - `mubuf_load_params` true
-      - `mtbuf_load_params` false
-      - `scratch_mubuf_load_params` false
-      - `scratch_flat_load_params` false
-      - `global_load_params` true
 
 ## Clears
 
