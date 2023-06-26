@@ -43,6 +43,7 @@ Food
   - butter: 227g (8oz)
   - nonfat green yogurt: 227g (8oz)
   - graham cracker crumbs: 114g
+  - Morton's Kosher Salt: 241g
 
 ## Salt
 

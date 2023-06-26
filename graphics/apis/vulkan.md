@@ -22,44 +22,45 @@ Vulkan
 - 1.3 was released in 2022
   - no new HW feature
 
-## Spec (1.2.149)
+## Chapter 3. Fundamentals
 
-- 2. Fundamentals
-  - 2.2. Execution Model
-    - work is submitted to queues using queue submission commands such as
-      vkQueueSubmit, vkQueueBindSparse, or vkQueuePresentKHR
-      - optionally take a list of semaphores for waiting and another list of
-        semaphores for signaling
-    - the work itself, as well as semaphore waiting/signaling, are all queue
-      operations
-    - queue operations on different queues have no implicit ordering
-      constraints and may execute in any order
-      - must use explicit ordering constraints if cross-queue ordering is
-        needed
-    - queue operations on the same queue also may execute in any order, except
-      when implicit ordering constraints apply
-      - vkQueueSubmit respects submission order and other implicit ordering
-        constraints
-        - other queue submission commands do not
-      - any queue operation cannot be reordered after a queue signal operation
-        - any memory write also becomes available with queue signal operation
-      - a queue wait operation cannot be reordered before a queue signal
-        operation sharing the same semaphore
-        - any memory write that is available also becomes visible
-    - commands recorded in a command buffer are either
-      - action command (draw, dispatch, clear, copy, begin/end renderpass)
-      - state command (bind pipelines, set dynamic states, etc.)
-      - sync command (set/wait events, barriers, render pass deps)
-    - more in 6.2.
-  - 2.3. Object Model
-    - the handle to a dispatchable object is a pointer which is unique during
-      the object's lifetime
-    - the handle to a non-dispatchable object is an opaque `uint64_t`
-      - it can be a pointer
-      - it can be an index to a pool (potentially non-unique if pool objects
-        are reference counted)
-      - it can be the object states tightly packed (thus non-unique)
-  - 2.3.1. Object Lifetime
+- 3.2. Execution Model
+  - Work is submitted to queues using queue submission commands that
+    typically take the form vkQueue* (e.g. vkQueueSubmit ,
+    vkQueueBindSparse)
+    - optionally take a list of semaphores upon which to wait before work
+      begins and a list of semaphores to signal once work has completed
+  - The work itself, as well as signaling and waiting on the semaphores are
+    all queue operations
+  - There are no implicit ordering constraints between queue operations on
+    different queues, or between queues and the host, so these may operate
+    in any order with respect to each other
+    - Explicit ordering constraints between different queues or with the
+      host can be expressed with semaphores and fences
+  - queue operations on the same queue also may execute in any order, except
+    when implicit ordering constraints apply
+    - vkQueueSubmit respects submission order and other implicit ordering
+      constraints
+      - other queue submission commands do not
+    - any queue operation cannot be reordered after a queue signal operation
+      - any memory write also becomes available with queue signal operation
+    - a queue wait operation cannot be reordered before a queue signal
+      operation sharing the same semaphore
+      - any memory write that is available also becomes visible
+  - commands recorded in a command buffer are either
+    - action command (draw, dispatch, clear, copy, begin/end renderpass)
+    - state command (bind pipelines, set dynamic states, etc.)
+    - sync command (set/wait events, barriers, render pass deps)
+  - more in 7.2.
+- 3.3. Object Model
+  - the handle to a dispatchable object is a pointer which is unique during
+    the object's lifetime
+  - the handle to a non-dispatchable object is an opaque `uint64_t`
+    - it can be a pointer
+    - it can be an index to a pool (potentially non-unique if pool objects
+      are reference counted)
+    - it can be the object states tightly packed (thus non-unique)
+  - 3.3.1. Object Lifetime
     - conceptually, an object has states and contents
       - states are immutable after object creation/allocation
       - contents can change
@@ -128,35 +129,36 @@ Vulkan
       - VkDescriptorSetLayout and vkCreatePipelineLayout
         - not true for some impls
       - VkDescriptorSetLayout and vkCreateDescriptorUpdateTemplate
-  - 2.3.2. External Object Handles
+  - 3.3.2. External Object Handles
     - a VkDevice defines a object handle scope
       - any handle not in scope is said to be external
       - an external handle is exported from the object in the source scope
       - an external handle can be imported to an in-scope handle
-  - 2.5. Command Syntax and Duration
-    - VkBool32 can only be 0 or 1
-    - commands that create/destroy objects take the form
-      `vkCreate*`/`vkDestroy*`
-      - either takes `VkAllocationCallbacks` as the last in-parameter
-    - commands that alloc/free objects from a pool take the form
-      `vkAllocate*`/`vkFree*`
-      - they use the pool's `VkAllocationCallbacks`
-    - `vkGet*` and `vkEnumerate*` results are invarant given the same
-      in-parameters, unless called out
-  - 2.6. Threading Behavior
-    - an object is immutable, internally synced, or externally synced
-      - immutable: no state change allowed thus no mutex needed
-      - internally synced: an internal mutex protects some mutable states
-      - externally synced: no two command use the same object at the same time
-    - some commands affect children objects that are enumerated or allocated
-      rather than created and the children objects are externally synced
-      - VkInstance and VkPhysicalDevice
-      - VkDevice and VkQueue
-      - VkDescriptorPool and VkDescriptorSet
-      - VkCommandPool and VkCommandBuffer
-    - some object can either be internally or externally synced
-      - `VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT`
-  - 2.7.2. Implicit Valid Usage
+- 3.5. Command Syntax and Duration
+  - VkBool32 can only be 0 or 1
+  - commands that create/destroy objects take the form
+    `vkCreate*`/`vkDestroy*`
+    - either takes `VkAllocationCallbacks` as the last in-parameter
+  - commands that alloc/free objects from a pool take the form
+    `vkAllocate*`/`vkFree*`
+    - they use the pool's `VkAllocationCallbacks`
+  - `vkGet*` and `vkEnumerate*` results are invarant given the same
+    in-parameters, unless called out
+- 3.6. Threading Behavior
+  - an object is immutable, internally synced, or externally synced
+    - immutable: no state change allowed thus no mutex needed
+    - internally synced: an internal mutex protects some mutable states
+    - externally synced: no two command use the same object at the same time
+  - some commands affect children objects that are enumerated or allocated
+    rather than created and the children objects are externally synced
+    - VkInstance and VkPhysicalDevice
+    - VkDevice and VkQueue
+    - VkDescriptorPool and VkDescriptorSet
+    - VkCommandPool and VkCommandBuffer
+  - some object can either be internally or externally synced
+    - `VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT`
+- 3.7. Valid Usage
+  - 3.7.2. Implicit Valid Usage
     - `VK_NULL_HANDLE` is for non-dispatchable objects; `NULL` is for
       dispatchable objects
     - `NULL` is allowed for pointers unless called out
@@ -174,114 +176,119 @@ Vulkan
     - drivers must ignore unknown pnext node
       - it might be valid to a layer who cannot strip it out
     - some clarifications on core versons and extensions
-  - 2.7.3. Return Codes
-    - return code is either success (>=0) or runtime error (<0); no
-      programming error
-    - on errors, driver can trash out-parameters (except sType and pNext)
-    - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
-      should enable validation layers to get details, or to file a bug against
-      the validation layers or the driver
-- 5. Command Buffers
-  - secondary command buffer inherits no state from the primary command
-    buffer
-    - except for render pass and subpass
-    - secondary command buffer must explicitly set all other states
-  - 5.4. Command Buffer Recording
-    - `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
-      - an impl might generate self-modifying commands when the flag is set
-        - how?
-      - an impl might skip CPU-intensive optimizations when the flag it set
-    - `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
-      - an impl might need to patch the last command of a secondary command
-        buffer to jump back to the address of its caller
-      - patching is not possible when the flag is set
-  - 5.7. Secondary Command Buffer Execution
-    - vkCmdExecuteCommands can be inside or outside of a render pass
-      - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
-        accordingly
-- 6. Synchronization and Cache Control
-  - there are five explicit synchronization mechanisms
-    - fences, semaphores, events, pipeline barriers, and render passes
-  - 6.1. Execution and Memory Dependencies
-    - an operation is an arbitrary amount of work to be executed on
-      - the host,
-      - a device, or
-      - an external entity such as presentation engine
-    - a synchronization command introduces, between two sets of operations,
-      - an execution dependency
-        - the first synchronization scope defines the first set of operations
-        - the second synchronization scope defines the second set of
-          operations
-      - a memory dependency
-        - the first access scope defines the first set of memory accesses
-        - the second access scope defines the second set of memory accesses
-        - this is needed to deal with memory caches and domains
-    - an execution dependency guarantees the first set of operations
-      happens-before the second set of operations
-      - i.e., the first set complete before the second set is initiated
-      - not enough for RAW hazard, when the first set writes and the second
-        set reads
-      - nor enough for WAW hazard
-    - types of memory access operations include
-      - an availability operation makes writes available to a memory domain
-        (e.g., vkFlushMappedMemoryRanges makes host writes available in host
-        domain)
-      - a memory domain operation makes writes available in one domain
-        available in another (e.g., `VK_ACCESS_HOST_WRITE_BIT` in source
-        access mask makes host writes available in device domain)
-      - a visibility operation makes writes available become visible to the
-        specified memory accesses (e.g., writes available in device domain are
-        made visibile to accesses defined by the destination access mask)
-    - a memory dependency is an execution dependency that includes availibitiy
-      and visibility operations such that
-      - the first set of operations (defined by the first sync scope)
-        happens-before the availibility operation
-      - the availibility operation happens before the visibility operation
-        - the availibility operation applies to memory accesses that are
-          defined the first access scope
-        - the visibility operation applies to memory accesses that are
-          defined the second access scope
-        - note that the sync scopes and the access scopes are different, but
-          the sync scopes often limit the access scopes
-      - the visibility operation happens-before the second set of operations
-        (defined by the second sync scope)
-  - 6.2. Implicit Synchronization Guarantees
-    - command buffers and submission order
-      - we need to give a meaning to the order in which commands are recorded
-        and submitted
-        - such that a draw command is not reordered before a state command it
-          depends on
-        - or two overlapping triangles are drawn in reverse order
-          - this is known as the primitive order and the rasterization order
-      - submission order essentially says that the commands must be executed
-        in the order that they are recorded and submitted
-        - except for commands in different subpasses of a render pass
-      - however, execution can overlap or be out-of-order
-        - as long as, for example, the primitive order is honored
-	- explicit sync is required to avoid overlapping or reordering
-	  - e.g., non-primitive WAR, such as ssbo, requires an execution
-	    dependency
-	  - e.g., non-primitive RAW/WAW, such as ssbo, requires a memory
-	    dependency
-    - semaphores and signal operation order
-      - we need to give a meaning to the order in which queue signal
-        operations are submitted
-        - such that two queue signal operations are not reordered
-      - signal operation order essentially says that the queue signal
-        operations must be executed in the order that they are submitted
-    - submission order and signal operation order are trivial
-      - they exist only because queue operations are allowed to be reordered
-        arbitrarily which is too wild; we need them as fundamental ordering
-        contraints
-      - they don't specify how a command buffer is ordered against its signal
-        operation
-        - that will be defined by the semaphore's execution dependency
-      - they also don't specify memory dependency
-        - say, we update an ssbo and sample from it; the submission order
-          specifies the execution dependency but there is still a memory
-          dependency that needs to be be specified
-        - `vkCmdPipelineBarrier` to the rescue
-  - 6.4.1. Semaphore Signaling
+- 3.8. VkResult Return Codes
+  - return code is either success (>=0) or runtime error (<0); no
+    programming error
+  - on errors, driver can trash out-parameters (except sType and pNext)
+  - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
+    should enable validation layers to get details, or to file a bug against
+    the validation layers or the driver
+
+## Chapter 6. Command Buffers
+
+- secondary command buffer inherits no state from the primary command
+  buffer
+  - except for render pass and subpass
+  - secondary command buffer must explicitly set all other states
+- 6.4. Command Buffer Recording
+  - `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
+    - an impl might generate self-modifying commands when the flag is set
+      - how?
+    - an impl might skip CPU-intensive optimizations when the flag it set
+  - `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
+    - an impl might need to patch the last command of a secondary command
+      buffer to jump back to the address of its caller
+    - patching is not possible when the flag is set
+- 6.7. Secondary Command Buffer Execution
+  - vkCmdExecuteCommands can be inside or outside of a render pass
+    - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
+      accordingly
+
+## Chapter 7. Synchronization and Cache Control
+
+- there are five explicit synchronization mechanisms
+  - fences, semaphores, events, pipeline barriers, and render passes
+- 7.1. Execution and Memory Dependencies
+  - an operation is an arbitrary amount of work to be executed on
+    - the host,
+    - a device, or
+    - an external entity such as presentation engine
+  - a synchronization command introduces, between two sets of operations,
+    - an execution dependency
+      - the first synchronization scope defines the first set of operations
+      - the second synchronization scope defines the second set of
+        operations
+    - a memory dependency
+      - the first access scope defines the first set of memory accesses
+      - the second access scope defines the second set of memory accesses
+      - this is needed to deal with memory caches and domains
+  - an execution dependency guarantees the first set of operations
+    happens-before the second set of operations
+    - i.e., the first set complete before the second set is initiated
+    - not enough for RAW hazard, when the first set writes and the second
+      set reads
+    - nor enough for WAW hazard
+  - types of memory access operations include
+    - an availability operation makes writes available to a memory domain
+      (e.g., vkFlushMappedMemoryRanges makes host writes available in host
+      domain)
+    - a memory domain operation makes writes available in one domain
+      available in another (e.g., `VK_ACCESS_HOST_WRITE_BIT` in source
+      access mask makes host writes available in device domain)
+    - a visibility operation makes writes available become visible to the
+      specified memory accesses (e.g., writes available in device domain are
+      made visibile to accesses defined by the destination access mask)
+  - a memory dependency is an execution dependency that includes availibitiy
+    and visibility operations such that
+    - the first set of operations (defined by the first sync scope)
+      happens-before the availibility operation
+    - the availibility operation happens before the visibility operation
+      - the availibility operation applies to memory accesses that are
+        defined the first access scope
+      - the visibility operation applies to memory accesses that are
+        defined the second access scope
+      - note that the sync scopes and the access scopes are different, but
+        the sync scopes often limit the access scopes
+    - the visibility operation happens-before the second set of operations
+      (defined by the second sync scope)
+- 7.2. Implicit Synchronization Guarantees
+  - command buffers and submission order
+    - we need to give a meaning to the order in which commands are recorded
+      and submitted
+      - such that a draw command is not reordered before a state command it
+        depends on
+      - or two overlapping triangles are drawn in reverse order
+        - this is known as the primitive order and the rasterization order
+    - submission order essentially says that the commands must be executed
+      in the order that they are recorded and submitted
+      - except for commands in different subpasses of a render pass
+    - however, execution can overlap or be out-of-order
+      - as long as, for example, the primitive order is honored
+  - explicit sync is required to avoid overlapping or reordering
+    - e.g., non-primitive WAR, such as ssbo, requires an execution
+      dependency
+    - e.g., non-primitive RAW/WAW, such as ssbo, requires a memory
+      dependency
+  - semaphores and signal operation order
+    - we need to give a meaning to the order in which queue signal
+      operations are submitted
+      - such that two queue signal operations are not reordered
+    - signal operation order essentially says that the queue signal
+      operations must be executed in the order that they are submitted
+  - submission order and signal operation order are trivial
+    - they exist only because queue operations are allowed to be reordered
+      arbitrarily which is too wild; we need them as fundamental ordering
+      contraints
+    - they don't specify how a command buffer is ordered against its signal
+      operation
+      - that will be defined by the semaphore's execution dependency
+    - they also don't specify memory dependency
+      - say, we update an ssbo and sample from it; the submission order
+        specifies the execution dependency but there is still a memory
+        dependency that needs to be be specified
+      - `vkCmdPipelineBarrier` to the rescue
+- 7.4. Semaphores
+  - 7.4.1. Semaphore Signaling
     - the semaphore signal operation is a synchronization command
       - it defines two synchronization scopes and their execution and memory
         dependencies
@@ -293,25 +300,27 @@ Vulkan
         before the batch and all prior signal operations are also executed
     - IOW, a command can be reorderd before a prior signal operation and but
       after its own signal operation
-  - 6.4.2. Semaphore Waiting
+  - 7.4.2. Semaphore Waiting
     - the first sync scope includes all semaphore signal operations that
       operate on the same semaphore
     - the second sync scope includes all commands in the batch
-  - 6.5. Events
-    - events can be used for fine-grained host/queue synchronization
-    - they can also be used as a "split" barrier
-      - say, we update an ssbo and sample from it; there is an irrelevant work
-        that we can insert before vkCmdPipelineBarrier to better utilize the
-        GPU
-      - when the irrelevant work is complex enough that might confuse
-        vkCmdPipelineBarrier or make it impractical, we can instead
-        vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
-      - the barrier is splitted into the signal half and wait half
-- 7. Render Pass
-  - 7.4. Render Pass Commands
-    - depending on VkSubpassContents, any subpass of a render pass either
-      execute only commands in the primary command buffer or only command the
-      secondary command buffers
+- 7.5. Events
+  - events can be used for fine-grained host/queue synchronization
+  - they can also be used as a "split" barrier
+    - say, we update an ssbo and sample from it; there is an irrelevant work
+      that we can insert before vkCmdPipelineBarrier to better utilize the
+      GPU
+    - when the irrelevant work is complex enough that might confuse
+      vkCmdPipelineBarrier or make it impractical, we can instead
+      vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
+    - the barrier is splitted into the signal half and wait half
+
+## Chapter 8. Render Pass
+
+- 8.4. Render Pass Commands
+  - depending on VkSubpassContents, any subpass of a render pass either
+    execute only commands in the primary command buffer or only command the
+    secondary command buffers
 
 ## Versions
 
