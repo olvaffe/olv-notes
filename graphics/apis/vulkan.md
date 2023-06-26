@@ -183,6 +183,11 @@ Vulkan
   - `VK_ERROR_UNKNOWN` is always a result of app bug or driver bug; the app
     should enable validation layers to get details, or to file a bug against
     the validation layers or the driver
+- 3.9. Numeric Representation and Computation
+  - only applies to computations outside of shader execution, , such as
+    texture image specification and sampling, and per-fragment operations
+    - requirements for shader execution differ and are specified by the
+      Precision and Operation of SPIR-V Instructions section
 
 ## Chapter 6. Command Buffers
 
@@ -321,6 +326,23 @@ Vulkan
   - depending on VkSubpassContents, any subpass of a render pass either
     execute only commands in the primary command buffer or only command the
     secondary command buffers
+
+## Appendix A: Vulkan Environment for SPIR-V
+
+- Precision and Operation of SPIR-V Instructions
+  - Precision of Individual Operations
+    - Correctly Rounded
+      - Operations described as "correctly rounded" will return the infinitely
+        precise result, x, rounded so as to be representable in
+        floating-point. The rounding mode is not specified, unless the entry
+        point is declared with the RoundingModeRTE or the RoundingModeRTZ
+        Execution Mode. These execution modes affect only correctly rounded
+        SPIR-V instructions. These execution modes do not affect
+        OpQuantizeToF16. If the rounding mode is not specified then this
+        rounding is implementation specific, subject to the following rules.
+        If x is exactly representable then x will be returned. Otherwise,
+        either the floating-point value closest to and no less than x or the
+        value closest to and no greater than x will be returned.
 
 ## Versions
 
