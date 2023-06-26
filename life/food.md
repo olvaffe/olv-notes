@@ -36,6 +36,13 @@ Food
     - 2 pt
   - gallon, gal.
     - 4 qt
+- 1 cup of "stuff" in american recipes
+  - note that 1 cup equals 16 tbsp.
+  - all-purpose flour: 120g to 140g
+  - granulated sugar: 200g
+  - butter: 227g (8oz)
+  - nonfat green yogurt: 227g (8oz)
+  - graham cracker crumbs: 114g
 
 ## Salt
 
