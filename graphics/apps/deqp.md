@@ -522,6 +522,16 @@ dEQP
 - `CopyImageToImage::checkTestResult` checks that the final pixel data written
   by the gpu copy match those emulated by cpu copy
 
+## Test Case: `dEQP-VK.spirv_assembly.instruction.compute.convertutof.uint64_to_float32`
+
+- `createInstructionTests` calls `createConvertComputeTests`
+  - `instruction` is `OpConvertUToF`
+  - `name` is `convertutof`
+  - `createConvertCases` creates a bunch of `ConvertCase`, which describes
+    test input/output/assembly/type/etc.
+  - `getVulkanFeaturesAndExtensions` checks features and exts
+  - a test of class `SpvAsmComputeShaderCase` is created
+
 ## Test Case: `dEQP-GLES31.functional.vertex_attribute_binding.usage.single_binding.unaligned_offset_elements_1_aligned_elements`
 
 - the test is `SingleBindingCase` with `FLAG_BUF_UNALIGNED_OFFSET` and
