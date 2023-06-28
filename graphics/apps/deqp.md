@@ -331,6 +331,12 @@ dEQP
   - for each pixel,
     - if outside of the draw rectangle, it should be the clear value `5`
     - if inside of the draw rectangle, it should be `1`
+- `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_16_64_6.samples_2.d16_unorm.depth_zero` is similar
+  - image size `16x64` view 3 layers
+  - `imageLayers` is 6, `viewLayers` is 3, and `resolveBaseLayer` is 0
+  - `renderArea` has offset `(10, 10)` and extent `(6, 54)`
+  - 
+  - 
 
 ## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.calibrated.*`
 

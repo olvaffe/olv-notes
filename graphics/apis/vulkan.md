@@ -327,6 +327,80 @@ Vulkan
     execute only commands in the primary command buffer or only command the
     secondary command buffers
 
+## Chapter 18. Queries
+
+- 18.1. Query Pools
+  - a `VkQueryPool` can hold `queryCount` queries of type `queryType`, both
+    specified by `VkQueryPoolCreateInfo`
+- 18.2. Query Operation
+  - each query in a query pool has
+    - a "status" that is either available or unavailable
+    - a "state" that holds numerical values
+    - both "status" and "state" are undefined initially
+  - `vkCmdResetQueryPool` or `vkResetQueryPool` resets queries in a query pool
+    - a reset sets "status" to unavailable and makes "state" undefined
+  - `vkCmdBeginQuery` and `vkCmdEndQuery`
+    - a query must begin and end in the same command buffer
+      - conceptually, because there are secondary command buffers and
+        `inheritedQueries` feature
+    - a query must either
+      - begin and end in the same subpass or
+      - begin and end outside of a render pass
+    - when `multiview` is enabled, a query must begin and end in the same
+      subpass
+      - the commands begin/end N queries at the same time, where N is the
+        number of views
+    - after begin, a query is considered active
+      - that is, after the begin command is executed on the queue, not after
+        the call returns
+      - an active query must not be reset
+      - two queries of the same type cannot be active at the same time
+        - this rule says that the hw can support 1 outstanding active query
+          for each type at a time
+    - after end, the "status" of the query becomes available
+      - only an active query can be ended
+  - `vkCmdCopyQueryPoolResults` or `vkGetQueryPoolResults` retrieves and
+    formats the results
+    - a query in a pool is just some storage for some opaque data
+    - these commands parse the opaque data, convert them to a standard
+      format, and write the results to the specified destination
+    - `VK_QUERY_RESULT_64_BIT` controls the results are in 64-bit or 32-bit uints
+    - `VK_QUERY_RESULT_WAIT_BIT` waits for `vkCmdEndQuery` of all specified
+      queries to be executed on the queue
+      - that is, it waits until all specified queries become available
+      - without it, and if any of the queries is unavailable, see
+        `VK_QUERY_RESULT_PARTIAL_BIT`
+    - `VK_QUERY_RESULT_WITH_AVAILABILITY_BIT` controls whether an additional
+      64-bit or 32-bit uint is written per query to indicate availability
+      (non-zero is available and 0 is unavailable)
+    - `VK_QUERY_RESULT_PARTIAL_BIT` controls handling of unavailable queries
+      - if a query is available, the result is final and well-defined
+      - if a query is unavailable, and if `VK_QUERY_RESULT_PARTIAL_BIT` is
+        set, the result is between 0 and the final value
+      - otherwise, the call may
+        - fail and return `VK_NOT_READY`
+        - succeed and the result is undefined
+- 18.3. Occlusion Queries
+  - `VK_QUERY_TYPE_OCCLUSION` counts samples that pass the per-fragment tests
+  - the result is a 32-bit or 64-bit uint
+  - if `VK_QUERY_CONTROL_PRECISE_BIT` is not set, the result can be any
+    non-zero value if any sample passes the per-fragment tests
+- 18.5. Timestamp Queries
+  - `VK_QUERY_TYPE_TIMESTAMP` reads the gpu clock counter
+  - the result is a 32-bit or 64-bit uint
+  - the counter may reset anytime except intra-command buffer or when
+    `VK_EXT_calibrated_timestamps` is enabled
+- 18.7. Transform Feedback Queries
+  - `VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT` counts primitives written
+    out by the SO hw as well as primitives that reach the SO hw
+  - the result is two 32-bit or 64-bit uints
+    - first one is count of prims written
+    - second one is count of prims that would be written if the buffer was
+      large enough
+- 18.8. Primitives Generated Queries
+  - `VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT` counts primitives generated,
+    regardless of whether they reach the SO hw or not
+
 ## Appendix A: Vulkan Environment for SPIR-V
 
 - Precision and Operation of SPIR-V Instructions
