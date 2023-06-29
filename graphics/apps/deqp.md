@@ -275,7 +275,7 @@ dEQP
 
 ## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
 
-- renderpass
+- `DepthStencilResolveTest::createRenderPass`
   - two attachments
     - first
       - `VK_FORMAT_D24_UNORM_S8_UINT`
@@ -296,7 +296,7 @@ dEQP
       `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
       - `depthResolveMode` is `VK_RESOLVE_MODE_NONE`
       - `stencilResolveMode` is `VK_RESOLVE_MODE_SAMPLE_ZERO_BIT`
-- pipeline
+- `DepthStencilResolveTest::createRenderPipeline`
   - `quad-vert` uses `gl_VertexIndex` to set `gl_Position` to the corners
   - `quad-frag` does
     - `if(gl_SampleID != pushConstants.sampleID) discard;`
@@ -332,11 +332,20 @@ dEQP
     - if outside of the draw rectangle, it should be the clear value `5`
     - if inside of the draw rectangle, it should be `1`
 - `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_16_64_6.samples_2.d16_unorm.depth_zero` is similar
-  - image size `16x64` view 3 layers
+  - image size `16x64`
   - `imageLayers` is 6, `viewLayers` is 3, and `resolveBaseLayer` is 0
   - `renderArea` has offset `(10, 10)` and extent `(6, 54)`
-  - 
-  - 
+  - `depthResolveMode` is `VK_RESOLVE_MODE_SAMPLE_ZERO_BIT`
+  - `verifyBuffer` is `VB_DEPTH`
+  - `clearValue.depth` is `1.0`
+  - `depthExpectedValue` is `0.04`
+  - `quad-geom` is used to draw to first 3 layers
+  - `quad-frag` writes `gl_FragDepth`
+    - sample 0 uses `0.04` and sample 1 uses `0.02`
+  - `DepthStencilResolveTest::verifyDepth` verifies that, for each pixel in
+    the first 3 layers,
+    - pixels outside of the render area are all `clearValue.depth`
+    - pixels inside the render area are all `depthExpectedValue`
 
 ## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.calibrated.*`
 
