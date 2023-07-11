@@ -112,3 +112,37 @@ XR (VR, AR, MR)
     - `vf` decodes a video file
     - `vive` for various vive devices
     - `wmr` for windows mixed reality headsets
+
+## Video
+
+- 360 videos
+  - the 360-degree scene is recorded using an omnidirectional camera
+    - e.g., with 2 lenses each cover 200 degrees horizontally
+  - stitching
+    - the images captured by the 2 lenses are stitched into a 360-degree
+      sphere
+  - storage
+    - the 360-degree sphere is projected onto a rectangular 2D frame, like
+      how the globe is projected onto a world map
+    - this is called equirectangular projection
+  - resolution
+    - with FOV of 120 degrees, we look at 1/3 of the frame at a time; a 6K 360
+      video feels like 2K
+  - playback
+    - the player is responsible to set the FOV and to project
+      - mouse events on pc and gyroscope events on handheld devices
+- 180 videos
+  - similar to 360 videos, but saves bandwidth
+- 3D videos
+  - the scene is recorded using 2 lenses from slightly different perspectives
+    - the image has 2 channels, like how a stereophonic audio has 2 channels
+    - it's called stereoscopic
+  - storage
+    - storing 2 channels (200% bandwidth, original quality)
+    - storing subsamples or anaglyph (100% bandwidth, low quality)
+    - storing 1 channel plus delta/depth/etc (~150% bandwidth, original
+      quality)
+  - playback
+    - the player can play back as
+      - anaglyph, which requires a 3d glass
+      - side-by-side, which requires a vr headset
