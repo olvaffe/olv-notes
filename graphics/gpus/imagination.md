@@ -113,13 +113,19 @@ Imagination PowerVR
       ebuilds build from source code
 - public source code
   - kernel driver is at
-    <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-5.15/drivers/gpu/drm/img-rogue/>
+    <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-5.15/drivers/gpu/drm/img-rogue/> and
+    <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-5.15/drivers/gpu/drm/mediatek/>
   - mesa dri driver is at
     <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/media-libs/mesa-img/files/0001-Add-pvr-dri-driver.patch>
     - it builds `pvr_dri.so` which loads proprietary `libpvr_dri_support.so`
     - there are `DRM_FORMAT_MOD_PVR_FBCDC_8x8_V7` and
       `DRM_FORMAT_MOD_PVR_FBCDC_16x4_V7`
     - `FBCDC` stands for frame buffer compression and decompression
+- DRM
+  - card 0 is `pvr`
+  - card 1 is `mediatek`
+  - minigbm users probably tries `pvr` and then `mediatek`.  Because minigbm
+    does not have a `pvr` backend, it uses the `mediatek` backend
 - vulkaninfo
   - `/etc/vulkan/icd.d/icdconf.json` points to `libVK_IMG.so`
     - `libusc.so` is Universal Shading Cluster? compiler backend?
