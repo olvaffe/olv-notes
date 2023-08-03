@@ -73,3 +73,25 @@ minijail
 - child calls `minijail_enter` again
   - preceded by `minijail_preenter`
   - still mounts, chroot, drop caps, seccomp, etc.
+
+## `minijail0` cmdline options
+
+- `minijail0` forks and execs the specified program in a sandbox
+- `-i` causes the parent process to exit
+- `-u` changes the uid
+- `-g` changes the gid
+- `-G` inherits the supplementary groups of the uid specified by `-u`
+- `-p` creates a pid namespace
+- `-v` creates a mount namespace
+- `-U` creates a user namespace
+- `-N` creates a cgroup namespace
+- `-l` creates an ipc namespace
+- `-r` remounts `/proc` ro
+- `-t` mounts tmpfs to `/tmp`
+- `-f` writes pid of the child to the specified file
+- `-P` chroots to the specified dir using `pivot_root`
+- `-b` bind-mounts the specified paths
+- `-k` mounts the specified paths
+- `-R` sets rlimits
+- `-n` sets `no_new_privs`
+- `-S` enables seccomp
