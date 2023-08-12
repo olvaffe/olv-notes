@@ -1,5 +1,43 @@
-IOMMU
-=====
+Kernel IOMMU
+============
+
+## Core
+
+- config
+  - `IOMMU_DEFAULT_DMA_STRICT`
+    - this is the default on arm
+    - `iommu.passthrough=0 iommu.strict=1`
+    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_DMA` and set
+      `iommu_dma_strict`
+  - `IOMMU_DEFAULT_DMA_LAZY`
+    - this is the default on x86
+    - `iommu.passthrough=0 iommu.strict=0`
+    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_DMA_FQ`
+  - `IOMMU_DEFAULT_PASSTHROUGH`
+    - `iommu.passthrough=1`
+    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_IDENTITY`
+- `iommu_subsys_init`
+
+## AMD
+
+- early init
+  - `pci_iommu_alloc` is called from x86 `mem_init`
+  - `amd_iommu_detect` calls `iommu_go_to_state` to transition from
+    `IOMMU_START_STATE` to `IOMMU_IVRS_DETECTED`
+    - this calls `detect_ivrs` to detect acpi IVRS table
+  - `x86_init.iommu.iommu_init` is set to `amd_iommu_init`
+- init
+  - `pci_iommu_init` is an initcall that calls `x86_init.iommu.iommu_init`
+  - `amd_iommu_init` transitions from `IOMMU_IVRS_DETECTED` to
+    `IOMMU_INITIALIZED`
+  - `early_amd_iommu_init`
+    - `init_iommu_all` calls `init_iommu_one` and `init_iommu_one_late` on
+      each iommu
+  - `early_enable_iommus` enables all iommus
+  - `amd_iommu_init_pci` initializes iommus as pci devices
+  - `enable_iommus_vapic`
+  - `enable_iommus_v2`
+  - `amd_iommu_enable_interrupts`
 
 ## How to Use
 
