@@ -80,6 +80,10 @@ dEQP
       non-android
     - `android/cts/master/mustpass.xml` is not used by android cts
   - `android/cts/AndroidTest.xml` is what android cts uses
+- branches
+  - `pie-cts-dev` is based on `vulkan-cts-1.1.0`
+  - `android11-tests-dev` is based on `vulkan-cts-1.2.1`
+  - `android13-tests-dev` is based on `vulkan-cts-1.3.1`
 
 ## `TestResults.qpa`
 
