@@ -1,10 +1,30 @@
 Android CTS
 ===========
 
-## CTS
+## Build
 
-- `adb shell settings put global verifier_verify_adb_installs 0`
-- `adb shell settings put global package_verifier_enable 0`
+- <https://source.android.com/docs/compatibility/cts/development>
+  - `repo init ...`
+  - `. build/envsetup.sh`
+  - `lunch aosp_x86_64`
+  - `m cts`
+  - `cd out/host/linux-x86/cts/android-cts`
+- branches
+  - `android10-tests-dev`, `android11-tests-dev`, and so on are for
+    developments
+  - `android10-tests-release`, `android11-tests-release`, and so on merge
+    from the dev branches to make quarterly releases
+- old branches
+  - `pie-cts-dev` and `pie-cts-release`
+  - iirc, `prebuilts/misc/linux-x86/flex` might be too old
+    - copy the one in the host to here
+
+## Run
+
+- <https://source.android.com/compatibility/cts/downloads.html>
+- permissions
+  - `adb shell settings put global verifier_verify_adb_installs 0`
+  - `adb shell settings put global package_verifier_enable 0`
 - `./cts-tradefed run commandAndExit cts-dev -m <module> -t <CLASS>#<METHOD>`
   - this runs the primary abi
     - for other abis, specify `--abi` or `-a`
@@ -12,27 +32,15 @@ Android CTS
       - `arm64-v8a`
   - `-t` can be replaced by
     `--module-arg 'CtsGraphicsTestCases:include-filter:android.graphics.cts.VulkanFeaturesTest*'`
-- <https://source.android.com/compatibility/cts/downloads.html>
-  - <https://android.googlesource.com/platform/tools/tradefederation/>
-    - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/testtype/suite/BaseTestSuite.java>
-    - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/command/CommandOptions.java>
-  - <https://android.googlesource.com/platform/cts/>
-    - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
-    - for fastest runs, use `cts-dev` plan
-- build cts
-  - <https://source.android.com/docs/compatibility/cts/development>
-  - `. build/envsetup.sh`
-  - `make cts -j192 TARGET_PRODUCT=aosp_arm64`
-  - `cd out/host/linux-x86/cts/android-cts/tools`
-  - branches
-    - `android10-tests-dev`, `android11-tests-dev`, and so on are for
-      developments
-    - `android10-tests-release`, `android11-tests-release`, and so on merge
-      from the dev branches to make quarterly releases
-  - old branches
-    - `pie-cts-dev` and `pie-cts-release`
-    - iirc, `prebuilts/misc/linux-x86/flex` might be too old
-      - copy the one in the host to here
+
+## Sources
+
+- <https://android.googlesource.com/platform/tools/tradefederation/>
+  - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/testtype/suite/BaseTestSuite.java>
+  - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/command/CommandOptions.java>
+- <https://android.googlesource.com/platform/cts/>
+  - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
+  - for fastest runs, use `cts-dev` plan
 
 ## graphics-related modules
 
