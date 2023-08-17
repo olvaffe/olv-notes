@@ -1213,3 +1213,83 @@ Vulkan
       pipeline being created should have LTO applied on the pipeline libraries
       - on the other hand, when the flag is omitted, the pipeline should be
         fast-linked
+
+## Coordinates
+
+- fixed-function vertex processing
+  - clip coordinates
+    - this is the coordinates of `gl_Position`
+  - primitive clipping
+    - view volume
+      - it is `[-w, w]` for x and y
+      - it is `[0, w]` for z by default
+    - cull volume and user-defined culling
+      - `gl_CullDistance` is an array of `maxCullDistances` floats
+        - positive is inside, zero is on, and negative is outside
+      - if `gl_CullDinstance[i]` is negative for all vertices of a primitive, the
+        primitive is discarded
+    - clip volume and user-defined clipping
+      - `gl_ClipDistance` is an array of `maxClipDistances` floats
+        - positive is inside, zero is on, and negative is outside
+      - if `gl_ClipDinstance[i]` is negative for any vertex of a primitive, the
+        primitive is clipped
+  - normalized device coordinates
+    - in clip coordinates, dividing xyz by w gives NDC
+  - framebuffer coordinates
+    - a viewport is defined by
+      - `x` and `y`
+      - `width` and `height`
+      - `minDepth` and `maxDepth`
+    - ndc coordinates are mapped to framebuffer coordinates using viewports
+  - knobs for z
+    - `VK_EXT_depth_clip_control` has `negativeOneToOne`
+      - when true, the view volume for z is `[-w, w]`
+    - core has `depthClamp`
+      - when false, z is clipped by the clip volume
+      - when true, z is not clipped and is instead clamped by viewports
+    - `VK_EXT_depth_clip_enable` has `depthClipEnable`
+      - this provides explicit control for clipping, taking precedence over
+        `depthClamp`
+    - `VK_EXT_depth_range_unrestricted`
+      - viewport `minDepth` and `maxDepth` must be in `[0.0, 1.0]` by default
+      - when this extension is supported, they can be arbitrary
+      - this does not affect depth clipping, but only depth clamping
+- rasterization
+  - depth bias
+    - an offset (bias) can be added to z of framebuffer coordinates
+  - knobs for depth bias
+    - core has `depthBiasEnable`
+      - when false, no bias is applied
+    - core has `depthBiasConstantFactor`, `depthBiasClamp`, `depthBiasSlopeFactor`
+      - the bias is roughly given by
+        `m * depthBiasSlopeFactor + r * depthBiasConstantFactor`, clampped by
+        `depthBiasClamp`
+      - `m` is the slope of z
+      - `r` is implementation-defined
+    - `VK_EXT_depth_bias_control` has `depthBiasRepresentation` and
+      `depthBiasExact`
+      - they give explicit control over `r`
+- fragment operations
+  - depth replacement
+    - it replaces z in framebuffer coordinates by `gl_FragDepth`
+  - depth bounds test
+    - when enabled, and if z value in the depth attachment is outside of
+      `[minDepthBounds, maxDepthBounds]`, the sample is discarded
+  - depth test
+    - depth clamping and range adjustment
+      - z in framebuffer coordinates is a float
+        - with depth clipping or depth clamping, and with sane `gl_FragDepth`,
+          it should be between `[minDepth, maxDepth]`
+        - otherwise, it is arbitrary
+      - `VK_EXT_depth_clamp_zero_one`
+        - when enabled,
+          - if the attachment is D32 float, z is unchanged
+          - otherwise, z is clamped to `[0.0, 1.0]`
+        - when disabled,
+          - if z is outside of `[minDepth, maxDepth]`, it becomes undefined
+          - if the attachment is unorm and z is outside of `[0.0, 1.0]`, it
+            becomes undefined
+    - depth comparison
+      - core has `depthTestEnable` and `depthCompareOp`
+    - depth attachment write
+      - core has `depthWriteEnable`
