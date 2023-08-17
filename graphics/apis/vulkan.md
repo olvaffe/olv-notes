@@ -1162,3 +1162,54 @@ Vulkan
     operations on shared and payload memory
   - `shaderFloat16` specifies support for 16-bit floats
   - `shaderInt8` specifies support for 8-bit ints
+
+## `VK_KHR_pipeline_library`
+
+- a pipeline library is a `VkPipeline` that cannot be used directly
+- to create a pipeline library, specify `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR`
+  when creating the pipeline
+- to create a pipeline from pipeline libraries,
+  `VkPipelineLibraryCreateInfoKHR` to `VkGraphicsPipelineCreateInfo`
+
+## `VK_EXT_graphics_pipeline_library`
+
+- init
+  - `VkGraphicsPipelineLibraryCreateInfoEXT`
+    - `graphicsPipelineLibrary` is true if gpl is supported
+    - this feature query exists because the extension might be promoted to core
+  - `VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT`
+    - `graphicsPipelineLibraryFastLinking` is true if creating a pipeline from
+      pipeline libraries is cheap without
+      `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT`
+    - `graphicsPipelineLibraryIndependentInterpolationDecoration` is true if
+      interpolation decorations of vs outs and fs ins do not need to match
+- shader module is deprecated
+  - `VkShaderModuleCreateInfo` can be chained to `VkPipelineShaderStageCreateInfo` directly
+- pipeline layout
+  - `VkPipelineLayoutCreateInfo` gains a new flag,
+    `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
+  - vs and fs may need different descriptor sets.  When compiling them
+    independently, `VkPipelineLayout` must be specified twice
+    - one option is to use a full `VkPipelineLayout` and specify the same
+      layout
+    - another option is to use two partial `VkPipelineLayout`s, which must be
+      created with `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
+- pipeline
+  - `VkGraphicsPipelineLibraryCreateInfoEXT`
+    - `flags` specifies a subset of the graphics pipeline to compile
+      - there are 4 parts
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT`
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT`
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT`
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT`
+    - when this struct is omitted,
+      - if not doing pipeline libraries, `flags` is assumed to include all bits
+      - if doing pipeline libraries, `flags` is assumed to include no bit
+  - `VkGraphicsPipelineCreateInfo` gains 2 new flags
+    - `VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT`
+      specifies that the pipeline library being created should retain info for
+      LTO later
+    - `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT` specifies that the
+      pipeline being created should have LTO applied on the pipeline libraries
+      - on the other hand, when the flag is omitted, the pipeline should be
+        fast-linked
