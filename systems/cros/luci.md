@@ -220,3 +220,32 @@ Chrome OS CI
     - `adjustLighting:    true,`
     - `liveCaptions:      true,`
     - `noiseCancellation: true,`
+- flow
+  - restart ui
+  - log in as crosuicujtest1@gmail.com
+  - disable play store
+  - wait for cpu cooldown
+  - create a window and create a meet
+  - add 1 bot
+  - zoom out to 50%
+  - create a window and create a doc
+  - show the two windows side-by-side
+  - present the doc in meet
+  - keep typing into doc
+  - after a while, add 2 more bots
+  - after a while, add 12 more bots
+  - after 10m, done
+
+## `tast.ui.LoginPerf.ash_chrome`
+
+- flow
+  - restart ui
+  - log in as cros.gaia.testing.13@gmail.com
+  - opt in to play store
+  - wait for arc to init
+  - sign out
+  - restart ui
+  - repeat
+    - sign in and create two windows showing animations
+    - sign out
+    - restart ui
