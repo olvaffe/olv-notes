@@ -235,6 +235,13 @@ Chrome OS CI
   - after a while, add 2 more bots
   - after a while, add 12 more bots
   - after 10m, done
+- `results-chart.json` metrics
+  - `Power.system` and `Power.t`
+    - this shows power consumption in W at various time points in S
+  - `EventLatency.KeyPressed.TotalLatency`
+    - this shows keypress latentency in uS
+  - `Graphics.Smoothness.PercentDroppedFrames3.AllSequences`
+    - this shows frame drop rate in percentage
 
 ## `tast.ui.LoginPerf.ash_chrome`
 
