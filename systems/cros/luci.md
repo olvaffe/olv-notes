@@ -153,3 +153,29 @@ Chrome OS CI
     - it decodes the first `framesPerIteration` (200) frames
       `measurementIterations` (5) times
     - it measures the decode time to calculate the fps
+
+## `tast.ui.MeetCUJ`
+
+- `meetTest`
+  - `bots` is an array of bot counts
+    - the test seesion will be divided into N phases
+    - each phase takes `duration / N` minutes and has `bots[i]` bots
+  - `layout` picks meet layout (`TiledLayout` or `SpotlightLayout`)
+  - `present` presents the doc or jamboard window
+  - `docs` creates a doc window
+  - `jamboard` creates a jamboard window
+  - `split`
+  - `cam` turns the camera on
+  - `effects` enables meet effects
+    - `Apply visual effects`, `Blur your background`
+  - `backgroundBlur` enables platform bg blur
+  - `adjustLighting` enables platform relighting
+  - `liveCaptions` turns on platform live captioning
+  - `noiseCancellation` enables platform noise cancellation
+  - `zoomOut` zooms out on both the browser and display
+    - `ctrl+-` and sleep 3s, for 5 times
+  - `tabSwitchDocs` switches between Docs and Meet
+    - `alt+tab`, sleep 10s, `alt+tab`
+  - `duration` is by default 10 minutes
+  - `browserType` is ash or lacros
+  - `botsOptions`
