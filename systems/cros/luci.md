@@ -179,3 +179,44 @@ Chrome OS CI
   - `duration` is by default 10 minutes
   - `browserType` is ash or lacros
   - `botsOptions`
+- subtests
+  - `tast.ui.MeetCUJ.docs`
+    - `bots:        []int{1, 3, 15},`
+    - `layout:      googlemeet.TiledLayout,`
+    - `present:     true,`
+    - `docs:        true,`
+    - `split:       true,`
+    - `cam:         true,`
+    - `zoomOut:     true,`
+    - `effects:     true,`
+    - `browserType: browser.TypeAsh,`
+  - `tast.ui.MeetCUJ.docs_lacros`
+    - `browserType: browser.TypeLacros,`
+  - `tast.ui.MeetCUJ.docs_no_effects`
+    - `effects:           false,`
+  - `tast.ui.MeetCUJ.docs_audio_effects`
+    - `effects:           false,`
+    - `liveCaptions:      true,`
+    - `noiseCancellation: true,`
+  - `tast.ui.MeetCUJ.docs_noise_cancellation`
+    - `effects:           false,`
+    - `noiseCancellation: true,`
+  - `tast.ui.MeetCUJ.docs_live_captions`
+    - `effects:           false,`
+    - `liveCaptions:      true,`
+  - `tast.ui.MeetCUJ.docs_background_blur`
+    - `effects:           false,`
+    - `backgroundBlur:    true,`
+  - `tast.ui.MeetCUJ.docs_adjust_lighting`
+    - `effects:           false,`
+    - `adjustLighting:    true,`
+  - `tast.ui.MeetCUJ.docs_video_effects`
+    - `effects:           false,`
+    - `backgroundBlur:    true,`
+    - `adjustLighting:    true,`
+  - `tast.ui.MeetCUJ.docs_platform_effects`
+    - `effects:           false,`
+    - `backgroundBlur:    true,`
+    - `adjustLighting:    true,`
+    - `liveCaptions:      true,`
+    - `noiseCancellation: true,`
