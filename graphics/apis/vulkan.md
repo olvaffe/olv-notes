@@ -401,6 +401,98 @@ Vulkan
   - `VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT` counts primitives generated,
     regardless of whether they reach the SO hw or not
 
+## Chapter 29. Fragment Operations
+
+- coverage mask
+  - there is a coverage mask associated with each fragment produced by
+    rasterization
+  - if a frag op results in a coverage mask of 0, the fragment is discard and
+    no further frag ops are performed
+- 29.1. Discard Rectangles Test
+  - `VK_EXT_discard_rectangles`
+  - if a sample falls inside or outside (depending on
+    `VkDiscardRectangleModeEXT`) any discard rectangle, it is discarded
+- 29.2. Scissor Test
+  - if a sample falls outside the scissor rectangle, it is discarded
+- 29.3. Exclusive Scissor Test
+  - `VK_NV_scissor_exclusive`
+  - if a sample falls inside the scissor rectangle, it is discarded
+- 29.4. Sample Mask Test
+  - samples not in `VkPipelineMultisampleStateCreateInfo::pSampleMask` are
+    discarded
+- 29.5. Fragment Shading
+  - fragment shaders are invoked for each fragment, subjected to these rules
+    - a fs must not be executed if the fragment has been discarded
+    - a fs may not be executed if it has no side-effect
+      - e.g., the fragment will be discarded and the fs has no storage op
+      - or, a following fragment will override all side-effects
+    - otherwise, a fs must be executed and
+      - if sampling shading is enabled and requires multiple executions, the
+        fs must be executed as specified
+      - Each covered sample must be included in at least one fragment shader invocation.
+  - `SampleMask`
+    - reading returns samples covered by this execution
+    - writing updates the sample mask (similar to
+      `VkPipelineMultisampleStateCreateInfo::pSampleMask`)
+  - `VK_EXT_shader_tile_image` is used with dynamic rendering to replace
+    render pass
+  - `FragDepth`
+    - writing replaces the depth value for all samples in `SampleMask`
+  - `VK_EXT_shader_stencil_export`
+  - `VK_EXT_fragment_shader_interlock`
+- 29.6. Multisample Coverage
+  - samples not in `SampleMask` are discarded
+  - `alphaToCoverageEnable` and `alphaToOneEnable`
+    - only applies to output 0 and only applies to float
+    - `alphaToCoverageEnable` generates a sample mask based on the alpha value
+      of the fragment, and is ANDed with the coverage mask
+    - `alphaToOneEnable` replaces alpha value by 1
+- 29.7. Depth and Stencil Operations
+- 29.8. Depth Bounds Test
+  - samples whose corresponding depth values in the attachment are outside of
+    `[minDepthBounds, maxDepthBounds]` are discarded
+- 29.9. Stencil Test
+- 29.10. Depth Test
+- 29.11. Representative Fragment Test
+  - `VK_NV_representative_fragment_test`
+- 29.12. Sample Counting
+  - occulusion query counter is incremented for each sample
+- 29.13. Fragment Coverage To Color
+  - `VK_NV_fragment_coverage_to_color`
+- 29.14. Coverage Reduction
+  - when `rasterizationSamples` is greater than the fb samples
+
+## Chapter 48. Formats
+
+- 48.1. Format Definition
+  - Color formats must be represented in memory in exactly the form indicated
+    by the format’s name.
+    - depth formats are opaque and their memory representations are more relaxed
+  - Compatible Formats
+    - Uncompressed color formats are compatible with each other if they occupy
+      the same number of bits per texel block as long as neither or both are
+      alpha formats
+    - Compressed color formats are compatible with each other if the only
+      difference between them is the numeric format of the uncompressed pixels
+    - Each depth/stencil format is only compatible with itself
+  - Size Compatibility
+    - Color formats with the same texel block size are considered
+      size-compatible as long as neither or both are alpha formats
+- 48.3. Required Format Support
+  - Mandatory format support
+    - sub-byte components
+    - 1-3 byte-sized components
+    - 4 byte-sized components
+    - 10- and 12-bit components
+    - 16-bit components
+    - 32-bit components
+    - 64-bit/uneven components
+    - depth/stencil with `VK_IMAGE_TYPE_2D`
+    - BC compressed formats with `VK_IMAGE_TYPE_2D` and `VK_IMAGE_TYPE_3D`
+    - ETC2 and EAC compressed formats with `VK_IMAGE_TYPE_2D`
+    - ASTC LDR compressed formats with `VK_IMAGE_TYPE_2D`
+  - Formats requiring sampler Y′CBCR conversion for `VK_IMAGE_ASPECT_COLOR_BIT`
+
 ## Appendix A: Vulkan Environment for SPIR-V
 
 - Precision and Operation of SPIR-V Instructions
