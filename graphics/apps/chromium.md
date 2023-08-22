@@ -452,6 +452,81 @@ Chromium Browser
     - I think this can also promote some frames to hw overlays and skip gpu
       composition for them
   - `display_embedder` contains platform-specific code for display
+- I have a trace for chrome playing a video
+  - it appears that `Chrome_ChildIOThread` is the io thread
+  - renderer: `Chrome_ChildIOT` wakes up (timer-based?)
+  - renderer: `VideoFrameCompo` wakes up (sw-decode a frame?)
+  - renderer: `Chrome_ChildIOT` wakes up (submits frame to gpu process?)
+  - gpu: `Chrome_ChildIOThread` wakes up and calls `FlushDeferredRequests`
+    - gpu: `CrGpuMain` calls `ExecuteDeferredRequest` in response
+  - renderer: `Chrome_ChildIOT` wakes up (submission acked?)
+  - renderer: `VideoFrameCompo` wakes up (more work submitted?)
+  - gpu: `Chrome_ChildIOThread` wakes up
+  - gpu: `VizCompositorThread` wakes up to `Surface::CommitFrame`,
+    `DisplayScheduler::DrawAndSwap`, and `SkiaRenderer::SwapBuffers`
+  - gpu: `CrGpuMain` wakes up to `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+  - gpu: `DrmThread` wakes up to `DrmThread::SchedulePageFlip` and
+    `DrmThread::OnPlanesReadyForPageFlip`
+    - the kernel creates a crtc fence that is signaled on next vblank
+  - gpu: `DrmThread` wakes up to `OnDrmEvent` (after the crtc fence signals)
+  - gpu: `CrGpuMain` wakes up
+    - this probably marks the previous buffer available
+  - gpu: `VizCompositorThread` wakes up
+- in this video playback trace,
+  - there is a new frame every ~33ms
+    - this is likely the fps of the video stream
+    - a flip is scheduled every other vsync
+  - sometimes there is an extra frame update
+    - this is likely from non-video frame change
+    - an extra flip is scheduled
+  - pseudo events
+    - `DisplayScheduler:pending_swaps` starts slightly before
+      `SkiaRenderer::SwapBuffers` and ends slightly after
+      `DrmThread::OnPlanesReadyForPageFlip`
+    - `Graphics.Pipeline.DrawAndSwap`
+      - start early in `DisplayScheduler::DrawAndSwap`
+      - `draw` phase corresponds to `DirectRenderer::DrawFrame`
+      - `WaitForSwap` phase starts before `SkiaRenderer::SwapBuffers` and ends
+        in `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+      - `Swap` phase starts in `SkiaOutputSurfaceImplOnGpu::SwapBuffers` and
+        ends after `DrmThread::OnPlanesReadyForPageFlip`
+      - `WaitForPresentation` phase starts after
+        `DrmThread::OnPlanesReadyForPageFlip` and ends in `OnDrmEvent`
+- I have a trace for chrome showing camera preview
+  - when a capture completes
+    - with capture time of 33ms and a queue of 3 captures, a capture completes
+      99ms later after scheduled
+  - `cros_camera_service`: `Capture request` wakes up to
+    - `CameraClient::RequestHandler::WriteStreamBuffers` 
+    - `CameraDeviceAdapter::Notify`
+      - this wakes up `DefaultCaptureR` which wakes up `EffectsGlThread`
+    - `CameraDeviceAdapter::ProcessCaptureResult`
+      - this wakes up `DefaultCaptureR` again which wakes up
+        `EffectsGlThread`, `CameraCallbackO`, and `FenceSyncThread`
+      - this also wakes up `CameraMonitor`
+  - main: `Chrome_ChildIOThread` and `CameraDeviceIpcThread0` wake up to
+    - schedule another capture
+      - `cros_camera_service`: `MojoIpcThread` wakes up
+      - `cros_camera_service`: `CameraDeviceOps` wakes up to
+        `CameraDeviceAdapter::ProcessCaptureRequest`
+    - notify renderer about the current capture
+      - the rest is similar to the video playback trace above
+- I have a trace for chrome showing camera preview with effects
+  - `cros_camera_service`: `Capture request` wakes up and calls
+    `CameraDeviceAdapter::ProcessCaptureResult`
+  - `cros_camera_service`: `DefaultCaptureR` wakes up and calls
+    `StreamManipulatorManager::ProcessCaptureResultOnStreamManipulator`
+  - `cros_camera_service`: `EffectsGlThread` wakes up and calls
+    `EffectsStreamManipulatorImpl::ProcessCaptureResult` which calls
+    `EffectsStreamManipulatorImpl::RenderEffect`
+    - it calls `GpuImageProcessor::NV12ToRGBA` followed by `glFinish` to convert yuv to
+      rgb
+    - it calls `EffectsPipeline::ProcessFrame` which is another beast
+    - on effects pipeline completion,
+      `EffectsStreamManipulatorImpl::PostProcess` is called
+      - this calls `GpuImageProcessor::RGBAToNV12` followed by `glFinish` to
+        convert rgb back to yuv
+    - on skyrim, it easily takes >30ms
 
 ## GPU and Skia
 
