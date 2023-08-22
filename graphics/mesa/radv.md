@@ -645,3 +645,65 @@ Mesa RADV
       - I guess when those bits are set, the clear value from the
         `DB_STENCIL_CLEAR` and `DB_DEPTH_CLEAR` registers rather than from the
         fs
+
+## Performance Counters
+
+- when a physical device is created, `ac_init_perfcounters` is called to
+  initialize hw counters
+- counter enumeration returns an array of pseudo counters
+  - all pseudo counters are
+    - `VK_PERFORMANCE_COUNTER_SCOPE_COMMAND_KHR`
+    - `VK_PERFORMANCE_COUNTER_STORAGE_FLOAT64_KHR`
+    - `VK_PERFORMANCE_COUNTER_DESCRIPTION_CONCURRENTLY_IMPACTED_BIT_KHR`
+  - `radv_init_perfcounter_descs` initializes the pseudo counters
+    - the value of a pseudo counter is calculated from a list of pseudo regs
+    - `radv_perfcounter_op` defines the calculations (sum, max, etc.)
+    - a pseudo reg is a 32-bit value
+      - bit 31: constant
+        - if set, the lower 31 bits are a constant uint
+        - if clear, see below
+      - bit 16..30: block
+        - `enum ac_pc_gpu_block`
+      - bit0..15: selector (defined by hw)
+- multi-pass queries
+  - when a query reads X pseudo counters, it is translated to read Y pseudo
+    regs
+  - if a pseudo reg is non-constant, it belongs to some `ac_pc_gpu_block`
+  - there is a limit on how many hw counters can be active at a time for each
+    gpu block
+  - if a query requires more hw counters than a gpu block has, the query is
+    multi-pass
+  - `radv_get_counter_registers` translates pseudo counters to pseudo regs
+  - `radv_get_num_counter_passes` calculates the pass count
+- when the perf query feature is enabled,
+  - `device->perf_counter_bo` is allocated
+  - `device->perf_counter_lock_cs` is allocated
+- when a query pool for `VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR` is created, a
+  `radv_pc_query_pool` rather than a `radv_query_pool` is created
+  - `radv_pc_init_query_pool` initializes the query pool
+    - `radv_get_counter_registers` translates pseudo counters to pseudo regs
+    - `radv_get_num_counter_passes` inits pass count
+    - pseudo regs are translated to hw regs
+    - a hw reg can have N instances
+      - when there are X units in Y SEs, `N = X * Y`
+    - `pool->stride` is the size of 1 query
+- profiling lock uses `AMDGPU_CTX_OP_SET_STABLE_PSTATE` to set
+  `AMDGPU_CTX_STABLE_PSTATE_PEAK`
+- begin/end query
+  - `radv_pc_begin_query`
+    - it writes 0 to offset `PERF_CTR_BO_FENCE_OFFSET` of `device->perf_counter_bo`
+    - it sets `R_036020_CP_PERFMON_CNTL`, `R_037390_RLC_PERFMON_CLK_CNTL`,
+      `R_031100_SPI_CONFIG_CNTL`, and `R_036780_SQ_PERFCOUNTER_CTRL`
+    - it emits `PKT3_COND_EXEC` based on offset `PERF_CTR_BO_PASS_OFFSET` of
+      `device->perf_counter_bo` to select different counters
+    - `radv_pc_stop_and_sample` takes a snapshot
+  - `radv_pc_end_query`
+    - it writes 1 to offset `PERF_CTR_BO_FENCE_OFFSET` of `device->perf_counter_bo` and waits
+    - `radv_pc_stop_and_sample` takes another snapshot
+- submit
+  - `radv_create_perf_counter_lock_cs` creates two shorts cs to be executed
+    before and after
+    - they manipulate offset `PERF_CTR_BO_LOCK_OFFSET` and
+      `PERF_CTR_BO_PASS_OFFSET` for multi-pass queries
+- getting result
+  - `radv_pc_get_results` performs the calculations

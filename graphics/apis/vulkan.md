@@ -1306,6 +1306,37 @@ Vulkan
       - on the other hand, when the flag is omitted, the pipeline should be
         fast-linked
 
+## `VK_KHR_performance_query`
+
+- this mainly adds `VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR` query type
+  - the query type usually reads counter values at begin and end
+- features and properties
+  - `performanceCounterQueryPools` supports perf queries
+  - `performanceCounterMultipleQueryPools` supports multiple query pools for
+    perf queries
+  - `allowCommandBufferQueryCopies` supports `vkCmdCopyQueryPoolResults` for
+    perf queries
+- `vkAcquireProfilingLockKHR` and `vkReleaseProfilingLockKHR` 
+  - to avoid counter value reset due to device suspend, the profiling lock
+    must be held
+  - strangely, it must be held before `vkBeginCommandBuffer`
+- `vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR`
+  - enumerates available counters on a queue family
+  - `VkPerformanceCounterKHR`
+    - `unit` is generic, percentage, ns, bytes, bytes-per-second, kelvin,
+      watts, volts, amps, hertz, cycles, etc.
+    - `scope` is cmdbuf, renderpass, command, etc.
+    - `storage` is int32/64, uint32/64, float32/64
+    - `uuid` is the uuid of the counter
+  - `VkPerformanceCounterDescriptionKHR`
+    - `flags` is for various things such as if a counter affects perf
+    - `name`/`category`/`description`
+- `vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR`
+- `vkCreateQueryPool`
+  - `VkQueryPoolPerformanceCreateInfoKHR` specifies the counters to enable
+- `vkQueueSubmit`
+  - `VkPerformanceQuerySubmitInfoKHR` specifies the counter pass index
+
 ## Coordinates
 
 - fixed-function vertex processing

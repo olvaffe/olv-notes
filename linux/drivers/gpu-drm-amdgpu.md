@@ -220,6 +220,10 @@ DRM amdgpu
     - there are only 3 levels: hw max, hw min, and 700
       (`RENOIR_UMD_PSTATE_GFXCLK`)
   - or, cat `pp_od_clk_voltage` and echo to reprogram the table
+    - for example,
+      - `echo 's 0 1500' > pp_od_clk_voltage`
+      - `echo 's 1 1500' > pp_od_clk_voltage`
+      - `echo 'c' > pp_od_clk_voltage`
     - on renoir, `set_fine_grain_clk_vol` is NULL, `odn_edit_dpm_table` points
       to `smu_od_edit_dpm_table` which calls `renoir_od_edit_dpm_table` to set
       `SMU_MSG_SetSoftMaxGfxClk` and `SMU_MSG_SetHardMinGfxClk`
