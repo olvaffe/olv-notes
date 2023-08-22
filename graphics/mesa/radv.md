@@ -10,17 +10,8 @@ Mesa RADV
   - `RADV_DEBUG=shaders` dumps shader disassembly
 - `RADV_PERFTEST` for radv perf flags
 - `ACO_DEBUG` for compiler debug flags
-- `RADV_THREAD_TRACE*` generates SQTT trace data for RGP (radeon gpu profiler)
-  - `RADV_THREAD_TRACE=100` dumps the SQTT trace for frame #100
-    - `radv_handle_sqtt` is called after each successful `sqtt_QueuePresentKHR`
-      - `radv_begin_sqtt` is called before frame #100
-      - `radv_end_sqtt` is called after frame #100
-      - `radv_get_sqtt_trace` is called to retrieve the trace
-      - `ac_dump_rgp_capture` saves the trace to `/tmp/*.rgp`
-- `RADV_RRA_TRACE*` generates trace data for RRA (radeon raytrace
-  analyzer)
-- `MESA_VK_MEMORY_TRACE*` generates trace data for RMV (radeon memory
-  visualizer)
+- `MESA_VK_TRACE`
+  - see `Tracing` section
 - `RADV_FORCE_VRS` and `RADV_FORCE_VRS_CONFIG_FILE` control VRS (variable-rate
   shading)
 - `RADV_TRAP_HANDLER` installs a trap handle on GFX8
@@ -31,6 +22,44 @@ Mesa RADV
 - `RADV_FORCE_FAMILY` enables the null winsys
 - `AMD_CU_MASK` can be used to disable CUs
 - `AMD_PARSE_IB` can parse the specified binary IB file
+
+## Tracing
+
+- `MESA_VK_TRACE` for a comma-separated list of trace types
+  - initializes `instance->trace_mode`
+  - available trace types
+    - `rgp` for Radeon GPU Profiler
+    - `rmv` for Radeon Memory Visualizer
+    - `rra` for Radeon Raytracing Analyzer
+  - `MESA_VK_TRACE_FRAME` specifies the frame trigger
+    - initializes `instance->trace_frame`
+  - `MESA_VK_TRACE_TRIGGER` specifies the file trigger
+    - initializes `instance->trace_trigger_file`
+  - `wsi_common_queue_present` triggers the capturing
+    - it tracks frame count and compares against `instance->trace_frame` to
+      trigger
+    - it also checks and removes `instance->trace_trigger_file` to trigger
+- `RADV_TRACE_MODE_RGP`
+  - `radv_amdgpu_winsys_create` is called with a reserved vmid
+  - `radv_GetPhysicalDeviceToolProperties` reports the tool
+  - `init_dispatch_tables` initializes the dispatch tables
+  - `radv_sqtt_init` initializes sqtt
+  - `RADV_THREAD_TRACE_CACHE_COUNTERS` enables cache counter tracing as well
+  - when triggered, `capture_trace` sets `device->sqtt_triggered`
+    - `radv_handle_sqtt` is called after each successful `sqtt_QueuePresentKHR`
+      - if `MESA_VK_TRACE_FRAME=100`,
+      - `radv_begin_sqtt` is called before frame #100
+      - `radv_end_sqtt` is called after frame #100
+      - `radv_get_sqtt_trace` is called to retrieve the trace
+      - `ac_dump_rgp_capture` saves the trace to `/tmp/*.rgp`
+- `VK_TRACE_MODE_RMV` is similar
+  - `vk_memory_trace_init` initializes the runtime
+  - `radv_memory_trace_init` initializes radv-specific stuff
+  - when triggered, `radv_rmv_collect_trace_events` collects the events and
+    `vk_dump_rmv_capture` dumps them
+- `RADV_TRACE_MODE_RRA` is similar
+  - `radv_rra_trace_init` initializes rra
+  - when triggered, `radv_rra_dump_trace` dumps the accel structs
 
 ## Tools
 
