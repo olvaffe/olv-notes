@@ -522,11 +522,49 @@ Chromium Browser
     - it calls `GpuImageProcessor::NV12ToRGBA` followed by `glFinish` to convert yuv to
       rgb
     - it calls `EffectsPipeline::ProcessFrame` which is another beast
+      - it seems there are multiple `drishti_gl_runn` threads and most
+        PROCESSes are on diffrent threads
+        - `PROCESS::ImageHasMinWidthAndHeightCalculator`
+        - `PROCESS::optionalimagedownscalecontainer`
+        - `PROCESS::syrtisvulkansegmentationsubgraph`
+        - `PROCESS::autolightpositionsubgraph`
+        - `PROCESS::relightcontainer`
+        - `PROCESS::bgreplacecontainer`
+        - `PROCESS::bgblurcontainer`
+        - `PROCESS::waitonrendercontainer`
+        - `EffectsStreamManipulatorImpl::OnFrameProcessed`
+      - it seems the effects pipeline has a queue.  `ProcessFrame` can submit
+        framen N while the following `OnFrameProcessed` returns frame N-1 or
+        even N-2
     - on effects pipeline completion,
       `EffectsStreamManipulatorImpl::PostProcess` is called
       - this calls `GpuImageProcessor::RGBAToNV12` followed by `glFinish` to
         convert rgb back to yuv
     - on skyrim, it easily takes >30ms
+- I have a trace for a key press
+  - a `InputLatency::Char` meansures the latency of a key press to page flip
+    completion
+  - key press
+  - main: `evdev` wakes up
+  - main: `CrBrowserMain` wakes up to call
+    `RenderWidgetHostViewBase::OnKeyEvent` and
+    `RenderWidgetHostImpl::ForwardKeyboardEvent`
+    - a `LatencyInfo` is created to track the latency of the input event
+    - `STEP_SEND_INPUT_EVENT_UI`
+  - renderer: `Compositor` wakes up to call `WidgetInputHandlerImpl::DispatchEvent`
+    - `STEP_HANDLE_INPUT_EVENT_IMPL`
+    - `STEP_DID_HANDLE_INPUT_AND_OVERSCROLL`
+  - renderer: `CrRendererMain` wakes up to call
+    `WidgetBaseInputHandler::OnHandleInputEvent`
+    - `STEP_HANDLE_INPUT_EVENT_MAIN`
+    - `STEP_HANDLED_INPUT_EVENT_MAIN_OR_IMPL`
+    - `STEP_HANDLED_INPUT_EVENT_IMPL`
+  - renderer: `Compositor` wakes up to call `ProxyImpl::ScheduledActionDraw`
+    and `MainFrame.Draw`
+    - `STEP_SWAP_BUFFERS`
+  - gpu: `VizCompositorThread` wakes up to call `Display::DrawAndSwap`
+    - `STEP_DRAW_AND_SWAP`
+  - gpu: `CrGpuMain` wakes up after `OnDrmEvent` (after page flip)
 
 ## GPU and Skia
 
