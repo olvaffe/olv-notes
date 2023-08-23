@@ -535,7 +535,24 @@ Chromium Browser
         - `EffectsStreamManipulatorImpl::OnFrameProcessed`
       - it seems the effects pipeline has a queue.  `ProcessFrame` can submit
         framen N while the following `OnFrameProcessed` returns frame N-1 or
-        even N-2
+        even N-2.  For example,
+        - 0.0ms: `ProcessFrame(N)`
+        - 0.2ms-0.5ms: `PROCESS::ImageHasMinWidthAndHeightCalculator(N)` and
+                       `PROCESS::optionalimagedownscalecontainer(N)`
+        - 9.3ms: `PROCESS::waitonrendercontainer(N-1)` ends and
+          `PROCESS::syrtisvulkansegmentationsubgraph(N)` begins
+        - 9.5ms: `OnFrameProcessed(N-1)`
+        - 23.0ms: `PROCESS::syrtisvulkansegmentationsubgraph(N)` ends
+          - the gpu time is 9ms
+        - 34.0ms-51.3ms: `PROCESS::relightcontainer(N)`
+          - 1x `clEnqueueWriteBuffer`
+          - Nx `clEnqueueNDRangeKernel` and 1x `clFlush`
+            - 2x `vkQueueSubmit` on clvk
+          - 1x `clEnqueueReadBuffer`
+            - 1x `vkQueueSubmit` on clvk
+          - the gpu times of the 3 queue submits are 4ms, 2ms, 5ms
+        - 51.3ms-51.7ms: `PROCESS::bgreplacecontainer(N)` and `PROCESS::bgblurcontainer(N)`
+        - 72.2ms: `PROCESS::waitonrendercontainer(N)` ends
     - on effects pipeline completion,
       `EffectsStreamManipulatorImpl::PostProcess` is called
       - this calls `GpuImageProcessor::RGBAToNV12` followed by `glFinish` to
