@@ -582,6 +582,27 @@ Chromium Browser
   - gpu: `VizCompositorThread` wakes up to call `Display::DrawAndSwap`
     - `STEP_DRAW_AND_SWAP`
   - gpu: `CrGpuMain` wakes up after `OnDrmEvent` (after page flip)
+- `PipelineReporter` track appears to be the most important info about frames
+  - start: hw vsync
+  - end: hw flip complete of the following frame
+    - that is, the scanout buffer is ready for reuse
+  - it is usually 2 vsyncs long
+    - After a hw vsync, viz asks the renderer to begin a frame
+    - The renderer spends a few ms to composite the frame and submits it to viz
+    - viz spends a few ms to render the frame and submits it to kernel for
+      page flip
+    - on next hw flip, the frame becomes front
+    - on yet another hw flip, the frame becomes available for reuse
+  - <https://android.googlesource.com/platform/external/perfetto/+/refs/heads/main/protos/perfetto/trace/track_event/chrome_frame_reporter.proto>
+    - state
+      - `STATE_NO_UPDATE_DESIRED` no real change
+      - `STATE_PRESENTED_ALL` all changes are presented
+      - `STATE_PRESENTED_PARTIAL` some changes are presented
+      - `STATE_DROPPED` some required changes are missing
+    - frame drop reason
+      - `REASON_DISPLAY_COMPOSITOR` viz decides to drop
+      - `REASON_MAIN_THREAD` the main thread decides to drop
+      - `REASON_CLIENT_COMPOSITOR` the cc thread decides to drop
 
 ## GPU and Skia
 
