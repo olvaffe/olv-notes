@@ -123,7 +123,9 @@ DRM amdgpu
     - `amdgpu_gmc_agp_location` picks the agp location to be before or after vram
       - in this case, after and can use up to 48-bit address space
   - `amdgpu_bo_init`
-    - in `amdgpu_ttm_init`, GTT size is set to `AMDGPU_DEFAULT_GTT_SIZE_MB` (3GB)
+    - in `amdgpu_ttm_init`, GTT size is set to `ttm_tt_pages_limit`
+      - `ttm_global_init` calls `ttm_tt_mgr_init` to set the limit to half of
+        sysram
   - relevant log
     - `[drm] vm size is 262144 GB, 4 levels, block size is 9-bit, fragment size is 9-bit`
     - `amdgpu 0000:04:00.0: amdgpu: VRAM: 512M 0x000000F400000000 - 0x000000F41FFFFFFF (512M used)`
@@ -141,6 +143,7 @@ DRM amdgpu
     - relevant log
       - `[drm] GART: num cpu pages 262144, num gpu pages 262144`
       - `[drm] PCIE GART of 1024M enabled.`
+- <https://lore.kernel.org/all/CADnq5_MfSNHP--KyQe2GEWCvg4XAwLV5FAw+0B-0DwvXBcACtw@mail.gmail.com/T/#mb034b7f92c4b3351038c71611d7a6d574fc9bee9>
 
 ## PM sysfs
 
