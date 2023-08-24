@@ -156,6 +156,74 @@ Mesa RADV
     - `AMDGPU_INFO_VIS_VRAM_USAGE`, and
     - `AMDGPU_INFO_GTT_USAGE` respectively
 
+## Formats
+
+- `radv_physical_device_get_format_properties`
+  - if unrecognized, (1-plane) subsampled, or etc2, bail immediately
+  - if planar, xfers, sampling, disjoint are supported
+    - and early return
+  - if `radv_is_storage_image_format_supported`, storage is supported
+  - if `radv_is_vertex_buffer_format_supported`, vb is supported
+  - if `radv_is_buffer_format_supported`, tbo is supported
+  - if ds
+    - if `radv_is_zs_format_supported`, ds, sampling, blit, xfer, are supported
+    - if d+s, only blit src is supported
+  - if color
+    - if `radv_is_sampler_format_supported`, sampling and blit src (except for
+      `R32G32B32`) are supported
+    - if `radv_is_colorbuffer_format_supported` and not 64-bit channel, rb and
+      blit dst are supported
+    - if supported and is not sscale/uscale, xfer is supported
+  - if `radv_is_atomic_format_supported`, atomic is supported
+- `radv_is_vertex_buffer_format_supported`
+  - it supports 8/16/32/64-bit channels and more
+  - `radv_write_vertex_descriptors` builds the descriptor
+- `radv_is_sampler_format_supported`
+  - `radv_translate_tex_dataformat` returns
+    `V_008F14_IMG_DATA_FORMAT_8_8_8_8`, etc.
+  - `radv_translate_tex_numformat` returns `V_008F14_IMG_NUM_FORMAT_UNORM`,
+    etc.
+    - unorm/snorm/float/srgb supports linear filtering
+    - uint/sint supports nearest
+    - uscaled/sscaled are not supported
+  - `radv_make_texture_descriptor` builds the descriptor
+  - aco `visit_tex` uses `aco_opcode::image_load*`,
+    `aco_opcode::image_sample*`, or `aco_opcode::image_gather4*`
+- `radv_is_storage_image_format_supported`
+  - this looks like a subset of `radv_is_sampler_format_supported`
+    - unorm/snorm/float are supported
+    - uint/sint are supported
+    - srgb/uscaled/sscaled are not supported
+    - compressed are not supported
+  - `radv_make_texture_descriptor` builds the descriptor
+  - aco `visit_image_load` and `visit_image_store` use
+    `aco_opcode::image_load*` and `aco_opcode::image_store*`
+- `radv_is_atomic_format_supported`
+  - this is limited to 32-bit int/float and 64-bit int
+- `radv_is_filter_minmax_format_supported`
+  - this is limited to required formats
+  - `radv_init_sampler` builds the descriptor
+- `radv_is_buffer_format_supported`
+  - `radv_translate_buffer_dataformat` returns
+    `V_008F0C_BUF_DATA_FORMAT_8_8_8_8`, etc.
+  - `radv_translate_buffer_numformat` returns `V_008F0C_BUF_NUM_FORMAT_UNORM`,
+    etc.
+  - `radv_make_texel_buffer_descriptor` builds the descriptor
+  - aco `visit_tex` uses `aco_opcode::buffer_load_format*`
+    - for ssbo, aco uses `aco_opcode::buffer_store_*` and
+      `aco_opcode::buffer_load_*`
+- `radv_is_colorbuffer_format_supported`
+  - `ac_get_cb_format` returns `V_028C70_COLOR_8_8_8_8`, etc.
+    - channel sizes
+  - `radv_translate_colorswap` returns `V_028C70_SWAP_STD`, etc.
+    - channel order
+  - `ac_get_cb_number_type` returns `V_028C70_NUMBER_UNORM`, etc.
+    - numeric format
+  - `radv_initialise_color_surface` builds `CB_COLOR_INFO`
+- `radv_is_zs_format_supported`
+  - `radv_translate_dbformat` returns `V_028040_Z_16`, etc.
+  - `radv_initialise_ds_surface` builds `DB_Z_INFO` and `DB_STENCIL_INFO`
+
 ## Image Creation
 
 - a `radv_image` has an array of `radv_image_plane`
