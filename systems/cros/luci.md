@@ -256,3 +256,29 @@ Chrome OS CI
     - sign in and create two windows showing animations
     - sign out
     - restart ui
+
+## `tast.camera.DecodeAccelJPEG` and `tast.camera.DecodeAccelJPEGPerf`
+
+- `DecodeAccelJPEG`
+  - `restart ui`
+  - `/usr/local/libexec/chrome-binary-tests/jpeg_decode_accelerator_unittest \
+        --vmodule=*/media/gpu/chromeos/*=2,*/media/gpu/v4l2/*=2,*/media/gpu/vaapi/*=2,*/media/gpu/*=1 \
+        --test_data_path=/usr/local/share/tast/data_pushed/go.chromium.org/tast-tests/cros/local/bundles/cros/camera/data/ \
+        --jpeg_filenames=peach_pi-1280x720.jpg \
+        --gtest_output=xml:/usr/local/tmp/tast/run_tmp/gtest_output.xml3726734669`
+  - assets
+    - <gs://chromiumos-test-assets-public/tast/cros/video/peach_pi-1280x720_20181105.jpg>
+- `tast.camera.DecodeAccelJPEGPerf`
+  - `restart ui`
+  - `/usr/local/libexec/chrome-binary-tests/jpeg_decode_accelerator_unittest \
+        --gtest_filter=All/MjpegDecodeAcceleratorTest.PerfJDA/DMABUF \
+        --perf_decode_times=10000 \
+        --perf_output_path=/usr/local/tmp/tast_out.20230828-164500.020854737/camera.DecodeAccelJPEGPerf/perf_output.1920x1080.hw.json \
+        --test_data_path=/usr/local/share/tast/data_pushed/go.chromium.org/tast-tests/cros/local/bundles/cros/camera/data/ \
+        --jpeg_filenames=pink-nature-1920x1080.jpg`
+  - for sw decoding, it uses `MjpegDecodeAcceleratorTest.PerfSW`
+  - assets
+    - <gs://chromiumos-test-assets-public/tast/cros/video/bonsai-tree-3840x2160_20230504.jpg>
+    - <gs://chromiumos-test-assets-public/tast/cros/video/peach_pi-1280x720_20181105.jpg>
+    - <gs://chromiumos-test-assets-public/tast/cros/video/pink-nature-1920x1080_20230504.jpg>
+    - <gs://chromiumos-test-assets-public/tast/cros/video/red-squirrel-2560x1920_20230504.jpg>
