@@ -51,7 +51,7 @@ Android SurfaceFlinger
   C++-level `Surface`.
 - Java-level `SurfaceView` also has a Java-level `Surface`.
 - Java-level `TextureView` has a Java-level `SurfaceTexture`, which maps to
-  C++-level `SurfaceTexture.
+  C++-level `SurfaceTexture`.
 
 ## `DisplaySurface`
 
@@ -136,7 +136,7 @@ Android SurfaceFlinger
     buffer is idle
   - It then renders to the buffer and does a `eglSwapBuffers` to `queueBuffer`
   - If the buffer is idle by next vsync, SF latches it
-  - when systrace is enabled, APP `HWC release and `GPU completion` threads
+  - when systrace is enabled, APP `HWC release` and `GPU completion` threads
     are created
     - APP `HWC release` tracks all out-fences returned in `dequeueBuffer`
     - APP `GPU completion` tracks all in-fences upon `queueBuffer`
