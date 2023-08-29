@@ -282,3 +282,14 @@ Chrome OS CI
     - <gs://chromiumos-test-assets-public/tast/cros/video/peach_pi-1280x720_20181105.jpg>
     - <gs://chromiumos-test-assets-public/tast/cros/video/pink-nature-1920x1080_20230504.jpg>
     - <gs://chromiumos-test-assets-public/tast/cros/video/red-squirrel-2560x1920_20230504.jpg>
+- `jpeg_decode_accelerator_unittest`'s `PerfDecodeBySW`
+  - `GetSoftwareDecodeResult` calls `libyuv::ConvertToI420` to decode
+    `libyuv::FOURCC_MJPG`
+- `jpeg_decode_accelerator_unittest`'s `PerfDecodeByJDA/DMABUF`
+  - creates a thread, `decoder_thread`
+  - calls `JpegClient::CreateJpegDecoder` on the thread
+  - calls `JpegClient::PrepareMemory`
+    - `in_dmabuf_fd_` is a dmabuf holding the jpeg data
+    - `hw_out_dmabuf_frame_`
+  - calls `JpegClient::StartDecode` on the thread
+    - calls `MjpegDecodeAccelerator::Decode`
