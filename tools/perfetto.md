@@ -222,7 +222,7 @@ Perfetto
     - probe `/proc/meminfo`, `/proc/vmstat`, `/proc/stat`,
       `/sys/class/devfreq`, `/sys/devices/system/cpu`, etc.
     - `sys_stats_config`
-      - `meminfo_period_ms
+      - `meminfo_period_ms`
       - `vmstat_period_ms`
       - `stat_period_ms`
       - `devfreq_period_ms`
@@ -430,7 +430,7 @@ Perfetto
     - `previous_packet_dropped`
     - `sequence_flags`
       - `SEQ_INCREMENTAL_STATE_CLEARED` means prior incremental data (e.g.,
-      	`interned_data`, trace_packet_defaults`) will no longer be referenced
+        `interned_data`, `trace_packet_defaults`) will no longer be referenced
       	by this or future packets
       - `SEQ_NEEDS_INCREMENTAL_STATE` means this packet requires valid
       	incremental data to parse
@@ -457,6 +457,26 @@ Perfetto
         - `VulkanApiEvent`
         - `VulkanMemoryEvent`
   - `TrackEvent`
+- <https://protobuf.dev/programming-guides/encoding/>
+  - unsigned 64-bit ints are encoded as varints
+    - a 64-bit uint takes one to ten bytes
+    - each byte represents 7 bits of the uint, from LSB to MSB of the int
+      - if the MSB of the byte is 0, this is the last byte
+      - otherwise, there are more bytes
+    - small uints take fewer bytes
+  - a message is encoded as a sequence of `(tag, value)` pairs
+    - a `tag` is a uint encoded as varint
+      - `tag & 7` is the type of the field
+      - `tag >> 3` is the id of the field
+    - type 0: int32, int64, uint32, uint64, sint32, sint64, bool, enum
+      - `value` is also a uint encoded as varint
+    - type 1: fixed64, sfixed64, double
+      - `value` has a fixed width of 64 bits
+    - type 2: string, bytes, embedded messages, packed repeated fields
+      - `value` is a varint, which denotes the length, followed by length
+        bytes
+    - type 5: fixed32, sfixed32, float
+      - `value` has a fixed width of 32 bits
 
 ## Host/Guest Time Sync
 
