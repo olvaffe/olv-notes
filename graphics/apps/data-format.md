@@ -75,3 +75,26 @@ Khronos Data Format
 - RGB ETC2 with "punchthrough" alpha
   - it is similar to RGB ETC2, except there is no individual mode
   - when bit 33 is 0, it can mean transparent in certain conditions
+- <https://github.com/Themaister/Granite/blob/master/vulkan/texture/texture_decoder.cpp>
+  - EAC
+    - only unsigned support
+    - `dispatch_kernel_eac`
+      - push contants: width, height
+      - specialization: `VK_FORMAT_EAC_R11G11_UNORM_BLOCK ? 2 : 1`
+      - dispatch: `(width+7)/8, (height+7)/8, 1`
+        - each workgroup handles four 4x4 texel blocks
+    - <https://github.com/Themaister/Granite/blob/master/assets/shaders/decode/eac.comp>
+      - `coord` is in texels and is the coord in the uncompressed tex
+      - `tile_coord` is in texel blocks and is the coord in the compressed tex
+      - `pixel_coord` is in texels and is the coord within a texel block
+      - `linear_pixel` is linearized `pixel_coord`
+      - `decode_eac_alpha` decodes the 64-bit value
+        - see R11 EAC above
+  - ETC2
+    - `dispatch_kernel_etc2`
+      - push contants: width, height
+      - specialization: 0 (RGB ETC2), 1 (RGB ETC2 with punchthrough alpha), or 8 (RGBA ETC2)
+      - dispatch: `(width+7)/8, (height+7)/8, 1`
+        - each workgroup handles four 4x4 texel blocks
+    - <https://github.com/Themaister/Granite/blob/master/assets/shaders/decode/etc2.comp>
+      - `build_coord` is the same as in EAC
