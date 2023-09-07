@@ -984,3 +984,7 @@ Chromium Browser
       - `vaRenderPicture`
       - `vaEndPicture`
 - `VideoFrame` and mojo
+  - `media/mojo/mojom/BUILD.gn` says `media.mojom.VideoFrame` and
+    `::scoped_refptr<::media::VideoFrame>` are convertible
+  - the conversion uses `video_frame_mojom_traits.cc`'s `data` and `Read`
+    methods
