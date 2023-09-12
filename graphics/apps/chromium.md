@@ -32,6 +32,7 @@ Chromium Browser
     - `is_component_build = is_debug`
       - this controls shared or static libraries
       - set to true for faster linking and deploying
+      - but it appears to introduce races in `VaapiWrapper`
     - `dcheck_always_on = (build_with_chromium && !is_official_build)`
       - this controls whether `DLOG` and `DCHECK` are compiled in
     - `enable_nacl = true`
