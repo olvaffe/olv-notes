@@ -40,7 +40,9 @@ Chromium Browser
       - set to true for faster build
     - `is_chrome_branded = false`
       - set to true for chrome branding
-      - no functional difference?
+      - one big difference is in `ShouldUseFieldTrialTestingConfig`
+        - on a chrome branded build, `fieldtrial_testing_config.json` is not
+          applied by default
   - release build
     - `is_official_build = true`
   - recommended dev args
@@ -224,6 +226,9 @@ Chromium Browser
 - features
   - features are defined everywhere
     - `find -name '*_features.cc'` for most of them
+    - they are defined by `BASE_FEATURE`
+      - there are more than 4K features
+      - each feature has a name and is enabled/disabled by default
     - `--enable-features=Foo,Bar` is just another switch parsed by
       `FeatureList::InitializeInstance`
       - `FeatureList::RegisterOverride` is called on each enabled feature with
@@ -235,6 +240,12 @@ Chromium Browser
     - `OVERRIDE_USE_DEFAULT` uses the feature's `default_state`
       - `FEATURE_ENABLED_BY_DEFAULT` defaults to enabled
       - `FEATURE_DISABLED_BY_DEFAULT` defaults to disabled
+  - <https://chromium.googlesource.com/chromium/src/+/main/testing/variations/>
+    - `VariationsFieldTrialCreatorBase::SetUpFieldTrials` sets up field trials
+    - on a on-chrome dev build, `FIELDTRIAL_TESTING_ENABLED` is set by default
+      - `VariationsFieldTrialCreatorBase::ApplyFieldTrialTestingConfig`
+        applies the testing config generated from
+        `fieldtrial_testing_config.json`
 - flags
   - flags are defined in `chrome/browser/about_flags.cc`
   - each flag is associated with a switch or a feature
