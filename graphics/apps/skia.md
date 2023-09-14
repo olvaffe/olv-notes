@@ -16,10 +16,10 @@ Skia
     - `gn/BUILDCONFIG.gn`
     - `gn/skia.gni`
   - gl/gles
-    - `skia_use_gl = true` to enable GL or GLES backend
-    - `skia_use_egl = true` to pick EGL/GLES on Linux
-      - does not affect android
-    - `skia_use_x11 = false` to pick GLX/GL on Linux
+    - `skia_use_gl = true` to enable GL/GLES backend
+      - `skia_use_egl = true` to use EGL
+        - does not affect android
+      - `skia_use_x11 = true` to use GLX
   - vulkan
     - `skia_use_vulkan = true` to enable VK backend
   - disable font
@@ -40,6 +40,16 @@ Skia
   - <https://skia.org/docs/user/special/angle/>
 - skia on vulkan
   - <https://skia.org/docs/user/special/vulkan/>
+
+## Linux
+
+- args
+  - `is_official_build = false`
+  - `is_component_build = true`
+  - `skia_use_gl = true`
+  - `skia_use_egl = true`
+  - `skia_use_x11 = false`
+  - `skia_use_vulkan = true`
 
 ## Tests
 
