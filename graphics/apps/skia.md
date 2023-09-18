@@ -50,6 +50,14 @@ Skia
   - `skia_use_egl = true`
   - `skia_use_x11 = false`
   - `skia_use_vulkan = true`
+- meson
+  - use `cpp.find_library('skia')` directly
+  - comparing defines in `defines.bzl` and `include`, we should define
+    - `SK_ASSUME_GL_ES=1`
+    - `SK_DEBUG`
+    - `SK_GANESH`
+    - `SK_GL`
+    - `SK_VULKAN`
 
 ## Tests
 
