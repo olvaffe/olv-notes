@@ -421,7 +421,7 @@ Chromium Browser
       - `DrmThreadProxy` is created
       - `GbmSurfaceFactory` is created
       - `DrmOverlayManagerGpu` is created
-- `GpuChildThread` starts the gpu thread
+- `GpuChildThread` starts the gpu (main) thread
   - `GpuChildThread` has a `VizMainImpl`
 - `SurfaceFactoryOzone::GetGLOzone`
   - on wayland, `GLOzoneEGLWayland` is returned
@@ -472,6 +472,25 @@ Chromium Browser
     - `viz::OutputPresenterGL::AllocateImages()`
   - other places such as `OzoneImageBacking::UploadFromMemory` call
     `ProduceSkiaGanesh` which also import the native pixmap
+- clients
+  - there is a priviledged client from the browser process
+    - the browser process has a `GpuHostImpl` that implements `mojom::GpuHost`
+    - `GpuHostImpl` calls `VizMain::CreateGpuService` to create a `GpuService`
+      in the gpu process
+  - there is a public client for each renderer process
+    - `RenderThreadImpl::Init` calls `viz::Gpu::Create` to create a `viz::Gpu`
+    - that creates a `viz::GpuClient` in the browser process
+    - `viz::GpuClient` communites with `viz::GpuHostImpl` in the browser
+      process
+    - gpu channel
+      - `RenderThreadImpl::EstablishGpuChannel` in renderer process
+      - `Gpu::EstablishGpuChannel` in renderer process
+      - `GpuClient::EstablishGpuChannel` in the browser process
+      - `GpuHostImpl::EstablishGpuChannel` in the browser process
+      - `GpuServiceImpl::EstablishGpuChannel` in the gpu process
+      - `GpuChannelManager::EstablishChannel` in the gpu process
+      - create a `GpuChannel` in the gpu process
+      - create a `GpuChannelHost` in the renderer process
 
 ## GPU and GL
 
@@ -685,6 +704,10 @@ Chromium Browser
       - `REASON_DISPLAY_COMPOSITOR` viz decides to drop
       - `REASON_MAIN_THREAD` the main thread decides to drop
       - `REASON_CLIENT_COMPOSITOR` the cc thread decides to drop
+- threads
+  - `CreateAndStartIOThread` creates `GpuIOThread` thread
+  - `VizCompositorThreadRunnerImpl` creates `VizCompositorThread` thread
+  - `CompositorGpuThread::Create` creates `CompositorGpuThread` thread
 
 ## GPU and Skia
 
@@ -695,6 +718,43 @@ Chromium Browser
 - if `GrContextType::kVulkan`,
   `VulkanInProcessContextProvider::InitializeGrContext` is called
   - which calls `GrDirectContext::MakeVulkan`
+- renderer compositor and remote raster (OOP-R)
+  - blink uses "paint ops" rather than `SkPicture` to serialize commands
+  - `TileManager::CreateRasterTask` creates raster tasks
+    - it looks like a `RasterTaskImpl` is created for a `RasterSource` and a
+      `RasterBuffer`
+  - `RasterTaskImpl::RunOnWorkerThread` calls `RasterBuffer::Playback`
+  - `GpuRasterBufferProvider::RasterBufferImpl::Playback` calls
+    `BeginRasterCHROMIUM`, `RasterCHROMIUM`, and `EndRasterCHROMIUM` of
+    `RasterInterface`
+  - `RasterImplementation` implements `RasterInterface` over command buffers
+  - the service uses `RasterDecoderImpl`
+    - `RasterDecoderImpl::DoRasterCHROMIUM` deserializes `cc::PaintOp` and
+      calls their `Raster` method to draw with skia
+- display compositor and `SkiaRenderer`
+  - the browser process calls `CreateRootCompositorFrameSink` to create a
+    `RootCompositorFrameSinkImpl` in the gpu process
+  - `RootCompositorFrameSinkImpl::Create` `std::make_unique<Display>` a
+    `viz::Display` which `std::make_unique<SkiaRenderer>` a `SkiaRenderer`
+  - when it's time to swap, I guess `DisplayScheduler::DrawAndSwap` is called
+    - `DisplayScheduler::DrawAndSwap` calls `Display::DrawAndSwap`
+    - `Display::DrawAndSwap` calls `DirectRenderer::DrawFrame`
+    - `SkiaRenderer` draws with skia
+      - `DirectRenderer::DrawFrame` invokes these methods from `SkiaRenderer`
+        - `BeginDrawingFrame`
+        - `BeginDrawingRenderPass`
+        - `DoDrawQuad`
+        - `FinishDrawingRenderPass`
+        - `FinishDrawingFrame`
+        - more
+      - the `SkCanvas` is from `SkiaOutputSurfaceImpl`
+        - `SkiaOutputSurfaceImpl::BeginPaintCurrentFrame` returns the canvas
+          - the canvas is owned by `GrDeferredDisplayListRecorder`
+          - all ops are recorded and deferred
+        - `SkiaOutputSurfaceImpl::EndPaint` calls
+          `SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame` on the gpu
+          thread
+        - ultimately, the gpu thread calls `SkiaOutputDevice::Draw`
 
 ## GPU and WebGL
 
@@ -706,6 +766,25 @@ Chromium Browser
   - the commands are handled by `GPUProcessor`
   - decoded GL commands are dispatched to `app/gfx/gl` directly
   - context management commands are sent to who?
+- remote gles
+  - initially, remote gles was used for everything
+    - renderer/ui/display compositors all used remote gles, but they use
+      remote raster now after OOP-D / OOP-R
+    - webgl used remote gles and still does today
+  - the client uses `GLES2Implementation`
+    - it implements `GLES2Interface`, which includes
+      `gles2_interface_autogen.h` to declare all GLES2 functions
+    - it includes `gles2_implementation_autogen.h` and
+      `gles2_implementation_impl_autogen.h` to implement all GLES2 functions
+    - it uses `GLES2CmdHelper` to serialize the GLES2 function calls into a
+      `CommandBufferProxyImpl`
+  - the service in the gpu process uses `GLES2DecoderImpl` or
+    `GLES2DecoderPassthroughImpl`
+    - it uses `GLES2CommandBufferStub` to deserialize the commands and
+      dispatches to `GLES2DecoderImpl::HandleFoo` or
+      `GLES2DecoderPassthroughImpl::HandleFoo`
+    - `GLES2DecoderImpl` validates before calling into the driver while
+      `GLES2DecoderPassthroughImpl` calls into angle directly
 
 ## GPU and IPC
 
