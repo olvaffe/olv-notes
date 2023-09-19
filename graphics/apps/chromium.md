@@ -215,6 +215,76 @@ Chromium Browser
 - every process is an instance of `chrome`, the executable/dll
 - the type (browser/render/gpu/...) of a process is determined by its command
   line switch, `-type <type>`
+- gpu process history
+  - initially,
+    - the gpu process provides remote gles
+      - clients use a gles implementation that serializes commands into
+        command buffers
+      - the gpu process deserializes command buffers and executes the gles
+        command
+      - that is, a client serializes commands into `CommandBufferProxyImpl`
+        and the gpu process deserializes them from `GLES2CommandBufferStub`
+    - the per-tab renderer process runs the renderer compositor
+      - the renderer comopsitor composites html elements into a frame
+      - it uses skia-over-gles which the gles impl is remote
+      - frames are submitted to the browser process
+        - renderer: `blink -> LayerTreeHost -> LayerTreeHostImpl -> ClientLayerTreeFrameSink`
+        - browser: `RenderWidgetHostImpl -> RenderWidgetHostViewAura -> DelegatedFrameHost -> CompositorFrameSinkSupport`
+    - the ui thread in the browser process runs the ui compositor and the
+      display compositor
+      - the ui compositor draws the ui
+      - the display compositor composites renderer frames and the ui frames
+      - when gpu compositing, it uses skia-over-gles where the gles impl is
+        remote
+      - the ui compositor submits `CompositorFrame` to
+        `DirectLayerTreeFrameSink` which submits it to
+        `CompositorFrameSinkSupport`
+      - the display compositor has
+        `HostFrameSinkManager`/`FrameSinkManagerImpl` and
+        `GpuProcessTransportFactory`/`viz::Display`
+  - OOP-D, Out-Of-Process Display Compositor
+    - the display compositor is moved from the ui thread in the browser
+      process to a new `VizCompositorThread` thread in the gpu process
+      - because the new thread and the main thread are both in the gpu
+        process, a new `InProcessCommandBuffer` is introduced in place of
+        `CommandBufferProxyImpl` and `GLES2CommandBufferStub`
+      - `HostFrameSinkManager` is in the browser process and
+        `FrameSinkManagerImpl` is in the gpu process
+        - the ipc is `mojom::FrameSinkManager` and
+          `mojom::FrameSinkManagerClient`
+      - `VizProcessTransportFactory` is in the browser process and
+        `RootCompositorFrameSinkImpl`/`viz::Display` is in the gpu process
+        - the ipc is `mojom::DisplayPrivate`
+    - the per-tab renderer process runs the renderer compositor
+      - there is almost no change to the renderer compositor
+      - except `CompositorFrame` is submitted to the gpu process directly
+    - the ui thread in the browser process runs the ui compositor
+      - `ClientLayerTreeFrameSink` is in the browser process and
+        `RootCompositorFrameSinkImpl`/`CompositorFrameSinkSupport` is in the
+        gpu process
+        - the ipc is `mojom::CompositorFrameSink` and `mojom::CompositorFrameSinkClient`
+  - OOP-R, Out-Of-Process Rasterization
+    - the motivation is skia-vk
+    - the renderer process raster pipeline is
+      - paint to `SkPicture`
+      - raster task
+      - raster with skia
+      - serialize to gles2 command buffer
+      - gl in gpu process
+    - with oopr, it becomes
+      - pait to paint ops
+      - raster task
+      - serialize to raster command buffer
+      - raster with skia in gpu process
+    - paint ops
+      - `SkCanvas -> PaintCanvas`
+      - `SkPaint -> PaintFlags`
+      - `SkPicture -> PaintRecord/PaintOpBuffer`
+      - `SkShader -> PaintShader`
+      - `SkImage -> PaintImage`
+  - OOP-C, Out-Of-Process Rasterization for Canvas
+    - OOP-R applies to the rasterization of non-canvas HTML elements
+    - OOP-C applies to the rasterization of 2D canvas
 
 ## Switches, Features, and Flags
 
