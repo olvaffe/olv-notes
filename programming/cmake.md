@@ -98,3 +98,29 @@ CMake
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+## Dependencies
+
+- <https://cmake.org/cmake/help/latest/guide/using-dependencies/index.html>
+- `find_package` finds prebuilt packages
+  - it searches well-known places, using hints provided by the project or
+    users
+  - it supports package components or optional packages
+  - `find_package(Foo 3.4 REQUIRED COMPONENTS bar)`
+- config mode
+  - prebuilt packages that use cmake or are cmake-aware can provide necessary
+    files for `find_package`
+  - `find_package(Foo)` searches for `FooConfig.cmake` or `foo-config.cmake`
+    in common paths such as `lib/cmake/Foo`
+  - `CMAKE_PREFIX_PATH` var provides a semicolon-separated list of search
+    paths
+  - `CMAKE_PREFIX_PATH` envvar provides a colon-separated list of search paths
+- module mode
+  - `Find` modules must be provided separately for the prebuilt packages
+  - `find_package(Foo)` searches for `FindFoo.cmake` in common paths
+  - `CMAKE_MODULE_PATH` var provides a semicolon-separated list of search
+    paths
+- imported targets
+  - both config and module modes may define imported targets
+  - an imported target looks like `Foo::Bar`, and is preferred over other
+    cmake variables provided
