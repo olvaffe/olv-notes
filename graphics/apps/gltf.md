@@ -60,3 +60,19 @@ glTF
     - <https://github.com/BinomialLLC/basis_universal>
     - no direct GPU support
     - can be transcoded to GPU compressed formats quickly
+- build
+  - `git clone https://github.com/KhronosGroup/KTX-Software.git`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PWD/out/install`
+  - `ninja -C out install`
+- meson
+  - `dependency('Ktx', method: 'cmake', required: false)`
+  - `meson setup out --cmake-prefix-path <path-to-ktx-out-install>`
+- cmdline tool
+  - `ktx create --format ASTC_4x4_UNORM_BLOCK a.png a.ktx`
+    - `--1d` for 1D texture
+    - `--cubemap` for cuebmap texture
+    - `--depth N` for 3D texture
+    - `--layers N` for array texture
+    - `--levels N` for mipmap
+    - `--generate-mipmap` to generate mipmap
+    - `--astc-quality thorough` for quality if format is `ASTC_*`
