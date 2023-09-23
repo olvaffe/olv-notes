@@ -327,6 +327,22 @@ Vulkan
     execute only commands in the primary command buffer or only command the
     secondary command buffers
 
+## Chapter 9. Shaders
+
+- 9.24. Static Use
+  - `OpVariable` declares a variable which is a pointer to a global object in
+    memory
+  - if an entry point's call tree contains a funcition that contains an
+    instruction using the pointer, the entry point statically uses the object
+  - a shader entry point also statically uses all variables explicitly
+    declared in its interface
+
+## Chapter 15. Shader Interfaces
+
+- 15.8. Shader Resource Interface
+  - 15.8.3 has a big note on variables sharing the same `DescriptorSet` and
+    `Binding`
+
 ## Chapter 18. Queries
 
 - 18.1. Query Pools
