@@ -34,3 +34,22 @@ Mesa ANV
   - `brw_compiler_create` enables everything for `nir_lower_int64_options`
   - `brw_preprocess_nir` calls `nir_lower_int64_float_conversions`
   - `brw_postprocess_nir` calls `nir_lower_int64`
+
+## blorp
+
+- `vkCmdCopyBuffer2` flow
+  - `blorp_batch_init` initializes `blorp_batch`
+  - `blorp_buffer_copy` does the copying
+    - `isl_surf_init` to initialize a `isl_surf` on stack for both src/dst
+    - `blorp_copy`
+      - `blorp_params_init` initializes `blorp_params`
+      - `brw_blorp_surface_info_init` initializes `params.src` and
+        `params.dst`
+      - `blorp_copy_get_formats` overrides formats
+      - `blorp_surf_convert_to_uncompressed` overrides w/h for compressed
+        formats
+      - `genX(blorp_exec)` executes
+        - if `BLORP_BATCH_USE_COMPUTE`, `blorp_exec_on_compute` and
+          `blorp_exec_compute`
+        - else, `blorp_exec_on_render` and `blorp_exec_3d`
+  - `blorp_batch_finish` is nop
