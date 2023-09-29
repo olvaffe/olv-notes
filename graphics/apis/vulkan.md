@@ -1191,6 +1191,18 @@ Vulkan
 - `VK_EXT_image_sliced_view_of_3d`
   - `imageSlicedViewOf3D` indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
     descriptor can be a sliced 3D image view of a 3D image
+- `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT`
+  - it was added by `VK_KHR_maintenance2`
+  - there has always been `VUID-VkImageViewCreateInfo-image-07072` (which was
+    named `VUID-VkImageViewCreateInfo-image-01584` at first) which states
+    - If image was created with the
+      `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT` flag and format is a
+      non-compressed format, the `levelCount` and `layerCount` members of
+      `subresourceRange` must both be 1
+  - in 1.2.171, `VUID-VkImageViewCreateInfo-image-04739` was added to ban
+    `VK_IMAGE_VIEW_TYPE_3D`
+  - in 1.3.226, `VUID-VkImageViewCreateInfo-image-04739` was removed to allow
+    `VK_IMAGE_VIEW_TYPE_3D`
 
 ## `VK_EXT_attachment_feedback_loop_layout`
 
