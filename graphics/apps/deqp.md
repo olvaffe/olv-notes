@@ -740,3 +740,92 @@ dEQP
       `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT/VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
       visible to
       `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT/VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
+
+## Test Case: `dEQP-VK.image.texel_view_compatible.compute.basic.2d_image.image_store.astc_4x4_unorm_block.r32g32b32a32_uint`
+
+- `createImageCompressionTranscodingTests` creates the test
+- `TestParameters` is
+  - `operation` is `OPERATION_IMAGE_STORE`
+  - `shader` is `SHADER_TYPE_COMPUTE`
+  - `size` is `64x64x1`
+  - `layers` is 1
+  - `imageType` is `IMAGE_TYPE_2D`
+  - `formatCompressed` is `VK_FORMAT_ASTC_4x4_UNORM_BLOCK`
+  - `formatUncompressed` is `VK_FORMAT_R32G32B32A32_UINT`
+  - `imagesCount` is 3
+  - `compressedImageUsage` is xfer src, xfer dst, sampled, and storage
+  - `compressedImageViewUsage` is the same as `compressedImageUsage`
+  - `uncompressedImageUsage` is the same as `compressedImageUsage`
+  - `useMipmaps` is false
+  - `formatForVerify` is `VK_FORMAT_R8G8B8A8_UNORM`
+  - `formatIsASTC` is true
+- `TexelViewCompatibleCase`
+  - `initPrograms`
+    - `comp`
+      - `layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;`
+      - `ivec2 pos = ivec2(gl_GlobalInvocationID.xy);`
+      - `imageStore(u_image0, pos, imageLoad(u_image1, pos));`
+      - `imageStore(u_image2, pos, imageLoad(u_image0, pos));`
+    - `decompress`
+      - `layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;`
+      - `layout (binding = 0) uniform sampler2D compressed_result;`
+      - `layout (binding = 1) uniform sampler2D compressed_reference;`
+      - `layout (binding = 2, rgba8) writeonly uniform image2D decompressed_result;`
+      - `layout (binding = 3, rgba8) writeonly uniform image2D decompressed_reference;`
+      - `const vec2 pixels_resolution = vec2(gl_NumWorkGroups.xy);`
+      - `const vec2 cord = vec2(gl_GlobalInvocationID.xy) / vec2(pixels_resolution);`
+      - `const ivec2 pos = ivec2(gl_GlobalInvocationID.xy);`
+      - `imageStore(decompressed_result, pos, texture(compressed_result, cord));`
+      - `imageStore(decompressed_reference, pos, texture(compressed_reference, cord));`
+  - `createInstance` creates a `ImageStoreComputeTestInstance`
+    - `ImageStoreComputeTestInstance` inherits from `BasicComputeTestInstance`
+- `BasicComputeTestInstance::iterate`
+  - there are 3 images
+    - image 0 has format `VK_FORMAT_ASTC_4x4_UNORM_BLOCK` and its view has
+      format `VK_FORMAT_R32G32B32A32_UINT`
+    - image 1 and 2 have format `VK_FORMAT_R32G32B32A32_UINT`
+  - `copyDataToImage` copies the generated compressed data into image 1
+  - there are 3 descriptors
+    - desc 0 has type `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`
+    - desc 1 and 2 has type `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+  - `executeShader` executes `comp`
+    - it loads raw data from image 1 and stores them to image 0
+    - it then loads raw data from image 0 and stores them to image 2
+  - pre-decompress verification
+    - it makes sure the generated compressed data is the same as the data read
+      back from image 2
+  - it also calls `decompressImage`
+- `BasicComputeTestInstance::decompressImage`
+  - there are 5 images
+    - `compressed` is from image 0 in `BasicComputeTestInstance::iterate` and
+      has view `compressedView`
+    - `uncompressed` is from image 2 in `BasicComputeTestInstance::iterate`
+    - `resultImage` has format `VK_FORMAT_R8G8B8A8_UNORM` and has view `resultView`
+    - `referenceImage` has format `VK_FORMAT_R8G8B8A8_UNORM` and has view
+      `referenceView`
+    - `uncompressedImage` has format `VK_FORMAT_ASTC_4x4_UNORM_BLOCK` and has
+      `uncompressedView`
+  - there are 4 descriptors
+    - desc 0: `uncompressedView`
+    - desc 1: `compressedView`
+    - desc 2: `resultView`
+    - desc 3: `referenceView`
+  - cmd buffer
+    - copy from `uncompressed` to `transferBuffer`
+    - copy from `transferBuffer` to `uncompressedImage`
+    - dispatch with full size (64x64x1)
+      - the shader samples from `uncompressedView` and stores to `resultView`
+      - the shader also samples from `compressedView` and stores to `referenceView`
+    - copy from `resultImage` to `resultBuffer`
+    - copy from `referenceImage` to `referenceBuffer`
+  - compare `resultBuffer` and `referenceBuffer`
+  - in summary,
+    - in `interate`, image 0, 1, and 2 all have compressed data
+      - image 0 is from load/store of image 1
+      - image 1 is from copy
+      - image 2 is from load/store of image 0
+    - in `decompressImage`,
+      - the reference is from sampling image 0 (named `compressed`) and
+        storing to `referenceImage`
+      - the result is from sampling image 2 (named `uncompressed`) and storing
+        to `resultImage`
