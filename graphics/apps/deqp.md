@@ -783,7 +783,8 @@ dEQP
   - there are 3 images
     - image 0 has format `VK_FORMAT_ASTC_4x4_UNORM_BLOCK` and its view has
       format `VK_FORMAT_R32G32B32A32_UINT`
-    - image 1 and 2 have format `VK_FORMAT_R32G32B32A32_UINT`
+    - image 1 and 2 have format `VK_FORMAT_R32G32B32A32_UINT` and its view has
+      the same format
   - `copyDataToImage` copies the generated compressed data into image 1
   - there are 3 descriptors
     - desc 0 has type `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`
@@ -800,11 +801,11 @@ dEQP
     - `compressed` is from image 0 in `BasicComputeTestInstance::iterate` and
       has view `compressedView`
     - `uncompressed` is from image 2 in `BasicComputeTestInstance::iterate`
-    - `resultImage` has format `VK_FORMAT_R8G8B8A8_UNORM` and has view `resultView`
+    - `resultImage` has format `VK_FORMAT_R8G8B8A8_UNORM` and has view `resultView` of the same format
     - `referenceImage` has format `VK_FORMAT_R8G8B8A8_UNORM` and has view
-      `referenceView`
+      `referenceView` of the same format
     - `uncompressedImage` has format `VK_FORMAT_ASTC_4x4_UNORM_BLOCK` and has
-      `uncompressedView`
+      `uncompressedView` of the same format
   - there are 4 descriptors
     - desc 0: `uncompressedView`
     - desc 1: `compressedView`
