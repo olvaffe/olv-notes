@@ -41,6 +41,10 @@ Piglit
   - `CMakeLists.txt` under `tests` usually has `piglit_include_target_api()`
     - the function is defined in `cmake/piglit_util.cmake`
     - it includes `CMakeLists.${piglit_target_api}.txt`
+- run
+  - `PIGLIT_BUILD_DIR=out ./piglit run -p surfaceless_egl -t 'dma_buf' quick_gl results`
+  - this calls `run` from `framework/programs/run.py`
+  - `load_test_profile` imports `tests/quick_gl.py`
 
 ## Tests
 
