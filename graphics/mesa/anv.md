@@ -53,3 +53,14 @@ Mesa ANV
           `blorp_exec_compute`
         - else, `blorp_exec_on_render` and `blorp_exec_3d`
   - `blorp_batch_finish` is nop
+
+## Descriptor Sets
+
+- for each descriptor type, `anv_descriptor_data_for_type` decides what does
+  the descriptor consist of
+  - `ANV_DESCRIPTOR_INDIRECT_SAMPLED_IMAGE` is `anv_sampled_image_descriptor`
+  - `ANV_DESCRIPTOR_INDIRECT_STORAGE_IMAGE` is `anv_storage_image_descriptor`
+  - `ANV_DESCRIPTOR_INDIRECT_ADDRESS_RANGE` is `anv_address_range_descriptor`
+  - because `indirect_descriptors` is usually true, the hw descriptors
+    (`RENDER_SURFACE_STATE` and `SAMPLER_STATE`) are not directly written to
+    the descriptor sets
