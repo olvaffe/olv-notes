@@ -64,3 +64,25 @@ Mesa ANV
   - because `indirect_descriptors` is usually true, the hw descriptors
     (`RENDER_SURFACE_STATE` and `SAMPLER_STATE`) are not directly written to
     the descriptor sets
+- `bindless_surface_state_pool`
+  - `anv_physical_device_init_va_ranges` allocates 2GB of `anv_va_range` for
+    the pool
+  - `anv_state_pool_init` allocates a `anv_state_pool`
+    - it's a suballocator that supports alloc/free
+    - `start_offset` of the pool is 0, meaning offsets of allocations are
+      relative to the pool rather than absolute
+  - `anv_state_pool_alloc` allocates from a bucket
+    - it tries free list of the bucket first
+    - otherwise, it tries the free list of larget buckets, and split the larger
+      alloc
+    - otherwise, it calls `anv_block_pool_alloc` to allocate from the
+      underlying `anv_block_pool`
+  - `anv_state_pool_free` always returns to the free list of the bucket
+  - `anv_image_view` and `anv_buffer_view` allocate `SURFACE_STATE` from the
+    pool
+  - `STATE_BASE_ADDRESS::BindlessSurfaceStateBaseAddress` is set to the va of
+    the pool
+  - `anv_bindless_state_for_binding_table` converts the offset of the surface
+    state 
+    - from the offset to `bindless_surface_state_pool` to offset to
+      `internal_surface_state_pool`
