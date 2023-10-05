@@ -830,3 +830,39 @@ dEQP
         storing to `referenceImage`
       - the result is from sampling image 2 (named `uncompressed`) and storing
         to `resultImage`
+
+## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
+
+- `CopyImageTests::init` calls `addCopyTests`
+  - `srcFormat` is `GL_RGBA32UI`
+  - `dstFormat` is `GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4`
+  - `srcSize` is `(129, 127)`, 8 levels
+  - `dstSize` is `(132, 124)`, 8 levels
+- `CopyImageTest::iterate`
+  - iteration 1
+    - `CopyImageTest::createImagesIter` creates and inits src and dst images
+      - `genImage` calls `gl.texImage2D` or `gl.compressedTexImage2D` with
+        generated texel data
+        - because this is astc, `genTexel` randomly picks one of 8 possible
+          values
+    - `CopyImageTest::renderSourceIter` renders the src image to the current fb
+  - iteration 2
+    - `CopyImageTest::renderDestinationIter` renders the dst image to the
+      current fb
+  - iteration 3
+    - `CopyImageTest::copyImageIter` copies random (aligned) regions from the
+      src to the dst with `gl.copyImageSubData`
+      - `copyImageData` simulates the copy on cpu for verification
+    - `CopyImageTest::verifySourceIter` renders the src image to the current
+      fb and `glu::readPixels` to verify
+  - iteration 4
+    - `CopyImageTest::verifyDestinationIter` renders the dst image to the
+      current fb and `glu::readPixels` to verify
+    - `CopyImageTest::destroyImagesIter` destroys both images
+  - iteration 5
+    - `CopyImageTest::createImagesIter`
+    - `CopyImageTest::copyImageIter`
+    - `CopyImageTest::verifySourceIter`
+  - iteration 6
+    - `CopyImageTest::verifyDestinationIter`
+    - `CopyImageTest::destroyImagesIter`
