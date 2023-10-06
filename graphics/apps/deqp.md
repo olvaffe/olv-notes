@@ -846,6 +846,7 @@ dEQP
         - because this is astc, `genTexel` randomly picks one of 8 possible
           values
     - `CopyImageTest::renderSourceIter` renders the src image to the current fb
+      - the origin is picked by `RandomizedRenderGrid`
   - iteration 2
     - `CopyImageTest::renderDestinationIter` renders the dst image to the
       current fb
@@ -866,3 +867,22 @@ dEQP
   - iteration 6
     - `CopyImageTest::verifyDestinationIter`
     - `CopyImageTest::destroyImagesIter`
+
+- under angle, and when simplified to 1 level and 1 copy,
+  - `createImagesIter`
+    - because the src image size is `(129, 127)`, there is a
+      `vkCmdCopyBufferToImage` with the same extent
+    - because the dst image size is `(132, 124)`, there is a
+      `vkCmdCopyBufferToImage` with the same extent
+  - `copyImageIter`
+    - because the copy is from `(114, 114)` to `(0, 0)` of src size
+      `(15, 13)`, there is a `vkCmdCopyImage` with
+      - `srcOffset` is `(114, 114)`
+      - `dstOffset` is `(0, 0)`
+      - `extent` is `(15, 13)`
+  - `verifyDestinationIter`
+    - there is a render pass with render area `(400, 300)` and a
+      `vkCmdDrawIndexed`
+    - there is a `vkCmdCopyImageToBuffer` with `imageOffset` of `(1, 113)` and
+      `imageExtent` of `(264, 124)`
+  - `destroyImagesIter`
