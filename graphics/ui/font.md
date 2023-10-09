@@ -59,11 +59,11 @@ Font
       larger viewing distance
   - `scale` is determined by compositors
     - a common formula is `scale = floor(real_dpi / 96)`
-    - dpis equal to or larger than 196 are called HiDPI
+    - dpis equal to or larger than `96 * 2` are called HiDPI
   - `scale` is an integer because it applies to text and ui elements
     - fonts are vectors and support fractional scales
     - ui elements tend to be bitmaps and look blurry with fractional scales
-    - it is also called "ui scale", "device scale", etc.
+    - the scale is also called "ui scale", "device scale", etc.
   - toolkits are slowly gaining fractional scale support for ui elements
 - we really need fractional scale for 160dpi
   - without it, UI elements are small but OK
@@ -75,7 +75,7 @@ Font
       ui elements too huge
 - Wayland
   - there is (integral) output scale
-  - fractional scale is wip
+  - there is now the newer fractional scale, `wp_fractional_scale_v1`
 - each app requires a different solution
 
 ## fontconfig
@@ -151,7 +151,11 @@ Font
 ## gnome
 
 - `gsettings set org.gnome.desktop.interface text-scaling-factor 1.5`
-  - this is a accessibility setting
+  - this scales the text and is an accessibility setting
+- there is `GDK_SCALE` that applies an integral scale to both the ui and the
+  text, but it is x11-only
+- there was also `GDK_DPI_SCALE` that aplpies a fractional scale to just the
+  text which has been removed
 
 ## alacritty
 

@@ -1,6 +1,136 @@
 Wayland
 =======
 
+## Wayland Repos
+
+- <https://gitlab.freedesktop.org/wayland/wayland.git>
+  - core wayland code and protocol
+  - see `Wayland Core` below for the core code
+  - the core protocol is defined in `wayland.xml`
+    - `<protocol name="wayland">`
+    - `<interface name="wl_display" version="1">`
+    - `<interface name="wl_registry" version="1">`
+    - `<interface name="wl_callback" version="1">`
+    - `<interface name="wl_compositor" version="6">`
+    - `<interface name="wl_shm_pool" version="1">`
+    - `<interface name="wl_shm" version="1">`
+    - `<interface name="wl_buffer" version="1">`
+    - `<interface name="wl_data_offer" version="3">`
+    - `<interface name="wl_data_source" version="3">`
+    - `<interface name="wl_data_device" version="3">`
+    - `<interface name="wl_data_device_manager" version="3">`
+    - `<interface name="wl_shell" version="1">`
+      - deprecated
+    - `<interface name="wl_shell_surface" version="1">`
+    - `<interface name="wl_surface" version="6">`
+    - `<interface name="wl_seat" version="9">`
+    - `<interface name="wl_pointer" version="9">`
+    - `<interface name="wl_keyboard" version="9">`
+    - `<interface name="wl_touch" version="9">`
+    - `<interface name="wl_output" version="4">`
+    - `<interface name="wl_region" version="1">`
+    - `<interface name="wl_subcompositor" version="1">`
+    - `<interface name="wl_subsurface" version="1">`
+- <https://gitlab.freedesktop.org/wayland/wayland-utils.git>
+  - the only utility is `wayland-info`
+- <https://gitlab.freedesktop.org/wayland/weston.git>
+  - `weston` is a basic compositor and `libweston` can be used to build
+    full-featured compositor
+- <https://gitlab.freedesktop.org/wayland/wayland-protocols.git>
+  - protocol phases
+    - in the development phase, the protocol, the client, and the compositor
+      changes take the form of MRs and must not be merged
+    - in the testing phase, the protocol change is merged to and the
+      client/compositor changes are encouraged
+      - only backward-compatible changes are allowed in this phase
+      - if major design flaws are found, a new major version is introduced to
+        completely replace the current version
+      - otherwise, it gets promoted to stable
+  - directory tree
+    - `stable` is for current stable protocols
+    - `staging` is for protocols in the testing phase
+    - `deprecated` is for deprecated protocols
+    - `unstable` is historical and should not be used for new protocols
+      - the protocol names are prefixed by `z`
+      - only backward-compatible changes are allowed
+      - when it gets stablized, backward-incompatible changes are made in the
+        process
+  - stable protocols
+    - `<protocol name="presentation_time">`
+      - `<interface name="wp_presentation" version="1">`
+      - `<interface name="wp_presentation_feedback" version="1">`
+    - `<protocol name="viewporter">`
+      - `<interface name="wp_viewporter" version="1">`
+      - `<interface name="wp_viewport" version="1">`
+    - `<protocol name="xdg_shell">`
+      - `<interface name="xdg_wm_base" version="6">`
+      - `<interface name="xdg_positioner" version="6">`
+      - `<interface name="xdg_surface" version="6">`
+      - `<interface name="xdg_toplevel" version="6">`
+      - `<interface name="xdg_popup" version="6">`
+  - staging protocols
+    - `<protocol name="content_type_v1">`
+      - `<interface name="wp_content_type_manager_v1" version="1">`
+      - `<interface name="wp_content_type_v1" version="1">`
+    - `<protocol name="cursor_shape_v1">`
+      - `<interface name="wp_cursor_shape_manager_v1" version="1">`
+      - `<interface name="wp_cursor_shape_device_v1" version="1">`
+    - `<protocol name="drm_lease_v1">`
+      - `<interface name="wp_drm_lease_device_v1" version="1">`
+      - `<interface name="wp_drm_lease_connector_v1" version="1">`
+      - `<interface name="wp_drm_lease_request_v1" version="1">`
+      - `<interface name="wp_drm_lease_v1" version="1">`
+    - `<protocol name="ext_foreign_toplevel_list_v1">`
+      - `<interface name="ext_foreign_toplevel_list_v1" version="1">`
+      - `<interface name="ext_foreign_toplevel_handle_v1" version="1">`
+    - `<protocol name="ext_idle_notify_v1">`
+      - `<interface name="ext_idle_notifier_v1" version="1">`
+      - `<interface name="ext_idle_notification_v1" version="1">`
+    - `<protocol name="ext_session_lock_v1">`
+      - `<interface name="ext_session_lock_manager_v1" version="1">`
+      - `<interface name="ext_session_lock_v1" version="1">`
+      - `<interface name="ext_session_lock_surface_v1" version="1">`
+    - `<protocol name="ext_transient_seat_v1">`
+      - `<interface name="ext_transient_seat_manager_v1" version="1">`
+      - `<interface name="ext_transient_seat_v1" version="1">`
+    - `<protocol name="fractional_scale_v1">`
+      - `<interface name="wp_fractional_scale_manager_v1" version="1">`
+      - `<interface name="wp_fractional_scale_v1" version="1">`
+    - `<protocol name="security_context_v1">`
+      - `<interface name="wp_security_context_manager_v1" version="1">`
+      - `<interface name="wp_security_context_v1" version="1">`
+    - `<protocol name="single_pixel_buffer_v1">`
+      - `<interface name="wp_single_pixel_buffer_manager_v1" version="1">`
+    - `<protocol name="tearing_control_v1">`
+      - `<interface name="wp_tearing_control_manager_v1" version="1">`
+      - `<interface name="wp_tearing_control_v1" version="1">`
+    - `<protocol name="xdg_activation_v1">`
+      - `<interface name="xdg_activation_v1" version="1">`
+      - `<interface name="xdg_activation_token_v1" version="1">`
+    - `<protocol name="xwayland_shell_v1">`
+      - `<interface name="xwayland_shell_v1" version="1">`
+      - `<interface name="xwayland_surface_v1" version="1">`
+  - selected unstable protocols
+    - `<protocol name="idle_inhibit_unstable_v1">`
+      - `<interface name="zwp_idle_inhibit_manager_v1" version="1">`
+      - `<interface name="zwp_idle_inhibitor_v1" version="1">`
+    - `<protocol name="input_method_unstable_v1">`
+      - `<interface name="zwp_input_method_context_v1" version="1">`
+      - `<interface name="zwp_input_method_v1" version="1">`
+      - `<interface name="zwp_input_panel_v1" version="1">`
+      - `<interface name="zwp_input_panel_surface_v1" version="1">`
+    - `<protocol name="linux_dmabuf_unstable_v1">`
+      - `<interface name="zwp_linux_dmabuf_v1" version="4">`
+      - `<interface name="zwp_linux_buffer_params_v1" version="4">`
+      - `<interface name="zwp_linux_dmabuf_feedback_v1" version="4">`
+    - `<protocol name="zwp_linux_explicit_synchronization_unstable_v1">`
+      - `<interface name="zwp_linux_explicit_synchronization_v1" version="2">`
+      - `<interface name="zwp_linux_surface_synchronization_v1" version="2">`
+      - `<interface name="zwp_linux_buffer_release_v1" version="1">`
+    - `<protocol name="text_input_unstable_v3">`
+      - `<interface name="zwp_text_input_v3" version="1">`
+      - `<interface name="zwp_text_input_manager_v3" version="1">`
+
 ## Wayland core
 
 - Binaries
