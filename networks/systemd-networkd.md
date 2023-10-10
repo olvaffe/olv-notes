@@ -96,6 +96,43 @@ systemd-networkd
     - yes when the bridge is also used as the gateway of the networks in
       containers
 
+## Names
+
+- `hostname`
+  - kernel defaults hostname to `CONFIG_DEFAULT_HOSTNAME`, which is usually
+    `(none)`
+  - `systemd` uses first of
+    - `systemd.hostname=` from kernel cmdline
+    - `/etc/hostname`
+      - `man 5 hostname` recommends a single label without any dot
+      - some apps might break though
+    - DHCP lease
+    - hard-coded `localhost`
+  - `gethostname` uses `uname` syscall to get the hostname
+- `domainname`
+  - this is NIS domain name and is irrelevant nowaday
+- `dnsdomainname` and FQDN
+  - the canonical name returned by calling `getaddrinfo` for `gethostname` is
+    the FQDN
+  - the part after the first dot is the DNS domain name
+- addr-to-name
+  - `getnameinfo`, which obsoletes `gethostbyaddr`
+- name-to-addr
+  - `getaddrinfo`, which obsoletes `gethostbyname`
+  - the behavior is configured by `/etc/nsswitch.conf`
+- systemd recommends `hosts: mymachines resolve files myhostname dns` in
+  `nsswitch.conf`
+  - `mymachines` resolves with `systemd-machined` for vms/containers
+  - `resolve` resolves with `systemd-resolved` but may not be available
+  - `files` resolves with `/etc/hosts`
+    - when manually configured, `/etc/hostname` should be a short nickname for
+      the local machine and `/etc/hosts` should have the canonical name for
+      the local machine as well as the short nickname as an alias
+    - this way, `getaddrinfo` can resolve the short nickname to the canonical
+      name, which is the FQDN of the local machine
+  - `myhostname` resolves `localhost.localdomain` to `127.0.0.1`
+  - `dns` resolves with DNS configured by `/etc/resolv.conf`
+
 ## systemd-resolved
 
 - systemd-resolved can manage `/etc/resolv.conf` or just be a client of

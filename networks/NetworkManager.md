@@ -61,6 +61,8 @@ NetworkManager
     - dnsmasq starts dnsmasq at localhost and points `/etc/resolve.conf` to
       localhost
     - systemd-resolved uses systemd-resolved
+    - both `dnsmasq` and `systemd-resolved` provide dbus interfaces to receive
+      DNS servers and options from NM
 - `[keyfile]`
   - `path=` specifies the location of keyfiles.  By default,
     `/etc/NetworkManager/system-connections`
@@ -70,6 +72,9 @@ NetworkManager
     should be managed by NM
 - `[connection]`
   - default values for connnectoins
+  - `ipv4.route-metric` defaults to -1
+    - for wired, the metric will be 100
+    - for wirelss, the metric will be 600
 - `[device]`
   - `match-device=` specifies the device
   - `managed=` specifies whether the device is managed or ignored

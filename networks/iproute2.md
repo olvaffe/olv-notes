@@ -1,6 +1,18 @@
 iproute2
 ========
 
+## Repo
+
+- <https://git.kernel.org/pub/scm/network/iproute2/iproute2.git>
+- replaces `net-tools`
+  - <https://net-tools.sourceforge.io/>
+  - `arp` -> `ip neigh`
+  - `ifconfig` -> `ip addr`
+  - `ipmaddr` -> `ip maddr`
+  - `iptunnel` -> `ip tunnel`
+  - `route` -> `ip route`
+  - `netstat` -> `ss`
+
 ## Static IP and Routing
 
 - `ip addr add 192.168.0.1/24 dev eth0`
