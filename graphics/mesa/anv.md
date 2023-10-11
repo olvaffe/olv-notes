@@ -92,6 +92,35 @@ Mesa ANV
         current bbo to jump to the new bbo
       - calls `anv_batch_set_storage` with the new bbo
 
+## BO Addresses
+
+- `anv_device_alloc_bo`, rather than i915, picks the bo address
+  - `bo->offset` is initialized by `anv_bo_vma_alloc_or_close` to be the
+    canonical address of the bo
+    - on i915, this makes use of `EXEC_OBJECT_PINNED`
+  - `anv_vma_heap_for_flags` picks the heap
+    - for regular `VkDeviceMemory`, `device->vma_hi` is used
+    - for `VkDescriptorPool`, `device->vma_desc` is used
+    - for `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT`, `device->vma_cva` is used
+      - this is used in trace capture
+  - there is also `explicit_address` support
+    - in trace replay, `VkMemoryOpaqueCaptureAddressAllocateInfo` specifies an
+      explicit address in `device->vma_cva` heap to use
+    - `anv_block_pool` (base class of `anv_state_pool`), which does not
+      support free, uses `ANV_BO_ALLOC_FIXED_ADDRESS` to skip vma heap
+- `struct anv_address` is `anv_bo` plus an `offset`
+  - `anv_address_physical` returns `bo->offset + offset` as the 64-bit address
+  - it is necessary because i915 requires all active bos to be tracked so we
+    want to express an address as a bo plus an offset
+- `anv_state_pool_alloc` and `anv_state_stream_alloc` return an `struct anv_state`
+  - it includes
+    - `offset` is relative to the `anv_state_pool`
+    - `alloc_size` is the size of the alloc and can be 0 to indicate
+      `ANV_STATE_NULL`
+    - `map` is the cpu pointer
+    - `idx` is for internal use (for free)
+  - `anv_state_pool_state_address` returns `anv_address` of `anv_state`
+
 ## Pipelines
 
 - `anv_CreateGraphicsPipelines` calls `anv_graphics_pipeline_create`
@@ -147,14 +176,73 @@ Mesa ANV
 
 ## Descriptor Sets
 
-- for each descriptor type, `anv_descriptor_data_for_type` decides what does
-  the descriptor consist of
-  - `ANV_DESCRIPTOR_INDIRECT_SAMPLED_IMAGE` is `anv_sampled_image_descriptor`
-  - `ANV_DESCRIPTOR_INDIRECT_STORAGE_IMAGE` is `anv_storage_image_descriptor`
-  - `ANV_DESCRIPTOR_INDIRECT_ADDRESS_RANGE` is `anv_address_range_descriptor`
-  - because `indirect_descriptors` is usually true, the hw descriptors
-    (`RENDER_SURFACE_STATE` and `SAMPLER_STATE`) are not directly written to
-    the descriptor sets
+- `anv_CreateDescriptorPool`
+  - `anv_descriptor_data_for_type` returns the kinds of data each descriptor
+    includes
+    - `ANV_DESCRIPTOR_INDIRECT_SAMPLED_IMAGE` is `anv_sampled_image_descriptor`
+    - `ANV_DESCRIPTOR_INDIRECT_STORAGE_IMAGE` is `anv_storage_image_descriptor`
+    - `ANV_DESCRIPTOR_INDIRECT_ADDRESS_RANGE` is `anv_address_range_descriptor`
+    - because `indirect_descriptors` is usually true, the hw descriptors
+      (`RENDER_SURFACE_STATE` and `SAMPLER_STATE`) are not included in the
+      descriptors
+  - `anv_descriptor_data_size` returns the hw size of a descriptor
+  - `pool->host_heap` and `pool->host_mem_size`
+    - the pool has `host_mem_size` of cpu memory that follows `pool`
+      immediately
+    - `host_heap` suballocates from the cpu memory
+    - the cpu memory is used for
+      - `maxSets` of `struct anv_descriptor_set`
+      - one `struct anv_descriptor` for each descriptor
+      - one `struct anv_buffer_view` for each descriptor that includes
+        `ANV_DESCRIPTOR_BUFFER_VIEW` (that is, ubo and ssbo)
+  - `pool->bo`, `pool->bo_heap`, and `pool->bo_mem_size`
+    - `bo` has size `bo_mem_size` and is allocated with
+      `ANV_BO_ALLOC_DESCRIPTOR_POOL` to use `vma_desc` heap
+    - `bo_heap` suballocates from `bo`
+  - `pool->surface_state_stream` uses `device->internal_surface_state_pool`
+- `anv_AllocateDescriptorSets`
+  - `anv_descriptor_set_layout_size` returns the required host mem size for
+    the layout
+    - the `struct anv_descriptor_set` itself
+    - one `struct anv_descriptor` for each descriptor
+    - one `struct anv_buffer_view` for each descriptor that includes
+      `ANV_DESCRIPTOR_BUFFER_VIEW` (that is, ubo and ssbo)
+  - `anv_descriptor_pool_alloc_set` allocates a `struct anv_descriptor_set`
+    from `host_heap`
+    - `set->descriptors` follows `set`
+    - `set->buffer_views` follows `set->descriptors`
+  - `anv_descriptor_set_layout_descriptor_buffer_size` returns the required hw
+    mem size for the layout
+  - `set->desc_mem` is suballocated from `set->bo` using `set->bo_heap`
+    - each suballocation is aligned to `ANV_UBO_ALIGNMENT`
+    - `set->desc_mem` and `set->desc_addr` are manually initialized
+    - `set->desc_offset` is relative to `internal_surface_state_pool`
+- `STATE_BASE_ADDRESS::SurfaceStateBaseAddress` before gfx 12.5
+  - binding tables must be in the first 64KB of `SurfaceStateBaseAddress`
+    - because `3DSTATE_BINDING_TABLE_POINTERS_*` only has 16 bits for the
+      binding table offsets which are relative to `SurfaceStateBaseAddress`
+  - each entry of the binding table is a 32-bit offset relative to
+    `SurfaceStateBaseAddress`
+  - `binding_table_pool` is special
+    - `base_address` is at the top (that is,
+      `internal_surface_state_pool.adddr`
+    - `start_offset` is negative (`base_address + start_offset` is
+      `binding_table_pool.addr`)
+    - `block_size` is `BINDING_TABLE_POOL_BLOCK_SIZE` (64KB)
+  - `flush_descriptor_sets`
+    - if there is no space for binding tables,
+      - `anv_cmd_buffer_new_binding_table_block` allocates
+        `BINDING_TABLE_POOL_BLOCK_SIZE` (64KB) from `binding_table_pool`
+      - `genX(cmd_buffer_emit_state_base_address)` updates
+        `SurfaceStateBaseAddress` to `anv_cmd_buffer_surface_base_address`
+        which is the the new 64KB block
+    - `anv_cmd_buffer_alloc_binding_table` allocates a binding table from the
+      64KB block and returns the offset from the 64KB block to
+      `internal_surface_state_pool`
+    - `emit_binding_table` updates each entry of the binding table
+      - `surface_state` is relative to `internal_surface_state_pool`
+      - that's why it does `state_offset + surface_state.offset` to get an
+        offset relative to `SurfaceStateBaseAddress`
 - `bindless_surface_state_pool`
   - `anv_physical_device_init_va_ranges` allocates 2GB of `anv_va_range` for
     the pool
