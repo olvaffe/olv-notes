@@ -121,7 +121,34 @@ Mesa ANV
     - `idx` is for internal use (for free)
   - `anv_state_pool_state_address` returns `anv_address` of `anv_state`
 
-## Pipelines
+## Compute Pipelines
+
+- `anv_CreateComputePipelines` calls `anv_compute_pipeline_create`
+  - `anv_pipeline_init` performs the common init
+  - `anv_pipeline_init_layout` inits `pipeline->layout` from
+    `anv_pipeline_layout`
+  - `anv_pipeline_compile_cs`
+    - `anv_pipeline_stage_get_nir` translated spirv to nir
+    - `anv_pipeline_nir_preprocess` preprocesses nir
+    - `anv_pipeline_lower_nir` lowers nir
+    - `brw_compile_cs` generates the binary
+    - `anv_device_upload_kernel` uploads the binary to
+      `instruction_state_pool`
+    - `anv_pipeline_add_executables` saves stats for
+      `VK_KHR_pipeline_executable_properties`
+  - `genX(compute_pipeline_emit)` emits `MEDIA_VFE_STATE` and
+    `INTERFACE_DESCRIPTOR_DATA` to `pipeline->batch`
+- `anv_pipeline_lower_nir` and resources
+  - `anv_nir_compute_used_push_descriptors` returns a bitmask of used
+    descriptors in the push descriptor set
+  - `anv_nir_apply_pipeline_layout`
+  - `anv_nir_update_resource_intel_block`
+  - `anv_nir_compute_push_layout`
+  - `anv_nir_lower_resource_intel`
+  - `anv_nir_loads_push_desc_buffer`
+  - `anv_nir_push_desc_ubo_fully_promoted`
+
+## Graphics Pipelines
 
 - `anv_CreateGraphicsPipelines` calls `anv_graphics_pipeline_create`
 - `anv_graphics_pipeline_compile` compiles shaders
@@ -132,6 +159,7 @@ Mesa ANV
     generates the binary
     - they call `brw_compile_vs` and `brw_compile_fs` for codegen, which call
       `brw_postprocess_nir`
+  - `anv_device_upload_kernel` uploads the binary to `instruction_state_pool`
 
 ## `shaderFloat64`
 
