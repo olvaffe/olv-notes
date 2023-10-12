@@ -189,6 +189,61 @@ Vulkan
     - requirements for shader execution differ and are specified by the
       Precision and Operation of SPIR-V Instructions section
 
+## Chapter 4. Initialization
+
+- 4.1. Command Function Pointers
+  - `vkGetInstanceProcAddr` can query
+    - global commands
+      - `vkEnumerateInstanceVersion` since 1.1
+      - `vkEnumerateInstanceExtensionProperties`
+      - `vkEnumerateInstanceLayerProperties`
+      - `vkCreateInstance`
+      - instance must be `NULL`
+    - self
+      - instance can be NULL since 1.2
+    - core dispatchable commands
+    - enabled instance extension dispatchable commands
+    - available device extension dispatchable commands
+  - `vkGetDeviceProcAddr` can query
+    - requested core version device-level dispatchable commands
+      - core version is requested by `VkApplicationInfo::apiVersion`
+      - with `maintenance5`, NULL must be returned for commands not in the
+        requested core version
+    - enabled extension device-level dispatchable commands
+  - physical-device-level functionality
+    - a functionality introduced since a core version can be used if
+      `VkPhysicalDeviceProperties::apiVersion` is the same or newer than the
+      core version
+    - a functionality introduced with an instance extension can be used if the
+      instance extension is enabled
+    - a functionality introduced with a device extension can be used if the
+      device extension is available
+- 4.2. Instances
+  - `VkApplicationInfo::apiVersion` must be the highest version of Vulkan that
+    the application is designed to use
+    - The patch version number specified in `apiVersion` is ignored
+    - The variant version of the instance must match that requested in `apiVersion`
+    - Because Vulkan 1.0 implementations may fail with
+      `VK_ERROR_INCOMPATIBLE_DRIVER` when `apiVersion` is not 1.0,
+      applications should determine the version of Vulkan available before
+      calling `vkCreateInstance`. If the `vkGetInstanceProcAddr` returns NULL
+      for `vkEnumerateInstanceVersion`, it is a Vulkan 1.0 implementation.
+      Otherwise, the application can call `vkEnumerateInstanceVersion` to
+      determine the version of Vulkan.
+    - As long as the instance supports at least Vulkan 1.1, an application can
+      use different versions of Vulkan with an instance than it does with a
+      device or physical device.
+      - that is, the instance-level functionality is capped to
+        `min(VkApplicationInfo::apiVersion, vkEnumerateInstanceVersion)`
+      - the physical-device-level and device-level functionality is capped to
+        `min(VkApplicationInfo::apiVersion, VkPhysicalDeviceProperties::apiVersion)`
+    - in practice, roughly
+      - the loader decides the instance version
+      - the driver decides the device version
+      - when the loader supports instance version 1.0, it also limits the
+        device version to 1.0
+      - otherwise, the two versions are orthogonal
+
 ## Chapter 6. Command Buffers
 
 - secondary command buffer inherits no state from the primary command
@@ -337,6 +392,77 @@ Vulkan
   - a shader entry point also statically uses all variables explicitly
     declared in its interface
 
+## Chapter 9. Resource Creation
+
+- 12.1. Buffers
+  - `VkBufferCreateInfo`
+    - `size` must be positive and must not exceed
+      `VkPhysicalDeviceMaintenance4Properties::maxBufferSize`
+    - `sharingMode` is explained in 12.9
+    - `flags`
+      - `VK_BUFFER_CREATE_SPARSE_BINDING_BIT` depends on `sparseBinding`
+        feature
+      - `VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT` depends on
+        `sparseResidencyBuffer` feature
+      - `VK_BUFFER_CREATE_SPARSE_ALIASED_BIT` depends on
+        `sparseResidencyAliased` feature
+      - `VK_BUFFER_CREATE_PROTECTED_BIT` depends on `protectedMemory` feature
+      - sparse and protected are mutually exclusive
+    - `usage`
+      - all valid usage is supported (because buffers have no format)
+      - they determine where the buffers can be used
+        - e.g., `VK_BUFFER_USAGE_VERTEX_BUFFER_BIT` allows the buffer to be
+          used in `vkCmdBindVertexBuffers`
+- 12.2. Buffer Views
+  - `VkBufferViewCreateInfo`
+    - `buffer`
+      - must have been created with `VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT`
+        or `VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT`
+      - if not sparse, must have a memory bound
+    - `offset`
+      - must be less than the buffer size
+      - must be aligned to
+        `VkPhysicalDeviceLimits::minTexelBufferOffsetAlignment`
+    - `range`
+      - must be positive and less than the buffer size, or `VK_WHOLE_SIZE`
+      - element count must not exceed
+        `VkPhysicalDeviceLimits::maxTexelBufferElements`
+    - `VkBufferUsageFlags2CreateInfoKHR::usage`
+      - if exists, must be a subset of the usage of the buffer
+      - otherwise, the usage of the buffer is assumed
+      - `VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT` depends on
+        `VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT`
+      - `VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT` depends on
+        `VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT`
+- 12.3. Images
+  - `VK_IMAGE_TILING_LINEAR` may (or may not) have more restrictions
+    - as reported by `vkGetPhysicalDeviceFormatProperties` or
+      `vkGetPhysicalDeviceImageFormatProperties2`?
+    - `imageType` must be `VK_IMAGE_TYPE_2D`
+    - `format` must not be a depth/stencil format
+    - `mipLevels` must be 1
+    - `arrayLayers` must be 1
+    - `samples` is `VK_SAMPLE_COUNT_1_BIT`
+    - `usage` must only include `VK_IMAGE_USAGE_TRANSFER_SRC_BIT` and/or
+      `VK_IMAGE_USAGE_TRANSFER_DST_BIT`
+    - other implementation-defined restrictions
+  - formats that reuqire ycbcr conversion may (or may not) have similar
+    restrictions
+  - Image Creation Limits
+    - `imageCreateMaybeLinear` is derived from tiling
+    - `imageCreateFormatFeatures` is derived from tiling and
+      `vkGetPhysicalDeviceFormatProperties`
+    - `imageCreateImageFormatPropertiesList` is derived from from calling
+      `vkGetPhysicalDeviceImageFormatProperties2`
+      - it is a list and there can be more than one entry when the image has
+        multiple external handle types, etc.
+      - it is empty if any call fails
+    - `imageCreateMaxMipLevels`, `imageCreateMaxArrayLayers`,
+      `imageCreateMaxExtent`, and `imageCreateSampleCounts` are derived from
+      `imageCreateImageFormatPropertiesList`
+    - as the most basic rule, for an image creation to be valid,
+      `imageCreateImageFormatPropertiesList` must be non-empty
+
 ## Chapter 15. Shader Interfaces
 
 - 15.8. Shader Resource Interface
@@ -478,9 +604,80 @@ Vulkan
 - 29.14. Coverage Reduction
   - when `rasterizationSamples` is greater than the fb samples
 
-## Chapter 48. Formats
+## Chapter 33. Sparse Resources
 
-- 48.1. Format Definition
+- 33.1. Sparse Resource Features
+  - `sparseBinding` feature
+    - resouces can be bound at sparse block (i.e., gpu page) granularity
+    - the entire resource must be bound to memory before use
+    - if a format is supported, `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT` (but
+      not `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT`) does not affect the result
+      for both `VK_IMAGE_TILING_LINEAR` and `VK_IMAGE_TILING_OPTIMAL`
+  - sparse residency features
+    - resources do not have to be completely bound to memory before use
+    - there are separate features for buffers, 2d images, 3d images, and msaa
+      support
+    - A sparse image created using `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT`
+      supports all non-compressed color formats with power-of-two element size
+      that non-sparse usage supports
+    - Additional formats may also be supported and can be queried via
+      `vkGetPhysicalDeviceSparseImageFormatProperties`
+    - `VK_IMAGE_TILING_LINEAR` tiling is not supported
+
+## Chapter 46. Extending Vulkan
+
+- 46.1. Instance and Device Functionality
+  - Commands that enumerate instance properties, or that accept a `VkInstance`
+    object as a parameter, are considered instance-level functionality.
+  - Commands that dispatch from a `VkDevice` object or a child object of a
+    `VkDevice`, or take any of them as a parameter, are considered
+    device-level functionality.
+  - Commands that dispatch from `VkPhysicalDevice`, or accept a
+    `VkPhysicalDevice` object as a parameter, are considered either
+    instance-level or device-level functionality depending if the
+    functionality is specified by an instance extension or device extension
+    respectively.
+  - Additionally, commands that enumerate physical device properties are
+    considered device-level functionality.
+- 46.2. Core Versions
+  - The Vulkan version number comprises four parts indicating the `variant`,
+    `major`, `minor` and `patch` version of the Vulkan API Specification.
+  - The version of instance-level functionality can be queried by calling
+    `vkEnumerateInstanceVersion`.
+  - The version of device-level functionality is returned in
+    `VkPhysicalDeviceProperties::apiVersion`
+- 46.3. Layers
+  - `vkEnumerateInstanceLayerProperties` enumerates instance layers
+  - `vkEnumerateDeviceLayerProperties` has been deprecated
+- 46.4. Extensions
+  - instance-level extensions
+    - when an instance-level extension is not enabled, `vkGetInstanceProcAddr`
+      for a command defined by the extension returns NULL
+      - can a instance extension define a global command that are queriable with
+        `vkGetInstanceProcAddr(NULL, ...)`?  It seems no.
+    - when a device-level extension is availalbe, `vkGetInstanceProcAddr` for a
+      command defined by the extension returns non-NULL
+  - device-level extensions
+    - when a device-level extension is not enabled, `vkGetDeviceProcAddr` for a
+      command defined by the extension returns NULL
+    - physical-device-level commands defined by device extensions can be used as
+      long as the device extensions are available
+- 46.6. Compatibility Guarantees (Informative)
+  - extension
+    - promotion: incorporated into core and absorbed by another extension
+    - deprecation: no longer relevant
+    - obsoletion: fundamentally incompatible with core or a better extension
+    - aliases: to avoid duplicating documentation
+    - special use: not recommended for general use
+      - `cadsupport`
+      - `d3demulation`
+      - `devtools`
+      - `debugging`
+      - `glemulation`
+
+## Chapter 49. Formats
+
+- 49.1. Format Definition
   - Color formats must be represented in memory in exactly the form indicated
     by the format’s name.
     - depth formats are opaque and their memory representations are more relaxed
@@ -494,7 +691,24 @@ Vulkan
   - Size Compatibility
     - Color formats with the same texel block size are considered
       size-compatible as long as neither or both are alpha formats
-- 48.3. Required Format Support
+- 49.2. Format Properties
+  - `vkGetPhysicalDeviceFormatProperties2` queries format features
+    - buffers and images have different features for the same format
+    - different image tilings can have different features for the same format
+- 49.3. Required Format Support
+  - unless otherwise noted, the required format features must be supported for
+    - every `VkImageType` (including arrayed and cube variants)
+    - all `VkImageCreateFlags` values
+  - when `VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT` is supported, these must also
+    be supported
+    - `VK_FORMAT_FEATURE_TRANSFER_SRC_BIT`
+    - `VK_FORMAT_FEATURE_TRANSFER_DST_BIT`
+    - `VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT_EXT` (for linear and
+      optimal tilings)
+  - the mandatory feature bits apply to `optimalTilingFeatures` and
+    `bufferFeatures`
+    - according to table 66, 67, and 68, they do not apply to
+      `linearTilingFeatures` or `drmFormatModifierTilingFeatures`
   - Mandatory format support
     - sub-byte components
     - 1-3 byte-sized components
@@ -504,10 +718,39 @@ Vulkan
     - 32-bit components
     - 64-bit/uneven components
     - depth/stencil with `VK_IMAGE_TYPE_2D`
-    - BC compressed formats with `VK_IMAGE_TYPE_2D` and `VK_IMAGE_TYPE_3D`
-    - ETC2 and EAC compressed formats with `VK_IMAGE_TYPE_2D`
-    - ASTC LDR compressed formats with `VK_IMAGE_TYPE_2D`
-  - Formats requiring sampler Y′CBCR conversion for `VK_IMAGE_ASPECT_COLOR_BIT`
+    - one of
+      - BC compressed formats with `VK_IMAGE_TYPE_2D` and `VK_IMAGE_TYPE_3D`
+      - ETC2 and EAC compressed formats with `VK_IMAGE_TYPE_2D`
+      - ASTC LDR compressed formats with `VK_IMAGE_TYPE_2D`
+  - multi-planar (`nPLANE`) or sub-sampled (`422` or `420`) formats
+    - when the aspect is `VK_IMAGE_ASPECT_PLANE_n_BIT`, the plane format
+      decides if support is mandatory
+    - when the aspect is `VK_IMAGE_ASPECT_COLOR_BIT`, `samplerYcbcrConversion`
+      feature requires some formats to be supported through ycbcr conversion
+      when the image type is `VK_IMAGE_TYPE_2D` and the tiling is
+      `VK_IMAGE_TILING_OPTIMAL`
+
+## Chapter 50. Additional Capabilities
+
+- 50.1. Additional Image Capabilities
+  - an implementation can return `VK_ERROR_FORMAT_NOT_SUPPORTED` for any
+    combination except for
+    - those required by Required Format Support
+    - if usage1/flags1 is supported, then usage2/flags2 must be supported if
+      it is a subset of usage1/flags1
+    - if usage includes `VK_IMAGE_USAGE_SAMPLED_BIT` and flags is non-sparse,
+      `VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT` must not affect the result
+  - `VkImageFormatProperties`
+    - `maxExtent` must be at least the same as specified in
+      `VkPhysicalDeviceLimits`
+    - `maxMipLevels` must support complete mipmaps unless
+      - tiling is not `VK_IMAGE_TILING_OPTIMAL`,
+      - the image is external, or
+      - the format requires ycbcr conversion
+    - `maxArrayLayers` must support array image unless
+      - tiling is `VK_IMAGE_TILING_LINEAR`
+      - image type is `VK_IMAGE_TYPE_3D`, or
+      - the format requires ycbcr conversion
 
 ## Appendix A: Vulkan Environment for SPIR-V
 
@@ -525,45 +768,6 @@ Vulkan
         If x is exactly representable then x will be returned. Otherwise,
         either the floating-point value closest to and no less than x or the
         value closest to and no greater than x will be returned.
-
-## Versions
-
-- if `vkGetInstanceProcAddr("vkEnumerateInstanceVersion")` returns NULL, the
-  instance-level version is 1.0
-- otherwise, `vkEnumerateInstanceVersion` returns instance-level version
-- `VkPhysicalDeviceProperties::apiVersion` specifies the device-level version
-- roughly, instance-level version and commands are decided by the loader;
-  device-level version and commands are decided by the driver
-  - a command taking none or VkInstance is a instance-level command
-  - a command taking VkPhysicalDevice and others is a device-level command
-- for instance-level version 1.0, `VkApplicationInfo::apiVersion` must be 1.0
-  - it means the app can only use 1.0 for both instance-level and device-level
-    functions
-- since instance-level version 1.1, `VkApplicationInfo::apiVersion` can be any
-  version
-  - it specifies the max version of both instance-level and device-level
-    versions the app intends to use
-  - instance-level version can differ from device-level version
-
-## Layers
-
-- instance-level layers exist
-- device-level layers are deprecated
-
-## Extensions
-
-- instance-level extensions
-  - when an instance-level extension is not enabled, `vkGetInstanceProcAddr`
-    for a command defined by the extension returns NULL
-    - can a instance extension define a global command that are queriable with
-      `vkGetInstanceProcAddr(NULL, ...)`?  It seems no.
-  - when a device-level extension is availalbe, `vkGetInstanceProcAddr` for a
-    command defined by the extension returns non-NULL
-- device-level extensions
-  - when a device-level extension is not enabled, `vkGetDeviceProcAddr` for a
-    command defined by the extension returns NULL
-  - physical-device-level commands defined by device extensions can be used as
-    long as the device extensions are available
 
 ## Example
 
