@@ -527,6 +527,20 @@ Vulkan
   - the result is a 32-bit or 64-bit uint
   - if `VK_QUERY_CONTROL_PRECISE_BIT` is not set, the result can be any
     non-zero value if any sample passes the per-fragment tests
+- 18.4. Pipeline Statistics Queries
+  - it queries a specified set of `VkPipeline` counters
+    - IA, VS, TCS/TES, GS, CL, CS, etc.
+    - see `VkQueryPipelineStatisticFlagBits`
+  - some counters might be inaccurate
+    - Vertices corresponding to incomplete primitives may contribute to the
+      count.
+    - Incomplete primitives may be counted.
+    - The actual number of primitives output by the primitive clipping stage
+      for a particular input primitive is implementation-dependent...'
+    - Implementations may skip the execution of certain compute shader
+      invocations or execute additional compute shader invocations for
+      implementation-dependent reasons as long as the results of rendering
+      otherwise remain unchanged.
 - 18.5. Timestamp Queries
   - `VK_QUERY_TYPE_TIMESTAMP` reads the gpu clock counter
   - the result is a 32-bit or 64-bit uint
