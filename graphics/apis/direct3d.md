@@ -300,3 +300,36 @@ Direct3D
 - ask the device to create a render target view backed by the buffer
 - ask the device context to bind the view as the render target
 - set the viewport
+- example
+  - init
+    - `D3D11CreateDevice` creates a `ID3D11Device` and a `ID3D11DeviceContext`
+    - `ID3D11Device::CreateBuffer` creates a `ID3D11Buffer`
+    - `ID3D11Device::CreateTexture2D` creates a `ID3D11Texture2D`
+      - `ID3D11Texture2D` is a `ID3D11Resource`
+    - `ID3D11Device::CreateRenderTargetView` creates a `ID3D11RenderTargetView`
+      from a `ID3D11Resource`
+  - draw
+    - `ID3D11DeviceContext::ClearRenderTargetView`
+    - `D3DCompile` translates HLSL to bytecode
+    - `ID3D11Device::CreateVertexShader` (and the like) translates bytecode to
+      `ID3D11VertexShader` (and the like)
+    - `ID3D11DeviceContext::RSSetViewports` sets the viewport
+    - `ID3D11DeviceContext::OMSetRenderTargets` sets a
+      `ID3D11RenderTargetView` and a `ID3D11DepthStencilView` as the rt
+    - `ID3D11DeviceContext::IASetInputLayout` sets the input layout
+    - `ID3D11DeviceContext::IASetPrimitiveTopology` sets the primitive
+      topology
+    - `ID3D11DeviceContext::VSSetShader` (and the like) sets the shader
+    - `ID3D11DeviceContext::VSSetConstantBuffers` (and the like) sets the
+      constant buffers
+    - `ID3D11Device::CreateQuery` creates a `ID3D11Query`
+      - `ID3D11Query` is a `ID3D11Asynchronous`
+    - `ID3D11DeviceContext::Begin` optinally accepts a `ID3D11Asynchronous`
+    - `ID3D11DeviceContext::Draw` draws
+    - `ID3D11DeviceContext::End` optionally aceepts a `ID3D11Asynchronous`
+    - `ID3D11DeviceContext::GetData` retrieves data from a
+      `ID3D11Asynchronous`
+  - misc
+    - `ID3D11DeviceContext::CopySubresourceRegion` copies between two
+      `ID3D11Resource`
+    - `ID3D11DeviceContext::Map` maps a `ID3D11Resource`
