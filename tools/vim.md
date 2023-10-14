@@ -30,3 +30,15 @@ Vim
     - `file:` means a static tag, such as a static function
     - `kind:{value}`, where `kind:` is optional, specifies the tag kind
       - see `ctags --list-kinds`
+- `ctags`
+  - ctags deterimines the language of a file and invokes the corresponding
+    parser
+    - `--list-maps` shows how file names are mapped to languages
+    - `--map-<LANG>` changes the mappings
+      - `--map-C='+.foo'` maps `*.foo` as C
+      - `--map-C='+(macros.*)'` maps `macros.*` to C (rather than RpmMacros)
+    - `--languages` changes languages to support
+      - `--languages=-RpmMacros` disables RpmMacros
+  - `-I FOO+`
+    - when an identifier is defined as `void FOO(bar) func_name`, this tells
+      the parser toskips `FOO(bar)`
