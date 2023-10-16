@@ -775,3 +775,22 @@ Mesa RADV
       `PERF_CTR_BO_PASS_OFFSET` for multi-pass queries
 - getting result
   - `radv_pc_get_results` performs the calculations
+
+## NGG & GDS
+
+- `radv_cmd_buffer::gds_needed`
+  - it is set when streamout or when NGG with certain query types are enabled
+  - when queue submit, `radv_update_preamble_cs` allocates `queue->gds_bo`
+- gs pipeline stats
+  - `radv_create_query_pool` sets `pool->uses_gds` when gs
+    primitives/invocations are enabled on gfx10.3
+  - `emit_begin_query` calls `gfx10_copy_gds_query` to override pipeline stats
+    - `V_028A90_SAMPLE_PIPELINESTAT` writes the stats to the pool
+    - `gfx10_copy_gds_query` overrides gs invocations/primitives
+  - `emit_end_query` is similar
+  - `radv_nir_lower_abi` handles two related intrinsics
+    - `nir_intrinsic_atomic_add_gs_emit_prim_count_amd` increments
+      `RADV_SHADER_QUERY_GS_PRIM_EMIT_OFFSET` in gds
+    - `nir_intrinsic_atomic_add_shader_invocation_count_amd` increments
+      `RADV_SHADER_QUERY_GS_INVOCATION_OFFSET` in gds
+  - those two intrinsics are emitted by `ac_nir_gs_shader_query`
