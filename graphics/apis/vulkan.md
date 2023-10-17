@@ -1583,6 +1583,45 @@ Vulkan
 - `vkQueueSubmit`
   - `VkPerformanceQuerySubmitInfoKHR` specifies the counter pass index
 
+## `VK_EXT_image_compression_control`
+
+- `VK_EXT_image_compression_control` adds `imageCompressionControl` feature
+- `VkImageCompressionPropertiesEXT`
+  - it can be chained to
+    - `vkGetPhysicalDeviceImageFormatProperties2`
+    - `vkGetImageSubresourceLayout2KHR`
+  - `imageCompressionFlags` is one of
+    - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` to indicate lossless compression
+    - `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` to indicate lossy
+      compression
+    - `VK_IMAGE_COMPRESSION_DISABLED_EXT` to indicate no compression
+  - `imageCompressionFixedRateFlags` is 0 or one of
+    - `VK_IMAGE_COMPRESSION_FIXED_RATE_1BPC_BIT_EXT` to
+      `VK_IMAGE_COMPRESSION_FIXED_RATE_24BPC_BIT_EXT`
+    - bpc stands for bit-per-component
+- `VkImageCompressionControlEXT`
+  - it can be chained to
+    - `VkImageCreateInfo`
+    - `VkSwapchainCreateInfoKHR`
+    - `VkPhysicalDeviceImageFormatInfo2`
+  - `flags`
+    - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` is the default and allows
+      lossless/no compression
+    - `VK_IMAGE_COMPRESSION_FIXED_RATE_DEFAULT_EXT` and
+      `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` allows
+      lossless/lossy/no compression
+    - `VK_IMAGE_COMPRESSION_DISABLED_EXT` allows no compression
+  - `compressionControlPlaneCount` must match the plane count of the format
+  - `pFixedRateFlags` is an array of masks that indicate the requested bpc of
+    each plane
+- `VK_EXT_image_compression_control_swapchain`
+  - it adds `imageCompressionControlSwapchain` feature
+  - `vkGetPhysicalDeviceSurfaceFormats2KHR` can query
+    `VkImageCompressionPropertiesEXT` to know if the wsi supports
+    lossless/lossy/none compression for a surface format
+  - `vkCreateSwapchainKHR` can include `VkImageCompressionControlEXT` to
+    control compression for the swapchain images
+
 ## Coordinates
 
 - fixed-function vertex processing
