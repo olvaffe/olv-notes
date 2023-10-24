@@ -17,6 +17,9 @@ SPIR-V
   - <https://github.com/KhronosGroup/glslang>
   - depends on SPIRV-Tools
   - provides `glslangValidator` to convert GLSL/HLSL to SPIR-V
+  - build
+    - `./update_glslang_sources.py`
+    - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug`
 - SPIRV-Cross
   - <https://github.com/KhronosGroup/SPIRV-Cross>
   - provides `spirv-cross` to convert SPIR-V to GLSL/HLSL/MSL
