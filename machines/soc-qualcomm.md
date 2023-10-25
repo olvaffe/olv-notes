@@ -1,7 +1,7 @@
 Qualcomm SoC
 ============
 
-## History
+## History: Mobile Series
 
 - Snapdragon S series
   - discontinued
@@ -74,6 +74,16 @@ Qualcomm SoC
     - SM4350
     - 8nm
     - Adreno 619
+  - 4 Gen 1
+    - 2022
+    - SM4375
+    - 6nm
+    - Adreno 619
+  - 4 Gen 2
+    - 2023
+    - SM4450
+    - 4nm
+    - Adreno 613
 - Snapdragon 6 series
   - mid-range
   - 600
@@ -116,6 +126,11 @@ Qualcomm SoC
     - SM{6225,6350,6375}
     - 6nm-8nm
     - Adreno 610, 619
+  - 6 Gen 1
+    - 2023
+    - SM6450
+    - 4nm
+    - Adreno 710
 - Snapdragon 7 series
   - upper mid-range
   - 710, 712
@@ -142,7 +157,12 @@ Qualcomm SoC
     - 2022
     - SM7450
     - 4nm
-    - Adreno ?
+    - Adreno 644
+  - 7s/7+ Gen2
+    - 2023
+    - SM{7435,7475}-AB
+    - 4nm
+    - Adreno 710/725
 - Snapdragon 8 series
   - high-end
   - 800, 801, 805
@@ -190,6 +210,14 @@ Qualcomm SoC
     - SM84{50,75}
     - 4nm
     - Adreno 730
+  - 8 Gen2
+    - 2023
+    - SM8550
+    - 4nm
+    - Adreno 740
+
+## History: Compute Platforms
+
 - Snapdragon 7 Compute Platforms
   - 7c
     - 2020
@@ -224,9 +252,15 @@ Qualcomm SoC
     - Adreno 690
   - 8cx Gen3
     - 2022
-    - SC8???
+    - SC8280
     - 5nm
     - Adreno 8cx Gen3
+- Snapdragon X Series
+  - X Elite
+    - 2024
+    - SC?
+    - 4nm
+    - Adreno?
 
 ## Qualcomm Modem/WiFi/BT?
 

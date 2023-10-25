@@ -15,6 +15,9 @@ Broadcom SoC
 - RPi 4 uses BCM2711
   - Video Core VI, 500MHz
   - Cortex-A72 (ARMv8)
+- RPi 5 uses BCM2712
+  - Video Core VII, 800MHz
+  - Cortex-A76 (ARMv8.2-A)
 - Vide Core has two main processors with differnet instruction sets
   - a VPU, dual-core dual-issue 16-way SIMD for system managements, codecs, etc.
   - QPUs, for 3D works

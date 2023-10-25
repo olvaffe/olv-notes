@@ -28,19 +28,19 @@ ARM Processors
     - ARM11, 2002
 - Application profile
   - ARMv7-A
-    - Cortex-A5, 2009
-    - Cortex-A7, 2011
     - Cortex-A8, 2005
     - Cortex-A9, 2007
-    - Cortex-A12, 2013
+    - Cortex-A5, 2009
     - Cortex-A15, 2010
+    - Cortex-A7, 2011
+    - Cortex-A12, 2013
     - Cortex-A17, 2014
   - ARMv8-A
-    - Cortex-A34, 2016
-    - Cortex-A35, 2015
     - Cortex-A53, 2012
     - Cortex-A57, 2012
+    - Cortex-A35, 2015
     - Cortex-A72, 2015
+    - Cortex-A34, 2016
     - Cortex-A73, 2016
   - ARMv8.1-A
   - ARMv8.2-A
@@ -53,12 +53,22 @@ ARM Processors
   - ARMv8.3-A
   - ARMv8.4-A
   - ARMv8.5-A
-  - ARMv9-A
+  - ARMv8.6-A
+  - ARMv8.7-A
+  - ARMv8.8-A
+  - ARMv8.9-A
+  - ARMv9.0-A
     - Cortex-A510, 2021
     - Cortex-A710, 2021
     - Cortex-A715, 2022
     - Cortex-X2, 2021
     - Cortex-X3, 2022
+  - ARMv9.1-A
+  - ARMv9.2-A
+    - Cortex-A520, 2023
+    - Cortex-A720, 2023
+    - Cortex-X4, 2023
+  - ARMv9.3-A
 - Real-time profile
   - ARMv7-R
     - Cortex-R4, 2011

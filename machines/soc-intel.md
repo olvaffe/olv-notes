@@ -14,8 +14,8 @@ Intel CPUs
   - Willow Cove   - 2020 - 10nm
   - Golden Cove   - 2021 - Intel 7 (was 10nm, but roughly TSMC's 7nm)
   - Raptor Cove   - 2022 - Intel 7
-  - Redwood Cove  - 2023 - Intel 4?
-  - Lion Cove
+  - Redwood Cove  - 2023 - Intel 4
+  - Lion Cove     - 2024 - Intel 20A?
 - Little Cores
   - Silvermont    - 2013 - 22nm
   - Airmont       - 2014 - 14nm
@@ -23,8 +23,8 @@ Intel CPUs
   - Goldmont Plus - 2017 - 14nm
   - Tremont       - 2020 - 10nm
   - Gracemont     - 2021 - Intel 7
-  - Crestmont     - 2023 - Intel 4?
-  - Skymont
+  - Crestmont     - 2023 - Intel 4
+  - Skymont       - 2024 - Intel 20A?
 
 ## CPUs
 
@@ -114,11 +114,11 @@ Intel CPUs
 - 21Q4~: Core 12xxx
   - Alder Lake
     - desktop/mobile
-    - Golden Cove, Gracemont, and Gen12.5 GPU
+    - Golden Cove, Gracemont, and Gen12 GPU
 - 22Q4~: Core 13xxx
   - Raptor Lake
     - desktop
-    - Raptor Cove, Gracemont, and Gen12.5 GPU
+    - Raptor Cove, Gracemont, and Gen12 GPU
 - 23Q4~: Core 14xxx?
   - Meteor Lake
     - desktop
@@ -127,6 +127,7 @@ Intel CPUs
   - Arrow Lake
 - 25Q4~: Core 16xxx?
   - Lunar Lake
+  - Panther Lake
 
 ## Product Lines
 

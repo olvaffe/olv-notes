@@ -1,0 +1,100 @@
+MediaTek SoCs
+=============
+
+## Series
+
+- Helio A, 2018-2020
+  - 12nm
+  - Cortex-A53
+  - PowerVR GE8300
+- Helio P, 2015-2020
+  - 28nm, 16nm, 12nm
+  - Cortex-A53, A73
+  - Mali-T860, Mali-T880, Mali-G71, Mali-G72, PowerVR GE8320
+- Helio G
+  - Helio G9x
+    - 2019, G90 / MT6785
+      - 12nm, Cortex-{A76,A55}, Mali-G76 MC4
+    - 2020, G95 / MT6785
+      - 12nm, Cortex-{A76,A55}, Mali-G76 MC4
+    - 2021, G96 / MT6781
+      - 12nm, Cortex-{A76,A55}, Mali-G57 MC2
+    - 2022, G99 / MT6789
+      - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - Helio G8x
+    - 2020, G80 / G85 / MT6769
+      - 12nm, Cortex-{A75,A55}, Mali-G52 MC2
+    - 2021, G88 / MT6769
+      - 12nm, Cortex-{A75,A55}, Mali-G52 MC2
+  - Helio G3x
+    - 2020, G35 / MT6765
+      - 12nm, Cortex-A53, PowerVR GE8320
+    - 2021, G37 / MT6765
+      - 12nm, Cortex-A53, PowerVR GE8320
+    - 2023, G36 / MT6765
+      - 12nm, Cortex-A53, PowerVR GE8320
+- Dimensity (5G)
+  - Dimensity 700
+    - 2020, 720 / MT6853
+      - 7nm, Cortex-{A76,A55}, Mali-G57 MC3
+    - 2021, 700 / MT6833
+      - 7nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - Dimensity 800
+    - 2020, 800 / MT6873
+      - 7nm, Cortex-{A76,A55}, Mali-G57 MC4
+    - 2020, 820 / MT6875
+      - 7nm, Cortex-{A76,A55}, Mali-G57 MC5
+    - 2021, 810 / MT6833
+      - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - Dimensity 900
+    - 2021, 900 / MT6877
+      - 6nm, Cortex-{A78,A55}, Mali-G68 MC4
+    - 2022, 930 / MT6855
+      - 6nm, Cortex-{A78,A55}, IMG BXM-8-256
+  - Dimensity 1000
+    - 2020, 1000 / MT6889
+      - 7nm, Cortex-{A77,A55}, Mali-G77 MC9
+    - 2021, 1200 / MT6893
+      - 6nm, Cortex-{A78,A55}, Mali-G77 MC9
+    - 2022, 1300 / MT6893
+      - 6nm, Cortex-{A78,A55}, Mali-G77 MC9
+    - 2022, 1080 / MT6877
+      - 6nm, Cortex-{A78,A55}, Mali-G68 MC4
+  - Dimensity 6000
+    - 2023, 6020 (700 renamed)
+    - 2023, 6080 (810 renamed)
+    - 2023, 6100+
+      - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - Dimensity 7000
+    - 2023, 7020 (930 renamed)
+    - 2023, 7030 (1050 renamed)
+    - 2023, 7050 (1080 renamed)
+    - 2023, 7200
+      - 4nm, Cortex-{A715,A510}, Mali-G610 MC4
+  - Dimensity 8000
+    - 2022, 8200 / MT6896
+      - 4nm, Cortex-{A78,A55}, Mali-G610 MC6
+    - 2023, 8020 (1100 renamed)
+    - 2023, 8050 (1300 renamed)
+  - Dimensity 9000
+    - 2021, 9000 / MT6983
+      - 4nm, Cortex-{X2,A710,A510}, Mali-G710 MC10
+    - 2022, 9000+ / MT6983
+      - 4nm, Cortex-{X2,A710,A510}, Mali-G710 MC10
+    - 2022, 9200 / MT6985
+      - 4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
+    - 2023, 9200+ / MT6985
+      - 4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
+- Kompanio (for Chromebooks)
+  - 2019, 500 / MT8183
+    - 12nm, Cortex-{A73,A53}, Mali-G72 MP3
+    - kukui, jacuzzi
+  - 2021, 820 / MT8192
+    - 7nm, Cortex-{A76,A55}, Mali-G57 MC5
+    - asurada
+  - 2021, 1200 / MT8195
+    - 6nm, Cortex-{A78,A55}, Mali-G57 MC5
+    - cherry
+  - 2022, 520 / MT8188
+    - 7nm, Cortex-{A76,A55}, Mali-G52 MC2
+    - corsola
