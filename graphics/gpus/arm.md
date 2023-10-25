@@ -3,55 +3,68 @@ ARM Mali
 
 ## History
 
-- 2007-: Utgard
-  - Mali-{200,300,400,450}
+- 2007: Utgard
   - GLES 2.0
-  - vector ISA
+  - non-unified, vector isa
+  - Mali-{200,300,400,450}
 - 2010: Midgard
-  - Mali-T604
   - GLES 3.1
-  - 4x or 16x FSAA
+  - unified, vector isa
   - 1 to 4 unified shader cores
-  - 2 ALUs per shader core
-  - vector ISA
+  - 2 or 4 ALUs per shader core
+  - 4x or 16x FSAA
   - 1 MMU
   - 32KB to 256KB L2
   - 16x16 tiles
-- 2011: Midgard
-  - Mali-T658
-  - GLES 3.1
-  - more cores and L2
-  - 4 ALUs per core
-- 2012: Midgard
-  - Mali-T{624,628,678}
-  - GLES 3.1
+  - Mali-{T604,T658}
+- 2012: Midgard 2nd gen
   - ASTC
-- 2013: Midgard
-  - Mali-T{720,760}
+  - Mali-{T622,T624,T628,T678}
+- 2013: Midgard 3nd gen
   - GLES 3.2
   - 4x to 16x MSAA
   - 256KB to 2048MB L2
   - 1 to 16 cores
   - AFBC framebuffer compression
-- 2015: Midgard
-  - Mali-T{820,830,860}
-- 2016 Bifrost
-  - Mali-G{51,71}
+  - Mali-{T720,T760}
+- 2014: Midgard 4nd gen
+  - Mali-{T820,T830,T860,T880}
+- 2016: Bifrost
+  - Unified shaders with quad vectorization
+  - Scalar ISA
+  - Clauses execution
   - 1 to 32 cores
-  - scalar ISA
-  - quad-based ALUs
-  - full coherency
-- 2017 Bifrost
-  - Mali-G{52,72}
-- 2018 Bifrost
+  - Full cache coherency
+  - Mali-{G31,G51,G71}
+- 2017: Bifrost 2nd gen
+  - Mali-{G52,G72}
+- 2018: Bifrost 3nd gen
+  - 8 execution lanes per engine (up from 4). Doubled pixel and texel
+    throughput.
   - Mali-G76
-- 2019 Valhall
-  - Mali-G{57,77}
-- 2020 Valhall
-  - Mali-G{68,78}
-- 2021 Valhall
-  - Mali-G{310,510,610,710}
-  - CSF, Command Stream Frontend
+- 2019: Valhall
+  - New superscalar engine
+  - Simplified scalar ISA
+  - New dynamic scheduling
+  - Mali-{G57,G77}
+- 2020: Valhall 2nd gen
+  - Asynchronous clock domains
+  - New FMA units and increase Tiler throughput
+  - Arm Frame Buffer Compression (AFBC) 1.3
+  - Mali-{G68,G78}
+- 2021: Valhall 3nd gen
+  - Larger shader cores (2x compared to Valhall 2nd Gen)
+  - New GPU frontend, Command Stream Frontend (CSF) replaces the Job Manager
+  - Mali-{G310,G510,G610,G710}
+- 2022: Valhall 4nd gen
+  - Ray Tracing support (hardware-based)
+  - Variable Rate Shading
+  - New Execution Engine, with doubled the FMA block, Matrix Multiply instruction support, and PPA improvements
+  - Arm Fixed Rate Compression (AFRC)
+  - Mali-{G615,G715}, Immortalis-G715
+- 2023: 5nd gen
+  - Deferred vertex shading (DVS) pipeline
+  - Mali-{G620,G720}, Immortalis-G720
 
 ## Identification
 

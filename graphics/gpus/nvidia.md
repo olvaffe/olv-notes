@@ -125,7 +125,7 @@ nVidia
   - GeForce 30
   - Direct3D 12.0 Ultimate with `12_2` feature level
   - Ampere architecture
-- AD10x released in 2020
+- AD10x released in 2022
   - GeForce 40
   - Direct3D 12.0 Ultimate with `12_2` feature level
   - Ada Lovelace architecture

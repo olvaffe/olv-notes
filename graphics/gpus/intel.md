@@ -22,10 +22,11 @@ Intel GPUs
   - Ice Lake, 2019, 10nm, 10th gen, Gen11
 - Xe
   - Tiger Lake, 2020, Intel 7 (10nm), 11th gen, Gen12
-  - Alder Lake, 2021, Intel 7 (10nm), 12th gen, Gen12.5
-  - Raptor Lake, 2022, Intel 7 (10nm), 13th gen, Gen12.5
-  - DG1, 2020
-  - Arc (DG2), 2022
+  - Alder Lake, 2021, Intel 7, 12th gen, Gen12
+  - Raptor Lake, 2022, Intel 7, 13th gen, Gen12
+  - DG1 (Xe), 2021, Intel 7, Gen12
+  - DG2 (Arc), 2022, 6nm, Gen12.5
+  - Meteor Lake, 2023, Intel 4, 14th gen, Gen12.5
 
 ## Ice Lake
 
