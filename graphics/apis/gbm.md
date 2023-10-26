@@ -131,6 +131,19 @@ GBM
     the same bo
     - sometimes aux bo is required to be separated
   - ycbcr and modifier don't combine well
+- `gbm_device_is_format_supported`
+  - `__DRIimageExtension::queryDmaBufModifiers`
+  - `dri2_query_dma_buf_modifiers` calls `pipe_screen::is_format_supported`
+    and `pipe_screen::query_dmabuf_modifiers`
+- `gbm_device_get_format_modifier_plane_count`
+  - `__DRIimageExtension::queryDmaBufFormatModifierAttribs` with
+    `__DRI_IMAGE_FORMAT_MODIFIER_ATTRIB_PLANE_COUNT`
+  - `dri2_query_dma_buf_format_modifier_attribs` calls
+    `pipe_screen::is_dmabuf_modifier_supported` and
+    `pipe_screen::get_dmabuf_modifier_planes`
+    - `DRM_FORMAT_MOD_LINEAR` and `DRM_FORMAT_MOD_INVALID` are considered
+      well-known (no metadata plance and is equal to format plane count) and
+      do not call into the pipe driver
 - `gbm_bo_create`
   - `gbm_format_to_dri_format` maps fourcc to dri format
     - it only maps rgba formats and has no ycbcr support
