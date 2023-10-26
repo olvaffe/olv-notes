@@ -185,6 +185,57 @@ GBM
     - each plane has its own fd/stride/offset
       - different fds might refer to the same bo though
 
+## Clients
+
+- the api has 3 main categories
+  - `gbm_device_*`
+    - create/destory/query
+    - `gbm_device_is_format_supported`
+    - `gbm_device_get_format_modifier_plane_count`
+  - `gbm_surface_`
+    - for use with `EGL_KHR_platform_gbm`
+  - `gbm_bo_*`
+    - create/destory/queries
+    - `gbm_bo_import`
+    - `gbm_bo_get_handle` / `gbm_bo_get_handle_for_plane`
+    - `gbm_bo_get_fd` / `gbm_bo_get_fd_for_plane`
+    - `gbm_bo_write`
+    - `gbm_bo_map`
+- x11
+  - xserver
+    - `gbm_device_get_format_modifier_plane_count`
+    - no surface
+    - bo create/import/export
+    - no bo map/write
+  - xf86-video-amdgpu delta is empty
+- wayland
+  - weston
+    - no device query
+    - use surface
+    - bo create/import/export/write
+    - no bo map
+  - wlroots
+    - no device query
+    - no surface
+    - bo create/export
+    - no bo import/map/write
+- apps over kms
+  - kmscube
+    - no device query
+    - use surface
+    - bo create/export/map
+    - no bo import/write
+  - mpv
+    - no device query
+    - use surface
+    - bo create/export/map
+    - no bo import/write
+  - sdl
+    - `gbm_device_is_format_supported`
+    - use surface
+    - bo create/export/map/write
+    - no bo import
+
 ## minigbm
 
 - to build,
