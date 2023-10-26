@@ -56,7 +56,7 @@ ANGLE
     - `angledir=angle-aarch64-$(date +%Y%m%d)`
     - `find out/aarch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
     - `find out/aarch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/aarch64,$angledir,"`
-    - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt`
+    - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt src/tests/restricted_traces/restricted_traces.json`
     - `zstd $angledir.tar`
     - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
       - `ln -sf libEGL.so libEGL.so.1`
