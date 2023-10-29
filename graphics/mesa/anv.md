@@ -317,3 +317,15 @@ Mesa ANV
       clear color) aux planes
     - the memory plane count is the format plane count times 1, 2, or 3,
       depending on the modifier
+    - a 3-plane formats can in theory has up to 9 memory planes
+      - `VK_IMAGE_ASPECT_MEMORY_PLANE_x_BIT_EXT` supports up to 4 memory
+        planes
+      - what this means is, `vkGetImageSubresourceLayout` or
+        `vkGetImageMemoryRequirements2` can query up to 4 memory planes
+      - if an image with such a format/modifier is created,
+        - it cannot support `VkExternalMemoryImageCreateInfo` in general,
+          because we can't query the layouts of all 9 meomry planes which are
+          needed by the foreign apis
+        - it cannt support `VK_IMAGE_CREATE_DISJOINT_BIT`, which requires
+          querying memory requirements for all 9 memory planes
+        - but it can still be supported when non-disjoint and non-external
