@@ -293,3 +293,27 @@ Mesa ANV
     state 
     - from the offset to `bindless_surface_state_pool` to offset to
       `internal_surface_state_pool`
+
+## DRM modifiers
+
+- `anv_GetPhysicalDeviceFormatProperties2`
+  - it calls `anv_get_image_format_features2` with different tilings/modifiers
+    to query their features
+    - `isl_drm_modifier_info_for_each` loops through all known modifiers
+    - it does not always treat `DRM_FORMAT_MOD_LINEAR` as linear tiling, so
+      there might be bugs
+    - 3-channel formats (e.g., `VK_FORMAT_R8G8B8_UNORM`) cannot be
+      renderred/blitted to natively.  The workaround does not apply to
+      modifiers.
+    - finally, it treats modifiers specially
+      - `isl_drm_modifier_get_score` returns 0 for unsupported modifiers.
+        They are rejected.
+      - only `ISL_COLORSPACE_LINEAR`/`ISL_COLORSPACE_SRGB` with
+        `ISL_UNORM`/`ISL_SFLOAT` are supporeted
+        - `ISL_COLORSPACE_YUV` is rejected
+        - `ISL_SNORM`/`ISL_UINT`/etc are rejected
+  - `isl_drm_modifier_get_plane_count` is simple
+    - each plane has 0 (no compression), 1 (compression), or 2 (compression +
+      clear color) aux planes
+    - the memory plane count is the format plane count times 1, 2, or 3,
+      depending on the modifier
