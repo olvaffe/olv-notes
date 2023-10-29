@@ -312,6 +312,14 @@ Mesa ANV
         `ISL_UNORM`/`ISL_SFLOAT` are supporeted
         - `ISL_COLORSPACE_YUV` is rejected
         - `ISL_SNORM`/`ISL_UINT`/etc are rejected
+      - compressed formats are rejected
+      - npot formats (e.g., 3-channel formats) are rejected
+      - no disjoint support
+      - if planar,
+        - only `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM` and
+          `VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM` are supported
+        - no aux support
+      - the only supported aux surface is `CCS_E`
   - `isl_drm_modifier_get_plane_count` is simple
     - each plane has 0 (no compression), 1 (compression), or 2 (compression +
       clear color) aux planes
@@ -329,3 +337,15 @@ Mesa ANV
         - it cannt support `VK_IMAGE_CREATE_DISJOINT_BIT`, which requires
           querying memory requirements for all 9 memory planes
         - but it can still be supported when non-disjoint and non-external
+- `anv_GetPhysicalDeviceImageFormatProperties`
+  - it calls `anv_get_image_format_properties`
+  - only `VK_IMAGE_TILING_OPTIMAL` supports msaa
+  - if modifier,
+    - only simple 2D image is supported
+      - `VK_IMAGE_TYPE_2D`
+      - array size 1
+      - mip level 1
+      - sample count 1
+    - the only supported aux suface is `CCS_E`
+    - `VK_IMAGE_CREATE_DISJOINT_BIT` plus aux is rejected
+    - `VK_IMAGE_CREATE_ALIAS_BIT` is rejected
