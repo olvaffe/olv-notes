@@ -490,6 +490,11 @@ Mesa RADV
       descriptor in the opaque metadata
     - `ac_surface_compute_bo_metadata` computes `tiling_info` from
       `radeon_surf`
+    - when the resource is multi-planar,
+      - `whandle->plane` specifies the plane
+      - `resource` points to the specified plane
+      - `si_set_tex_bo_metadata` is called only if this is the first plane
+        - `whandle->offset == 0`
   - on radeonsi import, `si_texture_from_winsys_buffer` calls
     `buffer_get_metadata`
     - `ac_surface_apply_bo_metadata` partially inits `radeon_surf` from
