@@ -448,6 +448,63 @@ Mesa RADV
 - `radv_layout_fmask_compressed`
 - `radv_expand_fmask_image_inplace`
 
+## External Images
+
+- `radv_GetPhysicalDeviceFormatProperties2` calls
+  `radv_list_drm_format_modifiers` to query modifiers
+  - it rejects compressed or depth/stencil formats
+  - `ac_get_supported_modifiers` returns all supported modifiers
+    - on gfx9,
+      - `AMD_FMT_MOD_TILE_GFX9_64K_D_X` with and without dcc
+      - `AMD_FMT_MOD_TILE_GFX9_64K_S_X` with and without dcc
+      - if block size is 32 bits, `AMD_FMT_MOD_TILE_GFX9_64K_S_X` with dcc
+        retile
+      - `AMD_FMT_MOD_TILE_GFX9_64K_D` without dcc
+      - `AMD_FMT_MOD_TILE_GFX9_64K_S` without dcc
+      - `DRM_FORMAT_MOD_LINEAR`
+  - `radv_get_modifier_flags` removes `DISJOINT` support
+  - if planar, `drmFormatModifierPlaneCount` is set to format plane count
+    - there is no dcc support (but the function does not reject them atm)
+  - if non-planar, `drmFormatModifierPlaneCount` is
+    - 3 if dcc retile
+    - 2 if dcc
+    - 1 if no dcc
+- `radv_GetPhysicalDeviceImageFormatProperties2`
+  - `radv_get_image_format_properties` handles most properties and call
+    `radv_check_modifier_support` for modifiers
+    - it accepts only 2D, non-sparse
+    - if dcc, `radv_are_formats_dcc_compatible` checks
+      `VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT`
+    - if dcc, non-array and non-mipmap
+    - no msaa
+  - `get_external_image_format_properties` handles external properties
+    - if dma-buf, it requires
+      - `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
+      - 2D
+    - if opaque fd and non-linear, it also requires dedicated alloc
+- amdgpu supports per-bo `amdgpu_bo_metadata` for use by userspace
+  - it is still in use, until the entire userspace becomes explicit
+    - iow, it defines `DRM_FORMAT_MOD_INVALID`
+  - on radeonsi export, `si_texture_get_handle` calls `si_set_tex_bo_metadata`
+    - `ac_surface_compute_umd_metadata` essentially embeds the texture
+      descriptor in the opaque metadata
+    - `ac_surface_compute_bo_metadata` computes `tiling_info` from
+      `radeon_surf`
+  - on radeonsi import, `si_texture_from_winsys_buffer` calls
+    `buffer_get_metadata`
+    - `ac_surface_apply_bo_metadata` partially inits `radeon_surf` from
+      `tiling_info`
+    - `ac_surface_apply_umd_metadata` partially inits `radeon_surf` from the
+      opaque metadata
+- if a memory is dedicated,
+  - `radv_GetMemoryFdKHR` calls `buffer_set_metadata`
+    - `radv_amdgpu_winsys_bo_set_metadata` computes `tiling_info`
+      - unlike radeonsi, it does not use `ac_surface_compute_bo_metadata`
+  - `radv_AllocateMemory` with `VkImportMemoryFdInfoKHR` calls
+    `buffer_get_metadata` if not `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
+    - `radv_amdgpu_winsys_bo_get_metadata` decodes `tiling_info`
+      - unlike radeonsi, it does not use `ac_surface_apply_bo_metadata`
+
 ## Command Processor
 
 - `radeon_set_config_reg`

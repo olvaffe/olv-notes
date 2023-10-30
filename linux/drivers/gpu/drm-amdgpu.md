@@ -310,6 +310,12 @@ DRM amdgpu
 - `DRM_IOCTL_AMDGPU_GEM_USERPTR` creates a gem bo from userptr
 - `DRM_IOCTL_AMDGPU_GEM_MMAP` returns the magic mmap offset for cpu mapping
 - `DRM_IOCTL_AMDGPU_GEM_METADATA` sets/gets the bo metadata
+  - it is for userspace export/import
+  - `drm_amdgpu_gem_metadata` payload has
+    - `__u64 flags` is reserved
+    - `__u64 tiling_info` is the tiling flags
+      - DCE looks at this, likely because the userspace does not handle it
+    - `__u32 data[64]` is completely opaque
 - `DRM_IOCTL_AMDGPU_GEM_OP` queries/updates gem bo info
 - `DRM_IOCTL_AMDGPU_GEM_VA` maps/unmaps/replaces gem bo va
 - `DRM_IOCTL_AMDGPU_CS` submits a job
