@@ -12,6 +12,8 @@ Android CTS
 - branches
   - `android10-tests-dev`, `android11-tests-dev`, and so on are for
     developments
+    - `android11-tests-dev` requires `libncurses.so.5` and `libtinfo.so.5`
+      from the host.  Create symlinks if your distro only has `libncurses6`
   - `android10-tests-release`, `android11-tests-release`, and so on merge
     from the dev branches to make quarterly releases
 - old branches
