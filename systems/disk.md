@@ -266,3 +266,36 @@ Distro Disk
 - lsblk
 - blkid
 - findmnt
+
+## Data Migration
+
+- partition table cloning
+  - `sfdisk -d /dev/sda | sfdisk /dev/sdb`
+  - it is usually better to dump to a file and manually edit first
+    - to generate new uuids or when the two disks have difference sizes
+    - header lines
+      - keep `label: gpt`
+      - remove the rest and let sfdisk derive them from the new disk
+    - partition lines
+      - keep `type`, `size`, `name`, and `attrs`
+        - remove `size` as well for the last partition
+      - remove the rest and let sfdisk derive them
+- partition cloning
+  - the two partitions should have the same size
+    - if the size grows, follow the cloning by `resize2fs /dev/sdb4`
+  - `cp /dev/sda4 /dev/sdb4` copies the entire partition
+  - `e2image -arp /dev/sda4 /dev/sdb4` copies ext partitions
+    - it only copies blocks that are used
+- data cloning
+  - `cp -ax --sparse=always / /mnt`
+    - `-a` is recursive and preserves everything (mode, owner, timestamps,
+      context, links, xattr)
+    - `-x` stays on the same filesystem
+  - `rsync -qaHAXSx / /mnt`
+    - `-q` is quiet
+    - `-a` is archive (recursive and preserves most things)
+    - `-H` preserves hard links
+    - `-A` preserves acls
+    - `-X` preserves xattrs
+    - `-S` uses sparse
+    - `-x` stays on the same filesystem
