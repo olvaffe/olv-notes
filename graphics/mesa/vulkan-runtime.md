@@ -45,3 +45,61 @@ Mesa Vulkan Runtime
   - calls `CmdEndRendering` to end rendering
   - calls `CmdPipelineBarrier2` to insert a memory barrier if there is any
     `vk_subpass_dependency` whose dst subpass is `VK_SUBPASS_EXTERNAL`
+
+## Graphics Pipeline State
+
+- `vk_graphics_pipeline_state_fill` flattens `VkGraphicsPipelineCreateInfo` to
+  `vk_graphics_pipeline_state`
+- `vk_get_dynamic_graphics_states` turns `VkPipelineDynamicStateCreateInfo`
+  into a bitmask of `enum mesa_vk_dynamic_graphics_state`
+- pipeline libraries
+  - reminder
+    - `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR` means to create a pipeline library
+      - i.e., a pipeline that is incomplete
+    - `VkPipelineLibraryCreateInfoKHR` means to create a complete pipeline or
+      a pipeline library from the specified pipeline libraries
+    - `VkGraphicsPipelineLibraryCreateInfoEXT` specifies the graphics states
+      included directly in `VkGraphipcsPipelineCreateInfo`
+      - the complete pipeline or pipeline library being created will have
+        graphipcs states directly from `VkGraphipcsPipelineCreateInfo` or (if
+        any) indirectly from `VkPipelineLibraryCreateInfoKHR`
+  - `allowed_stages` is
+    - if creating a regular pipeline, it's
+      - `VK_SHADER_STAGE_ALL_GRAPHICS`
+      - `VK_SHADER_STAGE_TASK_BIT_EXT`
+      - `VK_SHADER_STAGE_MESH_BIT_EXT`
+    - if creating a graphics pipeline library, it depends on
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT`
+      - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT`
+    - otherwise, zero
+- `FOREACH_STATE_GROUP` macro
+  - it takes another macro as input
+  - it invokes the other macro with all `mesa_vk_graphics_state_groups` one by
+    one
+    - the first parameter is `mesa_vk_graphics_state_groups`
+    - the second parameter is the type of state group
+    - the third parameter is the name of state group in
+      `vk_graphics_pipeline_state`
+- `lib`
+  - if gpl, it's `VkGraphicsPipelineLibraryCreateInfoEXT::flags`
+  - else, it's 0 or all
+- `needs` is a bitmask of `enum mesa_vk_graphics_state_groups`
+  - it specifies the graphics states to be flatten to
+    `vk_graphics_pipeline_state`
+  - it is initialized to graphipcs states directly included in
+    `VkGraphicsPipelineCreateInfo`
+  - `FOREACH_STATE_GROUP(FILTER_NEEDS)` filters out states that are already
+    flattened previously
+  - if a state group is fully dynamic, it is also removed from `needs`
+    - `get_dynamic_state_groups` maps `mesa_vk_graphics_state_groups` to
+      `mesa_vk_dynamic_graphics_state`
+    - `fully_dynamic_state_groups` maps `mesa_vk_dynamic_graphics_state` to
+      `mesa_vk_graphics_state_groups`
+- `ma`
+  - `FOREACH_STATE_GROUP(ENSURE_STATE_IF_NEEDED)` calls `vk_multialloc_add`
+    for needed states
+  - `all` can be provided as the storage to avoid multialloc
+- `INFO_ALIAS` maps names in `VkGraphicsPipelineCreateInfo` to names in
+  `vk_graphics_pipeline_state`
+- `FOREACH_STATE_GROUP(INIT_STATE_IF_NEEDED)` initializes each needed
+  graphics state groups
