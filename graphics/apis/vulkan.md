@@ -396,10 +396,12 @@ Vulkan
     - as a special case, if two render passes have a single subpass,
       - the ds and resolve attachment references are ignored for compatibility
         check
-- 8.4. Render Pass Commands
+- 8.8. Render Pass Commands
   - depending on VkSubpassContents, any subpass of a render pass either
     execute only commands in the primary command buffer or only command the
     secondary command buffers
+- 8.10. Common Render Pass Data Races (Informative)
+  - this section summarizes renderpass feedback loops
 
 ## Chapter 9. Shaders
 
