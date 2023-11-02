@@ -377,6 +377,25 @@ Vulkan
 
 ## Chapter 8. Render Pass
 
+- 8.3. Render Pass Compatibility
+  - framebuffers and graphics pipelines are created based on a specific render
+    pass object
+  - during rendering, framebuffers and graphics pipelines can be used to any
+    compatible render pass object
+    - two attachment references are compatible if they have the same format
+      and sample count (or are both `VK_ATTACHMENT_UNUSED`)
+    - two arrays of attachment references are compatible if all pairs of
+      attachment references are compatible (when the array sizes mismatch,
+      missing attachment references are considered `VK_ATTACHMENT_UNUSED`)
+    - two render passes are compatible if all attachment references (color,
+      ds, input, resolve) are compatible, and they are otherwise idential
+      except for
+      - initial and final image layouts of attachments
+      - load and store ops of attachments
+      - image layouts in attachment references
+    - as a special case, if two render passes have a single subpass,
+      - the ds and resolve attachment references are ignored for compatibility
+        check
 - 8.4. Render Pass Commands
   - depending on VkSubpassContents, any subpass of a render pass either
     execute only commands in the primary command buffer or only command the
@@ -392,7 +411,86 @@ Vulkan
   - a shader entry point also statically uses all variables explicitly
     declared in its interface
 
-## Chapter 9. Resource Creation
+## Chapter 10. Pipelines
+
+- 10.1. Compute Pipelines
+  - `VkComputePipelineCreateInfo` mainly consists of
+    - `VkPipelineCreateFlags`
+      - `VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT` disables shader
+        optimization
+      - `VK_PIPELINE_CREATE_ALLOW_DERIVATIVES_BIT` allows other pipelines to
+        derive from this one (to reduce compile time)
+      - `VK_PIPELINE_CREATE_DERIVATIVE_BIT` allows this pipeline to derive
+        from another one (to reduce compile time)
+      - `VK_PIPELINE_CREATE_VIEW_INDEX_FROM_DEVICE_INDEX_BIT`
+      - `VK_PIPELINE_CREATE_DISPATCH_BASE_BIT` allows dispatching with
+        `vkCmdDispatchBase`
+      - `VK_PIPELINE_CREATE_FAIL_ON_PIPELINE_COMPILE_REQUIRED_BIT` early
+        returns with `VK_PIPELINE_COMPILE_REQUIRED` if compilation is required
+        (as opposed to pipeline cache hit)
+      - `VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT` sets the rest of the
+        pipelines to `VK_NULL_HANDLE` on the first failure of multiple
+        pipeline creation
+      - there are more bits that are not in core
+    - `VkPipelineShaderStageCreateInfo`
+    - `VkPipelineLayout` describes the pipeline layout (descriptor set
+      layouts, push constants, etc.)
+      - the layout is "consumed", in the sense that the pipeline can outlive
+        the layout
+      - impl needs the layout because
+        - shader refers to the descriptor with `set` and `binding`
+        - impl uses the layout to, for example, map `set` and `binding` to the
+          offset of the descriptor
+- 10.2. Graphics Pipelines
+  - `VkGraphicsPipelineCreateInfo` is divided into 4 state groups
+    - Vertex Input State
+      - this state group is required for a complete graphipcs pipeline if the
+        pipeline has vertex shader
+      - `VkPipelineVertexInputStateCreateInfo`
+      - `VkPipelineInputAssemblyStateCreateInfo`
+    - Pre-Rasterization Shader State
+      - this state group is always required for a complete graphics pipeline
+      - `VkPipelineShaderStageCreateInfo` for vs/tcs/tes/gs/task/mesh
+      - `VkPipelineLayout`
+      - `VkPipelineViewportStateCreateInfo`
+      - `VkPipelineRasterizationStateCreateInfo`
+      - `VkPipelineTessellationStateCreateInfo`
+      - `VkRenderPass` and `subpass`
+        - or `viewMask` of `VkPipelineRenderingCreateInfo`
+      - some extensions
+    - Fragment Shader State
+      - this state group is required for a complete graphipcs pipeline if
+        `rasterizerDiscardEnable` is true
+      - `VkPipelineShaderStageCreateInfo` for fs
+      - `VkPipelineLayout`
+      - `VkPipelineMultisampleStateCreateInfo`
+        - if sample shading is enabled or `renderpass` is not `VK_NULL_HANDLE`
+      - `VkPipelineDepthStencilStateCreateInfo`
+      - `VkRenderPass` and `subpass`
+        - or `viewMask` of `VkPipelineRenderingCreateInfo`
+      - some extensions and some flags
+    - Fragment Output State
+      - this state group is required for a complete graphipcs pipeline if
+        `rasterizerDiscardEnable` is true
+      - `VkPipelineColorBlendStateCreateInfo`
+      - `VkRenderPass` and `subpass`
+        - or `VkPipelineRenderingCreateInfo`
+      - `VkPipelineMultisampleStateCreateInfo`
+      - some extensions and some flags
+  - `renderPass` and `subpass`
+    - unless dynamic rendering, `renderPass` and `subpass` must be valid
+    - if dynamic rendering, `VkPipelineRenderingCreateInfo` is provided in
+      place of `renderPass`
+      - if both are specified, `VkPipelineRenderingCreateInfo` is ignored
+- 10.3. Ray Tracing Pipelines
+- 10.5. Multiple Pipeline Creation
+  - the create functions can create multiple pipelines at a time
+  - if it fails to create for a pipeline, the object will be set to
+    `VK_NULL_HANDLE` and the create function will return the error
+    - if multiple pipelines fails, it returns the error code of any of the
+      failed creation
+
+## Chapter 12. Resource Creation
 
 - 12.1. Buffers
   - `VkBufferCreateInfo`
