@@ -5,16 +5,18 @@ dEQP
 
 - Build
   - `python3 external/fetch_sources.py`
-  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DDEQP_TARGET=surfaceless`
+  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
     - `DEQP_TARGET` is mostly for GL/GLES
   - `ninja`
 - Package
+  - `cd out`
   - `mkdir deqp-dist`
   - `cd deqp-dist`
   - `for i in vulkan/deqp-vk vulkan/vulkan; do ln -sf ../external/vulkancts/modules/$i; done`
   - `for i in egl/deqp-egl gles2/deqp-gles2 gles2/gles2 gles3/deqp-gles3 gles3/gles3 gles31/deqp-gles31 gles31/gles31; do ln -sf ../modules/$i; done`
+  - `for i in glcts gl_cts; do ln -sf ../external/openglcts/modules/$i; done`
   - `for i in vk-master.txt vk-master egl-master.txt gles2-master.txt gles3-master.txt gles31-master.txt; do ln -sf ../../android/cts/main/$i; done`
-  - `strip deqp-*`
+  - `strip deqp-* glcts`
   - `cd ..`
   - `tar zchf deqp-dist.tar.gz deqp-dist`
 
