@@ -831,6 +831,25 @@ dEQP
       - the result is from sampling image 2 (named `uncompressed`) and storing
         to `resultImage`
 
+## Test Case: `dEQP-VK.texture.compressed_3D.astc_4x4_unorm_block_3d_pot`
+
+- the test is a part of `create3DTextureCompressedFormatTests`
+  - size is width 128, height 64, depth 8, non-mipmapped
+  - format is `VK_FORMAT_ASTC_4x4_UNORM_BLOCK`
+  - backing mode is regular (non-sparse)
+- `Compressed3DTestInstance::Compressed3DTestInstance`
+  - `TestTexture::populateCompressedLevels` initializes the 3D texture
+    - with complete mipmap
+    - `vkCmdCopyBufferToImage` with 8 regions, one for each level
+      - level 0 is 128x64x8
+      - level 1 is 64x32x4
+      - level 7 is 1x1x1
+- `Compressed3DTestInstance::iterate`
+  - because depth is 8, it tests slice 0, 3, and 7
+  - `m_renderer2D.renderQuad` draws a quad, sampling the respective slices, an
+    - `vkCmdDrawIndexed` with 6 vertices
+  - `vkCmdCopyImageToBuffer` to verify
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
