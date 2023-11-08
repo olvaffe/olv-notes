@@ -65,6 +65,14 @@ Chromium Browser
     - `ffmpeg_branding = "Chrome"'`
     - see also
       <https://gitlab.archlinux.org/archlinux/packaging/packages/chromium/-/blob/main/PKGBUILD>
+- packaging
+  - `ninja -C out/Default installer` generates `out/Default/*.deb`
+  - arch package has its own rules for packaging
+  - cros uses
+    <https://chromium.googlesource.com/chromiumos/chromite.git/+/refs/heads/main/lib/chrome_util.py>
+    - `StageChromeFromBuildDir` copies files from the build dir to the staging
+      dir
+    - `_COPY_PATHS_CHROME` is the list of files to copy
 
 ## Build for ChromeOS
 
