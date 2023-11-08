@@ -28,7 +28,8 @@ Chromium Browser
       - these control the optimization levels: debug, release, and official
     - `symbol_level = -1`, `v8_symbol_level = symbol_level`, and
       `blink_symbol_level = -1`
-      - these control the debug symbols: auto (-1), none, min, full
+      - these control the debug symbols: auto (-1), none (0), min (1),
+        full (2)
     - `is_component_build = is_debug`
       - this controls shared or static libraries
       - set to true for faster linking and deploying
@@ -67,10 +68,22 @@ Chromium Browser
       - `"cros_boards": "board1:board2"`
       - `"checkout_src_internal": True`
         - might require `gsutil.py config`
+      - `"download_remoteexec_cfg": True`
     - `target_os = ["chromeos"]`
+    - this affects what `DEPS` does when `gclient sync` runs
+      - e.g., it runs `cros chrome-sdk` to
+        - download the toolchain to `src/build/cros_cache`
+        - download gn args to `src/build/args/chromeos`
+        - create `src/out_$BOARD/Release/args.gn`
   - `gclient sync`
 - setup
   - `gn gen out_$BOARD/Release`
+    - the pre-generated `args.gn` has
+      `import("//build/args/chromeos/$BOARD.gni")`
+    - these additional changes are recommended
+      - `is_chrome_branded = true`
+      - `use_remoteexec = true` for faster build
+      - `dcheck_always_on = false` if don't need dchecks
   - the default will be a release monolithic build
 - build
   - `autoninja -C out_$BOARD/Release chrome nacl_helper`
