@@ -63,6 +63,8 @@ Chromium Browser
     - `disable_fieldtrial_testing_config = true`
     - `proprietary_codecs = true'`
     - `ffmpeg_branding = "Chrome"'`
+    - see also
+      <https://gitlab.archlinux.org/archlinux/packaging/packages/chromium/-/blob/main/PKGBUILD>
 
 ## Build for ChromeOS
 
