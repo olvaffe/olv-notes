@@ -26,6 +26,9 @@ Chromium Browser
   - defaults can be seen with `gn args out/Default --list`
     -  `is_official_build = false` and `is_debug = !is_official_build`
       - these control the optimization levels: debug, release, and official
+        - official build is very slow to build
+        - debug build is very slow to run
+        - use release build!
     - `symbol_level = -1`, `v8_symbol_level = symbol_level`, and
       `blink_symbol_level = -1`
       - these control the debug symbols: auto (-1), none (0), min (1),
@@ -36,26 +39,28 @@ Chromium Browser
       - but it appears to introduce races in `VaapiWrapper`
     - `dcheck_always_on = (build_with_chromium && !is_official_build)`
       - this controls whether `DLOG` and `DCHECK` are compiled in
-    - `enable_nacl = true`
-      - set to false for faster build
-    - `use_goma = false`
+    - `enable_nacl = false`
+      - only for chromeos
+    - `use_remoteexec = false`
       - set to true for faster build
+      - was `use_goma`
     - `is_chrome_branded = false`
       - set to true for chrome branding
       - one big difference is in `ShouldUseFieldTrialTestingConfig`
         - on a chrome branded build, `fieldtrial_testing_config.json` is not
           applied by default
-  - release build
-    - `is_official_build = true`
   - recommended dev args
+    - `is_chrome_branded = true`
     - `is_debug = false`
+    - `use_remoteexec = true`
+    - `is_component_build = true`
+      - seems to have issues with `VaapiWrapper` though
+    - `dcheck_always_on = true`
     - `symbol_level = 1`
     - `v8_symbol_level = 0`
     - `blink_symbol_level = 0`
-    - `is_component_build = true`
-    - `enable_nacl = false` (cros requires nacl?)
-    - `use_goma = true`
-  - enable sw proprietary codecs
+  - for a chromium build where `is_chrome_branded = false`
+    - `disable_fieldtrial_testing_config = true`
     - `proprietary_codecs = true'`
     - `ffmpeg_branding = "Chrome"'`
 
