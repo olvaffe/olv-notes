@@ -162,6 +162,23 @@ Chromium Browser
     - `is_official_build = true`
     - `use_thin_lto = true`
 
+## Versioning
+
+- `chrome/VERSION`
+  - `MAJOR` is incremented every 4 weeks
+  - `MINOR` is always 0
+  - `BUILD` is incremented every 12 hours
+  - `PATCH` is not used on main
+- branching
+  - when `BUILD` is incremented to `X+1`, it concludes the development of
+    BUILD `X`
+  - `refs/branch-heads/<X>` branch is created from some earlier commit
+    - the branch is not fetched by default
+  - a commit to add `chrome_branch_deps.json` is added and tagged on the
+    branch
+  - `PATCH` version is incremented once a day (or on-demand) if there are
+    changes
+
 ## Directory Structure
 
 - browsers
