@@ -90,6 +90,40 @@ dma-buf
 - it is possible to create a sync-file by merging two sync-files.  The new
   sync-file wraps a dma-fence-array.
 
+## sw-sync
+
+- `CONFIG_SW_SYNC` creates `/sys/kernel/debug/sync`
+  - `sw_sync` supports ioctls to create dma-fences
+  - `info` dumps `sync_timeline_list_head` and `sync_file_list_head`
+    - `sync_timeline_list_head` is only used by `sw_sync`
+    - `sync_file_list_head` is unused
+- `sw_sync_debugfs_fops`
+  - `sw_sync_debugfs_open` associates a `sync_timeline` with the file
+    - `context` is from `dma_fence_context_alloc`
+    - `name` is from `get_task_comm`
+    - `pt_list` is a list of all `sync_pt` sorted by seqnos
+    - `pt_tree` is an rb tree to help find the right spot to insert a new
+      `sync_pt` to `pt_list`
+  - `sw_sync_ioctl`
+    - `SW_SYNC_IOC_CREATE_FENCE` creates a `sync_pt` and a `sync_file`
+      - `sync_pt_create` create a `sync_pt`, which is a subclass of
+        `dma_fence` with a userspace-specified 32-bit seqno
+        - the `sync_pt` is added to `pt_list`, which is sorted by seqnos
+      - `sync_file_create` creates a `sync_file` to wrap `sync_pt`
+    - `SW_SYNC_IOC_INC` increments `sync_timeline`
+      - `sync_timeline_signal` increments the timeline value
+        - all `sync_pt` with seqnos less than or equal to the timeline value
+          are signaled and removed
+  - `sw_sync_debugfs_release` signals all remaining `sync_pt` before freeing
+    the timeline
+- `timeline_fence_ops` is the `dma_fence_ops` for `sync_pt`
+  - `timeline_fence_get_driver_name` returns `sw_sync`
+  - `timeline_fence_get_timeline_name` returns the name of `sync_timeline`,
+    which is the comm name
+  - `timeline_fence_signaled` returns true if the timeline value is greater
+    than or equal to the fence seqno
+  - `timeline_fence_release` frees the `sync_pt`
+
 ## dma-resv
 
 - A `dma_resv` manages fences for a buffer
