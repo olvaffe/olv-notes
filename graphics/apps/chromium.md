@@ -830,6 +830,26 @@ Chromium Browser
       `GLES2DecoderPassthroughImpl::HandleFoo`
     - `GLES2DecoderImpl` validates before calling into the driver while
       `GLES2DecoderPassthroughImpl` calls into angle directly
+- `SharedImageBacking`
+  - webgl renders to a `SharedImageBacking` and compositor samples from the
+    `SharedImageBacking`
+  - by default on linux/x11, the image backing is `GLTextureImageBacking`
+    - that is, webgl renders to a GL texture and compositor samples from it
+    - `--enable-features=DefaultANGLEVulkan` uses `GLTextureImageBacking`
+      - that is, everything works the same except angle translates gles to vk
+        internally
+    - `--enable-features=Vulkan` uses `ExternalVkImageBacking`
+      - webgl renders to an imported vk image
+      - compositor samples from the vk image
+      - it crashes on radv and runs fine on anv
+    - `--enable-features=Vulkan,DefaultANGLEVulkan` uses `OzoneImageBacking`
+      - webgl renders to an imported gbm bo
+      - compositor samples from the imported gbm bo
+      - it gets tiling wrong on radv and runs fine on anv
+    - `--enable-features=Vulkan,DefaultANGLEVulkan,VulkanFromANGLE` uses
+      `AngleVulkanImageBacking`
+      - webgl renders to a vk image
+      - compositor samples from the vk image
 
 ## GPU and IPC
 
