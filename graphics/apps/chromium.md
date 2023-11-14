@@ -862,16 +862,47 @@ Chromium Browser
       `GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle`
   - export
     - `GpuMemoryBuffer::CloneHandle` exports a `gfx::GpuMemoryBufferHandle`
+  - `enum GpuMemoryBufferType`
+    - `EMPTY_BUFFER` has no backing
+    - `SHARED_MEMORY_BUFFER` is generic and the handle is a
+      `UnsafeSharedMemoryRegion`
+      - it is a cpu shared memory
+      - on linux, it is a shm under `/dev/shm`
+    - `IO_SURFACE_BUFFER` is for mac and the handle is a `ScopedIOSurface`
+    - `NATIVE_PIXMAP` is for linux and the handle is a `NativePixmapHandle`
+    - `DXGI_SHARED_HANDLE` is for windows and the handle is a `ScopedHandle`
+      and a `DXGIHandleToken`
+    - `ANDROID_HARDWARE_BUFFER` is for android and the handle is a
+      `ScopedHardwareBufferHandle`
 - a `SharedImageBacking` is an external gpu resource (gl texture, vk image,
   etc.)
   - a factory is used for alloc/import
     - `CreateSharedImageFactory` creates the factory, `SharedImageFactory`
     - internally, there is an array of factories, `factories_`
-      - `OzoneImageBackingFactory`
+      - `SharedMemoryImageBackingFactory`
+        - `SharedMemoryImageBackingFactory::IsSupported` supports
+          `SHARED_MEMORY_BUFFER` and `SHARED_IMAGE_USAGE_CPU_WRITE`
       - `WrappedSkImageBackingFactory`
-      - `ExternalVkImageBackingFactory`
-      - `EGLImageBackingFactory`
+        - `WrappedSkImageBackingFactory::IsSupported` supports `EMPTY_BUFFER`
+          (i.e., it allocs a skia image instead of import)
       - `GLTextureImageBackingFactory`
+        - `GLTextureImageBackingFactory::IsSupported` supports `EMPTY_BUFFER`
+          (i.e., it allocs a gl texture instead of import)
+      - `AngleVulkanImageBackingFactory` if
+        `--enable-features=Vulkan,VulkanFromANGLE`
+        - `AngleVulkanImageBackingFactory::IsSupported` supports
+          `EMPTY_BUFFER` and `NATIVE_PIXMAP` (i.e., it supports alloc and
+          import)
+      - `EGLImageBackingFactory`
+        - `EGLImageBackingFactory::IsSupported` supports `EMPTY_BUFFER` (i.e.,
+          it supports alloc)
+      - `OzoneImageBackingFactory`
+        - `OzoneImageBackingFactory::IsSupported` supports `EMPTY_BUFFER` and
+          `NATIVE_PIXMAP` (i.e., it supports alloc and import)
+      - `ExternalVkImageBackingFactory`
+        - `ExternalVkImageBackingFactory::IsSupported` supports `EMPTY_BUFFER`
+          and whatever the vulkan impl supports (e.g., `NATIVE_PIXMAP` if the
+          vk driver supports dma-buf export/import)
   - `SharedImageFactory::CreateSharedImage` internally allocs/imports a
     `SharedImageBacking`
     - `GetFactoryByUsage` picks a factory based on buffer usage
