@@ -237,10 +237,21 @@ GDB
 
 - `gdb -ex "target remote :1234" prog`
 - `set sysroot <sysroot>`
-- `set solib-absolute-prefix <sysroot>`
+  - the old name is `set solib-absolute-prefix <sysroot>`
 - `set debug-file-directory <debug-file-dir>`
 - `set solib-search-path <relative-paths>`
 - `set directories <source-file-dirs>`
+- remote debugging tips
+  - gdb defaults `sysroot` to `target:`
+    - this retrieves the executable and the shared libraries from the target,
+      which is the remote when remote debugging
+    - `set sysroot /` to use the local files even if they might be incorrect
+      - or `set sysroot /not-exist`
+  - gdb defaults `directories` to `$cdir:$cwd`
+    - this finds source files relative to `$cdir` or `$cwd`
+    - if they are not enough, `set directories <out>`
+  - gdb defaults `solib-search-path` to `.`
+    - if they are not enough, `set solib-search-path <out>`
 
 ## Threading
 
