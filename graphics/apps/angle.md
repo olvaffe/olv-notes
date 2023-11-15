@@ -5,14 +5,43 @@ ANGLE
 
 - <https://chromium.googlesource.com/angle/angle/+/HEAD/doc/DevSetup.md>
   - `git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git`
-  - `export PATH=`pwd`/depot_tools:$PATH`
-  - `git clone https://chromium.googlesource.com/angle/angle`
-  - `cd angle`
-  - `python scripts/bootstrap.py`
-  - `gclient sync`
+  - `export PATH="$PWD/depot_tools:$PATH"`
+  - `mkdir angle && cd angle`
+  - `fetch angle`
+    - this generates `.gclient` and runs `gclient sync` to fetch source code
+      - it uses `depot_tools/fetch_configs/angle.py`
+    - manual steps are
+      - `git clone https://chromium.googlesource.com/angle/angle`
+      - `python scripts/bootstrap.py` to generate `.gclient`
+      - `gclient sync`
   - `sudo ./build/install-build-deps.sh`
   - `gn gen out/Debug`
   - `autoninja -C out/Debug`
+- default gn args
+  - note that `build` is a separate git repo
+  - debuggability
+    - `is_official_build = false`
+      - set to true to enable aggressive optimizations
+    - `is_debug = true`
+    - `symbol_level = -1`
+    - `angle_assert_always_on = false`
+    - for lightweight debugging,
+      - `is_debug = false`
+      - `symbol_level = 1`
+      - `angle_assert_always_on = true`
+  - renderers
+    - `angle_enable_vulkan = true`
+    - `angle_enable_gl = true`
+      - if gl is enabled, angle defaults to gl
+        - see `GetDisplayTypeFromEnvironment`
+  - window systems
+    - `angle_use_gbm = false`
+    - `angle_use_vulkan_display = true`
+    - `angle_use_wayland = true`
+    - `angle_use_x11 = true`
+  - `use_remoteexec = true`
+    - this requires setup and adding
+      `"custom_vars": { "download_remoteexec_cfg": True, },` to `.gclient`
 - Run
   - export `LD_LIBRARY_PATH=<path-to-angle>/out/Debug`
   - `ldd es2gears`
@@ -21,55 +50,54 @@ ANGLE
     - this does not work because the native window is considered invalid
       - iirc, `xcb_create_window` != `XCreateWindow` and angle expects xcb
     - glmark2 with `-Dflavors=x11-glesv2` works
-- Android
-  - <https://chromium.googlesource.com/angle/angle/+/HEAD/doc/DevSetupAndroid.md>
-  - `echo "target_os = ['android']" >> .gclient`
-  - `gclient sync`
-  - `gn args out/Android`
-    - `target_os = "android"`
-    - `target_cpu = "arm64"`
-    - `angle_enable_vulkan = true`
-    - `angle_expose_non_conformant_extensions_and_versions = true`
-    - `is_component_build = false`
-    - `is_official_build = true`
-    - `is_debug = false`
-    - `angle_assert_always_on = false`
-    - `use_goma = true`
-  - `autoninja -C out/Android`
-  - `adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk`
-    - verify installation with `adb shell pm path org.chromium.angle`
-  - enable angle
-    - `adb shell settings put global angle_debug_package org.chromium.angle`
-    - `adb shell settings put global angle_gl_driver_all_angle 1`
-  - disable
-    - `adb shell settings delete global angle_gl_driver_all_angle`
-    - `adb shell settings delete global angle_debug_package`
-  - to verify, `adb logcat -d | grep ANGLE`
+- package
+  - `cd out`
+  - `angledir=angle-aarch64-$(date +%Y%m%d)`
+  - `find out/aarch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
+  - `find out/aarch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/aarch64,$angledir,"`
+  - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt src/tests/restricted_traces/restricted_traces.json`
+  - `zstd $angledir.tar`
+  - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
+    - `ln -sf libEGL.so libEGL.so.1`
+    - `ln -sf libGLESv2.so libGLESv2.so.2`
+  - `angle_deqp_egl_tests`
+    - use `strace -e trace=file` to figure out what files are missing
+    - `--deqp-egl-display-type=angle-vulkan` selects the vulkan config, which
+      is used to select test expectation file?
+    - `--deqp-case` converts deqp-style test names to `--gtest_filter`
+    - `--renderdoc` eanbles renderdoc frame captures
 - cross compile
   - `./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64`
   - `gn args out/aarch64`, same as android except
     - `target_os = "linux"`
     - `is_official_build = false`
   - `autoninja -C out/aarch64`
-  - package
-    - `cd out`
-    - `angledir=angle-aarch64-$(date +%Y%m%d)`
-    - `find out/aarch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
-    - `find out/aarch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/aarch64,$angledir,"`
-    - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt src/tests/restricted_traces/restricted_traces.json`
-    - `zstd $angledir.tar`
-    - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
-      - `ln -sf libEGL.so libEGL.so.1`
-      - `ln -sf libGLESv2.so libGLESv2.so.2`
-  - `angle_deqp_egl_tests`
-    - use `strace -e trace=file` to figure out what files are missing
-    - `ls third_party/VK-GL-CTS/src/android/cts/main/*-master.txt \
-       src/tests/deqp_support/*_test_expectations.txt | \
-       xargs tar zcf deqp-data.tar.gz`
-    - `--deqp-egl-display-type=angle-vulkan` selects the vulkan config, which
-      is used to select test expectation file?
-    - `--deqp-case` converts deqp-style test names to `--gtest_filter`
-    - `--renderdoc` eanbles renderdoc frame captures
+
+## Android
+
+- <https://chromium.googlesource.com/angle/angle/+/HEAD/doc/DevSetupAndroid.md>
+- `echo "target_os = ['android']" >> .gclient`
+- `gclient sync`
+- `gn args out/Android`
+  - `target_os = "android"`
+  - `target_cpu = "arm64"`
+  - `angle_enable_vulkan = true`
+  - `angle_expose_non_conformant_extensions_and_versions = true`
+  - `is_component_build = false`
+  - `is_official_build = true`
+  - `is_debug = false`
+  - `angle_assert_always_on = false`
+  - `use_goma = true`
+- `autoninja -C out/Android`
+- `adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk`
+  - verify installation with `adb shell pm path org.chromium.angle`
+- enable angle (require root)
+  - `adb shell settings put global angle_debug_package org.chromium.angle`
+  - `adb shell settings put global angle_gl_driver_all_angle 1`
+- disable
+  - `adb shell settings delete global angle_gl_driver_all_angle`
+  - `adb shell settings delete global angle_debug_package`
+- to verify, `adb logcat -d | grep ANGLE`
 
 ## `eglGetDisplay`
 

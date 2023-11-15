@@ -961,7 +961,11 @@ Chromium Browser
     - `gpu::SharedImageRepresentationFactory::ProduceSkia()`
     - `viz::SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass()`
   - skia-gl instead uses `GLOzoneEGLGbm::ImportNativePixmap`
-    - this calls `eglCreateImageKHR(EGL_LINUX_DMA_BUF_EXT)`
+    - `NativePixmapEGLBinding::InitializeFromNativePixmap` calls
+      `eglCreateImageKHR(EGL_LINUX_DMA_BUF_EXT)`
+    - when the `NativePixmap` does not have a modifier
+      (`NativePixmapHandle::kNoModifier` is `DRM_FORMAT_MOD_INVALID`), there
+      is no `EGL_DMA_BUF_PLANE*_MODIFIER_*_EXT`
 - Formats
   - ui format `BGRA_8888` or `RGBA_8888`, modifiers are
     - `0x200000000401901`, 1 plane (amd without dcc)
