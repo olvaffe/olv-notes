@@ -394,6 +394,24 @@ Mesa RADV
       - `surf->cmask_size` is set
   - if stencil, `gfx9_compute_miptree` is called again
     - if d+s, stencil is completey separated from depth
+- DCC retile
+  - the render engine prefers the DCC blocks to be pipe (L2) aligned and rb
+    aligned
+  - the display engine might require the DCC blocks to be packed (neither pipe
+    aligned nor rb aligned)
+  - in `ac_query_gpu_info`
+    - `use_display_dcc_with_retile_blit` is set when there is enough CU
+      - when set, there are both aligned and unaligned DCCs
+        - the driver renders to the aligned DCC first and blits to unaligned DCC
+    - `use_display_dcc_unaligned` is set when there is 1 RB and is GFX9
+      - when set, use unaligned dcc if scanout
+      - when cleared, disable dcc if scanout
+      - `use_display_dcc_with_retile_blit` takes precedence
+    - IOW, when an image is for scanout,
+      - if `use_display_dcc_with_retile_blit`, there are an aligned and an
+        unaligned DCC
+      - if `use_display_dcc_unaligned`, there is an unaligned DCC
+      - else, there is no DCC
 
 ## Image Layout
 
