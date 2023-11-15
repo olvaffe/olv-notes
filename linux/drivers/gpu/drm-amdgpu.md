@@ -6,8 +6,39 @@ DRM amdgpu
 - `cz_ih.c` is Carrizo Interrupt Handler
 - `amdgpu_amdkfd.c` is Kernel Fusion Driver for HSA
 - `amdgpu_ras.c` is Reliability, Availability, Serviceability
-- `si.c` is Sea Islands
-- `vi.c` is Volcanic Islands
+- `si.c` is Southern Islands (GFX6)
+  - `AMDGPU_FAMILY_SI`
+- `cik.c` is Sea Islands (GFX7)
+  - `AMDGPU_FAMILY_CI`
+  - `AMDGPU_FAMILY_KV` (apu)
+- `vi.c` is Volcanic Islands (GFX8)
+- engines
+  - DCE is Display and Compositing Engine
+  - DCN is Display Core Next
+  - UVD is Unified Video Decoder
+  - VCE is Video Compression Engine
+  - VCN is Video Core Next
+
+## Identifications
+
+- identifications until mid-2021
+  - `amdgpu_drv.c` maintains `pciidlist` to map pci ids to `amd_asic_type`
+  - `amdgpu_device_ip_early_init` maps `amd_asic_type` to `family`
+  - `AMDGPU_FAMILY_SI` is Southern Islands (SI, GFX6)
+  - `AMDGPU_FAMILY_CI` and `AMDGPU_FAMILY_KV` (apu) are Sea Islands (CIK,
+    GFX7)
+  - `AMDGPU_FAMILY_VI` and `AMDGPU_FAMILY_CZ` (apu) are Volcanic Islands (VI,
+    GFX8)
+  - `AMDGPU_FAMILY_AI` and `AMDGPU_FAMILY_RV` (apu) are Vega (GFX9)
+- identifications since mid-2021
+  - `amdgpu_drv.c` maintains `pciidlist` to map new amd
+    `PCI_CLASS_DISPLAY_VGA` class devices to `CHIP_IP_DISCOVERY` to automatic
+    discovery
+  - `AMDGPU_FAMILY_NV` and `AMDGPU_FAMILY_VGH`, `AMDGPU_FAMILY_YC`,
+    `AMDGPU_FAMILY_GC_10_3_6`, `AMDGPU_FAMILY_GC_10_3_7` (apu) are Navi 1x and
+    2x (GFX10)
+  - `AMDGPU_FAMILY_GC_11_0_0` and `AMDGPU_FAMILY_GC_11_0_1` are are Navi 3x
+    (GFX11)
 
 ## Initialization
 
@@ -335,3 +366,50 @@ DRM amdgpu
     - only used by radeonsi
   - `DRM_IOCTL_AMDGPU_WAIT_FENCES` waits an array of `drm_amdgpu_fence`s
     - no user
+
+## Display
+
+- display ip blocks
+  - gfx6 uses `si_set_ip_blocks` and DCE 6.x
+  - gfx7 uses `cik_set_ip_blocks` and DCE 8.x
+  - gfx8 uses `vi_set_ip_blocks` and DCE 10.x/11.x
+  - gfx9+ uses `amdgpu_discovery_set_display_ip_blocks`
+  - newer chips use `dm_ip_block` rather than `dce_v*_ip_block`
+- `DRM_IOCTL_MODE_ADDFB2` calls `drm_mode_addfb2_ioctl`
+  - it calls `amdgpu_display_user_framebuffer_create` on amdgpu
+  - `amdgpu_display_get_fb_info` extracts the tiling from the bo metadata
+  - `convert_tiling_flags_to_modifier` converts tiling to modifiers
+- `add_gfx9_modifiers`
+  - `TILE_VERSION` is `AMD_FMT_MOD_TILE_VER_GFX9`
+  - `TILE` is 
+    - `AMD_FMT_MOD_TILE_GFX9_64K_D_X`
+    - `AMD_FMT_MOD_TILE_GFX9_64K_D`
+    - `AMD_FMT_MOD_TILE_GFX9_64K_S_X` (raven only)
+    - `AMD_FMT_MOD_TILE_GFX9_64K_S` (raven only)
+  - if `TILE` is `*_X`
+    - `PIPE_XOR_BITS` depends on `num_pipes` and `num_se`
+    - `BANK_XOR_BITS` additionally depends on `num_banks`
+  - raven additionally supports `DCC`
+    - `TILE` must be `AMD_FMT_MOD_TILE_GFX9_64K_S_X`
+    - `DCC_INDEPENDENT_64B` is set
+    - `DCC_MAX_COMPRESSED_BLOCK` is `AMD_FMT_MOD_DCC_BLOCK_64B`
+    - if `DCC_RETILE`,
+      - `RB` depends on `num_se` and `num_rb_per_se`
+      - `PIPE` depends on `num_pipes`
+  - raven2 additionally supports `DCC_CONSTANT_ENCODE`
+- `add_gfx10_1_modifiers`
+  - `TILE_VERSION` is `AMD_FMT_MOD_TILE_VER_GFX10`
+    - `TILE` is
+      - `AMD_FMT_MOD_TILE_GFX9_64K_R_X`
+      - `AMD_FMT_MOD_TILE_GFX9_64K_S_X`
+    - `PIPE_XOR_BITS` depends on `num_pipes`
+    - if `DCC`
+      - `TILE` must be `AMD_FMT_MOD_TILE_GFX9_64K_R_X`
+      - `DCC_CONSTANT_ENCODE` is set
+      - `DCC_INDEPENDENT_64B` is set
+      - `DCC_MAX_COMPRESSED_BLOCK` is `AMD_FMT_MOD_DCC_BLOCK_64B`
+      - `DCC_RETILE` is optional
+  - `TILE_VERSION` is `AMD_FMT_MOD_TILE_VER_GFX9`
+    - `TILE` is
+      - `AMD_FMT_MOD_TILE_GFX9_64K_D`
+      - `AMD_FMT_MOD_TILE_GFX9_64K_S`
