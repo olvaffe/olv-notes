@@ -51,12 +51,24 @@ ANGLE
       - iirc, `xcb_create_window` != `XCreateWindow` and angle expects xcb
     - glmark2 with `-Dflavors=x11-glesv2` works
 - package
-  - `cd out`
-  - `angledir=angle-aarch64-$(date +%Y%m%d)`
-  - `find out/aarch64 -maxdepth 1 -type f -executable | xargs aarch64-linux-gnu-strip -x`
-  - `find out/aarch64 -maxdepth 1 -type f -executable -o -name gen | xargs tar cf $angledir.tar --transform="s,out/aarch64,$angledir,"`
-  - `tar rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt third_party/VK-GL-CTS/src/android/cts/main/*.txt third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/gles/aosp_mustpass/main/*.txt src/tests/restricted_traces/restricted_traces.json`
-  - `zstd $angledir.tar`
+  - test data files
+    - tests call `FindTestDataPath` to find data files
+    - `angle_end2end_tests` needs
+      - `src/tests/angle_end2end_tests_expectations.txt`
+    - `angle_trace_tests` needs
+      - `src/tests/restricted_traces/`
+      - `gen/tracegz_*.gz`
+    - deqp needs
+      - `src/tests/deqp_support/*_test_expectations.txt`
+      - `third_party/VK-GL-CTS/src/external/openglcts/data/mustpass/*/main/*.txt`
+      - `gen/vk_gl_cts_data/data/`
+  - commands
+    - `angledir=angle-x86-$(date +%Y%m%d)`
+    - `find out/x86 -maxdepth 1 -type f -executable | xargs strip -g`
+    - `find out/x86 -maxdepth 1 -type f -executable | xargs tar -cf $angledir.tar --transform="s,out/x86,$angledir,"`
+    - `tar -rf $angledir.tar --transform="s,,$angledir/," -C out/x86 gen`
+    - `tar -rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt src/tests/restricted_traces/*.json third_party/VK-GL-CTS/src/external/openglcts/data/mustpass`
+    - `zstd $angledir.tar`
   - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
     - `ln -sf libEGL.so libEGL.so.1`
     - `ln -sf libGLESv2.so libGLESv2.so.2`
