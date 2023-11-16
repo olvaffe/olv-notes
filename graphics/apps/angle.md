@@ -25,10 +25,13 @@ ANGLE
     - `is_debug = true`
     - `symbol_level = -1`
     - `angle_assert_always_on = false`
+    - `angle_enable_vulkan_validation_layers = true`
+      - note that angle sets `VK_LAYER_PATH` to use the bundled validation layer
     - for lightweight debugging,
       - `is_debug = false`
       - `symbol_level = 1`
       - `angle_assert_always_on = true`
+      - `angle_enable_vulkan_validation_layers = false`
   - renderers
     - `angle_enable_vulkan = true`
     - `angle_enable_gl = true`
@@ -66,7 +69,7 @@ ANGLE
     - `angledir=angle-x86-$(date +%Y%m%d)`
     - `find out/x86 -maxdepth 1 -type f -executable | xargs strip -g`
     - `find out/x86 -maxdepth 1 -type f -executable | xargs tar -cf $angledir.tar --transform="s,out/x86,$angledir,"`
-    - `tar -rf $angledir.tar --transform="s,,$angledir/," -C out/x86 gen`
+    - `tar -rf $angledir.tar --transform="s,,$angledir/," -C out/x86 angledata gen`
     - `tar -rf $angledir.tar --transform="s,,$angledir/," src/tests/deqp_support/*.txt src/tests/restricted_traces/*.json third_party/VK-GL-CTS/src/external/openglcts/data/mustpass`
     - `zstd $angledir.tar`
   - if want to use on regular egl/gles apps with `LD_LIBRARY_PATH`,
