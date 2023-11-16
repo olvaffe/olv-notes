@@ -25,13 +25,13 @@ ANGLE
     - `is_debug = true`
     - `symbol_level = -1`
     - `angle_assert_always_on = false`
-    - `angle_enable_vulkan_validation_layers = true`
+    - `angle_debug_layers_enabled = true`
       - note that angle sets `VK_LAYER_PATH` to use the bundled validation layer
     - for lightweight debugging,
       - `is_debug = false`
       - `symbol_level = 1`
       - `angle_assert_always_on = true`
-      - `angle_enable_vulkan_validation_layers = false`
+      - `angle_debug_layers_enabled = false`
   - renderers
     - `angle_enable_vulkan = true`
     - `angle_enable_gl = true`
