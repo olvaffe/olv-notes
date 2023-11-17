@@ -907,3 +907,36 @@ dEQP
     - there is a `vkCmdCopyImageToBuffer` with `imageOffset` of `(1, 113)` and
       `imageExtent` of `(264, 124)`
   - `destroyImagesIter`
+
+## Test Case: `dEQP-GLES3.functional.fbo.msaa.4_samples.depth_component16`
+
+- `FboMultisampleTests::init` creates a `BasicFboMultisampleCase` with
+  - `m_colorFormat = GL_RGBA8`
+  - `m_depthStencilFormat = GL_DEPTH_COMPONENT16`
+  - `m_size = IVec2(119, 131)`
+  - `m_numSamples = 4`
+  - `FboTestCase`
+    - `m_viewportWidth = 128`
+    - `m_viewportHeight = 128`
+- `FboTestCase::iterate`
+  - it picks a random `(x, y)` in the render target window
+  - `BasicFboMultisampleCase::preCheck` checks if the test is supported
+  - it creates a `sglr::GLContext` with viewport `(x, y, 128, 128)`
+  - `BasicFboMultisampleCase::render`
+    - it creates 2 FBOs of size 119x131
+      - both have color and depth
+      - the first is mutisampled and the second is single-sampled
+    - draw
+      - depth is cleared to 1.0
+      - draw a full fbo quad with z goes from -1.0 to 1.0
+        - the default depth function is `GL_LESS`
+      - draw random 8 quads with depth function set to `GL_ALWAYS`
+      - blit to resolve samples
+    - visualize
+      - it draws 8 full fbo quads with different but fixed z
+      - the depth func is `GL_ELSS` and the depth write is disabled
+    - it reads back the color values for comparision later
+  - it creates a `sglr::ReferenceContext`
+  - `BasicFboMultisampleCase::render` again
+  - `BasicFboMultisampleCase::compare` calls `FboTestCase::compare` to compare
+    the result and the reference surfaces
