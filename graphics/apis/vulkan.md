@@ -396,6 +396,11 @@ Vulkan
     - as a special case, if two render passes have a single subpass,
       - the ds and resolve attachment references are ignored for compatibility
         check
+- 8.7. Render Pass Multisample Resolve Operations
+  - whether the attachments are color or depth/stencil,
+    - the pipelne stage is `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT`
+    - the read access is `VK_ACCESS_COLOR_ATTACHMENT_READ_BIT`
+    - the write access is `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
 - 8.8. Render Pass Commands
   - depending on VkSubpassContents, any subpass of a render pass either
     execute only commands in the primary command buffer or only command the
