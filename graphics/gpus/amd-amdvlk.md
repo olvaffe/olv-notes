@@ -1,6 +1,36 @@
 AMDVLK
 ======
 
+## Build
+
+- <https://github.com/GPUOpen-Drivers/AMDVLK/blob/dev/README.md>
+- download
+  - `mkdir amdvlk`
+  - `cd amdvlk`
+  - `repo init -u https://github.com/GPUOpen-Drivers/AMDVLK.git -b master`
+    - to use a specific tag, use `-b refs/tags/v-2023.Q3.3` for example
+  - `repo sync`
+- dependencies
+  - `sudo apt install build-essential cmake curl git ninja-build pkg-config python3`
+  - `sudo apt install libssl-dev libx11-dev libxcb1-dev x11proto-dri2-dev
+                      libxcb-dri3-dev libxcb-dri2-0-dev libxcb-present-dev
+                      libxshmfence-dev libxrandr-dev libwayland-dev`
+  - dxc
+    - `git clone --recurse-submodules https://github.com/microsoft/DirectXShaderCompiler.git`
+    - `cmake -S . -B out -G Ninja -C cmake/caches/PredefinedParams.cmake -DCMAKE_BUILD_TYPE=Release`
+    - `ninja -C out`
+- build
+  - `cd drivers`
+  - `export PATH="<path-to-dxc>:$PATH"`
+  - `cmake -S xgl -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug`
+  - `ninja -C out`
+    - note that amdvlk requires a specific version of dxc
+    - just comment out `firstbithigh()` unless RT is needed
+- distribute
+  - `strip -g out/icd/amdvlk64.so`
+  - `scp -C out/icd/amdvlk64.so dst:`
+  - `scp -C out/icd/amd_icd64.json dst:` and edit `amd_icd64.json`
+
 ## XGL
 
 - example call flow
