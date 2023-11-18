@@ -132,4 +132,13 @@ Crostini
 
 ## vmc
 
-- `vmc start --enable-vulkan --no-start-lxd --enable-big-gl --dlc-id=borealis-dlc --extra-disk=disk.img borealis`
+- launching crostini remotely
+  - `/usr/local/autotest/bin/autologin.py`
+  - `dlcservice_util --id=termina-dlc --install`
+  - `vmc start --enable-gpu termina`
+  - `vmc container termina penguin https://storage.googleapis.com/cros-containers/%d debian/bookworm`
+  - `vmc container termina penguin`
+  - `vmc stop termina`
+- borealis
+  - `dlcservice_util --id=borealis-dlc --install`
+  - `vmc start --enable-vulkan --no-start-lxd --enable-big-gl --dlc-id=borealis-dlc --extra-disk=disk.img borealis`
