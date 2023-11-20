@@ -223,3 +223,14 @@ Chrome OS Build
   - `mount -o ro /dev/loop0p3 sysroot`
   - `mount /dev/loop0p1 sysroot/mnt/stateful_partition`
   - `mount --bind sysroot/mnt/stateful_partition/dev_image sysroot/usr/local`
+
+## USE flags
+
+- `USE=angle -egl` and `arc-mesa-virgl`
+  - with `USE=-egl`, the package disables egl/virgl and becomes vk-only
+  - with `USE=angle`, the package
+    - ships `init.gpu.rc` with `setprop ro.hardware.egl angle`
+    - creates `/vendor/lib64/libGLESv2_angle.so` to point to
+      `egl/libGLESv2_angle.so` provided by the vendor image
+- `USE=cross_domain_context`
+  - `vm_concierge` will start arcvm with `--gpu vulkan=true,context-types=cross-domain:...`

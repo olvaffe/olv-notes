@@ -7,20 +7,14 @@ Vulkan
   - HW features are about GL 4.3 or GLES 3.1
   - plus persistent and coherent memory
 - 1.1 was released in 2018
-  - protected content
-  - subgroup operations
-  - multi-view
-  - device groups
-  - external memory/fence/semaphore
-  - advanced compute
-  - HLSL
-  - YCbCr
 - 1.2 was released in 2020
-  - no new HW feature
-  - timeline semaphore
-  - (optional) descriptor indexing
+  - no new HW reqs
 - 1.3 was released in 2022
-  - no new HW feature
+  - no new HW reqs
+
+## Chapter 1. Preamble
+
+## Chapter 2. Introduction
 
 ## Chapter 3. Fundamentals
 
@@ -243,6 +237,22 @@ Vulkan
       - when the loader supports instance version 1.0, it also limits the
         device version to 1.0
       - otherwise, the two versions are orthogonal
+  - `VK_EXT_validation_features`
+    - deprecates `VK_EXT_validation_flags`
+    - enable/disable specific validation features of
+      `VK_LAYER_KHRONOS_validation`
+      - thread safety
+      - api params
+      - object lifetimes
+      - core checks
+      - unique handles
+
+## Chapter 5. Devices and Queues
+
+- 5.1. Physical Devices
+  - `VkPhysicalDevice` is used to query device caps and features
+- 5.2. Devices
+  - `VkDevice` and the available `VkQueue`'s are created together
 
 ## Chapter 6. Command Buffers
 
@@ -250,6 +260,13 @@ Vulkan
   buffer
   - except for render pass and subpass
   - secondary command buffer must explicitly set all other states
+- 6.2. Command Pools
+  - A command pool is almost a dummy object to reset/free a group of command
+    buffers in one go
+  - A command buffer consists of
+    - a list of BOs, dynamically growing, with one chained to another
+    - a vector of reloc entries (if resources may move on the impl)
+    - a vector of binding table blocks
 - 6.4. Command Buffer Recording
   - `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
     - an impl might generate self-modifying commands when the flag is set
@@ -268,6 +285,11 @@ Vulkan
 
 - there are five explicit synchronization mechanisms
   - fences, semaphores, events, pipeline barriers, and render passes
+  - `VkSemaphore` is for cross-queue synchronization with submit granularity
+  - `VkFence` is for vk/cpu synchronization with submit granularity
+    - wait is on the CPU side
+  - `VkEvent` is for vk/cpu synchronization with command granularity
+    - wait is on the GPU side
 - 7.1. Execution and Memory Dependencies
   - an operation is an arbitrary amount of work to be executed on
     - the host,
@@ -312,6 +334,13 @@ Vulkan
     - the visibility operation happens-before the second set of operations
       (defined by the second sync scope)
 - 7.2. Implicit Synchronization Guarantees
+  - Within a single queue, vkQueueSubmit are executed in call order
+  - Within a VkQueueSubmit, VkSubmitInfo are executed in array order
+  - Within a VkSubmitInfo, VkCommandBuffer are executed in array order
+  - Within a VkCommandBuffer, commands outside of render passes are executed in
+    recorded order (this includes vkCmdBeginRenderPass and vkCmdEndRenderPass)
+  - Within a render pass subpass, commands are executed in recorded order
+  - Between render pass subpasses, there is no implicit ordering
   - command buffers and submission order
     - we need to give a meaning to the order in which commands are recorded
       and submitted
@@ -377,6 +406,31 @@ Vulkan
 
 ## Chapter 8. Render Pass
 
+- 8.1. Render Pass Objects
+  - `VkRenderPass` describes a rendering pass abstractly; no image but only their
+    formats, etc.
+  - `VkFramebuffer` is created from VkRenderPass and a list of VkImageView as the
+    attachments
+    - unless `VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT`
+    - `VkFramebuffer` is like a physical instance of a `VkRenderPass`
+    - the separation is such that, when a pipeline is created for a render pass,
+      the pipeline can work with any framebuffer compatible with the render pass.
+  - A `VkRenderPass` contains a set of (abstract) attachments it will work on
+    - each attachment is described with `VkAttachmentDescription` abstractly
+    - format
+    - load/store ops
+    - initial layout: the layout the attachment is in when entering the render
+      pass
+    - final layout: the layout the attachment will be transitioned to by the
+      implementation automatically when exiting the render pass
+  - A subpass of a render pass works with a subset of the attachments
+    - input attachemnts
+    - color attachemnts
+    - resolve attachemnts
+    - depth attachemnt
+    - preserve attachemnts
+    - the implementation transitions all attachments to the specified layouts
+      automatically when entering a subpass
 - 8.3. Render Pass Compatibility
   - framebuffers and graphics pipelines are created based on a specific render
     pass object
@@ -407,6 +461,34 @@ Vulkan
     secondary command buffers
 - 8.10. Common Render Pass Data Races (Informative)
   - this section summarizes renderpass feedback loops
+  - feedback loop
+    - when a subpass accesses a subresource as a color/depth/stencil attachment,
+      and at the same time as an input attachment or an image resource, a
+      feedback loop is formed
+      - unless the subresource is not written to as a color/depth/stencil
+        attachment
+    - a subpass containing a feedback loop causes a data race, unless
+      - a memory dependency between the read/write
+      - `VK_EXT_rasterization_order_attachment_access`
+  - `VK_EXT_attachment_feedback_loop_layout`
+    - this extension allows a feedback loop between a color/depth/stencil
+      attachment and an image resource
+      - that is, the extension replaces `VUID-vkCmdDraw-None-06538` by
+        `VUID-vkCmdDraw-None-08753`
+      - `VUID-vkCmdDraw-None-06538` states: If any recorded command in the
+        current subpass writes to an image subresource as an attachment, this
+        command must not read from the memory backing that image subresource in
+        any other way than as an attachment
+    - the device must have been created with `attachmentFeedbackLoopLayout`
+    - the image must have been created with
+      `VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
+    - the pipeline must have been created with
+      `VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT` or
+      `VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
+    - the render pass must have been created with
+      `VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT`
+    - the image must have been transitioned to
+      `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT`
 
 ## Chapter 9. Shaders
 
@@ -420,6 +502,60 @@ Vulkan
 
 ## Chapter 10. Pipelines
 
+- A VkPipelineLayout consists of multiple descriptor set layouts and push
+  constants.
+  - Because a pipeline can work with multiple sets at the same time.
+- A pipeline is created from a pipeline layout and many other states
+  - renderPass / subpass
+  - pipeline cache
+  - base pipeline
+- `VK_KHR_pipeline_library`
+  - a pipeline library is a `VkPipeline` that cannot be used directly
+  - to create a pipeline library, specify `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR`
+    when creating the pipeline
+  - to create a pipeline from pipeline libraries,
+    `VkPipelineLibraryCreateInfoKHR` to `VkGraphicsPipelineCreateInfo`
+- `VK_EXT_graphics_pipeline_library`
+  - init
+    - `VkGraphicsPipelineLibraryCreateInfoEXT`
+      - `graphicsPipelineLibrary` is true if gpl is supported
+      - this feature query exists because the extension might be promoted to core
+    - `VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT`
+      - `graphicsPipelineLibraryFastLinking` is true if creating a pipeline from
+        pipeline libraries is cheap without
+        `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT`
+      - `graphicsPipelineLibraryIndependentInterpolationDecoration` is true if
+        interpolation decorations of vs outs and fs ins do not need to match
+  - shader module is deprecated
+    - `VkShaderModuleCreateInfo` can be chained to `VkPipelineShaderStageCreateInfo` directly
+  - pipeline layout
+    - `VkPipelineLayoutCreateInfo` gains a new flag,
+      `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
+    - vs and fs may need different descriptor sets.  When compiling them
+      independently, `VkPipelineLayout` must be specified twice
+      - one option is to use a full `VkPipelineLayout` and specify the same
+        layout
+      - another option is to use two partial `VkPipelineLayout`s, which must be
+        created with `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
+  - pipeline
+    - `VkGraphicsPipelineLibraryCreateInfoEXT`
+      - `flags` specifies a subset of the graphics pipeline to compile
+        - there are 4 parts
+        - `VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT`
+        - `VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT`
+        - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT`
+        - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT`
+      - when this struct is omitted,
+        - if not doing pipeline libraries, `flags` is assumed to include all bits
+        - if doing pipeline libraries, `flags` is assumed to include no bit
+    - `VkGraphicsPipelineCreateInfo` gains 2 new flags
+      - `VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT`
+        specifies that the pipeline library being created should retain info for
+        LTO later
+      - `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT` specifies that the
+        pipeline being created should have LTO applied on the pipeline libraries
+        - on the other hand, when the flag is omitted, the pipeline should be
+          fast-linked
 - 10.1. Compute Pipelines
   - `VkComputePipelineCreateInfo` mainly consists of
     - `VkPipelineCreateFlags`
@@ -496,6 +632,34 @@ Vulkan
     `VK_NULL_HANDLE` and the create function will return the error
     - if multiple pipelines fails, it returns the error code of any of the
       failed creation
+- 10.7. Pipeline Cache
+  - `VkPipelineCache` is for faster pipeline creation
+
+## Chapter 11. Memory Allocation
+
+- 11.2. Device Memory
+  - `VK_ANDROID_external_memory_android_hardware_buffer`
+    - export ahb
+      - `vkGetPhysicalDeviceImageFormatProperties2` with
+        `VkPhysicalDeviceExternalImageFormatInfo` to query support
+      - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` to create the image
+      - `vkAllocateMemory` with `VkExportMemoryAllocateInfo` to allocate the
+        memory
+      - `vkGetMemoryAndroidHardwareBufferANDROID` to export the AHB
+      - in this path, only the public AHB formats are supported
+    - import ahb
+      - `vkGetAndroidHardwareBufferPropertiesANDROID` with
+        `VkAndroidHardwareBufferPropertiesANDROID` and
+        `VkAndroidHardwareBufferFormatPropertiesANDROID` to query ahb
+      - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` and optionally
+        `VkExternalFormatANDROID` to create the image
+      - `vkAllocateMemory` with `VkImportAndroidHardwareBufferInfoANDROID` to
+        import the ahb
+      - in this path, ahb can have implemetation-defined formats
+    - allocate externally and import
+      - `vkGetPhysicalDeviceImageFormatProperties2` with
+        `VkAndroidHardwareBufferUsageANDROID` to get the optimal ahb usage
+      - in this path, vk is consulted for the ahb usage
 
 ## Chapter 12. Resource Creation
 
@@ -567,12 +731,354 @@ Vulkan
       `imageCreateImageFormatPropertiesList`
     - as the most basic rule, for an image creation to be valid,
       `imageCreateImageFormatPropertiesList` must be non-empty
+  - core formats
+    - most core formats have one plane
+    - compressed formats have one plane
+    - depth formats have one plane
+    - stencil formats have one plane
+    - depth/stencil formats have two planes
+      - `VK_FORMAT_D32_SFLOAT_S8_UINT`
+      - `VK_FORMAT_D24_UNORM_S8_UINT`
+  - YCbCr formats
+    - some have one plane, such as
+      - `VK_FORMAT_G8B8G8R8_422_UNORM`
+    - some have two planes, such as
+      - `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM`
+    - some have three planes, such as
+      - `K_FORMAT_G8_B8_R8_3PLANE_422_UNORM`
+  - DRM modifiers
+    - `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT` mixes tiling and layout
+      together.  Format data and format metadata reside on different memory
+      planes
+    - a single-plane format thus can have multiple memory planes when the tiling is
+      `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
+    - can we combine multi-planar format with drm modifier?  It has `N*M`
+      planes in theory.
+  - `VK_EXT_image_compression_control`
+    - `VK_EXT_image_compression_control` adds `imageCompressionControl` feature
+    - `VkImageCompressionPropertiesEXT`
+      - it can be chained to
+        - `vkGetPhysicalDeviceImageFormatProperties2`
+        - `vkGetImageSubresourceLayout2KHR`
+      - `imageCompressionFlags` is one of
+        - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` to indicate lossless compression
+        - `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` to indicate lossy
+          compression
+        - `VK_IMAGE_COMPRESSION_DISABLED_EXT` to indicate no compression
+      - `imageCompressionFixedRateFlags` is 0 or one of
+        - `VK_IMAGE_COMPRESSION_FIXED_RATE_1BPC_BIT_EXT` to
+          `VK_IMAGE_COMPRESSION_FIXED_RATE_24BPC_BIT_EXT`
+        - bpc stands for bit-per-component
+    - `VkImageCompressionControlEXT`
+      - it can be chained to
+        - `VkImageCreateInfo`
+        - `VkSwapchainCreateInfoKHR`
+        - `VkPhysicalDeviceImageFormatInfo2`
+      - `flags`
+        - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` is the default and allows
+          lossless/no compression
+        - `VK_IMAGE_COMPRESSION_FIXED_RATE_DEFAULT_EXT` and
+          `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` allows
+          lossless/lossy/no compression
+        - `VK_IMAGE_COMPRESSION_DISABLED_EXT` allows no compression
+      - `compressionControlPlaneCount` must match the plane count of the format
+      - `pFixedRateFlags` is an array of masks that indicate the requested bpc of
+        each plane
+  - `VK_EXT_image_compression_control_swapchain`
+    - it adds `imageCompressionControlSwapchain` feature
+    - `vkGetPhysicalDeviceSurfaceFormats2KHR` can query
+      `VkImageCompressionPropertiesEXT` to know if the wsi supports
+      lossless/lossy/none compression for a surface format
+    - `vkCreateSwapchainKHR` can include `VkImageCompressionControlEXT` to
+      control compression for the swapchain images
+- 12.4. Image Layouts
+  - `VkImageTiling` and `VkImageLayout`
+    - for each plane, HW needs to store the format data and often also format
+      metadata
+    - layout transition makes sure the format metadata is resolved to the format
+      data for the destination operation
+    - tiling specifies whether the format data is tiled or not
+    - Image layout is per-image subresource.  Separate image subresources of the
+      same image can be in different layouts at the same time, with the
+      exception that depth and stencil aspects of a given image subresource can
+      only be in different layouts if the `separateDepthStencilLayouts` feature
+      is enabled.
+  - 1.0
+    - `VK_IMAGE_LAYOUT_UNDEFINED`
+    - `VK_IMAGE_LAYOUT_GENERAL`
+    - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_PREINITIALIZED`
+  - 1.1
+    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL`
+  - 1.2
+    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
+  - 1.3
+    - `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`
+    - `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`
+  - assume
+    - `VK_KHR_maintenance2`
+      - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR`
+      - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR`
+    - `VK_KHR_separate_depth_stencil_layouts`
+      - `separateDepthStencilLayouts` feature
+      - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR`
+      - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR`
+      - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR`
+      - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR`
+    - `VK_KHR_dynamic_rendering`
+    - in `VkRenderingInfo`, `pDepthAttachment` and `pStencilAttachment` are
+      specified separately with some requirements
+      - if both specify a image view, they must specify the same image view
+      - `pDepthAttachment`'s image view must include a depth component
+        - its layout must not be
+          - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+          - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
+          - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
+          - IOW, must use depth
+      - `pStencilAttachment`'s image view must include a stencil component
+          - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+          - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
+          - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
+          - IOW, must use stencil
+- 12.5. Image Views
+  - a `VkImageView` can be created fro a `VkImage`
+    - `VkImageViewType` and `VkImageType` can differ under conditions
+      - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD` 
+      - `VK_IMAGE_VIEW_TYPE_xD_ARRAY` is always compatible with `VK_IMAGE_TYPE_xD` 
+      - `VK_IMAGE_VIEW_TYPE_CUBE` and `VK_IMAGE_VIEW_TYPE_CUBE_ARRAY` are
+        compatible with `VK_IMAGE_TYPE_2D` if
+        - `imageCubeArray` feature is supported and enabled
+        - the image was created with `VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT`
+        - view `layerCount` must be 6 or multiples of 6
+      - `VK_IMAGE_VIEW_TYPE_2D` and `VK_IMAGE_VIEW_TYPE_2D_ARRAY` are compatible
+        with `VK_IMAGE_TYPE_3D` if
+        - `imageView2DOn3DImage` feature is supported and enabled
+        - the image was created with `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT`
+      - there is also `VK_EXT_image_2d_view_of_3d`
+    - view `format` and image `format` can differ if
+      - the image was created with `VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT`
+    - view `subresourceRange` specifies a subset of the miptree accessible to
+      the view
+      - `baseMipLevel` and `levelCount` select the mip levels
+      - `baseArrayLayer` and `layerCount` select the array layers
+      - note that 3D images have only a single array layer
+        - `VK_EXT_image_sliced_view_of_3d` allows selecting slices at a mip level
+  - VUIDs
+    - VUID-VkImageViewCreateInfo-image-04970
+      - `levelCount` must be 1 when creating a 2D view from a 3D image
+    - VUID-VkImageViewSlicedCreateInfoEXT-None-07870
+      - `levelCount` must be 1 when creating a sliced 3D view from a 3D image
+  - core
+    - `imageView2DOn3DImage` feature indicates
+      `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` support, permitting a 2D or 2D
+      array image view of a 3D image
+    - `VkFramebufferCreateInfo` does not allow 3D views.  The bit allows 3D
+      images to be used as color buffers
+    - it is designed for rendering, and is similar to
+      `glFramebufferTextureLayer`
+  - `VK_EXT_image_2d_view_of_3d`
+    - `image2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+      descriptor can be a 2D image view of a 3D image
+    - `sampler2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+      descriptor can be a 2D image view of a 3D image
+    - `VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT` must be specified when
+      creating the 3D image
+    - the bit is for sampling, and is similar to `glBindImageTexture`
+  - `VK_EXT_image_sliced_view_of_3d`
+    - `imageSlicedViewOf3D` indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+      descriptor can be a sliced 3D image view of a 3D image
+  - `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT`
+    - it was added by `VK_KHR_maintenance2`
+    - there has always been `VUID-VkImageViewCreateInfo-image-07072` (which was
+      named `VUID-VkImageViewCreateInfo-image-01584` at first) which states
+      - If image was created with the
+        `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT` flag and format is a
+        non-compressed format, the `levelCount` and `layerCount` members of
+        `subresourceRange` must both be 1
+    - in 1.2.171, `VUID-VkImageViewCreateInfo-image-04739` was added to ban
+      `VK_IMAGE_VIEW_TYPE_3D`
+    - in 1.3.226, `VUID-VkImageViewCreateInfo-image-04739` was removed to allow
+      `VK_IMAGE_VIEW_TYPE_3D`
+  - `VkImageAspectFlagBits`
+    - basic
+      - `VK_IMAGE_ASPECT_COLOR_BIT`
+      - `VK_IMAGE_ASPECT_DEPTH_BIT`
+      - `VK_IMAGE_ASPECT_STENCIL_BIT`
+      - `VK_IMAGE_ASPECT_METADATA_BIT`
+    - multi-planar
+      - `VK_IMAGE_ASPECT_PLANE_0_BIT`
+      - `VK_IMAGE_ASPECT_PLANE_1_BIT`
+      - `VK_IMAGE_ASPECT_PLANE_2_BIT`
+    - DRM modifier
+      - `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT`
+      - `VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT`
+      - `VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT`
+      - `VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT`
+  - `vkGetImageMemoryRequirements2` and `vkGetDeviceImageMemoryRequirements`
+    - aspect bit can be specified with `VkImagePlaneMemoryRequirementsInfo` or
+      `VkDeviceImageMemoryRequirements`
+    - only plane and memory plane aspects are valid
+    - only when `VK_IMAGE_CREATE_DISJOINT_BIT` is set
+    - only for drm modifiers or multi-plane formats
+      - if drm modifiers, must be one of
+        `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT` and etc.
+      - otherwise, if multi-plane formats, must be one of
+        `VK_IMAGE_ASPECT_PLANE_0_BIT` and etc.
+  - `vkBindImageMemory2`
+    - aspect bit can be specified with `VkBindImagePlaneMemoryInfo`
+    - only plane and memory plane aspects are valid
+  - `vkGetImageSubresourceLayout` or `vkQueueBindSparse`
+    - aspect mask can be specified with `VkImageSubresource`
+    - must be a single bit
+      - meaning depth/stencil formats have no well-defined linear layout
+  - `vkCmdCopyImage2`, `vkCmdCopyBufferToImage2`, `vkCmdCopyImageToBuffer2`,
+    `vkCmdBlitImage2`, `vkCmdResolveImage2`
+    - aspect mask can be specified with `VkImageSubresourceLayers`
+    - only color, depth, stencil, and plane aspects are valid
+  - `vkCreateImageView`
+    - aspect mask can be specified in `VkImageSubresourceRange`
+    - valid aspects depend on formats
+      - can only be `VK_IMAGE_ASPECT_COLOR_BIT` if color formats
+      - can only be `VK_IMAGE_ASPECT_DEPTH_BIT` if depth-only formats
+      - can only be `VK_IMAGE_ASPECT_STENCIL_BIT` if stencil-only formats
+      - can only be depth, stencil, or both aspects if depth/stencil formats
+        - must be a single bit when used in a descriptor set
+        - is ignored and assume to be both aspects when used as a framebuffer
+        	attachment
+  - `vkCmdClearColorImage`, `vkCmdClearDepthStencilImage`, `vkCmdSetEvent2`,
+    `vkCmdWaitEvents2`, `vkCmdPipelineBarrier2`, `vkCmdWaitEvents`, and
+    `vkCmdPipelineBarrier`
+    - aspect mask can be specified in `VkImageSubresourceRange`
+  - `vkCreateRenderPass2` or `vkCreateRenderPass`
+    - aspect mask can be specified in `VkAttachmentReference2` or
+      `VkInputAttachmentAspectReference`
+    - only for input attachments
+  - `vkCmdClearAttachments`
+    - aspect mask can be specified in `VkClearAttachment`
+    - valid aspect masks are color, depth, stencil, or depth+stencil
+- 12.8. Resource Memory Association
+  - `VK_IMAGE_CREATE_DISJOINT_BIT`
+    - driver by default allocates a buffer and puts planes on different region of
+      the same buffer
+      - thus only a `VkDeviceMemory` needs to be bound
+    - when `VK_IMAGE_CREATE_DISJOINT_BIT` is specified, driver puts different
+      planes on different buffers
+      - thus multiple `VkDeviceMemory` need to be bound
+    - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
+      which respectively point to different BOs
+- 12.9. Resource Sharing Mode
+  - resources should only be accessed in the Vulkan instance that has exclusive
+    ownership of the underlying memory
+  - only one Vulkan instance has exclusive ownership of a resource's underlying
+    memory at any time
+  - it takes three steps to transfer exclusive ownership
+    - the source instance or API releases exclusive ownership
+    - wait with a fence or semaphore
+    - the destination instance or API acquires exclusive ownership
+  - furthermore, within a Vulkan instance, resources created with
+    `VK_SHARING_MODE_EXCLUSIVE` should only be accessed in the queue that has
+    exclusive ownership
+  - releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
+    `VkImageMemoryBarrier`
+
+## Chapter 13. Samplers
+
+- `VkSampler` describes a sampler (min filter, etc)
+- 13.1. Sampler Y′CBCR Conversion
+  - feature bits
+    - these control valid values of `xChromaOffset` and `yChromaOffset`
+      - `VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT`
+      - `VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT`
+      - each bit enables each chroma location
+    - this controls valid values of `chromaFilter`
+      - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT`
+      - without the bit, only `VK_FILTER_NEAREST` is allowed
+    - this controls valid values of `minFilter`, `magFilter`, and `chromaFilter`
+      - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT`
+      - without the bit, all three must have the same value
+    - these controls valid values of `forceExplicitReconstruction`
+      - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT`
+        - with the bit, always explicit and `forceExplicitReconstruction` is
+          assumed true
+        - without the bit, it is implicit by default
+      - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT`
+        - with the bit, `forceExplicitReconstruction` can be set to true
+  - when CbCr is subsampled, reconstruction is required
+    - reconstruction uses `chromaFilter`
+      - `minFilter` and `magFilter` are not used
+    - implicit reconstruction
+      - scale unnormalized coordinates `(u, v)` to be `(u/2, v/2)`
+      - if `VK_FILTER_NEAREST`, use the texel closest to `(u/2, v/2)`
+      - if `VK_FILTER_LINEAR`, use the average of the 4 texels closest to `(u/2, v/2)`
+    - explicit reconstruction
+      - if `VK_FILTER_NEAREST` and texel `(i, j)` is needed, use texel `(i/2, j/2)`
+      - if `VK_FILTER_LINEAR` and texel `(i, j)` is needed, use the average of
+        the 4 texels closest to `(i/2, j/2)`
+        - because `VK_FILTER_LINEAR` needs 4 texels, this can read up to 9
+          texels in total
+        - quad-linear filtering
+    - chroma offsets (cosited or midpoint) are chosen based on how CbCr was
+      subsampled
+      - Y and full CbCr samples are co-sited
+      - when full CbCr samples are downsampled,
+        - we can store the average of each 2x2 samples, in this case we want to
+          treat the stored sample as the midpoint of the 2x2 samples
+        - we can store the top-left sample of each 2x2 samples, in this case we
+          want to treat the stored sample as co-sited with the top-left Y aample
+
+## Chapter 14. Resource Descriptors
+
+- 14.1. Descriptor Types
+  - samplers
+  - sampled images
+  - storage images
+  - uniform texel buffers
+  - storage texel buffers
+  - uniform buffers
+  - storage buffers
+  - input attachments (color attachments being read in following subpasses)
+- 14.2. Descriptor Sets
+  - `VkDescriptorSetLayout` describes the layout (bindings) of a descriptor set
+  - `VkPipelineLayout` is a group of descriptor set layouts
+  - A `VkDescriptorPool` allocates enough memory (host or device, depending on
+    the implementations) to hold the specified amount of descriptors of the
+    specified types.
+  - A `VkDescriptorSet` grabs some of the descriptors from the pool according to
+    its `VkDescriptorLayout`.
+  - A `VkDescriptorSetLayout` of a set has multiple bindings, with each binding
+    corresponding to an array of descriptors of the same type.
+  - `vkUpdateDescriptorSets` writes the descriptors into the memory
+  - A descriptor pool mallocs
+    - `sizeof(descriptor_set) * maxSets`
+    - `sizeof(descriptor) * numDescriptors`, for each descriptor type
+  - A descriptor set layout is described as
+    - binding X: N descriptors of certain type used by certain shader stages
+    - there can be arbitrarily many bindings, using arbitrarily binding numbers
+    - this is enough for impl to calculate the total number of HW descriptors
+      required and to maps "descriptor #n at binding X" to "HW descriptor #m"
+  - A descriptor set is suballocated from the pool
+    - `vkUpdateDescriptorSets` is used to update a descriptor set
+    - a descriptor set may simply hold shallow pointers to various VkImageView,
+      VkSampler, VkBuffer, etc.  HW descriptors are generated at draw time.
 
 ## Chapter 15. Shader Interfaces
 
 - 15.8. Shader Resource Interface
   - 15.8.3 has a big note on variables sharing the same `DescriptorSet` and
     `Binding`
+
+## Chapter 16. Image Operations
+
+## Chapter 17. Fragment Density Map Operations
 
 ## Chapter 18. Queries
 
@@ -651,6 +1157,36 @@ Vulkan
   - the result is a 32-bit or 64-bit uint
   - the counter may reset anytime except intra-command buffer or when
     `VK_EXT_calibrated_timestamps` is enabled
+- 18.6. Performance Queries
+  - `VK_KHR_performance_query` mainly adds
+    `VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR` query type
+    - the query type usually reads counter values at begin and end
+  - features and properties
+    - `performanceCounterQueryPools` supports perf queries
+    - `performanceCounterMultipleQueryPools` supports multiple query pools for
+      perf queries
+    - `allowCommandBufferQueryCopies` supports `vkCmdCopyQueryPoolResults` for
+      perf queries
+  - `vkAcquireProfilingLockKHR` and `vkReleaseProfilingLockKHR` 
+    - to avoid counter value reset due to device suspend, the profiling lock
+      must be held
+    - strangely, it must be held before `vkBeginCommandBuffer`
+  - `vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR`
+    - enumerates available counters on a queue family
+    - `VkPerformanceCounterKHR`
+      - `unit` is generic, percentage, ns, bytes, bytes-per-second, kelvin,
+        watts, volts, amps, hertz, cycles, etc.
+      - `scope` is cmdbuf, renderpass, command, etc.
+      - `storage` is int32/64, uint32/64, float32/64
+      - `uuid` is the uuid of the counter
+    - `VkPerformanceCounterDescriptionKHR`
+      - `flags` is for various things such as if a counter affects perf
+      - `name`/`category`/`description`
+  - `vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR`
+  - `vkCreateQueryPool`
+    - `VkQueryPoolPerformanceCreateInfoKHR` specifies the counters to enable
+  - `vkQueueSubmit`
+    - `VkPerformanceQuerySubmitInfoKHR` specifies the counter pass index
 - 18.7. Transform Feedback Queries
   - `VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT` counts primitives written
     out by the SO hw as well as primitives that reach the SO hw
@@ -661,6 +1197,114 @@ Vulkan
 - 18.8. Primitives Generated Queries
   - `VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT` counts primitives generated,
     regardless of whether they reach the SO hw or not
+
+## Chapter 19. Clear Commands
+
+## Chapter 20. Copy Commands
+
+## Chapter 21. Drawing Commands
+
+## Chapter 22. Fixed-Function Vertex Processing
+
+## Chapter 23. Tessellation
+
+## Chapter 24. Geometry Shading
+
+## Chapter 25. Mesh Shading
+
+## Chapter 26. Cluster Culling Shading
+
+## Chapter 27. Fixed-Function Vertex Post-Processing
+
+- 27.4. Primitive Clipping
+  - view volume
+    - it is `[-w, w]` for x and y
+    - it is `[0, w]` for z by default
+  - cull volume and user-defined culling
+    - `gl_CullDistance` is an array of `maxCullDistances` floats
+      - positive is inside, zero is on, and negative is outside
+    - if `gl_CullDinstance[i]` is negative for all vertices of a primitive, the
+      primitive is discarded
+  - clip volume and user-defined clipping
+    - `gl_ClipDistance` is an array of `maxClipDistances` floats
+      - positive is inside, zero is on, and negative is outside
+    - if `gl_ClipDinstance[i]` is negative for any vertex of a primitive, the
+      primitive is clipped
+- 27.7. Coordinate Transformations
+  - clip coordinates
+    - this is the coordinates of `gl_Position`
+  - normalized device coordinates
+    - in clip coordinates, dividing xyz by w gives NDC
+  - framebuffer coordinates
+    - a viewport is defined by
+      - `x` and `y`
+      - `width` and `height`
+      - `minDepth` and `maxDepth`
+    - ndc coordinates are mapped to framebuffer coordinates using viewports
+- knobs for z
+  - `VK_EXT_depth_clip_control` has `negativeOneToOne`
+    - when true, the view volume for z is `[-w, w]`
+  - core has `depthClamp`
+    - when false, z is clipped by the clip volume
+    - when true, z is not clipped and is instead clamped by viewports
+  - `VK_EXT_depth_clip_enable` has `depthClipEnable`
+    - this provides explicit control for clipping, taking precedence over
+      `depthClamp`
+  - `VK_EXT_depth_range_unrestricted`
+    - viewport `minDepth` and `maxDepth` must be in `[0.0, 1.0]` by default
+    - when this extension is supported, they can be arbitrary
+    - this does not affect depth clipping, but only depth clamping
+
+## Chapter 28. Rasterization
+
+- `VkPhysicalDeviceFeatures`
+  - `largePoints` is true if point size greather than 1.0 is supported
+  - `wideLines` is true if line width greather than 1.0 is supported
+- `VkPhysicalDeviceLimits`
+  - `pointSizeRange` and `pointSizeGranularity`
+    - point size written to `PointSize` is clamped to the range
+  - `lineWidthRange` and `lineWidthGranularity`
+    - line width specified by `VkPipelineRasterizationStateCreateInfo` is
+      clamped to the range
+  - `strictLines`
+    - line rasterization follows the strict rules or not
+- 28.10. Points
+  - point rasterization
+    - same as a square centered at the point position, where the square width is
+      the point size
+- 28.11. Line Segments
+  - line rasterization
+    - when `strictLines` is true, it is the same as a rectangle centered at the
+      line, where two sides have length the same as line width and two sides
+      have length the same as the line length
+    - when `strictLines` is false, it is the same as a parallelogram centered at
+      the line, with two exceptions
+      - interpolations can follow either strict or non-strict rules
+      - non-antialiased lines can follow the Bresenham rule instead
+  - `VK_EXT_line_rasterization`
+    - all modes are optional, and support status is specified by
+      `VkPhysicalDeviceLineRasterizationFeaturesEXT`
+    - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT` forces the strict rule
+    - `VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT` forces the Bresenham rule
+    - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT` is similar to the
+      strict rule, except implementations can include pixels that are not
+      covered and can compute coverage values freely
+    - also support stippled line rasterization
+- 28.12. Polygons
+  - depth bias
+    - an offset (bias) can be added to z of framebuffer coordinates
+  - knobs for depth bias
+    - core has `depthBiasEnable`
+      - when false, no bias is applied
+    - core has `depthBiasConstantFactor`, `depthBiasClamp`, `depthBiasSlopeFactor`
+      - the bias is roughly given by
+        `m * depthBiasSlopeFactor + r * depthBiasConstantFactor`, clampped by
+        `depthBiasClamp`
+      - `m` is the slope of z
+      - `r` is implementation-defined
+    - `VK_EXT_depth_bias_control` has `depthBiasRepresentation` and
+      `depthBiasExact`
+      - they give explicit control over `r`
 
 ## Chapter 29. Fragment Operations
 
@@ -697,6 +1341,8 @@ Vulkan
       `VkPipelineMultisampleStateCreateInfo::pSampleMask`)
   - `VK_EXT_shader_tile_image` is used with dynamic rendering to replace
     render pass
+  - depth replacement
+    - it replaces z in framebuffer coordinates by `gl_FragDepth`
   - `FragDepth`
     - writing replaces the depth value for all samples in `SampleMask`
   - `VK_EXT_shader_stencil_export`
@@ -712,8 +1358,27 @@ Vulkan
 - 29.8. Depth Bounds Test
   - samples whose corresponding depth values in the attachment are outside of
     `[minDepthBounds, maxDepthBounds]` are discarded
+  - when enabled, and if z value in the depth attachment is outside of
+    `[minDepthBounds, maxDepthBounds]`, the sample is discarded
 - 29.9. Stencil Test
 - 29.10. Depth Test
+  - depth clamping and range adjustment
+    - z in framebuffer coordinates is a float
+      - with depth clipping or depth clamping, and with sane `gl_FragDepth`,
+        it should be between `[minDepth, maxDepth]`
+      - otherwise, it is arbitrary
+    - `VK_EXT_depth_clamp_zero_one`
+      - when enabled,
+        - if the attachment is D32 float, z is unchanged
+        - otherwise, z is clamped to `[0.0, 1.0]`
+      - when disabled,
+        - if z is outside of `[minDepth, maxDepth]`, it becomes undefined
+        - if the attachment is unorm and z is outside of `[0.0, 1.0]`, it
+          becomes undefined
+  - depth comparison
+    - core has `depthTestEnable` and `depthCompareOp`
+  - depth attachment write
+    - core has `depthWriteEnable`
 - 29.11. Representative Fragment Test
   - `VK_NV_representative_fragment_test`
 - 29.12. Sample Counting
@@ -723,9 +1388,29 @@ Vulkan
 - 29.14. Coverage Reduction
   - when `rasterizationSamples` is greater than the fb samples
 
+## Chapter 30. The Framebuffer
+
+## Chapter 31. Dispatching Commands
+
+## Chapter 32. Device-Generated Commands
+
 ## Chapter 33. Sparse Resources
 
+## Sparse Resources
+
 - 33.1. Sparse Resource Features
+  - sparse binding
+    - create the resource with `VK_IMAGE_CREATE_SPARSE_BINDING_BIT` or
+      `VK_BUFFER_CREATE_SPARSE_BINDING_BIT`
+    - use `vkQueueBindSparse` to bind memories
+    - a resource is backed 1 or more memories
+    - when a resource is active, it must be fully resident
+    - when a resource is idle, memories can be unbound/rebound/moved
+  - sparse residency
+    - create the resource with `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT` or
+      `VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT`
+    - when a resource is active, it can be partially resident
+    - mip tail is the tail levels of a mipmap that cannot be partially resident
   - `sparseBinding` feature
     - resouces can be bound at sparse block (i.e., gpu page) granularity
     - the entire resource must be bound to memory before use
@@ -742,6 +1427,30 @@ Vulkan
     - Additional formats may also be supported and can be queried via
       `vkGetPhysicalDeviceSparseImageFormatProperties`
     - `VK_IMAGE_TILING_LINEAR` tiling is not supported
+
+## Chapter 34. Window System Integration (WSI)
+
+## Chapter 35. Deferred Host Operations
+
+## Chapter 36. Private Data
+
+## Chapter 37. Acceleration Structures
+
+## Chapter 38. Micromap
+
+## Chapter 39. Ray Traversal
+
+## Chapter 40. Ray Tracing
+
+## Chapter 41. Memory Decompression
+
+## Chapter 42. Video Coding
+
+## Chapter 43. Optical Flow
+
+## Chapter 44. Execution Graphs
+
+## Chapter 45. Low Latency 2
 
 ## Chapter 46. Extending Vulkan
 
@@ -793,6 +1502,33 @@ Vulkan
       - `devtools`
       - `debugging`
       - `glemulation`
+
+## Chapter 47. Features
+
+- Shader Data Type Widths
+  - `VkPhysicalDeviceFeatures` has
+    - `shaderFloat64` specifies support for 64-bit floats
+    - `shaderInt64` specifies support for 64-bit ints
+    - `shaderInt16` specifies support for 16-bit ints
+  - `VkPhysicalDeviceVulkan11Features` has
+    - `storageBuffer16BitAccess` specifies support for 16-bit load/store on
+      ssbo, as well as width-only conversions of 16-bit types
+    - `uniformAndStorageBuffer16BitAccess` is the same as above but on ubo
+    - `storagePushConstant16` ditto
+    - `storageInputOutput16` ditto
+  - `VkPhysicalDeviceVulkan12Features` has
+    - `storageBuffer8BitAccess` specifies support for 8-bit load/store on ssbo,
+      as well as width-only conversions of 8-bit types
+    - `uniformAndStorageBuffer8BitAccess` is the same as above but on ubo
+    - `storagePushConstant8` ditto
+    - `shaderBufferInt64Atomics` specifies support for 64-bit int atomic
+      operations on buffers
+    - `shaderSharedInt64Atomics` specifies support for 64-bit int atomic
+      operations on shared and payload memory
+    - `shaderFloat16` specifies support for 16-bit floats
+    - `shaderInt8` specifies support for 8-bit ints
+
+## Chapter 48. Limits
 
 ## Chapter 49. Formats
 
@@ -871,8 +1607,41 @@ Vulkan
       - image type is `VK_IMAGE_TYPE_3D`, or
       - the format requires ycbcr conversion
 
+## Chapter 51. Debugging
+
+- 51.1. Debug Utilities
+  - `VK_EXT_debug_utils`
+    - it is promoted from `VK_EXT_debug_marker`
+    - it deprecates `VK_EXT_debug_report`
+- 51.5. Active Tooling Information
+  - `VK_EXT_tooling_info`
+    - implemented by tools and layers to report themselves
+
 ## Appendix A: Vulkan Environment for SPIR-V
 
+- Validation Rules Within a Module
+  - `VK_KHR_shader_float_controls`
+    - it has been promoted to 1.2
+    - `VkShaderFloatControlsIndependence`
+      - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY`: float16/float64 share
+        the same control
+      - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL`: float16, float32, and float64
+        are independent
+      - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE`: float16/float32/float64
+        share the same control
+    - `VkPhysicalDeviceFloatControlsProperties`
+      - `denormBehaviorIndependence`
+      - `roundingModeIndependence`
+      - `shaderSignedZeroInfNanPreserveFloat{16,32,64}` indicates whether
+        `SignedZeroInfNanPreserve` is supported
+      - `shaderDenormPreserveFloat{16,32,64}` indicates whether `DenormPreserve`
+        is supported
+      - `shaderDenormFlushToZeroFloat{16,32,64}` indicates whether
+        `DenormFlushToZero` is supported
+      - `shaderRoundingModeRTEFloat{16,32,64}` indicates whether
+        `RoundingModeRTE` is supported
+      - `shaderRoundingModeRTZFloat{16,32,64}` indicates whether
+        `RoundingModeRTZ` is supported
 - Precision and Operation of SPIR-V Instructions
   - Precision of Individual Operations
     - Correctly Rounded
@@ -887,6 +1656,65 @@ Vulkan
         If x is exactly representable then x will be returned. Otherwise,
         either the floating-point value closest to and no less than x or the
         value closest to and no greater than x will be returned.
+
+## Appendix B: Memory Model
+
+- Availability, Visibility, and Domain Operations
+  - when the first access scope includes `VK_ACCESS_HOST_WRITE_BIT`, the command
+    includes a memory domain operation from the host domain to the device
+    domain; when the second access scope include `VK_ACCESS_HOST_READ_BIT` or
+    `VK_ACCESS_HOST_WRITE_BIT`, it includes a memory domain operation from the
+    device domain to the host domain
+  - `vkFlushMappedMemoryRanges`s includes an availability operation
+  - `vkInvalidateMappedMemoryRanges` includes an visibility operation
+  - `vkQueueSubmit` includes both a domain operation (from the host to the device)
+    and a visibility operation
+
+## Appendix C: Compressed Image Formats
+
+## Appendix D: Core Revisions (Informative)
+
+- Version 1.3
+  - 23 promoted extensions
+    - `VK_KHR_dynamic_rendering`
+    - `VK_KHR_synchronization2`
+- Version 1.2
+  - 24 promoted extensions
+    - `VK_KHR_buffer_device_address` for bindless resources
+    - `VK_KHR_draw_indirect_count` for GL compat
+    - `VK_KHR_separate_depth_stencil_layouts` for D3D compat
+    - `VK_KHR_spirv_1_4` for HLSL compat
+    - `VK_KHR_timeline_semaphore`
+    - `VK_KHR_uniform_buffer_standard_layout` for HLSL compat
+    - `VK_EXT_descriptor_indexing` for bindless resources
+    - `VK_EXT_scalar_block_layout` for HLSL compat
+    - `VK_EXT_separate_stencil_usage` for D3D compat
+- Version 1.1
+  - some of the new features
+    - protected content
+    - subgroup operations
+    - `vkEnumerateInstanceVersion`
+  - 23 promoted extensions
+    - `VK_KHR_16bit_storage`
+    - `VK_KHR_device_group` for multi-gpu
+    - `VK_KHR_external_fence`
+    - `VK_KHR_external_memory`
+    - `VK_KHR_external_semaphore`
+    - `VK_KHR_multiview` for vr
+    - `VK_KHR_relaxed_block_layout` for HLSL compat
+    - `VK_KHR_sampler_ycbcr_conversion`
+    - `VK_KHR_variable_pointers` for advanced compute
+
+## Appendix E: Layers & Extensions (Informative)
+
+## Appendix F: Vulkan Roadmap Milestones
+
+- Roadmap 2022
+  - requires Vulkan 1.3
+  - requires some optional features, noticeably
+    - `samplerYcbcrConversion`
+    - `descriptorIndexing`
+  - requires increased limits
 
 ## Example
 
@@ -983,826 +1811,3 @@ Vulkan
     - `vkQueueSubmit`
     - `vkQueuePresentKHR`
     - `vkQueueWaitIdle`
-
-## Objects
-
-- VkInstance is an instance of Vulkan
-- VkPhysicalDevice is used to query device caps and features
-- VkDevice and the available VkQueue's are created together
-- VkCommandBuffer are command buffers that get submitted to specific queues
-- VkCommandPool is to enable suballocations of command buffers
-- VkSemaphore is for cross-queue synchronization with submit granularity
-- VkFence is for vk/cpu synchronization with submit granularity
-  - wait is on the CPU side
-- VkBuffer and VkImage are created without any backing store
-- VkDeviceMemory, the backing store, is allocated separately
-- VkBufferView and VkImageView are views of the pipelines into the buffers /
-  images
-- VkEvent is for vk/cpu synchronization with command granularity
-  - wait is on the GPU side
-- VkQueryPool is for querying GPU stats
-- VkSampler describes a sampler (min filter, etc)
-- VkShaderModule is a shader stage compiled from SPIR-V
-- VkDescriptorSetLayout describes the layout (bindings) of a descriptor set
-- VkPipelineLayout is a group of descriptor set layouts
-- VkRenderPass describes a rendering pass abstractly; no image but only their
-  formats, etc.
-- VkFramebuffer is created from VkRenderPass and a list of VkImageView as the
-  attachments
-- VkPipelineCache is for faster pipeline creation
-- VkPipeline is a huge object created from VkPipelineLayout and VkRenderPass
-  and other states (but not VkFramebuffer)
-- VkDescriptorPool is to enable suballocations of descriptor sets
-- VkDescriptorSet describes shader resources
-
-## Render Passes and Framebuffers
-
-- A VkRenderPass contains a set of (abstract) attachments it will work on
-  - each attachment is described with VkAttachmentDescription abstractly
-  - format
-  - load/store ops
-  - initial layout: the layout the attachment is in when entering the render
-    pass
-  - final layout: the layout the attachment will be transitioned to by the
-    implementation automatically when exiting the render pass
-- A VkFramebuffer contains a set of (physical) attachments
-  - each attachemnt is a VkImageView
-  - VkFramebuffer is like a physical instance of a VkRenderPass
-  - the separation is such that, when a pipeline is created for a render pass,
-    the pipeline can work with any framebuffer compatible with the render pass.
-- A subpass of a render pass works with a subset of the attachments
-  - input attachemnts
-  - color attachemnts
-  - resolve attachemnts
-  - depth attachemnt
-  - preserve attachemnts
-  - the implementation transitions all attachments to the specified layouts
-    automatically when entering a subpass
-
-## Descriptor Sets
-
-- A VkDescriptorPool allocates enough memory (host or device, depending on
-  the implementations) to hold the specified amount of descriptors of the
-  specified types.
-- A VkDescriptorSet grabs some of the descriptors from the pool according to
-  its VkDescriptorLayout.
-- A VkDescriptorSetLayout of a set has multiple bindings, with each binding
-  corresponding to an array of descriptors of the same type.
-- vkUpdateDescriptorSets writes the descriptors into the memory
-- Types of descriptors
-  - samplers
-  - sampled images
-  - storage images
-  - uniform texel buffers
-  - storage texel buffers
-  - uniform buffers
-  - storage buffers
-  - input attachments (color attachments being read in following subpasses)
-- A descriptor pool mallocs
-  - `sizeof(descriptor_set) * maxSets`
-  - `sizeof(descriptor) * numDescriptors`, for each descriptor type
-- A descriptor set layout is described as
-  - binding X: N descriptors of certain type used by certain shader stages
-  - there can be arbitrarily many bindings, using arbitrarily binding numbers
-  - this is enough for impl to calculate the total number of HW descriptors
-    required and to maps "descriptor #n at binding X" to "HW descriptor #m"
-- A descriptor set is suballocated from the pool
-  - `vkUpdateDescriptorSets` is used to update a descriptor set
-  - a descriptor set may simply hold shallow pointers to various VkImageView,
-    VkSampler, VkBuffer, etc.  HW descriptors are generated at draw time.
-
-## Pipelines
-
-- A VkPipelineLayout consists of multiple descriptor set layouts and push
-  constants.
-  - Because a pipeline can work with multiple sets at the same time.
-- A pipeline is created from a pipeline layout and many other states
-  - renderPass / subpass
-  - pipeline cache
-  - base pipeline
-
-## Command Buffers
-
-- A command buffer consists of
-  - a list of BOs, dynamically growing, with one chained to another
-  - a vector of reloc entries (if resources may move on the impl)
-  - a vector of binding table blocks
-- A command pool is almost a dummy object to reset/free a group of command
-  buffers in one go
-
-## Execution and Memory Dependencies
-
-- An operation is an arbitrary amount of work to be executed on the host, a
-  device, or an external entity.
-- An execution dependency is a guarantee that, for two sets of operations, the
-  first set must happens-before the second set.
-- An execution dependency chain is a sequence of execution dependencies, where
-  for each pair of consecutive execution dependencies, there is at least one
-  operation in the the second set of operations of the first execution
-  dependency and in the first set of operations of the second execution
-  dependency.
-- Execution dependencies alone are not sufficient to guarantee that values
-  resulting from writes in one set of operations can be read from another set
-  of operations.
-- Three additional types of operations are introduced to control memory
-  access
-  - Availability operation causes the values generated by the specified memory
-    write accesses to become available to a memory domain for future access
-    (e.g., flush the cache)
-  - Memory domain operation causes values available to a source memory domain
-    to become available to a destination memory domain.  (e.g., host domain,
-    device domain, external domain, and foreign domain)
-  - Visibility operation causes values available to a memory domain to become
-    visible to the specified memory accesses (e.g., invalidate the cache)
-- A memory dependency is an execution dependency which also includes
-  availability and visibility operations.  It guarantees that
-  - the first set of operations happens-before the availability operation
-  - the availability operation happens-before the visibilitiy operation
-  - the visibility operation happens-before the second set of operations.
-- Some commands, such as a draw command, can consist of multiple operations
-  known as pipeline stages.  They must adhere to the implicit ordering: a
-  later pipeline stage must not happens-before an earlier pipeline stage.
-
-## Synchronizations
-
-- Synchronization commands introduce explicit execution dependencies or memory
-  dependencies.
-- A synchronization command has two synchronization scopes.  The first scope
-  defines the types of operations before it that are considered to be in the
-  first set of the execution dependency.  The second scope defines the types
-  of operations after it that are considered to be in the second set of the
-  execution dependency.
-- It might have two memory access scopes when it also defines a memory
-  dependency.  The first scope defines the types of memory accesses generated
-  by the operations in the first set that are made available.  The second
-  scope defines the types of memory accesses generated by the operations in
-  the second set that the available values are visible by.
-- when the first access scope includes `VK_ACCESS_HOST_WRITE_BIT`, the command
-  includes a memory domain operation from the host domain to the device
-  domain; when the second access scope include `VK_ACCESS_HOST_READ_BIT` or
-  `VK_ACCESS_HOST_WRITE_BIT`, it includes a memory domain operation from the
-  device domain to the host domain
-- vkFlushMappedMemoryRegions includes an availability operation
-- vkInvalidateMappedMemoryRanges includes an visibility operation
-- vkQueueSubmit includes both a domain operation (from the host to the device)
-  and a visibility operation
-
-## Command Ordering
-
-- Within a single queue, vkQueueSubmit are executed in call order
-- Within a VkQueueSubmit, VkSubmitInfo are executed in array order
-- Within a VkSubmitInfo, VkCommandBuffer are executed in array order
-- Within a VkCommandBuffer, commands outside of render passes are executed in
-  recorded order (this includes vkCmdBeginRenderPass and vkCmdEndRenderPass)
-- Within a render pass subpass, commands are executed in recorded order
-- Between render pass subpasses, there is no implicit ordering
-
-## Resource Exclusive Ownership
-
-- resources should only be accessed in the Vulkan instance that has exclusive
-  ownership of the underlying memory
-- only one Vulkan instance has exclusive ownership of a resource's underlying
-  memory at any time
-- it takes three steps to transfer exclusive ownership
-  - the source instance or API releases exclusive ownership
-  - wait with a fence or semaphore
-  - the destination instance or API acquires exclusive ownership
-- furthermore, within a Vulkan instance, resources created with
-  `VK_SHARING_MODE_EXCLUSIVE` should only be accessed in the queue that has
-  exclusive ownership
-- releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
-  `VkImageMemoryBarrier`
-
-## Debug Extensions
-
-- `VK_EXT_debug_report`
-  - deprecated by `VK_EXT_debug_utils`
-- `VK_EXT_debug_marker`
-  - promoted to `VK_EXT_debug_utils`
-- `VK_EXT_validation_flags`
-  - deprecated by `VK_EXT_validation_features`
-- `VK_EXT_debug_utils`
-- `VK_EXT_tooling_info`
-  - implemented by tools and layers to report themselves
-- `VK_EXT_validation_features`
-  - enable/disable specific validation features of
-    `VK_LAYER_KHRONOS_validation`
-    - thread safety
-    - api params
-    - object lifetimes
-    - core checks
-    - unique handles
-
-## `VkFormat`
-
-- core formats
-  - most core formats have one plane
-  - compressed formats have one plane
-  - depth formats have one plane
-  - stencil formats have one plane
-  - depth/stencil formats have two planes
-    - `VK_FORMAT_D32_SFLOAT_S8_UINT`
-    - `VK_FORMAT_D24_UNORM_S8_UINT`
-- YCbCr formats
-  - some have one plane, such as
-    - `VK_FORMAT_G8B8G8R8_422_UNORM`
-  - some have two planes, such as
-    - `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM`
-  - some have three planes, such as
-    - `K_FORMAT_G8_B8_R8_3PLANE_422_UNORM`
-- `VkImageTiling` and `VkImageLayout`
-  - for each plane, HW needs to store the format data and often also format
-    metadata
-  - layout transition makes sure the format metadata is resolved to the format
-    data for the destination operation
-  - tiling specifies whether the format data is tiled or not
-  - Image layout is per-image subresource.  Separate image subresources of the
-    same image can be in different layouts at the same time, with the
-    exception that depth and stencil aspects of a given image subresource can
-    only be in different layouts if the `separateDepthStencilLayouts` feature
-    is enabled.
-- DRM modifiers
-  - `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT` mixes tiling and layout
-    together.  Format data and format metadata reside on different memory
-    planes
-  - a single-plane format thus can have multiple memory planes when the tiling is
-    `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
-  - can we combine multi-planar format with drm modifier?  It has `N*M`
-    planes in theory.
-- `VK_IMAGE_CREATE_DISJOINT_BIT`
-  - driver by default allocates a buffer and puts planes on different region of
-    the same buffer
-    - thus only a `VkDeviceMemory` needs to be bound
-  - when `VK_IMAGE_CREATE_DISJOINT_BIT` is specified, driver puts different
-    planes on different buffers
-    - thus multiple `VkDeviceMemory` need to be bound
-  - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
-    which respectively point to different BOs
-
-## `VkImageAspectFlagBits`
-
-- basic
-  - `VK_IMAGE_ASPECT_COLOR_BIT`
-  - `VK_IMAGE_ASPECT_DEPTH_BIT`
-  - `VK_IMAGE_ASPECT_STENCIL_BIT`
-  - `VK_IMAGE_ASPECT_METADATA_BIT`
-- multi-planar
-  - `VK_IMAGE_ASPECT_PLANE_0_BIT`
-  - `VK_IMAGE_ASPECT_PLANE_1_BIT`
-  - `VK_IMAGE_ASPECT_PLANE_2_BIT`
-- DRM modifier
-  - `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT`
-  - `VK_IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT`
-  - `VK_IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT`
-  - `VK_IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT`
-- `vkGetImageMemoryRequirements2` and `vkGetDeviceImageMemoryRequirements`
-  - aspect bit can be specified with `VkImagePlaneMemoryRequirementsInfo` or
-    `VkDeviceImageMemoryRequirements`
-  - only plane and memory plane aspects are valid
-  - only when `VK_IMAGE_CREATE_DISJOINT_BIT` is set
-  - only for drm modifiers or multi-plane formats
-    - if drm modifiers, must be one of
-      `VK_IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT` and etc.
-    - otherwise, if multi-plane formats, must be one of
-      `VK_IMAGE_ASPECT_PLANE_0_BIT` and etc.
-- `vkBindImageMemory2`
-  - aspect bit can be specified with `VkBindImagePlaneMemoryInfo`
-  - only plane and memory plane aspects are valid
-- `vkGetImageSubresourceLayout` or `vkQueueBindSparse`
-  - aspect mask can be specified with `VkImageSubresource`
-  - must be a single bit
-    - meaning depth/stencil formats have no well-defined linear layout
-- `vkCmdCopyImage2`, `vkCmdCopyBufferToImage2`, `vkCmdCopyImageToBuffer2`,
-  `vkCmdBlitImage2`, `vkCmdResolveImage2`
-  - aspect mask can be specified with `VkImageSubresourceLayers`
-  - only color, depth, stencil, and plane aspects are valid
-- `vkCreateImageView`
-  - aspect mask can be specified in `VkImageSubresourceRange`
-  - valid aspects depend on formats
-    - can only be `VK_IMAGE_ASPECT_COLOR_BIT` if color formats
-    - can only be `VK_IMAGE_ASPECT_DEPTH_BIT` if depth-only formats
-    - can only be `VK_IMAGE_ASPECT_STENCIL_BIT` if stencil-only formats
-    - can only be depth, stencil, or both aspects if depth/stencil formats
-      - must be a single bit when used in a descriptor set
-      - is ignored and assume to be both aspects when used as a framebuffer
-      	attachment
-- `vkCmdClearColorImage`, `vkCmdClearDepthStencilImage`, `vkCmdSetEvent2`,
-  `vkCmdWaitEvents2`, `vkCmdPipelineBarrier2`, `vkCmdWaitEvents`, and
-  `vkCmdPipelineBarrier`
-  - aspect mask can be specified in `VkImageSubresourceRange`
-- `vkCreateRenderPass2` or `vkCreateRenderPass`
-  - aspect mask can be specified in `VkAttachmentReference2` or
-    `VkInputAttachmentAspectReference`
-  - only for input attachments
-- `vkCmdClearAttachments`
-  - aspect mask can be specified in `VkClearAttachment`
-  - valid aspect masks are color, depth, stencil, or depth+stencil
-
-## `VkImageLayout`
-
-- 1.0
-  - `VK_IMAGE_LAYOUT_UNDEFINED`
-  - `VK_IMAGE_LAYOUT_GENERAL`
-  - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_PREINITIALIZED`
-- 1.1
-  - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL`
-- 1.2
-  - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
-- 1.3
-  - `VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL`
-  - `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`
-
-## Depth and Stencil
-
-- assume
-  - `VK_KHR_maintenance2`
-    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL_KHR`
-    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL_KHR`
-  - `VK_KHR_separate_depth_stencil_layouts`
-    - `separateDepthStencilLayouts` feature
-    - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL_KHR`
-    - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL_KHR`
-    - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL_KHR`
-    - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL_KHR`
-  - `VK_KHR_dynamic_rendering`
-- in `VkRenderingInfo`, `pDepthAttachment` and `pStencilAttachment` are
-  specified separately with some requirements
-  - if both specify a image view, they must specify the same image view
-  - `pDepthAttachment`'s image view must include a depth component
-    - its layout must not be
-      - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
-      - `VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL`
-      - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
-      - IOW, must use depth
-  - `pStencilAttachment`'s image view must include a stencil component
-      - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
-      - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
-      - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
-      - IOW, must use stencil
-
-## Point and Line Rasterization
-
-- `VkPhysicalDeviceFeatures`
-  - `largePoints` is true if point size greather than 1.0 is supported
-  - `wideLines` is true if line width greather than 1.0 is supported
-- `VkPhysicalDeviceLimits`
-  - `pointSizeRange` and `pointSizeGranularity`
-    - point size written to `PointSize` is clamped to the range
-  - `lineWidthRange` and `lineWidthGranularity`
-    - line width specified by `VkPipelineRasterizationStateCreateInfo` is
-      clamped to the range
-  - `strictLines`
-    - line rasterization follows the strict rules or not
-- point rasterization
-  - same as a square centered at the point position, where the square width is
-    the point size
-- line rasterization
-  - when `strictLines` is true, it is the same as a rectangle centered at the
-    line, where two sides have length the same as line width and two sides
-    have length the same as the line length
-  - when `strictLines` is false, it is the same as a parallelogram centered at
-    the line, with two exceptions
-    - interpolations can follow either strict or non-strict rules
-    - non-antialiased lines can follow the Bresenham rule instead
-- `VK_EXT_line_rasterization`
-  - all modes are optional, and support status is specified by
-    `VkPhysicalDeviceLineRasterizationFeaturesEXT`
-  - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT` forces the strict rule
-  - `VK_LINE_RASTERIZATION_MODE_BRESENHAM_EXT` forces the Bresenham rule
-  - `VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT` is similar to the
-    strict rule, except implementations can include pixels that are not
-    covered and can compute coverage values freely
-  - also support stippled line rasterization
-
-## YCbCr Conversion
-
-- feature bits
-  - these control valid values of `xChromaOffset` and `yChromaOffset`
-    - `VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT`
-    - `VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT`
-    - each bit enables each chroma location
-  - this controls valid values of `chromaFilter`
-    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT`
-    - without the bit, only `VK_FILTER_NEAREST` is allowed
-  - this controls valid values of `minFilter`, `magFilter`, and `chromaFilter`
-    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT`
-    - without the bit, all three must have the same value
-  - these controls valid values of `forceExplicitReconstruction`
-    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT`
-      - with the bit, always explicit and `forceExplicitReconstruction` is
-        assumed true
-      - without the bit, it is implicit by default
-    - `VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT`
-      - with the bit, `forceExplicitReconstruction` can be set to true
-- when CbCr is subsampled, reconstruction is required
-  - reconstruction uses `chromaFilter`
-    - `minFilter` and `magFilter` are not used
-  - implicit reconstruction
-    - scale unnormalized coordinates `(u, v)` to be `(u/2, v/2)`
-    - if `VK_FILTER_NEAREST`, use the texel closest to `(u/2, v/2)`
-    - if `VK_FILTER_LINEAR`, use the average of the 4 texels closest to `(u/2, v/2)`
-  - explicit reconstruction
-    - if `VK_FILTER_NEAREST` and texel `(i, j)` is needed, use texel `(i/2, j/2)`
-    - if `VK_FILTER_LINEAR` and texel `(i, j)` is needed, use the average of
-      the 4 texels closest to `(i/2, j/2)`
-      - because `VK_FILTER_LINEAR` needs 4 texels, this can read up to 9
-        texels in total
-      - quad-linear filtering
-  - chroma offsets (cosited or midpoint) are chosen based on how CbCr was
-    subsampled
-    - Y and full CbCr samples are co-sited
-    - when full CbCr samples are downsampled,
-      - we can store the average of each 2x2 samples, in this case we want to
-        treat the stored sample as the midpoint of the 2x2 samples
-      - we can store the top-left sample of each 2x2 samples, in this case we
-        want to treat the stored sample as co-sited with the top-left Y aample
-
-## Sparse Resources
-
-- sparse binding
-  - create the resource with `VK_IMAGE_CREATE_SPARSE_BINDING_BIT` or
-    `VK_BUFFER_CREATE_SPARSE_BINDING_BIT`
-  - use `vkQueueBindSparse` to bind memories
-  - a resource is backed 1 or more memories
-  - when a resource is active, it must be fully resident
-  - when a resource is idle, memories can be unbound/rebound/moved
-- sparse residency
-  - create the resource with `VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT` or
-    `VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT`
-  - when a resource is active, it can be partially resident
-  - mip tail is the tail levels of a mipmap that cannot be partially resident
-
-## `VK_ANDROID_external_memory_android_hardware_buffer`
-
-- export ahb
-  - `vkGetPhysicalDeviceImageFormatProperties2` with
-    `VkPhysicalDeviceExternalImageFormatInfo` to query support
-  - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` to create the image
-  - `vkAllocateMemory` with `VkExportMemoryAllocateInfo` to allocate the
-    memory
-  - `vkGetMemoryAndroidHardwareBufferANDROID` to export the AHB
-  - in this path, only the public AHB formats are supported
-- import ahb
-  - `vkGetAndroidHardwareBufferPropertiesANDROID` with
-    `VkAndroidHardwareBufferPropertiesANDROID` and
-    `VkAndroidHardwareBufferFormatPropertiesANDROID` to query ahb
-  - `vkCreateImage` with `VkExternalMemoryImageCreateInfo` and optionally
-    `VkExternalFormatANDROID` to create the image
-  - `vkAllocateMemory` with `VkImportAndroidHardwareBufferInfoANDROID` to
-    import the ahb
-  - in this path, ahb can have implemetation-defined formats
-- allocate externally and import
-  - `vkGetPhysicalDeviceImageFormatProperties2` with
-    `VkAndroidHardwareBufferUsageANDROID` to get the optimal ahb usage
-  - in this path, vk is consulted for the ahb usage
-
-## Image Views
-
-- a `VkImageView` can be created fro a `VkImage`
-  - `VkImageViewType` and `VkImageType` can differ under conditions
-    - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD` 
-    - `VK_IMAGE_VIEW_TYPE_xD_ARRAY` is always compatible with `VK_IMAGE_TYPE_xD` 
-    - `VK_IMAGE_VIEW_TYPE_CUBE` and `VK_IMAGE_VIEW_TYPE_CUBE_ARRAY` are
-      compatible with `VK_IMAGE_TYPE_2D` if
-      - `imageCubeArray` feature is supported and enabled
-      - the image was created with `VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT`
-      - view `layerCount` must be 6 or multiples of 6
-    - `VK_IMAGE_VIEW_TYPE_2D` and `VK_IMAGE_VIEW_TYPE_2D_ARRAY` are compatible
-      with `VK_IMAGE_TYPE_3D` if
-      - `imageView2DOn3DImage` feature is supported and enabled
-      - the image was created with `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT`
-    - there is also `VK_EXT_image_2d_view_of_3d`
-  - view `format` and image `format` can differ if
-    - the image was created with `VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT`
-  - view `subresourceRange` specifies a subset of the miptree accessible to
-    the view
-    - `baseMipLevel` and `levelCount` select the mip levels
-    - `baseArrayLayer` and `layerCount` select the array layers
-    - note that 3D images have only a single array layer
-      - `VK_EXT_image_sliced_view_of_3d` allows selecting slices at a mip level
-- VUIDs
-  - VUID-VkImageViewCreateInfo-image-04970
-    - `levelCount` must be 1 when creating a 2D view from a 3D image
-  - VUID-VkImageViewSlicedCreateInfoEXT-None-07870
-    - `levelCount` must be 1 when creating a sliced 3D view from a 3D image
-- core
-  - `imageView2DOn3DImage` feature indicates
-    `VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT` support, permitting a 2D or 2D
-    array image view of a 3D image
-  - `VkFramebufferCreateInfo` does not allow 3D views.  The bit allows 3D
-    images to be used as color buffers
-  - it is designed for rendering, and is similar to
-    `glFramebufferTextureLayer`
-- `VK_EXT_image_2d_view_of_3d`
-  - `image2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
-    descriptor can be a 2D image view of a 3D image
-  - `sampler2DViewOf3D` feature indicates a `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
-    descriptor can be a 2D image view of a 3D image
-  - `VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT` must be specified when
-    creating the 3D image
-  - the bit is for sampling, and is similar to `glBindImageTexture`
-- `VK_EXT_image_sliced_view_of_3d`
-  - `imageSlicedViewOf3D` indicates a `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
-    descriptor can be a sliced 3D image view of a 3D image
-- `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT`
-  - it was added by `VK_KHR_maintenance2`
-  - there has always been `VUID-VkImageViewCreateInfo-image-07072` (which was
-    named `VUID-VkImageViewCreateInfo-image-01584` at first) which states
-    - If image was created with the
-      `VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT` flag and format is a
-      non-compressed format, the `levelCount` and `layerCount` members of
-      `subresourceRange` must both be 1
-  - in 1.2.171, `VUID-VkImageViewCreateInfo-image-04739` was added to ban
-    `VK_IMAGE_VIEW_TYPE_3D`
-  - in 1.3.226, `VUID-VkImageViewCreateInfo-image-04739` was removed to allow
-    `VK_IMAGE_VIEW_TYPE_3D`
-
-## `VK_EXT_attachment_feedback_loop_layout`
-
-- feedback loop
-  - when a subpass accesses a subresource as a color/depth/stencil attachment,
-    and at the same time as an input attachment or an image resource, a
-    feedback loop is formed
-    - unless the subresource is not written to as a color/depth/stencil
-      attachment
-  - a subpass containing a feedback loop causes a data race, unless
-    - a memory dependency between the read/write
-    - `VK_EXT_rasterization_order_attachment_access`
-- `VK_EXT_attachment_feedback_loop_layout`
-  - this extension allows a feedback loop between a color/depth/stencil
-    attachment and an image resource
-    - that is, the extension replaces `VUID-vkCmdDraw-None-06538` by
-      `VUID-vkCmdDraw-None-08753`
-    - `VUID-vkCmdDraw-None-06538` states: If any recorded command in the
-      current subpass writes to an image subresource as an attachment, this
-      command must not read from the memory backing that image subresource in
-      any other way than as an attachment
-  - the device must have been created with `attachmentFeedbackLoopLayout`
-  - the image must have been created with
-    `VK_IMAGE_USAGE_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
-  - the pipeline must have been created with
-    `VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT` or
-    `VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT`
-  - the render pass must have been created with
-    `VK_DEPENDENCY_FEEDBACK_LOOP_BIT_EXT`
-  - the image must have been transitioned to
-    `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT`
-
-## `VK_KHR_shader_float_controls`
-
-- it has been promoted to 1.2
-- `VkShaderFloatControlsIndependence`
-  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_32_BIT_ONLY`: float16/float64 share
-    the same control
-  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_ALL`: float16, float32, and float64
-    are independent
-  - `VK_SHADER_FLOAT_CONTROLS_INDEPENDENCE_NONE`: float16/float32/float64
-    share the same control
-- `VkPhysicalDeviceFloatControlsProperties`
-  - `denormBehaviorIndependence`
-  - `roundingModeIndependence`
-  - `shaderSignedZeroInfNanPreserveFloat{16,32,64}` indicates whether
-    `SignedZeroInfNanPreserve` is supported
-  - `shaderDenormPreserveFloat{16,32,64}` indicates whether `DenormPreserve`
-    is supported
-  - `shaderDenormFlushToZeroFloat{16,32,64}` indicates whether
-    `DenormFlushToZero` is supported
-  - `shaderRoundingModeRTEFloat{16,32,64}` indicates whether
-    `RoundingModeRTE` is supported
-  - `shaderRoundingModeRTZFloat{16,32,64}` indicates whether
-    `RoundingModeRTZ` is supported
-
-## Shader Data Type Widths
-
-- `VkPhysicalDeviceFeatures` has
-  - `shaderFloat64` specifies support for 64-bit floats
-  - `shaderInt64` specifies support for 64-bit ints
-  - `shaderInt16` specifies support for 16-bit ints
-- `VkPhysicalDeviceVulkan11Features` has
-  - `storageBuffer16BitAccess` specifies support for 16-bit load/store on
-    ssbo, as well as width-only conversions of 16-bit types
-  - `uniformAndStorageBuffer16BitAccess` is the same as above but on ubo
-  - `storagePushConstant16` ditto
-  - `storageInputOutput16` ditto
-- `VkPhysicalDeviceVulkan12Features` has
-  - `storageBuffer8BitAccess` specifies support for 8-bit load/store on ssbo,
-    as well as width-only conversions of 8-bit types
-  - `uniformAndStorageBuffer8BitAccess` is the same as above but on ubo
-  - `storagePushConstant8` ditto
-  - `shaderBufferInt64Atomics` specifies support for 64-bit int atomic
-    operations on buffers
-  - `shaderSharedInt64Atomics` specifies support for 64-bit int atomic
-    operations on shared and payload memory
-  - `shaderFloat16` specifies support for 16-bit floats
-  - `shaderInt8` specifies support for 8-bit ints
-
-## `VK_KHR_pipeline_library`
-
-- a pipeline library is a `VkPipeline` that cannot be used directly
-- to create a pipeline library, specify `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR`
-  when creating the pipeline
-- to create a pipeline from pipeline libraries,
-  `VkPipelineLibraryCreateInfoKHR` to `VkGraphicsPipelineCreateInfo`
-
-## `VK_EXT_graphics_pipeline_library`
-
-- init
-  - `VkGraphicsPipelineLibraryCreateInfoEXT`
-    - `graphicsPipelineLibrary` is true if gpl is supported
-    - this feature query exists because the extension might be promoted to core
-  - `VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT`
-    - `graphicsPipelineLibraryFastLinking` is true if creating a pipeline from
-      pipeline libraries is cheap without
-      `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT`
-    - `graphicsPipelineLibraryIndependentInterpolationDecoration` is true if
-      interpolation decorations of vs outs and fs ins do not need to match
-- shader module is deprecated
-  - `VkShaderModuleCreateInfo` can be chained to `VkPipelineShaderStageCreateInfo` directly
-- pipeline layout
-  - `VkPipelineLayoutCreateInfo` gains a new flag,
-    `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
-  - vs and fs may need different descriptor sets.  When compiling them
-    independently, `VkPipelineLayout` must be specified twice
-    - one option is to use a full `VkPipelineLayout` and specify the same
-      layout
-    - another option is to use two partial `VkPipelineLayout`s, which must be
-      created with `VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT`
-- pipeline
-  - `VkGraphicsPipelineLibraryCreateInfoEXT`
-    - `flags` specifies a subset of the graphics pipeline to compile
-      - there are 4 parts
-      - `VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT`
-      - `VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT`
-      - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT`
-      - `VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT`
-    - when this struct is omitted,
-      - if not doing pipeline libraries, `flags` is assumed to include all bits
-      - if doing pipeline libraries, `flags` is assumed to include no bit
-  - `VkGraphicsPipelineCreateInfo` gains 2 new flags
-    - `VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT`
-      specifies that the pipeline library being created should retain info for
-      LTO later
-    - `VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT` specifies that the
-      pipeline being created should have LTO applied on the pipeline libraries
-      - on the other hand, when the flag is omitted, the pipeline should be
-        fast-linked
-
-## `VK_KHR_performance_query`
-
-- this mainly adds `VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR` query type
-  - the query type usually reads counter values at begin and end
-- features and properties
-  - `performanceCounterQueryPools` supports perf queries
-  - `performanceCounterMultipleQueryPools` supports multiple query pools for
-    perf queries
-  - `allowCommandBufferQueryCopies` supports `vkCmdCopyQueryPoolResults` for
-    perf queries
-- `vkAcquireProfilingLockKHR` and `vkReleaseProfilingLockKHR` 
-  - to avoid counter value reset due to device suspend, the profiling lock
-    must be held
-  - strangely, it must be held before `vkBeginCommandBuffer`
-- `vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR`
-  - enumerates available counters on a queue family
-  - `VkPerformanceCounterKHR`
-    - `unit` is generic, percentage, ns, bytes, bytes-per-second, kelvin,
-      watts, volts, amps, hertz, cycles, etc.
-    - `scope` is cmdbuf, renderpass, command, etc.
-    - `storage` is int32/64, uint32/64, float32/64
-    - `uuid` is the uuid of the counter
-  - `VkPerformanceCounterDescriptionKHR`
-    - `flags` is for various things such as if a counter affects perf
-    - `name`/`category`/`description`
-- `vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR`
-- `vkCreateQueryPool`
-  - `VkQueryPoolPerformanceCreateInfoKHR` specifies the counters to enable
-- `vkQueueSubmit`
-  - `VkPerformanceQuerySubmitInfoKHR` specifies the counter pass index
-
-## `VK_EXT_image_compression_control`
-
-- `VK_EXT_image_compression_control` adds `imageCompressionControl` feature
-- `VkImageCompressionPropertiesEXT`
-  - it can be chained to
-    - `vkGetPhysicalDeviceImageFormatProperties2`
-    - `vkGetImageSubresourceLayout2KHR`
-  - `imageCompressionFlags` is one of
-    - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` to indicate lossless compression
-    - `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` to indicate lossy
-      compression
-    - `VK_IMAGE_COMPRESSION_DISABLED_EXT` to indicate no compression
-  - `imageCompressionFixedRateFlags` is 0 or one of
-    - `VK_IMAGE_COMPRESSION_FIXED_RATE_1BPC_BIT_EXT` to
-      `VK_IMAGE_COMPRESSION_FIXED_RATE_24BPC_BIT_EXT`
-    - bpc stands for bit-per-component
-- `VkImageCompressionControlEXT`
-  - it can be chained to
-    - `VkImageCreateInfo`
-    - `VkSwapchainCreateInfoKHR`
-    - `VkPhysicalDeviceImageFormatInfo2`
-  - `flags`
-    - `VK_IMAGE_COMPRESSION_DEFAULT_EXT` is the default and allows
-      lossless/no compression
-    - `VK_IMAGE_COMPRESSION_FIXED_RATE_DEFAULT_EXT` and
-      `VK_IMAGE_COMPRESSION_FIXED_RATE_EXPLICIT_EXT` allows
-      lossless/lossy/no compression
-    - `VK_IMAGE_COMPRESSION_DISABLED_EXT` allows no compression
-  - `compressionControlPlaneCount` must match the plane count of the format
-  - `pFixedRateFlags` is an array of masks that indicate the requested bpc of
-    each plane
-- `VK_EXT_image_compression_control_swapchain`
-  - it adds `imageCompressionControlSwapchain` feature
-  - `vkGetPhysicalDeviceSurfaceFormats2KHR` can query
-    `VkImageCompressionPropertiesEXT` to know if the wsi supports
-    lossless/lossy/none compression for a surface format
-  - `vkCreateSwapchainKHR` can include `VkImageCompressionControlEXT` to
-    control compression for the swapchain images
-
-## Coordinates
-
-- fixed-function vertex processing
-  - clip coordinates
-    - this is the coordinates of `gl_Position`
-  - primitive clipping
-    - view volume
-      - it is `[-w, w]` for x and y
-      - it is `[0, w]` for z by default
-    - cull volume and user-defined culling
-      - `gl_CullDistance` is an array of `maxCullDistances` floats
-        - positive is inside, zero is on, and negative is outside
-      - if `gl_CullDinstance[i]` is negative for all vertices of a primitive, the
-        primitive is discarded
-    - clip volume and user-defined clipping
-      - `gl_ClipDistance` is an array of `maxClipDistances` floats
-        - positive is inside, zero is on, and negative is outside
-      - if `gl_ClipDinstance[i]` is negative for any vertex of a primitive, the
-        primitive is clipped
-  - normalized device coordinates
-    - in clip coordinates, dividing xyz by w gives NDC
-  - framebuffer coordinates
-    - a viewport is defined by
-      - `x` and `y`
-      - `width` and `height`
-      - `minDepth` and `maxDepth`
-    - ndc coordinates are mapped to framebuffer coordinates using viewports
-  - knobs for z
-    - `VK_EXT_depth_clip_control` has `negativeOneToOne`
-      - when true, the view volume for z is `[-w, w]`
-    - core has `depthClamp`
-      - when false, z is clipped by the clip volume
-      - when true, z is not clipped and is instead clamped by viewports
-    - `VK_EXT_depth_clip_enable` has `depthClipEnable`
-      - this provides explicit control for clipping, taking precedence over
-        `depthClamp`
-    - `VK_EXT_depth_range_unrestricted`
-      - viewport `minDepth` and `maxDepth` must be in `[0.0, 1.0]` by default
-      - when this extension is supported, they can be arbitrary
-      - this does not affect depth clipping, but only depth clamping
-- rasterization
-  - depth bias
-    - an offset (bias) can be added to z of framebuffer coordinates
-  - knobs for depth bias
-    - core has `depthBiasEnable`
-      - when false, no bias is applied
-    - core has `depthBiasConstantFactor`, `depthBiasClamp`, `depthBiasSlopeFactor`
-      - the bias is roughly given by
-        `m * depthBiasSlopeFactor + r * depthBiasConstantFactor`, clampped by
-        `depthBiasClamp`
-      - `m` is the slope of z
-      - `r` is implementation-defined
-    - `VK_EXT_depth_bias_control` has `depthBiasRepresentation` and
-      `depthBiasExact`
-      - they give explicit control over `r`
-- fragment operations
-  - depth replacement
-    - it replaces z in framebuffer coordinates by `gl_FragDepth`
-  - depth bounds test
-    - when enabled, and if z value in the depth attachment is outside of
-      `[minDepthBounds, maxDepthBounds]`, the sample is discarded
-  - depth test
-    - depth clamping and range adjustment
-      - z in framebuffer coordinates is a float
-        - with depth clipping or depth clamping, and with sane `gl_FragDepth`,
-          it should be between `[minDepth, maxDepth]`
-        - otherwise, it is arbitrary
-      - `VK_EXT_depth_clamp_zero_one`
-        - when enabled,
-          - if the attachment is D32 float, z is unchanged
-          - otherwise, z is clamped to `[0.0, 1.0]`
-        - when disabled,
-          - if z is outside of `[minDepth, maxDepth]`, it becomes undefined
-          - if the attachment is unorm and z is outside of `[0.0, 1.0]`, it
-            becomes undefined
-    - depth comparison
-      - core has `depthTestEnable` and `depthCompareOp`
-    - depth attachment write
-      - core has `depthWriteEnable`
