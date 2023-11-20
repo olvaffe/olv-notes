@@ -30,6 +30,12 @@ AMDVLK
   - `strip -g out/icd/amdvlk64.so`
   - `scp -C out/icd/amdvlk64.so dst:`
   - `scp -C out/icd/amd_icd64.json dst:` and edit `amd_icd64.json`
+- settings
+  - `xgl/icd/settings/settings_xgl.json`
+  - `pal/src/core/settings_platform.json`
+  - `pal/src/core/settings_core.json`
+  - `pal/src/core/hw/gfxip/gfx6/settings_gfx6.json`
+  - `pal/src/core/hw/gfxip/gfx9/settings_gfx9.json`
 
 ## XGL
 

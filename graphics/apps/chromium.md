@@ -1128,6 +1128,37 @@ Chromium Browser
 - `components/exo`
 - `components/viz`
 
+## GPU and EXO
+
+- formats
+  - wayland protocol
+    - `wl_shm.format` uses fourcc
+    - `zwp_linux_dmabuf_v1` uses fourcc as well
+  - exo
+    - `wl_shm` uses `shm_supported_formats` to map fourcc to
+      `gfx::BufferFormat`
+    - `zwp_linux_dmabuf_v1` uses `ui::GetBufferFormatFromFourCCFormat` to map
+      fourcc to `gfx::BufferFormat`
+  - when exo creates a `ClientSharedImage`,
+    - if allocating, it specifies `viz::SharedImageFormat` directly
+    - if importing from `gfx::GpuMemoryBuffer`, no format is specified
+- `CreateSharedImage`
+  - exo uses `ClientSharedImageInterface::CreateSharedImage`
+    - if importing, the variant with `gfx::GpuMemoryBuffer`
+  - `SharedImageInterfaceProxy::CreateSharedImage`
+  - `SharedImageStub::OnCreateGMBSharedImage`
+  - `SharedImageStub::CreateSharedImage`
+    - if importing, the variant with `gfx::GpuMemoryBufferHandle` and
+      `gfx::BufferFormat`
+  - `SharedImageFactory::CreateSharedImage`
+  - `OzoneImageBackingFactory::CreateSharedImage`
+    - if importing,
+      - `GbmSurfaceFactory::CreateNativePixmapFromHandle`
+      - `DrmThreadProxy::CreateBufferFromHandle`
+      - `DrmThread::CreateBufferFromHandle`
+      - `GbmDevice::CreateBufferFromHandle`
+      - `gbm_bo_import`
+
 ## Media
 
 - <https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/media/README.md#playback>
