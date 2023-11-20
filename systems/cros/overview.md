@@ -63,8 +63,10 @@ Chrome OS Overview
   - `cd ~/chromiumos`
   - `repo init -u https://chromium.googlesource.com/chromiumos/manifest -b main`
     - if googler, use <https://chrome-internal.googlesource.com/chromeos/manifest-internal>
-    - also `~/chromiumos/chromite/scripts/gsutil config` and use
-      `chromeos-bot` as the project id
+    - also install `google-cloud-sdk`, `gcloud auth login`, and leave the
+      project id at 0
+    - because cros uses bundled `gsutil`, copy the credential 
+      `cp ~/.config/gcloud/legacy_credentials/*/.boto ~/.boto`
   - `repo sync -j4`
 - Source Tree Layout
   - `chromite`, build tools and scripts
