@@ -1396,8 +1396,6 @@ Vulkan
 
 ## Chapter 33. Sparse Resources
 
-## Sparse Resources
-
 - 33.1. Sparse Resource Features
   - sparse binding
     - create the resource with `VK_IMAGE_CREATE_SPARSE_BINDING_BIT` or
