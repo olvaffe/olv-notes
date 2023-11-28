@@ -266,17 +266,48 @@ DRM amdgpu
 ## GPU Hang
 
 - `amdgpu_job_timedout` is called when a job takes too long and times out
-  - if `amdgpu_device_should_recover_gpu` returns true, `amdgpu_gpu_recovery`
-    is called to recover the GPU
-    - `CHIP_STONEY` does not support recovery?
-- `amdgpu_gpu_recovery` recovers the gpu after a hang
-  - `amdgpu_do_asic_reset` resets the gpu
-    - `amdgpu_reset_capture_coredumpm` is added since v6.0
-      - it calls `dev_coredumpm` to generate a coredump
+  - it attemps `amdgpu_ring_soft_recovery` first to soft-recover the ring
+    - dmesg `ring %s timeout, but soft recovered` if soft-recovered
+    - otherwise, `ring %s timeout, signaled seq=%u, emitted seq=%u`
+  - it calls `amdgpu_device_should_recover_gpu` to see if it should recover
+    the ring
+    - dmesg `GPU recovery disabled.` if recovery is disabled
+    - it is disabled for `CHIP_STONEY` and some other chips by default
+    - set `amdgpu_gpu_recovery` param to override
+  - `amdgpu_device_gpu_recover` recovers the GPU
+    - if recovery fails, dmesg `GPU Recovery Failed: %d`
+- `amdgpu_device_gpu_recover` recovers the gpu after a hang
+  - dmesg `amdgpu: GPU reset begin!`
+  - `amdgpu_device_pre_asic_reset` calls `amdgpu_device_ip_suspend` to suspend
+    all ip blocks
+  - `amdgpu_do_asic_reset` resets the asic and resumes
+    - `amdgpu_asic_reset` resets the asic
+      - dmesg `MODE2 reset`
+    - `amdgpu_device_asic_init` posts the asic after reset
+      - dmesg `GPU reset succeeded, trying to resume`
+    - `amdgpu_device_ip_resume_phase1` resumes some ip blocks
+    - `amdgpu_coredump` is added since v6.0
+      - it calls `dev_coredumpm` to generate a coredump under
+        `/sys/class/devcoredump/devcd*/data`
+      - reading the sysfs node calls `amdgpu_devcoredump_read`
+      - writing the sysfs node (or after 5 minutes, `DEVCD_TIMEOUT`) deletes
+        the device
+    - `amdgpu_device_ip_resume_phase2` resumes more ip blocks
+    - `amdgpu_ib_ring_tests` tests rings after resume
+      - dmesg `IB test failed on %s (%d).` if a ring fails
+  - dmesg `GPU reset(%d) succeeded!`
+    - or if reset failed, `GPU reset(%d) failed`
+  - if reset fails, dmesg `GPU reset end with ret = %d` before the function
+    returns
 - it looks like amdgpu does not support post-mortem-style hang reports
   - use `RADV_DEBUG=hang` to dumps gpu states to home dir
     - it works better with <https://gitlab.freedesktop.org/tomstdenis/umr>
       installed
+- `/sys/kernel/debug/dri/0`
+  - `amdgpu_gpu_recover` triggers a gpu reset
+    - reading the file schedules `amdgpu_debugfs_reset_work`
+  - `amdgpu_reset_dump_register_list` is the list of regs to dump on gpu reset
+    - `echo 0x123 0x456 > amdgpu_reset_dump_register_list` to update the list
 
 ## DRM scheduler
 

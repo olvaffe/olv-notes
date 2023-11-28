@@ -72,3 +72,29 @@ CrOS Metrics
       - `Chrome_Lacros` if lacros
       - `Chrome_Linux` if linux
       - `Chrome_Android` if android
+
+## devcoredumps
+
+- a kernel driver might create a devcoredump device under
+  `/sys/class/devcoredump/devcd*` on device hangs
+- `99-crash-reporter.rules` has a rule to invoke `crash_reporter` on
+  devcoredump device add
+- `UdevCollector::HandleCrash` processes the devcoredump
+  - if `UdevCollector::IsSafeDevCoredump`, the devcoredump is processed
+  - else if `util::IsDeveloperImage`, the devcoredump is processed
+  - else the devcoredump is removed
+- `UdevCollector::AppendDevCoredump`
+  - `driverName` is `amdgpu`, `adreno`, etc.
+  - `dump_basename` is `devcoredump_<driver>.<date>.<time>.<rand>.<seq>`
+  - it reads the devcoredump, compresses the data, and saves it to
+    `/var/spool/crash/<core_path>`
+  - it checks if `/etc/crash_reporter_logs.conf` has a config for
+    `crash_reporter-udev-collection-devcoredump-<driver>` and executes the
+    command to collect more logs
+  - `CrashCollector::FinishCrash` creates the metadata
+- `crash_sender` calls `Sender::ChooseAction` to determine if the report
+  should be sent
+  - `IsDeviceCoredumpUploadAllowed` expects
+    `/var/lib/crash_reporter/device_coredump_upload_allowed` to exist
+  - `IsSafeDeviceCoredump` checks against `exec_name` in the metadata
+  - when either is true, the report is sent
