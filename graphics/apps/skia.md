@@ -8,20 +8,43 @@ Skia
   - `cd skia`
   - `./tools/git-sync-deps`
   - `./tools/install_dependencies.sh`
-  - `./bin/gn gen out --args='is_official_build=false'`
+  - `./bin/fetch-gn`
+  - `./bin/gn gen out`
   - `ninja -C out`
+- update
+  - `git pull`
+  - `./tools/git-sync-deps`
 - args
-  - list
-    - `gn args --list out`
-    - `gn/BUILDCONFIG.gn`
-    - `gn/skia.gni`
-  - gl/gles
-    - `skia_use_gl = true` to enable GL/GLES backend
-      - `skia_use_egl = true` to use EGL
-        - does not affect android
-      - `skia_use_x11 = true` to use GLX
-  - vulkan
-    - `skia_use_vulkan = true` to enable VK backend
+  - `gn args out --list` to see the current values
+    - `is_component_build = false`
+      - true for shared library
+      - false for static library
+    - `is_debug = true`
+      - true for no optimization
+      - false for `-O3` and `-DNDEBUG`
+    - `is_official_build = false`
+      - true to disable `is_debug`
+      - false to enable `is_debug` and to add `-g`
+    - `skia_enable_ganesh = true`
+      - the old gpu backend
+    - `skia_enable_graphite = false`
+      - the new gpu backend
+    - `skia_enable_gpu_debug_layers = true`
+      - enable vk validation layer for tests/tools
+    - `skia_enable_spirv_validation = true`
+      - enable vk validation layer for tests/tools
+    - `skia_gl_standard = ""`
+      - defines `SK_ASSUME_GL_ES=1` or `SK_ASSUME_GL=1` to reduce code size
+    - `skia_use_angle = false`
+    - `skia_use_egl = false`
+      - true to use egl rather than glx
+      - always true on android
+    - `skia_use_gl = true`
+      - true to enable gl/gles backend
+    - `skia_use_vulkan = false`
+      - true to enable vk backend
+    - `skia_use_x11 = true`
+      - use glx unless `skia_use_egl`
   - disable font
     - `skia_enable_fontmgr_android = false`
     - `skia_enable_fontmgr_empty = true`
@@ -36,28 +59,22 @@ Skia
     - `extra_ldflags = [ "--sysroot=/sysroot-arm64" ]`
   - misc
     - `cc_wrapper = "ccache"`
-- skia on angle
-  - <https://skia.org/docs/user/special/angle/>
-- skia on vulkan
-  - <https://skia.org/docs/user/special/vulkan/>
-
-## Linux
-
-- args
-  - `is_official_build = false`
-  - `is_component_build = true`
-  - `skia_use_gl = true`
-  - `skia_use_egl = true`
-  - `skia_use_x11 = false`
-  - `skia_use_vulkan = true`
-- meson
-  - use `cpp.find_library('skia')` directly
-  - comparing defines in `defines.bzl` and `include`, we should define
-    - `SK_ASSUME_GL_ES=1`
-    - `SK_DEBUG`
-    - `SK_GANESH`
-    - `SK_GL`
-    - `SK_VULKAN`
+- linux build
+  - args
+    - `is_component_build = true`
+    - `skia_use_egl = true`
+    - `skia_use_vulkan = true`
+    - `cc_wrapper = "ccache"`
+  - meson
+    - use `cpp.find_library('skia')` directly
+    - comparing defines in `defines.bzl` and `include`, we should define
+      - `SK_DEBUG`
+      - `SK_GANESH`
+      - `SK_GL`
+      - `SK_VULKAN`
+  - deploy
+    - `strip -g out/lib*.so`
+    - `tar -zcf skia-dist.tar.gz --transform="s,,skia-dist/," out/lib*.so include src/base/SkTime.h`
 
 ## Tests
 
@@ -274,13 +291,27 @@ Skia
 
 ## Basics
 
+- `SkPixmap` is a wrapper to cpu-access pixels
+  - a pixmap is created from a pointer to pixels and a `SkImageInfo` to
+    describe the pixels
+  - skia cannot sample from or draw into a pixmap directly
+  - skia can read from or write to a pixmap
+    - while `SkCanvas` cannot sample from or draw into a pixmap, it can read
+      the surface contents back to a `SkPixmap` prepared by the client
+    - `SkPngEncoder` can encode a pixmap to a png
+- `SkBitmap` owns a cpu memory for pixels
+  - `pixelRef()` returns the cpu memory
+    - the cpu memory is ref-counted and can be shared by bitmaps
+  - `pixmap()` returns the pixmap (which is a wrapper to the storage)
+  - a bitmap is as limited as a pixmap
+- `SkImage` holds ro pixel data in some storage
+  - skia can sample from an image directly
 - `SkSurface` is the drawing destination
-  - `SkSurface::MakeRaster` creates a raster (sw) surface for the surface
+  - `SkSurfaces::Raster` creates a raster (sw) surface
+    - internally, it uses a bitmap as the storage
+  - `SkSurfaces::RenderTarget` creates a ganesh render target surface
 - `SkCanvas` is the drawing context to a `SkSurface`
 - `SkPicture` holds recorded `SkCanvas` drawing commands for playback later
-- `SkImage` holds ro pixel data in some storage
-- `SkBitmap`
-- `SkPixmap`
 - `SkImageInfo` describes a 2D RGBA image
   - `SkISize` for the width/height
   - `SkColorInfo`
