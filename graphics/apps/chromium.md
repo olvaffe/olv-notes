@@ -1142,6 +1142,8 @@ Chromium Browser
   - when exo creates a `ClientSharedImage`,
     - if allocating, it specifies `viz::SharedImageFormat` directly
     - if importing from `gfx::GpuMemoryBuffer`, no format is specified
+      - the `viz::SharedImageFormat` of the image will be drived from
+        `gfx::BufferFormat`
 - `CreateSharedImage`
   - exo uses `ClientSharedImageInterface::CreateSharedImage`
     - if importing, the variant with `gfx::GpuMemoryBuffer`
@@ -1158,6 +1160,28 @@ Chromium Browser
       - `DrmThread::CreateBufferFromHandle`
       - `GbmDevice::CreateBufferFromHandle`
       - `gbm_bo_import`
+      - the `viz::SharedImageFormat` of the image is derived from
+        `gfx::BufferFormat`
+        - `GetPlaneBufferFormat` returns the plane format in
+          `gfx::BufferFormat`
+        - `viz::GetSinglePlaneSharedImageFormat` returns the image format
+- composition
+  - when viz is ready to composite the image, it calls
+    `SkiaOutputSurfaceImpl::MakePromiseSkImage` to create a `SkImage`
+    - for rgba, it uses `MakePromiseSkImageSinglePlane`
+- format example
+  - when the wayland client uses `DRM_FORMAT_XRGB8888`
+  - exo calls `GetBufferFormatFromFourCCFormat` to use `gfx::BufferFormat::BGRX_8888`
+  - `OzoneImageBackingFactory` calls `GetSinglePlaneSharedImageFormat` to use
+    `SinglePlaneFormat::kBGRX_8888`
+  - viz calls `ToClosestSkColorType` to use `kRGB_888x_SkColorType`
+  - viz also calls `GetGrBackendFormatForTexture` to use `VK_FORMAT_B8G8R8A8_UNORM`
+    - if vk, `GetGrBackendFormatForTexture` calls `gpu::ToVkFormat` that calls
+      `ToVkFormatSinglePlanar` that calls `ToVkFormatSinglePlanarInternal`
+  - note that viz picks both `kRGB_888x_SkColorType` and
+    `VK_FORMAT_B8G8R8A8_UNORM`
+    - inside skia, `GrVkCaps::initFormatTable` maps `VK_FORMAT_B8G8R8A8_UNORM`
+      to `GrColorType::kBGRA_8888` which results in a conflict
 
 ## Media
 
