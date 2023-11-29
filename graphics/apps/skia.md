@@ -74,7 +74,7 @@ Skia
       - `SK_VULKAN`
   - deploy
     - `strip -g out/lib*.so`
-    - `tar -zcf skia-dist.tar.gz --transform="s,,skia-dist/," out/lib*.so include src/base/SkTime.h`
+    - `tar -zcf skia-dist.tar.gz --transform="s,,skia-dist/," out/lib*.so include src/base/SkTime.h modules/skcms/skcms.h modules/skcms/src/skcms_public.h`
 
 ## Tests
 
