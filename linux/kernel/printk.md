@@ -37,6 +37,16 @@ printk
   - kgdb registers a console
   - VT registers a console when `CONFIG_VT_CONSOLE`
 - those specified in `console=` cmdline are enabled
+  - `console_setup` parses each `console=` and saves them to `console_cmdline`
+    array in order
+  - each console is parsed into `name`, `index`, and `options`
+  - `preferred_console` is set to the last console
+- `try_enable_preferred_console` enables consoles
+  - if no `console=`, `try_enable_default_console`
+  - `printk` prints to all consoles
+  - `preferred_console` points to the last console 
+    - it will have `CON_CONSDEV` bit, meaning `/dev/console` refers to this
+      console
 
 ## netconsole
 

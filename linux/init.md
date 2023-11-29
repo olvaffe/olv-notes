@@ -52,6 +52,30 @@ Kernel init
   - `proc_root_init` initializes procfs
   - `arch_call_rest_init` performs the rest initializations
 
+## command line
+
+- arch saves the cmdline to `boot_command_line`
+  - on x86, `x86_64_start_kernel` calls `copy_bootdata`
+    - it initializes `boot_params` and copies the cmdline to
+      `boot_command_line`
+  - on arm64, `setup_arch` calls `setup_machine_fdt` which calls
+    `early_init_dt_scan`
+    - `early_init_dt_scan_chosen` copies `bootargs` from dt to
+      `boot_command_line`
+- arch calls `parse_early_param` to parse `early_param`
+  - `__setup_param` defines an entry in `.init.setup` section
+  - `INIT_SETUP` puts them between `__setup_start` and `__setup_end`
+- `start_kernel`
+  - `setup_boot_config` parses `bootconfig`
+  - `setup_command_line` aggregates cmdlines from different sources
+  - `parse_args` parses the cmdline again
+    - `__start___param` and `__stop___param`
+      - `module_param` defines an entry in `.modinfo` section
+      - `RO_DATA` puts them between `__start___param` and `__stop___param`
+    - if a param is unknown at this point (non-early and non module-param;
+      iow, defined by `__setup`, it is handled by `unknown_bootoption`
+      - e.g., `console=` is handled by `unknown_bootoption`
+
 ## `arch_call_rest_init`
 
 - `arch_call_rest_init` calls `rest_init` in the common kernel code
