@@ -31,7 +31,13 @@ Sommelier
   - `--force-drm-device=/dev/dri/renderD128`
   - `--display=/run/users/blah/wayland-0`
   - `--enable-linux-dmabuf`
-  - `-X --glamor`
+  - without `-X --glamor`
+    - this leaves `WAYLAND_DISPLAY` untouched but sets `WAYLAND_SOCKET` to
+      point to sommelier
+    - `wl_display_connect` uses `WAYLAND_SOCKET` when it is set
+  - with `-X --glamor`
+    - this sets `WAYLAND_DISPLAY` to an invalid value and sets `DISPLAY` to
+      point to xwayland
 
 ## Sommelier Manual Setup/Troubleshooting
 
