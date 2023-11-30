@@ -1130,6 +1130,33 @@ Chromium Browser
 
 ## GPU and EXO
 
+- exo initialization
+  - from `BrowserMainLoop` of the browser process
+    - `ChromeContentBrowserClient::CreateBrowserMainParts` creates
+      `ChromeBrowserMainExtraPartsAsh`
+    - `ChromeBrowserMainExtraPartsAsh::PreProfileInit` calls
+      `ExoParts::CreateIfNecessary`
+    - `ExoParts::ExoParts` calls `WaylandServerController::CreateIfNecessary`
+    - `WaylandServerController::WaylandServerController` calls
+      `wayland::Server::Create`
+- `zwp_linux_dmabuf_v1`
+  - init
+    - `wayland::Server::Initialize` creates `WaylandDmabufFeedbackManager`
+    - `WaylandDmabufFeedbackManager::WaylandDmabufFeedbackManager` initializes
+      based on `gpu::Capabilities`
+      - `BrowserMainLoop::PostCreateThreadsImpl` creates a
+        `VizProcessTransportFactory` and calls
+        `aura::Env::set_context_factory`
+      - `VizProcessTransportFactory::TryCreateContextsForGpuCompositing`
+        creates a `viz::ContextProviderCommandBuffer`
+      - `ContextProviderCommandBuffer::BindToCurrentSequence` sets `impl_` to
+        a `gpu::gles2::GLES2Implementation` wrapping a
+        `gpu::gles2::GLES2CmdHelper`
+      - `ImplementationBase::ImplementationBase` calls
+        `gpu_control->GetCapabilities` to initialize caps
+        - `BrowserGpuChannelHostFactory::EstablishGpuChannelSync` creates a
+          `GpuChannelHost`
+        - `gpu::CommandBufferProxyImpl` is a `GpuControl`
 - formats
   - wayland protocol
     - `wl_shm.format` uses fourcc
