@@ -1,12 +1,40 @@
 Sommelier
 =========
 
+## Overview
+
+- build
+  - `meson setup out -Dxwayland_path=/usr/bin/Xwayland -Dxwayland_gl_driver_path=/usr/lib/dri -Dwith_tests=false`
+  - `ninja -C out`
+- usage
+  - virtualization channel
+    - `--noop-driver` tells sommelier to use no virtualization channel
+    - `--virtgpu-channel` tells sommelier to use `VirtGpuChannel` which
+      connects to `virtio_gpu` rendernode
+    - otherwise, sommelier uses `VirtWaylandChannel` which connects to
+      `/dev/wl0`
+  - `--force-drm-device` to force a drm device for use with gbm rather than
+    using the first `virtio_gpu` rendernode
+  - `--display` specifies the host compositor that sommelier connects to
+  - `--enable-linux-dmabuf` to advertise `zwp_linux_dmabuf_v1`
+    - sommerlier depends on `zwp_linux_dmabuf_v1` from the host compositor but
+      only advertises `wl_drm` by default
+  - `-X` starts xwayland
+    - the cmdline is `/usr/bin/Xwayland -nolisten tcp -rootless -shm -displayfd <sock-num> -wm <sock-num>`
+      - note that `-shm` disables glamor
+    - these envvars are set
+      - `LIBGL_DRIVERS_PATH`
+      - `WAYLAND_SOCKET`
+  - `-glamor` starts xwayland withou `-shm` to enable glamor
+- to run sommelier without virtualization, these are normally needed
+  - `--noop-driver`
+  - `--force-drm-device=/dev/dri/renderD128`
+  - `--display=/run/users/blah/wayland-0`
+  - `--enable-linux-dmabuf`
+  - `-X --glamor`
+
 ## Sommelier Manual Setup/Troubleshooting
 
-- in the guest,
-  - `meson out -Dxwayland_path=/usr/bin/Xwayland -Dxwayland_gl_driver_path=/usr/lib/dri`
-  - `cd out`
-  - `ninja`
 - in the host, run customized sway
   - Revert "Remove xdg-shell v6 support" in sway and wlroots
   - in `xdg_surface_handle_surface_commit`, comment out
