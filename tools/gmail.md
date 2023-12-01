@@ -36,6 +36,7 @@ Gmail
   - `AND` is logical and: `this AND that`
     - it is the default and can be omitted
   - `OR` is logical or: `this OR that`
+    - `{this that}` can be used as well
   - `NOT` is logical not: `this NOT that`
     - `-` can be used as well
   - `()` is grouping: `subject:(this AND that)`
