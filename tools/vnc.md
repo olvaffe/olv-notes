@@ -17,5 +17,5 @@ VNC
 - TurboVNC
   - forked from TightVNC
   - focus on 3D
-- TightVNC
+- TigerVNC
   - forked from TightVNC
