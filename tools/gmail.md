@@ -45,7 +45,9 @@ Gmail
 - search a mail belonging to a mailing list
   - if the list is a true list, there is `List-Id:`
   - if the list is merely a group alias, we can use `To:`, `Cc:`, or `Bcc:`
-  - in both cases, we can just search `to:`
+  - we have to use separate rules
+    - e.g., gitlab is a true list but its notifications have `From:author` and
+      `To:me`, and can only be matched by `list:`
   - note that when the address is `alias+news@example.org`, it is matched by
     `to:alias@examples.org` but not by `to:(alias)@examples.org`
 
