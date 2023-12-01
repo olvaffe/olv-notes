@@ -53,6 +53,8 @@ Gmail
     - also note that when the address is `alias+news@example.org`, it is
       matched by `list:alias@examples.org` but not by
       `list:alias.examples.org` nor `list:{alias}.examples.org`
+     - and `list:{alias+review}.examples.org` is treated as if the `+` sign is
+       space
 
 ## Inbox Zero
 
