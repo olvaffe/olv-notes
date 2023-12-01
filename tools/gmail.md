@@ -51,10 +51,14 @@ Gmail
     - note that gitlab notifications have `From:author` and `To:me`, and can
       only be matched by `list:`
     - also note that when the address is `alias+news@example.org`, it is
-      matched by `list:alias@examples.org` but not by
-      `list:alias.examples.org` nor `list:{alias}@examples.org`
-     - and `list:{alias+review}.examples.org` is treated as if the `+` sign is
+      matched by `list:alias@example.org` but not by
+      `list:alias.example.org` nor `list:{alias}@example.org`
+     - and `list:{alias+review}.example.org` is treated as if the `+` sign is
        a space
+    - also, `list:alias@example.org` does not match `other-alias@example.org`
+      - but `list:alias.example.org` does
+      - and `list:(alias)@example.org` does
+      - it seems simple `@` is treated specially
 
 ## Inbox Zero
 
