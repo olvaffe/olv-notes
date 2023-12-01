@@ -23,7 +23,7 @@ Gmail
 
 - search by header fields
   - `from:`, `to:`, `cc:`, `subject:`
-  - `list:` searches `List-Id:`
+  - `list:`
   - `after:`, `before:`
 - search by derived data
   - `larger:`, `smaller:`
@@ -46,11 +46,13 @@ Gmail
 - search a mail belonging to a mailing list
   - if the list is a true list, there is `List-Id:`
   - if the list is merely a group alias, we can use `To:`, `Cc:`, or `Bcc:`
-  - we have to use separate rules
-    - e.g., gitlab is a true list but its notifications have `From:author` and
-      `To:me`, and can only be matched by `list:`
-  - note that when the address is `alias+news@example.org`, it is matched by
-    `to:alias@examples.org` but not by `to:(alias)@examples.org`
+  - it seems we can always use `list:` to match
+    - `list:` implies `to:`?
+    - note that gitlab notifications have `From:author` and `To:me`, and can
+      only be matched by `list:`
+    - also note that when the address is `alias+news@example.org`, it is
+      matched by `list:alias@examples.org` but not by
+      `list:alias.examples.org` nor `list:{alias}.examples.org`
 
 ## Inbox Zero
 
