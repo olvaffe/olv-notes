@@ -872,6 +872,11 @@ Vulkan
       - `baseArrayLayer` and `layerCount` select the array layers
       - note that 3D images have only a single array layer
         - `VK_EXT_image_sliced_view_of_3d` allows selecting slices at a mip level
+    - if the image format is multi-planr (including sub-sampled), and the
+      aspect is `VK_IMAGE_ASPECT_COLOR_BIT`, and the usage includes
+      `VK_IMAGE_USAGE_SAMPLED_BIT`,
+      - both the sampler and this image view must be created with
+        `VkSamplerYcbcrConversionInfo`
   - VUIDs
     - VUID-VkImageViewCreateInfo-image-04970
       - `levelCount` must be 1 when creating a 2D view from a 3D image
@@ -994,6 +999,9 @@ Vulkan
 
 - `VkSampler` describes a sampler (min filter, etc)
 - 13.1. Sampler Y′CBCR Conversion
+  - Conversion must be fixed at pipeline creation time, through use of a
+    combined image sampler with an immutable sampler in
+    `VkDescriptorSetLayoutBinding`
   - feature bits
     - these control valid values of `xChromaOffset` and `yChromaOffset`
       - `VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT`
@@ -1531,23 +1539,89 @@ Vulkan
 ## Chapter 49. Formats
 
 - 49.1. Format Definition
-  - Color formats must be represented in memory in exactly the form indicated
-    by the format’s name.
-    - depth formats are opaque and their memory representations are more relaxed
-  - Compatible Formats
-    - Uncompressed color formats are compatible with each other if they occupy
-      the same number of bits per texel block as long as neither or both are
-      alpha formats
-    - Compressed color formats are compatible with each other if the only
-      difference between them is the numeric format of the uncompressed pixels
-    - Each depth/stencil format is only compatible with itself
-  - Size Compatibility
-    - Color formats with the same texel block size are considered
-      size-compatible as long as neither or both are alpha formats
+  - a list of all formats
+  - 49.1.1. Compatible Formats of Planes of Multi-Planar Formats
+    - a `_2PLANE` format has 2 format planes
+    - a `_3PLANE` format has 3 format planes
+    - `_420` has reduced width/height after the first plane
+    - `_422` has reduced with after the first plane
+    - Table 58. Plane Format Compatibility Table
+  - 49.1.2. Multi-planar Format Image Aspect
+  - 49.1.3. Packed Formats
+    - formats with `_PACKnn` suffix are packed formats, and the naming
+      convention is different
+    - formats with `_mPACKnn` suffix are non-packed formats, and the naming
+      convention does not change
+      - except that each of the `m` compoents is considered packed
+  - 49.1.4. Identification of Formats
+    - `VK_FORMAT_{component-format|compression-scheme}_{numeric-format}`
+    - the names can be followed by suffices
+      - `_PACKnn`
+      - `_mPACKnn`
+      - `_BLOCK`
+    - For multi-planar images
+      - the components in separate planes are separated by underscores
+      - the number of planes is indicated by the addition of a `_2PLANE` or
+        `_3PLANE` suffix
+      - `_444` indicates that all three planes of a three-planar image are
+        the same size.
+      - `_420` indicates that planes other than the first are reduced in
+        size by a factor of two both horizontally and vertically,
+      - `_422` indicates that planes other than the first are reduced in
+        size by a factor of two horizontally or that the R and B values
+        appear at half the horizontal frequency of the G values,
+        - e.g., `VK_FORMAT_G8B8G8R8_422_UNORM` is non-planar and the R/B
+          values appear at half the horizontal frequency
+  - 49.1.5. Representation and Texel Block Size
+    - Color formats must be represented in memory in exactly the form
+      indicated by the format’s name.
+    - Each format has a texel block size, the number of bytes used to store
+      one texel block.
+    - The representation of non-packed formats is that the first component
+      specified in the name of the format is in the lowest memory addresses
+      and the last component specified is in the highest memory addresses.
+      - These include `_2PACK16` and `_4PACK16`, which are 2- and 4-comopnent
+        non-packed formats.
+    - Packed formats store multiple components within one underlying type. The
+      bit representation is that the first component specified in the name of
+      the format is in the most-significant bits and the last component
+      specified is in the least-significant bits of the underlying type.
+      - these are `_PACK8`, `_PACK16`, and `_PACK32` formats
+    - Table 61. Byte mappings for non-packed/compressed color formats
+    - Table 62. Bit mappings for packed 8-bit formats
+    - Table 63. Bit mappings for packed 16-bit formats
+    - Table 64. Bit mappings for packed 32-bit formats
+  - 49.1.6. Depth/Stencil Formats
+    - Depth/stencil formats are considered opaque and need not be stored in
+      the exact number of bits per texel or component ordering indicated by
+      the format enum.
+    - However, implementations must not substitute a different depth or
+      stencil precision than is described in the format (e.g. D16 must not be
+      implemented as D24 or D32).
+  - 49.1.7. Format Compatibility Classes
+    - Compatible Formats
+      - Uncompressed color formats are compatible with each other if they
+        occupy the same number of bits per texel block as long as neither or
+        both are alpha formats
+      - Compressed color formats are compatible with each other if the only
+        difference between them is the numeric format of the uncompressed
+        pixels
+      - Each depth/stencil format is only compatible with itself
+    - Size Compatibility
+      - Color formats with the same texel block size are considered
+        size-compatible as long as neither or both are alpha formats
+    - Table 65. Compatible Formats
 - 49.2. Format Properties
   - `vkGetPhysicalDeviceFormatProperties2` queries format features
-    - buffers and images have different features for the same format
-    - different image tilings can have different features for the same format
+    - `VkFormatFeatureFlagBits` lists all possible features
+      - some are specific to buffers and some are specific to images
+    - `bufferFeatures` is for buffers
+    - `linearTilingFeatures` is for images with `VK_IMAGE_TILING_LINEAR`
+    - `optimalTilingFeatures` is for images with `VK_IMAGE_TILING_OPTIMAL`
+    - `drmFormatModifierTilingFeatures` is for images with
+      `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
+      - different modifiers have different `drmFormatModifierTilingFeatures`
+        and `drmFormatModifierPlaneCount`
 - 49.3. Required Format Support
   - unless otherwise noted, the required format features must be supported for
     - every `VkImageType` (including arrayed and cube variants)
@@ -1560,28 +1634,35 @@ Vulkan
       optimal tilings)
   - the mandatory feature bits apply to `optimalTilingFeatures` and
     `bufferFeatures`
-    - according to table 66, 67, and 68, they do not apply to
-      `linearTilingFeatures` or `drmFormatModifierTilingFeatures`
+    - they do not apply to `linearTilingFeatures` or
+      `drmFormatModifierTilingFeatures` according to
+      - Table 66. Key for format feature tables
+      - Table 67. Feature bits in optimalTilingFeatures
+      - Table 68. Feature bits in bufferFeatures
   - Mandatory format support
-    - sub-byte components
-    - 1-3 byte-sized components
-    - 4 byte-sized components
-    - 10- and 12-bit components
-    - 16-bit components
-    - 32-bit components
-    - 64-bit/uneven components
-    - depth/stencil with `VK_IMAGE_TYPE_2D`
+    - Table 69. Mandatory format support: sub-byte components
+    - Table 70. Mandatory format support: 1-3 byte-sized components
+    - Table 71. Mandatory format support: 4 byte-sized components
+    - Table 72. Mandatory format support: 10- and 12-bit components
+    - Table 73. Mandatory format support: 16-bit components
+    - Table 74. Mandatory format support: 32-bit components
+    - Table 75. Mandatory format support: 64-bit/uneven components
+    - Table 76. Mandatory format support: depth/stencil with VkImageType
+      `VK_IMAGE_TYPE_2D`
     - one of
-      - BC compressed formats with `VK_IMAGE_TYPE_2D` and `VK_IMAGE_TYPE_3D`
-      - ETC2 and EAC compressed formats with `VK_IMAGE_TYPE_2D`
-      - ASTC LDR compressed formats with `VK_IMAGE_TYPE_2D`
+      - Table 77. Mandatory format support: BC compressed formats with
+        VkImageType `VK_IMAGE_TYPE_2D` and `VK_IMAGE_TYPE_3D`
+      - Table 78. Mandatory format support: ETC2 and EAC compressed formats
+        with VkImageType `VK_IMAGE_TYPE_2D`
+      - Table 79. Mandatory format support: ASTC LDR compressed formats with
+        VkImageType `VK_IMAGE_TYPE_2D`
   - multi-planar (`nPLANE`) or sub-sampled (`422` or `420`) formats
-    - when the aspect is `VK_IMAGE_ASPECT_PLANE_n_BIT`, the plane format
-      decides if support is mandatory
-    - when the aspect is `VK_IMAGE_ASPECT_COLOR_BIT`, `samplerYcbcrConversion`
-      feature requires some formats to be supported through ycbcr conversion
-      when the image type is `VK_IMAGE_TYPE_2D` and the tiling is
-      `VK_IMAGE_TILING_OPTIMAL`
+    - when a view is created with `VK_IMAGE_ASPECT_PLANE_n_BIT`, the view
+      format is the plane format
+    - when a view is created with `VK_IMAGE_ASPECT_COLOR_BIT`, the view format
+      is the image format and requires `samplerYcbcrConversion`
+      - Table 80. Formats requiring sampler Y′CBCR conversion for
+        `VK_IMAGE_ASPECT_COLOR_BIT` image views
 
 ## Chapter 50. Additional Capabilities
 
