@@ -369,3 +369,17 @@ Mesa ANV
     - this is guaranteed by the spec
     - `lookup_ycbcr_conversion` returns the ycbcr conversion to the lowering
       pass
+- `anv_get_format` uses `ycbcr_formats` table for ycbcr formats
+  - for `_nPLANE` ones, each plane gets mapped to a regular plane format
+    - despite there appear to be some hw support such as
+      `ISL_FORMAT_PLANAR_420_8`
+    - `nir_vk_lower_ycbcr_tex` lowers the sampling
+      - to sample all planes
+      - to reconstruct chroma samples 
+      - to convert colorspaces
+  - for `VK_FORMAT_G8B8G8R8_422_UNORM` and `VK_FORMAT_B8G8R8G8_422_UNORM`,
+    they get mapped to hw `ISL_FORMAT_YCRCB_NORMAL` and
+    `ISL_FORMAT_YCRCB_SWAPY`
+    - `isl_format_is_yuv` returns true in this case
+    - `nir_vk_lower_ycbcr_tex` is still used to lower
+      - I guess the hw is only responsible for chroma sample reconstruction
