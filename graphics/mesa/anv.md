@@ -349,3 +349,23 @@ Mesa ANV
     - the only supported aux suface is `CCS_E`
     - `VK_IMAGE_CREATE_DISJOINT_BIT` plus aux is rejected
     - `VK_IMAGE_CREATE_ALIAS_BIT` is rejected
+
+## `VK_KHR_sampler_ycbcr_conversion`
+
+- spec
+  - when a multi-planar format (including single-plane but sub-sampled
+    formats) is sampled as `VK_IMAGE_ASPECT_COLOR_BIT`,
+    `VkSamplerYcbcrConversion` must be specified
+    - when creating the image view
+    - when creating the sampler
+  - the sampler must be known to pipeline creation through combined image
+    sampler and `pImmutableSamplers`
+- anv
+  - `vk_ycbcr_conversion` is from the runtime
+  - `anv_image_view` does not care about `vk_ycbcr_conversion`
+  - `anv_sampler` embeds a `vk_sampler` which has `ycbcr_conversion`
+  - when a pipeline is created, `nir_vk_lower_ycbcr_tex` lowers the sampling
+    if the immutable sampler has a ycbcr conversion
+    - this is guaranteed by the spec
+    - `lookup_ycbcr_conversion` returns the ycbcr conversion to the lowering
+      pass
