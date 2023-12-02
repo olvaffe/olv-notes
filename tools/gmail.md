@@ -22,8 +22,10 @@ Gmail
 ## Search Operators
 
 - search by header fields
-  - `from:`, `to:`, `cc:`, `subject:`
-  - `list:`
+  - `from:`, `to:`, `cc:`, `bcc:`, `list:`
+    - `to:` implies `cc:` and `bcc:`
+    - `list:` implies `to:`
+  - `subject:`
   - `after:`, `before:`
 - search by derived data
   - `larger:`, `smaller:`
@@ -43,22 +45,33 @@ Gmail
   - `+` is exact search: `+regressed`
   - `AROUND`: `this AROUND 30 that`
     - find `this` and `that` that are within 30 words apart
-- search a mail belonging to a mailing list
-  - if the list is a true list, there is `List-Id:`
-  - if the list is merely a group alias, we can use `To:`, `Cc:`, or `Bcc:`
-  - it seems we can always use `list:` to match
-    - `list:` implies `to:`?
-    - note that gitlab notifications have `From:author` and `To:me`, and can
-      only be matched by `list:`
-    - also note that when the address is `alias+news@example.org`, it is
-      matched by `list:alias@example.org` but not by
-      `list:alias.example.org` nor `list:{alias}@example.org`
-     - and `list:{alias+review}.example.org` is treated as if the `+` sign is
-       a space
-    - also, `list:alias@example.org` does not match `other-alias@example.org`
-      - but `list:alias.example.org` does
-      - and `list:(alias)@example.org` does
-      - it seems simple `@` is treated specially
+- `@` is special
+  - `abc@xyz` matches `abc@xyz` or `abc.foo@xyz`
+    - but not `foo.abc@xyz` nor `abc@foo.xyz`
+  - otherwise, `@` seem to match anything
+    - `xyz@` and `@xyz` are the same as `xyz`
+      - they can match `foo.xyz.bar@foo.xyz.bar` for example
+    - `{abc}@xyz` is the same as `{abc}.xyz` which is the same as `abc.xyz`
+      - it matches `foo.abc.xyz.bar`
+- types of group mails
+  - traditional mailing list
+    - sender is on `From:`
+    - list is on `To:`, `Cc:`, or `Bcc:`
+    - list is also on `List-Id:`
+  - ads
+    - sender is on `From:`
+    - receiver is on `To:`, `Cc:`, or `Bcc:`
+    - there is no list
+  - gitlab notifications
+    - sender is on `From:`
+    - receiver is on `To:`, `Cc:`, or `Bcc:`
+    - list is also on `List-Id:`
+  - aliases
+    - sender is on `From:`
+    - alias is on `To:`, `Cc:`, or `Bcc:`
+    - there is no list
+  - because `list:` matches all relevant fields, we can always use `list:`
+    - but watch out for when `@` is special
 
 ## Inbox Zero
 
