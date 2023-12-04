@@ -325,6 +325,20 @@ Skia
   - `SkYUVColorSpace` for the color space (rec 601, 709, etc.)
   - `SkEncodedOrigin` for the origin (top-left, etc.)
   - `Siting` for chroma siting (centered)
+- `SkColorType`
+  - `SkRasterPipeline::appendLoad` picks different opcodes depending on the
+    color type
+    - the opcodes are implemented in `SkRasterPipeline_opts.h`
+  - `kRGB_565_SkColorType` uses `Op::load_565`
+    - it is `VK_FORMAT_R5G6B5_UNORM_PACK16`
+  - `kARGB_4444_SkColorType` uses `Op::load_4444`
+    - it is `VK_FORMAT_R4G4B4A4_UNORM_PACK16`
+  - `kRGBA_8888_SkColorType` uses `Op::load_8888`
+    - it is `VK_FORMAT_A8B8G8R8_UNORM_PACK32`
+  - `kRGBA_1010102_SkColorType` uses `Op::load_1010102`
+    - it is `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
+  - `kRGB_888x_SkColorType` uses `Op::load_8888` and `Op::force_opaque`
+  - `kBGRA_8888_SkColorType` uses `Op::load_8888` and `Op::swap_rb`
 
 ## GPU
 
