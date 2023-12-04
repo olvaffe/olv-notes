@@ -33,3 +33,21 @@ procps
     - the load average of past 1, 5, and 15 minutes
     - running/total processes
     - last created pid
+
+## free
+
+- `procps_meminfo_new` reads `/proc/meminfo`
+
+## pidof
+
+- it calls `procps_pids_new` with 3 items
+  - `PIDS_ID_PID`
+  - `PIDS_CMD`
+  - `PIDS_CMDLINE_V`
+- it calls `procps_pids_get` to read `/proc/*`
+  - `PIDS_ID_PID` maps to `tid` which is from `strtoul(ent->d_name, NULL, 10)`
+  - `PIDS_CMD` maps to `cmd` which is from `stat`
+  - `PIDS_CMDLINE_V` maps to `cmdline_v` which is from `cmdline`
+- it matches against `/proc/*/cmdline` mostly
+  - with `-w`, it matches against `/proc/*/stat` as well which is for kernel
+    workers
