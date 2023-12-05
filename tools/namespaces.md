@@ -16,6 +16,8 @@ Namespaces
     mount namespace allows that process to create bind mounts and mount the
     following types of filesystems:
     - proc, sysfs, devpts, tmpfs, mqueue, bpf
+    - to mount proc, needs pid namespace
+    - to mount sysfs, needs user namespace
   - Holding `CAP_SYS_ADMIN` within the user namespace that owns a process's
     PID namespace allows (since Linux 3.8) that process to mount /proc
     filesystems.
