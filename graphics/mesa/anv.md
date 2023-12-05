@@ -1,6 +1,13 @@
 Mesa ANV
 ========
 
+## Initialization
+
+- `anv_physical_device::info` is a `struct intel_device_info`
+  - it is initialized by `intel_get_device_info_from_fd` which calls
+    `intel_device_info_init_common` to map pci id to one of
+    `intel_device_info_*`
+
 ## BO Allocations
 
 - kmd bo allocations are through `anv_kmd_backend::gem_create`
