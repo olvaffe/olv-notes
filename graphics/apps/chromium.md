@@ -1331,3 +1331,47 @@ Chromium Browser
     `::scoped_refptr<::media::VideoFrame>` are convertible
   - the conversion uses `video_frame_mojom_traits.cc`'s `data` and `Read`
     methods
+
+## Perfetto
+
+- Chrome uses TrackEvent data source in a different way
+  - use perfetto ui, `Record new trace`, `Chrome` to record a trace
+  - then go to `Info and stats` to see the exact config used
+    - instead of `track_event` data source and `track_event_config`, it uses
+
+      data_sources: {
+        config {
+          name: "org.chromium.trace_event"
+          chrome_config {
+              trace_config: "..."
+          }
+        }
+      }
+- <https://source.chromium.org/chromium/chromium/src/+/main:base/trace_event/builtin_categories.h>
+  - `cc` is the compositor
+    - <https://source.chromium.org/chromium/chromium/src/+/main:cc/>
+    - in the renderer process, blink is the client
+    - in the browser process, ui is the client
+  - `disabled-by-default-skia.gpu` is skia gpu (ganesh and graphite)
+    - <https://source.chromium.org/chromium/chromium/src/+/main:third_party/skia/src/gpu/>
+  - `drm` is ozone drm (only used on cros)
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/platform/drm/>
+    - `hwoverlays` for overlay-related events
+    - `drmcursor` for cursor-related events
+  - `exo` is exo wayland compositor (only used on cros)
+    - <https://source.chromium.org/chromium/chromium/src/+/main:components/exo/>
+  - `gpu` is gpu-related events
+    - <https://source.chromium.org/chromium/chromium/src/+/main:gpu/>
+  - `gpu.angle` is angle
+    - <https://source.chromium.org/chromium/chromium/src/+/main:third_party/angle/>
+  - `ozone` is ozone abstraction layer
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/>
+  - `toplevel` is top-level events
+  - `ui` is ui
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/>
+  - `views` is ui views toolkit
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/views/>
+  - `viz` is for composition and gpu presentation
+    - <https://source.chromium.org/chromium/chromium/src/+/main:components/viz/>
+  - `wayland` is ozone wayland
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/platform/wayland/>
