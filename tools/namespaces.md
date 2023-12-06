@@ -9,6 +9,15 @@ Namespaces
     Likewise, a process that creates a new user namespace using unshare(2) or
     joins an existing user namespace using setns(2) gains a full set of
     capabilities in that namespace.
+  - On the other hand, that process has no capabilities in the parent (in the
+    case of clone(2)) or previous (in the case of unshare(2) and setns(2))
+    user namespace, even if the new namespace is created or joined by the root
+    user (i.e., a process with user ID 0 in the root namespace).
+  - Note that a call to execve(2) will cause a process’s capabilities to be
+    recalculated in the  usual  way  (see  capabilities(7)).  Consequently,
+    unless the process has a user ID of 0 within the namespace, or the
+    executable file has a non‐empty inheritable capabilities mask, the process
+    will lose all capabilities.
   - Having a capability inside a user namespace permits a process to perform
     operations (that require privilege) only on resources governed by that
     namespace.
