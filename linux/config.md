@@ -188,7 +188,7 @@ Kernel Config
 
 - select `Processor type and features`
   - select `Symmetric multi-processing support`
-  - select `Support x2apic` if guest, depending on `HYPERVISOR_GUEST`
+  - select `Support x2apic`, depending on `IRQ_REMAP`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
@@ -203,6 +203,7 @@ Kernel Config
     - select `EFI stub support`
   - select `Timer frequency (1000 HZ)`
 - select `Power management and ACPI options`
+  - select `Power Management Debug Support` if debug
   - select `ACPI (Advanced Configuration and Power Interface) Support`
     - select `ACPI Time and Alarm (TAD) Device Support`
     - select `Processor Aggregator`
@@ -447,6 +448,7 @@ Kernel Config
     - select `AMD GPU` if amd
       - select `Always enable userptr write support`
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
+    - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if intel
     - select `MSM DRM` if msm
     - select `Virtio GPU driver` if guest
     - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
@@ -601,7 +603,7 @@ Kernel Config
   - select `IOMMU Hardware Support`
     - select `ARM Ltd. System MMU (SMMU) Support` if msm
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
-    - select `Support for Interrupt Remapping` if kvm
+    - select `Support for Interrupt Remapping`
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if msm
     - select `Support for Remote Processor subsystem`

@@ -85,21 +85,25 @@ Chrome OS Kernel
 
 - to boot cros kernel with regular distro, there are a few caveats
 - enable serial console, vt, and fbcon
-  - `CONFIG_SERIAL_8250=y`
-  - `CONFIG_SERIAL_8250_CONSOLE=y`
-  - `CONFIG_SERIAL_8250_DW=y`
+  - `CONFIG_SERIAL_8250`
+  - `CONFIG_SERIAL_8250_CONSOLE`
+  - `CONFIG_SERIAL_8250_DW`
   - `CONFIG_VT`
   - `CONFIG_DRM_FBDEV_EMULATION`
   - `CONFIG_FRAMEBUFFER_CONSOLE`
 - enable compressed modules and firmwares
-  - `CONFIG_MODULE_COMPRESS=y`
-  - `CONFIG_FW_LOADER_COMPRESS=y`
+  - `CONFIG_MODULE_COMPRESS`
+  - `CONFIG_FW_LOADER_COMPRESS`
+  - `CONFIG_FW_LOADER_COMPRESS_ZSTD`
   - `CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware"`
 - enable more filesystems
   - `CONFIG_BTRFS_FS`
   - `CONFIG_F2FS_FS`
-  - `CONFIG_AUTOFS_FS` for systemd
+  - `CONFIG_VFAT_FS` (built-in this and NLS modules)
+  - `CONFIG_AUTOFS4_FS` for systemd
     - <https://github.com/systemd/systemd/blob/main/README>
+- misc
+  - `CONFIG_ZRAM` (built-in this and lzo)
 - disable security for simplicity
   - `CONFIG_SECURITY`
   - `CONFIG_SECURITY_CHROMIUMOS_READONLY_PROC_SELF_MEM`
