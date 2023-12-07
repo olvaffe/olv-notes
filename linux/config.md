@@ -298,8 +298,13 @@ Kernel Config
   - select `NVME Support` if needed
     - select `NVM Express block device`
   - select `Misc devices`
+    - select `EEPROM support`
+      - select `I2C EEPROMs / RAMs / ROMs from most vendors`
     - select `Intel Management Engine Interface` if intel
+    - select `ME Enabled Intel Chipsets` if intel
+    - select `Intel MEI GSC embedded device` if intel
     - select `Intel HDCP2.2 services of ME Interface` if intel, depending on `DRM_I915`
+    - select `Intel GSC Proxy services of ME Interface` if intel
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if sata or usb mass storage
     - select `SCSI device support`
@@ -379,6 +384,7 @@ Kernel Config
         - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
+    - select `PXA2xx SSP SPI master` if intel
     - select `BCM2835 SPI controller` if rpi
     - select `BCM2835 SPI auxiliary controller` if rpi
     - select `QTI QSPI controller` if msm
@@ -388,6 +394,7 @@ Kernel Config
     - select `AMD GPIO pin control` if amd
     - select `Intel pinctrl drivers` if intel
       - select desired drivers such as
+      - select `Intel Meteor Lake pinctrl and GPIO driver`
       - select `Intel Tiger Lake pinctrl and GPIO driver`
     - if msm
       - select `Qualcomm core pin controller driver`
@@ -480,8 +487,11 @@ Kernel Config
           - select `AMD SOF Machine Driver Support`
         - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
+          - select `Use more user friendly long card names`
           - select `Skylake+ with HDA Codecs`
+          - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
           - select `SOF with nau8825 codec in I2S Mode` if needed
+          - select `SoundWire generic machine driver` if needed
         - select `ASoC support for QCOM platforms` if msm
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
@@ -494,6 +504,7 @@ Kernel Config
             - deselect all but desired drivers such as
             - select `SOF support for Tigerlake`
             - select `SOF support for Alderlake`
+            - select `SOF support for Meteorlake`
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
         - select `CODEC drivers`
@@ -565,6 +576,7 @@ Kernel Config
     - select `Broadcom VideoCore support` if rpi
       - select all
   - select `Platform support for Chrome hardware` if cros
+    - select `ChromeOS specific ACPI extensions`
     - select `Chrome OS Laptop`
     - select `Chrome OS pstore support`
     - select `ChromeOS Tablet Switch Controller`
@@ -614,8 +626,10 @@ Kernel Config
   - select `Rpmsg drivers` if msm
     - select `Qualcomm SMEM Glink driver`
     - select `Qualcomm Shared Memory Driver` if modem
-  - select `SoundWire support` if msm
-    - select `Qualcomm SoundWire Master driver`
+  - select `SoundWire support`
+    - select `AMD SoundWire Manager driver` if amd
+    - select `Intel SoundWire Master driver` if intel
+    - select `Qualcomm SoundWire Master driver` if msm
   - select `SOC (System On Chip) specific Drivers`
     - select `Broadcom SoC drivers` if rpi
       - select `Raspberry Pi power domain driver`
@@ -633,6 +647,8 @@ Kernel Config
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
       - select `ChromeOS EC Sensor for lid angle`
+    - select `Light sensors`
+      - select `ACPI Ambient Light Sensor` if needed
     - select `Proximity and distance sensors`
       - select `ChromeOS EC MKBP Proximity sensor` if cros
       - select `SX9310/SX9311 Semtech proximity sensor` if needed
