@@ -165,3 +165,14 @@ Locking
       Because preemption is disabled in read-side critical section, when the
       dummy task runs, it means the CPU has left the read-side critical
       section.
+
+## Locking
+
+- `local_irq_save` to avoid race with current cpu
+- `spin_lock` to avoid race with another cpu
+- Documentation/spinlocks.txt
+- Concurrency: Two or more functions could be called concurrently.
+- Reentrancy: The same function could be concurrently called.
+- Mutex (kernel/mutex.c)
+  - sleep with `__set_task_state(task, TASK_UNINTERRUPTIBLE); schedule();`
+  - needs to be waked up

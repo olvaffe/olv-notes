@@ -29,3 +29,10 @@ Character Devices
   - this decides the real fops
 - for simpler case, the driver can call `register_chrdev` to do both
 - for even simpler case, the driver can call `misc_register`
+
+## Random Notes
+
+- open fileoperation has prototype `int (*open) (struct inode *, struct file *)`
+  `struct inode` is the file on the fs, while `struct file` is a fd
+- char node major number is a limited resouce.  `register_chrdev_region` to
+  reserve a range.
