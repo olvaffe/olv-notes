@@ -390,3 +390,21 @@ Mesa ANV
     - `isl_format_is_yuv` returns true in this case
     - `nir_vk_lower_ycbcr_tex` is still used to lower
       - I guess the hw is only responsible for chroma sample reconstruction
+
+## perf
+
+- `intel_perf_new` allocs a `intel_perf_config`
+- `intel_perf_init_metrics` initializes the cfg
+  - `intel_perf_init_metrics` adds `INTEL_PERF_QUERY_FIELD_TYPE_MI_RPC` reg
+  - `oa_metrics_available` checks if oa is available
+  - `load_oa_metrics` adds queries
+    - `get_register_queries_function` returns the gen-specific function
+      - `mtlgt2_register_render_basic_counter_query` adds `RenderBasic`
+        queries
+      - it is generated from `perf/oa-mtlgt2.xml`
+        - `GpuTime` is gpu time elapsed (ns)
+        - `GpuCoreClocks` is gpu clock elapsed (cycles)
+        - `AvgGpuCoreFrequency` is `GpuCoreClocks * 1000000000 / GpuTime` (hz)
+        - `GpuBusy` is `gpu-busy-cycles * 100 / GpuCoreClocks` (%)
+- `intel_perf_open`
+- `intel_perf_close`
