@@ -1354,12 +1354,18 @@ Chromium Browser
     - in the browser process, ui is the client
   - `disabled-by-default-skia.gpu` is skia gpu (ganesh and graphite)
     - <https://source.chromium.org/chromium/chromium/src/+/main:third_party/skia/src/gpu/>
+  - `evdev` is ozone evdev (only used on cros)
+    - <https://source.chromium.org/chromium/chromium/src/+/main:ui/events/ozone/evdev/>
   - `drm` is ozone drm (only used on cros)
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/platform/drm/>
     - `hwoverlays` for overlay-related events
     - `drmcursor` for cursor-related events
   - `exo` is exo wayland compositor (only used on cros)
     - <https://source.chromium.org/chromium/chromium/src/+/main:components/exo/>
+  - `input` is input
+    - <https://source.chromium.org/chromium/chromium/src/+/main:content/browser/renderer_host/input/>
+  - `mojom` is mojo ipc
+    - <https://source.chromium.org/chromium/chromium/src/+/main:mojo/>
   - `gpu` is gpu-related events
     - <https://source.chromium.org/chromium/chromium/src/+/main:gpu/>
   - `gpu.angle` is angle
@@ -1367,8 +1373,11 @@ Chromium Browser
   - `ozone` is ozone abstraction layer
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/>
   - `toplevel` is top-level events
+  - `toplevel.flow` is top-level flow events
   - `ui` is ui
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/>
+  - `v8` is v8 js engine
+    - <https://source.chromium.org/chromium/v8/v8>
   - `views` is ui views toolkit
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/views/>
   - `viz` is for composition and gpu presentation
