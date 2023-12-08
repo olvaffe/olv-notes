@@ -69,74 +69,121 @@ Chrome OS Firmwares
   - or, `flashrom -p host -w <image>`
   - might need to disable write-protection, `flashrom --wp-disable`
 
-## Google Security Chip (GSC), currently H1
 
-- <https://2018.osfc.io/uploads/talk/paper/7/gsc_copy.pdf>
-- ARM SC300 core, 8kB boot ROM, 64kB SRAM, 512kB flash
-- USB, I2C, SPI, UART, GPIO, etc.
-- in addition to CPU, known as AP, there are also GSC (Google Security Chip)
-  and EC
-  - GSC does not replace EC
-- GSC pins
-  - power related
-    - power button
-    - AC present
-    - battery cutoff
-    - EC reset
-    - AP reset
-  - flash related
-    - WP to AP & EC flashes
-    - SPI to API & EC flashes
-  - tpm
-    - SPI to AP
-  - debug related
-    - usb-c (for CCD)
-    - EC uart
-    - AP uart
-- in other words,
-  - GSC can flash its own flash, EC flash, and AP flash
-  - GSC can connect to EC uart and AP uart
-  - devs can access EC using a special usb-c SuzyQ cable
-  - devs can also access EC from AP via TPM
-    - thus devs can update GSC, EC, and AP firmwares on DUT
-- Cr50, firmware on GSC
-  - Cr50 runs on GSC and implements serials, TPM2, CCD, and U2F
-    - <https://chromium.googlesource.com/chromiumos/platform/ec>
+## GSC (Google Security Chip)
+
+- titan
+  - titan is a family of silicon root of trust (secure microcontrollers)
+    developed by google
+  - they are used in different products
+    - datacenter servers
+    - chromebooks
+    - pixels
+    - security keys
+  - opentitan is an open-source design based on titan
+  - tock os is an open-source os with titan and opentitan support
+  - what cros calls gsc is titan
+- titan H1
+  - it is an older soc
+  - <https://2018.osfc.io/uploads/talk/paper/7/gsc_copy.pdf>
+    - ARM SC300 core, 8kB boot ROM, 64kB SRAM, 512kB flash
+    - USB, I2C, SPI, UART, GPIO, etc.
+  - pins
+    - power related
+      - power/refresh/back keys
+      - AC present
+      - battery cutoff
+      - EC reset
+      - AP reset
+    - flash related
+      - WP to AP & EC flashes
+      - SPI to AP & EC flashes
+    - tpm
+      - SPI to AP
+    - debug related
+      - usb-c (for CCD)
+      - EC uart
+      - AP uart
+    - in other words,
+      - GSC can flash its own flash, EC flash, and AP flash
+      - GSC can connect to EC uart and AP uart
+      - devs can access EC using a special usb-c SuzyQ cable
+      - devs can also access EC from AP via TPM
+        - thus devs can update GSC, EC, and AP firmwares on DUT
+- cr50 / ti50
+  - cr50 is the older firmware that runs on titan H1
+  - it is a fork of <https://chromium.googlesource.com/chromiumos/platform/ec>
+    for the apps (tpm, ccd, u2f, serial, etc.) and kernel
     - `cr50_stab` branch
     - `make BOARD=cr50`
     - ebuild is `chromeos-base/chromeos-cr50`
-  - Cr50 does not reboot (unless the battery dies)
-  - GSC has a bootrom and a 512KB flash
+  - H1 has a bootrom and a 512KB flash
     - bootrom is read-only
     - the 512KB flash is divided into two (16 KB RO, 228KB RW, 12KB NVMEM)
       - two copies of Cr50 for A/B update
-    - coming out of reboot, GSC boots to RO first;  RO then boots to RW.
+    - coming out of reset, bootrom boots to RO first;  RO then boots to RW.
+  - the tpm app exposes a tpm device to the dut
+  - the ccd app exposes a usb device with id `18d1:5014` when connected to the
+    host with servo
+    - the usb device provides many functions
+    - up to 4 serial ports
+      - 0 for cr50 serial
+      - 1 for ap serial
+      - 2 for ec serial
+      - 3 for fpmcu serial
+    - `raiden_debug_spi` flash programmer
+      - because gsc connects to both ec and ap flashes, `target={ec,ap}`
+        should be specified as well
+      - use `gsctool` to flash gsc firmware instead
+- ti50
+  - ti50 is the newer firmware that runs on titan D2
+  - it consists of a fork of cros ec for the apps and a fork of tock os for
+    the kernel
+  - the ccd app exposes a usb device with id `18d1:504a`
 
-## EC
+## EC (Embedded Controller)
 
-- some EC has built-in flash and some has external flash
-- EC firmware is now zephyr-based
+- EC
+  - it is evolved from keyboard controller
+  - these peripherals are connected to EC
+    - keyboard
+    - lid/accel/gyro/light/etc sensors
+    - battery/charger
+    - leds
+    - etc
+  - e.g., Nuvoton NPCX9M6F
+    - <https://docs.zephyrproject.org/latest/boards/arm/npcx9m6f_evb/doc/index.html>
+    - Cortex-M4F
+    - 256 KB RAM and 64 KB boot ROM
+    - external flash?  (some parts have on-chip 512KB/1MB flash?)
+    - etc
+  - GSC interconnects with EC as well
+    - GSC can route the EC serial for CCD
+    - GSC has WP and SPI pins to EC flash
+    - etc
+- firmware
+  - it is zephyr-based
   - <https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/zephyr/README.md>
-  - `zmake <board>`
-  - `build/zephyr/<board>/output/zephyr.bin`
-- previously, it was based on
-  - <https://chromium.googlesource.com/chromiumos/platform/ec>
-  - `make BOARD=<board>`
-    - the binary will be at `build/<board>/ec.bin`
+    - `zmake <board>`
+    - `build/zephyr/<board>/output/zephyr.bin`
     - or, `emerge-<board> chromeos-base/chromeos-ec`
-  - source code directory structure
-    - A board under `board/` decides the baseboard
-    - A baseboard under `baseboard/` decides the controller
-    - A controller under `chip/` decides the CPU under `core/`
-  - To get ec.bin,
-    - `$(out)/%.elf: $(out)/%.lds $(objs)`
-      - use ec.lds to link
-    - `$(out)/%.flat: $(out)/%.elf $(out)/%.smap $(build-utils)`
-      - create EC binary image
-    - `$(out)/$(PROJECT).obj: common/firmware_image.S $(out)/firmware_image.lds $(flat-y)`
-      - create firmware image that combines several binary images
-    - `$(out)/%.bin: $(out)/%.obj`
-      - create firmware binary
+  - previously,
+    - also <https://chromium.googlesource.com/chromiumos/platform/ec>
+    - `make BOARD=<board>`
+      - the binary will be at `build/<board>/ec.bin`
+    - source code directory structure
+      - A board under `board/` decides the baseboard
+      - A baseboard under `baseboard/` decides the controller
+      - A controller under `chip/` decides the CPU under `core/`
+    - To get ec.bin,
+      - `$(out)/%.elf: $(out)/%.lds $(objs)`
+        - use ec.lds to link
+      - `$(out)/%.flat: $(out)/%.elf $(out)/%.smap $(build-utils)`
+        - create EC binary image
+      - `$(out)/$(PROJECT).obj: common/firmware_image.S $(out)/firmware_image.lds $(flat-y)`
+        - create firmware image that combines several binary images
+      - `$(out)/%.bin: $(out)/%.obj`
+        - create firmware binary
 
 ## AP firmware (BIOS)
 
@@ -227,8 +274,7 @@ Chrome OS Firmwares
     - `sudo fwupdtool update`
       - or visit
         <https://fwupd.org/lvfs/devices/tw.com.genesyslogic.gl3590.firmware>
-      - `wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab -O gl3590_64.17.cab`
-      - `sudo fwupdtool install gl3590_64.17.cab`
+      - `sudo fwupdtool install be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab`
 - `servod` supports a wide range of interfaces
   - servo v4.1: 18d1:520d
   - cr50 ccd: 18d1:5014
@@ -269,7 +315,7 @@ Chrome OS Firmwares
 
 ## CCD
 
-- <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md>
+- <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_gsc.md>
 - on DUT or host with working `gsctool`
   - `gsctool -a -o`
   - press power key occasionally for 5 minutes
