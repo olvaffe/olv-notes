@@ -1,5 +1,18 @@
-Filesystem Hierarchy Standard
-=============================
+Filesystem Hierarchy
+====================
+
+## systemd
+
+- `man 7 file-hierarchy`
+- `systemd-path`
+- on EFI systems, the ESP partition is commonly mounted to `/boot`
+- `/run/user/<uid>`, emptied when reboot or user logs out
+  - `$XDG_RUNTIME_DIR` should point to this directory
+- user packages
+  - there was system-managed packages, locally installed packages
+    (`/usr/local`), and opt packages (`/opt/<name>`)
+  - user packages go to `~/.local`
+    - originated from <https://www.python.org/dev/peps/pep-0370/>
 
 ## `/`
 
@@ -129,16 +142,3 @@ Filesystem Hierarchy Standard
   - `XDG_SESSION_DESKTOP`
   - `XDG_SEAT`
   - `XDG_VTNR`
-
-## systemd
-
-- `man 7 file-hierarchy`
-- `systemd-path`
-- on EFI systems, the ESP partition is commonly mounted to `/boot`
-- `/run/user/<uid>`, emptied when reboot or user logs out
-  - `$XDG_RUNTIME_DIR` should point to this directory
-- user packages
-  - there was system-managed packages, locally installed packages
-    (`/usr/local`), and opt packages (`/opt/<name>`)
-  - user packages go to `~/.local`
-    - originated from <https://www.python.org/dev/peps/pep-0370/>
