@@ -50,7 +50,7 @@ Arch Linux
     - `echo <host-name> > /etc/hostname`
     - `passwd` to set a password for root
   - create user
-    - `useradd -m -G wheel,video <user>`
+    - `useradd -m -G wheel <user>`
     - `passwd <user>`
     - `visudo`
   - traditionally, also
@@ -102,7 +102,7 @@ Arch Linux
     - also `gdb perf strace man-pages debuginfod`
   - gui, `sway polkit i3status swayidle swaylock mako`
     - `alacritty google-chrome noto-fonts noto-fonts-cjk`
-    - `light wl-clipboard wayland-utils`
+    - `brightnessctl wl-clipboard wayland-utils`
     - `imv grim slurp`
     - `mesa mesa-utils vulkan-radeon vulkan-tools`
   - bluetooth, `bluez bluez-utils`
@@ -161,7 +161,7 @@ Arch Linux
   - `echo usb > /etc/hostname`
   - `echo -e '[zram0]\nzram-size = ram' > /etc/systemd/zram-generator.conf`
 - create a normal user
-  - `useradd -m -G wheel,video olv`
+  - `useradd -m -G wheel olv`
   - `passwd olv`
   - `visudo`
     - allow wheel to sudo
@@ -216,7 +216,7 @@ Arch Linux
   - `pacman -R arch-install-scripts`
   - `pacman -Syu sudo vim`
   - `visudo`
-  - `useradd -m -G wheel,video olv`
+  - `useradd -m -G wheel olv`
   - `passwd -d olv`
 - boot
   - `sudo systemd-nspawn -i arch.img --private-users=identity -b --bind /dev/dri --bind /dev/input --bind /dev/snd`
