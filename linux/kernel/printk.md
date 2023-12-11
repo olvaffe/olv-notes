@@ -71,3 +71,46 @@ printk
   - `CONFIG_REGULATOR_DEBUG` for regulator
   - `CONFIG_RTC_DEBUG` for RTC
   - `CONFIG_SPI_DEBUG` for SPI
+
+## log level
+
+- each message has one of 8 loglevels
+  - `LOGLEVEL_EMERG` (0) means system is unusable
+  - `LOGLEVEL_ALERT` (1) means action must be taken immediately
+  - `LOGLEVEL_CRIT` (2) means critical conditions
+  - `LOGLEVEL_ERR` (3) means error conditions
+  - `LOGLEVEL_WARNING` (4) means warning conditions
+  - `LOGLEVEL_NOTICE` (5) means normal but significant condition
+  - `LOGLEVEL_INFO` (6) means informational
+  - `LOGLEVEL_DEBUG` (7) means debug-level messages
+- `console_printk` is an array of 4 loglevels
+  - `console_loglevel` is the current console loglevel
+    - `suppress_message_printing` suppresses a message if the message loglevel
+      is equal to or greater than `console_loglevel`
+    - it is initialized to `CONSOLE_LOGLEVEL_DEFAULT` (7), to print all but
+      `LOGLEVEL_DEBUG`
+  - `default_message_loglevel` is the defaut message loglevel
+    - if a message lacks an explicit loglevel, it is assumed to have
+      `default_message_loglevel`
+    - it is initialized to `MESSAGE_LOGLEVEL_DEFAULT` (4)
+  - `minimum_console_loglevel` is barely used
+    - it is used by `SYSLOG_ACTION_CONSOLE_OFF` and
+      `SYSLOG_ACTION_CONSOLE_LEVEL`
+    - it is initialized to `CONSOLE_LOGLEVEL_MIN` (1)
+  - `default_console_loglevel` is not used by the kernel
+    - it is such that the userspace knows the default loglevel
+    - it is initialized to `CONSOLE_LOGLEVEL_DEFAULT` (7)
+- `/proc/sys/kernel/printk` represents the `console_printk` array
+  - all 4 numbers can be changed freely by the userspace
+- cmdline params
+  - `quiet` calls `quiet_kernel` to set `console_loglevel` to
+    `CONSOLE_LOGLEVEL_QUIET` (4)
+  - `debug` calls `debug_kernel` to set `console_loglevel` to
+    `CONSOLE_LOGLEVEL_DEBUG` (10)
+  - `loglevel` calls `loglevel` to set `console_loglevel` to the specified
+    value
+- debug messages
+  - a message with `LOGLEVEL_DEBUG` is suppressed by default because
+    `CONSOLE_LOGLEVEL_DEFAULT` is also `LOGLEVEL_DEBUG`
+  - besides, `pr_debug`, `dev_dbg`, etc are no-op unless `DEBUG` or
+    `CONFIG_DYNAMIC_DEBUG` is defined
