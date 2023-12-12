@@ -1436,6 +1436,99 @@ Vulkan
 
 ## Chapter 34. Window System Integration (WSI)
 
+- 34.1. WSI Platform
+  - each platform-specific extension is an instance extension
+- 34.2. WSI Surface
+  - `VK_KHR_surface` provides `VkSurfaceKHR` to abstract platform
+    surfaces/windows
+  - `VK_KHR_android_surface` provides `vkCreateAndroidSurfaceKHR` to create a
+    surface from a `struct ANativeWindow`
+    - `currentExtent` is the window size and images are scaled to
+      `currentExtent`
+  - `VK_KHR_wayland_surface` provides `vkCreateWaylandSurfaceKHR` to create a
+    surface from a `struct wl_surface`
+    - `currentExtent` is always `UINT32_MAX` and `imageExtent` determines the
+      window size
+    - `VK_PRESENT_MODE_MAILBOX_KHR` is always supported
+    - `wl_surface.attach`, `wl_surface.damage`, and `wl_surface.commit` must
+      be sent and must only be sent by `vkQueuePresentKHR`
+    - a separate `wl_event_queue` must be used
+  - `VK_KHR_win32_surface` provides `vkCreateWin32SurfaceKHR` to create a
+    surface from a `HWND`
+    - `currentExtent` is the window size and can be 0
+  - `VK_KHR_xcb_surface` provides `vkCreateXcbSurfaceKHR` to create a
+    surface from a `xcb_window_t`
+    - `currentExtent` is the window size and can be 0
+  - `VK_EXT_metal_surface` provides `vkCreateMetalSurfaceEXT` to create a surface
+    from a `CAMetalLayer`
+- 34.3. Presenting Directly to Display Devices
+  - `VK_KHR_display` provides
+    - `vkGetPhysicalDeviceDisplayProperties2KHR` to enumerate `VkDisplayKHR`
+      - on drm, each `drmModeConnectorPtr` of a gpu device corresponds to a
+        `VkDisplayKHR`
+    - `vkGetPhysicalDeviceDisplayPlaneProperties2KHR` to enumerate planes
+      - on drm, mesa assumes each `drmModeConnectorPtr` has one plane
+    - `vkGetDisplayPlaneSupportedDisplaysKHR` to query which planes are usable
+      on which displays
+    - `vkGetDisplayModeProperties2KHR` to enumerate `VkDisplayModeKHR`
+      - on drm, each `drmModeModeInfoPtr` of a `drmModeConnectorPtr`
+        corresponds to a `VkDisplayModeKHR`
+    - `vkCreateDisplayModeKHR` to create new `VkDisplayModeKHR`
+      - on drm, this returns an existing mode if any.  No new mode can be
+        created.
+    - `vkGetDisplayPlaneCapabilities2KHR` to query the caps of a plane/mode combo
+    - finally, `vkCreateDisplayPlaneSurfaceKHR` to create a surface from a
+      plane/mode combo
+  - `VK_EXT_direct_mode_display` is for vr
+    - `VK_EXT_acquire_drm_display` provides
+      - `vkAcquireDrmDisplayEXT` to acquire a connector
+        - on wayland, the idea is to use `wp_drm_lease_device_v1` to lease the
+          master fd and to pass the master fd to vulkan using this extension
+      - `vkGetDrmDisplayEXT` to query the `VkDisplayKHR` associated with a connector
+  - `VK_EXT_display_control` provides `vkDisplayPowerControlEXT` to change the
+    power state (off, on, suspend) of a display
+  - `VK_EXT_headless_surface` provides `vkCreateHeadlessSurfaceEXT` to create
+    a surface from thin air
+    - it does not depend on `VK_KHR_display`
+- 34.4. Querying for WSI Support
+  - `VK_KHR_surface` provides `vkGetPhysicalDeviceSurfaceSupportKHR` to check
+    if a queue family / surface combo is supported
+  - `VK_KHR_wayland_surface` provides
+    `vkGetPhysicalDeviceWaylandPresentationSupportKHR` to check if a queue
+    family / `wl_display` combo is supported
+  - `VK_KHR_win32_surface` provides
+    `vkGetPhysicalDeviceWin32PresentationSupportKHR` to check if a queue
+    family is supported
+  - `VK_KHR_xcb_surface` provides
+    `vkGetPhysicalDeviceXcbPresentationSupportKHR` to check if a queu family /
+    `xcb_visualid_t` combo is supported
+- 34.5. Surface Queries
+  - `vkGetPhysicalDeviceSurfaceCapabilities2KHR` for surface caps
+  - `vkGetPhysicalDeviceSurfaceFormats2KHR` for surface formats
+  - `vkGetPhysicalDeviceSurfacePresentModesKHR` for surface present modes
+- 34.7. Device Group Queries
+  - `vkGetDeviceGroupPresentCapabilitiesKHR`
+  - `vkGetDeviceGroupSurfacePresentModesKHR`
+  - `vkGetPhysicalDevicePresentRectanglesKHR`
+- 34.9. Present Wait
+  - by chaining `VkPresentIdKHR` to `vkQueuePresentKHR`, `vkWaitForPresentKHR`
+    can be used to wait for a present
+- 34.10. WSI Swapchain
+  - `VK_KHR_swapchain` (and etc.) provides
+    - `vkCreateSwapchainKHR`
+    - `vkDestroySwapchainKHR`
+    - `vkGetSwapchainImagesKHR`
+    - `vkAcquireNextImage2KHR`
+    - `vkQueuePresentKHR`
+    - `vkReleaseSwapchainImagesEXT`
+  - `VK_KHR_shared_presentable_image` provides `vkGetSwapchainStatusKHR`
+  - `VK_EXT_display_control` provides `vkGetSwapchainCounterEXT`
+  - `VK_KHR_display_swapchain` provides `vkCreateSharedSwapchainsKHR`
+  - `VK_KHR_present_wait` provides `vkWaitForPresentKHR`
+- 34.11. Hdr Metadata
+  - `VK_EXT_hdr_metadata` provides `vkSetHdrMetadataEXT` to set the hdr
+    metadata for following presents
+
 ## Chapter 35. Deferred Host Operations
 
 ## Chapter 36. Private Data
