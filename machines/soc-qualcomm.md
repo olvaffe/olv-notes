@@ -224,6 +224,9 @@ Qualcomm SoC
     - SC7180
     - 8nm
     - Adreno 618
+    - dts
+      - `sc7180-trogdor-lazor-r3-kb.dts`
+      - `sc7180-trogdor-coachz-r3.dts`
   - 7c Gen2
     - 2021
     - SC7180P
@@ -234,6 +237,8 @@ Qualcomm SoC
     - SC7280?
     - 6nm
     - Adreno 7c+ Gen3 (Adreno 635)
+    - dts
+      - `sc7280-herobrine-villager-r1.dts`
 - Snapdragon 8 Compute Platforms
   - 835, 850
     - 2018
