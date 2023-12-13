@@ -1523,8 +1523,15 @@ Vulkan
     - `supportedUsageFlags`  is a bitmak of supported image usages for
       regular present modes
       - always includes `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
-    - `sharedPresentSupportedUsageFlags` is a bitmask of supported image
-      usages for shared present modes
+    - `VK_KHR_surface_protected_capabilities` provides
+      `VkSurfaceProtectedCapabilitiesKHR`
+    - `VK_EXT_surface_maintenance1` provides
+      `VkSurfacePresentScalingCapabilitiesEXT`, `VkSurfacePresentModeEXT`, and
+      `VkSurfacePresentModeCompatibilityEXT`
+    - `VK_KHR_shared_presentable_image` provides
+      `VkSharedPresentSurfaceCapabilitiesKHR`
+      - `sharedPresentSupportedUsageFlags` is a bitmask of supported image
+        usages for shared present modes
       - always includes `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
   - `vkGetPhysicalDeviceSurfaceFormats2KHR` for surface formats
   - `vkGetPhysicalDeviceSurfacePresentModesKHR` for surface present modes
