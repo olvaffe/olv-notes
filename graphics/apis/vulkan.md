@@ -1535,6 +1535,18 @@ Vulkan
       - always includes `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
   - `vkGetPhysicalDeviceSurfaceFormats2KHR` for surface formats
   - `vkGetPhysicalDeviceSurfacePresentModesKHR` for surface present modes
+    - `VK_PRESENT_MODE_IMMEDIATE_KHR` presents an image immediately, without
+      waiting for vblank
+    - `VK_PRESENT_MODE_MAILBOX_KHR` presents an image to a "mailbox", where
+      the image waits for the next vblank.  If there is already an image in
+      the mailbox, the newly presented image replaces the one in the mailbox.
+      replaces the one in the mailbox.
+    - `VK_PRESENT_MODE_FIFO_KHR` presents an image to a FIFO (of unlimited
+      size?), where the images in the FIFO wait for vblanks in order.
+    - `VK_PRESENT_MODE_FIFO_RELAXED_KHR` is similar to FIFO above, but when
+      the FIFO is empty, the newly presented image does not wait in the FIFO
+    - `VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR`
+    - `VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR`
 - 34.7. Device Group Queries
   - `vkGetDeviceGroupPresentCapabilitiesKHR`
   - `vkGetDeviceGroupSurfacePresentModesKHR`
