@@ -1504,6 +1504,28 @@ Vulkan
     `xcb_visualid_t` combo is supported
 - 34.5. Surface Queries
   - `vkGetPhysicalDeviceSurfaceCapabilities2KHR` for surface caps
+    - `minImageCount` and `maxImageCount` specify the valid lengths of the
+      swapchain
+      - `minImageCount` is at least 1
+      - `maxImageCount` can be 0, which means no limit
+    - `currentExtent` is the current surface size, or `UINT32_MAX`
+    - `minImageExtent` and `maxImageExtent` specify the valid image sizes of
+      the swapchain
+    - `maxImageArrayLayers` is the max number of layers of presentable images
+      in the swapchain
+    - `supportedTransforms` is a bitmask of supported tranforms (90, 180, 270,
+      mirror, etc.)
+    - `currentTransform` is the current transform of the surface
+    - `supportedCompositeAlpha`
+      - opaque, pre-mult alpha, post-mult alpha, inherit (platform-defined)
+      - picking a format without alpha or writing 1.0 to alpha are two other
+        ways to achieve opaque
+    - `supportedUsageFlags`  is a bitmak of supported image usages for
+      regular present modes
+      - always includes `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
+    - `sharedPresentSupportedUsageFlags` is a bitmask of supported image
+      usages for shared present modes
+      - always includes `VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT`
   - `vkGetPhysicalDeviceSurfaceFormats2KHR` for surface formats
   - `vkGetPhysicalDeviceSurfacePresentModesKHR` for surface present modes
 - 34.7. Device Group Queries
