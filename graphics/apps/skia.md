@@ -379,3 +379,56 @@ Skia
   - `GrBackendFormat:MakeGL` initializes from GL format and target
   - `GrBackendFormat:MakeVk` initializes from `VkFormat` or
     `GrVkYcbcrConversionInfo`
+
+## Ganesh `GrVkCaps`
+
+- `GrVkCaps::GrVkCaps` inits statically-determinted caps
+- `GrVkCaps::init` inits dynamically-determinted caps
+  - `GrVkCaps::initGrCaps`
+  - `GrVkCaps::initShaderCaps`
+  - `GrVkCaps::initFormatTable` inits `fFormatTable` and
+    `fColorTypeToFormatTable`
+  - `GrVkCaps::initStencilFormat` inits `fPreferredStencilFormat`
+  - `GrVkCaps::applyDriverCorrectnessWorkarounds`
+    - it looks like `fMustUseCoherentHostVisibleMemory` can hurt MTL
+  - `GrCaps::finishInitialization`
+    - `GrCaps::applyOptionsOverrides`
+    - `SkCapabilities::initSkCaps`
+- format tables
+  - `fColorTypeToFormatTable` is initialized by `initFormatTable` and
+    `setColorType`
+    - skia core works with color types and the table is used to map color
+      types to vk formats
+  - `fFormatTable` is initialized by `initFormatTable` and `FormatInfo::init`
+    - `fFormatTable` is an array of `FormatInfo`
+    - `getFormatInfo` maps a `VkFormat` to a `FormatInfo` in `fFormatTable`
+      using `kVkFormats`
+    - `FormatInfo::init` queries `VkFormatProperties` to map
+      `VkFormatFeatureFlags` to internal flags
+      - `kTexturable_Flag` means can be sampled with linear filtering
+      - `kRenderable_Flag` means renderable with blending and implies
+        `kTexturable_Flag`
+      - `kBlitSrc_Flag` and `kBlitDst_Flag` mean blit src/dst
+    - each `FormatInfo` also has an array of `ColorTypeInfo`
+      - the mapping is one-to-many
+      - `fColorType` is the `GrColorType`
+      - `fTransferColorType` is the color type of the cpu memory
+        - `onTransferPixelsTo` calls `copyBufferToImage` and expects the
+          buffer to have the xfer color type
+        - `onTransferPixelsFrom` and `onReadPixels` call `copyImageToBuffer`
+          and expect the buffer to have the xfer color type
+      - `fFlags` describes the color type's intensions
+        - `kUploadData_Flag` means it can be uploaded into
+        - `kRenderable_Flag` means it can be renderered into
+        - `kWrappedOnly_Flag`
+      - `fReadSwizzle` is the glsl swizzle applied to the sampled value
+      - `fWriteSwizzle` is the glsl swizzle applied to the output value
+  - `GrCaps::getDefaultBackendFormat` picks the vk format for a color type
+    - `onGetDefaultBackendFormat` uses `fColorTypeToFormatTable` to make color
+      type to vk format
+    - `isFormatTexturable` checks against `kTexturable_Flag`
+    - `onAreColorTypeAndFormatCompatible` checks the color type and the format
+      are compat
+    - `supportedWritePixelsColorType`
+    - `isFormatAsColorTypeRenderable` checks `kRenderable_Flag` of both the
+      format and the color type
