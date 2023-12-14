@@ -8,6 +8,33 @@ Mesa ANV
     `intel_device_info_init_common` to map pci id to one of
     `intel_device_info_*`
 
+## Memory Heaps and Types
+
+- `anv_physical_device_init_heaps` initializes the memory heaps and types
+  - it calls KMD-specific funtions
+  - on x86, `SUPPORT_INTEL_INTEGRATED_GPUS` is set; host-visible but
+    non-coherent mt is allowed
+    - it sets `device->memory.need_flush` and ends up issuing (potentially
+      multiple) `mfence` and `clflush` for cpu cache flush/invalidate
+- `anv_i915_physical_device_init_memory_types`
+  - if `anv_physical_device_has_vram`, there are 3 memory types
+    - device local
+    - host visible+coherent+cached
+    - device local and host visible+coherent
+    - the condition is true for discrete gpus
+  - if `device->info.has_llc`, there are also 3 memory types
+    - device local
+    - device local and host visible+coherent
+    - device local and host visible+coherent+cached
+    - the condition is true before xe and non-atom
+  - otherwise, there are 2 memory types
+    - device local and host visible+coherent
+    - device local and host visible+cached
+  - if `device->has_protected_contexts`, there is one extra memory type
+    - device local+protected
+    - the condition is true on gfx12 with newer i915
+- `anv_xe_physical_device_init_memory_types`
+
 ## BO Allocations
 
 - kmd bo allocations are through `anv_kmd_backend::gem_create`
