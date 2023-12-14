@@ -95,6 +95,8 @@ MediaTek SoCs
   - 2021, 1200 / MT8195
     - 6nm, Cortex-{A78,A55}, Mali-G57 MC5
     - cherry
+    - `mt8195-dojo-rev1-sku1-sku3.dts`
+    - `mt8195-tomato-rev3.dts`
   - 2022, 520 / MT8188
     - 7nm, Cortex-{A76,A55}, Mali-G52 MC2
     - corsola
