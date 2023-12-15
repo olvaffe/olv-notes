@@ -163,6 +163,11 @@ Qualcomm SoC
     - SM{7435,7475}-AB
     - 4nm
     - Adreno 710/725
+  - 7 Gen3
+    - 2024
+    - SM7550-AB
+    - 4nm
+    - Adreno 720
 - Snapdragon 8 series
   - high-end
   - 800, 801, 805
@@ -215,6 +220,11 @@ Qualcomm SoC
     - SM8550
     - 4nm
     - Adreno 740
+  - 8 Gen3
+    - 2024
+    - SM8650-AB
+    - 4nm
+    - Adreno 750
 
 ## History: Compute Platforms
 
@@ -224,7 +234,7 @@ Qualcomm SoC
     - SC7180
     - 8nm
     - Adreno 618
-    - dts
+    - cros: trogdor
       - `sc7180-trogdor-lazor-r3-kb.dts`
       - `sc7180-trogdor-coachz-r3.dts`
   - 7c Gen2
@@ -234,10 +244,10 @@ Qualcomm SoC
     - Adreno 618
   - 7c+ Gen3
     - 2022
-    - SC7280?
+    - SDM7280
     - 6nm
     - Adreno 7c+ Gen3 (Adreno 635)
-    - dts
+    - cros: herobrine
       - `sc7280-herobrine-villager-r1.dts`
 - Snapdragon 8 Compute Platforms
   - 835, 850
@@ -247,19 +257,19 @@ Qualcomm SoC
     - Adreno 540, 630
   - 8c, 8cx
     - 2019
-    - SC8180
+    - SC8180X
     - 7nm
     - Adreno 675, 680, 690
   - 8cx Gen2
     - 2020
-    - SC8180
+    - SC8180XP
     - 7nm
     - Adreno 690
   - 8cx Gen3
     - 2022
-    - SC8280
+    - SC8280XP
     - 5nm
-    - Adreno 8cx Gen3
+    - Adreno 8cx Gen3 (Adreno 730)
 - Snapdragon X Series
   - X Elite
     - 2024

@@ -47,7 +47,7 @@ AMD CPUs
   - Stoney Ridge
     - ultra mobile
     - Excavator+ and GCN3
-    - cros grunt
+    - cros: grunt
 - 2017: Ryzen 1000 series
   - Summit Ridge
     - desktop
@@ -75,11 +75,11 @@ AMD CPUs
   - Picasso
     - desktop/mobile
     - Zen+ and GCN5
-    - cros zork
+    - cros: zork
   - Dali, Pollock (2020)
     - ultra mobile
     - Zen and GCN5
-    - cros zork
+    - cros: zork
 - 2020: Ryzen 4000 series
   - Renoir
     - desktop/mobile
@@ -97,7 +97,7 @@ AMD CPUs
   - Barcelo (2022 refresh of Cezanne)
     - mobile
     - Zen 3 and GCN5
-    - cros guybrush
+    - cros: guybrush
   - Lucienne
     - ultra mobile
     - Zen 2 and GCN5
@@ -118,22 +118,30 @@ AMD CPUs
   - Phoenix
     - mobile
     - Zen 4 and RDNA3
+    - cros: myst
   - Mendocino
     - mobile
     - Zen 2 and RDNA2
+    - cros: skyrim
   - Rembrandt-R
     - mobile
     - Zen 3+ and RDNA2
   - Barcelo-R
     - mobile
     - Zen 3 and GCN5
-- 2024: Ryzen 8000 series?
+- 2024: Ryzen 8000 series
   - Granite Ridge
     - desktop
+    - Zen 5
+  - Fire Range
+    - mobile
     - Zen 5
   - Strix Point
     - desktop/mobile
     - Zen 5
+  - Hawk Point
+    - mobile
+    - Zen 4 and RDNA3
 
 ## Chromebooks
 

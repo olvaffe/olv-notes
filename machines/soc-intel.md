@@ -16,6 +16,7 @@ Intel CPUs
   - Raptor Cove   - 2022 - Intel 7
   - Redwood Cove  - 2023 - Intel 4
   - Lion Cove     - 2024 - Intel 20A?
+  - Panther Cove  - 2025 - Intel 20A?
 - Little Cores
   - Silvermont    - 2013 - 22nm
   - Airmont       - 2014 - 14nm
@@ -25,6 +26,7 @@ Intel CPUs
   - Gracemont     - 2021 - Intel 7
   - Crestmont     - 2023 - Intel 4
   - Skymont       - 2024 - Intel 20A?
+  - Darkmont      - 2025 - Intel 20A?
 
 ## CPUs
 
@@ -57,12 +59,14 @@ Intel CPUs
   - Kaby Lake
     - desktop/mobile
     - Skylake and Gen9.5 GPU
+    - cros: poppy
   - Skylake X
     - desktop
     - Skylake and Gen9.5 GPU
   - Atom: Apollo Lake
     - ultra mobile
     - Goldmont and Gen9.5 GPU
+    - cros: reef, coral
 - 17Q4~: Core 8xxx
   - Coffee Lake
     - desktop/mobile
@@ -73,12 +77,14 @@ Intel CPUs
   - Kaby Lake R
     - mobile
     - Skylake and Gen9.5 GPU
+    - cros: fizz, rammus
   - Amber Lake Y
     - ultra mobile
     - Skylake and Gen9.5 GPU
   - Atom: Gemini Lake
     - ultra mobile
     - Goldmont Plus and Gen9.5 GPU
+    - cros: octopus
 - 18Q4~: Core 9xxx
   - Coffee Lake Refresh
     - desktop
@@ -98,6 +104,7 @@ Intel CPUs
   - Comet Lake H and U
     - mobile
     - Skylake and Gen9.5 GPU
+    - cros: hatch, puff, drallion
   - Amber Lake Y
     - ultra mobile
     - Skylake and Gen9.5 GPU
@@ -108,26 +115,39 @@ Intel CPUs
   - Tiger Lake
     - mobile
     - Willow Cove and Gen12 GPU
+    - cros: volteer
   - Atom: Jasper Lake
     - ultra mobile
     - Tremont and Gen11 GPU
+    - cros: dedede
 - 21Q4~: Core 12xxx
   - Alder Lake
     - desktop/mobile
     - Golden Cove, Gracemont, and Gen12 GPU
+    - cros: brya
 - 22Q4~: Core 13xxx
   - Raptor Lake
-    - desktop
+    - desktop/mobile
     - Raptor Cove, Gracemont, and Gen12 GPU
-- 23Q4~: Core 14xxx?
-  - Meteor Lake
+    - cros: skolas
+  - Atom: Alder Lake N
+    - ultra mobile
+    - Gracemont and Gen12 GPU
+    - cros: nissa
+- 23Q4~: Core 14xxx
+  - Raptor Lake-R refresh
     - desktop
+- 23Q4~: Core Ultra 1xx
+  - Meteor Lake
+    - desktop/mobile
     - Redwood Cove, Crestmont, and Gen12.5 GPU
-- 24Q4~: Core 15xxx?
+    - cros: rex
+- 24Q4~: Core Ultra 2xx?
   - Arrow Lake
-- 25Q4~: Core 16xxx?
+- 25Q4~: Core Ultra 3xx?
   - Lunar Lake
   - Panther Lake
+  - Nova Lake
 
 ## Product Lines
 
@@ -160,6 +180,7 @@ Intel CPUs
   - P, Performance for thin & light
     - TDP <=28W
   - U, Power efficient
+    - TDP <=15W
   - Y, Extremely low-power efficient
   - G1-G7, Graphics level (processors with newer integrated graphics technology)
 - Embedded Suffices
