@@ -395,6 +395,13 @@ Chrome OS Firmwares
   - nv storage
   - `/sys/devices/platform/chromeos_acpi/VDAT` (x86)
   - `/proc/device-tree/firmware/chromeos/vboot-shared-data` (ARM)
+- kernel cmdline
+  - <https://chromium.googlesource.com/chromiumos/platform/depthcharge/+/refs/heads/main/src/boot/commandline.c>
+  - `cros_secure` to indicate the bootloader is depthcharge
+  - `%U` is replaced by kernel partition UUID
+  - `cros_debug` to indicate dev mode
+    - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference/+/refs/heads/main/host/lib/crossystem.c>
+    - `VbGetSystemPropertyInt("cros_debug")` scans `/proc/cmdline` for `cros_debug`
 
 ## depthcharge altfw
 
