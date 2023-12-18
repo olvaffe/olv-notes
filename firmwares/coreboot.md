@@ -44,49 +44,63 @@ coreboot
 
 ## bootblock
 
-- take x86 for example
-- the entry point is defined by `arch/x86/bootblock_crt0.S`
-- when CPU is reset, it executes from `CONFIG_X86_RESET_VECTOR`
-  - `CONFIG_X86_RESET_VECTOR` is 0xfffffff0; this is the first instruction the
-    CPU fetches and executes after reset
+- take intel for example
+- when CPU comes out of reset, it executes from `_X86_RESET_VECTOR`
+  - `_X86_RESET_VECTOR` is `0xfffffff0`
+  - this is the first instruction the CPU fetches and executes after reset
   - well, except for FIT (Firmware Interface Table)
-- the reset vector points to `_start` in `cpu/x86/16bit/reset16.inc`, and it
-  jumps to `_start16bit` in `cpu/x86/16bit/entry16.inc`
+- `src/arch/x86/bootblock.ld` puts `.reset` section at `_X86_RESET_VECTOR`
+  - `src/cpu/x86/reset16.S` defines the `.reset` section
+  - the cpu starts executing from `_start` which consists of a single
+    instruction to jump to `_start16bit` defined in `src/cpu/x86/entry16.S`
 - `_start16bit` does a bit of initialization and enters the protected mode by
-  jumping to `__protected_start` in `cpu/x86/32bit/entry32.inc`
+  jumping to `bootblock_protected_mode_entry` in `src/cpu/x86/entry32.S`
 - after a few more intialization, it jumps to `bootblock_pre_c_entry` in
-  `soc/intel/common/block/cpu/car/cache_as_ram.S`
+  `src/soc/intel/common/block/cpu/car/cache_as_ram.S`
 - after setting up cache-as-ram, it jumps to `car_init_done` to set up the
-  stack and calls `bootblock_c_entry`.  The soc-specific C entry calls the
-  common `bootblock_main_with_basetime`
-- `bootblock_soc_early_init`
-  - initialize early pch, spi
-- `bootblock_mainboard_early_init`
-- `bootblock_soc_init`
-  - initialize pch
-- `bootblock_mainboard_init`
-- `run_romstage`
+  stack and calls `bootblock_c_entry`.
+- the soc-specific C entry `bootblock_c_entry` calls the common
+  `bootblock_main_with_basetime`
+  - `bootblock_soc_early_init`
+    - initialize early pch, spi
+  - `bootblock_mainboard_early_init`
+    - e.g., initialize early gpio
+  - `bootblock_soc_init`
+    - initialize pch
+  - `bootblock_mainboard_init`
+    - e.g., initialize gpio
+  - `run_romstage`
+- `run_romstage` is defined in `src/lib/prog_loaders.c`
   - load and decompress romstage from cbfs
   - call the entry point of romstage
 
 ## romstage
 
-- take x86 for example
-- bootblock calls `_start` in `arch/x86/assembly_entry.S`, which calls
-  `car_stage_entry`, which calls `romstage_main`
-- after initializing dram, `run_postcar_phase` is called to enter the postcar
-  stage
-- the entry of the postcar stage is `_start` of `arch/x86/exit_car.S`
-- postcar tears down cache-as-ram and calls `main` in `arch/x86/postcar.c`
+- take intel for example
+- bootblock calls the romstage
+- the romstage entry point is `_start` defined in `src/arch/x86/assembly_entry.S`
+  - it calls `car_stage_entry`, which calls `romstage_main`
+- after initializing dram, `romstage_main` calls `run_postcar_phase` to enter
+  the postcar stage
+  - `vboot_run_logic` first to optionally enter verstage
+    - `verstage_main`
+      - `vb2api_fw_phase1`
+      - `vb2api_fw_phase2`
+      - `vb2api_fw_phase3`
+    - `after_verstage`
+  - it loads and decompresses postcar stage from cbfs
+  - call the entry point of postcar stage
+- the entry of the postcar stage is `_start` of `src/arch/x86/exit_car.S`
+- postcar tears down cache-as-ram and calls `main` in `src/arch/x86/postcar.c`
 - `run_ramstage` loads, decompresses, and enters the ramstage
 
 ## ramstage
 
-- take x86 for example
+- take intel for example
 - romstage calls `_start` in `src/arch/x86/c_start.S` which calls `main` in
   `src/lib/hardwaremain.c`
-- after walking through states in `boot_states`, it loads the payload and
-  enters the payload
+- after walking through states in `boot_states`, `bs_payload_load` loads the
+  payload and `bs_payload_boot` jumps to the the payload
 
 ## payload
 
@@ -103,7 +117,7 @@ coreboot
 ## Flashmap
 
 - `.fmd` describe how the flash (usually NOR flash) is paritioned
-- take x86 for example
+- take intel for example
   - usually starts with `FLASH@0xfe000000 0x2000000` for a 32MB NOR flash at
     the top of the 4GB address space
   - [0MB..5MB]

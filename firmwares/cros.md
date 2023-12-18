@@ -395,13 +395,72 @@ Chrome OS Firmwares
   - nv storage
   - `/sys/devices/platform/chromeos_acpi/VDAT` (x86)
   - `/proc/device-tree/firmware/chromeos/vboot-shared-data` (ARM)
-- kernel cmdline
-  - <https://chromium.googlesource.com/chromiumos/platform/depthcharge/+/refs/heads/main/src/boot/commandline.c>
-  - `cros_secure` to indicate the bootloader is depthcharge
-  - `%U` is replaced by kernel partition UUID
-  - `cros_debug` to indicate dev mode
-    - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference/+/refs/heads/main/host/lib/crossystem.c>
-    - `VbGetSystemPropertyInt("cros_debug")` scans `/proc/cmdline` for `cros_debug`
+
+## depthcharge internals
+
+- the entrypoint is `main` defined in `src/vboot/main.c`
+- `vboot_select_and_boot_kernel` starts the booting process
+  - `vb2api_kernel_phase1`
+  - `vb2api_kernel_phase2`
+  - `vboot_select_and_load_kernel`
+  - `vb2api_kernel_finalize`
+  - `vboot_boot_kernel`
+- entering developer mode in depthcharge
+  - if recovery, `vboot_select_and_load_kernel` shows `recovery_select_screen`
+  - followed by ctrl-d, `ui_manual_recovery_action` shows
+    `recovery_to_dev_screen`
+  - `recovery_to_dev_finalize` calls `vb2api_enable_developer_mode` to set
+    `VB2_SECDATA_FIRMWARE_FLAG_DEV_MODE` and reboot
+  - because `VB2_SECDATA_FIRMWARE_FLAG_DEV_MODE` is set, these 3 bits are also
+    set
+    - `VB2_SD_FLAG_DEV_MODE_ENABLED`
+    - `VB2_CONTEXT_DEVELOPER_MODE`
+    - `VB2_SECDATA_FIRMWARE_FLAG_LAST_BOOT_DEVELOPER`
+  - because of `VB2_CONTEXT_DEVELOPER_MODE`, the boot mode is set to
+    `VB2_BOOT_MODE_DEVELOPER`
+  - because of `VB2_BOOT_MODE_DEVELOPER`, `vboot_select_and_load_kernel` shows
+    `developer_mode_screen`
+  - `ui_developer_mode_boot_internal_action` calls `vboot_load_kernel` to load the kernel from the internal disk
+  - `vboot_boot_kernel` boots the loaded kernel
+    - `fill_boot_info` fills in the boot info including the cmdline
+    - `commandline_subst` replaces the cmdline
+      - `cros_secure` is prepended to indicate the bootloader is depthcharge
+      - `%U` is replaced by kernel partition UUID
+    - `crossystem_setup` updates acpi for use by the kernel
+      - because of `VB2_CONTEXT_DEVELOPER_MODE`, `vb2api_export_vbsd` exports
+        `VBSD_BOOT_DEV_SWITCH_ON` in acpi vdat table
+    - `boot` jumps to the kernel
+- entering developer mode in userspace
+  - upstart `startup` executes `chromeos_startup` defined in platform2
+  - `ChromeosStartup::Run`
+    - `Platform::InDevMode` calls `VbGetSystemPropertyInt("cros_debug")` to
+      see if we are in dev mode yet
+      - this looks for `cros_debug` in `/proc/cmdline`
+      - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference/+/refs/heads/main/host/lib/crossystem.c>
+  - `ChromeosStartup::CheckForStatefulWipe`
+    - `ChromeosStartup::IsDevToVerifiedModeTransition`
+      - `VbGetSystemPropertyInt("devsw_boot")` checks for
+        `VBSD_BOOT_DEV_SWITCH_ON` in acpi vdat table
+      - `VbGetSystemPropertyString("mainfw_type")` must not be `recovery`
+    - `ChromeosStartup::DevIsDebugBuild` checks for
+      `VbGetSystemPropertyInt("debug_build")`
+    - `Platform::Clobber`
+      - it invokes `/sbin/chromeos-boot-alert` with `enter_dev`
+        - this shows `Preparing system for Developer Mode...` and waits for
+          30s
+      - it invokes `/sbin/clobber-log` with `Enter developer mode`
+        - this logs to `/mnt/stateful_partition/unencrypted/clobber.log`
+      - it invokes `/sbin/clobber-state` with `keepimg`
+        - this wipes and re-creates stateful
+        - this touches `/mnt/stateful_partition/.developer_mode`
+        - this reboots the device
+  - crossystem variables
+    - `devsw_boot` means devloper mode in depthcharge
+      - it is true after entering developer mode 
+    - `cros_debug` means developer mode in userspace
+      - it is true when `/proc/cmdline` has `cros_debug`
+      - dev/test images are built with `--force_developer_mode` , which sets
+        `cros_debug` in kernel cmdline
 
 ## depthcharge altfw
 
