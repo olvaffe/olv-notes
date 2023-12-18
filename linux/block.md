@@ -10,27 +10,6 @@ Block Subsystem
 - Some drivers need the requested be translated to another command set first
   - `sd_init_command` of sd
 
-## Device Mapper
-
-- `/dev/mapper/control` is used to configure dm
-- `dmsetup targets` lists supported targets
-  - `linear` maps a linear range from one block device to another
-  - `striped` stripes the data across physical devices
-  - `error` simulates io errors (for testing)
-  - `crypt` provides data encryption
-    - uses kernel crypto api to encrypt and descrypt data
-- `dmsetup ls --tree` lists devices and their dependencies as a tree
-- LUKS
-  - using plain `dm-crypt` is not recommended
-  - LUKS defines a standardized header, key-slot area, and a bulk data area
-    that is at the start of the block device
-  - `cryptsetup luksFormat /dev/sda1` formats a partition as a LUKS partition
-  - `cryptsetup open --type luks /dev/sda1 blah` creates a device `blah`
-    backed by the physical device
-- LVM
-  - using plain `dm-linear` is not recommended?
-  - LVM stores some metadata on the physical device just like LUKS does
-
 ## NVMe
 
 - high-end ssds are connected to PCIe bus,  with non-standard command
