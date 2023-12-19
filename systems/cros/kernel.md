@@ -81,6 +81,42 @@ Chrome OS Kernel
   - kills the chrome session to trigger a crashdump
   - prints `sysrq: Cros dump and crash`
 
+## Kernel Image
+
+- `src/scripts/build_kernel_image.sh` is used to create the kernel image
+- the script generates these cmdline options
+  - `console=`
+  - `loglevel=${FLAGS_loglevel}`
+  - `init=/sbin/init`
+  - `cros_secure`
+  - `drm.trace=0x106`
+  - `root=${root_dev}`
+  - `rootwait`
+  - `ro`
+  - `dm_verity.error_behavior=${FLAGS_verity_error_behavior}`
+  - `dm_verity.max_bios=${FLAGS_verity_max_ios}`
+  - `dm_verity.dev_wait=${dev_wait}`
+  - `${device_mapper_args}`
+    - `dm=\"1 vroot none ro 1,${table}\"`
+  - `${FLAGS_boot_args}`
+    - `noinitrd`
+    - `cros_debug`
+  - `vt.global_cursor_default=0`
+  - `kern_guid=%U`
+    - `%U` will be replaced by kernel partition uuid by depthcharge
+  - `cros_lsb_release_hash=${FLAGS_version_attestation_hash}`
+  - if x86,
+    - `add_efi_memmap`
+    - `noresume`
+    - `i915.modeset=1`
+  - board-specific `modify_kernel_command_line` can modify the cmdline
+    - `tpm_tis.force=0`
+    - `ramoops.ecc=1`
+    - `intel_pmc_core.warn_on_s0ix_failures=1`
+    - `xdomain=0`
+    - `i915.enable_psr=1`
+    - `swiotlb=65536`
+
 ## Linux Distro: Config
 
 - to boot cros kernel with regular distro, there are a few caveats
