@@ -479,6 +479,7 @@ Kernel Config
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if msm
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
+    - select `Enable legacy fbdev support for your modesetting driver` (for vt)
     - select `AMD GPU` if amd
       - select `Always enable userptr write support`
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
@@ -497,8 +498,6 @@ Kernel Config
       - select `DRM HDMI Support for Mediatek SoCs`
     - select `Simple framebuffer driver` if desired
     - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
-    - select `Frame buffer Devices`
-      - select `Support for frame buffer devices` (for vt)
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
@@ -529,6 +528,7 @@ Kernel Config
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
         - select `Sound Open Firmware Support` if intel or cros
           - select `SOF PCI enumeration support` if x86
+          - select `SOF OF enumeration support` if arm
           - select `SOF support for AMD audio DSPs` if amd
             - select `SOF support for RENOIR`
             - select `SOF support for REMBRANDT`
@@ -539,7 +539,6 @@ Kernel Config
             - select `SOF support for Meteorlake`
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
-          - select `SOF OF enumeration support` if arm
           - select `SOF support for MTK audio DSPs` if mtk
             - select `SOF support for MT8195 audio DSP`
         - select `CODEC drivers`
@@ -586,9 +585,9 @@ Kernel Config
     - select `Secure Digital Host Controller Interface support` if needed
       - select `SDHCI platform and OF driver helper` if arm
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
-    - select `MediaTek SD/MMC Card Interface support` if mtk
     - select `Qualcomm SDHCI Controller Support` if msm
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
+    - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `LED Support`
     - select `LED Class Support`
     - select `PWM driven LED Support` if needed, depending on `PWM`
@@ -601,10 +600,10 @@ Kernel Config
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
     - select `MediaTek PMIC based RTC`, if mtk
   - select `DMA Engine support`
+    - select `BCM2835 DMA engine support` if rpi
     - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
-    - select `BCM2835 DMA engine support` if rpi
-  - select `DMABUF options`
+  - select `DMABUF options` if desired
     - select `userspace dmabuf misc driver`
   - select `Virtio drivers` if guest
     - select `PCI driver for virtio devices`
@@ -638,25 +637,25 @@ Kernel Config
     - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Intel SCU platform driver` if intel
   - select `Common Clock Framework` if arm
+    - select `Broadcom BCM2835 clock support` if rpi
+    - select `Raspberry Pi firmware based clock support` if rpi
+    - select `Clock driver for MediaTek SoC` if mtk
     - select `Support for Qualcomm's clock controllers` if msm
       - select `RPMh Clock Driver`
       - select SC7180*
       - select SC7280*
-    - select `Broadcom BCM2835 clock support` if rpi
-    - select `Raspberry Pi firmware based clock support` if rpi
-    - select `Clock driver for MediaTek SoC` if mtk
   - select `Hardware Spinlock drivers` if msm
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
-    - select `Qualcomm APCS IPC driver` if msm
-    - select `Qualcomm Technologies, Inc. IPCC driver` if msm
     - select `BCM2835 Mailbox` if rpi
+    - select `Qualcomm APCS IPC driver` if msm
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
+    - select `Qualcomm Technologies, Inc. IPCC driver` if msm
   - select `IOMMU Hardware Support`
-    - select `ARM Ltd. System MMU (SMMU) Support` if msm
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
+    - select `ARM Ltd. System MMU (SMMU) Support` if msm
     - select `MediaTek IOMMU Support` if mtk
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
@@ -708,9 +707,9 @@ Kernel Config
       - select `SX9310/SX9311 Semtech proximity sensor` if needed
       - select `SX9324 Semtech proximity sensor` if needed
   - select `Pulse-Width Modulation (PWM) Support` if arm
+    - select `BCM2835 PWM support` if rpi
     - select `ChromeOS EC PWM driver` if cros
     - select `MediaTek display PWM driver` if mtk
-    - select `BCM2835 PWM support` if rpi
   - select `IRQ chip support` if msm
     - select `QCOM PDC`
   - select `Reset Controller Support` if arm
