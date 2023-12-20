@@ -275,6 +275,7 @@ Kernel Config
     - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
     - select `Message Signaled Interrupts (MSI and MSI-X)`
+    - select `Support for PCI Hotplug` if needed (for usb4)
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
@@ -311,7 +312,8 @@ Kernel Config
       - select `Intel Management Engine Interface`
       - select `ME Enabled Intel Chipsets`
       - select `Intel MEI GSC embedded device`
-      - select `Intel HDCP2.2 services of ME Interface`, depending on `DRM_I915`
+      - select `Intel HDCP2.2 services of ME Interface` if protected, depending on `DRM_I915`
+      - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if sata or usb mass storage
@@ -380,6 +382,8 @@ Kernel Config
       - deselect all but desired drivers
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
+      - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
+        - select `Cr50 SPI Interface` if cros
       - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if cros, depending on `I2C`
       - select `TPM 2.0 CRB Interface` if needed
   - select `I2C support`
@@ -618,7 +622,7 @@ Kernel Config
     - select `ChromeOS specific ACPI extensions`
     - select `Chrome OS pstore support`
     - select `ChromeOS Embedded Controller`
-      - select `ChromeOS Embedded Controller (rpmsg)` if qcom/mtk
+      - select `ChromeOS Embedded Controller (rpmsg)` if mtk
       - select `ChromeOS Embedded Controller (SPI)`
       - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
@@ -700,10 +704,7 @@ Kernel Config
     - select `Light sensors`
       - select `ACPI Ambient Light Sensor` if needed
       - select `ChromeOS EC Light and Proximity Sensors` if cros
-    - select `Pressure sensors`
-      - select `ChromeOS EC Barometer Sensor` if cros
     - select `Proximity and distance sensors`
-      - select `ChromeOS EC MKBP Proximity sensor` if cros
       - select `SX9310/SX9311 Semtech proximity sensor` if needed
       - select `SX9324 Semtech proximity sensor` if needed
   - select `Pulse-Width Modulation (PWM) Support` if arm
@@ -725,7 +726,7 @@ Kernel Config
     - select `Qualcomm QUSB2 PHY Driver` if qcom
     - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if qcom
   - select `Generic powercap sysfs driver` if x86
-    - select `Intel RAPL Support via MSR Interface` if intel/amd, depending on `IOSF_MBI`
+    - select `Intel RAPL Support via MSR Interface`, depending on `IOSF_MBI`
   - select `Reliability, Availability and Serviceability (RAS) features`
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support` if arm
