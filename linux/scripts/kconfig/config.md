@@ -223,7 +223,7 @@ Kernel Config
   - select `Broadcom SoC Support` if rpi
     - select `Broadcom BCM2835 family`
   - select `MediaTek SoC Family` if mtk
-  - select `Qualcomm Platforms` if msm
+  - select `Qualcomm Platforms` if qcom
 - select `Kernel Features`
   - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)`
@@ -249,7 +249,7 @@ Kernel Config
       - select `Generic DT based cpufreq driver`
       - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mtk
-      - select `QCOM CPUFreq HW driver` if msm
+      - select `QCOM CPUFreq HW driver` if qcom
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
 
 ## Config: Device Drivers
@@ -259,7 +259,7 @@ Kernel Config
     - select `KVM for Intel processors support` if intel
     - select `KVM for AMD processors support` if amd
 - select `Networking support`
-  - select `Networking options` if msm
+  - select `Networking options` if qcom
     - select `Qualcomm IPC Router support`
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
       - select `TUN device for Qualcomm IPC Router`
@@ -267,9 +267,9 @@ Kernel Config
     - select `Bluetooth device drivers`
       - select `HCI USB driver` if x86/mtk, depending on `USB`
         - select `MediaTek protocol support` if mtk
-      - select `HCI UART driver` if msm/rpi
+      - select `HCI UART driver` if qcom/rpi
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
-        - select `Qualcomm Atheros protocol support` if msm, depending on `SERIAL_DEV_BUS`
+        - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
@@ -278,7 +278,7 @@ Kernel Config
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
-      - select `DesignWare PCI Core Support` if newer msm
+      - select `DesignWare PCI Core Support` if newer qcom
         - select `Qualcomm PCIe controller`
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
@@ -334,12 +334,12 @@ Kernel Config
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
-    - select `Qualcomm IPA support` if msm modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
+    - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
     - select `Wireless LAN` if needed
       - deselect all but the desired drivers, such as
-      - select `Atheros/Qualcomm devices` if msm
+      - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support`
         - select `Qualcomm ath10k SNOC support`
         - select `Qualcomm Technologies 802.11ax chipset support`, depending on `CRYPTO_MICHAEL_MIC`
@@ -373,7 +373,7 @@ Kernel Config
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86
         - select `Mediatek serial port support` if mtk
-        - select `QCOM on-chip GENI based serial port support` if msm, depending on `QCOM_GENI_SE`
+        - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
@@ -391,7 +391,7 @@ Kernel Config
         - select `Synopsys DesignWare Platform` if x86, depending on `COMMON_CLK`
           - select `AMD PSP I2C semaphore support` if amd
         - select `MediaTek I2C adapter` if mtk
-        - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
+        - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if qcom, depending on `QCOM_GENI_SE`
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
     - select `BCM2835 SPI controller` if rpi
@@ -399,9 +399,9 @@ Kernel Config
     - select `MediaTek SPI controller` if mtk
     - select `MediaTek SPI NOR controller` if mtk
     - select `PXA2xx SSP SPI master` if intel
-    - select `QTI QSPI controller` if msm
-    - select `Qualcomm GENI based SPI controller` if msm
-  - select `SPMI support` if msm/mtk
+    - select `QTI QSPI controller` if qcom
+    - select `Qualcomm GENI based SPI controller` if qcom
+  - select `SPMI support` if qcom/mtk
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
   - select `Pin controllers`
     - select `AMD GPIO pin control` if amd
@@ -411,14 +411,14 @@ Kernel Config
       - select `Intel Tiger Lake pinctrl and GPIO driver`
     - select `MediaTek pinctrl drivers` if mtk
       - select desired drivers
-    - if msm
+    - if qcom
       - select `Qualcomm core pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc SC7180 pin controller driver`
       - select `Qualcomm Technologies Inc SC7280 pin controller driver`
       - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
-  - select `Board level reset or power off` if msm
+  - select `Board level reset or power off` if qcom
     - select `Qualcomm power-on driver`
   - select `Power supply class support`
     - select `SBS Compliant gas gauge`
@@ -441,14 +441,14 @@ Kernel Config
         - select `ACPI INT340X thermal drivers`
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
-    - select `Qualcomm thermal drivers` if msm
+    - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
       - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`, depending on `IIO`
       - select `Qualcomm SPMI PMIC Temperature Alarm`
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
-    - select `QCOM watchdog` if msm
+    - select `QCOM watchdog` if qcom
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
@@ -457,14 +457,14 @@ Kernel Config
     - select `ChromeOS Embedded Controller multifunction device` if cros, depending on `CROS_EC`
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if mtk
-    - select `Qualcomm SPMI PMICs` if msm
+    - select `Qualcomm SPMI PMICs` if qcom
   - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
     - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
-    - select `Qualcomm Technologies, Inc. RPMh regulator driver` if msm, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
+    - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
   - select `Multimedia support` if desired
     - select `Media device types`
       - select `Cameras/video grabbers support`
@@ -476,7 +476,7 @@ Kernel Config
         - select `Memory-to-memory multimedia devices`
         - select `Mediatek Video Codec driver` if mtk, depending on `MTK_IOMMU` and `MTK_SCP`
         - select `MediaTek MDP v3 driver` if mtk, depending on `MTK_IOMMU`, `MTK_SCP`, and `MTK_CMDQ`
-        - select `Qualcomm Venus V4L2 encoder/decoder driver` if msm
+        - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
     - select `Enable legacy fbdev support for your modesetting driver` (for vt)
@@ -484,7 +484,7 @@ Kernel Config
       - select `Always enable userptr write support`
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
       - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if intel
-    - select `MSM DRM` if msm
+    - select `MSM DRM` if qcom
     - select `Virtio GPU driver` if guest
     - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
       - it requires `CMA` and `DMA_CMA` to work
@@ -523,7 +523,7 @@ Kernel Config
           - select `SoundWire generic machine driver` if needed
         - select `ASoC support for Mediatek MT8195 chip` if mtk
           - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
-        - select `ASoC support for QCOM platforms` if msm
+        - select `ASoC support for QCOM platforms` if qcom
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
         - select `Sound Open Firmware Support` if intel or cros
@@ -543,7 +543,7 @@ Kernel Config
             - select `SOF support for MT8195 audio DSP`
         - select `CODEC drivers`
           - select `Generic Digital Microphone CODEC` if x86
-          - if msm
+          - if qcom
             - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
             - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
             - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
@@ -573,8 +573,8 @@ Kernel Config
     - select `EHCI HCD (USB 2.0) support` if needed
     - select `USB Printer support` if needed
     - select `USB Mass Storage support`
-    - select `DesignWare USB3 DRD Core Support` if msm
-    - select `Onboard USB hub support` if msm
+    - select `DesignWare USB3 DRD Core Support` if qcom
+    - select `Onboard USB hub support` if qcom
     - select `USB Type-C Support`
       - select `USB Type-C Connector System Software Interface driver`
         - select `UCSI ACPI Interface Driver` if x86
@@ -585,17 +585,17 @@ Kernel Config
     - select `Secure Digital Host Controller Interface support` if needed
       - select `SDHCI platform and OF driver helper` if arm
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
-    - select `Qualcomm SDHCI Controller Support` if msm
+    - select `Qualcomm SDHCI Controller Support` if qcom
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `LED Support`
     - select `LED Class Support`
     - select `PWM driven LED Support` if needed, depending on `PWM`
-    - select `LED support for Qualcomm LPG` if newer msm, depending on `LEDS_CLASS_MULTICOLOR`
+    - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
   - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
     - select `Intel client SoC Integrated MC` if intel
-    - select `QCOM EDAC Controller` if msm, depending on `QCOM_LLCC`
+    - select `QCOM EDAC Controller` if qcom, depending on `QCOM_LLCC`
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
     - select `MediaTek PMIC based RTC`, if mtk
@@ -618,7 +618,7 @@ Kernel Config
     - select `ChromeOS specific ACPI extensions`
     - select `Chrome OS pstore support`
     - select `ChromeOS Embedded Controller`
-      - select `ChromeOS Embedded Controller (rpmsg)` if msm/mtk
+      - select `ChromeOS Embedded Controller (rpmsg)` if qcom/mtk
       - select `ChromeOS Embedded Controller (SPI)`
       - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
@@ -640,39 +640,39 @@ Kernel Config
     - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
-    - select `Support for Qualcomm's clock controllers` if msm
+    - select `Support for Qualcomm's clock controllers` if qcom
       - select `RPMh Clock Driver`
       - select SC7180*
       - select SC7280*
-  - select `Hardware Spinlock drivers` if msm
+  - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
     - select `BCM2835 Mailbox` if rpi
-    - select `Qualcomm APCS IPC driver` if msm
+    - select `Qualcomm APCS IPC driver` if qcom
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
-    - select `Qualcomm Technologies, Inc. IPCC driver` if msm
+    - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
-    - select `ARM Ltd. System MMU (SMMU) Support` if msm
+    - select `ARM Ltd. System MMU (SMMU) Support` if qcom
     - select `MediaTek IOMMU Support` if mtk
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
-      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if msm
-      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if msm
-      - select `Qualcomm sysmon driver` if msm
-      - select `Qualcomm WCNSS Peripheral Image Loader` if msm modem
+      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if qcom
+      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if qcom
+      - select `Qualcomm sysmon driver` if qcom
+      - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
   - select `Rpmsg drivers` if arm
     - select `MediaTek SCP` if mtk
-    - select `Qualcomm SMEM Glink driver` if msm
-    - select `Qualcomm Shared Memory Driver` if msm modem
+    - select `Qualcomm SMEM Glink driver` if qcom
+    - select `Qualcomm Shared Memory Driver` if qcom modem
   - select `SoundWire support`
     - select `AMD SoundWire Manager driver` if amd
     - select `Intel SoundWire Master driver` if intel
-    - select `Qualcomm SoundWire Master driver` if msm
+    - select `Qualcomm SoundWire Master driver` if qcom
   - select `SOC (System On Chip) specific Drivers` if arm
     - select `Broadcom SoC drivers` if rpi
       - select `Raspberry Pi power domain driver`
@@ -680,7 +680,7 @@ Kernel Config
       - select `MediaTek CMDQ Support`
       - select `MediaTek PMIC Wrapper Support`
       - select `MediaTek Smart Voltage Scaling(SVS)`, depending on `NVMEM_MTK_EFUSE`
-    - select `Qualcomm SoC drivers` if msm
+    - select `Qualcomm SoC drivers` if qcom
       - select all
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
@@ -693,7 +693,7 @@ Kernel Config
       - select `HID Accelerometers 3D` if desired (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
-      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if msm
+      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if qcom
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
       - select `ChromeOS EC Sensor for lid angle`
@@ -710,31 +710,31 @@ Kernel Config
     - select `BCM2835 PWM support` if rpi
     - select `ChromeOS EC PWM driver` if cros
     - select `MediaTek display PWM driver` if mtk
-  - select `IRQ chip support` if msm
+  - select `IRQ chip support` if qcom
     - select `QCOM PDC`
   - select `Reset Controller Support` if arm
-    - select `Qcom AOSS Reset Driver` if msm
-    - select `Qualcomm PDC Reset Driver` if msm
+    - select `Qcom AOSS Reset Driver` if qcom
+    - select `Qualcomm PDC Reset Driver` if qcom
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
     - select `TI SYSCON Reset Driver` if mtk
   - select `PHY Subsystem` if arm
     - select `MediaTek PCIe-PHY Driver` if mtk
     - select `MediaTek T-PHY Driver` if mtk
-    - select `Qualcomm eDP PHY driver` if msm
-    - select `Qualcomm QMP PHY Driver` if msm
-    - select `Qualcomm QUSB2 PHY Driver` if msm
-    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if msm
+    - select `Qualcomm eDP PHY driver` if qcom
+    - select `Qualcomm QMP PHY Driver` if qcom
+    - select `Qualcomm QUSB2 PHY Driver` if qcom
+    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if qcom
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface` if intel/amd, depending on `IOSF_MBI`
   - select `Reliability, Availability and Serviceability (RAS) features`
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support` if arm
     - select `Mediatek SoCs EFUSE support` if mtk
-    - select `QCOM QFPROM Support` if msm
+    - select `QCOM QFPROM Support` if qcom
   - select `Trusted Execution Environment support`
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
-  - select `On-Chip Interconnect management support` if msm
+  - select `On-Chip Interconnect management support` if qcom
     - select `Qualcomm Network-on-Chip interconnect drivers`
     - select `Qualcomm OSM L3 interconnect driver`
     - select `Qualcomm SC7180 interconnect driver`
