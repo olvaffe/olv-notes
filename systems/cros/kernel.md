@@ -242,81 +242,142 @@ Chrome OS Kernel
 ## Drivers
 
 - `CONFIG_GOOGLE_FIRMWARE`
-  - `CONFIG_GOOGLE_SMI` is the driver for coreboot `CONFIG_ELOG_GSMI`
+  - `CONFIG_GOOGLE_SMI` provides `gsmi` platform driver
+    - it is for coreboot `CONFIG_ELOG_GSMI`
     - elog is a flash-based event log on x86
     - the driver provides efivars to access the log
-  - `CONFIG_GOOGLE_COREBOOT_TABLE` is the driver for coreboot table
+  - `CONFIG_GOOGLE_COREBOOT_TABLE` provides `coreboot_table` platform driver
+    - it is the driver for coreboot table
     - the driver parses the coreboot table and registers devices listed in the
       table
-    - `CONFIG_GOOGLE_MEMCONSOLE_COREBOOT` is the driver for `memconsole`
+    - `CONFIG_GOOGLE_MEMCONSOLE_COREBOOT` provides `memconsole` coreboot
+      driver
       - the driver provides `/sys/firmware/log` to read the coreboot log
-    - `CONFIG_GOOGLE_FRAMEBUFFER_COREBOOT` is the driver for `framebuffer`
+    - `CONFIG_GOOGLE_FRAMEBUFFER_COREBOOT` provides `framebuffer` coreboot
+      driver
       - the driver registers a `simple-framebuffer` platform device
-      - coreboot does not seem to advertise the device anymore
-    - `CONFIG_GOOGLE_VPD` is the driver for `vpd`
+      - it is no longer used
+    - `CONFIG_GOOGLE_VPD` provides `vpd` coreboot driver
       - the driver provides `/sys/firmware/vpd` to access VPD (vital product
         data)
 - `CONFIG_TCG_TPM`
-  - `CONFIG_TCG_TIS_SPI_CR50` is the driver for cr50-based tpm over spi
-    - it does not appear to be needed anymore
-  - `CONFIG_TCG_CR50_I2C` is the driver for cr50-based tpm over i2c
+  - `CONFIG_TCG_TIS_SPI_CR50` provides `tpm_tis_spi` spi driver
+    - it is for cr50-based tpm over spi
+  - `CONFIG_TCG_CR50_I2C` provides `cr50_i2c` i2c driver
+    - it is for cr50-based tpm over i2c
     - gsc (google security chip) is connected to the ap via i2c
 - `CONFIG_CHROME_PLATFORMS`
-  - `CONFIG_CHROMEOS_ACPI` is the driver for acpi `GGL0001` provided by
-    coreboot
+  - `CONFIG_CHROMEOS_ACPI` provides `chromeos_acpi` platform driver
+    - it is the driver for acpi `GGL0001` provided by coreboot
     - it exports acpi vals as attrs under
       `/sys/devices/platform/chromeos_acpi`
-    - it replaces the downstream `CONFIG_ACPI_CHROMEOS` driver
+    - it replaces the downstream `CONFIG_ACPI_CHROMEOS` (`ChromeOS`) driver
   - `CONFIG_CHROMEOS_LAPTOP` matches the DMI table and registers i2c and acpi
     devices
-    - it does not appear to be needed anymore
-  - `CONFIG_CHROMEOS_PSTORE` matches ACPI/DMI and registers `ramoops` platform
-    device
-  - `CONFIG_CHROMEOS_TBMC` is the driver for acpi `GOOG0006` provided by
-    coreboot
+    - it is no longer used
+  - `CONFIG_CHROMEOS_PSTORE` provides `chromeos_pstore` platform driver
+    - it matches ACPI/DMI and registers `ramoops` platform device
+  - `CONFIG_CHROMEOS_TBMC` provides `chromeos_tbmc` platform driver
+    - it is the driver for acpi `GOOG0006` provided by coreboot
     - it registers an input device to report `SW_TABLET_MODE`
-    - it does not appear to be needed anymore
-  - `CONFIG_CROS_EC` registers the `cros-ec-dev` platform device
-    - `CONFIG_CROS_EC_I2C`
-      - it does not appear to be needed anymore
-    - `CONFIG_CROS_EC_RPMSG`
-      - EC is connected to ap via rpmsg on arm (in addition to spi)
-    - `CONFIG_CROS_EC_SPI`
-      - EC is connected to ap via spi
-    - `CONFIG_CROS_EC_CHARDEV` provides `/dev/cros_ec`
-    - `CONFIG_CROS_EC_LIGHTBAR` does not appear to be needed anymore
-    - `CONFIG_CROS_EC_VBC` does not appear to be needed anymore
-    - `CONFIG_CROS_EC_DEBUGFS` exports `/sys/kernel/debug/cros_ec` for EC log
-    - `CONFIG_CROS_EC_SENSORHUB` registers sensor devices connected to the
-      EC sensorhub
-    - `CONFIG_CROS_EC_SYSFS` exports EC info (`reboot`, `flashinfo`,
-      `version`, etc.) to sysfs
-    - `CONFIG_CROS_EC_PD_UPDATE` provides autoupdate of PD firmware
-    - `CONFIG_CROS_USBPD_LOGGER` is the driver for logging PD events to kmsg
-    - `CONFIG_CROS_USBPD_NOTIFY` is the driver for acpi `GOOG0003`
-    - `CONFIG_CROS_TYPEC_SWITCH`  is the driver for acpi `GOOG001A`
-  - `CONFIG_CROS_HPS_I2C`  is the driver for acpi `GOOG0020` provided by coreboot
-  - `CONFIG_CHROMEOS_PRIVACY_SCREEN` is the driver for acpi `GOOG0010`
-- `CONFIG_MFD_CROS_EC_DEV` is the driver for `cros-ec-dev`
+  - `CONFIG_CROS_EC`
+    - `CONFIG_CROS_EC_I2C` provides `cros-ec-i2c` i2c driver
+      - it is no longer used
+    - `CONFIG_CROS_EC_RPMSG` provides `cros-ec-rpmsg` rpmsg driver
+      - it is used on mtk
+    - `CONFIG_CROS_EC_ISHTP` provides `cros_ec_ishtp` ishtp driver
+      - it is no longer used
+    - `CONFIG_CROS_EC_SPI` provides `cros-ec-spi` spi driver
+      - EC is commonly connected to ap via spi
+    - `CONFIG_CROS_EC_UART` provides `cros-ec-uart` serdev driver
+      - it is used on amd
+    - `CONFIG_CROS_EC_LPC` provides `cros_ec_lpcs` platform driver
+      - it is used on x86
+    - they register `cros-ec-dev` platform device(s) to be driven by
+      `CONFIG_MFD_CROS_EC_DEV`
+  - `CONFIG_CROS_KBD_LED_BACKLIGHT` provides `chromeos-keyboard-leds` platform
+    driver
+  - `CONFIG_CROS_EC_CHARDEV` provides `cros-ec-chardev` platform driver
+    - it exports `/dev/cros_ec`
+  - `CONFIG_CROS_EC_LIGHTBAR` provides `cros-ec-lightbar` platform driver
+    - it is no longer used
+  - `CONFIG_CROS_EC_VBC` provides `cros-ec-vbc` platform driver
+    - it is no longer used
+  - `CONFIG_CROS_EC_DEBUGFS` provides `cros-ec-debugfs` platform driver
+    - it exports `/sys/kernel/debug/cros_ec` for EC log
+  - `CONFIG_CROS_EC_SENSORHUB` provides `cros-ec-sensorhub` platform driver
+    - it registers sensor devices connected to the EC sensorhub, such as
+      - `cros-ec-accel`
+      - `cros-ec-baro`
+      - `cros-ec-gyro`
+      - `cros-ec-mag`
+      - `cros-ec-prox`
+      - `cros-ec-light`
+      - `cros-ec-lid-angle`
+  - `CONFIG_CROS_EC_SYSFS` provides `cros-ec-sysfs` platform driver
+    - it exports EC info (`reboot`, `flashinfo`, `version`, etc.) to sysfs
+  - `CONFIG_CROS_EC_TYPEC` provides `cros-ec-typec` platform driver
+    - it manages typec ports via ec
+  - `CONFIG_CROS_USBPD_LOGGER` provides `cros-usbpd-logger` platform driver
+    - it logs PD events to kmsg
+  - `CONFIG_CROS_USBPD_NOTIFY` provides `cros-usbpd-notify` or
+    `cros-usbpd-notify-acpi` platform driver
+    - it is the driver for acpi `GOOG0003`
+  - `CONFIG_CROS_HPS_I2C`  provides `cros-hps` i2c driver
+    - it is not used yet?
+  - `CONFIG_CHROMEOS_PRIVACY_SCREEN` provides `chromeos_privacy_screen_driver`
+    acpi driver
+    - it is no longer used
+  - `CONFIG_CROS_TYPEC_SWITCH` provides `cros-typec-switch` platform driver
+    - it is not used yet?
+  - `CONFIG_CROS_EC_PD_UPDATE` provides `cros-ec-pd-update` platform driver
+    - it is downstream and is no longer used
+- `CONFIG_MFD_CROS_EC_DEV` provides `cros-ec-dev` platform driver
+  - `cros-ec-dev` platform devices are registered by `CONFIG_CROS_EC`
+  - there can be several `cros-ec-dev` devices
+    - `cros_ec`
+    - `cros_fp` on x86
+    - `cros_scp` on mtk
   - it adds a bunch of subdevices where individual drivers bind to
-- `CONFIG_KEYBOARD_CROS_EC` provides keyboard support
-  - EC is evolved from keyboard controller
-- `CONFIG_I2C_CROS_EC_TUNNEL` is the driver for a pseudo i2c bus where i2c
-  devices are connected to EC rather than AP
-- `CONFIG_CHARGER_CROS_USBPD` is the driver for ec USB PD
-- `CONFIG_CHARGER_CROS_PCHG` is the driver for ec peripheral chargers
-- `CONFIG_REGULATOR_CROS_EC` is the driver for ec regulator
-- `CONFIG_SND_SOC_CROS_EC_CODEC` is the driver for ec codec
-- `CONFIG_RTC_DRV_CROS_EC` is the driver for ec rtc
-- `CONFIG_PWM_CROS_EC` is the driver for ec pwm
-- `CONFIG_EXTCON_USBC_CROS_EC` is the driver for ec usbc
+    - `cros-ec-sensorhub` if sensorhub
+    - `cros-ec-rtc` if rtc (on qcom)
+    - `cros-usbpd-charger`, `cros-usbpd-logger`, and `cros-usbpd-notify`
+    - `cros-ec-pchg` if peripheral chargers
+    - `cros-ec-chardev`, `cros-ec-debugfs`, and `cros-ec-sysfs`
+- `CONFIG_KEYBOARD_CROS_EC` provides `cros-ec-keyb` platform driver
+  - it supports a few special keys such as 
+    - power, volume, brightness, screen lock
+    - lid, tablet switch
+- `CONFIG_I2C_CROS_EC_TUNNEL` provides `cros-ec-i2c-tunnel` platform driver
+  - it is the driver for a pseudo i2c bus where i2c devices are connected to
+    EC rather than AP
+- `CONFIG_CHARGER_CROS_USBPD` provides `cros-usbpd-charger` platform driver
+  - it is the driver for ec-based USB PD
+- `CONFIG_CHARGER_CROS_PCHG` provides `cros-ec-pchg` platform driver
+  - it is the driver for ec peripheral chargers
+- `CONFIG_REGULATOR_CROS_EC` provides `cros-ec-regulator` platform driver
+  - it is used on mtk
+- `CONFIG_SND_SOC_CROS_EC_CODEC` provides `cros-ec-codec` platform driver
+  - it is used on zork
+- `CONFIG_RTC_DRV_CROS_EC` provides `cros-ec-rtc` platform driver
+  - it is used on qcom
+- `CONFIG_PWM_CROS_EC` provides `cros-ec-pwm` platform driver
+  - it is used on arm
+- `CONFIG_EXTCON_USBC_CROS_EC` provides `extcon-usbc-cros-ec` platform driver
+  - it is used on kukui
 - `CONFIG_IIO_CROS_EC_SENSORS_CORE`
-  - `CONFIG_IIO_CROS_EC_ACCEL_LEGACY`
-  - `CONFIG_IIO_CROS_EC_SENSORS_CORE`
-  - `CONFIG_IIO_CROS_EC_SENSORS`
-  - `CONFIG_IIO_CROS_EC_SENSORS_LID_ANGLE`
-  - `CONFIG_IIO_CROS_EC_ACTIVITY`
-  - `CONFIG_IIO_CROS_EC_SENSORS_SYNC`
-  - `CONFIG_IIO_CROS_EC_LIGHT_PROX`
-  - `CONFIG_IIO_CROS_EC_BARO`
-- `CONFIG_CROS_EC_MKBP_PROXIMITY` is the driver for ec proximity sensor
+  - `CONFIG_IIO_CROS_EC_SENSORS` provides `cros-ec-sensors` platform driver
+    - it supports `cros-ec-accel`, `cros-ec-gyro`, and `cros-ec-mag` devices
+  - `CONFIG_IIO_CROS_EC_SENSORS_LID_ANGLE` provides `cros-ec-lid-angle`
+    platform driver
+  - `CONFIG_IIO_CROS_EC_ACTIVITY` is downstream and is no longer used
+  - `CONFIG_IIO_CROS_EC_SENSORS_SYNC` is downstream and is no longer used
+  - `CONFIG_IIO_CROS_EC_ACCEL_LEGACY` is no longer used
+  - `CONFIG_IIO_CROS_EC_LIGHT_PROX` provides `cros-ec-light-prox` platform
+    driver
+    - it supports `cros-ec-light` and `cros-ec-prox` devices
+  - `CONFIG_IIO_CROS_EC_BARO` provides `cros-ec-baro` platform driver
+    - it is no longer used
+- `CONFIG_CROS_EC_MKBP_PROXIMITY` provides `cros-ec-mkbp-proximity` platform
+  driver
+  - it is no longer used
