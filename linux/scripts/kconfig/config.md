@@ -9,7 +9,7 @@ Kernel Config
       drivers for the arch
     - or download a pre-made config and `make olddefconfig`
       - such as
-        <https://raw.githubusercontent.com/raspberrypi/linux/rpi-5.10.y/arch/arm64/configs/bcm2711_defconfig>
+        <https://raw.githubusercontent.com/raspberrypi/linux/rpi-6.1.y/arch/arm64/configs/bcm2711_defconfig>
   - `make menuconfig` to edit generated config
     - to discover non-discoverable devices,
       - `dtc -I fs /sys/firmware/devicetree/base` and look for `compatible`
@@ -107,7 +107,7 @@ Kernel Config
   - select `Kernel support for MISC binaries`
 - select `Memory Management options`
   - select `Transparent Hugepage Support`
-    - select `Transparent Hugepage Support sysfs defaults (madvice)`
+    - select `Transparent Hugepage Support sysfs defaults (always)`
   - select `Multi-Gen LRU`
     - select `Enable by default`
 - select `Networking support`
@@ -127,6 +127,9 @@ Kernel Config
     - select `802.1d Ethernet Bridging`
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
+  - select `Wireless` if needed
+    - select `cfg80211 - wireless configuration API`
+    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
   - select `RF switch subsystem support`
 - select `File systems`
   - select `The Extended 4 (ext4) filesystem`
@@ -155,23 +158,21 @@ Kernel Config
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
-- select `Cryptographic API`
-  - select `Block ciphers` (for iwd)
+- select `Cryptographic API` if iwd
+  - select `Block ciphers`
     - select `AES (Advanced Encryption Standard)`
     - select `DES and Triple DES EDE`
-  - select `Length-preserving ciphers and modes` (for iwd)
+  - select `Length-preserving ciphers and modes`
     - select `CBC (Cipher Block Chaining)`
     - select `ECB (Electronic Codebook)`
-  - select `Hashes, digests, and MACs` (for iwd)
+  - select `Hashes, digests, and MACs`
     - select `CMAC (Cipher-based MAC)`
     - select `HMAC (Keyed-Hash MAC)`
     - select `MD5`
     - select `SHA-1`
     - select `SHA-224 and SHA-256`
     - select `SHA-384 and SHA-512`
-  - select `Compression` (for zram)
-    - select `LZO`
-  - select `Userspace interface` (for iwd)
+  - select `Userspace interface`
     - select `Hash algorithms`
     - select `Symmetric key cipher algorithms`
     - deselect `Obsolete cryptographic algorithms`
@@ -199,18 +200,15 @@ Kernel Config
     - select `Enable paravirtualization code`
   - select `Processor family (Core 2/newer Xeon)` if intel and desired
   - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd and desired
-  - select `CPU microcode loading support`
-    - select `AMD microcode loading support` if amd
   - select `EFI runtime service support` if uefi
-    - select `EFI stub support`
   - select `Timer frequency (1000 HZ)`
   - select `Built-in kernel command line` if desired
 - select `Power management and ACPI options`
   - select `Device power management core functionality`
     - select `Power Management Debug Support` if debug
   - select `ACPI (Advanced Configuration and Power Interface) Support`
-    - select `ACPI Time and Alarm (TAD) Device Support`
-    - select `Processor Aggregator`
+    - select `ACPI Time and Alarm (TAD) Device Support` if desired
+    - select `Processor Aggregator` if desired
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `AMD Processor P-State driver` if amd
@@ -249,10 +247,10 @@ Kernel Config
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `Generic DT based cpufreq driver`
-      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mtk
       - select `QCOM CPUFreq HW driver` if msm
+      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
 
 ## Config: Device Drivers
 
@@ -272,30 +270,27 @@ Kernel Config
       - select `HCI UART driver` if msm/rpi
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if msm, depending on `SERIAL_DEV_BUS`
-  - select `Wireless` if desired
-    - select `cfg80211 - wireless configuration API`
-    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
 - select `Device Drivers`
   - select `PCI support` if pci
-    - select `PCI Express Port Bus support` if pcie
+    - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `PCI controller drivers` if arm
+      - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
       - select `DesignWare PCI Core Support` if newer msm
         - select `Qualcomm PCIe controller`
-      - select `Broadcom Brcmstb PCIe host controller` if rpi
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
       - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
       - select `Firmware loading facility`
-        - select `Build named firmware blobs into the kernel binary` if built-in i915/amdgpu/etc
+        - select `Build named firmware blobs into the kernel binary` if built-in i915/amdgpu/microcode/etc
         - select `Enable compressed firmware support`
   - select `Firmware Drivers`
-    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
+    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
     - select `Google Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `Coreboot Table Access`
@@ -312,11 +307,12 @@ Kernel Config
   - select `Misc devices`
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if x86, depending on `I2C`
-    - select `Intel Management Engine Interface` if intel
-    - select `ME Enabled Intel Chipsets` if intel
-    - select `Intel MEI GSC embedded device` if intel
-    - select `Intel HDCP2.2 services of ME Interface` if intel, depending on `DRM_I915`
-    - select `Intel GSC Proxy services of ME Interface` if intel
+    - if intel,
+      - select `Intel Management Engine Interface`
+      - select `ME Enabled Intel Chipsets`
+      - select `Intel MEI GSC embedded device`
+      - select `Intel HDCP2.2 services of ME Interface`, depending on `DRM_I915`
+      - select `Intel GSC Proxy services of ME Interface`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if sata or usb mass storage
     - select `SCSI device support`
@@ -394,17 +390,17 @@ Kernel Config
         - select `Broadcom BCM2835 I2C controller` if rpi
         - select `Synopsys DesignWare Platform` if x86, depending on `COMMON_CLK`
           - select `AMD PSP I2C semaphore support` if amd
-        - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
         - select `MediaTek I2C adapter` if mtk
+        - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if msm, depending on `QCOM_GENI_SE`
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
-    - select `PXA2xx SSP SPI master` if intel
     - select `BCM2835 SPI controller` if rpi
     - select `BCM2835 SPI auxiliary controller` if rpi
-    - select `QTI QSPI controller` if msm
-    - select `Qualcomm GENI based SPI controller` if msm
     - select `MediaTek SPI controller` if mtk
     - select `MediaTek SPI NOR controller` if mtk
+    - select `PXA2xx SSP SPI master` if intel
+    - select `QTI QSPI controller` if msm
+    - select `Qualcomm GENI based SPI controller` if msm
   - select `SPMI support` if msm/mtk
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
   - select `Pin controllers`
@@ -435,26 +431,26 @@ Kernel Config
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
     - select `Generic device cooling support` if arm, depending on `PM_DEVFREQ`
-    - select `Qualcomm thermal drivers` if msm
-      - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
-      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`, depending on `IIO`
-      - select `Qualcomm SPMI PMIC Temperature Alarm`
+    - select `Mediatek thermal drivers` if mtk
+      - select `MediaTek thermal drivers`
+        - select `AUXADC temperature sensor driver for MediaTek SoCs`
+        - select `LVTS Thermal Driver for MediaTek SoCs`
     - select `Intel thermal drivers` if intel
       - select `X86 package temperature thermal driver`
       - select `ACPI INT340X thermal drivers`
         - select `ACPI INT340X thermal drivers`
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
-    - select `Mediatek thermal drivers` if mtk
-      - select `MediaTek thermal drivers`
-        - select `AUXADC temperature sensor driver for MediaTek SoCs`
-        - select `LVTS Thermal Driver for MediaTek SoCs`
+    - select `Qualcomm thermal drivers` if msm
+      - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
+      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`, depending on `IIO`
+      - select `Qualcomm SPMI PMIC Temperature Alarm`
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
+    - select `QCOM watchdog` if msm
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
-    - select `QCOM watchdog` if msm
     - select `Broadcom BCM2835 hardware watchdog` if rpi
     - select `Mediatek SoCs watchdog support` if mtk
   - select `Multifunction device drivers`
@@ -465,10 +461,10 @@ Kernel Config
   - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
     - select `ChromeOS EC regulators` if cros
-    - select `Qualcomm Technologies, Inc. RPMh regulator driver` if msm, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
+    - select `Qualcomm Technologies, Inc. RPMh regulator driver` if msm, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
   - select `Multimedia support` if desired
     - select `Media device types`
       - select `Cameras/video grabbers support`
