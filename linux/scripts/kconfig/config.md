@@ -405,7 +405,7 @@ Kernel Config
     - select `PXA2xx SSP SPI master` if intel
     - select `QTI QSPI controller` if qcom
     - select `Qualcomm GENI based SPI controller` if qcom
-  - select `SPMI support` if qcom/mtk
+  - select `SPMI support` if arm
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
   - select `Pin controllers`
     - select `AMD GPIO pin control` if amd
@@ -427,6 +427,7 @@ Kernel Config
   - select `Power supply class support`
     - select `SBS Compliant gas gauge`
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
+    - select `ChromeOS EC based peripheral charger` if cros, depending on `CROS_EC`
   - select `Hardware Monitoring support`
     - select `AMD Family 10h+ temperature sensor` if amd
     - select `Dell laptop SMM BIOS hwmon driver` if dell
@@ -588,6 +589,7 @@ Kernel Config
   - select `MMC/SD/SDIO card support` if desired
     - select `Secure Digital Host Controller Interface support` if needed
       - select `SDHCI support on PCI bus` if x86
+      - select `SDHCI support for ACPI enumerated SDHCI controllers` if x86
       - select `SDHCI platform and OF driver helper` if arm
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
     - select `Qualcomm SDHCI Controller Support` if qcom
@@ -628,8 +630,6 @@ Kernel Config
       - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
     - select `Backlight LED support for Chrome OS keyboards`
-    - select `ChromeOS HPS device`
-    - select `ChromeOS Privacy Screen support`
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
     - select `AMD SoC PMC driver` if amd
