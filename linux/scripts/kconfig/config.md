@@ -462,9 +462,9 @@ Kernel Config
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if mtk
     - select `Qualcomm SPMI PMICs` if qcom
-  - select `Voltage and Current Regulator Support` if arm
-    - select `Fixed voltage regulator support`
-    - select `ChromeOS EC regulators` if cros
+  - select `Voltage and Current Regulator Support`
+    - select `Fixed voltage regulator support` if arm
+    - select `ChromeOS EC regulators` if cros and arm
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
@@ -587,6 +587,7 @@ Kernel Config
     - select `USB Role Switch Support`
   - select `MMC/SD/SDIO card support` if desired
     - select `Secure Digital Host Controller Interface support` if needed
+      - select `SDHCI support on PCI bus` if x86
       - select `SDHCI platform and OF driver helper` if arm
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
     - select `Qualcomm SDHCI Controller Support` if qcom
@@ -637,8 +638,8 @@ Kernel Config
     - select `ThinkPad ACPI Laptop Extras` if thinkpad
     - select `Lenovo WMI-based systems management driver` if thinkpad
     - select `Intel PMC Core driver` if intel
+    - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
     - select `Intel HID Event` if intel
-    - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Intel SCU platform driver` if intel
   - select `Common Clock Framework` if arm
     - select `Broadcom BCM2835 clock support` if rpi
