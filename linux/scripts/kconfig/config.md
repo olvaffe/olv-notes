@@ -234,6 +234,7 @@ Kernel Config
     - select `Enable support for persistent memory`
   - select `Support for NMI-like interrupts`
 - select `Boot options`
+  - select `Default kernel command string` if desired
   - deselect `UEFI runtime support`
 - select `Power management options`
   - select `Device power management core functionality`
@@ -254,8 +255,8 @@ Kernel Config
 
 ## Config: Device Drivers
 
-- select `Virtualization`
-  - select `Kernel-based Virtual Machine (KVM) support` if desired
+- select `Virtualization` if desired
+  - select `Kernel-based Virtual Machine (KVM) support`
     - select `KVM for Intel processors support` if intel
     - select `KVM for AMD processors support` if amd
 - select `Networking support`
@@ -417,11 +418,11 @@ Kernel Config
       - select desired drivers
     - if qcom
       - select `Qualcomm core pin controller driver`
+        - select `Qualcomm Technologies Inc SC7180 pin controller driver`
+        - select `Qualcomm Technologies Inc SC7280 pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
-      - select `Qualcomm Technologies Inc SC7180 pin controller driver`
-      - select `Qualcomm Technologies Inc SC7280 pin controller driver`
-      - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
+        - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
   - select `Board level reset or power off` if qcom
     - select `Qualcomm power-on driver`
   - select `Power supply class support`
@@ -446,11 +447,11 @@ Kernel Config
         - select `ACPI INT340X thermal drivers`
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
+    - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
     - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
       - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`, depending on `IIO`
       - select `Qualcomm SPMI PMIC Temperature Alarm`
-    - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `QCOM watchdog` if qcom
@@ -622,8 +623,8 @@ Kernel Config
     - select `Broadcom VideoCore support` if rpi
       - select all
   - select `Platform support for Chrome hardware` if cros
-    - select `ChromeOS specific ACPI extensions`
-    - select `Chrome OS pstore support`
+    - select `ChromeOS specific ACPI extensions` if x86
+    - select `Chrome OS pstore support` if x86
     - select `ChromeOS Embedded Controller`
       - select `ChromeOS Embedded Controller (rpmsg)` if mtk
       - select `ChromeOS Embedded Controller (SPI)`
@@ -647,8 +648,8 @@ Kernel Config
     - select `Clock driver for MediaTek SoC` if mtk
     - select `Support for Qualcomm's clock controllers` if qcom
       - select `RPMh Clock Driver`
-      - select SC7180*
-      - select SC7280*
+      - select `SC7180 *`
+      - select `SC7280 *`
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
@@ -656,6 +657,7 @@ Kernel Config
     - select `Qualcomm APCS IPC driver` if qcom
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
+    - select `Qualcomm APCS IPC driver` if qcom
     - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
