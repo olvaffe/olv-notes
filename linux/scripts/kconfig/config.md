@@ -203,6 +203,7 @@ Kernel Config
   - select `EFI runtime service support` if uefi
   - select `Timer frequency (1000 HZ)`
   - select `Built-in kernel command line` if desired
+    - select `Built-in command line overrides boot loader arguments` if desired
 - select `Power management and ACPI options`
   - select `Device power management core functionality`
     - select `Power Management Debug Support` if debug
@@ -235,6 +236,7 @@ Kernel Config
   - select `Support for NMI-like interrupts`
 - select `Boot options`
   - select `Default kernel command string` if desired
+    - select `Kernel command line type (Always use the default kernel command string)` if desired
   - deselect `UEFI runtime support`
 - select `Power management options`
   - select `Device power management core functionality`
