@@ -280,8 +280,8 @@ Kernel Config
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
-      - select `DesignWare PCI Core Support` if newer qcom
-        - select `Qualcomm PCIe controller`
+      - select `DesignWare-based PCIe controllers` if newer qcom
+        - select `Qualcomm PCIe controller (host mode)`
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
       - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
@@ -423,8 +423,6 @@ Kernel Config
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
-  - select `Board level reset or power off` if qcom
-    - select `Qualcomm power-on driver`
   - select `Power supply class support`
     - select `SBS Compliant gas gauge`
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
@@ -450,7 +448,6 @@ Kernel Config
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
     - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
-      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5`, depending on `IIO`
       - select `Qualcomm SPMI PMIC Temperature Alarm`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
@@ -598,7 +595,7 @@ Kernel Config
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `LED Support`
     - select `LED Class Support`
-    - select `PWM driven LED Support` if needed, depending on `PWM`
+    - select `PWM driven LED Support` if arm, depending on `PWM`
     - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
   - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
@@ -657,7 +654,6 @@ Kernel Config
     - select `Qualcomm APCS IPC driver` if qcom
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
-    - select `Qualcomm APCS IPC driver` if qcom
     - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
@@ -670,7 +666,7 @@ Kernel Config
       - select `Mediatek SCP support` if mtk
       - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if qcom
       - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if qcom
-      - select `Qualcomm sysmon driver` if qcom
+      - select `Qualcomm sysmon driver` if qcom modem
       - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
   - select `Rpmsg drivers` if arm
     - select `MediaTek SCP` if mtk
@@ -688,7 +684,21 @@ Kernel Config
       - select `MediaTek PMIC Wrapper Support`
       - select `MediaTek Smart Voltage Scaling(SVS)`, depending on `NVMEM_MTK_EFUSE`
     - select `Qualcomm SoC drivers` if qcom
-      - select all
+      - select `Qualcomm AOSS Driver`
+      - select `Qualcomm Command DB`
+      - select `QCOM GENI Serial Engine Driver`
+      - select `Qualcomm Technologies, Inc. LLCC driver`
+      - select `Qualcomm Remote Filesystem memory driver`
+      - select `Qualcomm RPM-Hardened (RPMH) Communication`
+      - select `Qualcomm Shared Memory Manager (SMEM)`
+      - select `Qualcomm Shared Memory Point to Point support`
+      - select `Qualcomm socinfo driver`
+      - select `Qualcomm Technologies, Inc. (QTI) Sleep stats driver`
+      - select `Qualcomm APR/GPR Bus (Asynchronous/Generic Packet Router)`
+      - select `QCOM Interconnect Bandwidth Monitor driver`
+  - select `PM Domains` if arm
+    - select `Qualcomm PM Domains` if qcom
+      - select `Qualcomm RPMh Power domain driver`
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
@@ -722,12 +732,14 @@ Kernel Config
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
     - select `TI SYSCON Reset Driver` if mtk
   - select `PHY Subsystem` if arm
-    - select `MediaTek PCIe-PHY Driver` if mtk
-    - select `MediaTek T-PHY Driver` if mtk
-    - select `Qualcomm eDP PHY driver` if qcom
-    - select `Qualcomm QMP PHY Driver` if qcom
-    - select `Qualcomm QUSB2 PHY Driver` if qcom
-    - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if qcom
+    - if mtk
+      - select `MediaTek PCIe-PHY Driver`
+      - select `MediaTek T-PHY Driver`
+    - if qcom
+      - select `Qualcomm eDP PHY driver`
+      - select `Qualcomm QMP PHY Driver`
+      - select `Qualcomm QUSB2 PHY Driver`
+      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface`, depending on `IOSF_MBI`
   - select `Reliability, Availability and Serviceability (RAS) features`
