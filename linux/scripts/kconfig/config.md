@@ -476,9 +476,11 @@ Kernel Config
       - select `Media USB Adapters`, depending on `USB`
         - select `USB Video Class (UVC)`
       - select `Media platform devices` if arm
+        - select `V4L platform devices`
         - select `Memory-to-memory multimedia devices`
         - select `Mediatek Video Codec driver` if mtk, depending on `MTK_IOMMU` and `MTK_SCP`
         - select `MediaTek MDP v3 driver` if mtk, depending on `MTK_IOMMU`, `MTK_SCP`, and `MTK_CMDQ`
+        - select `Qualcomm V4L2 Camera Subsystem driver` if qcom
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
@@ -512,6 +514,8 @@ Kernel Config
         - select `HD Audio PCI`
         - select `Build Realtek HD-audio codec support` if needed
         - select `Build HDMI/DisplayPort HD-audio codec support`
+      - select `USB sound devices`
+        - select `USB Audio/MIDI driver` if needed
       - select `ALSA for SoC audio support`
         - select `AMD Audio Coprocessor - Renoir support` if amd
           - select `AMD Renoir support for DMIC`
@@ -556,6 +560,7 @@ Kernel Config
       - select `Special HID drivers`
         - deselect all but the desired drivers, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
+        - select `Vivaldi Keyboard`
         - select `Logitech devices`
           - select `Logitech receivers full support`, depending on `HIDRAW`
           - select `Logitech HID++ devices support`
