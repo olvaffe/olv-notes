@@ -445,6 +445,7 @@ Kernel Config
       - select `X86 package temperature thermal driver`
       - select `ACPI INT340X thermal drivers`
         - select `ACPI INT340X thermal drivers`
+      - select `Intel PCH Thermal Reporting Driver` if needed
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
