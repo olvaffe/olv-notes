@@ -420,7 +420,18 @@ Chrome OS Firmwares
     `VB2_BOOT_MODE_DEVELOPER`
   - because of `VB2_BOOT_MODE_DEVELOPER`, `vboot_select_and_load_kernel` shows
     `developer_mode_screen`
-  - `ui_developer_mode_boot_internal_action` calls `vboot_load_kernel` to load the kernel from the internal disk
+  - `ui_developer_mode_boot_internal_action` calls `vboot_load_kernel` to load
+    the kernel from the internal disk
+    - it calls `vb2api_load_kernel` from vboot to load the kernel image
+    - internally,
+      - `GptNextKernelEntry` picks the kernel with the highest priority
+        - it only considers partitions with `S1` or `Tn` with `n>0`
+      - `GptUpdateKernelEntry` updates the gpt flags
+        - `GPT_UPDATE_ENTRY_TRY` decrements `T` if `S0`
+          - if `T` reaches 0, set `P0` as well
+        - `GPT_UPDATE_ENTRY_BAD` sets `P0,T0` if `S0`
+        - `GPT_UPDATE_ENTRY_ACTIVE` sets `S1,P2,T0`
+        - `GPT_UPDATE_ENTRY_INVALID` sets `S0,P0,T0`
   - `vboot_boot_kernel` boots the loaded kernel
     - `fill_boot_info` fills in the boot info including the cmdline
     - `commandline_subst` replaces the cmdline

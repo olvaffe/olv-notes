@@ -5,28 +5,52 @@ Intel GPUs
 
 - Nehalem
   - Nehalem, 2008, 45nm, 1st gen, Gen4
+    - `intel_device_info_i965`, etc.
   - Westmere, 2010, 32nm, 1st gen, Gen5
+    - `intel_device_info_ilk`
 - Sandy Bridge
   - Sandy Bridge, 2011, 32nm, 2nd gen, Gen6
+    - `intel_device_info_snb_gt1`, etc.
   - Ivy Bridge, 2012, 22nm, 3th gen, Gen7
+    - `intel_device_info_ivb_gt1`, `intel_device_info_byt`, etc.
 - Haswell
   - Haswell, 2013, 22nm, 4th gen, Gen7.5
+    - `intel_device_info_hsw_gt1`, etc.
   - Broadwell, 2014, 14nm, 5th gen, Gen8
+    - `intel_device_info_bdw_gt1`, `intel_device_info_chv`, etc.
 - Skylake
   - Skylake, 2015, 14nm, 6th gen, Gen9
+    - `intel_device_info_skl_gt1`, `intel_device_info_bxt`, etc.
   - Kaby Lake, 2016, 14nm, 7th gen, Gen9.5
+    - `intel_device_info_kbl_gt1`, `intel_device_info_glk`, etc.
   - Coffee Lake, 2017, 14nm, 8th/9th gen, Gen9.5
+    - `intel_device_info_cfl_gt1`
   - (SKIPPED) Cannon Lake, 2018, 10nm, 9th gen, Gen10
   - Comet Lake, 2019, 14nm, 10th gen, Gen9.5
 - Ice Lake
   - Ice Lake, 2019, 10nm, 10th gen, Gen11
-- Xe
+    - `intel_device_info_icl_gt2`, `intel_device_info_ehl_4x8`, etc.
+- Xe-LP
   - Tiger Lake, 2020, Intel 7 (10nm), 11th gen, Gen12
+    - `intel_device_info_tgl_gt1`, `intel_device_info_rkl_gt05`, etc.
+  - Xe (DG1), 2021, Intel 7, Gen12
+    - `intel_device_info_dg1`, etc.
   - Alder Lake, 2021, Intel 7, 12th gen, Gen12
+    - `intel_device_info_adl_gt05`, etc.
   - Raptor Lake, 2022, Intel 7, 13th gen, Gen12
-  - DG1 (Xe), 2021, Intel 7, Gen12
-  - DG2 (Arc), 2022, 6nm, Gen12.5
+    - `intel_device_info_rpl`, etc.
+- Xe-HPG
+  - Arc (DG2, Alchemist), 2022, 6nm, Gen12.5
+    - `intel_device_info_dg2_g10`, etc.
   - Meteor Lake, 2023, Intel 4, 14th gen, Gen12.5
+    - `intel_device_info_mtl_u`, etc.
+- Xe2
+  - Arc (DG3, Battlemage)
+  - Lunar Lake
+- Xe3
+  - Arc (DG4, Celestial)
+- Xe4
+  - Arc (DG5, Druid)
 
 ## Ice Lake
 
