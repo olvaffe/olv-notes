@@ -1,38 +1,102 @@
-ACPI
-====
+Kernel ACPI
+===========
 
-## Bus Scan
+## Overview
 
-- `acpi_init` calls `acpi_scan_init` which calls
-  `acpi_bus_scan(ACPI_ROOT_OBJECT)`
-- `acpi_bus_scan` adds ACPI device node objects under a given handle
-  - `acpi_bus_type_and_status` returns the type and status of the given handle
-  - `acpi_add_single_object` creates and adds an `acpi_device` for the handle
-    - `acpi_init_device_object` initializes the `acpi_device`
-      - `dev->parent` is set to `acpi_bus_get_parent`, which returns NULL for
-      	`ACPI_ROOT_OBJECT`
-      - `dev->pnp` is set up by `acpi_set_pnp_ids`, which has
-      	`ACPI_SYSTEM_HID` (LNXSYSTM) for `ACPI_ROOT_OBJECT`
-    - `acpi_device_add` adds the `acpi_device`
-      - device name is set to `acpi_device_hid` which returns the first name
-      	of `device->pnp`
-  - `acpi_walk_namespace` recursively walks the namspace and adds all
-    `acpi_device` under `ACPI_ROOT_OBJECT`
-  - `acpi_bus_attach` recursively calls `acpi_scan_attach_handler` on each
-    `acpi_device`
-    - this calls the attach callback of the matching `acpi_scan_handler`s
-    - `acpi_default_enumeration` calls `acpi_create_platform_device` to create
-      a corresponding `platform_device`
-- before scanning the root object, scan handlers are registered with
-  `acpi_scan_add_handler`
-  - `lpss_handler` matches LPSS devices.  `acpi_lpss_create_device` calls
-    `acpi_create_platform_device` to create a `platform_device` for the
-    `acpi_device`
-  - `pci_root_handler` matches PCI host controllers.  `acpi_pci_root_add`
-    calls `pci_acpi_scan_root` to createa a `pci_bus`.
-- there are `acpi_driver`s that are registered to acpi bus to drive
-  `acpi_device` directly using `acpi_bus_register_driver`
-- but more commonly, `acpi_scan_handler` is used to set up devices from
-  `acpi_device`s
-  - e.g., a `platform_device` can be set up from an `acpi_device`, and is
-    driven driven by a `platform_driver`
+- <https://www.kernel.org/doc/html/latest/firmware-guide/acpi/index.html>
+- `osl.c` implements `acpiosxf.h`, an abstraction interface acpica uses to
+  communicate with the os
+- `osi.c` manipulates the `_OSI` table
+  - bios has a built-in `_OSI` table for the supported operating systems
+  - `acpi_osi_setup_late` calls `acpi_install_interface` and
+    `acpi_remove_interface` to update the table
+    - e.g., removes `_OSI(Windows 2012)` to disable some paths in acpi
+
+## ACPICA
+
+- the repo is at <https://github.com/acpica/acpica>
+  - `generate/linux/linuxize.sh` copies a subset of acpica files to the kernel
+    and applies a coding style transformation
+  - looking at `linux_dirs` in `generate/linux/libacpica.sh`, they are copied
+    to these directories
+    - `drivers/acpi/acpica`
+    - `include/acpi`
+    - `include/acpi/platform`
+    - `tools/power/acpi/common`
+    - `tools/power/acpi/os_specific/service_layers`
+    - `tools/power/acpi/tools/acpidump`
+- `include/acpi/acpi.h` is the master header file for acpica
+  - other than types and macros, these sub-headers also declare functions
+  - `platform/aclinuxex.h` declares `acpi_os_*`
+    - they appear to be an os abstraction layer for acpica
+    - acpica calls into kernel using this layer
+  - `acpiosxf.h` declares `acpi_os_*`
+    - they appear to be an os abstraction layer for userspace tools
+    - acpica userspace tools calls into this layer, wher
+      `tools/power/acpi/os_specific/service_layers` provides an impl
+  - `acpixf.h` declares `acpi_*`
+    - they are the interface defined by acpica
+    - kernel calls into acpica using this interface
+    - acpica uses this interface internally as well
+- `acpixf.h` interface
+  - initialization, such as
+    - `acpi_initialize_tables`
+    - `acpi_initialize_subsystem`
+    - `acpi_enable_subsystem`
+    - `acpi_initialize_objects`
+  - misc global, such as
+    - `acpi_enable`
+    - `acpi_disable`
+    - `acpi_install_interface`
+  - table load/unload, such as
+    - `acpi_install_table`
+    - `acpi_load_table`
+    - `acpi_load_tables`
+  - table manipulation, such as
+    - `acpi_reallocate_root_table`
+    - `acpi_get_table_header`
+    - `acpi_get_table`
+  - namespace and name, such as
+    - `acpi_walk_namespace`
+    - `acpi_get_devices`
+    - `acpi_get_name`
+    - `acpi_get_handle`
+  - object manipulation and enumeration, such as
+    - `acpi_evaluate_object`
+    - `acpi_get_object_info`
+    - `acpi_get_next_object`
+    - `acpi_get_type`
+    - `acpi_get_parent`
+  - handler, such as
+    - `acpi_install_global_event_handler`
+    - `acpi_install_fixed_event_handler`
+    - `acpi_install_gpe_handler`
+    - `acpi_install_notify_handler`
+    - `acpi_install_address_space_handler`
+    - `acpi_install_interface_handler`
+  - lock, such as
+    - `acpi_acquire_global_lock`
+    - `acpi_acquire_mutex`
+  - fixed event, such as
+    - `acpi_enable_event`
+    - `acpi_disable_event`
+    - `acpi_clear_event`
+    - `acpi_get_event_status`
+  - general purpose event (GPE), such as
+    - `acpi_enable_gpe`
+    - `acpi_disable_gpe`
+    - `acpi_get_gpe_status`
+  - resource, such as
+    - `acpi_walk_resources`
+  - hw (acpi device)
+    - `acpi_read`
+    - `acpi_write`
+  - sleep/wake
+    - `acpi_enter_sleep_state`
+    - `acpi_leave_sleep_state`
+  - logging
+    - `acpi_error` and `ACPI_ERROR`
+    - `acpi_warning` and `ACPI_WARNING`
+    - `acpi_info` and `ACPI_INFO`
+    - `acpi_debug_print` and `ACPI_DEBUG_PRINT`
+    - these are mainly called from acpica into the kernel
