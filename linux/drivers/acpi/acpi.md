@@ -61,6 +61,7 @@ Kernel ACPI
     - `acpi_get_devices`
     - `acpi_get_name`
     - `acpi_get_handle`
+    - `acpi_attach_data`
   - object manipulation and enumeration, such as
     - `acpi_evaluate_object`
     - `acpi_get_object_info`

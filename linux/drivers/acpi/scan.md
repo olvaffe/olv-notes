@@ -1,6 +1,29 @@
 Kernel ACPI Scan
 ================
 
+## `acpi_device`
+
+- `acpi_add_single_object` creates an `acpi_device` for an `acpi_handle`
+  - `acpi_init_device_object` initializes the struct
+    - `device->dev.bus` is set to `acpi_bus_type`
+    - `fwnode_init` initializes `device->fwnode` with
+      `acpi_device_fwnode_ops`
+    - `acpi_set_pnp_ids` adds various ids to `device->pnp`
+      - if it is `ACPI_ROOT_OBJECT`, the hid is `ACPI_SYSTEM_HID` (`LNXSYSTM`)
+      - if it is a device, it invokes `acpi_get_object_info`
+    - `acpi_init_properties`
+  - if the type is a device or a processor, `acpi_scan_init_status`
+    initializes the status
+    - `acpi_bus_get_status_handle` evalutes `_STA` of the `acpi_handle`
+    - `acpi_set_device_status` saves the status in `acpi_device`
+  - `acpi_bus_get_power_flags` initializes the power flags
+    - it checks/evaluates `_PS0`, etc.
+  - `acpi_bus_get_wakeup_device_flags` initializes the wakeup flags
+    - it checks/evaluates `_PRW`, etc.
+  - `acpi_tie_acpi_dev` calls `acpi_attach_data` to associate the
+    `acpi_device` with the `acpi_handle`
+  - `acpi_device_add` adds the device to the acpi bus
+
 ## Bus Scan
 
 - `acpi_init` calls `acpi_scan_init` which calls
@@ -36,61 +59,8 @@ Kernel ACPI Scan
   `acpi_device`s
   - e.g., a `platform_device` can be set up from an `acpi_device`, and is
     driven driven by a `platform_driver`
-
-## `/sys/devices/LNXSYSTM` on Dell Precision 5520
-
 - these are ACPI devices and kernel drivers match for `modalias`
   - some drivers do `acpi_scan_add_handler` to create devices around `acpi_device`
   - some drivers drive the `acpi_dvice` directly
   - acpi core creates a `platform_device` for each `ACPI_TYPE_DEVICE` in
     `acpi_default_enumeration`
-- LNXCPU:0[0-7], modalias LNXCPU, `CONFIG_ACPI_PROCESSOR`
-- LNXPWRBN:00, modalias LNXPWRBN, `CONFIG_ACPI_BUTTON`
-- LNXSYBUS:00, modalias LNXSYBUS
-  - ACPI0003:00, modalias ACPI0003, `CONFIG_ACPI_AC`
-  - ACPI000C:00, modalias ACPI000C, `CONFIG_ACPI_PROCESSOR_AGGREGATOR`
-  - INT33A1:00, modalias INT33A1:PNP0D80, `CONFIG_INTEL_PMC_CORE`:`CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT`
-  - INT33D5:00, modalias INT33D5, `CONFIG_INTEL_HID_EVENT`
-  - INT3400:00, modalias INT3400, `CONFIG_ACPI` and `CONFIG_INT340X_THERMAL`
-  - INT340E:00, modalias INT340E:PNP0C02, `CONFIG_PCI_MMCONFIG`
-  - MSFT0101:00, modalias MSFT0101, `CONFIG_TCG_CRB` and `CONFIG_TCG_TIS`
-  - PNP0A08:00, modalias PNP0A08:PNP0A03, `CONFIG_PCI`
-    - INT3403:06, modalias INT3403, `CONFIG_ACPI` and `CONFIG_INT340X_THERMAL`
-    - LNXPOWER:0[0-2], modalias LNXPOWER
-    - LNXVIDEO:00, modalias LNXVIDEO, `CONFIG_ACPI_VIDEO`
-    - PNP0C02:0[2-5], modalias PNP0C02, `CONFIG_PCI_MMCONFIG`
-    - PNP0C14:0[0-1], modalias PNP0C14, `CONFIG_ACPI_WMI`
-    - device:0a/LNXVIDEO:01, modalias LNXVIDEO, `CONFIG_ACPI_VIDEO`
-    - device:0f/DLL07BF:00, modalias DLL07BF:PNP0F13
-    - device:0f/DLLK07BF:00, modalias DLLK07BF:PNP0303, `CONFIG_ACPI`
-    - device:0f/INT0800:00, modalias INT0800
-    - device:0f/INT3F0D:00, modalias INT3F0D:PNP0C02, `CONFIG_PCI_MMCONFIG`
-    - device:0f/PNP0000:00, modalias PNP0000
-    - device:0f/PNP0100:00, modalias PNP0100
-    - device:0f/PNP0103:00, modalias PNP0103, `CONFIG_HPET`
-    - device:0f/PNP0B00:00, modalias PNP0B00, `CONFIG_X86`
-    - device:0f/PNP0C02:0[0-1], modalias PNP0C02, `CONFIG_PCI_MMCONFIG`
-    - device:0f/PNP0C04:00, modalias PNP0C04
-    - device:0f/PNP0C09:00, modalias PNP0C09, `CONFIG_ACPI`
-      - INT3403:0[0-5], modalias INT3403, `CONFIG_ACPI` and `CONFIG_INT340X_THERMAL`
-    - device:../device:../LNXPOWER:.. (total 20), modalias LNXPOWER
-    - device:79/DLL07BF:01, modalias DLL07BF:PNP0C50, `CONFIG_I2C_HID`
-  - PNP0C0A:00, modalias PNP0C0A, `CONFIG_ACPI_BATTERY`
-  - PNP0C0C:00, modalias PNP0C0C, `CONFIG_ACPI_BUTTON`
-  - PNP0C0D:00, modalias PNP0C0D, `CONFIG_ACPI_BUTTON`
-  - PNP0C0E:00, modalias PNP0C0E, `CONFIG_ACPI_BUTTON`
-  - PNP0C0F:0[0-7], modalias PNP0C0F, `CONFIG_PCI`
-  - PNP0C14:0[2-3], modalias PNP0C14, `CONFIG_ACPI_WMI`
-- LNXSYBUS:01, modalias LNXSYBUS
-  - LNXTHERM:00, modalias LNXTHERM, `CONFIG_ACPI_THERMAL`
-
-## Finding Drivers
-
-- `find /sys/devices -name driver | xargs readlink -e | sort | uniq`
-  - this lists all drivers that are bound to some devices
-  - no unused driver
-  - modules that discover and create the devices but are not themselves
-    drivers are not included
-- it is easy to find module names from here
-  - some drivers does not have `module` links because they are built-in and
-    they fail to set `device_driver::mod_name`

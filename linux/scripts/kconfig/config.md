@@ -781,3 +781,14 @@ Kernel Config
             `builtin_fw_amdgpu_yellow_carp`
   - brya: `builtin_fw_guc_adl`, `builtin_fw_huc_adl`,
           `builtin_fw_x86_adl_ucode`, and `builtin_fw_x86_rpl_ucode`
+
+## Finding Drivers
+
+- `find /sys/devices -name driver | xargs readlink -e | sort | uniq`
+  - this lists all drivers that are bound to some devices
+  - no unused driver
+  - modules that discover and create the devices but are not themselves
+    drivers are not included
+- it is easy to find module names from here
+  - some drivers does not have `module` links because they are built-in and
+    they fail to set `device_driver::mod_name`
