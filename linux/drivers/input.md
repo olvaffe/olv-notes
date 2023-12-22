@@ -59,6 +59,32 @@ Input subsystem
 
 - invokes `evdev_grab`
 
+## atkbd and psmouse
+
+- serio
+  - `serio_init` registers `serio_bus`
+  - when a `serio` port and a `serio_driver` match, `serio_connect_driver`
+    connects the port to the driver
+- i8042
+  - `i8042_init` registers both `i8042` platform driver and device
+    - `i8042_platform_init` also registers `i8042 kbd` and `i8042 aux` pnp
+      drivers, but they are usually unused
+    - `i8042_controller_check` performs pio to check the controller
+  - `i8042_register_ports` calls `serio_register_port` to register the kbd
+    and aux ports, if exists
+- atkbd
+  - `atkbd_init` calls `serio_register_driver` to register `atkbd_drv`
+  - `atkbd_connect` connects to a `serio` port and calls
+    `input_allocate_device`/`input_register_device` to alloc/register an
+    `input_dev`
+  - it speaks the ps2 protocol
+    - `ps2_command` to send a cmd to the keyboard
+    - `atkbd_receive_byte` to handle data from the keyboard
+    - the ps2 helper uses the `i8042` serio port to communicate with the hw
+- psmouse
+  - `psmouse_init` calls `serio_register_driver` to register `psmouse_drv`
+  - the rest is similar to atkbd
+
 ## gamepad
 
 - a cheap gamepad normally has
