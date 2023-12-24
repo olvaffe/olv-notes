@@ -229,24 +229,49 @@ Kernel ALSA
 
 ## ASoC: AMD
 
-- all the soc pci drivers match `PCI_DEVICE(PCI_VENDOR_ID_AMD, 0x15e2)`
-  - `git grep module_pci_driver sound/soc/{amd,sof/amd}` lists all of them
-  - `snd_amd_acp_find_config` determines which driver to use
-    - if chromebook, return `FLAG_AMD_SOF`
-    - else, return 0
-    - `FLAG_AMD_LEGACY` is never set
-  - these drivers require `FLAG_AMD_SOF`
-    - `snd_sof_pci_amd_rmb_driver`
-    - `snd_sof_pci_amd_rn_driver`
-  - these drivers require `FLAG_AMD_LEGACY`
-    - `snd_amd_acp_pci_driver`
-  - these drivers require 0
-    - `acp3x_driver` is for rev 0x00
-    - `rn_acp_driver` is for rev 0x01
-    - `acp5x_driver` is for rev 0x50
-    - `yc_acp6x_driver` is for rev 0x60 and 0x6f
-    - `rpl_acp6x_driver` is for rev 0x62
-    - `ps_acp63_driver` is for rev 0x63
+- AMD Audio Coprocessor (ACP)
+  - a pci device with `PCI_DEVICE(PCI_VENDOR_ID_AMD, ACP_PCI_DEV_ID)` (0x15e2)
+  - different revisions require different drivers
+    - raven has rev 0x00 which is driven by `acp3x_driver`
+    - renoir has rev 0x01 which is driven by `rn_acp_driver`
+    - vangogh has rev 0x50 which is driven by `acp5x_driver`
+    - yellow carp (rembrandt) has rev 0x60 or 0x6f which is driven by
+      `yc_acp6x_driver`
+    - raphael has rev 0x62 which is driven by `rpl_acp6x_driver`
+    - pink sardine (phoenix) has rev 0x63 which is driven by `ps_acp63_driver`
+  - even the same revision can have different firmwares and require different
+    drivers
+    - `snd_amd_acp_find_config` can return
+      - `FLAG_AMD_SOF`, which means acp uses the sof firmware
+        - renoir is driven by `snd_sof_pci_amd_rn_driver` instead
+        - vangogh is driven by `snd_sof_pci_amd_vgh_driver` instead
+        - rembrandt is driven by `snd_sof_pci_amd_rmb_driver` instead
+        - phoenix is driven by `snd_sof_pci_amd_acp63_driver` instead
+      - `FLAG_AMD_LEGACY`, which means acp uses the legacy firmware(?)
+        - all supported revisions are driven by `snd_amd_acp_pci_driver`
+          instead, which creates different platform devices for different
+          revisions
+        - renoir is driven by `renoir_driver` instead
+        - rembrandt is driven by `rembrandt_driver` instead
+        - phoenix  is driven by `acp63_driver` instead
+        - revision 0x70 is driven by `acp70_driver` instead
+- how different drivers work
+  - the default drivers usually power on acp, detect the config, and register
+    config-dependent platform devices, and let platform drivers take over
+    - for example, on rembrandt, `acp6x_mach_driver` and others take over
+  - the `FLAG_AMD_SOF` drivers usually call the generic `sof_pci_probe` with
+    driver-dependent `sof_dev_desc`
+    - for example, on rembrandt, `snd_sof_pci_amd_rmb_driver` calls
+      `sof_pci_probe` with `snd_soc_acpi_amd_rmb_sof_machines`
+    - if `RTL5682` is selected, `sof_pci_probe` creates `rt5682s-hs-rt1019`
+      platform device which binds to `sof_mach` platform driver
+  - the `FLAG_AMD_LEGACY` drivers usually register platform devices and let
+    platform drivers take over
+    - for example, on rembrandt, `rembrandt_driver` calls `acp_machine_select`
+      with `snd_soc_acpi_amd_rmb_acp_machines`
+    - if `RTL5682` is selected, `acp_machine_select` creates
+      `rmb-rt5682s-rt1019` platform device which binds to `acp_mach` platform
+      driver
 - on my renoir,
   - `snd_hda_intel` binds to the hda device
     - `CONFIG_SND_HDA_INTEL`
