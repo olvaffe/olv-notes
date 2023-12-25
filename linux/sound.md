@@ -194,15 +194,29 @@ Kernel ALSA
     - `snd_sof_pci_intel_mtl_driver` for meteor lake
     - `snd_sof_pci_intel_lnl_driver` for lunar lake
 - how different dirvers work
-  - using comet lake as an example
+  - using apollo lake  / `INT343A` as an example
   - `skl_driver`
-    - `skl_probe` calls `skl_find_machine` to find the machine
+    - `skl_probe` calls `skl_find_machine` with
+      `snd_soc_acpi_intel_bxt_machines` to find the machine
       - `snd_soc_acpi_find_machine` is used to match by acpi id
-    - `skl_machine_device_register` creates the platform device specified by
-      the machine
+      - machine `INT343A` is matched
+    - `skl_machine_device_register` creates the platform device
+      `bxt_alc298s_i2s`
+    - `broxton_audio` drives the platform device
   - `avs_pci_driver`
-    - `avs_register_all_boards`
-  - `snd_sof_pci_intel_cnl_driver`
+    - `avs_register_all_boards` calls `avs_register_i2s_boards` with
+      `avs_apl_i2s_machines` to register the machine
+      - machine `INT343A` is registered
+    - `avs_register_i2s_board` creates the platform device `avs_rt298`
+    - `avs_rt298_driver` drives the platform device
+  - `snd_sof_pci_intel_apl_driver`
+    - `hda_pci_intel_probe` calls `sof_pci_probe` with `bxt_desc` as the
+      driver data
+      - `hda_machine_select` calls `snd_soc_acpi_find_machine` to match by
+        acpi id
+      - machine `INT343A` is matched
+    - `sof_machine_register` creates the platform device `bxt_alc298s_i2s`
+    - `broxton_audio` drives the platform device
 - my tigerlake has devid 0xa0c8
   - `azx_driver` binds, probes, and bails because `snd_intel_dsp_driver_probe`
     picks `SND_INTEL_DSP_DRIVER_SOF`
