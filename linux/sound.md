@@ -163,16 +163,28 @@ Kernel ALSA
       - ACE 2.0: lunar lake
   - intel requires the dsp firmware to be signed
     - unless it's chromebook
-- `snd_intel_dsp_driver_probe` determines which driver to use
-  - `SND_INTEL_DSP_DRIVER_ANY` means any driver
-  - `SND_INTEL_DSP_DRIVER_LEGACY` means the original `azx_driver`
-  - `SND_INTEL_DSP_DRIVER_SST` means
+- there are 3 sets of drivers
+  - `snd_intel_dsp_driver_probe` determines which driver to use
+    - `SND_INTEL_DSP_DRIVER_ANY` means any driver
+  - `SND_INTEL_DSP_DRIVER_LEGACY` means the original non-asoc `azx_driver`
+    - this is used unless the platform uses dmic/i2s/soundwire
+  - `SND_INTEL_DSP_DRIVER_SST` means the SST drivers
+    - this is used with closed-source firmware
     - `sst_acpi_driver` for bay trail, cherry trail
+      - this is unmaintained and sof firmware/driver is recommended instead
     - `catpt_acpi_driver` for braswell, broadwell
-    - `skl_driver` for skylake to comet lake on closed-source firmware
-  - `SND_INTEL_DSP_DRIVER_AVS` is a rewrite of `skl_driver`
-  - `SND_INTEL_DSP_DRIVER_SOF` means any adsp on SoF firmware
+      - this is active
+    - `kmb_plat_dai_driver` for keembay
+      - this is active
+    - `skl_driver` for skylake to comet lake
+      - this is active but is being replaced by the AVS driver
+  - `SND_INTEL_DSP_DRIVER_AVS` is a rewrite of SST `skl_driver`
+    - `avs_pci_driver` for skylake to comet lake
+      - this is active and will replace `sky_driver`
+  - `SND_INTEL_DSP_DRIVER_SOF` means the SOF drivers
+    - this is used with SOF firmware
     - `snd_sof_acpi_intel_byt_driver` for bay trail, cherry trail
+    - `snd_sof_pci_intel_tng_driver` for merrifield
     - `snd_sof_acpi_intel_bdw_driver` for broadwell
     - `snd_sof_pci_intel_skl_driver` for skylake, kaby lake
     - `snd_sof_pci_intel_apl_driver` for apollo lake, gemini lake
@@ -180,6 +192,17 @@ Kernel ALSA
     - `snd_sof_pci_intel_icl_driver` for ice lake
     - `snd_sof_pci_intel_tgl_driver` for tiger lake, alder lake, raptor lake
     - `snd_sof_pci_intel_mtl_driver` for meteor lake
+    - `snd_sof_pci_intel_lnl_driver` for lunar lake
+- how different dirvers work
+  - using comet lake as an example
+  - `skl_driver`
+    - `skl_probe` calls `skl_find_machine` to find the machine
+      - `snd_soc_acpi_find_machine` is used to match by acpi id
+    - `skl_machine_device_register` creates the platform device specified by
+      the machine
+  - `avs_pci_driver`
+    - `avs_register_all_boards`
+  - `snd_sof_pci_intel_cnl_driver`
 - my tigerlake has devid 0xa0c8
   - `azx_driver` binds, probes, and bails because `snd_intel_dsp_driver_probe`
     picks `SND_INTEL_DSP_DRIVER_SOF`
