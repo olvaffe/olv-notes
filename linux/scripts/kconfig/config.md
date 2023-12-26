@@ -362,7 +362,6 @@ Kernel Config
       - select `Keyboards`
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
-        - deselect `PS/2 mouse`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
       - select `Touchscreens`
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
@@ -464,9 +463,9 @@ Kernel Config
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if mtk
     - select `Qualcomm SPMI PMICs` if qcom
-  - select `Voltage and Current Regulator Support`
-    - select `Fixed voltage regulator support` if arm
-    - select `ChromeOS EC regulators` if cros and arm
+  - select `Voltage and Current Regulator Support` if arm
+    - select `Fixed voltage regulator support`
+    - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
@@ -551,12 +550,10 @@ Kernel Config
               - select `SOF support for HDAudio codecs`
           - select `SOF support for MTK audio DSPs` if mtk
             - select `SOF support for MT8195 audio DSP`
-        - select `CODEC drivers`
-          - select `Generic Digital Microphone CODEC` if x86
-          - if qcom
-            - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
-            - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
-            - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
+        - select `CODEC drivers` if qcom
+          - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
+          - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
   - select `HID bus support`
     - select `HID bus core support`
       - select `Battery level reporting for HID devices`
