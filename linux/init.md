@@ -58,10 +58,18 @@ Kernel init
   - on x86, `x86_64_start_kernel` calls `copy_bootdata`
     - it initializes `boot_params` and copies the cmdline to
       `boot_command_line`
+    - later in `setup_arch`, if there is a built-in cmdline
+      (`CONFIG_CMDLINE`), the built-in cmdline either replaces the boot
+      cmdline or gets prepended
   - on arm64, `setup_arch` calls `setup_machine_fdt` which calls
     `early_init_dt_scan`
     - `early_init_dt_scan_chosen` copies `bootargs` from dt to
       `boot_command_line`
+    - if there is a built-in cmdline (`CONFIG_CMDLINE`), the built-in cmdline
+      either
+      - replaces the boot cmdline if `CONFIG_CMDLINE_FORCE`,
+      - is ignored if there is a boot cmdline, or
+      - is used if there is no boot cmdline
 - arch calls `parse_early_param` to parse `early_param`
   - `__setup_param` defines an entry in `.init.setup` section
   - `INIT_SETUP` puts them between `__setup_start` and `__setup_end`
