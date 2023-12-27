@@ -854,6 +854,8 @@ Kernel Config
     - `CONFIG_FUSE_FS=y`
   - `u2fd` requires
     - `CONFIG_UHID=y`
+  - `kmsvnc` requires
+    - `CONFIG_INPUT_UINPUT=y`
   - mmc requires
     - `CONFIG_MMC_BLOCK_MINORS=16`
 
