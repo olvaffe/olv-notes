@@ -819,6 +819,8 @@ Kernel Config
     - `CONFIG_SECURITY_SELINUX=y`
     - `CONFIG_LSM="selinux"`
 - `shill` requires
+  - `CONFIG_IP_ADVANCED_ROUTER=y`
+  - `CONFIG_IP_MULTIPLE_TABLES=y`
   - `CONFIG_IPV6_MULTIPLE_TABLES=y`
   - `CONFIG_CFG80211=y`
 - `session_manager` requires
