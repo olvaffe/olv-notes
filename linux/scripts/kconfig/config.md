@@ -837,6 +837,7 @@ Kernel Config
   - `boot-update-firmware.conf` blocks `ui.conf` for 15s unless
     - `CONFIG_I2C_CHARDEV=y`
     - this is because of `chromeos-touch-update.sh`
+      - funny that fw update uses `CONFIG_HIDRAW=y` instead
   - `bluetoothd` requires
     - `CONFIG_BT=y`
   - `conntrackd` requires
