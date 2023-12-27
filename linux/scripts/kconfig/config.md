@@ -767,9 +767,9 @@ Kernel Config
         - select `Cryptographic Coprocessor device`
           - deselect `Encryption and hashing offload support` if raven (boot issue)
 
-## Config: Built-in Firmwares
+## Config: cros
 
-- chromebooks
+- chromebooks built-in firmwares
   - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/eclass/cros-kernel2.eclass>
   - grunt: `builtin_fw_amdgpu_stoney`
   - zork: `builtin_fw_amdgpu_picasso` and `builtin_fw_amdgpu_raven2`
@@ -779,6 +779,76 @@ Kernel Config
             `builtin_fw_amdgpu_yellow_carp`
   - brya: `builtin_fw_guc_adl`, `builtin_fw_huc_adl`,
           `builtin_fw_x86_adl_ucode`, and `builtin_fw_x86_rpl_ucode`
+- cros userspace
+  - pid 1 is upstart with configs in `/etc/init`
+  - the first service is `pre-startup.conf`
+    - it triggers `startup.conf` and `udev.conf`
+    - `startup.conf` triggers `boot-services.conf` which triggers `shill.conf`
+      and `ui.conf`
+    - `udev.conf` triggers `udev-boot.conf` which triggers
+      `udev-trigger-early.conf` which triggers `boot-splash.conf`
+  - `startup.conf` starts `chromeos_startup`
+    - this mounts filesystems and restores selinux contexts among other things
+  - `boot-splash.conf` starts `frecon`
+    - pts/0 is for boot splash
+    - pts/1 to pts/3  are for agetty
+  - `shill.conf` starts `shill`
+    - this is the network manager
+  - `ui.conf` starts `session_manager`
+    - this replaces the boot splash
+- `chromeos_startup` requires
+  - `cros_debug` in `CONFIG_CMDLINE` for developer mode
+  - dm
+    - `CONFIG_MD=y`
+    - `CONFIG_BLK_DEV_DM=y`
+    - `CONFIG_DM_CRYPT=y`
+    - `CONFIG_DM_THIN_PROVISIONING=y`
+    - `CONFIG_DM_VERITY=y`
+    - `CONFIG_CRYPTO_AES_NI_INTEL=y`
+  - filesystems
+    - `CONFIG_EXT4_FS_SECURITY=y`
+    - `CONFIG_SQUASHFS=y`
+    - `CONFIG_SQUASHFS_XATTR=y`
+    - `CONFIG_SQUASHFS_LZ4=y`
+    - `CONFIG_SQUASHFS_LZO=y`
+    - `CONFIG_SQUASHFS_ZSTD=y`
+  - selinux
+    - `CONFIG_AUDIT=y`
+    - `CONFIG_SECURITY=y`
+    - `CONFIG_SECURITY_NETWORK=y`
+    - `CONFIG_SECURITY_SELINUX=y`
+    - `CONFIG_LSM="selinux"`
+- `shill` requires
+  - `CONFIG_IPV6_MULTIPLE_TABLES=y`
+  - `CONFIG_CFG80211=y`
+- `session_manager` requires
+  - the pre-start script requires cgroups
+    - `CONFIG_BLK_CGROUP=y`
+    - `CONFIG_CFS_BANDWIDTH=y`
+    - `CONFIG_CGROUP_FREEZER=y`
+    - `CONFIG_CPUSETS=y`
+    - `CONFIG_CGROUP_DEVICE=y`
+    - `CONFIG_CGROUP_CPUACCT=y`
+    - `CONFIG_CGROUP_BPF=y`
+  - cryptohome requires quota
+    - `CONFIG_QUOTA=y`
+    - `CONFIG_QFMT_V2=y`
+- random requirements
+  - `bluetoothd` requires
+    - `CONFIG_BT=y`
+  - `conntrackd` requires
+    - `CONFIG_NETFILTER=y`
+  - `cros-camera` requires a camera
+    - `CONFIG_MEDIA_SUPPORT=y`
+    - `CONFIG_MEDIA_CAMERA_SUPPORT=y`
+    - `CONFIG_MEDIA_USB_SUPPORT=y`
+    - `CONFIG_USB_VIDEO_CLASS=y`
+  - `memd` requires
+    - `CONFIG_LOW_MEM_NOTIFY=y` (downstream only)
+  - `cros-disks` requires
+    - `CONFIG_FUSE_FS=y`
+  - mmc requires
+    - `CONFIG_MMC_BLOCK_MINORS=16`
 
 ## Finding Drivers
 
