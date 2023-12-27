@@ -834,10 +834,14 @@ Kernel Config
     - `CONFIG_QUOTA=y`
     - `CONFIG_QFMT_V2=y`
 - random requirements
+  - `boot-update-firmware.conf` blocks `ui.conf` for 15s unless
+    - `CONFIG_I2C_CHARDEV=y`
+    - this is because of `chromeos-touch-update.sh`
   - `bluetoothd` requires
     - `CONFIG_BT=y`
   - `conntrackd` requires
     - `CONFIG_NETFILTER=y`
+    - and many more
   - `cros-camera` requires a camera
     - `CONFIG_MEDIA_SUPPORT=y`
     - `CONFIG_MEDIA_CAMERA_SUPPORT=y`
@@ -847,6 +851,8 @@ Kernel Config
     - `CONFIG_LOW_MEM_NOTIFY=y` (downstream only)
   - `cros-disks` requires
     - `CONFIG_FUSE_FS=y`
+  - `u2fd` requires
+    - `CONFIG_UHID=y`
   - mmc requires
     - `CONFIG_MMC_BLOCK_MINORS=16`
 
