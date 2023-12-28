@@ -238,6 +238,43 @@ dma-buf
 
 - create a dma-buf that wraps ranges of memfds from userspace
 
+## producers and consumers
+
+- producers call `dma_buf_export` to export their buffers as dma-bufs
+  - `drivers/accel/habanalabs`
+    - ioctl `HL_MEM_OP_EXPORT_DMABUF_FD`
+  - `drivers/dma-buf/heaps`
+    - ioctl `DMA_HEAP_IOCTL_ALLOC`
+  - `drivers/dma-buf/udmabuf`
+    - ioctl `UDMABUF_CREATE`
+  - `drivers/gpu/drm`
+    - ioctl `DRM_IOCTL_PRIME_HANDLE_TO_FD`
+  - `drivers/media/common/videobuf2`
+    - ioctl `VIDIOC_EXPBUF`
+    - ioctl `DMX_EXPBUF`
+  - `drivers/misc/fastrpc`
+    - ioctl `FASTRPC_IOCTL_ALLOC_DMA_BUFF`
+  - `drivers/virtio/virtio_dma_buf`
+    - used by drm/virtio
+  - `drivers/xen`
+    - ioctl `IOCTL_GNTDEV_DMABUF_EXP_FROM_REFS`
+- consumers call `dma_buf_attach` to add themselves to the attachment
+  lists of dma-bufs
+  - `drivers/accel/ivpu` and `drivers/accel/qaic`
+    - they are just drm drivers; see below
+  - `drivers/gpu/drm`
+    - ioctl `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+  - `drivers/media/common/videobuf2`
+    - ioctl `VIDIOC_QBUF`
+  - `drivers/media/platform/nvidia/tegra-vde`
+    - ioctl `VIDIOC_*`
+  - `drivers/misc/fastrpc`
+    - ioctl `FASTRPC_IOCTL_*`
+  - `drivers/virtio/virtio_dma_buf`
+    - used by drm/virtio
+  - `drivers/xen`
+    - ioctl `IOCTL_GNTDEV_DMABUF_IMP_TO_REFS`
+
 ## `dmabuf` filesystem
 
 - in kernel init, `dma_buf_init` is called
