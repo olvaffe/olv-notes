@@ -1,6 +1,48 @@
 Locking
 =======
 
+## Synchronizations
+
+- not about the kernel anymore
+- see locking.md
+- synchronize access to a shared resource
+- semaphore
+  - up adds a token (of resource readiness)
+  - down waits and removes a token (of resource readiness)
+  - naive implementation
+    - a semaphore is a futex where the int is the number of tokens (usually
+      either 0 or 1)
+    - up increments the futex, and `FUTEX_WAKE` if was 0
+    - down atomically does `FUTEX_WAIT(0)` and decrements the futex
+      - in a loop where only one waiter can decrement and exit
+- mutex (essentially binary semaphore)
+  - lock to acquire ownership (of a resource)
+  - unlock to relese ownership (of a resource)
+  - naive implementation
+    - a mutex is a futex where 0 means unlocked and 1 means locked
+    - lock sets the futex to 1 or `FUTEX_WAIT(1)`
+      - in a loop where only locker can set and exit
+    - unlock sets the futex to 0 and `FUTEX_WAKE`
+    - a naive mutex can also be considered a naive binary semaphore
+      - initial value is 1
+      - lock is down
+      - unlock is up
+- condition variable
+  - wait adds the caller to the wait queue
+  - signal wakes up and removes the first caller in the wait queue
+  - naive implementation
+    - a cv is a list (and a mutex to protect the list)
+    - wait adds a futex of value 0 to the list, `FUTEX_WAIT(0)`, and remove
+      the futex after signaled
+    - signal set the first futex to 1 and `FUTEX_WAKE`
+- scenarios
+  - N processes with N critical sections
+    - use a mutex to protect the critical sections
+  - producer/consumer with a bounded buffer
+    - need a mutex to protect `produce` and `consume`
+    - use two counting semaphores to signal each other
+    - or, use two condition variables to signal each other
+
 ## `spinlock_t`
 
 - `spin_lock_lock` busy waits until the lock is available and then grab it
