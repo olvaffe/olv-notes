@@ -5,10 +5,10 @@ PC DIY
 
 - Intel Core
   - i5: $200 ~ $300
-  - i7: $300 ~ $500
+  - i7: $300 ~ $400
 - AMD Ryzen
-  - 5: $100 ~ $200
-  - 7: $200 ~ $500
+  - 5: $200 ~ $300
+  - 7: $300 ~ $400
 - TDP
   - OEMs design the cooler to handle TDP watts
     - this is the sustainable watts that cpu can draw
@@ -33,35 +33,56 @@ PC DIY
     - under the same design and process, the difference of the best sku and
       the worst sku can just be manufacturing variances
 - what is a good deal?
-  - 5600
-    - 6C@3.5GHz - 32MB L3 - 65W
-    - $140
-      - this is the base
-  - 5600X
-    - 6C@3.7GHz - 32MB L3 - 65W
-    - $150
-      - perf x1.057
-      - cost x1.071
-  - 5700X
-    - 8C@3.4GHz - 32MB L3 - 65W
-    - $190
-      - perf x1.295
-      - cost x1.357
-  - 5800X
-    - 8C@3.8GHz - 32MB L3 - 105W
+  - 7600
+    - 6C@3.8GHz - 384KB/6MB/32MB - 65W
+      - perf base
+    - $230
+      - price base
+  - 7600X
+    - 6C@4.7GHz - 384KB/6MB/32MB - 105W
+      - x1.23
     - $240
-      - perf x1.447
-      - cost x1.714
-  - 5900X
-    - 12C@3.7GHz - 64MB L3 - 105W
-    - $300
-      - perf x2.114 plus bigger L3
-      - cost x2.142
-  - 5950X
-    - 16C@3.4GHz - 64MB L3 - 105W
-    - $470
-      - perf x2.588 plus bigger L3
-      - cost x3.357
+      - x1.04
+  - 7700
+    - 8C@3.8GHz - 512KB/6MB/32MB - 65W
+      - x1.33
+    - $330
+      - x1.43
+  - 7700X
+    - 8C@4.5GHz - 512KB/6MB/32MB - 105W
+      - x1.57
+    - $350
+      - x1.52
+  - 7800X3D
+    - 8C@4.2GHz - 512KB/6MB/96MB - 120W
+      - x1.47 plus 64MB L3
+    - $400
+      - x1.73
+  - 7900
+    - 12C@3.7GHz - 768KB/12MB/64MB - 65W
+      - x1.94 plus bigger L1/L2/L3
+    - $430
+      - x1.86
+  - 7900X
+    - 12C@4.7GHz - 768KB/12MB/64MB - 170W
+      - x2.47 plus bigger L1/L2/L3
+    - $450
+      - x1.95
+  - 7900X3D
+    - 12C@4.4GHz - 768KB/12MB/128MB - 120W
+      - x2.31 plus bigger L1/L2/L3 plus 64MB L3
+    - $510
+      - x2.21
+  - 7950X
+    - 16C@4.5GHz - 1MB/16MB/64MB - 170W
+      - x3.15 plus bigger L1/L2/L3
+    - $580
+      - x2.52
+  - 7950X3D
+    - 16C@4.2GHz - 1MB/16MB/128MB - 120W
+      - x2.94 plus bigger L1/L2/L3 plus 64MB L3
+    - $690
+      - x3.00
 - Ryzen 5 7600
   - <https://www.amd.com/en/product/12756>
   - Arch: Zen 4, 5nm
