@@ -53,6 +53,84 @@ Bluetooth
     connects for security
   - by marking the device trusted, the authorization can be skipped
 
+## BlueZ Build System
+
+- `Makefile.am`
+  - `pkglibexec_PROGRAMS += src/bluetoothd`
+    - `src_bluetoothd_SOURCES` includes
+      - `$(builtin_sources)` includes
+        - `plugins/`
+        - `profiles/`
+      - `$(attrib_sources)` includes `attrib/`
+      - `$(btio_sources)` includes `btio/`
+      - `src/`
+    - `src_bluetoothd_LDADD` includes
+      - `lib/libbluetooth-internal.la`
+      - `gdbus/libgdbus-internal.la`
+      - `src/libshared-glib.la`
+  - `noinst_LTLIBRARIES += lib/libbluetooth-internal.la`
+    - `lib_libbluetooth_internal_la_SOURCES` includes
+      - `$(lib_sources)` includes `lib/`
+      - `$(extra_sources)` includes `lib/`
+  - `noinst_LTLIBRARIES += gdbus/libgdbus-internal.la`
+    - `gdbus_libgdbus_internal_la_SOURCES` includes `gdbus/`
+  - `noinst_LTLIBRARIES += ell/libell-internal.la`
+    - `ell_libell_internal_la_SOURCES` includes `ell/`
+      - <git://git.kernel.org/pub/scm/libs/ell/ell.git>
+  - `noinst_LTLIBRARIES += src/libshared-glib.la`
+    - `src_libshared_glib_la_SOURCES` includes
+      - `$(shared_sources)` includes `src/shared/`
+      - `src/shared/*glib*`
+  - `noinst_LTLIBRARIES += src/libshared-mainloop.la`
+    - `src_libshared_mainloop_la_SOURCES` includes
+      - `$(shared_sources)` includes `src/shared/`
+      - `src/shared/*mainloop*`
+  - `noinst_LTLIBRARIES += src/libshared-ell.la`
+    - `src_libshared_ell_la_SOURCES`
+      - `$(shared_sources)` includes `src/shared/`
+      - `src/shared/*ell*`
+- `Makefile.tools`
+  - `bin_PROGRAMS += client/bluetoothctl`
+    - `client_bluetoothctl_SOURCES` includes `client/`
+    - `client_bluetoothctl_LDADD` includes
+      - `lib/libbluetooth-internal.la`
+      - `gdbus/libgdbus-internal.la`
+      - `src/libshared-glib.la`
+  - `bin_PROGRAMS += monitor/btmon`
+    - `monitor_btmon_SOURCES` includes `monitor/`
+    - `monitor_btmon_LDADD` includes
+      - `lib/libbluetooth-internal.la`
+      - `src/libshared-mainloop.la`
+  - `bin_PROGRAMS += tools/rctest tools/l2test tools/l2ping tools/bluemoon \
+                tools/hex2hcd tools/mpris-proxy tools/btattach tools/isotest`
+    - `*_SOURCES` includes `tools/`
+    - `*_LDADD` includes
+      - `gdbus/libgdbus-internal.la`
+      - `src/libshared-mainloop.la`
+      - `lib/libbluetooth-internal.la`
+- `Makefile.plugins`
+  - `plugin_LTLIBRARIES += plugins/sixaxis.la`
+  - `plugins_sixaxis_la_SOURCES = plugins/sixaxis.c`
+- `Makefile.obexd`
+  - `pkglibexec_PROGRAMS += obexd/src/obexd`
+    - `obexd_src_obexd_SOURCES` includes
+      - `$(btio_sources)` includes `btio/`
+      - `$(gobex_sources)` includes `gobex/`
+      - `$(obexd_builtin_sources)` includes
+        - `obexd/plugins/`
+        - `obexd/client/`
+      - `obexd/`
+    - `obexd_src_obexd_LDADD` includes
+      - `lib/libbluetooth-internal.la`
+      - `gdbus/libgdbus-internal.la`
+      - `src/libshared-glib.la`
+- `Makefile.mesh`
+  - `pkglibexec_PROGRAMS += mesh/bluetooth-meshd`
+    - `mesh_bluetooth_meshd_SOURCES` includes `mesh/`
+    - `mesh_bluetooth_meshd_LDADD` includes
+      - `ell/libell-internal.la`
+      - `src/libshared-ell.la`
+
 ## Profiles
 
 - my headset
@@ -84,13 +162,6 @@ Bluetooth
   - it has thse profiles
     - HOGP (HID over GATT Profile)
   - bluez uses `uhid` to create `hid_device` from userspace and skips `hidp`
-
-## Initscript
-
-- `/etc/init.d/bluetooth` starts `bluetoothd`.
-- It runs `rfcomm bind all`
-- It runs `sdptool` if `$SDPTOOL_OPTIONS` is non-empty
-- It runs `hciattach` if `/etc/bluetooth/uart` exists
 
 ## Stack
 
