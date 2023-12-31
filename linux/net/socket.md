@@ -31,3 +31,29 @@ Linux socket
     - socketpair(2) creates two endpoints without any name
 - connect(2) connects the endpoint to the address
 
+## syscalls
+
+- `socket(family, type, protocol)` creates a socket
+  - `sock_create` creates the socket
+    - `sock_alloc` allocates the socket which has an inode on `sockfs`
+    - `family` is the index into the static `net_families` array
+      - e.g., `AF_UNIX` maps to `unix_family_ops`
+      - `sock_register` updates the array
+  - `sock_map_fd` assocites the socket with a file
+- `connect(sockfd, addr, addrlen)` makes a connection
+  - this calls `proto_ops::connect`
+- `bind(sockfd, addr, addrlen)` binds a name to a socket
+  - this calls `proto_ops::bind`
+- `listen(sockfd, backlog)` marks a socket accepting connections
+  - this calls `proto_ops::listen`
+- `accept(sockfd, addr, addrlen)` accepts a connection
+  - this calls `sock_alloc` to allocate a new socket and calls
+    `proto_ops::accept`
+- `shutdown(sockfd, how)` shuts down a connection
+  - this calls `proto_ops::shutdown`
+- unix socket
+  - `net_families[AF_UNIX]` points to `unix_family_ops`
+  - `socket->ops` points to
+    - `unix_stream_ops` if `SOCK_STREAM`
+    - `unix_dgram_ops` if `SOCK_DGRAM`
+    - `unix_seqpacket_ops` if `SOCK_SEQPACKET`
