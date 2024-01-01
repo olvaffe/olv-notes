@@ -254,6 +254,24 @@ Bluetooth
       - `adapter_add_connection` calls `device_add_connection` and adds the
         device to `adapter->connections`
     - it does a lot more stuff
+- device connection
+  - `dev_connect` of `device_methods` initiates the connection
+    - `create_pending_list` adds all services to `dev->pending`
+    - `connect_next` calls `btd_service_connect` on the next pending service
+    - `btd_service_connect` calls `btd_profile::connect`
+  - the dongle initiates the connection
+    - take `input` plugin for example
+    - `confirm_event_cb` calls `btd_request_authorization`
+    - `adapter_authorize` adds a `service_auth` to `adapter->auths`
+    - `process_auth_queue` authorizes the connection
+      - if `btd_device_is_trusted` returns true, it is authorized
+      - otherwise, `agent_get` and `agent_authorize_service` authorize the
+        connection
+    - `auth_callback` accepts the connection
+    - `connect_event_cb` calls `input_device_set_channel` which calls
+      `input_device_connadd` which calls `input_device_connected`
+    - `input_device_connected` calls `hidp_add_connection` which calls
+      `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
 
 ## Profiles
 
