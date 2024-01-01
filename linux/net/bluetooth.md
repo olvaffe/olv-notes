@@ -170,16 +170,14 @@ Bluetooth
   controller
   - each device in the database is a subdirectory
     - with info about the device and whether it has been paired or not
-- It has well-known name `org.bluez` on system bus
-- For each HCI, an object on path `/org/bluez/<pid>/hciX` is created
-- If an agent (`bluetooth-applet`) for an HCI is running, it will be `/org/bluez/agent/hciX`
 - `main`
   - `connect_dbus` connects to the system bus and requests the well-known
     `org.bluez` name
-  - `adapter_init` calls `mgmt_new_default`
-    - a socket of bt protocol `BTPROTO_HCI` and of hci channel
-      `HCI_CHANNEL_CONTROL` is created
-    - `can_read_data` is called when there is incoming data
+  - `adapter_init` initializes adapters
+    - `mgmt_new_default` creates a socket of bt protocol `BTPROTO_HCI` and of
+      hci channel `HCI_CHANNEL_CONTROL`
+      - `can_read_data` is called when there is incoming data
+    - `mgmt_send(MGMT_OP_READ_VERSION)` to start initialization
   - `btd_device_init` calls `btd_service_add_state_cb`
   - `btd_agent_init` registers `org.bluez.AgentManager1` for `/org/bluez`
   - `btd_profile_init` registers `org.bluez.ProfileManager1` for `/org/bluez`
@@ -212,6 +210,50 @@ Bluetooth
     - `btd_adapter_set_blocked` or `btd_adapter_restore_powered` to block or
       restre the adpter
   - `mainloop_run_with_signal` enters the mainloop
+- adapter enumeration
+  - `adapter_init` sends `MGMT_OP_READ_VERSION`
+  - `read_version_complete` parses `mgmt_rp_read_version` and...
+    - sends `MGMT_OP_READ_COMMANDS` to get supported commands and events
+    - registers `MGMT_EV_INDEX_ADDED` and `MGMT_EV_INDEX_REMOVED` for adapter
+      addition and removal notifications
+    - sends `MGMT_OP_READ_INDEX_LIST` to enumerate adapters
+  - `read_index_list_complete` parses `mgmt_rp_read_index_list` and calls
+    `index_added` for each adapters
+  - `index_added` calls `btd_adapter_new` to create a new adapter and calls
+    `read_info` to send `MGMT_OP_READ_INFO`
+  - `read_info_complete` parses `mgmt_rp_read_info` and does a lot of adapter
+    initialization
+    - e.g. it registers `connected_callback` for `MGMT_EV_DEVICE_CONNECTED`
+  - `adapter_register` registers the new adapter
+    - it creates `/org/bluez/hci%d` with `org.bluez.Adapter1` interface
+    - `load_drivers` calls `btd_adapter_driver::probe` for each driver
+      - e.g., `hostname` plugin calls `btd_register_adapter_driver` to
+        register `hostname_driver`
+      - `hostname_probe` calls `adapter_set_name` to update the name of the
+        adapter
+    - `probe_profile` calls `btd_profile::adapter_probe` on the adapter and
+      updates `adapter->profiles` if the profile supports the adapter
+      - e.g., the `input` plugin calls `btd_profile_register` to register
+        `input_profile`
+      - `hid_server_probe` starts an input server on
+    - `load_devices` loads all devices from the database
+      - `create_filename` prefixes `/var/lib/bluetooth`
+      - `device_create_from_storage` creates the device
+        - it creates `/org/bluez/hci%d/dev_%s` with `org.bluez.Device1`
+          interface
+      - `adapter_add_device` adds the device to `adapter->devices`
+        - it also calls `btd_adapter_driver::device_added` for each driver
+      - `probe_devices` calls `device_probe_profiles` and
+        `device_resolved_drivers` on all added devices
+        - `dev_probe` calls `probe_service` which calls
+          `btd_profile::device_probe`
+          - e.g., it points to `input_device_register` for the input profile 
+    - `load_connections` sends `MGMT_OP_GET_CONNECTIONS` to get connected
+      devices
+      - for each connection, it looks up or creates a device of the addr
+      - `adapter_add_connection` calls `device_add_connection` and adds the
+        device to `adapter->connections`
+    - it does a lot more stuff
 
 ## Profiles
 
