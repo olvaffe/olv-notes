@@ -131,6 +131,49 @@ Bluetooth
       - `ell/libell-internal.la`
       - `src/libshared-ell.la`
 
+## BlueZ btio
+
+- `bt_io_connect`
+  - `parse_set_opts` parses the options into `struct set_opts`
+    - `BT_IO_OPT_SOURCE_BDADDR` specifies the src addr
+    - `BT_IO_OPT_DEST_BDADDR` specifies the dst addr
+    - `BT_IO_OPT_CHANNEL` specifies the channel
+      - `type` is set to `BT_IO_RFCOMM`
+    - `BT_IO_OPT_PSM` specifies the psm
+      - `type` is set to `BT_IO_L2CAP`
+    - `BT_IO_OPT_CID` specifies the cid
+      - `type` is set to `BT_IO_L2CAP`
+    - `BT_IO_OPT_MODE` specifies the mode
+      - `type` is set to `BT_IO_ISO` if the mode is `BT_IO_MODE_ISO`
+  - `create_io` creates a client `GIOChannel`
+    - if `type` is `BT_IO_L2CAP`
+      - `socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)`
+      - `l2cap_bind` binds the socket to `struct sockaddr_l2`
+    - if `type` is `BT_IO_RFCOMM`
+      - `socket(PF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)`
+      - `rfcomm_bind` binds the socket to `struct sockaddr_rc`
+    - if `type` is `BT_IO_SCO` (default)
+      - `socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_SCO)`
+      - `sco_bind` binds the socket to `struct sockaddr_sco`
+    - if `type` is `BT_IO_ISO`
+      - `socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_ISO)`
+      - `iso_bind` binds the socket to `struct sockaddr_iso`
+  - a connection is made
+    - `l2cap_connect` connects to `struct sockaddr_l2`
+    - `rfcomm_connect` connects to `struct sockaddr_rc`
+    - `sco_connect` connects to `struct sockaddr_sco`
+    - `iso_connect` connects to `struct sockaddr_iso`
+  - `connect_add` adds a gio watch
+    - it invokes the connect callback when `G_IO_OUT` is ready
+- `bt_io_listen`
+  - `parse_set_opts` is the same as in `bt_io_connect`
+  - `create_io` creates a server `GIOChannel`
+  - no connection is made
+    - instead, `listen` is called
+  - `server_add` adds a gio watch
+    - it invokes the callbcks when `G_IO_IN` is ready and the connection is
+      accepted
+
 ## Profiles
 
 - my headset
