@@ -25,16 +25,6 @@ Bluetooth
   - because the dongle is in the computer's database, connection is
     established
 
-## `bluetoothd`
-
-- `/var/lib/bluetooth/nn:nn:nn:nn:nn:nn` contains info about a local
-  controller
-  - each device in the database is a subdirectory
-    - with info about the device and whether it has been paired or not
-- It has well-known name `org.bluez` on system bus
-- For each HCI, an object on path `/org/bluez/<pid>/hciX` is created
-- If an agent (`bluetooth-applet`) for an HCI is running, it will be `/org/bluez/agent/hciX`
-
 ## `bluetoothctl`
 
 - a CLI tool to talk to `bluetoothd`
@@ -173,6 +163,55 @@ Bluetooth
   - `server_add` adds a gio watch
     - it invokes the callbcks when `G_IO_IN` is ready and the connection is
       accepted
+
+## BlueZ `bluetoothd`
+
+- `/var/lib/bluetooth/nn:nn:nn:nn:nn:nn` contains info about a local
+  controller
+  - each device in the database is a subdirectory
+    - with info about the device and whether it has been paired or not
+- It has well-known name `org.bluez` on system bus
+- For each HCI, an object on path `/org/bluez/<pid>/hciX` is created
+- If an agent (`bluetooth-applet`) for an HCI is running, it will be `/org/bluez/agent/hciX`
+- `main`
+  - `connect_dbus` connects to the system bus and requests the well-known
+    `org.bluez` name
+  - `adapter_init` calls `mgmt_new_default`
+    - a socket of bt protocol `BTPROTO_HCI` and of hci channel
+      `HCI_CHANNEL_CONTROL` is created
+    - `can_read_data` is called when there is incoming data
+  - `btd_device_init` calls `btd_service_add_state_cb`
+  - `btd_agent_init` registers `org.bluez.AgentManager1` for `/org/bluez`
+  - `btd_profile_init` registers `org.bluez.ProfileManager1` for `/org/bluez`
+  - `start_sdp_server`
+    - `init_server` initializes the server
+      - `l2cap_sock` is a listening socket of `BTPROTO_L2CAP`
+      - the psm is `SDP_PSM`
+      - `unix_sock` is set to -1 unless compat
+    - `io_accept_event` is called when there is an incoming connection
+      - it accepts the connection
+      - `io_session_event` is called when there is incoming data on the
+        connection
+      - `handle_request` and `process_request` are called to handle the
+        incoming requests
+  - `plugin_init` adds all plugins on `__bluetooth_builtin` array and in
+    `/usr/lib/bluetooth/plugins`
+    - `BLUETOOTH_PLUGIN_DEFINE` is used to define a built-in plugin
+      - it defines a global `struct bluetooth_plugin_desc __bluetooth_builtin_ ## name`
+      - `src/genbuiltin` script generates `src/builtin.h` which defines the
+        `__bluetooth_builtin` array
+    - `add_plugin` adds a plugin to the `plugins` list
+    - for each plugin, its `bluetooth_plugin_desc::init` is called
+  - `rfkill_init` watches `/dev/rfkill`
+    - on `G_IO_IN`, `rfkill_event` reads `struct rfkill_event` and checks if
+      the type is `RFKILL_TYPE_BLUETOOTH` or `RFKILL_TYPE_ALL` and the op is
+      `RFKILL_OP_CHANGE`
+    - `get_adapter_id_for_rfkill` reads `/sys/class/rfkill/rfkill%u/name` to
+      get the hci id
+    - `adapter_find_by_id` returns the adapter with the given id
+    - `btd_adapter_set_blocked` or `btd_adapter_restore_powered` to block or
+      restre the adpter
+  - `mainloop_run_with_signal` enters the mainloop
 
 ## Profiles
 
