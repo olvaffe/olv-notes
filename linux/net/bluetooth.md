@@ -25,24 +25,6 @@ Bluetooth
   - because the dongle is in the computer's database, connection is
     established
 
-## `bluetoothctl`
-
-- a CLI tool to talk to `bluetoothd`
-- `show` shows the controller info
-- `scan` discovers discoverable devices and add them to database
-- `devices` lists devices in the database
-- `info <dev>` shows the device info from the database
-- `pairable on` makes the controller pairable
-- `agent on` enables the agent that can provide pairing code
-- `default-agent` makes the agent the default one
-- `pair <dev>` pairs with the device
-  - the agent provides the pairing code, if needed, interactively
-- `connect <dev>` connects to the device
-- `trust <dev>` trusts the device
-  - profiles such as HIDP requires authorization every time the device
-    connects for security
-  - by marking the device trusted, the authorization can be skipped
-
 ## BlueZ Build System
 
 - `Makefile.am`
@@ -161,8 +143,18 @@ Bluetooth
   - no connection is made
     - instead, `listen` is called
   - `server_add` adds a gio watch
-    - it invokes the callbcks when `G_IO_IN` is ready and the connection is
-      accepted
+    - it invokes one of the callbcks when `G_IO_IN` is ready and the
+      connection is accepted
+    - there is no real difference between the `confirm` and the `connect`
+      callbacks
+- `bt_io_accept`
+  - this is normally called from the `confirm` callback of `bt_io_listen`
+    - in the confirm callback, `btd_request_authorization` starts auth and the
+      auth callback normally calls `bt_io_accept`
+  - it reads 1 byte if necessary (a workaround?)
+  - it invokes the connect callback when `G_IO_OUT` is ready
+- `bt_io_set` sets socket options
+- `bt_io_get` gets socket options
 
 ## BlueZ `bluetoothd`
 
@@ -261,17 +253,109 @@ Bluetooth
     - `btd_service_connect` calls `btd_profile::connect`
   - the dongle initiates the connection
     - take `input` plugin for example
-    - `confirm_event_cb` calls `btd_request_authorization`
-    - `adapter_authorize` adds a `service_auth` to `adapter->auths`
-    - `process_auth_queue` authorizes the connection
-      - if `btd_device_is_trusted` returns true, it is authorized
-      - otherwise, `agent_get` and `agent_authorize_service` authorize the
+    - the hid dongle is connected
+      - `can_read_data` receives `MGMT_EV_DEVICE_CONNECTED`
+      - `connected_callback` calls `adapter_add_connection` to manage the
         connection
-    - `auth_callback` accepts the connection
-    - `connect_event_cb` calls `input_device_set_channel` which calls
-      `input_device_connadd` which calls `input_device_connected`
-    - `input_device_connected` calls `hidp_add_connection` which calls
-      `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
+    - the hid dongle sends HID events
+      - btio accepts the ctrl channel and calls `connect_event_cb`
+      - btio accepts the intr channel and calls `confirm_event_cb`
+        - this also leads to `connect_event_cb` after auth
+    - `confirm_event_cb` calls `btd_request_authorization` to auth
+      - `adapter_authorize` adds a `service_auth` to `adapter->auths`
+      - `process_auth_queue` authorizes the connection
+        - if `btd_device_is_trusted` returns true, it is authorized
+        - otherwise, `agent_get` and `agent_authorize_service` authorize the
+          connection
+      - `auth_callback` accepts the connection and calls `connect_event_cb`
+    - `connect_event_cb` calls `input_device_set_channel`
+      - `input_device_set_channel` calls `input_device_connadd` after both
+        ctrl and intr channels are set up
+      - `input_device_connadd` calls `input_device_connected`
+      - `input_device_connected` calls `hidp_add_connection` which calls
+        `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
+
+## BlueZ `bluetoothctl`
+
+- a CLI tool to talk to `bluetoothd`
+  - `show` shows the controller info
+  - `scan` discovers discoverable devices and add them to database
+  - `devices` lists devices in the database
+  - `info <dev>` shows the device info from the database
+  - `pairable on` makes the controller pairable
+  - `agent on` enables the agent that can provide pairing code
+  - `default-agent` makes the agent the default one
+  - `pair <dev>` pairs with the device
+    - the agent provides the pairing code, if needed, interactively
+  - `connect <dev>` connects to the device
+  - `trust <dev>` trusts the device
+    - profiles such as HIDP requires authorization every time the device
+      connects for security
+    - by marking the device trusted, the authorization can be skipped
+- `main`
+  - it connects to the system bus
+  - it creates a client for `/org/bluez` of `org.bluez`
+  - it registers proxy handlers
+    - `proxy_added`
+    - `proxy_removed`
+    - `property_changed`
+- `cmd_agent` calls `agent_register`
+  - it registers `/org/bluez/agent` with `org.bluez.Agent1`
+  - it invokes `org.bluez.AgentManager1.RegisterAgent` with `/org/bluez/agent`
+    - this calls `register_agent` in `bluetoothd`
+  - this provides a cmdline-based auth agent
+- `cmd_default_agent` calls `agent_default`
+  - it invokes `org.bluez.AgentManager1.RequestDefaultAgent`
+    - this calls `request_default` in `bluetoothd`
+    - it moves the agent to the head of `default_agents` queue, which will be
+      returned by `agent_get(NULL)`
+- `cmd_connect`
+  - `find_proxy_by_address` returns the proxy for the device
+  - it invokes `org.bluez.Device1.Connect` on the device
+    - this calls `dev_connect` in `bluetoothd`
+
+## BlueZ Plugin, using input plugin as an example
+
+- its `init` is called by `bluetoothd` to enable a plugin
+- it calls `btd_register_adapter_driver` to be notified the come and leave of
+  adapters
+  - when an adapter comes, it calls `bt_io_listen` twice to listen on the
+    adapter's control and interrupt channels.
+  - for device initiated reconnection?
+- it calls `btd_register_device_driver` twice to be notified the come and leave
+  of devices supporting `HID_UUID` and `HSP_HS_UUID`
+  - `struct btd_device_driver` has a memeber `uuids` to give uuids the driver
+    suports.
+  - every `struct btd_device` has a memeber `uuids` to give a list of supported
+    uuids.
+  - device and driver matching is done by `device_probe_drivers`.
+  - Anyway, when a device supporting `HID_UUID` is found, the device is matched
+    by input plugin.  It calls its `input_device_register` to put the device on
+    the dbus with interface `org.bluez.Input`.
+  - The interface has a `Connect` method.  When the method is called, a
+    connection is made and `hidp_add_connection` is called to create a kernel
+    input device.
+- section 5.4.5 of HID spec for connection handling rules
+  - Both `HID_Control` and `HID_Interrupt` channels need to be established that
+    a HID connection is considered established.
+  - A HID device might reconnect in the event of host reset
+  - virtual cable: a HID device should exit page scan/page, inquiry scan/inquiry
+    modes in the duration of a connection.  This makes sure that no second
+    host can talk to the HID device.
+- when a hid connection is added, a `struct hidp_session` is created in kernel
+  using the given ctrl and intr connections.  `hidp_setup_input` is called to
+  create a `struct input_dev`.  A kernel thread is created to run
+  `hidp_session`.  Received ctrl frames and intr frames are handled by
+  `hidp_recv_ctrl_frame` and `hidp_recv_intr_frame`.  They report input events
+  using the standard mechanism.
+
+## BlueZ Debug
+
+- `btmon` to sniff traffic
+- `l2ping` to ping devices.  But devices can be configured not to echo back.
+  - It opens a `socket(PF_BLUETOOTH, SOCK_RAW, BTPROTO_L2CAP)`
+  - It `connect`s to given remote
+  - It `send`s `L2CAP_ECHO_REQ`
 
 ## Profiles
 
@@ -307,6 +391,8 @@ Bluetooth
 
 ## Stack
 
+- `L2CAP` stands for Logical Link Control and Adaption Protocol
+  - layered over link controller protocol 
 - `RFCOMM`, `TCS`, and `SDP` are immediately above `L2CAP`
 - `PPP`, `AT-COMMAND`, and `OBEX` are immediately above `RFCOMM`
 - `SCO` and `ACL` are above baseband and below `Link Manager`
@@ -351,169 +437,6 @@ Bluetooth
     They will go on to enter `master response` and `slave response` states if
     everything goes well.  Finally, they will both enter `CONNECTION` state.
 
-## `L2CAP`
-
-- Stands for Logical Link Control and Adaption Protocol
-- layered over link controller protocol 
-
-## `l2ping`
-
-- It opens a `socket(PF_BLUETOOTH, SOCK_RAW, BTPROTO_L2CAP)`
-- It `connect`s to given remote
-- It `send`s `L2CAP_ECHO_REQ`
-- Note that a connection is made as can be seen from `hcitool conn`
-
-## Connections
-
-- `hcitool cc <bdaddr>` and `hcitool dc <bdaddr>`
-- `hidd --connect <bdaddr>` and `hidd --unplug <bdaddr>`
-- `rfcomm connect <dev> <bdaddr> <channel>` and `rfcomm release <dev>`
-- the first one is in the link controller layer; the latters are much higher?
-
-## `hidd --connect`
-
-- It opens `ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HIDP)`
-- It opens a sdp over l2cap to get device info
-- It makes several `sk = socket(PF_BLUETOOTH, SOCK_SEQPACKET, BTPROTO_L2CAP)` and
-  connect to all of them.  They are HID control and interrupt channels.
-- It optionally requests authentication and encryption.
-- It `ioctl`s `HIDPCONNADD` with collected info.  An HID device is created by
-  using the established connections/channels.
-
-## `rfcomm connect`
-
-- It opens `ctl = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_RFCOMM)`
-- It makes another `sk = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM)`,
-  bind the remote address, and connect to it.
-- After connection is established, `RFCOMMCREATEDEV` is called upon `sk` to
-  create `/dev/rfcommX`.
-- When disconnected, it simply leaves.  `ctl` is not used in normal situation.
-
-## Debug
-
-- `hcitool scan` to discover devices.  But devices can be configured undiscoverable.
-
-    < HCI Command: Inquiry (0x01|0x0001) plen 5
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Inquiry Result with RSSI (0x22) plen 15
-    ............
-    > HCI Event: Inquiry Result with RSSI (0x22) plen 15
-    > HCI Event: Inquiry Complete (0x01) plen 1
-- `l2ping` to ping devices.  But devices can be configured not to echo back.
-
-    < HCI Command: Create Connection (0x01|0x0005) plen 13
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Connect Complete (0x03) plen 11
-    < HCI Command: Read Remote Supported Features (0x01|0x001b) plen 2
-    > HCI Event: Max Slots Change (0x1b) plen 3
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Command Status (0x0f) plen 4
-    < HCI Command: Remote Name Request (0x01|0x0019) plen 10
-    > HCI Event: Read Remote Supported Features (0x0b) plen 11
-    < ACL data: handle 42 flags 0x02 dlen 52
-        L2CAP(s): Echo req: dlen 44
-    > HCI Event: Command Status (0x0f) plen 4
-    > ACL data: handle 42 flags 0x02 dlen 52
-        L2CAP(s): Echo rsp: dlen 44
-    > HCI Event: Remote Name Req Complete (0x07) plen 255
-    > HCI Event: Number of Completed Packets (0x13) plen 5
-    < ACL data: handle 42 flags 0x02 dlen 52
-        L2CAP(s): Echo req: dlen 44
-    > HCI Event: Number of Completed Packets (0x13) plen 5
-    > ACL data: handle 42 flags 0x02 dlen 52
-        L2CAP(s): Echo rsp: dlen 44
-- E.g., a bt mouse might hide itself and stop echoing back when a hidd
-  connection is made.
-- `hcitoo cc` to a bt mouse (it is rejected, i guess)
-
-    < HCI Command: Create Connection (0x01|0x0005) plen 13
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Connect Complete (0x03) plen 11
-    < HCI Command: Read Remote Supported Features (0x01|0x001b) plen 2
-    > HCI Event: Command Status (0x0f) plen 4
-    < HCI Command: Remote Name Request (0x01|0x0019) plen 10
-    > HCI Event: Page Scan Repetition Mode Change (0x20) plen 7
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Read Remote Supported Features (0x0b) plen 11
-    > HCI Event: Remote Name Req Complete (0x07) plen 255
-    > HCI Event: QoS Setup Complete (0x0d) plen 21
-    < HCI Command: Disconnect (0x01|0x0006) plen 3
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Disconn Complete (0x05) plen 4
-- `hidd --connect` to a bt mouse
-
-    < HCI Command: Create Connection (0x01|0x0005) plen 13
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Connect Complete (0x03) plen 11
-    < HCI Command: Read Remote Supported Features (0x01|0x001b) plen 2
-    > HCI Event: Command Status (0x0f) plen 4
-    < HCI Command: Remote Name Request (0x01|0x0019) plen 10
-    > HCI Event: Page Scan Repetition Mode Change (0x20) plen 7
-    > HCI Event: Command Status (0x0f) plen 4
-    > HCI Event: Read Remote Supported Features (0x0b) plen 11
-    < ACL data: handle 42 flags 0x02 dlen 10
-        L2CAP(s): Info req: type 2
-    > HCI Event: Number of Completed Packets (0x13) plen 5
-    > ACL data: handle 42 flags 0x02 dlen 16
-        L2CAP(s): Info rsp: type 2 result 0
-          Extended feature mask 0x0000
-    < ACL data: handle 42 flags 0x02 dlen 12
-        L2CAP(s): Connect req: psm 1 scid 0x0040
-    > HCI Event: Remote Name Req Complete (0x07) plen 255
-    > HCI Event: Number of Completed Packets (0x13) plen 5
-    > ACL data: handle 42 flags 0x02 dlen 16
-        L2CAP(s): Connect rsp: dcid 0x005f scid 0x0040 result 1 status 2
-          Connection pending - Authorization pending
-    > HCI Event: QoS Setup Complete (0x0d) plen 21
-    > ACL data: handle 42 flags 0x02 dlen 16
-        L2CAP(s): Connect rsp: dcid 0x005f scid 0x0040 result 0 status 0
-          Connection successful
-    < ACL data: handle 42 flags 0x02 dlen 12
-        L2CAP(s): Config req: dcid 0x005f flags 0x00 clen 0
-    > HCI Event: Number of Completed Packets (0x13) plen 5
-    > ACL data: handle 42 flags 0x02 dlen 14
-        L2CAP(s): Config rsp: scid 0x0040 flags 0x00 result 0 clen 0
-          Success
-    > ACL data: handle 42 flags 0x02 dlen 16
-        L2CAP(s): Config req: dcid 0x0040 flags 0x00 clen 4
-          MTU 48
-
-
-## Plugin, using input plugin as an example
-
-- its `init` is called by `bluetoothd` to enable a plugin
-- it calls `btd_register_adapter_driver` to be notified the come and leave of
-  adapters
-  - when an adapter comes, it calls `bt_io_listen` twice to listen on the
-    adapter's control and interrupt channels.
-  - for device initiated reconnection?
-- it calls `btd_register_device_driver` twice to be notified the come and leave
-  of devices supporting `HID_UUID` and `HSP_HS_UUID`
-  - `struct btd_device_driver` has a memeber `uuids` to give uuids the driver
-    suports.
-  - every `struct btd_device` has a memeber `uuids` to give a list of supported
-    uuids.
-  - device and driver matching is done by `device_probe_drivers`.
-  - Anyway, when a device supporting `HID_UUID` is found, the device is matched
-    by input plugin.  It calls its `input_device_register` to put the device on
-    the dbus with interface `org.bluez.Input`.
-  - The interface has a `Connect` method.  When the method is called, a
-    connection is made and `hidp_add_connection` is called to create a kernel
-    input device.
-- section 5.4.5 of HID spec for connection handling rules
-  - Both `HID_Control` and `HID_Interrupt` channels need to be established that
-    a HID connection is considered established.
-  - A HID device might reconnect in the event of host reset
-  - virtual cable: a HID device should exit page scan/page, inquiry scan/inquiry
-    modes in the duration of a connection.  This makes sure that no second
-    host can talk to the HID device.
-- when a hid connection is added, a `struct hidp_session` is created in kernel
-  using the given ctrl and intr connections.  `hidp_setup_input` is called to
-  create a `struct input_dev`.  A kernel thread is created to run
-  `hidp_session`.  Received ctrl frames and intr frames are handled by
-  `hidp_recv_ctrl_frame` and `hidp_recv_intr_frame`.  They report input events
-  using the standard mechanism.
-
 ## Connection
 
 - Vol2, partC, Link Manager Protocol
@@ -553,59 +476,6 @@ Bluetooth
     Bluetooth devices, to be used for future authentication. In addition to
     pairing, the bonding procedure can involve higher layer initialization
     procedures.
-
-## org.bluez.Headset
-
-- It is provided by audio plugin.
-  - In the same directory, an alsa module and a gstreamer module can be found
-  - The alsa module allows
-    - talking to bluez audio plugin through `\0/org/bluez/audio`.
-    - it asks bluez to connect to a device.
-    - it receives SCO socket from bluez (`SCM_RIGHTS`).
-    - pcm data are written to SCO.
-    - the audio path is audio player, alsa bt module, bt driver.  Totally cpu.
-      - This is called SCO over HCI/UART.
-  - for gsm, ideally, we want gsm, audio chipset, bt chipset.  No cpu
-    intervention.
-    - This is called SCO over PCM.
-- In `audio_manager_init`,
-  - Adapter driver `headset_server_driver` is registered to listen on HSP and
-    HFP RFCOMM channels.
-  - Device driver `audio_driver` is registered to add `org.bluez.Audio`
-    interface to audio devices.  Devices are also probed and more interfaces
-    like `org.bluez.Headset` are added.
-- `Connect` causes `hs_connect` to be called.
-  - The state must be `disconnected`.
-  - It calls `rfcomm_connect` to establish ACL connection
-    - The state is changed to `connecting`.
-  - When ACL connection is made, `headset_connect_cb` is called.  It calls
-    `sco_connect` to establish SCO connection.
-    - The state is changed to `connected`.
-  - When SCO connection is made, `sco_connect_cb` is called.
-    - The state is changed to `playing`.
-
-## HCI over UART
-
-- hciattach opens the serial port
-  - Makes it raw and sets the baud rate
-  - Calls `uart_t->init` if exists
-  - Changes ldisc and proto
-    - `TIOCSETD` to use `N_HCI` ldisc.
-    - `HCIUARTSETPROTO` to specify protocol (H4, BCSP, LL, etc.)
-  - Calls `uart_t->post` if exists
-- The `N_HCI` ldisc
-  - does not allow read/write from the tty.
-- When a proto is set through `HCIUARTSETPROTO`
-  - the proto is `open`ed.
-  - `hci_uart_register_dev` is called to register a hci device.
-- When there are outgoing data, `hci_send_frame` is called
-  - In uart case, `hci_uart_send_frame` is called.
-  - `skb` is always enqueued to proto first.
-  - They are dequeued from proto and written to the serial port.
-- When there are incoming data, ldisc `receive_buf` is called.
-  - It calls proto's `recv`, like `ll_recv`.
-  - The buffer is parsed to form `skb`s.
-  - `hci_recv_frame` is called to receive the `skb`s.
 
 ## HCI packet formats
 
