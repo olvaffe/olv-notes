@@ -91,15 +91,13 @@ PC DIY
   - RAM: DDR5-5200
   - GPU: RDNA2, 2CU, 2200MHz
   - Connectivity:
-    - PCIe
-      - 5.0: 28 lanes
-        - 4 lanes are reserved for chipset, which cap the bandwidth of the
-          chipset
-      - chipset provides more lanes
-    - USB
-      - 3.2 Gen2 (10Gbps): x4
-      - 2.0 (480Mbps): x1
-      - chipset provides more ports
+    - PCIe 5.0: 28 lanes
+      - 16 lanes for gpu
+      - 8 lanes for nvme
+      - 4 lanes for chipset downlink
+        - this caps chipset bandwidth
+    - USB 3.2 Gen2 (10Gbps): x4
+    - USB 2.0 (480Mbps): x1
 - Ryzen 5 5600G
   - <https://www.amd.com/en/product/11176>
   - Arch: Zen 3, 7nm
@@ -108,13 +106,10 @@ PC DIY
   - RAM: DDR4-3200
   - GPU: GCN5, 7CU, 1900MHz
   - Connectivity:
-    - PCIe
-      - 4.0: 24 lanes
-        - 4 lanes are reserved for chipset
-      - chipset provides more lanes
-    - USB
-      - 3.2 Gen1 (5Gbps): x4
-      - chipset provides more ports
+    - PCIe 4.0: 24 lanes
+      - 4 lanes for chipset downlink
+        - this caps chipset bandwidth
+    - USB 3.2 Gen1 (5Gbps): x4
 - AMD Ryzen 9 6900HX
   - <https://www.amd.com/en/product/11541>
   - Arch: Zen 3+, 6nm
@@ -123,14 +118,11 @@ PC DIY
   - RAM: LPDDR5-6400
   - GPU: RDNA2, 12CU, 2400MHz
   - Connectivity:
-    - PCIe
-      - 4.0: 20 lanes
-        - 4 lanes are reserved for chipset
-      - chipset provides more lanes
-    - USB
-      - 3.2 Gen2 (10Gbps): x2
-      - 2.0 (480Mbps): x4
-      - chipset provides more ports
+    - PCIe 4.0: 20 lanes
+      - 4 lanes for chipset downlink
+        - this caps chipset bandwidth
+    - USB 3.2 Gen2 (10Gbps): x2
+    - USB 2.0 (480Mbps): x4
 
 ## Motherboards
 
@@ -140,25 +132,24 @@ PC DIY
   - $100 ~ $300
 - considerations
   - chipset
-    - e.g., AMD B550
-    - 1x M.2 PCIe 3.0 x4
-    - 4x SATA
-    - 1x USB-C 3.2 Gen2
-    - 1x USB-A 3.2 Gen2
-    - 2x USB-A 3.2 Gen1 (front)
-    - 2x USB-A 2.0 (front)
-    - 1x USB-C 3.2 Gen1
-      - some motherboards miss this header
-    - note that it is capped by the 4-lane PCIE 3.0 interconnect with the cpu
+    - AMD B650
+      - the total uplink bandwidth is capped by the 4-lane PCI-E 4.0
+        connection to the cpu
+      - USB 2.0 (480Mbps): x6
+      - USB 3.2 Gen2 (10Gbps): x4
+      - USB 3.2 Gen2x2 (10Gbps): x1 (or Gen2: x2)
+      - PCIe 4.0: x8
+        - for lan, wifi/bt, nvme, i2c, spi, hda, dsp, sensor hub, etc.
+      - SATA 6Gbps: x4 (or PCIe 3.0: x4)
   - wireless
-    - e.g., Realtek MT7921K / AMD RZ608
+    - e.g., AMD RZ616 (Realtek MT7922), Intel AX210
     - 802.11ax
-    - BT 5.2
-  - audio
-    - e.g., Realtek ALC1220-VB hda codec
+    - BT 5.2 / 5.3
   - lan
     - e.g., Realtek RTL8125
     - 2.5Gb
+  - audio
+    - e.g., Realtek ALC1220-VB hda codec
   - internal connectors
     - 1x 24-pin main power
     - 1x 8-pin cpu power
