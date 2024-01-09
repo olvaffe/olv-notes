@@ -1,0 +1,76 @@
+OpenWrt
+=======
+
+## Hardware
+
+- Minimum Requirements
+  - 128MB ram
+  - 16MB flash
+- brands
+  - TP-LINK
+  - NETGEAR
+  - D-Link
+  - Linksys
+  - ASUS
+  - Ubiquiti
+- Wi-Fi 6 (IEEE 802.11ax)
+  - TP-LINK Archer AX????
+    - soc: BCM6750 (ARMv7), BCM6755 (ARMv7), BCM4908 (ARMv8)
+    - ram: 256-1024MB
+    - flash: 16-512MB
+  - NETGEAR Nighthawk AX8
+    - soc: BCM4908
+    - ram: 1024MB
+    - flash: 512MB
+  - NETGEAR Orbi
+    - soc: IPQ8074A (quad core A53)
+    - ram: 1024MB
+    - flash: 512MB
+  - D-LINK
+    - soc: MT7981
+    - ram: 512MB
+    - flash: 128MB
+  - Linksys
+    - soc: IPQ6018
+    - ram: 512MB
+    - flash: 512MB
+  - ASUS \*-AX\*
+    - soc: BCM6755, BCM4908, BCM4912
+    - ram: 1024-2048MB
+    - flash: 256MB
+  - Ubiquiti UniFi AP 6
+    - soc: MT7621AT (mips), IPQ5018 (dual core A53)
+    - ram: 256-512MB
+    - flash: 32-128MB
+  - Nest Wifi Pro
+    - Qualcomm Immersive Home 316 Platform
+      - IPQ5018 with dual-core A53 @ 1GHz
+    - 1GB DDR3L
+    - 4GB eMMC
+- Wi-Fi 7 (IEEE 802.11be)
+  - TP-LINK Archer BE800
+    - Qualcomm Networking Pro 1220
+      - soc: quad core A73 2.2GHz
+    - ram: 2048MB
+    - flash: 256MB
+  - NETGEAR Nighthawk RS700S
+    - soc: quad core 2.6GHz
+    - ram: 2048MB
+    - flash: 512MB
+- <https://hackerboards.com/>
+  - Raspberry Pi
+    - 4: BCM2711
+    - 5: BCM2712
+  - FriendlyElec NanoPi
+    - R2S: RK3328
+    - R4S: RK3399
+    - R6S: RK3588S
+  - Sinovoip Banana Pi
+    - BPI-R3: MT7986
+    - BPI-R4: MT7988A
+    - BPI-M7: RK3588
+  - Xunlong Orange Pi
+    - 3: RK3566
+    - 5: RK3588
+  - Raxda Rock
+    - 5B: RK3588
