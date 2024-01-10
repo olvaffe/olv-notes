@@ -1,6 +1,73 @@
 OpenWrt
 =======
 
+## Build
+
+- build
+  - `git clone https://git.openwrt.org/openwrt/openwrt.git`
+  - `./scripts/feeds update -a`
+    - `parse_config` parses `feeds.conf.default`
+    - `update_feed` updates the listed repos
+      - `update_location` writes the repo url to `feeds/$repo.tmp/location`
+      - `update_feed_via` clones the repo to `feeds/$repo`
+    - `update_index` creates the index files
+      - `make prepare-mk TMP_DIR=feeds/$repo.tmp`
+      - `make -f include/scan.mk SCAN_TARGET=packageinfo SCAN_DIR=feeds/$repo TMP_DIR=feeds/$repo.tmp`
+        - this creates `feeds/$repo.tmp/.packageinfo`
+      - `make -f include/scan.mk SCAN_TARGET=targetinfo SCAN_DIR=feeds/$repo TMP_DIR=feeds/$repo.tmp`
+        - this creates `feeds/$repo.tmp/.targetinfo`
+      - `ln -sf feeds/$repo.tmp/.packageinfo feeds/$repo.index`
+      - `ln -sf feeds/$repo.tmp/.targetinfo feeds/$repo.targetindex`
+  - `./scripts/feeds install -a`
+    - `get_installed` creates and parses the index files
+      - `make prepare-tmpinfo` creates `tmp/.packageinfo` by scanning
+        `package/` and `tmp/.targetinfo` by scanning `target/linux/`
+      - `parse_package_metadata` parses `tmp/.packageinfo`
+      - `get_targets` parses `tmp/.targetinfo`
+    - `get_feed` creates symlinks
+      - `package/feeds/foo/bar` points to `feeds/foo/baz/bar`
+  - `./scripts/feeds install -a`
+  - get the default config for the target/subtarget
+    - `wget -O .config https://downloads.openwrt.org/snapshots/targets/mediatek/filogic/config.buildinfo`
+      for mediatek/filogic
+  - `make menuconfig` to update `.config`
+  - `make download` to download dependencies to `dl/`
+    - the biggest ones are `linux-firmware`, `linux`, `llvm-project`, `gcc`,
+      `binutils`, `gdb`, `u-boot`, etc.
+  - `make`
+    - the default target, the first one listed in `Makefile`, is `world`
+    - `world` depends on `prepare`
+      - `prepare` depends on `$(tools/stamp-compile)`
+        - `$(curdir)/builddirs-default` in `tools/Makefile` defines all enabled
+          packages
+        - it builds all packages with `make -C tools/foo compile`
+          - packages are built in `build_dir/host/` and installed to
+            `staging_dir/host/`
+      - `prepare` depends on `$(toolchain/stamp-compile)`
+        - `$(curdir)/builddirs` in `toolchain/Makefile` defines all enabled
+          packages
+        - it builds all packages with `make -C toolchain/foo compile`
+          - packages are built in `build_dir/toolchain-foo/` and installed to
+            `staging_dir/toolchain-foo/`
+    - `world` depends on `$(target/stamp-compile)`
+      - `$(curdir)/builddirs-default` in `target/Makefile` defines all enabled
+        targets
+        - there is only `linux`
+      - it builds the kernel with `make -C target/linux compile`
+        - kernel is built in `build_dir/target-foo/`
+    - `world` depends on `$(package/stamp-compile)`
+    - `world` depends on `$(target/stamp-install)`
+    - `world` depends on `$(package/stamp-install)`
+    - the final images and packages are under `bin/`
+- cleanup
+  - `make clean` cleans target and package
+  - `make targetclean` additionally cleans toolchain
+  - `make dirclean` additionally cleans tools
+- working with a single package
+  - `make foo/bar/compile`
+  - `make foo/bar/clean`
+  - `V=s` for verbose
+
 ## Hardware
 
 - Minimum Requirements
