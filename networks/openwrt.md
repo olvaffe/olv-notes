@@ -68,6 +68,26 @@ OpenWrt
   - `make foo/bar/clean`
   - `V=s` for verbose
 
+## Config
+
+- the top-level config is `Config.in`
+  - `source "target/Config.in"`
+    - this sources the generated `tmp/.config-target.in`
+  - `source "config/Config-images.in"`
+    - this sources `target/linux/*/image/Config.in` as well
+  - `source "config/Config-build.in"`
+  - `source "config/Config-devel.in"`
+  - `source "toolchain/Config.in"`
+    - this sources `toolchain/binutils/Config.in`,
+      `toolchain/gcc/Config.in`, and `toolchain/musl/Config.in` as well
+  - `source "target/imagebuilder/Config.in"`
+  - `source "target/sdk/Config.in"`
+  - `source "target/toolchain/Config.in"`
+  - `source "tmp/.config-package.in"`
+    - it includes `package/*/image-config.in` as well
+      - this expands to `package/base-files/image-config.in`, which includes
+        `tmp/.config-feeds.in`
+
 ## Hardware
 
 - Minimum Requirements
