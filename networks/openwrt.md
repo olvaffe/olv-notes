@@ -90,10 +90,11 @@ OpenWrt
 
 ## Hardware
 
-- Minimum Requirements
-  - 128MB ram
-  - 16MB flash
-- brands
+- HW Requirements
+  - flash/ram 4MB/32MB is no longer supported
+  - 8MB/64MB is expected to be unsupported in the near future
+  - 16MB/128MB or more is recommended
+- most popular brands
   - TP-LINK
   - NETGEAR
   - D-Link
