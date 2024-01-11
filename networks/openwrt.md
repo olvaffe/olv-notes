@@ -161,3 +161,81 @@ OpenWrt
     - 5: RK3588
   - Raxda Rock
     - 5B: RK3588
+- pfsense
+  - Netgate 1100: $189
+    - cpu: 2-core a53
+    - flash/ram: 8gb/1gb
+  - Netgate 2100: $340
+    - cpu: 2-core a53
+    - flash/ram: 8gb/4gb
+
+## Other OSes
+
+- openwrt upgrade
+  - download the sysupgrade firmware manually
+  - apply the sysupgrade firmware from luci or console
+    - this wipes the flash and flashes the new firmware
+    - all configs/packages are lost!
+  - backup and restore must be done manually
+    - limit customizations to UCI (`/etc/config`) makes things easier
+- pfesnse
+  - freebsd-based
+  - x86 and arm
+  - wired only
+  - an os upgrade can be triggered from webgui or from console
+    - it downloads the update, applies it, and reboots
+    - it tries to preserve configs
+      - but it is a good idea to save the old configs before update
+- proxmox
+  - debian-based
+  - x86-only (there is unofficial arm port)
+  - not a router os
+  - an os upgrade can be done via apt
+
+## Old Routers
+
+- TP-LINK TL-WR941ND(TW) Ver 3.1
+  - <https://openwrt.org/toh/tp-link/tl-wr941nd>
+    - `CONFIG_TARGET_ath79_tiny_DEVICE_tplink_tl-wr941-v2`
+  - SoC: Atheros AR9001AP-3NG
+    - cpu: AR9132
+      - kernel config `CONFIG_ATH79`
+      - the cpu type is `CPU_24K`
+    - wifi: AR9103 (2.4GHZ, abgn)
+      - kernel config `CONFIG_ATH9K`
+  - flash/ram: 4/32
+  - switch: Marvell 88E6060
+    - there are 6 independent MACs that perform all 802.3 functions
+      - frame formatting, crc checking, csma/cd enforcement, collision
+        handling
+    - there are 5 10BASE-T/100BASE-TX transceivers (PHYs)
+    - the last port does not have PHY and is connected to the upstream (cpu)
+      MAC for management
+    - kernel config `CONFIG_NET_DSA_MV88E6060`
+      - <https://docs.kernel.org/networking/dsa/index.html>
+      - there is a netdev for the CPU MAC which is unused by the userspace
+      - there are 5 netdevs for switch ports that have PHYs
+        - normally, userspace names them `wan` and `lan0` to `lan3`
+        - `wan` gets the ip from dhcp
+        - `lan0` to `lan3` are added to a bridge
+        - the bridge is assigned an ip and functions as a gateway
+        - a dhcpd binds to the bridge
+- TP-LINK Archer C7(US) Ver 2.0
+  - <https://openwrt.org/toh/tp-link/archer_c7>
+    - `TARGET_ath79_generic_DEVICE_tplink_archer-c7-v2`
+  - SoC: Qualcomm Atheros QCA9005AP
+    - cpu: QCA9558
+      - kernel config `CONFIG_ATH79`
+      - the cpu type is `CPU_74K`
+    - wifi: QCA9558 (2.4GHz, abgn), QCA9880-BR4A (5.0GHz, abgn+ac)
+      - kernel config `CONFIG_ATH10K`
+      - openwrt uses a modified ath10k driver with a modifier ath10k firmware
+        from Candela Technologies (CT)
+  - flash/ram: 16/128
+  - switch: AR8327N
+    - there are 7 independent MACs that perform all 802.3 functions
+    - there are 5 10BASE-Te/100BASE-TX/1000BASE-T transceivers (PHYs)
+    - the first and the last ports do not have PHYs and are connected to the
+      upstream (cpu) MACs for management
+      - two cpu ports for load-balancing?
+    - kernel config `CONFIG_NET_DSA_QCA8K`
