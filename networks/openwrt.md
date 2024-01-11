@@ -170,29 +170,6 @@ OpenWrt
     - cpu: 2-core a53
     - flash/ram: 8gb/4gb
 
-## Other OSes
-
-- openwrt upgrade
-  - download the sysupgrade firmware manually
-  - apply the sysupgrade firmware from luci or console
-    - this wipes the flash and flashes the new firmware
-    - all configs/packages are lost!
-  - backup and restore must be done manually
-    - limit customizations to UCI (`/etc/config`) makes things easier
-- pfesnse
-  - freebsd-based
-  - x86 and arm
-  - wired only
-  - an os upgrade can be triggered from webgui or from console
-    - it downloads the update, applies it, and reboots
-    - it tries to preserve configs
-      - but it is a good idea to save the old configs before update
-- proxmox
-  - debian-based
-  - x86-only (there is unofficial arm port)
-  - not a router os
-  - an os upgrade can be done via apt
-
 ## Old Routers
 
 - TP-LINK TL-WR941ND(TW) Ver 3.1
