@@ -96,6 +96,14 @@ systemd-networkd
     - yes when the bridge is also used as the gateway of the networks in
       containers
 
+## D-Bus
+
+- `busctl tree org.freedesktop.network1` to see all objects
+  - `/org/freedesktop/network1/link/*` are links (interfaces)
+  - `/org/freedesktop/network1/network/*` are networks
+    - object names are derived from filenames (e.g., `20-wan.network` becomes
+      `_320_2dwan`)
+
 ## Names
 
 - `hostname`
@@ -132,6 +140,25 @@ systemd-networkd
       name, which is the FQDN of the local machine
   - `myhostname` resolves `localhost.localdomain` to `127.0.0.1`
   - `dns` resolves with DNS configured by `/etc/resolv.conf`
+- special-use domain names
+  - <https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml>
+  - `in-addr.arpa.` for ipv4 reverse-mapping
+  - `ip6.arpa.` for ipv6 reverse-mapping
+  - `test.` is for testing
+  - `local.` is for mdns
+  - `invalid.` is always invalid
+  - private network
+    - `home.arpa.` is for residential private network
+    - `localhost.` is for local private network
+    - RFC6762 has some non-standard tlds for private networks
+      - `intranet.`
+      - `internal.`
+      - `private.`
+      - `corp.`
+      - `home.`
+      - `lan.`
+    - redhat uses `localdomain.`
+    - openwrt uses `lan.`
 
 ## systemd-resolved
 

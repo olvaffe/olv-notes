@@ -41,3 +41,42 @@ Homelab
   - untrusted clients (most iot)
   - servers (ssh, cast, etc.)
   - network management (dhcp, dns, omada, etc.)
+- WAN
+  - ISP is Xfinity
+  - need to reboot the modem to get a new DHCP lease
+  - modem provides a private network, `192.168.100.0/24`, briefly during boot
+  - xfinity provides
+    - an ipv4 address in `73.92.126.0/23`
+    - two ipv6 addresses (from RA and from DHCPv6 respectively?)
+    - a `/60` delegated prefix (it does not include the two ipv6 addresses)
+  - `20-wan.network`
+    - `DHCP=ipv4` suffices
+    - ipv6 ra is enabled by default and will trigger dhcpv6
+- LAN
+  - `20-lan.network`
+    - `Address=192.168.0.254/24`
+    - `DHCPServer=yes` to start dhcpv4
+    - `IPForward=yes` to forward both ipv4 and ipv6
+    - `IPMasquerade=ipv4` for ipv4 nat
+    - `DHCPPrefixDelegation=yes` to be assigned an ipv6 subnet
+    - `IPv6SendRA=yes` for ipv6 ra
+    - `IPv6AcceptRA=no`
+- `systemd-resolved`
+  - it is a name resolver
+    - it resolves locally first, and if that fails, it forwards the requests
+      to the dns servers
+  - it provides 3 interfaces
+    - the native interface is d-bus
+    - `nsswitch.conf` can be configured to use `systemd-resolved`
+    - it listens on dns ports as well
+  - `20-lan.network`
+    - `[Network]`
+    - `DNS=75.75.75.75 75.75.76.76 2001:558:feed::1 2001:558:feed::2` from
+      xfinity
+    - `[DHCPServer]`
+    - `DNS=_server_address` to advertise itself
+    - `[IPv6SendRA]`
+    - `EmitDNS=no` to not advertise wan dns server
+  - `resolved.conf`
+    - `DNSStubListenerExtra=192.168.0.254` to listen on the interface
+  - `/etc/hosts` for local host names
