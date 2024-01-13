@@ -70,6 +70,24 @@ Ethernet
   - Cat8
     - 2000mhz
     - up to 40Gb/s
+  - PoE
+    - PoE (802.3af): 12.95W
+    - PoE+ (802.3at): 25.50W
+    - PoE++ (802.bt, 4PPoE): 51W
+  - other considerations
+    - inside the cable jacket, there are 4 twisted pairs of copper wires
+    - shielded means foil inside the jacket to reduce EMI
+      - stiffer and more expensive
+      - usually not needed unless the run is near a power line or high-power
+        device such as air conditioner
+    - solid means the copper wires are solid rather than stranded to reduce
+      noise
+      - stiffer and more expensive
+      - must have except for very short runs
+    - plenum means the cables are rated for plenum air spaces required by fire
+      code
+      - fire-retardant and lower toxic fume
+      - if not plenum, at least CMR-rated
 
 ## Gigabit
 

@@ -31,6 +31,7 @@ Homelab
       - it tries to preserve configs
         - but backup is always recommended
 - general purpose
+  - armbian
   - debian
     - `unattended-upgrades`
 
@@ -107,3 +108,13 @@ Homelab
   - no first-hand experience, but it feels like each port has a native vlan id
     and a list of allowed vlan ids
     - if a frame is not tagged, it is assumed to have the native vlan id
+
+## HW
+
+- Cabling
+  - Cat6, 23 AWG, U/UTP, CMP (or at least CMR): 250ft
+  - Cat6 RJ45 connector: x2
+  - Cat6 punch down keystones: x2+4
+  - Wall plates: x2
+  - 8-port patch panel: x1
+  - Cat6 patch cable: x4
