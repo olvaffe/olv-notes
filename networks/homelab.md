@@ -80,3 +80,30 @@ Homelab
   - `resolved.conf`
     - `DNSStubListenerExtra=192.168.0.254` to listen on the interface
   - `/etc/hosts` for local host names
+- VLAN (802.11q)
+  - an untagged/access port is a port where the incoming and outgoing frames
+    are untagged
+    - that is, the device connected to the port sends/receives untagged frames
+    - the port is configured with a specific vlan id
+      - for each incoming frame received from the connected device, the switch
+        adds a tag, checks the destination, and forwards the frame to the
+        right port
+      - for each outgoing frame forwarded from another port, the switch checks
+        the tag, strips the tag, and sends the frame
+        - if the frame is untagged or has a wrong tag, the frame is dropped
+          instead
+  - a tagged/trunk port is a port where the incoming and outgoing frames
+    are tagged (except for native vlan)
+    - that is, the device connected to the port sends/receives tagged frames
+      (e.g., another switch's tagged port) except for native vlan
+    - the port is configured with multiple vlan ids
+      - for each incoming frame received from the connected device, the switch
+        checks the tag, checks the destination, and forwards the frame to the
+        right port
+      - for each outgoing frame forwarded from another port, the switch checks
+        the tag, and sends the frame
+    - the port is also configured with a native vlan id
+      - it works the same way as an untagged port
+  - no first-hand experience, but it feels like each port has a native vlan id
+    and a list of allowed vlan ids
+    - if a frame is not tagged, it is assumed to have the native vlan id
