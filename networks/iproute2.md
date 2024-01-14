@@ -59,3 +59,40 @@ iproute2
 - comparing to tap, no userspace handling of frames is needed
   - tap is for VMs, with hypervisor emulated HWs
   - veth is for containers
+
+## Bridge
+
+- in osi model,
+  - hubs are L1 (physical layer) devices
+  - switches are L2 (data link layer) devices
+    - they understand ethernet frames
+  - routers are L3 (network layer) devices
+    - they understand ip packets
+- bridges are switches
+  - the term bridge is mostly only used in ieee specs
+  - some may refer to a 2-port switch as a bridge
+  - the bottom line is they are the same thing
+- in this physical network, `host <-> switch <-> router <-> internet`,
+  - when the host wants to send a ip packet to the internet, it adds the
+    ethernet frame header to the ip packet and sends it out
+    - the mac src is the host
+    - the mac dst is the router
+  - the switch checks the mac dst and forwards the frame to the router
+  - the router checks the ip dst and route it to the final dst
+- linux bridge
+  - `ip link add br0 type bridge`
+  - `ip link set eth0 master br0`
+  - bridge mac addr
+    - if manually assigned, it will never change
+    - if generated, it will change as ports are added/removed
+      - it uses the lowest mac addr of all ports, or zero if no port
+      - see `br_stp_recalculate_bridge_id`
+- I guesss,
+  - just like a physical switch is not a netdev, a virtual bridge is also not
+    an netdev
+  - `br0` is more like a virtual nic connected to the bridge, than the bridge
+    itself
+  - when another netdev is added to the bridge, the netdev becomes a port
+    - the netdev is still available, but is only used to configure the port
+    - the netdev is no longer involved in routing
+- <https://hicu.be/bridge-vs-macvlan>
