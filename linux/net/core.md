@@ -92,3 +92,40 @@ Linux net core
       `tcp_queue_rcv` to queue the packet for userspace and calls `tcp_ack` to
       ack the packet
   - `skb_copy_datagram_msg` copies the packet from skb to msg
+
+## Ethernet Frame TX Flow
+
+- `__sock_sendmsg` is clled when the userspace writes to a socket
+  - `sock_sendmsg_nosec` calls `sock->ops->sendmsg`, which points to
+    `tcp_sendmsg` for tcp
+- `tcp_sendmsg`
+  - `skb_copy_to_page_nocache` copies the data from msg to skb
+  - `tcp_push` sends the skb to the lower level
+    - `tcp_write_xmit` calls `tcp_transmit_skb`
+    - `tcp_transmit_skb` builds the tcp header and calls
+      `icsk->icsk_af_ops->queue_xmit`, which points to `ip_queue_xmit` for
+      ipv4
+- `ip_queue_xmit`
+  - `ip_route_output_ports` routes the skb
+  - the ip header is built
+  - `ip_local_out` sends the skb to the lower level
+    - nftable `NFPROTO_IPV4`/`NF_INET_LOCAL_OUT` is run
+    - `dst_output` calls `skb_dst(skb)->output`, which points to `ip_output`
+      for ipv4
+    - `ip_output` runs nftable `NFPROTO_IPV4`/`NF_INET_POST_ROUTING`
+    - `ip_finish_output` calls `neigh_output`, which calls `neigh->output`,
+      which points to `neigh_direct_output`
+  - `neigh_direct_output` calls `dev_queue_xmit`
+- `dev_queue_xmit`
+  - `__dev_xmit_skb` queues the skb to qdisc
+    - `dev_qdisc_enqueue` calls `q->enqueue`, which points to
+      `fq_pie_qdisc_enqueue` when the scheduler is `fq_pie`
+  - `__qdisc_run` runs qdisc
+    - `qdisc_restart` calls
+      - `dequeue_skb` to dequeue an skb
+      - `sch_direct_xmit` to `dev_hard_start_xmit` the skb
+    - if there are too many skbs, `__netif_schedule` raises `NET_TX_SOFTIRQ`
+      - `net_tx_action` will call `qdisc_run` to do more xmits
+- `dev_hard_start_xmit` calls `xmit_one` to transmit one skb at a time
+  - `netdev_start_xmit` calls `ops->ndo_start_xmit`, which points to the
+    hw driver callback
