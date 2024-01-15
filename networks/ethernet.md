@@ -37,57 +37,99 @@ Ethernet
   - 1000BASE-T1
     - 802.3bp-2016
     - up to 40m
-    - Cat 6a
+    - for automative, iot, etc.
   - there are also fiber optic cable variants
 - 2.5 gigabit and 5 gigabit ethernet, 2.5Gb/s 5Gb/s
   - 2.5GBASE-T and 5GBASE-T
     - 802.3bz-2016
     - up to 100m
     - Cat 5e and 6
+  - there are other variants
 - 10 gigabit ethernet, 10Gb/s
-  - 10GBASE
-    - 802.3ae-2002
-    - mainly found in network switches
-- 100 gigabit ethernet, 10Gb/s
+  - 10GBASE-T
+    - 802.3an-2006
+    - up to 100m
+    - Cat 6a
+  - there are other variants
+- 25 gigabit, 40 gigabit and 100 gigabit ethernet, 40Gb/s, 100Gb/s
+  - 25GBASE-T and 40GBASE-T
+    - 802.3bq-2016
+    - up to 30m
+    - Cat 8
   - 100GBASE
     - 802.3ba-2010
     - mainly found in network switches
-- cables
-  - Cat5e
-    - 100mhz
-    - up to 2.5Gb/s
-  - Cat6
-    - 250mhz
-    - up to 10Gb/s at 37 to 55 meters
-  - Cat6A
-    - 500mhz
-    - up to 10Gb/s at 100 meters
-      - thicker and harder to run
-      - handle heat dissipation better for PoE++
-  - Cat7
-    - 600mhz
-    - up to 10Gb/s
-  - Cat8
-    - 2000mhz
-    - up to 40Gb/s
-  - PoE
-    - PoE (802.3af): 12.95W
-    - PoE+ (802.3at): 25.50W
-    - PoE++ (802.bt, 4PPoE): 51W
-  - other considerations
-    - inside the cable jacket, there are 4 twisted pairs of copper wires
-    - shielded means foil inside the jacket to reduce EMI
-      - stiffer and more expensive
-      - usually not needed unless the run is near a power line or high-power
-        device such as air conditioner
-    - solid means the copper wires are solid rather than stranded to reduce
-      noise
-      - stiffer and more expensive
-      - must have except for very short runs
-    - plenum means the cables are rated for plenum air spaces required by fire
-      code
-      - fire-retardant and lower toxic fume
-      - if not plenum, at least CMR-rated
+- 200, 400, 800 gigabit ethernet
+  - data centers
+
+## Twisted-Pair Cables
+
+- twisted-pair cables
+  - inside the cable jacket, there are 4 twisted pairs of copper wires
+    - each pair is twisted to reduce EMI
+  - solid means the copper wires are solid rather than stranded to reduce
+    noise
+    - stiffer and more expensive
+    - must have except for very short runs
+    - there is also CCA which is also bad
+  - plenum (CMP, as opposed to CMR) means the cables are rated for plenum air
+    spaces required by fire code
+    - fire-retardant and lower toxic fume
+    - if not CMP, at least CMR-rated
+  - shielding reduces EMI and helps heat dissipation
+    - but is stiffer and more expensive
+    - usually not needed unless PoE+, or the run is near a power line or
+      high-power device such as air conditioner
+    - U/UTP: cable unshielded, each pair unshielded
+    - F/FTP: cable foiled, each pair foiled
+- Cat5e
+  - 100mhz
+  - up to 2.5Gb/s
+- Cat6
+  - 250mhz
+  - up to 10Gb/s at 37 to 55 meters
+- Cat6A
+  - 500mhz
+  - up to 10Gb/s at 100 meters
+    - thicker and harder to run
+    - handle heat dissipation better for PoE++
+- Cat8
+  - 2000mhz
+  - up to 40Gb/s
+- PoE
+  - PoE (802.3af): 12.95W
+  - PoE+ (802.3at): 25.50W
+  - PoE++ (802.3bt, 4PPoE): 51W
+
+## VLAN
+
+- 802.11q
+- an untagged/access port is a port where the incoming and outgoing frames
+  are untagged
+  - that is, the device connected to the port sends/receives untagged frames
+  - the port is configured with a specific vlan id
+    - for each incoming frame received from the connected device, the switch
+      adds a tag, checks the destination, and forwards the frame to the
+      right port
+    - for each outgoing frame forwarded from another port, the switch checks
+      the tag, strips the tag, and sends the frame
+      - if the frame is untagged or has a wrong tag, the frame is dropped
+        instead
+- a tagged/trunk port is a port where the incoming and outgoing frames
+  are tagged (except for native vlan)
+  - that is, the device connected to the port sends/receives tagged frames
+    (e.g., another switch's tagged port) except for native vlan
+  - the port is configured with multiple vlan ids
+    - for each incoming frame received from the connected device, the switch
+      checks the tag, checks the destination, and forwards the frame to the
+      right port
+    - for each outgoing frame forwarded from another port, the switch checks
+      the tag, and sends the frame
+  - the port is also configured with a native vlan id
+    - it works the same way as an untagged port
+- no first-hand experience, but it feels like each port has a native vlan id
+  and a list of allowed vlan ids
+  - if a frame is not tagged, it is assumed to have the native vlan id
 
 ## Gigabit
 
@@ -100,29 +142,6 @@ Ethernet
   - `Speed: 1000Mb/s`
   - `Duplex: Full`
 - or, `cat /sys/class/net/<dev>/speed`
-
-## Home Network
-
-- at each node,
-  - performance
-    - for modem, it should be able to handle ISP bandwidth
-    - for ethernet, each node should be able to handle 1g/2.5g/10g
-  - power consumption
-    - passive/active cooling
-    - electricity bill
-- modem
-- router
-  - pfsense netgate advertises L3 forwarding, firewall, and vpn numbers
-- switch
-  - managed (for vlan, 802.1x, etc.) or not
-  - number of ports and their speeds
-  - unlike hub, a switch inspects the mac addrress and forwards packets to the
-    right ports
-- ap
-- cabling
-  - moca adapters for coax
-  - Cat6 is good enough
-    - Cat6A is more future proof but harder to run
 
 ## Link
 

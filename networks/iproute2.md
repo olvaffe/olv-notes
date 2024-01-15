@@ -4,14 +4,19 @@ iproute2
 ## Repo
 
 - <https://git.kernel.org/pub/scm/network/iproute2/iproute2.git>
+  - use `AF_NETLINK`/`NETLINK_ROUTE` to communicate with the kernel
 - replaces `net-tools`
   - <https://net-tools.sourceforge.io/>
+  - use ioctl to communicate with the kernel
   - `arp` -> `ip neigh`
   - `ifconfig` -> `ip addr`
   - `ipmaddr` -> `ip maddr`
   - `iptunnel` -> `ip tunnel`
   - `route` -> `ip route`
   - `netstat` -> `ss`
+- replaces `bridge-utils`
+  - <https://git.kernel.org/pub/scm/network/bridge/bridge-utils.git>
+  - use ioctl to communicate with the kernel
 
 ## Static IP and Routing
 
