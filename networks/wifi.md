@@ -4,45 +4,58 @@ WiFi
 ## Standards
 
 - due to demands, products tend to ship before standardization
+- 802.11
+  - 1997, unofficially Wi-Fi 0
+  - Frequency: 2.4 GHz
+  - Stream data rate: 1/2 MBits/s
 - 802.11b
   - 1999, unofficially Wi-Fi 1
   - Frequency: 2.4 GHz
-  - Bandwidth: 22 MHz
+  - Bandwidth: 20 MHz
   - Stream data rate: 1/2/5.5/11 MBits/s
-  - MIMO: no
 - 802.11a
   - 1999, unofficially Wi-Fi 2
   - Frequency: 5 GHz
-  - Bandwidth: 5/10/20 MHz
+  - Bandwidth: 20 MHz
   - Stream data rate: 6/9/12/18/24/36/48/54 MBit/s
-  - MIMO: no
 - 802.11g
   - 2003, unofficially Wi-Fi 3
   - Frequency: 2.4 GHz
-  - Bandwidth: 5/10/20 MHz
-  - Stream data rate: up to 13.5/27/54 MBit/s
-  - MIMO: no
+  - Bandwidth: 20 MHz
+  - Stream data rate: 6/9/12/28/24/36/48/54 MBit/s
 - 802.11n
   - 2008, Wi-Fi 4
   - Frequency: 2.4/5 GHz
   - Bandwidth: 20/40 MHz
   - Stream data rate: up to 288.8/600 MBit/s
-  - MIMO: 4
+  - MIMO: up to 4 (4x4:4, where the numbers stand for tx, rx, and streams)
 - 802.11ac
   - 2014, Wi-Fi 5
   - Frequency: 5 GHz
   - Bandwidth: 20/40/80/160 MHz
   - Stream data rate: up to 346.8/800/1733.2/3466.8 MBit/s
-  - MIMO: 8
+  - MIMO: up to 8
 - 802.11ax
   - 2020, Wi-Fi 6
-  - 2021, Wi-Fi 6E (6 GHz)
-  - Frequency: 2.4/5/6 GHz
-  - Bandwidth: 20/40/80/80+80 MHz
+  - Frequency: 2.4/5 GHz
+  - Bandwidth: 20/40/80/160 MHz
   - Stream data rate: up to 1147/2294/4804/9608 MBit/s
-  - MIMO: 8
+  - MU-MIMO: up to 8
+  - OFDMA
+  - 2021, Wi-Fi 6E (6 GHz)
 - 802.11be
-  - 2024, Wi-Fi 7???
+  - 2024, Wi-Fi 7
+  - Frequency: 2.4/5/6 GHz
+  - Bandwidth: 20/40/80/160/320 MHz
+  - Stream data rate: up to 46120 MBit/s
+    - the math goes like
+    - base: 7
+    - shorter GI: 9
+    - better encoding: 172
+    - 320MHz channel: 2882
+    - 16 streams: 46120
+  - MU-MIMO: up to 16
+  - OFDMA
 
 ## Bitrate Calculation
 
@@ -118,10 +131,17 @@ WiFi
   - multiple antennas to exploit multipath propagation
   - written NxM indicating N transmitters and M receivers
   - gives N (or M) times of the bandwidth
-- In practise,
-  - best AP (in 2020) uses 802.11ac, 4x4, supporting beamforming and all DFS
-    channels
-  - although clients are commonly limited to 2x2
+- In practise, the best AP in 2024 supports
+  - tri-band
+    - 802.11be for 6GHz
+    - 802.11be for 5GHz
+    - 802.11ax for 2.4GHz
+    - if mesh, a fourth band for backhaul
+  - MU-MIMO: 4x4, 16 streams
+    - although clients are commonly limited to 2x2
+  - OFDMA: reduce latency
+  - beamforming: focus signal to connected clients
+  - DFS: avoid channels with high inference
 
 ## Roaming
 
