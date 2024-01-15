@@ -16,7 +16,10 @@ Linux net bridge
     - `RX_HANDLER_PASS`, which means the skb should be handled normally by the
       slave device
   - when the skb is consumed by br, it is handled by `br_handle_frame_finish`
-    - if the skb is for the br, `br_pass_frame_up` calls
-      `br_netif_receive_skb` to go through the regular processing
+    - if the skb is for the br, `br_pass_frame_up` points `skb->dev` to the br
+      and calls `br_netif_receive_skb` to go through the regular processing
     - if the skb is for another machine, `br_forward` forwards it through the
       appropriate port
+      - `__br_forward` pinits `skb->dev` to the slave dev of the port and
+        calls `br_forward_finish`
+      - `br_dev_queue_push_xmit` calls `dev_queue_xmit` to xmit the skb
