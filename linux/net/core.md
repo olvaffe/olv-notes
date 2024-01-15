@@ -49,18 +49,19 @@ Linux net core
 ## Ethernet Frame RX Flow
 
 - when the hw receives an ethernet frame, it generates an interrupt
-- the driver handles the interupt and calls `napi_schedule`
-- `____napi_schedule` adds `napi_struct` to `sd->poll_list` and raises
-  `NET_RX_SOFTIRQ`
-- `net_rx_action` calls `napi_poll` on all entries of `sd->poll_list`
-- `__napi_poll` calls the driver's `poll` callback
-  - the driver has initialized the napi with `netif_napi_add` and provided the
-    callback
-- in the poll function, the driver
-  - asks the hw to copy the frame to cpu memory
-  - allocates and initializes a `sk_buffer` (metadata for the frame)
-  - calls `napi_gro_receive`, generic receive offloading
-    - some drivers call `netif_receive_skb` instead
+  - the driver handles the interupt and calls `napi_schedule`
+  - `____napi_schedule` adds `napi_struct` to `sd->poll_list` and raises
+    `NET_RX_SOFTIRQ`
+  - `net_rx_action` calls `napi_poll` on all entries of `sd->poll_list`
+  - `__napi_poll` calls the driver's `poll` callback
+    - the driver has initialized the napi with `netif_napi_add` and provided the
+      callback
+  - in the poll function, the driver
+    - asks the hw to copy the frame to cpu memory
+    - allocates and initializes a `sk_buffer` (metadata for the frame)
+    - calls `napi_gro_receive`, generic receive offloading
+      - some drivers call `netif_receive_skb` instead
+- `napi_gro_receive`
   - `napi_skb_finish` calls `netif_receive_skb_list_internal`
   - `__netif_receive_skb_list` calls `__netif_receive_skb_list_core` which
     calls `__netif_receive_skb_core` on each skb
@@ -74,12 +75,16 @@ Linux net core
   - `ip_rcv_finish` calls `ip_route_input_noref` to route the packet
     - it sets the `input` callback to `ip_local_deliver`, `ip_forward`, or
       others
+    - it sets the `output` callback to `ip_output`  or others
   - `dst_input` calls the `input` callback
-- `ip_local_deliver`
-  - nftable `NFPROTO_IPV4`/`NF_INET_LOCAL_IN` hook is run
-  - `ip_protocol_deliver_rcu` calls `inet_protos[protocol]->handler`
-    - the array is modified by `inet_add_protocol`
-    - protocols are `IPPROTO_TCP`, `IPPROTO_UDP`, `IPPROTO_ICMP`, etc.
+    - `ip_local_deliver`
+      - nftable `NFPROTO_IPV4`/`NF_INET_LOCAL_IN` hook is run
+      - `ip_protocol_deliver_rcu` calls `inet_protos[protocol]->handler`
+        - the array is modified by `inet_add_protocol`
+        - protocols are `IPPROTO_TCP`, `IPPROTO_UDP`, `IPPROTO_ICMP`, etc.
+    - `ip_forward`
+      - nftable `NFPROTO_IPV4`/`NF_INET_FORWARD` hook is run
+      - `ip_forward_finish` calls `dst_output`, which points to `ip_output`
 - `tcp_v4_rcv` handles received tcp packet
   - `__inet_lookup_skb` finds the `struct sock` for the packet src/dst
   - `tcp_v4_fill_cb` parses the packet header
