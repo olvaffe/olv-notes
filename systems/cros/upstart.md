@@ -155,36 +155,6 @@ Chrome OS upstart
 
 - TODO
 
-## `cryptohomed`
-
-- note that `/home` is a bind mount of `/mnt/stateful/home`
-  - `/home/.shadow` is just `/mnt/stateful/home/.shadow`
-    - it is encrypted by ext4 encryption
-  - but `/home/.shadow/chronos` is `/mnt/stateful_partition/encrypted/chronos`
-    - it is encrypted by dm-crypt
-- when cryptohomed is given username/password on user login,
-  - it hashes the username to get an hash
-  - `/home/.shadow/<salted_hash_of_username>` is where the user data are
-    - `master.0` is the encrypted vault keyset (EVK) that can be descrypted by
-      password to get VK
-    - `mount` is an encrypted ext4 directory and can be descrypted by VK
-  - it then bind mounts various user directories
-    - `/home/.shadow/<hash>/mount/user` to `/home/user/<hash>` 
-      - and to `/home/chronos/u-<hash>` for multi-user support
-      - and to `/home/chronos/user` for backward compatibility
-    - `/home/.shadow/<hash>/mount/root` to `/home/root/<hash>` 
-  - for a new username/password, cryptohomed creates `/home/.shadow/<hash>`
-    and everything underneath
-- `/home/.shadow/<hash>/mount` uses ext4 encryption
-  - file names and contents are encrypted
-  - `e4crypt add_key` to add the key to the user keyring
-  - everything is automatically decrypted on demand
-  - it used to use stacked ecryptfs
-- what are the differences between the three user directories?
-  - `/home/user/<hash>` is for Chrome user data?
-  - `/home/root/<hash>` is for system service user data?
-  - `/home/chronos/u-<hash>` is for multi-user user data?
-
 ## Sandboxing
 
 - `stop ui` first to look at system services
