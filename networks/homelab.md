@@ -29,6 +29,7 @@ Homelab
   - Wall plates: x2
   - 8-port patch panel: x1
   - Cat6 patch cable: x4
+  - 12.5ft telescoping extension ladder
   - or, moca adapters for coax
 
 ## Distros
