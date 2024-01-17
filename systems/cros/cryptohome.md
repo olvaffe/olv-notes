@@ -15,6 +15,7 @@ CrOS cryptohome
       - `root=` points to the dm device
     - the ext2 feature flags have an unknown bit set, forcing the kernel to
       mount it ro
+    - `make_dev_ssd.sh -r` changes both
   - 4: KERN-B, 32M
   - 5: ROOT-B, 4G
   - 6: KERN-C, reserved
