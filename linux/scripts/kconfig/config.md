@@ -120,11 +120,14 @@ Kernel Config
         - select `Netfilter connection tracking support`
         - select `Network Address Translation support`
         - select `Netfilter nf_tables support`
-        - select `Netfilter nf_tables masquerade support`
-        - select `Netfilter nf_tables nat module`, depending on `NF_TABLES_IPV4`
+          - select `Netfilter nf_tables masquerade support`
+          - select `Netfilter nf_tables nat module`, depending on `NF_TABLES_IPV4`
       - select `IP: Netfilter Configuration`
         - select `IPv4 nf_tables support`
-    - select `802.1d Ethernet Bridging`
+      - select `IPv6: Netfilter Configuration`
+        - select `IPv6 nf_tables support`
+    - select `802.1d Ethernet Bridging` if desired
+    - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
   - select `Wireless` if needed
@@ -330,6 +333,8 @@ Kernel Config
     - select `Device mapper support`
   - select `Network device support`
     - select `Network core driver support`
+      - select `WireGuard secure network tunnel` if desired
+      - select `MAC-VLAN support` if container
       - select `Universal TUN/TAP device driver support` if kvm
       - select `Virtual ethernet pair device` if container
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
