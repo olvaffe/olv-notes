@@ -15,6 +15,34 @@ systemd
            -> swap.target
          -> sockets.target
 
+## Old SysVinit (`/sbin/init`)
+
+- PID 1
+- it parses `/etc/inittab`
+  - usually, it runs scripts in `/etc/rcS.d` and `/etc/rc2.d`.  Then runs
+    `getty` for `tty[1-6]`
+- `rcS.d`
+  - `S01mountkernfs.sh` mounts `/run`, `/proc`, `/sys`, etc.
+  - `S02udev` makes sure `/dev` is mounted as devtmpfs and starts udev
+  - `S03mountdevsubfs.sh` mounts `/run/shm`, `/dev/pts`, etc.
+  - `S05keyboard-setup` runs `setupcon` to set up kernel keymap
+    - It is a script that runs `loadkeys`
+    - This is an early setup for, say, checkroot failure interaction
+  - `S07checkroot.sh` remounts `/` according to `/etc/fstab`
+  - `S08kmod` load modules listed in `/etc/modules`
+  - `S10mountall.sh` mounts all fs listed in `/etc/fstab`
+  - `S13procps` runs `sysctl` for settings listed in `/etc/sysctl.conf`
+  - `S15networking` runs `ifup`, which reads `/etc/network/interfaces`
+  - `S19console-setup` run `setupcon`
+  - more
+- `rc2.d`
+  - `S01binfmt-support` updates kernel binfmt database
+  - `S01rsyslog` starts syslogd
+  - `S02dbus` starts system-wise dbus
+  - `S02ssh` starts sshd
+  - `S05gdm3` starts gdm3
+  - more
+
 ## Source tree
 
 - `bash-completion/systemd-bash-completion.sh`

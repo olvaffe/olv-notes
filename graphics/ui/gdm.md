@@ -73,5 +73,53 @@ GDM
     `/etc/gdm3/Xsession "default"`.  The worker calls
     `gdm_session_worker_start_session()` to fork, setuid, and exec the
     program.  Then the parent calls `SessionStarted` back.
-
   - The worker remains alive until the session ends.
+
+## Session
+
+- The session is started by `/etc/gdm3/Xsession <name>`
+  - it sources `/etc/X11/Xsession.d`
+  - in the ends, it exec() `ssh-agent dbus-launch x-session-manager`
+    - or, `~/.xsession` if the file exists
+- The default session runs `/etc/gdm/Xsession "default"`
+  - `im-config_launch` starts the input method
+    - it sources
+      - `/usr/share/im-config/xinputrc.common`
+      - `/etc/default/im-config`
+      - `~/.xinputrc` or `/etc/X11/xinit/xinputrc`
+    - usually it starts `00_default.rc`, which starts the input method set in
+      `/etc/default/im-config`, which is usually `01_auto.rc`
+- In `on_session_exited`, `PostSession/Default` is run
+
+## gnome-session
+
+- `gnome-session`
+  - `get_session_keyfile()`
+    - it runs `IsRunnableHelper` to see if the session is runnable
+    - for each provider listed in `RequiredProviders`, it checks if the
+      app `DefaultProvider-<provider>` exists.  If not, the session is not
+      runnable
+    - for each app listed in `RequiredComponents`, it checks if the app is
+      available.
+    - if the session is not runnable, `FallbackSession` is used.
+  - `load_standard_apps()`
+    - call `gsm_manager_add_required_app()` on all `RequiredComponents`
+    - call `gsm_manager_add_autostart_app()` for all autostart apps
+    - call `gsm_manager_add_required_app()` on all `RequiredProviders`
+  - when started with the session defined by `/usr/share/gnome-session/sessions/gnome.session`
+    - which usually runs `gnome-shell` and `gnome-settings-daemon`
+  - it also runs all apps defined in
+    - `~/.config/autostart`
+    - `/usr/share/gnome/autostart`
+    - `/etc/xdg/autostart`
+  - it provides a dbus service, `org.gnome.SessionManager`.  gnome-shell talks
+    to the service to logout the session.
+- Manually running `dbus-launch Xorg; gnome-settings-daemon` shows that
+  gnome-settings-daemon starts
+  - polkitd (for limiting power management)
+  - upowerd (for doing low-level power management)
+  - console-kit-daemon
+- Manually running `gnome-shell` shows that it starts
+  - accounts-daemon (used by g-c-c accounts)
+  - gsd-printer (used by g-c-c printer)
+  - packagekitd (used by g-c-c info)

@@ -18,6 +18,9 @@ systemd-journald
     current journal file to `system@<seq-id>-<head-seq>-<head-time>.journal`
     - `journalctl --header` to see the mysteric numbers
   - if journald detects file corruption, it appends `~` to the filename
+- when `ForwardToSyslog=yes`, journald also forwards journals to
+  `/run/systemd/journal/socket/syslog` socket
+  - rsyslog uses the socket rather than `/dev/log` when it exists
 
 ## `journalctl`
 

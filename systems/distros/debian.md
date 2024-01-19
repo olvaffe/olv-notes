@@ -35,6 +35,28 @@ Debian
   - `apt autoremove --dry-run` to selectively mark packages manual
   - `apt autoremove` to remove unneeded ones
 
+## dpkg
+
+- `dpkg`
+  - `-i <pkg>.deb` installs `<pkg>.deb`
+  - `-r <pkg>` removes an installed package
+  - `-P <pkg>` purges an installed package
+  - `-L <pkg>` lists the contents an installed package
+  - `-l` lists installed packages
+  - `-S <path>` lists packages who own `<path>`
+- `dpkg-deb`
+  - `-c <pkg>.deb` shows the contents of `<pkg>.deb`
+  - `-x <pkg>.deb <dir>` extracts `<pkg>.deb` to `<dir>`
+
+## deb
+
+- a .deb file is an ar-archive
+- `ar t <pkg>.deb` shows 3 files
+  - `debian-binary` specifies the package format version (2.0)
+  - `control.tar.xz` contains package metadata and install scripts
+  - `data.tar.xz` contains files
+- `ar x <pkg>.deb` to extracts them
+
 ## `debootstrap`
 
 - `debootstrap` does 4 things
