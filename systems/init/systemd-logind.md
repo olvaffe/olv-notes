@@ -72,7 +72,7 @@ systemd-logind
       `seat_read_active_vt` to update the active vt and active session for
       seat0
 
-## agetty
+## AutoVT
 
 - logind manages VTs
   - by putting them in `VT_PROCESS` mode, logind is in charge of VT switches
@@ -82,67 +82,12 @@ systemd-logind
   - which executes `-/sbin/agetty -o '-p -- \\u' --noclear %I $TERM`
     - `%I` expands to `ttyN`
     - `$TERM` expands to `linux`
-- agetty
-  - runs as root
-  - opens `/dev/ttyN`
-  - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
-    controlling terminal
-  - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
-  - calls `tcsetpgrp` to make itself foreground
-  - prompts `login: ` and reads login name
-  - `execv`s `login` wit the login name
-- login
-  - runs as root
-  - closes stdin/stdout/stderr
-  - calls `vhangup`
-  - reopens `/dev/ttyN` for stdin/stdout/stderr
-  - initializes pam
-  - calls `pam_authenticate` to authenticate the username
-  - calls `initgroups` to init the supplementary groups
-  - opens pam session
-  - calls `setgid`
-  - sets up environ (`TERM`, `HOME`, `USER`, `SHELL`, etc.)
-    - `TERM` is from `agetty`
-    - the others are from `/etc/passwd`
-  - displays motd
-  - calls `TIOCNOTTY` to detach the controlling tty
-  - forks
-    - the parent
-      - closes all fds
-      - calls `wait` repeatedly until there is no child
-      - closes pam session
-    - the child
-      - calls `setsid` to create a new session and becomes the leader
-      - reopens `/dev/ttyN` for stdin/stdout/stderr
-      - calls `TIOCSCTTY` to attach the controlling tty
-      - calls `setuid`
-      - calls `chdir` to home
-      - calls `execvp` to execute the shell
-- environment variables
-  - kernel invokes `init` with `HOME=/` and `TERM=linux`
-  - systemd has
-    - `TERM=linux`
-    - added by initramfs shell
-      - `PWD=/`
-      - `SHLVL=1`
-    - added by initramfs `/init`
-      - `PATH=/sbin:/usr/sbin:/bin:/usr/bin`
-      - `drop_caps=`
-      - `init=/sbin/init`
-      - `rootmnt=/root`
-  - systemd-logind has ...
-  - agetty has ...
-  - login has ...
-  - bash has ...
+- `agetty` prompts for user name
+- `login` logs in the user
 
-## User Login
+## User Session
 
-- agetty prompts for user name
-- after getting the user name, agetty `exec`s login
-- login prompts for user password and authenticates using PAM
-- `/etc/pam.d/login` includes `/etc//pam.d/system-login`.  Among other things,
-  it include `pam_systemd`
-- `pam_systemd` together with `systemd-logind` does
+- after a user logs in, `pam_systemd` together with `systemd-logind` does
   - starts `user-$UID.slice`.  Under which,
     - starts `user@$UID.service`
     - starts `session-$SESSION.scope`

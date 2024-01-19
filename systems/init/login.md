@@ -1,6 +1,19 @@
 login and PAM
 =============
 
+## agetty
+
+- agetty is started by logind
+- agetty initializes tty and prompts for user name
+  - runs as root
+  - opens `/dev/ttyN`
+  - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
+    controlling terminal
+  - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
+  - calls `tcsetpgrp` to make itself foreground
+  - prompts `<hostname> login: ` and reads login name
+  - `execv`s `login -- <username>`
+
 ## login
 
 - repos
@@ -9,24 +22,18 @@ login and PAM
 - `/etc/login.defs` is the config file
   - it is shared by multiple tools and only a subset of configs are applicable
     to login
-- agetty initializes tty and prompts for user name
-  - it runs as root
-  - it opens `/dev/ttyN`
-  - it calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
-    controlling terminal
-  - it closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
-  - it calls `tcsetpgrp` to make itself foreground
-  - it prompts `<hostname> login: ` and reads login name
-  - it `execv`s `login -- <username>`
+- `login` is started by agetty and prompts for password
 - `init_tty`
+  - it closes the current stdin/stdout/stderr and calls `vhangup`
   - it gets the terminal path, `/dev/ttyN`, via `ttyname(STDIN_FILENO)`
-  - it opens the termianl and dups the fd to stdin/stdout/stderr
+  - it opens the terminal and dups the fd to stdin/stdout/stderr
 - `init_loginpam`
   - `pam_start("login", username, &conv, &pamh);`
     - `username` is specified by `agetty`
     - `conv` is `misc_conv` from `libpam_misc`
     - this function allocates a `pam_handle_t` and reads both
       - `/etc/pam.d/<service>`
+        - `<service>` is `login` in this case
         - these rules are added to `pamh->handlers.conf`
       - `/etc/pam.d/other`
         - these rules are added to `pamh->handlers.other`, which is used only
@@ -79,7 +86,7 @@ login and PAM
 - it calls `setgid` to change the gid
 - `init_environ` initializes env
   - `HOME`, `USER`, are `SHELL` are from passwd
-  - `TERM` is preserved
+  - `TERM` is from agetty and is preserved
   - `PATH` is set to `_PATH_DEFPATH` (`/usr/local/bin:/usr/bin`)
   - `MAIL` is set to `_PATH_MAILDIR/<username>` (`/var/spool/mail`)
   - `LOGNAME` is set to `USER`
@@ -106,6 +113,32 @@ login and PAM
   - `pam_end` to end pam
   - `execvp` to invoke the shell
   - `execle(shell)`
+
+## Environment Variables
+
+- kernel invokes `init` with `HOME=/` and `TERM=linux`
+- systemd has
+  - `TERM=linux`
+  - added by initramfs shell
+    - `PWD=/`
+    - `SHLVL=1`
+  - added by initramfs `/init`
+    - `PATH=/sbin:/usr/sbin:/bin:/usr/bin`
+    - `drop_caps=`
+    - `init=/sbin/init`
+    - `rootmnt=/root`
+- agetty and login have
+  - `TERM`
+  - `PATH`
+  - added by systemd
+    - `SYSTEMD_EXEC_PID`
+    - `INVOCATION_ID`
+- user shell has
+  - added by `login` using `/etc/passwd`
+    - `HOME`
+    - `USER`
+    - `SHELL`
+  - many more
 
 ## PAM config
 
