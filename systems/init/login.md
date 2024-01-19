@@ -134,11 +134,25 @@ login and PAM
     - `SYSTEMD_EXEC_PID`
     - `INVOCATION_ID`
 - user shell has
-  - added by `login` using `/etc/passwd`
+  - added by `login` using `/etc/passwd` and `/etc/login.defs`
     - `HOME`
     - `USER`
     - `SHELL`
-  - many more
+    - `MAIL`
+    - `LOGNAME`
+  - added by `pam_env` using `/etc/environment`
+  - added by `pam_systemd`
+    - `XDG_SESSION_ID`
+    - `XDG_RUNTIME_DIR`
+    - `MAIL`
+    - `LANG`
+    - `XDG_SESSION_CLASS`
+    - `XDG_SESSION_TYPE`
+    - `XDG_SEAT`
+    - `XDG_VTNR`
+  - added by user services using `systemctl --user set-environment`
+    - `DBUS_SESSION_BUS_ADDRESS`
+  - added by shell using `/etc/profile`, etc.
 
 ## PAM config
 
