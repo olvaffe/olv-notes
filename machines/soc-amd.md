@@ -9,34 +9,11 @@ AMD CPUs
 - Excavator   - 2015 - 28nm
 - Zen         - 2017 - 14nm
 - Zen+        - 2018 - 12nm
-- Zen 2
-  - 2019
-  - 7nm
-  - desktop: matisse, renoir
-  - mobile: renoir, lucienne, mendocino
-  - server: rome
-- Zen 3
-  - 2020
-  - 7nm
-  - desktop: vermeer, cezanne, chagall
-  - mobile: cezanne, barcelo
-  - server: milan
-- Zen 3+ (APU only)
-  - 2022
-  - 6nm
-  - mobile: rembrandt
-- Zen 4
-  - 2022
-  - 5nm
-  - desktop: raphael
-  - mobile: phoenix, dragon range
-  - server: genoa
-- Zen 5?
-  - 2024
-  - 3nm
-  - desktop: granite ridge
-  - mobile: strix point
-  - server: turin
+- Zen 2       - 2019 - 7nm
+- Zen 3       - 2020 - 7nm
+- Zen 3+      - 2022 - 6nm (apu only)
+- Zen 4       - 2022 - 5nm
+- Zen 5?      - 2024 - 3nm
 
 ## CPUs and APUs
 
@@ -150,16 +127,25 @@ AMD CPUs
   - 2C2T
   - gpu `1002:98e4`
   - `CHIP_STONEY|AMD_IS_APU`
+  - `AMDGPU_FAMILY_CZ`
 - zork
   - Ryzen 7 3700C
   - 4C8T
   - gpu `1002:15d8`
   - `CHIP_RAVEN|AMD_IS_APU`
+  - `AMDGPU_FAMILY_RV`
 - guybrush
   - Ryzen 5 5625C
   - 6C12T
   - gpu `1002:15e7`
   - `CHIP_RENOIR|AMD_IS_APU`
+  - `AMDGPU_FAMILY_RV`
+- skyrim
+  - Ryzen 5 7520C
+  - 4C8T
+  - gpu `1002:1506`
+  - `CHIP_ID_DISCOVERY|AMD_IS_APU`
+  - `AMDGPU_FAMILY_GC_10_3_6`
 
 ## Product Lines
 
