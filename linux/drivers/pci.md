@@ -1,6 +1,69 @@
 PCI
 ===
 
+## PCIe
+
+- PCIe 1.0
+  - 2003
+  - 2.5 GT/s
+  - 8b/10b (encode 8-bit words to 10-bit symbols)
+  - x1: `2.5 GT/s * 8 / 10 = 2 Gb/s = 0.25 GB/s`
+  - x16: 4 GB/s
+- PCIe 1.1
+  - 2005
+  - 2.5 GT/s
+- PCIe 2.0
+  - 2007
+  - 5 GT/s
+  - 8b/10b
+  - x1: 0.5 GB/s
+  - x16: 8 GB/s
+- PCIe 2.1
+  - 2009
+  - 5 GT/s
+- PCIe 3.0
+  - 2010
+  - 8 GT/s
+  - 128b/130b
+  - x1: `8 GT/s * 128 / 130 = 7.877 Gb/s = 0.985 GB/s`
+  - x16: 15.754 GB/s
+- PCIe 3.1
+  - 2014
+  - 8 GT/s
+- PCIe 4.0
+  - 2017
+  - 16 GT/s
+  - 128b/130b
+  - x1: 1.969 GB/s
+  - x16: 31.508 GB/s
+- PCIe 5.0
+  - 2019
+  - 32 GT/s
+  - 128b/130b
+  - x1: 3.938 GB/s
+  - x16: 63.015 GB/s
+- PCIe 6.0
+  - 2022
+  - 64 GT/s
+  - each 256-byte block carries 242 bytes of data
+  - x1: `64 GT/s * 242 / 256 = 60.5 Gb/s = 7.563 GB/s`
+  - x16: 121.000 GB/s
+- PCIe 7.0
+  - 2025
+  - 128 GT/s
+  - each 256-byte block carries 242 bytes of data
+  - x1: 15.125 GB/s
+  - x16: 242.000 GB/s
+- Power
+  - +3.3V: up to 3A (9.9W)
+  - +12V
+    - x1: up to 0.5A (6W), 10W combined
+    - x4: up to 2.1A (25W), 25W combined
+    - x16: up to 5.5A (66W), 75W combined
+  - optional +12V connectors
+    - 6-pin: 75W
+    - 8-pin: 150W
+
 ## PCI Architecture
 
 - there is a host bus
