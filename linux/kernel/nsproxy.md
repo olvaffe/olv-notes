@@ -5,6 +5,10 @@ Kernel nsproxy
 
 - `nsproxy` is a struct that holds all namespaces
   - `current->nsproxy`
+- syscalls
+  - `clone` calls `copy_namespaces`
+  - `unshare` calls `unshare_nsproxy_namespaces`
+  - `setns`
 
 ## namespaces
 
