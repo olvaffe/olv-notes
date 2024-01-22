@@ -1,6 +1,21 @@
 UEFI
 ====
 
+## TianoCore EDK II
+
+- the repo is at <https://github.com/tianocore/edk2>
+  - a stable release is tagged every 3 month
+- history
+  - in 2004, intel released their reference EFI impl
+    - the name Tiano was presented in the code
+    - used as the basis for community-run project, EDK, EFI Development Kit
+  - in 2006, intel released edk2
+    - the code was also referred to as Tiano R9
+  - <https://github.com/tianocore/tianocore.github.io/wiki/UDK>
+    - historically, intel took a snapshot of edk2, validated the code, and
+      released it as UDK
+    - UDK{2008,2010,2014,2015,2017,2018}
+
 ## Secure Boot
 
 - there should be a security module acting as root-of-trust to verify the uefi
@@ -69,3 +84,18 @@ UEFI
   - Copy your bootloader to `EFI/Boot/bootx64.efi` to make it the default
   - Windows 7 insists ESP to be FAT32.  So use it.
   - `efibootmgr` is a userspace tool to manipulate `EFI/`
+
+## EDK2 PXE
+
+- `EfiPxeBcDiscover` performs the pxe discovery sequence
+  - `PxeBcDhcp4Discover` builds the dhcpv4 discovery packet
+    - it asks for a bunch of dhcp options
+  - `PxeBcParseDhcp4Packet` parses the dhcpv4 offer packet
+    - `mInterestedDhcp4Tags` lists the options to parse
+    - if there is no dhcp message type option (53), this is a bootp offer
+      - the boot file is given by boot file option (67)
+    - else if there is the vendor class id option (60) and it is
+      `PXEClient`, this is a pxe offer
+      - if there is the vendor specific option (43), it is further parsed to
+        distinguish between pxe 1.0 and binl (microsoft?)
+    - else, this is a dhcpv4-only offer
