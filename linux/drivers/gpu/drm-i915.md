@@ -1,6 +1,68 @@
 DRM i915
 ========
 
+## Initialization
+
+- `i915_pci_probe` is the entrypoint
+  - `intel_info` is from the pci id table `pciidlist`
+    - for mtl, it's `mtl_info`
+  - `i915_driver_probe` calls various init functions
+- `i915_driver_create` creates `drm_i915_private`, a subclass of
+  `drm_device`
+  - the `drm_driver` is `i915_drm_driver`
+  - `intel_display_device_probe` probes the display ver and feats
+- `i915_driver_early_probe` initializes states that do not require hw
+  access
+  - detects ip versions/steppings
+  - initializes locks, wqs, ttm, root gt, gem, etc.
+- `intel_vgpu_detect` detects GVT-g
+- `intel_gt_probe_all` initializes gt
+- `i915_driver_mmio_probe` initializes gmch, display, and gt mmio
+- `i915_driver_hw_probe` initializes states that require hw access
+  - `intel_gt_assign_ggtt` creates/assigns `i915_ggtt` for each gt
+    - global graphics translation table for `va->pa` translations
+- `intel_display_driver_probe_noirq`
+  - `drm_vblank_init` initializes vblank
+  - `intel_bios_init` initializes bios
+  - `intel_power_domains_init` initializes display power domains
+  - `intel_dmc_init` initializes dmc and loads `i915/mtl_dmc.bin`
+  - `intel_mode_config_init` initializes `drm_mode_config`
+- `intel_irq_install` requests irq
+- `intel_display_driver_probe_nogem` does more display init
+  - `intel_wm_init` initializes watermark
+  - `intel_crtc_init` initializes crtcs
+- `i915_gem_init` initializes gem
+  - `intel_uc_fetch_firmwares` calls `__uc_fetch_firmwares` to load
+    `i915/mtl_guc_70.bin`, `i915/mtl_huc_gsc.bin`, and
+    `i915/mtl_gsc_1.bin`
+  - `intel_gt_init` initializes gt
+  - `intel_engines_driver_register` registers engines
+- `intel_pxp_init` initializes pxp (for protected content)
+- `intel_display_driver_probe`
+  - `intel_initial_commit` performs the first atomic commit
+  - `intel_fbdev_init` initializes `intel_fbdev` for fbdev emu
+- `i915_driver_register` registers i915 to various subsystems
+  - `i915_gem_driver_register` registers mm shrinker
+  - `i915_pmu_register` registers pmu (performance monitoring unit)
+  - `drm_dev_register` registers the drm device/driver
+  - `i915_debugfs_register` populates debugfs
+  - `i915_setup_sysfs` populates sysfs
+  - `intel_gt_driver_register` adds gt as `auxiliary_device`
+  - `intel_pxp_debugfs_register` populates debugfs for pxp
+  - `i915_hwmon_register` registers a hwmon for dgpu
+  - `intel_display_driver_register` registers display
+
+## Display Planes
+
+- `intel_crtc_init` calls `skl_universal_plane_create` or
+  `intel_cursor_plane_create` to create planes
+  - `drm_crtc_init_with_planes` initializes the `drm_crtc` with planes
+- `skl_universal_plane_create`
+  - it initializes plane caps and callbacks
+  - `icl_get_plane_formats` gets supported formats
+  - `intel_fb_plane_get_modifiers` gets supported modifiers
+  - `drm_universal_plane_init` initializes the `drm_plane`
+
 ## sysfs
 
 - `/sys/class/drm/card0`
