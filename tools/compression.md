@@ -1,6 +1,52 @@
 Compressions
 ============
 
+## History
+
+- compression process
+  - dictionary coding
+    - when a sequence of bytes matches an entry in the dictionary, replace the
+      sequence of bytes by a reference to the dictionary
+    - in LZ77, the dictionary is a circular buffer of the past N bytes
+  - entropy coding
+    - e.g., a text of length `n` requires `7*n` bits in ascii encoding.  If we
+      know the frequencies each character appears in the text, we can use a
+      different encoding to minimize the bits required to encode the text
+    - Huffman can find the optimal encoding in this example
+- history of algorithms
+  - 1952, Huffman
+  - 1977, LZ77
+  - 1978, LZ78
+  - 1982, LZSS, based on LZ77
+  - 1984, LZW, based on LZ78
+    - patented and patent expired on 2003
+  - 1992, DEFLATE, based on LZ77 and Huffman
+  - 1996, LZO, based on LZ77 (and no entropy encoding)
+  - 1999, LZMA, based on LZ77
+  - 2009, ANS
+  - 2011, LZ4, based on LZ77 (and no entropy encoding)
+  - 2016, Zstandard, based on LZ77 and ANS
+- history of compression formats
+  - LZW-based
+    - 1985, arc, proprietary
+    - 1985, compress, discontinued due to patent issues
+    - 1987, gif
+  - LZSS-based
+    - 1990, arj, proprietary
+    - 1993, rar, proprietary
+  - DEFLATE-based
+    - 1992, pkzip 1.93a, proprietary
+    - 1992, info-zip unzip 5.0
+    - 1992, gzip and zlib
+    - 1996, png
+  - LZMA-based
+    - 1999, 7z
+    - 2010, xz 5.0
+      - it was called lzma before 5.0
+  - others
+    - 1996, bzip2
+    - 2016, zstd
+
 ## Data
 
 - using numbers from lzbench
