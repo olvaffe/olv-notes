@@ -803,6 +803,9 @@ Kernel Config
     - this replaces the boot splash
 - `chromeos_startup` requires
   - `cros_debug` in `CONFIG_CMDLINE` for developer mode
+    - `CONFIG_CMDLINE="console=ttyS0,115200 console=tty0 root=/dev/foo rootwait rw cros_debug"`
+    - or non-built-in `root=PARTUUID=%U/PARTNROFF=1` and let depthcharge
+      expand `%U`
   - dm
     - `CONFIG_MD=y`
     - `CONFIG_BLK_DEV_DM=y`
