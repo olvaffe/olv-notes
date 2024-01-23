@@ -1,5 +1,5 @@
-CrOS cryptohome
-===============
+Platform2 cryptohome
+====================
 
 ## Before User Login
 

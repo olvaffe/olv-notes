@@ -1,5 +1,5 @@
-CrOS Camera
-===========
+Platform2 Camera
+================
 
 ## Overview
 

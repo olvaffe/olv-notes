@@ -1,5 +1,5 @@
-Chrome OS CI
-============
+Chrome OS Testing
+=================
 
 ## CI
 

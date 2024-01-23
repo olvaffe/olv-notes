@@ -1,5 +1,5 @@
-Chrome OS DLC
-=============
+Platform2 dlcservice
+====================
 
 ## DLC
 

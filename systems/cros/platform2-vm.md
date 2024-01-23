@@ -1,7 +1,7 @@
-Crostini
-========
+Platform2 vm
+============
 
-## Overview
+## Crostini Overview
 
 - it all starts with `vmc start --enable-gpu termina`
   - ask chrome to download `cros-termina` component (`chrome://components`)

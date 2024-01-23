@@ -1,5 +1,5 @@
-Chrome OS Firmwares
-===================
+Chrome OS Firmware
+==================
 
 ## Flash Firmwares
 

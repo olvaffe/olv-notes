@@ -1,5 +1,5 @@
-Sommelier
-=========
+Platform2 vm sommelier
+======================
 
 ## Overview
 

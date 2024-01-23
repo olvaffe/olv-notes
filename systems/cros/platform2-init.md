@@ -1,5 +1,5 @@
-Chrome OS upstart
-=================
+Platform2 init
+==============
 
 ## Boot
 
@@ -150,10 +150,6 @@ Chrome OS upstart
   - dev only
   - bind mount `/mnt/stateful_partition/dev_image` to /usr/local
   - bind mount `/mnt/stateful_partition/var_overlay/*` to `/var/*`
-
-## `session_manager`
-
-- TODO
 
 ## Sandboxing
 

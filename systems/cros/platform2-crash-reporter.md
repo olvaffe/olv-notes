@@ -1,5 +1,5 @@
-CrOS Metrics
-============
+Platform2 Crash Reporter
+========================
 
 ## Crash Reporter
 
