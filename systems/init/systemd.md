@@ -168,60 +168,109 @@ systemd
   - `systemd-xdg-autostart-condition` is invoked by `xdg-autostart-generator`
     to control autostart based on `XDG_CURRENT_DESKTOP`
 - bin binaries
-  - `bootctl`
-  - `busctl`
-  - `coredumpctl`
-  - `homectl`
-  - `hostnamectl`
-  - `journalctl`
-  - `kernel-install`
-  - `localectl`
-  - `loginctl`
-  - `machinectl`
-  - `mount.ddi`
-  - `networkctl`
-  - `oomctl`
-  - `portablectl`
-  - `resolvectl`
-  - `systemctl`
-  - `systemd-ac-power`
-  - `systemd-analyze`
-  - `systemd-ask-password`
-  - `systemd-cat`
-  - `systemd-cgls`
-  - `systemd-cgtop`
-  - `systemd-confext`
-  - `systemd-creds`
-  - `systemd-cryptenroll`
-  - `systemd-cryptsetup`
-  - `systemd-delta`
-  - `systemd-detect-virt`
-  - `systemd-dissect`
-  - `systemd-escape`
-  - `systemd-firstboot`
-  - `systemd-hwdb`
-  - `systemd-id128`
-  - `systemd-inhibit`
-  - `systemd-machine-id-setup`
-  - `systemd-mount`
-  - `systemd-notify`
-  - `systemd-nspawn`
-  - `systemd-path`
-  - `systemd-repart`
-  - `systemd-resolve`
-  - `systemd-run`
-  - `systemd-socket-activate`
-  - `systemd-stdio-bridge`
-  - `systemd-sysext`
-  - `systemd-sysusers`
-  - `systemd-tmpfiles`
-  - `systemd-tty-ask-password-agent`
-  - `systemd-umount`
-  - `systemd-vmspawn`
-  - `timedatectl`
-  - `udevadm`
-  - `userdbctl`
-  - `varlinkctl`
+  - `bootctl` controls uefi and `systemd-boot`
+  - `busctl` talks to dbus
+  - `coredumpctl` retrieves saved coredumps and their metadata
+  - `homectl` talks to `homed`
+  - `hostnamectl` talks to `hostnamed`
+  - `journalctl` talks to `journald`
+  - `kernel-install` installs the specified kernel
+    - kernel `make install` invokes `installkernel`, which can be a symlink to
+      `kernel-install`
+  - `localectl` talks to `localed`
+  - `loginctl` talks to `logind`
+  - `machinectl` talks to `machined`
+  - `mount.ddi` is a symlink to `systemd-dissect`
+  - `networkctl` talks to `networkd`
+  - `oomctl` talks to `oomd`
+  - `portablectl` talks to `portabled`
+  - `resolvectl` talks to `resolved`
+  - `systemctl` talks to `systemd`
+  - `systemd-ac-power` checks if the system is on ac
+  - `systemd-analyze` analyzes systemd stats
+  - `systemd-ask-password` queries system passwords interactively and prints
+    them to stdout
+  - `systemd-cat` logs its stdin to `journald`
+  - `systemd-cgls` lists cgroups
+  - `systemd-cgtop` monitors cgroups
+  - `systemd-confext` activates system extension images for `/etc`
+  - `systemd-creds` encrypts/descrypts service credentials
+  - `systemd-cryptenroll` enrolls hw security tokens
+  - `systemd-cryptsetup` is a wrapper to `cryptsetup`
+  - `systemd-delta` shows overriden config files
+  - `systemd-detect-virt` checks if the system is in a vm/container
+  - `systemd-dissect` dissects discoverable system images (ddi)
+  - `systemd-escape` escapes strings
+  - `systemd-firstboot` initializes basic configs on first boot
+  - `systemd-hwdb` queried udev hwdb
+  - `systemd-id128` generates/queries sd-128 ids
+  - `systemd-inhibit` inhibits shutdown/sleep/etc.
+  - `systemd-machine-id-setup` generates `/etc/machine-id`
+  - `systemd-mount` schedules a mount through `systemd`
+  - `systemd-notify` is a wrapper for `sd_notify`
+  - `systemd-nspawn` spawns a container
+  - `systemd-path` lists system paths
+  - `systemd-repart` repartitions according to `/etc/repart.d`
+  - `systemd-resolve` is a symlink to `resolvectl`
+  - `systemd-run` schedules a cmd through `systemd`
+  - `systemd-socket-activate` tests socket activation
+  - `systemd-stdio-bridge` is a proxy between its stdin/stdout and dbus
+    - when executed over ssh, it allows remote dbus calls
+  - `systemd-sysext` activates system extension images
+  - `systemd-sysusers` creates system users based on `/etc/sysusers.d`
+  - `systemd-tmpfiles` creates tmp files/dirs based on `/etc/tmpfiles.d`
+  - `systemd-tty-sk-password-agent` is a tty-based password agent
+    - <https://systemd.io/PASSWORD_AGENTS/>
+  - `systemd-umount` is a symlink to `systemd-mount` to umount
+  - `systemd-vmspawn` spawns a vm
+  - `timedatectl` talks to `timedated`
+  - `udevadm` talks to `udevd`
+  - `userdbctl` talks to `userdbd`
+  - `varlinkctl` introspects varlink services
+- others
+  - `systemd-fstab-generator`
+    - it scans `/etc/fstab` to convert it into swap, mount, and/or automount
+      units
+    - the unit files are written to `/tmp` by default
+  - `systemd-getty-generator`
+    - generates `serial-getty@.service` by looking at
+      `/sys/class/tty/console/active` and containers
+  - `systemd-rc-local-generator`
+    - adds `rc-local.service` to `multi-user.target.wants` and
+      `halt-local.service` to `final.target.wants`
+  - `systemd-readahead-collect` and `systemd-readahead-replay`
+    - the former collects files used during boot, and the latter caches the
+      files
+  - `systemd-system-update-generator`
+    - <http://freedesktop.org/wiki/Software/systemd/SystemUpdates>
+    - it checks `/system-update` and redirect systemd to a special system update
+      target unit if exists.  This allows us to do Windows-like system update.
+  - `systemd-initctl`
+    - listens to fds listed in env var `LISTEN_FDS` to provide `/dev/initctl`
+      emulation
+  - `libsystemd-daemon`
+    - header `sd-daemon.h`
+    - an API for writing new-style daemons
+  - `libsystemd-id128`
+    - an API to generate 128-bit (/ 32-char / 16-byte) UUID
+  - `libsystemd-journal`
+  - `libsystemd-login`
+  - `pam_systemd`
+  - `libudev`
+  - `libgudev`
+  - internal libraries
+    - `shared` subdirectory provides these internal libraries
+      - `libsystemd-shared`
+      - `libsystemd-dbus`
+      - `libsystemd-label`
+      - `libsystemd-logs`
+      - `libsystemd-capability`
+      - `libsystemd-audit`
+      - `libsystemd-acl`
+    - `core` provides internal `libsystemd-core`
+    - `libudev` provides internal `libudev-private`
+    - `udev` provides internal `libudev-core`
+
 
 ## Source tree
 
@@ -237,131 +286,6 @@ systemd
   - they define temporary files/directories to be created, removed, or cleaned
 - `units` see units below
 
-## Helpers
-
-- `systemd-ac-power`
-  - used libudev to detect if the system is on AC power
-- `systemd-ask-password`
-  - asks the user interactively for a password, and prints it to stdout
-- `systemd-fstab-generator`
-  - it scans `/etc/fstab` to convert it into swap, mount, and/or automount
-    units
-  - the unit files are written to `/tmp` by default
-- `systemd-getty-generator`
-  - generates `serial-getty@.service` by looking at
-    `/sys/class/tty/console/active` and containers
-- `systemd-rc-local-generator`
-  - adds `rc-local.service` to `multi-user.target.wants` and
-    `halt-local.service` to `final.target.wants`
-- `systemd-readahead-collect` and `systemd-readahead-replay`
-  - the former collects files used during boot, and the latter caches the
-    files
-- `systemd-shutdownd`
-  - run by systemd for delayed shutdown
-- `systemd-stdio-bridge`
-  - allows one to talk to D-Bus system bus from stdio
-  - we can open an SSH tunnel to execute it.  It allows remote connection to
-    the system bus
-- `systemd-system-update-generator`
-  - <http://freedesktop.org/wiki/Software/systemd/SystemUpdates>
-  - it checks `/system-update` and redirect systemd to a special system update
-    target unit if exists.  This allows us to do Windows-like system update.
-- `systemd-tmpfiles`
-  - it searches its config files in this order
-    - `/etc/tmpfiles.d`
-    - `/run/tmpfiles.d`
-    - `/usr/local/lib/tmpfiles.d`
-    - `/usr/lib/tmpfiles.d`
-  - it then creates, removes, or cleans temporary files as defined by
-    the config files
-
-## Tools
-
-- `systemd-analyze`
-  - it analyzes systemd log to, for example, show how long it took to start a
-    service
-- `systemd-cgls`
-  - shows cgroup contents recursively
-- `systemd-delta` shows which config from which directory overrides another
-  - the prefixes are, in this order,
-    - `/etc`
-    - `/run`
-    - `/usr/local/lib`
-    - `/usr/local/share`
-    - `/usr/lib`
-    - `/usr/share`
-    - `/lib`
-  - the suffixes are
-    - `sysctl.d`
-    - `tmpfiles.d`
-    - `modules-load.d`
-    - `binfmt.d`
-    - `systemd/system`
-    - `systemd/user`
-    - `systemd/system.preset`
-    - `systemd/user.preset`
-    - `udev/rules.d`
-    - `modprobe.d`
-- `journalctl`
-- `systemd-cat`
-  - redirects its stdin to journal
-- `loginctl`
-- `systemd-machine-id-setup`
-  - generates `/etc/machine-id`
-- `systemd-notify`
-  - shell script version for `sd_notify()`, which is used by daemons to notify
-    systemd daemons' current descriptive states
-- `systemd-nspawn`
-  - spawns a namespace container
-- `systemctl`
-- `systemd-timestamp`
-  - prints current (high-precision) time to stdout.  Can be used in a script
-    for simple profiling
-- `systemd-tty-ask-password-agent`
-  - <http://www.freedesktop.org/wiki/Software/systemd/PasswordAgents>
-- `bootctl` shows, lists, installs, removes EFI boot loaders
-  - it can install `systemd-boot`, a simple EFI boot loader
-- `busctl` lists and talks to D-Bus services
-- `coredumpctl` lists saved coredumps
-  - core dumps are piped to `/proc/sys/kernel/core_pattern`, which is set to
-    `systemd-coredump`
-  - man core(5)
-- `homectl` to manage `systemd-homed`-managed users
-- `hostnamectl` sets `/etc/hostname` and others
-- `localectl` sets, gets, and lists locales
-- `networkctl` talks to `systemd-networkd`
-- `timedatectl`
-
-## Daemons
-
-- `systemd-initctl`
-  - listens to fds listed in env var `LISTEN_FDS` to provide `/dev/initctl`
-    emulation
-
-## Libraries
-
-- `libsystemd-daemon`
-  - header `sd-daemon.h`
-  - an API for writing new-style daemons
-- `libsystemd-id128`
-  - an API to generate 128-bit (/ 32-char / 16-byte) UUID
-- `libsystemd-journal`
-- `libsystemd-login`
-- `pam_systemd`
-- `libudev`
-- `libgudev`
-- internal libraries
-  - `shared` subdirectory provides these internal libraries
-    - `libsystemd-shared`
-    - `libsystemd-dbus`
-    - `libsystemd-label`
-    - `libsystemd-logs`
-    - `libsystemd-capability`
-    - `libsystemd-audit`
-    - `libsystemd-acl`
-  - `core` provides internal `libsystemd-core`
-  - `libudev` provides internal `libudev-private`
-  - `udev` provides internal `libudev-core`
 
 ## suspend
 
