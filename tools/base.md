@@ -1,9 +1,15 @@
-procps
-======
+Base Utils
+==========
 
-## repo
+## Base Utils
 
-- <https://gitlab.com/procps-ng/procps.git>
+- arch linux `base` depends on
+  - `coreutils`, <https://git.savannah.gnu.org/cgit/coreutils.git>
+  - `iproute2`, <https://git.kernel.org/pub/scm/network/iproute2/iproute2.git>
+  - `iputils`, <https://github.com/iputils/iputils>
+  - `procps-ng`, <https://gitlab.com/procps-ng/procps>
+  - `util-linux`, <https://github.com/util-linux/util-linux>
+  - more
 
 ## uptime
 
