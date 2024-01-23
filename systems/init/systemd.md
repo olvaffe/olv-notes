@@ -43,6 +43,186 @@ systemd
   - `S05gdm3` starts gdm3
   - more
 
+## Binaries
+
+- libexec binaries
+  - `systemd` is pid 1
+  - `systemd-backlight` saves/restores backlight brightness on boot/shutdown
+    - values are stored in `/var/lib/systemd/backlight`
+  - `systemd-battery-check` checks the battery level in early boot
+    - it shows an error and powers off if the battery level is below 5% and is
+      not charging
+  - `systemd-binfmt` registers misc binfmt
+    - it registers new binfmt through `/proc/sys/fs/binfmt_misc/register`
+    - it reads the binfmt to be registered from
+      - `/etc/binfmt.d`
+      - `/run/binfmt.d`
+      - `/usr/local/lib/binfmt.d`
+      - `/usr/lib/binfmt.d`
+      - `/lib/binfmt.d`
+  - `systemd-bless-boot`, if enabled, marks the current boot successful (for
+    A/B boot)
+  - `systemd-boot-check-no-failures`, if enabled, stops before
+    `boot-complete.target` if any service fails
+  - `systemd-bsod` shows bsod if boot fails
+  - `systemd-cgroups-agent` is used if cgroup v1
+  - `systemd-coredump`, if enabled, is the kernel coredump handler
+    - it is set up in `/proc/sys/kernel/core_pattern`
+    - it saves coredumps to `/var/lib/systemd/coredump`
+  - `systemd-cryptsetup`, if enabled, sets up disk encryption
+  - `systemd-executor` is executed first to set up jails before exec'ing the
+    real binary
+  - `systemd-export` is invoked by `importd` to export an vm or container
+    image
+  - `systemd-fsck` is a wrapper for `fsck.<type>`
+  - `systemd-growfs`, if enabled in `/etc/fstab`, resizes a fs on demand
+  - `systemd-hibernate-resume` writes to `/sys/power/resume` to prep for
+    hibernation
+  - `systemd-homed`, if enabled, manages home dirs
+  - `systemd-homework` is invoked by `homed` to manage home dirs
+  - `systemd-hostnamed` manages system host names
+    - it provides `org.freedesktop.hostname1`
+    - it provides/stores additional info in `/etc/machine-info`
+  - `systemd-import` is invoked by `importd` to import a vm/container image
+  - `systemd-import-fs` is invoked by `importd` to import a vm/container dir
+  - `systemd-importd` manages vm or container images
+  - `systemd-integritysetup` sets up dm-integrity, to store checksums for each
+    block
+  - `systemd-journal-gatewayd` allows journals to be pulled by a remote server
+  - `systemd-journal-remote` pulls or receives journals from remote clients
+  - `systemd-journal-upload` pushes local journals to a remote server
+  - `systemd-journald` manages system journals
+  - `systemd-localed` manages system locale
+    - it provides `org.freedesktop.locale1`
+  - `systemd-logind` manage system logins
+    - it provides `org.freedesktop.login1`
+  - `systemd-machined` manages vms and containers
+  - `systemd-makefs`, inf enabled in `/etc/fstab`, creates a fs on demand
+  - `systemd-measure` is invoked by `ukify` for kernel signing
+  - `systemd-modules-load` loads modules during boot
+    - it is based on `libkmod`.
+    - It scans these directories to find modules to load
+      - `/etc/modules-load.d`
+      - `/run/modules-load.d`
+      - `/usr/local/lib/modules-load.d`
+      - `/usr/lib/modules-load.d`
+      - `/lib/modules-load.d`
+  - `systemd-network-generator` generates `networkd` configs from kernel
+    cmdline
+  - `systemd-networkd` manages system network
+  - `systemd-networkd-wait-online` blocks until the system is online
+  - `systemd-oomd` is a userspace oom killer based on cgroup and psi
+  - `systemd-pcrextend` is related to tpm
+  - `systemd-pcrlock` is related to tpm
+  - `systemd-portabled` manages portable services (chroots that provide
+    services?)
+  - `systemd-pstore` moves dumps in `/sys/fs/pstore` to
+    `/var/lib/systemd/pstore` on boot
+  - `systemd-pull` is invoked by `importd` to download a vm/container image
+  - `systemd-quotacheck` is a wrapper to `quotacheck`
+  - `systemd-random-seed` saves and restores `/dev/urandom` on boot/shutdown
+  - `systemd-remount-fs` remounts fs according to `/etc/fstab`
+  - `systemd-reply-password` is invoked by a password agent to write password
+    over a socket
+  - `systemd-resolved` manages system name resolving
+  - `systemd-rfkill` saves/restores rfkill state in `/var/lib/systemd/rfkill`
+  - `systemd-shutdown` is execv'd by pid 1 on shutdown
+  - `systemd-sleep` is invoked during hibernate/suspend
+    - it run executables in `/lib/systemd-sleep`, writes to `/sys/power/state`
+      to suspend or hibernate, and runs executables in `/lib/systemd-sleep`
+      again with different argument
+  - `systemd-socket-proxyd` is a socket proxy for socket activation
+  - `systemd-storagetm` exports all block devices as NVMe-TCP devices, to be
+    attached to a remote host
+  - `systemd-sulogin-shell` is invoked during recovery
+  - `systemd-sysctl` applies sysctl on boot
+    - it reads these files to set sysctl
+      - `/etc/sysctl.d`
+      - `/run/sysctl.d`
+      - `/usr/local/lib/sysctl.d`
+      - `/usr/lib/sysctl.d`
+      - `/lib/sysctl.d`
+      - `/etc/sysctl.conf`
+  - `systemd-sysroot-fstab-check` parses `<sysroot>/etc/fstab` and does a
+    `daemon-reload` from initrd
+  - `systemd-sysupdate` applies systemd updates according to
+    `/etc/sysupdate.d`
+  - `systemd-time-wait-sync` blocks until the system time is synced
+  - `systemd-timedated` manages system time
+    - it provides `org.freedesktop.timedate1` to set time, timezone, ntp, and
+      etc.
+  - `systemd-timesyncd` is an ntp client
+  - `systemd-tpm2-setup` is for tpm
+  - `systemd-udevd` is udev daemon
+  - `systemd-update-done` updates `/etc/.updated` and `/var/.updated`
+  - `systemd-update-utmp` records boot/shutdown to utmp
+  - `systemd-user-runtime-dir` creates/removes `/run/user/$UID`
+  - `systemd-user-sessions` creates/removes `/run/nologin` to disable user
+    login during boot/shutdown
+  - `systemd-userdbd`, if enabled, provides the user db
+  - `systemd-userwork` is invoked by `userdbd`
+  - `systemd-vconsole-setup` is a wrapper for `loadkeys` and `setfont`
+  - `systemd-veritysetup` sets up dm-verity
+  - `systemd-volatile-root` populates a tmpfs and mounts it to `/` (and mounts
+    `/usr` read-only), creating a stateless system
+  - `systemd-xdg-autostart-condition` is invoked by `xdg-autostart-generator`
+    to control autostart based on `XDG_CURRENT_DESKTOP`
+- bin binaries
+  - `bootctl`
+  - `busctl`
+  - `coredumpctl`
+  - `homectl`
+  - `hostnamectl`
+  - `journalctl`
+  - `kernel-install`
+  - `localectl`
+  - `loginctl`
+  - `machinectl`
+  - `mount.ddi`
+  - `networkctl`
+  - `oomctl`
+  - `portablectl`
+  - `resolvectl`
+  - `systemctl`
+  - `systemd-ac-power`
+  - `systemd-analyze`
+  - `systemd-ask-password`
+  - `systemd-cat`
+  - `systemd-cgls`
+  - `systemd-cgtop`
+  - `systemd-confext`
+  - `systemd-creds`
+  - `systemd-cryptenroll`
+  - `systemd-cryptsetup`
+  - `systemd-delta`
+  - `systemd-detect-virt`
+  - `systemd-dissect`
+  - `systemd-escape`
+  - `systemd-firstboot`
+  - `systemd-hwdb`
+  - `systemd-id128`
+  - `systemd-inhibit`
+  - `systemd-machine-id-setup`
+  - `systemd-mount`
+  - `systemd-notify`
+  - `systemd-nspawn`
+  - `systemd-path`
+  - `systemd-repart`
+  - `systemd-resolve`
+  - `systemd-run`
+  - `systemd-socket-activate`
+  - `systemd-stdio-bridge`
+  - `systemd-sysext`
+  - `systemd-sysusers`
+  - `systemd-tmpfiles`
+  - `systemd-tty-ask-password-agent`
+  - `systemd-umount`
+  - `systemd-vmspawn`
+  - `timedatectl`
+  - `udevadm`
+  - `userdbctl`
+  - `varlinkctl`
+
 ## Source tree
 
 - `bash-completion/systemd-bash-completion.sh`
@@ -63,15 +243,6 @@ systemd
   - used libudev to detect if the system is on AC power
 - `systemd-ask-password`
   - asks the user interactively for a password, and prints it to stdout
-- `systemd-binfmt`
-  - it registers new binfmt through `/proc/sys/fs/binfmt_misc/register`
-  - it reads the binfmt to be registered from
-    - `/etc/binfmt.d`
-    - `/run/binfmt.d`
-    - `/usr/local/lib/binfmt.d`
-    - `/usr/lib/binfmt.d`
-    - `/lib/binfmt.d`
-- `systemd-fsck` is a wrapper to fsck
 - `systemd-fstab-generator`
   - it scans `/etc/fstab` to convert it into swap, mount, and/or automount
     units
@@ -79,45 +250,18 @@ systemd
 - `systemd-getty-generator`
   - generates `serial-getty@.service` by looking at
     `/sys/class/tty/console/active` and containers
-- `systemd-modules-load`
-  - it is based on `libkmod`.
-  - It scans these directories to find modules to load
-    - `/etc/modules-load.d`
-    - `/run/modules-load.d`
-    - `/usr/local/lib/modules-load.d`
-    - `/usr/lib/modules-load.d`
-    - `/lib/modules-load.d`
-- `systemd-quotacheck` is a wrapper to quotacheck
-- `systemd-random-seed` reads or writes a random seed from or to
-  `/dev/urandom`
 - `systemd-rc-local-generator`
   - adds `rc-local.service` to `multi-user.target.wants` and
     `halt-local.service` to `final.target.wants`
 - `systemd-readahead-collect` and `systemd-readahead-replay`
   - the former collects files used during boot, and the latter caches the
     files
-- `systemd-remount-fs`
-  - remounts root and kernel filesystems (such as proc, sys, and etc.)
-- `systemd-reply-password`
-  - reads password from stdin and sends it to a socket
 - `systemd-shutdownd`
   - run by systemd for delayed shutdown
-- `systemd-sleep`
-  - run executables in `/lib/systemd-sleep`, write to `/sys/power/state` to
-    suspend or hibernate, and run executables in `/lib/systemd-sleep` again
-    with different argument
 - `systemd-stdio-bridge`
   - allows one to talk to D-Bus system bus from stdio
   - we can open an SSH tunnel to execute it.  It allows remote connection to
     the system bus
-- `systemd-sysctl`
-  - it reads these files to set sysctl
-    - `/etc/sysctl.d`
-    - `/run/sysctl.d`
-    - `/usr/local/lib/sysctl.d`
-    - `/usr/lib/sysctl.d`
-    - `/lib/sysctl.d`
-    - `/etc/sysctl.conf`
 - `systemd-system-update-generator`
   - <http://freedesktop.org/wiki/Software/systemd/SystemUpdates>
   - it checks `/system-update` and redirect systemd to a special system update
@@ -130,10 +274,6 @@ systemd
     - `/usr/lib/tmpfiles.d`
   - it then creates, removes, or cleans temporary files as defined by
     the config files
-- `systemd-update-utmp`
-  - update utmp for boot/reboot/shutdown messages
-- `systemd-vconsole-setup`
-  - setup a virtual console (keymap, font, and etc.)
 
 ## Tools
 
@@ -194,26 +334,9 @@ systemd
 
 ## Daemons
 
-- `systemd-hostnamed`
-  - is a daemon providing `org.freedesktop.hostname1` to set and get hostname
-  - `systemd-hostnamed` provides/stores additional info in `/etc/machine-info`
 - `systemd-initctl`
   - listens to fds listed in env var `LISTEN_FDS` to provide `/dev/initctl`
     emulation
-- `systemd-journald`
-  - a syslog replacement
-- `systemd-localed`
-  - <http://www.freedesktop.org/wiki/Software/systemd/localed>
-  - is a daemon providing `org.freedesktop.locale1` to set/get locale and
-    console keyboard mappings
-- `systemd-logind`
-  - <http://www.freedesktop.org/wiki/Software/systemd/multiseat>
-  - is a daemon providing `org.freedesktop.login1` to ??
-- `systemd`
-  - `src/core/main.c`
-- `systemd-timedated`
-  - provides `org.freedesktop.timedate1` to set time, timezone, ntp, and etc.
-- `udev`
 
 ## Libraries
 
