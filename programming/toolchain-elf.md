@@ -52,3 +52,10 @@ ELF
   there will be two vma (0x08048000 ~ 0x08097000, size 0x4f000)
                         (0x08097000 ~ 0x08098000, size 0x01000)
   a portion of the file is mapped twice.
+
+## OS ABI
+
+- ELF has a section `.note.ABI-tag`.
+- When ldconfig runs, the same library with higher OS version will be sorted
+  first.
+- It causes the library to be used, like the `libGL.so` on my debian unstable.

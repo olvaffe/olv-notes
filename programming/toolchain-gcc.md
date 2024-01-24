@@ -1,14 +1,6 @@
 GNU Toolchain
 =============
 
-## overview
-
-- binutils: as, ld, readelf, ...
-- libc: libc.so, libpthread.so, ld-linux.so, ldconfig, iconv, ...
-- gcc: gcc, libgcc.a, ... (runtime might have multiple versions, called multilib)
-- `libstdc++`: it is a part of the gcc.  An C++ app built with gcc x.y.z needs
-  `libstdc++` x.y.z to run.
-
 ## gcc
 
 - `gcc` is a frontend.  It searches for three things
@@ -172,80 +164,6 @@ GNU Toolchain
   - When configured non-shared, it is added to `libgcc.a`
 - in config.host, `extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"`
   for arm
-
-## ld
-
-- ld searches for libraries.  It uses sysroot too.  If sysroot given
-  at configuration time is a decendant of prefix dir, the sysroot is
-  relocatable, according to where the current executables are, which
-  is strongly recommended.
-- when ld runs, `get_sysroot` is always called.  It might be empty if
-  not compiled with sysroot support.  `${prefix}/bin` is called `BINDIR`,
-  `${prefix}/<target>/bin` is called `TOOLBINDIR`
-- default search pathes are given by `ldscripts`.  They are usually
-  absolute, prefixed by sysroot if supported.  ld only needs to find
-  ldscripts and the rest is given by script or by command line
-- `-L` describes the linker search path
-- `-rpath` describes the dynamic linker search path
-- `-rpath-link` describes the search path the linker should use when it is
-  emulating dynamic linker search path
-- prog links to libA, which links to libB.  At linking time, libB is
-  automatically added to prog, and linker emulates dynamic linker for that
-  purpose.  If rpath is used instead of rpath-link, the path leaks into prog.
-  - It could be dangerous and overrides `LD_LIBRARY_PATH`
-
-## binutils
-
-- GNU EABI == no eabi, EABI4 == EABI5 == eabi
-
-## crtX
-
-- removing `/usr/lib/crt*.o` provided by glibc makes gcc fail to compile executable
-- removing `/usr/lib/gcc/<target>/<version>/crt*.o` provided by gcc itself makes
-  gcc fail to compile executable
-- removing `/usr/lib/gcc/<target>/<version>/libgcc.a` provided by gcc itself makes
-  gcc fail to compile executable
-- when compiling gcc, a list of objects (crtX) to link when compiling is hardcoded.
-- in a compiled x86 shared executable, there are:
-
-        w __gmon_start__
-        T __libc_csu_fini
-        T __libc_csu_init
-        U __libc_start_main@@GLIBC_2.0
-        T _fini
-        T _init
-        T _start
-        T main
-  - `crti.o`: initializer `.init`, built from `initfini.c`
-    - defines `_init` and `_fini`
-  - `crt1.o`: startup code, at the beginning of `.text`, built from `start.[cS]`
-    - defines `_start`, calls to `__libc_csu_init` and `__libc_start_main`
-  - `crtn.o`: finalizer `.fini`, built from `initfini.c`
-  - `crtbegin.o`, `crtend.o`: from gcc, appended to `.init` and `.fini`
-
-## lifecycle (x86)
-
-- ld.so jumps to `_start` function defined in `sysdeps/i386/elf/start.S` (`crt1.o`)
-- `_start` pushes `__libc_csu_init`, `__libc_csu_fini`, `main`, `argc`, `argv`, etc.
-  to stack and calls `__libc_start_main` defined in `csu/libc-start.c` (`libc.so`)
-- `__libc_start_main` calls, among others, `__libc_csu_init` (and then main) defined in
-  `csu/elf-init.c` (`libc_nonshared.a`)
-- `__libc_csu_init` calls `_init`, defined in (generated) `csu/initfini.c` (`crti.o`)
-
-## glibc
-
-- see `configure.in` and `sysdeps/unix/sysv/linux/configure.in`
-- usually, `libdir=$(prefix)/lib` and `inst_libdir=$(install_root)$(libdir)`
-  - `slibdir=/lib` and `inst_slibdir=$(install_root)$(slibdir)`
-- for `libc.so`, a ld script is installed to `inst_libdir` and the real `.so`
-  is installed to `inst_slibdir`
-
-## OS ABI
-
-- ELF has a section `.note.ABI-tag`.
-- When ldconfig runs, the same library with higher OS version will be sorted
-  first.
-- It causes the library to be used, like the `libGL.so` on my debian unstable.
 
 ## GCC Visibility
 

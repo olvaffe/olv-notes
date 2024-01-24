@@ -36,6 +36,8 @@ Java
       2029
   - Java SE 18 & 19, 2022
   - Java SE 20 & 21, 2023
+    - 21 is LTS, with active support until 2028 and security support until
+      2031
 
 ## OpenJDK Distributions
 
