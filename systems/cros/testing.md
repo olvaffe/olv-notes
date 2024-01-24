@@ -293,3 +293,69 @@ Chrome OS Testing
     - `hw_out_dmabuf_frame_`
   - calls `JpegClient::StartDecode` on the thread
     - calls `MjpegDecodeAccelerator::Decode`
+
+## `tast.power.VideoPlayback.h264_1080_30fps_1hr_ash`
+
+- `powerAshRamfs` is the fixture
+  - `NewPowerUIFixture`'s `SetUp` starts chrome and calls `PowerTestSetup`
+  - `batteryDischarge.fulfill` forces using the battery
+  - `setUpRamfs` mounts `ramfs` to `/tmp/ramdisk`
+- `VideoPlayback` is the test function
+  - it opens a blank tab and makes the browser fullscreen
+  - copies `video_playback/h264_1080_30fps.mp4` to `/tmp/ramdisk`
+  - cools down the dut
+  - navigates to the video file
+  - plays the video in a loop
+  - starts the metrics recorder
+  - sleeps for 1hr
+  - collects the metrics
+- `TestMetrics` is the data source of the metrics recorder
+  - <https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/main/src/go.chromium.org/tast-tests/cros/local/power/docs/metrics.md>
+  - `NewCpuidleStateMetrics` records `CPUIdleMetricType` (`cpuidle`) metrics
+    - it reads `/sys/devices/system/cpu/cpu*/cpuidle/state*/{name,latency,time}`
+    - it shows how much time the cpus are in which states
+  - `NewRAPLPowerMetrics` records `PowerRelatedMetricType` (`power`) metrics
+    - it reads `/sys/class/powercap/intel-rapl:*/{name,energy_uj}`
+      - `package-0`
+        - `core`
+        - `uncore`
+      - `psys`
+  - `NewSysfsThermalMetrics` records `ThermalMetricType` (`temperature`)
+    metrics
+    - it reads `/sys/class/thermal/thermal_zone*/{type,temp}`
+  - `NewPackageCStatesMetrics` records `PackageCstatesMetricType` (`cpupkg`)
+    metrics
+    - it reads `/dev/cpu/*/msr`
+  - `NewProcfsCPUMetrics` records `CPUUsageMetricType` (`cpu_usage`) metrics
+    - it reads `/proc/stat` and parses the first line
+  - `NewFanMetrics` records `FanMetricType` (`fan`) metrics
+    - it invokes `ectool pwmgetfanrpm all` to get fan rpms
+  - `NewGPUUsageDataSource` records `GPUUsageMetricType` (`gpu_usage`) and
+    `GPUMemoryMetricType` (`gpu_memory`) metrics
+    - it reads `/sys/kernel/debug/dri/*/clients` for client pids
+    - it stats `/proc/<pid>/fd/*` for drm fds
+    - it reads `/proc/<pid>/fdinfo/<fd>` for drm fdinfo
+  - `NewGPUFreqMetrics` records `GPUFreqMetricType` (`gpufreq_wavg`) metrics
+    - it reads
+      - `/sys/kernel/debug/dri/0/i915_frequency_info` for i915
+      - `/sys/kernel/debug/dri/0/amdgpu_pm_info` for amdgpu
+      - `/sys/devices/platform/soc@0/5000000.gpu/devfreq/5000000.gpu/cur_freq`
+        for msm
+  - `NewZramIOMetrics` records `ZramMetricType` (`zram`) metrics
+    - it reads `/sys/block/zram0/stat`
+  - `NewMemoryMetrics` records `MemoryMetricType` (`memory)` metrics
+    - it reads `/proc/meminfo`
+  - `NewSysfsBatteryMetrics` records `BatterySOCMetricType` (`battery)`,
+    `system`, `perf.discharge_mwh`, and `perf.minutes_battery_life_tested`
+    metrics
+    - it checks `/sys/class/power_supply/*/type` for `Battery`
+    - it checks `/sys/class/power_supply/*/scope` for non-`Device`
+    - it times `/sys/class/power_supply/*/{voltage_now,current_now}` for
+      `system`
+    - it reads `/sys/class/power_supply/*/charge_now` for
+      `battery.battery_percent`
+    - it reports total discharge in `perf.discharge_mwh`
+    - it reports record time in `perf.minutes_battery_life_tested`
+  - `GeneratePowerLogAndSaveToCrosbolt` derives a few more metrics
+    - `perf.minutes_battery_life` projects the battery life
+    - `power.non_SoC` substracts `power.package-0` from `system`
