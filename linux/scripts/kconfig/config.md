@@ -387,6 +387,7 @@ Kernel Config
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
       - deselect all but desired drivers
+    - select `/dev/nvram support` if desired
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
