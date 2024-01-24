@@ -42,6 +42,54 @@ glibc
     `DT_RPATH`/`DT_RUNPATH` should be ignored
     - for the main executable itself, use an empty string
 
+## life cycle
+
+- the elf executable has `ld-linux-<arch>.so` as the interpreter and has
+  `_start` as the entry point
+  - kernel jumps to the entry point of ld
+    - `sysdeps/x86_64/dl-machine.h` defines `RTLD_START` which expands to
+      `_start` for ld
+    - `_dl_start`
+    - `_dl_init`
+    - it jumps to the executable entry point
+      - `_dl_fini` is a callback called by the executable
+  - ld loads the executable and jumps to the executable's entry point
+- `sysdeps/x86_64/start.S` defines `ENTRY (_start)`
+  - it is a part of `crt1.o`
+  - `_start` prepares args and calls `__libc_start_main`
+    - arg1 is in `%rdi` and is `main`
+    - arg2 is in `%rsi` and is `argc`
+      - it is popped from the current stack
+    - arg3 is in `%rdx` and is `argv`
+      - it points to the current stack top
+    - arg4 is in `%rcx` and is `init`
+      - it is zeroed
+    - arg5 is in `%r8` and is `fini`
+      - it is zeroed
+    - arg6 is in `%r9` and is `rtld_fini`
+      - is is from the ld
+    - arg7 is in stack and is `stack_end`
+- `csu/libc-start.c` defines `__libc_start_main`
+  - it is a versioned symbol and is a part of `libc.so`
+  - `LIBC_START_MAIN` macro expands to the the real impl,
+    `__libc_start_main_impl`
+  - if `rtld_fini` is provided, it is registered to `__cxa_atexit`
+  - `call_init` calls init functions
+    - elf `DT_INIT` has `_init`
+      - it is defined in `sysdeps/x86_64/crti.S`
+      - it calls `__gmon_start__`
+    - elf `DT_INIT_ARRAY` consists of ctros
+      - e.g., `__attribute__ ((constructor))`
+      - `csu/init-first.c` defines `_init_first`
+  - `__libc_start_call_main` is called
+- `sysdeps/nptl/libc_start_call_main.h` defines `__libc_start_call_main`
+  - it calls `exit(main(argc, argv))` after doing some inits for threads
+- `stdlib/exit.c` defines `exit`
+  - `__call_tls_dtors` calls dtors on `tls_dtor_list` list
+  - it calls dtors on `__exit_funcs` list
+    - these are added by `atexit`
+  - `_exit` calls `exit_group` syscall on linux
+
 ## Entry Point on x86-64
 
 - for an executable built with `-static`,
@@ -64,15 +112,6 @@ glibc
     - `_start` calls `__libc_start_main` with the relative address of `main`
       - `%rip` plus a hard-coded offset, which is the offset from `_start` to
         `main`
-
-## startup
-
-- ld.so jumps to `_start` function defined in `sysdeps/i386/elf/start.S` (`crt1.o`)
-- `_start` pushes `__libc_csu_init`, `__libc_csu_fini`, `main`, `argc`, `argv`, etc.
-  to stack and calls `__libc_start_main` defined in `csu/libc-start.c` (`libc.so`)
-- `__libc_start_main` calls, among others, `__libc_csu_init` (and then main) defined in
-  `csu/elf-init.c` (`libc_nonshared.a`)
-- `__libc_csu_init` calls `_init`, defined in (generated) `csu/initfini.c` (`crti.o`)
 
 ## crtX
 
