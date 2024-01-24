@@ -826,6 +826,8 @@ Kernel Config
     - `CONFIG_SECURITY_NETWORK=y`
     - `CONFIG_SECURITY_SELINUX=y`
     - `CONFIG_LSM="selinux"`
+- `cros_config_setup` requires
+  - `CONFIG_CHROMEOS_ACPI=y` or `CONFIG_ACPI_CHROMEOS=y` (downstream)
 - `shill` requires
   - `CONFIG_IP_ADVANCED_ROUTER=y`
   - `CONFIG_IP_MULTIPLE_TABLES=y`
