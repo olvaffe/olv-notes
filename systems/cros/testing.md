@@ -359,3 +359,84 @@ Chrome OS Testing
   - `GeneratePowerLogAndSaveToCrosbolt` derives a few more metrics
     - `perf.minutes_battery_life` projects the battery life
     - `power.non_SoC` substracts `power.package-0` from `system`
+
+## `tast.power.*`
+
+- `tast.power.Browsing.*`
+  - `browsingTestParam`
+    - `ConfigName` picks a config
+      - e.g., <https://storage.googleapis.com/chromiumos-test-assets-public/power_LoadTest/v2_config/browsing_20min.json>
+        - the test time is `loop_count * secs_per_page * num_page`, which is
+          `2 * 60 * 10 = 20min`
+    - `TimeParams` specifies metrics sampling internal (and total test time
+      for sanity check)
+    - `CollectTrace` enables perfetto tracing
+    - `MultiTab` uses multiple tabs and windows
+  - `Browsing` navigates to each page, scrolls occasionally, and moves on to
+    the next page
+  - variants
+    - `ash` and `lacros` picks ash or lacros
+    - `20min` runs for 20min rather than 1hr
+    - `heavy` navigates to heavier pages
+  - `power_daily`
+    - `20min_ash`
+    - `20min_lacros`
+  - `power_regression`
+    - `heavy_20min_ash`
+- `tast.power.Idle.*`
+  - `IdleParams`
+    - `DisplayPower` controls display on/off
+    - `BluetoothPower` controls bt on/off
+    - `CollectTrace` enables perfetto tracing
+    - `IdleTimeParams` specifies metrics sampling internal and total test time
+  - `Idle` opens a blank tab and sleeps for the specified time
+  - variants
+    - `ash` and `lacros` picks ash or lacros
+    - `fast` runs for 1min rather than 10min, with both display and bt on
+  - `power_daily`
+    - `display_off_bt_off_ash`
+    - `display_off_bt_off_lacros`
+    - `display_on_bt_on_lacros`
+  - `power_regression`
+    - `display_on_bt_on_ash`
+- `tast.power.VideoCall.*`
+  - `TimeParams` specifies metrics sampling internal and total test time
+  - `VideoCall` opens two windows side-by-side
+    - the first window is on
+      <https://storage.googleapis.com/chromiumos-test-assets-public/power_VideoCall/power_VideoCall.webrtc.html?preset=high>
+      - it uses webrtc at the top with camera and mic
+      - it plays 4 video streams at the bottom
+    - the second window is on <http://crospower.page.link/power_VideoCall_doc>
+      - it has a text box
+    - it types into the second window occasionally until the test ends
+  - variants
+    - `ash` and `lacros` picks ash or lacros
+    - `3m`, `25m`, and `2hr` run for different total time
+  - `power_daily`
+    - `3m_ash`
+    - `3m_lacros`
+  - `power_regression`
+    - `25m_ash`
+- `tast.power.VideoPlayback.*`
+  - `videoPlaybackTestParam`
+    - `VideoName` specifies the video file
+    - `TimeParams` specifies metrics sampling internal and total test time
+  - `VideoPlayback` creates a fullscreen window
+    - it waits until the battery is 50% charged
+    - it copies the video file to `/tmp/ramdisk`
+    - it plays the video file in a loop
+    - it sleeps for the test time
+  - variants
+    - `ash` and `lacros` picks ash or lacros
+    - `h264`, `vp8`, `vp9`, and `av1` are video codecs
+    - `720`, `1080`, and `4k` are resolutions
+    - `30fps` and `60fp` are frame rates
+    - `1hr` sleeps for 1hr rather than the 6min default
+  - `power_regression`
+    - `h264_1080_30fps_1hr_ash`
+    - `vp9_1080_30fps_1hr_ash`
+  - `crosbolt_perbuild`
+    - `h264_1080_30fps_ash`
+    - `vp9_1080_30fps_ash`
+    - `h264_1080_30fps_lacros`
+    - `vp9_1080_30fps_lacros`
