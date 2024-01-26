@@ -94,3 +94,35 @@ Git
 - `core.pager`
   - use `GIT_PAGER`, then `core.pager`, then `PAGER`, and then `less`
   - if `LESS` is not set, git sets it to `LESS=FRX`
+
+## git gc
+
+- `git gc --auto` is invoked automatically after several other subcommands
+  - `gc.autoDetach` is true and runs gc in the background
+  - `gc.auto` is 6700.  When there are more loose objects than that number, gc
+    packs the loose objects.
+  - `gc.autoPackLimit` is 50.  When there are more packs than that number, gc
+    consolidates them into one larger pack.
+
+## gerrit and repo
+
+- <https://www.gerritcodereview.com/>
+  - <https://gerrit.googlesource.com/gerrit/>
+  - <https://gerrit.googlesource.com/git-repo/>
+- repo init
+  - `repo` is a single-file python script
+  - `_FindRepo` finds `.repo/repo/main.py` in the cwd and in the parent dirs
+    - if that fails, it prompts for `repo init`
+  - `repo init` calls `_Init` 
+    - it creates `.repo`
+    - `_Clone` and `_Checkout` clones
+      `https://gerrit.googlesource.com/git-repo` to `.repo/repo`
+    - there is `.repo/repo/main.py` now
+  - `repo` invokes `.repo/repo/main.py`
+    - `_CheckWrapperVersion` checks the versions of `repo` between the one
+      invoked and the one in the cloned repo, and suggests an update if they
+      don't match
+- repo selfupdate
+  - `repo selfupdate` or `repo sync` triggers selfupdate
+  - `repoProject` is `.repo/repo`
+  - `_PostRepoFetch` prompts for a new repo version and restarts
