@@ -1407,6 +1407,41 @@ Chromium Browser
       calls `DrmThread::SchedulePageFlip` and `DrmThread::OnPlanesReadyForPageFlip`
 - EXO and the wayland server is a part of ash
 
+## CrOS DRM Overlays
+
+- on startup,
+  - there is an overlay for fullscreen XR24 fb
+    - this is gpu-composited
+  - if the cursor is on screen, there is another overlay for cursor AR24 fb
+- creating chrome windows does not change the overlay strategy
+  - whether the windows are maximized or fullscreen
+- video playback
+  - there can be 2 overlays for video-sized NV12 fb
+    - NV12 is planar and requires 2 overlays
+    - hw scaling is used for video resizing
+  - there is another overlay for fullscreen XR24 or AR24 fb
+    - this is gpu-composited
+    - XR24 if nothing is on top of the video
+    - AR24 if anything (e.g., video controls, captions, etc.) is on top of the video
+  - when the video is paused, the strategy might or might not change
+    - it could choose to gpu-comopsite everything
+- arcvm app
+  - there can be an overlay for the arc app
+    - the format can be AR24, AB24, XB24, etc.
+  - there is another overlay for fullscreen AR24 fb
+    - this is gpu-composited
+    - this includes arc app client decoration
+  - sometimes the compositor might choose to gpu-composite the arc app as well
+- arcvm SurfaceView
+  - other than an overlay for the app, there can be yet another overlay for
+    the surfaceview
+  - cros may choose different strategies
+    - it may gpu-composite everything
+    - it may convert the format (`RB16->AB24`) of the surfaceview while still
+      using an overlay for it
+      - this is tinted if `#tint-composited-content` is `Enabled`
+      - this does not happen if `#overlay-strategies` is `None`
+
 ## Overview
 
 - Front buffers
