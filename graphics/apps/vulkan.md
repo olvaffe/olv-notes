@@ -28,11 +28,11 @@ Vulkan Loader
   - `ninja`
 - tools
   - `git clone https://github.com/KhronosGroup/Vulkan-Tools.git`
-  - `cd Vulkan-Tools; mkdir out; cd out`
-  - `../scripts/update_deps.py --generator Ninja`
-    - this clones and builds `Vulkan-Headers` and `Vulkan-Loader`
-  - `cmake -G Ninja -C helper.cmake ..`
-  - `ninja`
+  - `cmake -S. -Bout -DCMAKE_BUILD_TYPE=Debug -DUPDATE_DEPS=ON -GNinja`
+    - `UPDATE_DEPS=ON` invokes `scripts/update_deps.py --generator Ninja` to
+      clone and build `Vulkan-Headers`, `volk`, and `Vulkan-Loader`
+    - it also generates `helper.cmake` for use with `cmake -C helper.cmake`
+  - `ninja -C out`
 - LunarG layers
   - `git clone --recurse-submodules https://github.com/LunarG/VulkanTools.git`
   - `cd VulkanTools`
@@ -186,15 +186,35 @@ Vulkan Loader
     - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
     - remember to unset `debug.vulkan.layers`
 - `Vulkan-Tools`
-  - `cd build-android`
-  - `ANDROID_SDK_HOME=<sdk-top> ANDROID_NDK_HOME=<ndk-top>
-    PATH=$PATH:<ndk-top> ./build_all.sh`
-  - `adb install ../cube/android/cube/bin/vkcube.apk`
-  - `adb shell am start-activity -W -S \
-     -n com.example.VkCube/android.app.NativeActivity \
-     -a android.intent.action.MAIN \
-     -c android.intent.category.LAUNCHER \
-     --es args '"--present_mode 2"'`
+  - `ANDROID_SDK_ROOT=~/android/sdk \
+     ANDROID_NDK_HOME=~/android/sdk/ndk/26.1.10909125 \
+     python scripts/android.py --config Debug --app-abi x86_64 --apk`
+    - the script hardcodes api level 26
+    - it uses cmake/ndk to build the native code
+      - `-D CMAKE_BUILD_TYPE=Debug`
+      - `-D UPDATE_DEPS=ON`
+      - `-D CMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake`
+      - `-D CMAKE_ANDROID_ARCH_ABI=x86_64`
+      - `-D ANDROID_PLATFORM=26`
+      - `-D ANDROID_USE_LEGACY_TOOLCHAIN_FILE=NO`
+    - it uses sdk to package the apk
+      - `aapt package -M cube/android/AndroidManifest.xml -I ~/android/sdk/platforms/android-26/android.jar -F VkCube-unaligned.apk build-android/libs`
+      - `zipalign 4 VkCube-unaligned.apk VkCube.apk`
+      - `keytool -genkey -keystore debug.keystore -alias androiddebugkey -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname CN=Android-Debug,O=Android,C=US`
+      - `apksigner sign --ks debug.keystore --ks-pass pass:android VkCube.apk`
+  - install
+    - `adb uninstall com.example.VkCube`
+    - `adb install -r -g --no-incremental build-android/bin/VkCube.apk`
+      - `adb shell pm path com.example.VkCube` to get the installed path
+    - `adb push build-android/cmake/x86_64/vulkaninfo/vulkaninfo /data/local/tmp`
+  - run
+    - `adb shell am start com.example.VkCube/android.app.NativeActivity`
+    - `adb shell /data/local/tmp/vulkaninfo`
+    - `adb shell am start-activity -W -S \
+       -n com.example.VkCube/android.app.NativeActivity \
+       -a android.intent.action.MAIN \
+       -c android.intent.category.LAUNCHER \
+       --es args '"--present_mode 2"'`
 
 ## Call Chain
 

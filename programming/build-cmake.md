@@ -124,3 +124,29 @@ CMake
   - both config and module modes may define imported targets
   - an imported target looks like `Foo::Bar`, and is preferred over other
     cmake variables provided
+
+## Android
+
+- <https://developer.android.com/ndk/guides/cmake>
+- cmake always has built-in NDK support
+  - before 3.21, it is unofficial and often breaks with new NDK releases
+- `$NDK/build/cmake/android.toolchain.cmake` works with cmake before and
+  after 3.21
+  - it uses cmake's build-in support if cmake is 3.21 or newer
+- required args
+  - `-DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake`
+    - this sets `CMAKE_ANDROID_NDK` and others
+    - read the toolchain file for details
+    - `-DANDROID_USE_LEGACY_TOOLCHAIN_FILE=OFF` to the newer toolchain file
+  - `-DANDROID_ABI=$ABI`
+    - valid values are `arm64-v8a`, `x86_64`, `armeabi-v7a`, `x86`
+    - it gets translated to `CMAKE_ANDROID_ARCH_ABI`
+- optional args
+  - `-DANDROID_PLATFORM=android-$MINSDKVERSION`
+    - default to the lowest version supported by the NDK release
+  - `-DANDROID_STL=$STL`
+    - `c++_shared`, `c++_static	`, `none`
+    - it gets translated to `CMAKE_ANDROID_STL_TYPE`
+  - `-DANDROID_CCACHE=ccache`
+    - it gets translated to `CMAKE_C_COMPILER_LAUNCHER` and
+      `CMAKE_CXX_COMPILER_LAUNCHER`

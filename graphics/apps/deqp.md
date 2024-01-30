@@ -65,9 +65,10 @@ dEQP
   - `git checkout -t aosp/android11-tests-dev`
     - Android 11 CTS cut releases from `android11-tests-dev`
   - `python external/fetch_sources.py`
-  - `python scripts/android/build_apk.py --abis x86_64 --sdk ~/android-sdk/ --ndk ~/android-sdk/ndk/23.1.7779620/`
-    - this checks for `aapt`, `zipalign`, and `dx`, where `dx` is removed
-      after `build-tools;29.0.3`
+  - `python scripts/android/build_apk.py --abis x86_64 --sdk ~/android/sdk --ndk ~/android/sdk/ndk/26.1.10909125`
+    - this checks for `aapt`, `zipalign`, `apksigner`, and `d8`/`dx`
+    - older deqp only checks for `dx` which is removed after
+      `build-tools;29.0.3`
   - `python scripts/android/install_apk.py`
     - might need to disable
       `Settings -> System -> Developer options -> Verify apps over ADB`
