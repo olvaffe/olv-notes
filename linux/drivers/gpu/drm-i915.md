@@ -62,6 +62,16 @@ DRM i915
   - `icl_get_plane_formats` gets supported formats
   - `intel_fb_plane_get_modifiers` gets supported modifiers
   - `drm_universal_plane_init` initializes the `drm_plane`
+- gem object pinning
+  - `i915_gem_object_pin_to_display_plane` pins the gem object, with this call
+    stack
+    - `intel_atomic_commit`
+    - `intel_atomic_prepare_commit`
+    - `intel_prepare_plane_fb`
+    - `intel_plane_pin_fb`
+  - `i915_gem_object_set_cache_level` sets the cache level to
+    `I915_CACHE_NONE`
+    - this calls `i915_gem_object_unbind` to unbind the bo from all gpu vmas
 
 ## sysfs
 
