@@ -3,20 +3,26 @@ crosvm
 
 ## Build and Run
 
-- download source code
-  - `mkdir crosvm`
-  - `cd crosvm`
-  - `repo init -g crosvm -u https://chromium.googlesource.com/chromiumos/manifest.git \
-               --repo-url=https://chromium.googlesource.com/external/repo.git`
-  - `repo sync`
-- install dependencies
-  - `sudo apt install libcap-dev libfdt-dev \
-                      libgbm-dev libvirglrenderer-dev \
-                      libwayland-bin libwayland-dev wayland-protocols \
-		      protobuf-compiler`
 - build
-  - `cd src/platform/crosvm`
-  - `cargo build --features "gpu x"`
+  - `git clone --recurse-submodules https://chromium.googlesource.com/crosvm/crosvm`
+  - `./tools/install-deps`
+  - `cargo build`
+  - to build crosvm inside a container
+    - `./tools/dev_container cargo build`
+    - or simply `./tools/dev_container` to get an interactive shell
+- interesting features
+  - e.g., `--features "default-no-sandbox virgl_renderer"`
+  - `default-no-sandbox` disables sandboxing
+    - crosvm spawns subprocesses for dev emu
+    - this controls whether the subprocesses are sandboxed by default
+  - `gpu` enables `virtio-gpu` dev emu
+    - this is the default
+  - `x` enables X support for `virtio-gpu`
+    - `virtio-gpu` will attemp to open an x display
+  - `virgl_renderer` enables virgl/venus support for `virtio-gpu`
+    - it adds support for all protocols supported by virglrenderer
+  - `wl-dmabuf` enables dma-buf support for `virtio-wl`
+    - it adds support for `VIRTIO_WL_CMD_VFD_NEW_DMABUF`, etc.
 - run
   - `./target/debug/crosvm run \
        --disable-sandbox \
@@ -355,6 +361,11 @@ crosvm
   - `GpuBufferDevice::allocate`
   - `Device::create_buffer`
   - `gbm_bo_create`
+
+## Rutabaga
+
+- `rutabaga_gfx/build.rs`
+  - by default, it builds `third_party/minigbm` and `third_party/virglrenderer` to avoid dependencies
 
 ## Crates
 
