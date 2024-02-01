@@ -23,6 +23,10 @@ crosvm
     - it adds support for all protocols supported by virglrenderer
   - `wl-dmabuf` enables dma-buf support for `virtio-wl`
     - it adds support for `VIRTIO_WL_CMD_VFD_NEW_DMABUF`, etc.
+- test
+  - `tools/dev_container tools/presubmit`
+  - `tools/dev_container tools/presubmit clippy`
+  - `tools/dev_container tools/presubmit format`
 - run
   - `./target/debug/crosvm run \
        --disable-sandbox \
