@@ -1,6 +1,41 @@
 Debian
 ======
 
+## stable releases
+
+- schedule
+  - debian has a stable release roughly every 2 years
+  - a stable release has a point release roughly every 2 months
+  - after a new release, the old release has security support for 1 year
+- suites/repos
+  - a release uses `stable` repo
+    - use codenames such as `bookworm` instead to avoid unexpected upgrade to
+      a new release
+  - updates are staged and tested in `stable-proposed-updates` until a point
+    release is made
+    - at which point, the updates are reflected in `stable`
+  - updates that are security-releated are also added to `stable-security`
+  - updates that are time-sensitive (e.g., timezone data) are also added to
+    `stable-updates`
+  - backports from `testing` are in `stable-backports`
+    - it consists of selected packages from `testing` which are re-compiled
+      for `stable`
+- components
+  - `main` consists of DFSG-compliant packages
+  - `contrib` consists of DFSG-compliant packages whose dependencies are not
+    in `main`
+  - `non-free` consists of non-DFSG-compliant packages
+  - `non-free-firmware` consists of non-DFSG-compliant firmware packages
+- kernel
+  - stable releases use lts kernels
+  - 10, buster, 4.19
+  - 11, bullseye, 5.10
+  - 12, bookworm, 6.1
+- bookworm
+  - `deb http://deb.debian.org/debian bookworm main non-free-firmware`
+  - `deb http://deb.debian.org/debian-security/ bookworm-security main non-free-firmware`
+  - `deb http://deb.debian.org/debian bookworm-updates main non-free-firmware`
+
 ## APT
 
 - `apt-get`
