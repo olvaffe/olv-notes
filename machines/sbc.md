@@ -134,3 +134,68 @@ SBC
   - `rkdeveloptool wl 0x40000 rootfs.img` to write `rootfs.img` to sector
     0x40000
     - it is the root fs
+- <https://github.com/inindev/nanopi-r5>
+  - `dtb/make_dtb.sh`
+    - it downloads `linux-6.5.6.tar.xz` and extracts
+      - `include/dt-bindings`
+      - `include/uapi`
+      - `arch/arm64/boot/dts/rockchip`
+    - it applies `patches`
+    - it uses `dtc` to generate `rk3568-nanopi-{r5c,r5s}.dtb`
+  - `uboot/make_uboot.sh`
+    - it clones <https://github.com/u-boot/u-boot.git> and checks out
+      `v2023.10`
+    - `cherry_pick` cherry-picks a bunch of upstream fixes
+    - it applies `patches`
+    - it builds u-boot twice, for r5c and r5s
+      - `make nanopi-${model}-rk3568_defconfig`
+      - `make BL31="$atf_file" ROCKCHIP_TPL="$tpl_file"`
+        - the firmwares are from <https://github.com/rockchip-linux/rkbin>
+        - this builds `idbloader.img` and `u-boot.itb`
+  - `debian/nanopi-r5c/make_debian_img.sh`
+    - it downloads
+      - <https://mirrors.edge.kernel.org/pub/linux/kernel/firmware/linux-firmware-20230210.tar.xz>
+      - <https://github.com/inindev/nanopi-r5/releases/download/v12.0.1/idbloader-r5c.img>
+      - <https://github.com/inindev/nanopi-r5/releases/download/v12.0.1/u-boot-r5c.itb>
+      - <https://github.com/inindev/nanopi-r5/releases/download/v12.0.1/rk3568-nanopi-r5c.dtb>
+    - `parition_media` creates a single partition starting at sector 0x8000
+    - `format_media` formats the partition to ext4
+    - `mount_media` moutns the partition
+    - it populates the partition with
+      - `/etc/kernel-img.conf`
+      - `/etc/fstab`
+      - `/etc/kernel/postinst.d/dtb_cp`
+        - it symlinks `/boot/rk3568-nanopi-r5c.dtb-${version}` to
+          `/boot/rk3568-nanopi-r5c.dtb`
+      - `/etc/kernel/postrm.d/dtb_rm`
+        - it removes `/boot/rk3568-nanopi-r5c.dtb-${version}`
+      - `/boot/mk_extlinux`
+        - it updates `/boot/extlinux/extlinux.conf` when kernel is updated
+          - `fdt /boot/rk3568-nanopi-r5c.dtb-${kver}`
+          - `append root=... ro rootwait`
+      - `/etc/kernel/postinst.d/update_extlinux`
+      - `/etc/kernel/postrm.d/update_extlinux`
+    - it adds to the partition these downloaded files
+      - `/usr/lib/firmware/{rockchip,rtl_bt,rtl_nic,rtlwifi,rtw88,rtw89}`
+      - `/boot/rk3568-nanopi-r5c.dtb`
+    - it debootstraps with these packages
+      - `linux-image-arm64, dbus, dhcpcd, libpam-systemd, openssh-server, systemd-timesyncd`
+      - `rfkill, wireless-regdb, wpasupplicant`
+      - `curl, pciutils, sudo, unzip, wget, xxd, xz-utils, zip, zstd`
+    - it modifies/adds these files
+      - `/etc/apt/sources.list`
+      - `/etc/default/locale`
+      - `/etc/wpa_supplicant/wpa_supplicant.conf`
+      - `/usr/lib/dhcpcd/dhcpcd-hooks/10-wpa_supplicant`
+      - `/etc/skel/.bashrc`
+      - `/root/.bashrc`
+      - `/etc/hostname`
+      - `/etc/hosts`
+    - it adds user `debian` and adds `/etc/sudoers.d/debian`
+    - it adds `/etc/rc.local` for first-boot init and changes some files
+      - the script generates `/etc/machine-id`, reconfigures ssh, resizes
+        rootfs partition, changes partition uuid, generates macs, etc.
+      - the script removes itself when done
+    - it dds `idbloader-r5c.img` to sector 0x40 and dds `u-boot-r5c.itb` to
+      0x4000
+      - sector size is 512 bytes
