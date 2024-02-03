@@ -346,6 +346,15 @@ Perfetto
   - definitions of declarations in `PERFETTO_DEFINE_CATEGORIES`
 - `perfetto::Tracing::Initialize`
   - calls `Tracing::InitializeInternal`
+  - `TracingMuxerImpl::InitializeInstance` is called with `InitializedMutex`
+    locked
+    - `instance_` is statically-initialized `TracingMuxerFake::Get()`
+    - `TracingMuxerImpl::TracingMuxerImpl` sets `instance_` to itself
+    - it spawns `task_runner_` to call `TracingMuxerImpl::Initialize` and
+      `TracingMuxerImpl::AddBackends`
+    - `TracingMuxerImpl::AddProducerBackend` calls
+      `SystemProducerTracingBackend::ConnectProducer`
+    - `GetProducerSocket` returns /run/perfetto/traced-producer.sock`
 - `perfetto::TrackEvent::Register`
   - builds `DataSourceDescriptor` proto
   - calls `TracingMuxerImpl::RegisterDataSource`
