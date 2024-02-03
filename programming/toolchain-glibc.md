@@ -274,3 +274,19 @@ glibc
   - `trace.h`, tracing
   - `ulimit.h`, ulimit commands
   - `utime.h`, access and modification times structure
+
+## Random
+
+- PLT
+  - when calling a global function `foo`, we actually call `foo@plt` which
+    resolves the address of `foo` dynamically
+  - if we define `foo`, and we want to call `foo` directly (e.g., `LD_PRELOAD`
+    won't work anymore), glibc provides `libc_hidden_def` and
+    `libc_hidden_proto`
+    - both macros are no-ops outside of `libc.so`
+    - they expand to `__attribute__ ((visibility ("hidden")))`
+- `weak_alias(__foo, foo)` makes `foo` a weak alias of `__foo`
+- a new syscall wrapper appears to be generated from
+  `sysdeps/unix/sysv/linux/syscalls.list`
+- `setvbuf` is defined by `weak_alias (_IO_setvbuf, setvbuf)`
+
