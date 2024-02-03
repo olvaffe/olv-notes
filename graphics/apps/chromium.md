@@ -1384,6 +1384,12 @@ Chromium Browser
     - <https://source.chromium.org/chromium/chromium/src/+/main:components/viz/>
   - `wayland` is ozone wayland
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/platform/wayland/>
+- `EnablePerfettoSystemTracing`
+  - this feature is enabled by defaut for cros
+  - `PerfettoTracedProcess::SetupSystemTracing` connects to the system
+    perfetto socket
+  - the gpu process cannot connect to the perfetto socket due to sandboxing,
+    which can be disabled by `--disable-gpu-sandbox`
 
 ## Compositor
 

@@ -58,3 +58,31 @@ Mesa utrace
     its tracepoint payloads need to be copied
 - `anv_device_utrace_finish` and `anv_QueuePresentKHR` call
   `u_trace_context_process`
+  - when a tracepoint ends, `begin_event` or `end_event` is called
+  - `end_event` calls `IntelRenderpassDataSource::Trace` to generate a
+    `GpuRenderStageEvent` trace event
+- `intel_tracepoints.py` defines the tracepoints
+  - they all take the form of `trace_intel_{begin,end}_foo`
+  - iris only uses `frame`, `batch`, `blorp`, `draw`, `compute`, `stall`
+    - `frame` is on the `frame` track
+      - it can begin in one batch and end in another batch
+    - `batch` is on the `command-buffer` track
+      - it begins/ends in every batch
+    - `draw` is on the `draw` track
+      - it begins/ends around `3DPRIMITIVE`, as a result of `draw_vbo`
+    - `compute` is on the `compute` track
+      - it begins/ends around `COMPUTE_WALKER`, as a result of `launch_grid`
+    - `stall` is on the `stall` track
+      - it begins/ends around `PIPE_CONTROL` that has
+        `PIPE_CONTROL_CACHE_FLUSH_BITS` or
+        `PIPE_CONTROL_CACHE_INVALIDATE_BITS`
+    - `blorp` is on the `blorp` track
+      - it begins/ends around `3DPRIMITIVE`, as a result of blorp ops that use
+        the 3d engine
+        - blorp op
+        - `iris_blorp_exec`
+        - `iris_blorp_exec_render`
+        - `blorp_exec`
+        - `blorp_exec_3d`
+          - `blorp_emit_pre_draw` begins
+          - `blorp_emit_post_draw` ends
