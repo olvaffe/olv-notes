@@ -1,6 +1,29 @@
 Das U-Boot
 ==========
 
+## Overview
+
+- <https://source.denx.de/u-boot/u-boot.git>
+- <https://docs.u-boot.org/en/latest/develop/release_cycle.html>
+  - quarterly release
+  - a release is tagged on the first Monday of each quarter
+  - then the merge window is opened for 3 weeks
+
+## Build
+
+- <https://docs.u-boot.org/en/latest/build/gcc.html>
+  - `make nanopi-r5c-rk3568_defconfig`
+  - `make menuconfig`
+  - `make CROSS_COMPILE=aarch64-linux-gnu-`
+- <https://docs.u-boot.org/en/latest/board/rockchip/rockchip.html>
+  - build or get tf-a firmware
+    - <https://github.com/ARM-software/arm-trusted-firmware.git>
+    - <https://github.com/rockchip-linux/rkbin>
+  - get tpl firmware
+    - also at <https://github.com/rockchip-linux/rkbin>
+  - `make CROSS_COMPILE=aarch64-linux-gnu- BL31=$rkbin/bin/rk35/rk3568_bl31_v1.43.elf ROCKCHIP_TPL=$rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.18.bin`
+    - `idbloader.img` and `u-boot.itb` are to be flashed
+
 ## Usage
 
 - Environment Variable Commands
