@@ -22,7 +22,11 @@ Das U-Boot
   - get tpl firmware
     - also at <https://github.com/rockchip-linux/rkbin>
   - `make CROSS_COMPILE=aarch64-linux-gnu- BL31=$rkbin/bin/rk35/rk3568_bl31_v1.43.elf ROCKCHIP_TPL=$rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.18.bin`
-    - `idbloader.img` and `u-boot.itb` are to be flashed
+    - `idbloader.img` is to be flashed to sector 0x40
+      - this is mandated by the bootrom
+    - `u-boot.itb` is to be flashed to sector 0x4000
+      - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
+        for `CONFIG_ARCH_ROCKCHIP`
 
 ## Usage
 
