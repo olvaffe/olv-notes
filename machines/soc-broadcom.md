@@ -44,7 +44,6 @@ Broadcom SoC
       gadget mode) to SDRAM
     - if it finds `pieeprom.upd` on local storage, it updates the stage2
       bootloader on EEPROM
-  - use `rpi-eeprom-config` to view/edit the config
 - VPU executes the firmware (`start4.elf`) from SDRAM
   - it parses `config.txt`, with these default values
     - `cmdline=cmdline.txt`, which reads kernel cmdline from `cmdline.txt`
@@ -117,6 +116,7 @@ Broadcom SoC
 - <https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-4> is arch
   - `raspberrypi-bootloader` provides vpu bootloader and firmwares under
     `/boot`
+    - <https://github.com/raspberrypi/firmware>
   - `uboot-raspberrypi` provides u-boot under `/boot`
     - `/boot/config.txt` has a single line, `enable_uart=1`
     - `/boot/kernel8.img` is actually `u-boot.bin`
@@ -127,7 +127,14 @@ Broadcom SoC
     - `/usr/lib/firmware/updates/cypress`
   - `linux-aarch64` provides the generic kernel
   - `linux-rpi` provides the rpi-specific downstream kernel
+    - <https://github.com/raspberrypi/linux>
     - it conflicts with `linux-aarch64` and `uboot-raspberrypi`
+  - `rpi4-eeprom` provides the eeprom tools
+    - <https://github.com/raspberrypi/rpi-eeprom>
+    - `rpi-eeprom-update -a` to schedule an eeprom update
+    - `rpi-eeprom-config` to view/edit the config
+  - `raspberrypi-utils` provides various tools
+    - <https://github.com/raspberrypi/utils>
 
 ## `/sys/firmware/devicetree`
 
