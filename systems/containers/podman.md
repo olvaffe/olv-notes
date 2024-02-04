@@ -111,3 +111,27 @@ Podman
 ## Podman
 
 - <https://github.com/containers/podman>
+- `podman run`
+  - `-i` keeps stdin open
+  - `-t` allocates pty
+  - `-e NAME=VAL` sets an envvar
+  - `-p host_port:container_port` maps host port to container port
+  - `-v host_dir:container_dir` creates a bind-mount
+
+## Dockerfile
+
+- <https://github.com/mbentley/docker-omada-controller/blob/master/Dockerfile.v5.x>
+  - uses ubuntu 20.04 as the base image
+  - `install.sh` downloads the software controller tarball, installs
+    dependencies, unpacks the tarball
+    - the dependencies are `ca-certificates`, `unzip`, `wget`, `gosu`,
+      `net-tools`, `tzdata`, `mongodb-server-core`, and
+      `openjdk-17-jre-headless`
+    - it untars and copies selected files to to `/opt/tplink/EAPController`
+  - `log4j_patch.sh` is nop for 5.x
+  - `healthcheck.sh` is run every 5 minutes to make sure the controller is
+    still alive
+  - the container runs `ENTRYPOINT CMD`
+    - `ENTRYPOINT` is `/bin/sh -c` by default and is overridden to
+      `entrypoint.sh` in this case
+    - `CMD` runs `java -server com.tplink.smb.omada.starter.OmadaLinuxMain`
