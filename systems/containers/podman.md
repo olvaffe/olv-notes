@@ -44,5 +44,37 @@ Podman
     - the runtime is expected to convert this to `config.json`
   - layer
 - <https://github.com/opencontainers/runtime-spec> is the runtime spec
+  - runtime must support
+    - `state <container-id>` shows the state of the container
+    - `create <container-id> <path-to-bundle>` creates a container according
+      to its `config.json`
+      - changes to `config.json` after this have no effect
+    - `start <container-id>` starts the container
+    - `kill <container-id> <signal>` sends a signal to the container
+    - `delete <container-id>` deletes the container
+  - container lifecycle
+    - user invokes `create`
+      - runtime creates the container environment according to `config.json`
+      - runtime invokes the deprecated `prestart` hook
+      - runtime invokes the `createRuntime` hook after namespaces are created
+        - to customize namespaces
+      - runtime invokes the `createContainer` hook after entering the mount
+        namespace
+        - to add mounts
+    - user invokes `start`
+      - runtime invokes the `startContainer` hook
+      - runtime runs the program specified by `process`
+      - runtime invokes the `postStart` hook
+    - user invokes `delete`
+      - runtime deletes the container environment
+      - runtime invokes the `postStop` hook
+  - `config.json`
+    - `ociVersion` is the container version
+    - `root.path` is an absoluate path or a relative path to the bundle,
+      usually `rootfs`
+    - `mounts` is an array of mountpoints
+    - `process` is the program to run
+      - `user` is the uid/gid/umask
+    - more
 - <https://github.com/opencontainers/runc> is the reference implementation of
   the runtime spec
