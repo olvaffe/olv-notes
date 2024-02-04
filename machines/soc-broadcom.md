@@ -23,34 +23,111 @@ Broadcom SoC
   - QPUs, for 3D works
 - Linux runs on ARM CPU
 
-## Bootloader
+## Raspberry Pi 4 Boot Flow
 
-- When powered on, VPU executes stage1 bootloader on SoC ROM
-  - it initializes eMMC controller
-  - it executes stage2 from recovery.bin on sdcard, or from EEPROM
+- <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-and-raspberry-pi-5-boot-flow>
+- When powered on, VPU executes stage1 bootloader from SoC ROM (bootrom)
   - CPU is reset and SDRAM is disabled
-- VPU executes stage2 bootloader (normally on EEPROM)
-  - it initializes more of the system, including SDRAM
-  - config is written to EEPROM as well
-  - it loads stage3 from `startup4.elf` on sdcard or usb to SDRAM
-- VPU executes stage3 bootloader (`starup4.elf`) on SDRAM
-  - it parses `config.txt`
+  - VPU initializes SD/eMMC controller
+  - VPU looks for `recovery.bin` on the first FAT partition
+    - `recovery.bin` is a minimal stage2 bootloader
+    - its job is to reflash the real stage2 bootloader to SPI EEPROM
+  - VPU looks for the stage2 bootloader in SPI EEPROM
+    - this is the normal boot flow
+  - otherwise, it enters USB device boot
+- VPU executes stage2 bootloader from EEPROM
+  - VPU initializes more of the system, including clocks and SDRAM
+  - VPU checks the config on EEPROM which affects the boot flow
+    - it can load the firmware, `start4.elf`, locally from SD card, USB
+      storage, or NVMe to SDRAM
+    - it can also load the firmware over network or USB (by entering usb
+      gadget mode) to SDRAM
+    - if it finds `pieeprom.upd` on local storage, it updates the stage2
+      bootloader on EEPROM
+  - use `rpi-eeprom-config` to view/edit the config
+- VPU executes the firmware (`start4.elf`) from SDRAM
+  - it parses `config.txt`, with these default values
+    - `cmdline=cmdline.txt`, which reads kernel cmdline from `cmdline.txt`
+    - `kernel=kernel8.img`, which loads kernel from `kernel8.img`
+    - `enable_uart=0`, which disables uart by default
+    - `armstub=?`, which uses armstub built-in in `start4.elf` by default
   - it loads various AP (ARM CPU) images
   - ARM CPU is out of reset and starts running
-  - stage3 bootloader is actually a full RTOS based on ThreadX
-- ARM executes some initializations, armstub, and kernel
+  - the firmware is actually a full RTOS based on ThreadX
+- CPU executes some initializations, armstub, and kernel
   - <https://github.com/raspberrypi/tools/tree/master/armstubs>
-- open source firmwares
-  - stage2/3 replacement, <https://github.com/christinaa/rpi-open-firmware>
-    - it initializes the system similar to stage2
-    - it initializes ARM to run an embedded chainloader
-    - the chainloader (re-)initializes eMMC controller and loads linux kernel
-    - most hw blocks do not work
-  - EFI, <https://github.com/pftf/RPi4>
-    - it is built from official EDK2 and backed by ARM and VMWare
-    - it instructs stage3 (via `config.txt`) to use EDK2 as armstub
-    - it can chainload any EFI bootloader (grub2, systemd-boot,
-      linux kernel itself)
+    - it is incorporated into `start4.elf`
+    - `armstub8.S` is used, corresponding to `kernel8.img`
+  - armstub starts in EL3, performs initializations, switches to EL2, and
+    jumps to the kernel
+
+## Firmwares
+
+- <https://github.com/raspberrypi/firmware/> is the official
+  proprietary/prebuilt firmwares
+- <https://github.com/christinaa/rpi-open-firmware> is a semi-working open
+  source firmware
+  - it provides vpu stage2 bootloader and firmware
+  - it initializes the system similar to stage2
+  - it initializes ARM to run an embedded chainloader
+  - the chainloader (re-)initializes eMMC controller and loads linux kernel
+  - most hw blocks do not work
+- <https://github.com/pftf/RPi4> is an UEFI firmware
+  - it is built from official EDK2 and backed by ARM and VMWare
+  - it specifies `armstub=RPI_EFI.fd` in `config.txt`, which instructs the vpu
+    firmware to use `RPI_EFI.fd` instead of the built-in one as armstub
+  - `RPI_EFI.fd` can chainload any EFI bootloader (grub2, systemd-boot, linux
+    kernel itself)
+- <https://source.denx.de/u-boot/u-boot.git> is u-boot
+  - `make rpi_4_defconfig`
+  - copy `u-boot.bin` to the boot dir
+  - specify `kernel=u-boot.bin` in `config.txt`
+
+## Distros
+
+- <https://www.raspberrypi.com/software/> is the official distro
+  - `2023-12-11-raspios-bookworm-arm64-lite.img.xz` is a compressed disk image
+  - MBR partition table
+    - partition 1: 512MB, VFAT, mounted to `/boot/firmware`
+    - partition 2: 2GB, EXT4, mounted to `/`
+  - `/boot/firmware` has all the vpu firmwares, kernels, initramfs, dtbs, etc.
+    - `config.txt` has
+      - `dtparam=audio=on`
+      - `camera_auto_detect=1`
+      - `display_auto_detect=1`
+      - `auto_initramfs=1`
+      - `dtoverlay=vc4-kms-v3d`
+      - `max_framebuffers=2`
+      - `disable_fw_kms_setup=1`
+      - `arm_64bit=1`
+      - `disable_overscan=1`
+      - `arm_boost=1`
+    - `cmdline.txt` has
+      - `console=serial0,115200 console=tty1`
+      - `root=PARTUUID=4e639091-02 rootfstype=ext4 fsck.repair=yes rootwait`
+      - `quiet init=/usr/lib/raspberrypi-sys-mods/firstboot`
+  - `/etc/kernel/postinst.d/z50-raspi-firmware`
+    - it copies the latest kernel (`/boot/vmlinuz-*`), initramfs
+      (`/boot/initrd.img-*)`, dtbs (`/usr/lib/linux-image-*/broadcom`), and
+      overlays (`/usr/lib/linux-image-*/overlays`) to `/boot/firmware` when
+      it is installed
+- <https://wiki.debian.org/RaspberryPi4> is debian
+  - `20231109_raspi_4_bookworm.img.xz` is a compressed disk image
+  - it is similar to the official distro
+- <https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-4> is arch
+  - `raspberrypi-bootloader` provides vpu bootloader and firmwares under
+    `/boot`
+  - `uboot-raspberrypi` provides u-boot under `/boot`
+    - `/boot/config.txt` has a single line, `enable_uart=1`
+    - `/boot/kernel8.img` is actually `u-boot.bin`
+    - `/boot/{mkscr,boot.scr,boot.txt}` is the boot script
+    - `/boot/bcm271*.dtb`
+  - `firmware-raspberrypi` provides firmwares under
+    - `/usr/lib/firmware/updates/brcm`
+    - `/usr/lib/firmware/updates/cypress`
+  - `linux-aarch64` provides the generic kernel
+  - `linux-rpi` provides the rpi-specific downstream kernel
+    - it conflicts with `linux-aarch64` and `uboot-raspberrypi`
 
 ## `/sys/firmware/devicetree`
 
