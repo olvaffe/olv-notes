@@ -78,3 +78,36 @@ Podman
     - more
 - <https://github.com/opencontainers/runc> is the reference implementation of
   the runtime spec
+
+## Tools
+
+- <https://github.com/containers/skopeo>
+  - it is a client for the distribution spec
+  - `skopeo inspect docker://docker.io/library/busybox`
+  - `skopeo inspect --config docker://docker.io/library/busybox`
+  - `skopeo copy docker://docker.io/library/busybox dir:my-dir`
+    - `man containers-transports` for different transports
+- <https://github.com/containers/buildah>
+  - it creates images following the image spec
+  - `buildah images` lists images
+  - `buildah containers` lists containers
+  - to create an image modified from `alpine`
+    - `alpine` is an alias for `docker.io/library/alpine`
+      - `/etc/containers/registries.conf.d/00-shortnames.conf`
+    - `buildah from alpine`
+      - it pulls the base image from the registry
+      - it creates a container named `alpine-working-container`
+    - `buildah run alpine-working-container sh`
+      - not working here...
+    - `buildah commit alpine-working-container alpine-modified`
+- <https://github.com/containers/youki>
+  - it is a rust implementation of the runtime spec
+- <https://github.com/containers/crun>
+  - it is a c implementation of the runtime spec
+- <https://github.com/containers/netavark>
+- <https://github.com/containers/conmon>
+- <https://github.com/containers/bubblewrap>
+
+## Podman
+
+- <https://github.com/containers/podman>
