@@ -98,7 +98,6 @@ Podman
       - it pulls the base image from the registry
       - it creates a container named `alpine-working-container`
     - `buildah run alpine-working-container sh`
-      - not working here...
     - `buildah commit alpine-working-container alpine-modified`
 - <https://github.com/containers/youki>
   - it is a rust implementation of the runtime spec
@@ -113,7 +112,14 @@ Podman
 - <https://github.com/containers/podman>
 - `podman run`
   - `-i` keeps stdin open
+    - `podman run busybox ls -l /proc/self/fd` says
+      - stdin is `/dev/null`
+      - stdout and stderr are pipes
+    - `podman run -i busybox ls -l /proc/self/fd` says
+      - stdin, stdout, and stderr are pipes
   - `-t` allocates pty
+    - `podman run -it busybox ls -l /proc/self/fd` says
+      - stdin, stdout, and stderr are `/dev/pts/0`
   - `-e NAME=VAL` sets an envvar
   - `-p host_port:container_port` maps host port to container port
   - `-v host_dir:container_dir` creates a bind-mount
