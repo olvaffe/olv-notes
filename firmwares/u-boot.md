@@ -28,6 +28,53 @@ Das U-Boot
       - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
         for `CONFIG_ARCH_ROCKCHIP`
 
+## Standard Boot
+
+- <https://docs.u-boot.org/en/stable/develop/bootstd.html>
+- configs
+  - `CONFIG_BOOTSTD` is enabled by default to show the config items
+  - `CONFIG_BOOTSTD_DEFAULTS` enables commonly needed features
+    - it enables `CONFIG_BOOTMETH_EXTLINUX` and `CONFIG_BOOTMETH_EXTLINUX_PXE`
+      which are what we want
+    - it selects `CONFIG_BOOT_DEFAULTS` which selects
+      `CONFIG_BOOT_DEFAULTS_CMDS` which implies `CONFIG_USE_BOOTCOMMAND`
+    - as a result, `CONFIG_BOOTCOMMAND` defaults to `bootflow scan`
+  - `CONFIG_BOOTSTD_FULL` enables additional cmds
+  - `CONFIG_BOOTSTD_BOOTCOMMAND` affects the default bootcmd
+  - `CONFIG_BOOTSTD_PROG` causes `main_loop` to call `bootstd_prog_boot`
+    directly to boot
+- autoboot
+  - `CONFIG_AUTOBOOT` is enabled by default
+    - `main_loop` calls `autoboot_command` with the string from `bootcmd` env
+    - the default value of `bootcmd` env is `bootflow scan`
+  - `U_BOOT_CMD_WITH_SUBCMDS(bootflow, ...)` defines the `bootflow` command
+    - `do_bootflow_scan` calls `bootflow_scan_first` and `bootflow_scan_next`
+      to loop over all bootflows
+      - it calls `bootdev_add_bootflow`
+      - it calls `bootflow_run_boot` to boot each bootflow in turn
+        - this calls `bootmeth_boot`
+- `bootflow_scan_first`
+  - `bootmeth_setup_iter_order` collects all `UCLASS_BOOTMETH`
+  - `bootdev_setup_iter` finds the first bootdev
+    - it seems to support `UCLASS_BOOTSTD`, bootdev hunter, and
+      `UCLASS_BOOTDEV`
+    - `bootdev_next_prio` finds and probes `UCLASS_BOOTDEV`
+    - `dm_scan_other` adds a default `UCLASS_BOOTSTD` device and a
+      `UCLASS_BOOTMETH` device for each `UCLASS_BOOTMETH` driver
+    - mmc registers a boodev hunter with `BOOTDEV_HUNTER(mmc_bootdev_hunter)`
+  - `bootflow_check` calls `bootmeth_get_bootflow`
+- `bootflow_scan_next` finds the first partition of the current device, or the
+  first partition of the next device, or fail
+- `bootmeth_get_bootflow` calls `read_bootflow` callback
+  - `extlinux_read_bootflow` reads `/extlinux/extlinux.conf` or
+    `/boot/extlinux/extlinux.conf` on the partition
+    - the paths are from `default_prefixes` and `EXTLINUX_FNAME`
+- `bootmeth_boot` calls `boot` callback
+  - `extlinux_boot` calls `pxe_process` to parse and boot the entry
+  - the format of `extlinux.conf` appears to be based on pxelinux, extlinux,
+    and
+    <https://uapi-group.org/specifications/specs/boot_loader_specification/>
+
 ## Usage
 
 - Environment Variable Commands
