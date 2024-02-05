@@ -7,7 +7,7 @@ Distro Disk
   - `g` to use GPT
     - by default, fdisk reserves the first and the last 1MB of the disk for
       primary and secondary GPT tables
-  - partition 1: 260M, ESP
+  - partition 1: 1GB, ESP
   - partition 2: rest of the disk, Linux
     - use two partitions if want to separate root and home
   - no swap
@@ -68,7 +68,14 @@ Distro Disk
   - must have at least 1 ESP
   - minimum size is 100MB
   - must be FAT32
-    - FAT32 requires a minimum size of 260MB on 4KB-sector disks
+    - FAT32 requires a minimum size of 260MB on 4KB-sector disks (and a
+      minimum size of 36MB on 512B-sector disks)
+      - because it requires a minimum of 65527 clusters plus some for metadata
+    - `mkfs.vfat -F 32 -S 4096` warns when the partition size is
+      `65695 * 4096` or less
+    - `mkfs.vfat -F 32 -S 4096 -a -f 1 -h 0 -R 2 -s 1` warns when the
+      partition size is `65590 * 4096` or less
+    - `mkfs.vfat -F 32` warns when the partition size is `66591 * 512` or less
 - MSR
   - 16MB
   - each GPT disk should have a MSR partition
@@ -92,7 +99,7 @@ Distro Disk
   - <https://opensource.rock-chips.com/wiki_Partitions>
   - partition 1 is at sector 64 (0x40)
     - bootrom always finds preloader at sector 64
-    - preload initializes dram
+    - preloader initializes dram
   - partition 2 is at sector 16384 (0x4000, 8MB)
     - preloader usually finds the bootloader at sector 16384
     - common bootloader is u-boot
@@ -104,15 +111,20 @@ Distro Disk
 - partition table
   - partition 1: sector 64, no fs
     - for preloader on rockchip
-  - partition 2: sector 16384 (8MB), no fs
+  - partition 2: sector 16384 (8MB), size 8MB, no fs
     - for u-boot on rockchip
-  - partition 3: sector 32768 (16MB), size 256MB, fat32
-    - for `/boot` on rockchip
+  - partition 3: size 260MB, fat32
     - for `/boot/firmware` on broadcom
-  - partition 4: rest, ext4
+  - partition 4: size 260MB, fat32
+    - for `/boot`
+  - partition 5: rest, ext4
     - for rootfs
-    - on rockchip, u-boot will find `/boot/extlinux/extlinux.conf`
-    - on broadcom, kernel/initramfs must be copied from `/boot` to `/boot/firmware`
+- on rockchip, u-boot will find `/boot/extlinux/extlinux.conf` on partition 4
+- on broadcom, vpu `start4.elf` will find `/boot/firmware/kernel8.img` on
+  partition 3
+  - kernel/initramfs must be copied from `/boot` to `/boot/firmware`
+  - alternatively, `/boot/firmware/kernel8.img` can be u-boot which will find
+    `/boot/extlinux/extlinux.conf` on partition 4
 
 ## GPT
 
