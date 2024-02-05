@@ -28,6 +28,23 @@ Distro Disk
   - /usr: 5G
   - rest: 1G
 
+## Booting
+
+- EFI finds the bootloader on ESP
+- bootloader finds its config files on ESP
+  - e.g., `systemd-boot` finds `/loader/loader.conf` on ESP
+- bootloader finds bootloader entries (`/loader/entries/*.conf`) on ESP and,
+  if exists, XBOOTLDR
+- bootloader entries refer to kernel/initramfs files using absolute paths on
+  the same partitions
+  - that is, a bootloader entry and its associated kernel/initramfs must be on
+    the same partition
+- <https://uapi-group.org/specifications/specs/boot_loader_specification/>
+  - if ESP is large enough to hold kernels, it should be mounted to `/boot`
+  - if ESP is too small to hold kernels, it should be moutned to `/efi`
+    - another partition, XBOOTLDR, should be created and moutned to `/boot`
+      instead
+
 ## Mounting
 
 - mount partition 2 (uses `subvol=roots/current` by default)
