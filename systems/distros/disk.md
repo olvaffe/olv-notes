@@ -69,6 +69,34 @@ Distro Disk
   - not recommended
   - should follow Recovery tool partition immediately
 
+## SBCs
+
+- rockchip
+  - <https://opensource.rock-chips.com/wiki_Partitions>
+  - partition 1 is at sector 64 (0x40)
+    - bootrom always finds preloader at sector 64
+    - preload initializes dram
+  - partition 2 is at sector 16384 (0x4000, 8MB)
+    - preloader usually finds the bootloader at sector 16384
+    - common bootloader is u-boot
+- broadcom
+  - vpu bootrom always finds stage2 in eeprom
+  - vpu stage2 initializes dram and finds `start4.elf` on the first vfat
+    partition
+  - vpu `start4.elf` functions as the bootloader and boots `kernel8.img`
+- partition table
+  - partition 1: sector 64, no fs
+    - for preloader on rockchip
+  - partition 2: sector 16384 (8MB), no fs
+    - for u-boot on rockchip
+  - partition 3: sector 32768 (16MB), size 256MB, fat32
+    - for `/boot` on rockchip
+    - for `/boot/firmware` on broadcom
+  - partition 4: rest, ext4
+    - for rootfs
+    - on rockchip, u-boot will find `/boot/extlinux/extlinux.conf`
+    - on broadcom, kernel/initramfs must be copied from `/boot` to `/boot/firmware`
+
 ## GPT
 
 - <https://en.wikipedia.org/wiki/GUID_Partition_Table>
