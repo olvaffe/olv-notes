@@ -30,6 +30,7 @@ Broadcom SoC
   - CPU is reset and SDRAM is disabled
   - VPU initializes SD/eMMC controller
   - VPU looks for `recovery.bin` on the first FAT partition
+    - if gpt, the partition type must be ESP or MS basic data
     - `recovery.bin` is a minimal stage2 bootloader
     - its job is to reflash the real stage2 bootloader to SPI EEPROM
   - VPU looks for the stage2 bootloader in SPI EEPROM
@@ -40,6 +41,7 @@ Broadcom SoC
   - VPU checks the config on EEPROM which affects the boot flow
     - it can load the firmware, `start4.elf`, locally from SD card, USB
       storage, or NVMe to SDRAM
+      - if gpt, the partition type must be ESP or MS basic data
     - it can also load the firmware over network or USB (by entering usb
       gadget mode) to SDRAM
     - if it finds `pieeprom.upd` on local storage, it updates the stage2

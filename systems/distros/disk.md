@@ -120,9 +120,9 @@ Distro Disk
     - for rockchip preloader
   - reserved: sector 16384 to 32767
     - for rockchip u-boot
-  - partition 1: sector 32768, size 260MB, fat32
+  - partition 1: sector 32768, size 260MB, esp, fat32
     - for `/boot/firmware` on broadcom
-  - partition 2: size 260MB, fat32
+  - partition 2: size 260MB, xbootldr, fat32
     - for `/boot`
   - partition 3: rest, ext4
     - for rootfs
