@@ -103,28 +103,36 @@ Distro Disk
   - partition 2 is at sector 16384 (0x4000, 8MB)
     - preloader usually finds the bootloader at sector 16384
     - common bootloader is u-boot
+  - partition 3 is at sector 24576 (0x6000, 12MB)
+    - u-boot includes tf-a and does not need this partition
+  - partition 4 is at sector 32768 (0x8000, 16MB)
+    - this is `/boot` and holds kernel/initramfs/dtb as well as
+      `extlinux/extlinux.conf`
 - broadcom
   - vpu bootrom always finds stage2 in eeprom
   - vpu stage2 initializes dram and finds `start4.elf` on the first vfat
     partition
   - vpu `start4.elf` functions as the bootloader and boots `kernel8.img`
 - partition table
-  - partition 1: sector 64, no fs
-    - for preloader on rockchip
-  - partition 2: sector 16384 (8MB), size 8MB, no fs
-    - for u-boot on rockchip
-  - partition 3: size 260MB, fat32
+  - fdisk considers 2048 to be the first usable sector and we cannot have
+    partitions starting before sector 2048
+  - reserved: sector 64 to 16383
+    - for rockchip preloader
+  - reserved: sector 16384 to 32767
+    - for rockchip u-boot
+  - partition 1: sector 32768, size 260MB, fat32
     - for `/boot/firmware` on broadcom
-  - partition 4: size 260MB, fat32
+  - partition 2: size 260MB, fat32
     - for `/boot`
-  - partition 5: rest, ext4
+  - partition 3: rest, ext4
     - for rootfs
-- on rockchip, u-boot will find `/boot/extlinux/extlinux.conf` on partition 4
-- on broadcom, vpu `start4.elf` will find `/boot/firmware/kernel8.img` on
-  partition 3
-  - kernel/initramfs must be copied from `/boot` to `/boot/firmware`
-  - alternatively, `/boot/firmware/kernel8.img` can be u-boot which will find
-    `/boot/extlinux/extlinux.conf` on partition 4
+  - on rockchip, u-boot will find `/boot/extlinux/extlinux.conf` on partition
+    2
+  - on broadcom, vpu `start4.elf` will find `/boot/firmware/kernel8.img` on
+    partition 1
+    - kernel/initramfs must be copied from `/boot` to `/boot/firmware`
+    - alternatively, `/boot/firmware/kernel8.img` can be u-boot which will
+      find `/boot/extlinux/extlinux.conf` on partition 2
 
 ## GPT
 
