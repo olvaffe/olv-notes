@@ -126,6 +126,52 @@ Mesa ANV
         current bbo to jump to the new bbo
       - calls `anv_batch_set_storage` with the new bbo
 
+## BO Flags
+
+- `ANV_BO_ALLOC_32BIT_ADDRESS` uses `vma_lo` heap and clears
+  `EXEC_OBJECT_SUPPORTS_48B_ADDRESS`
+- `ANV_BO_ALLOC_EXTERNAL` must be set for bos that are shared
+  - it affects host cacheability/coherency if allocated by the app
+    - ignore the requested memory type
+    - always `ANV_BO_ALLOC_HOST_COHERENT`
+    - no `ANV_BO_ALLOC_HOST_CACHED`
+  - it affects mocs
+    - use WT
+  - it affects pat entry
+    - treated as SCANOUT
+  - it affects mmap mode
+    - use WC
+- `ANV_BO_ALLOC_MAPPED` makes sure the bo is mappable and mapped
+- `ANV_BO_ALLOC_HOST_COHERENT` makes sure the bo is coherent
+  - no effect to the kmd
+  - affects pat entry
+- `ANV_BO_ALLOC_CAPTURE` means `EXEC_OBJECT_CAPTURE`, to include the bo in
+  devcoredump
+- `ANV_BO_ALLOC_FIXED_ADDRESS` uses the requested bo addr
+- `ANV_BO_ALLOC_IMPLICIT_SYNC` clears `EXEC_OBJECT_ASYNC`
+  - execbuffer will honor the implicit fences associated with the bo
+- `ANV_BO_ALLOC_IMPLICIT_WRITE` means `EXEC_OBJECT_WRITE`
+  - execbuffer will add an implicit write fence rather than read fence
+- `ANV_BO_ALLOC_CLIENT_VISIBLE_ADDRESS` picks a bo address that is unlikely to
+  have a conflict
+- `ANV_BO_ALLOC_AUX_TT_ALIGNED` aligns to AUX-TT, which is always set for app
+  allocs
+- `ANV_BO_ALLOC_LOCAL_MEM_CPU_VISIBLE` picks visible vram
+- `ANV_BO_ALLOC_NO_LOCAL_MEM` never picks vram
+- `ANV_BO_ALLOC_SCANOUT`
+- `ANV_BO_ALLOC_DESCRIPTOR_POOL` picks `vma_desc` for descriptor pools
+- `ANV_BO_ALLOC_TRTT` picks `vma_trtt` for sparse
+  - i915 only supports TRTT
+  - xe supports `vm_bind` (default) and TRTT
+- `ANV_BO_ALLOC_PROTECTED` means `I915_GEM_CREATE_EXT_PROTECTED_CONTENT`
+- `ANV_BO_ALLOC_HOST_CACHED` uses a cached host mapping
+- `ANV_BO_ALLOC_SAMPLER_POOL` picks `vma_samplers` for samplers
+- `ANV_BO_ALLOC_IMPORTED`
+  - it affects pat entry
+    - always cached/coherent
+  - it affects mmap mode
+- `ANV_BO_ALLOC_INTERNAL` has no real effect but only for rmv debug tool
+
 ## BO Addresses
 
 - `anv_device_alloc_bo`, rather than i915, picks the bo address
