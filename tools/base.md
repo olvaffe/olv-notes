@@ -57,3 +57,7 @@ Base Utils
 - it matches against `/proc/*/cmdline` mostly
   - with `-w`, it matches against `/proc/*/stat` as well which is for kernel
     workers
+
+## ps
+
+- `ps -f --ppid 2 --deselect`

@@ -36,6 +36,24 @@ Debian
   - `deb http://deb.debian.org/debian-security/ bookworm-security main non-free-firmware`
   - `deb http://deb.debian.org/debian bookworm-updates main non-free-firmware`
 
+## Initial Setup
+
+- base package
+  - `locales`, `vim`, `man-db`, `sudo`
+  - `systemd-resolved`, `systemd-zram-generator`
+- base setup
+  - `dpkg-reconfigure tzdata`
+  - `dpkg-reconfigure locales`
+  - `systemctl enable --now systemd-networkd`
+  - `visudo`
+  - `useradd -m olv`
+- extra packages
+  - `git`, `strace`, `lsof`
+- cleanup
+  - minimize packages
+  - if rpi, remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
+    `/usr/local`, and `/boot/firmware`
+
 ## APT
 
 - `apt-get`

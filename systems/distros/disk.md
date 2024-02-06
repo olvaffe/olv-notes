@@ -122,10 +122,13 @@ Distro Disk
     - for rockchip u-boot
   - partition 1: sector 32768, size 260MB, esp, fat32
     - for `/boot/firmware` on broadcom
+    - label `RASPIFIRM`
   - partition 2: size 260MB, xbootldr, fat32
     - for `/boot`
+    - label `RASPIBOOT`
   - partition 3: rest, ext4
     - for rootfs
+    - label `RASPIROOT`
   - on rockchip, u-boot will find `/boot/extlinux/extlinux.conf` on partition
     2
   - on broadcom, vpu `start4.elf` will find `/boot/firmware/kernel8.img` on
