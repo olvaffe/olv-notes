@@ -28,6 +28,35 @@ Das U-Boot
       - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
         for `CONFIG_ARCH_ROCKCHIP`
 
+## Code Flow: armv8
+
+- `_start:` in `arch/arm/cpu/armv8/start.S`
+  - soc-specific `boot0.h` branches to `reset`
+  - `reset` branches to `_main`
+- `ENTRY(_main)` in `arch/arm/lib/crt0_64.S`
+  - calls `board_init_f` in `common/board_f.c`
+    - it calls the init functions on `init_sequence_f` array
+  - branches to `board_init_r` in `common/board_r.c`
+    - it calls the init functions on `init_sequence_r` array
+    - some `init_sequence_r` init functions
+      - `initr_net` calls `eth_initialize` to initialize NICs
+        - console: `Net:   eth0: <name>`
+      - `run_main_loop` is the last function and calls `main_loop`
+- `main_loop` in `common/main.c`
+  - `run_preboot_environment_command` runs `CONFIG_PREBOOT` commands
+    - it runs `usb start` by default
+      - console: `starting USB...`
+      - `do_usb_start` calls `usb_init` to initialize and scan usb
+  - `bootdelay_process` gets boot cmd
+    - boot delay defaults to `CONFIG_BOOTDELAY`, which is 2 seconds
+    - it returns `bootcmd` env which defaults to `CONFIG_BOOTCOMMAND`, which
+      is `bootflow scan`
+  - `autoboot_command` autoboots
+    - `abortboot` calls `abortboot_single_key` to wait for autoboot abort
+      - console: `Hit any key to stop autoboot:  <seconds>`
+    - `run_command_list` runs the commands
+  - `cli_loop` prompts for `CONFIG_SYS_PROMPT` for interactive shell
+
 ## Standard Boot
 
 - <https://docs.u-boot.org/en/stable/develop/bootstd.html>
@@ -69,11 +98,20 @@ Das U-Boot
   - `extlinux_read_bootflow` reads `/extlinux/extlinux.conf` or
     `/boot/extlinux/extlinux.conf` on the partition
     - the paths are from `default_prefixes` and `EXTLINUX_FNAME`
+  - `efi_mgr_read_bootflow` finds `BootOrder` from efi vars
+    - `efi_init_obj_list` calls `efi_init_variables` calls `efi_var_from_file`
+      - it reads `EFI_VAR_FILE_NAME` (`ubootefi.var`)
+  - `extlinux_pxe_read_bootflow` calls `pxe_get` to retrieve the boot file
+    - it uses `do_get_tftp` which waits for the network
+    - `PXELINUX_DIR` is `pxelinux.cfg/`
+    - `pxe_default_paths` has various default filenames
 - `bootmeth_boot` calls `boot` callback
   - `extlinux_boot` calls `pxe_process` to parse and boot the entry
-  - the format of `extlinux.conf` appears to be based on pxelinux, extlinux,
-    and
-    <https://uapi-group.org/specifications/specs/boot_loader_specification/>
+    - the format of `extlinux.conf` appears to be based on pxelinux, extlinux,
+      and
+      <https://uapi-group.org/specifications/specs/boot_loader_specification/>
+  - `efi_mgr_boot` calls `efi_bootmgr_run`
+  - `extlinux_pxe_boot` also calls `pxe_process`
 
 ## Usage
 
