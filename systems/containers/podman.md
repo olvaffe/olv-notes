@@ -159,3 +159,16 @@ Podman
     - `ENTRYPOINT` is `/bin/sh -c` by default and is overridden to
       `entrypoint.sh` in this case
     - `CMD` runs `java -server com.tplink.smb.omada.starter.OmadaLinuxMain`
+  - <https://www.tp-link.com/us/support/faq/3281/>
+    - app connects to controller tcp 8843 (`PORTAL_HTTPS_PORT`) for auth and
+      tcp 8043 (`MANAGE_HTTPS_PORT`) for management
+      - or to controller tcp 8088 (`PORTAL_HTTP_PORT` and `MANAGE_HTTP_PORT`)
+        for both
+    - eap connects to controller tcp 29814 (`PORT_MANAGER_V2`), tcp 29815
+      (`PORT_TRANSFER_V2`), and tcp 29816 (`PORT_RTTY`)
+      - eap on older firmware connect to tcp 29811, 29812, and 29813
+    - eap powers on and broadcasts to udp 29810 (`PORT_DISCOVERY`) to announce
+      itself
+    - app initializes and broadcasts to udp 27001 (`PORT_APP_DISCOVERY`) to
+      discover controller
+    - controller connects to tcp 27217 for mongodb
