@@ -28,6 +28,33 @@ Das U-Boot
       - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
         for `CONFIG_ARCH_ROCKCHIP`
 
+## CLI
+
+- `bdinfo` prints board info
+- boot variants
+  - `boot` and `bootd` run `bootcmd` env
+  - `bootefi` boots an efi payload
+  - `bootelf` boots an elf image
+  - `booti` boots a kernel image
+  - `bootm` boots an app image
+  - `bootp` boots from pxe
+  - `bootflow scan` boots boot flows
+- `coninfo` prints console info
+- `env` handles env
+- load variants
+  - `ext2load` loads a file from ext2
+  - `ext4load` loads a file from ext4
+  - `fatload` loads a file from fat
+  - `load` loads a file from any fs?
+- `ls` lists a fs
+- `mmc` handles mmc
+- `net list` lists net devices
+- `part` handles partitions
+- `pci` lists pci devices
+- `run` runs cmds in an env var
+- `usb` handles usb
+- `version` shows version
+
 ## Code Flow: armv8
 
 - `_start:` in `arch/arm/cpu/armv8/start.S`
@@ -87,6 +114,8 @@ Das U-Boot
   - `bootdev_setup_iter` finds the first bootdev
     - it seems to support `UCLASS_BOOTSTD`, bootdev hunter, and
       `UCLASS_BOOTDEV`
+    - if `boot_targets` env is set, `bootstd_get_bootdev_order` returns the
+      env and `bootdev_next_label` tries them in order
     - `bootdev_next_prio` finds and probes `UCLASS_BOOTDEV`
     - `dm_scan_other` adds a default `UCLASS_BOOTSTD` device and a
       `UCLASS_BOOTMETH` device for each `UCLASS_BOOTMETH` driver
