@@ -146,6 +146,12 @@ AMD CPUs
   - gpu `1002:1506`
   - `CHIP_ID_DISCOVERY|AMD_IS_APU`
   - `AMDGPU_FAMILY_GC_10_3_6`
+- typical hw
+  - intel: N4000 (2C@1.1G), N4120 (4C@1.1G), N4500 (2C@1.1G), N6000 (4C@1.1G)
+  - amd: 9120C (2C@1.6G), 3015Ce (2C@1.2G)
+  - mediatek: MT8173 (2C+2C), MT8183 (4C+4C)
+  - memory: 4GB
+  - storage: 32GB, followed by 16GB/64GB
 
 ## Product Lines
 
