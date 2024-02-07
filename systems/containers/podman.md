@@ -111,6 +111,10 @@ Podman
 
 - <https://github.com/containers/podman>
 - `podman run`
+  - there are multiple processes
+    - `slirp4netns` provides network
+    - `conmon` manages the container and runs the command
+    - `podman` itself waits for `conmon` to terminate
   - `-i` keeps stdin open
     - `podman run busybox ls -l /proc/self/fd` says
       - stdin is `/dev/null`
@@ -123,6 +127,20 @@ Podman
   - `-e NAME=VAL` sets an envvar
   - `-p host_port:container_port` maps host port to container port
   - `-v host_dir:container_dir` creates a bind-mount
+  - `--init` binds mount `catatonit` to `/run/podman-init` and starts it as
+    pid 1
+  - `--detach` runs the container detached
+    - `podman` exits and `conmon`/`slirp4netns` lives on
+  - `--name NAME` assigns the given name to the container
+    - otherwise, podman assigns a randomly generated name
+  - `--privileged` gives the container the same access as the user launching
+    the container
+  - `--restart POLICY` specifies what to do when the process terminates
+  - `--network MODE` specifies the network mode
+    - `slirp4netns` is the default for rootless containers
+    - `bridge` is the default for rootful containers
+      - all rootful containers in this mode are on the same bridge
+    - `host` shares the network namespace with the host
 
 ## Dockerfile
 
