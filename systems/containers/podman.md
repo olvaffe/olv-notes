@@ -213,6 +213,12 @@ Podman
 
 ## systemd service
 
+- create a system user with subuid/subgid for rootless containers
+  - `useradd -r -b /srv -F -m <name>`
+- start the user systemd instance on boot
+  - `loginctl enable-linger <user>`
+- pull the image beforehand
+  - `podman pull <IMAGE>`
 - before podman 4.4,
   - `podman container create --name foo <IMAGE> <COMMAND>`
   - `podman generate systemd --name foo --restart-policy always \
@@ -220,6 +226,8 @@ Podman
        ~/.config/systemd/user/container-foo.service` to generate the unit
   - `systemctl --user daemon-reload`
   - `systemctl --user enable --now container-foo`
+- after podman 4.4,
+  - `man podman-systemd`
 
 ## Dockerfile
 

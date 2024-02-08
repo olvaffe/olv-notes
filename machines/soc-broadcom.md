@@ -14,18 +14,19 @@ Broadcom SoC
   - Cortex-A53 (ARMv8)
 - RPi 4 uses BCM2711
   - Video Core VI, 500MHz
-  - Cortex-A72 (ARMv8)
+  - Cortex-A72 x4 @1.8GHz (ARMv8)
 - RPi 5 uses BCM2712
   - Video Core VII, 800MHz
-  - Cortex-A76 (ARMv8.2-A)
-- Vide Core has two main processors with differnet instruction sets
-  - a VPU, dual-core dual-issue 16-way SIMD for system managements, codecs, etc.
-  - QPUs, for 3D works
-- Linux runs on ARM CPU
+  - Cortex-A76 x4 @2.4GHz (ARMv8.2-A)
 
 ## Raspberry Pi 4 Boot Flow
 
 - <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-and-raspberry-pi-5-boot-flow>
+- VideoCore has two main processors with differnet instruction sets
+  - a VPU, dual-core dual-issue 16-way SIMD for system managements, codecs,
+    etc.
+  - QPUs, for 3D works
+  - Linux runs on ARM CPU
 - When powered on, VPU executes stage1 bootloader from SoC ROM (bootrom)
   - CPU is reset and SDRAM is disabled
   - VPU initializes SD/eMMC controller
@@ -115,6 +116,11 @@ Broadcom SoC
 - <https://wiki.debian.org/RaspberryPi4> is debian
   - `20231109_raspi_4_bookworm.img.xz` is a compressed disk image
   - it is similar to the official distro
+  - it has these firmwares
+    - `bluez-firmware`
+    - `firmware-brcm80211`
+    - `raspi-firmware`
+    - `wireless-regdb`
 - <https://archlinuxarm.org/platforms/armv8/broadcom/raspberry-pi-4> is arch
   - `raspberrypi-bootloader` provides vpu bootloader and firmwares under
     `/boot`

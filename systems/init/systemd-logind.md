@@ -22,6 +22,12 @@ systemd-logind
   - shows the user slice
 - `loginctl session-status <session>`
   - shows the user session
+- `loginctl enable-linger <user>`
+  - it calls `org.freedesktop.login1.Manager.SetUserLinger`
+  - `method_set_user_linger` touches `/var/lib/systemd/linger/<user>` and
+    calls `manager_add_user_by_uid`
+  - when logind starts, `manager_enumerate_linger_users` scans the directory
+    and calls `manager_add_user_by_name`
 
 ## Manager
 
