@@ -107,40 +107,107 @@ Podman
 - <https://github.com/containers/conmon>
 - <https://github.com/containers/bubblewrap>
 
-## Podman
+## `podman container`
 
-- <https://github.com/containers/podman>
-- `podman run`
-  - there are multiple processes
-    - `slirp4netns` provides network
-    - `conmon` manages the container and runs the command
-    - `podman` itself waits for `conmon` to terminate
-  - `-i` keeps stdin open
+- <https://docs.podman.io/en/latest/markdown/podman-container.1.html>
+- management
+  - `list` or `ps` lists containers
+  - `port` lists port mappings
+  - `prune` removes non-running containers
+  - `stats` shows resource usage of containers
+  - `rename <CONTAINER> <NAME>` renames a container
+  - `update <CONTAINER>` updates cgroup configuration
+  - `inspect <CONTAINER>` shows the config of a container
+- scripting
+  - `wait <CONTAINER>` waits for a container to stop
+  - `exists <CONTAINER>` returns 0 if a container exists
+- lifecycle
+  - `create <IMAGE> [COMMAND...]` creates a container from `<IMAGE>`
+    - status is `created`
+  - `start <CONTAINER>` starts a container
+    - status is `running`
+    - the main process is started in the background by default
+  - `stop <CONTAINER>` stops a container
+    - status is `exited`
+    - it sends `SIGTERM` to the main process, followed by `SIGKILL` if the
+      main process does not terminate in 10 seconds
+  - `rm <CONTAINER>` removes a container
+- other lifecycle
+  - `init <CONTAINER>` initializes a created container
+    - status is `initialized`
+    - this does everything except for starting the main process
+      - e.g., vfs mounted, `conmon`/`crun` running
+  - `cleanup <CONTAINER>` undoes `init`
+    - status is back to `created`
+  - `pause <CONTAINER>` pauses a running container
+    - status is `paused`
+    - this uses freezer cgroup or `SIGSTOP`
+  - `unpause <CONTAINER>` undoes `pause`
+  - `restart` stops and starts a running container
+  - `kill <CONTAINER>` sends a signal to the main process of a running
+    container
+  - `clone <CONTAINER>` creates a container from `<CONTAINER>`
+  - `run <IMAGE>` creates and starts a container from `<IMAGE>`
+  - `runlabel <LABEL> <IMAGE>` runs a labeled command on the host
+    - e.g., the command might be `podman run <IMAGE>` plus necessary args
+- rootfs
+  - `diff <CONTAINER>` shows the diff with the parent layer
+  - `commit <CONTAINER>` creates an image from the current rootfs
+  - `cp` copies files between host and containers
+  - `mount <CONTAINER>` mounts the rootfs for host access
+  - `unmount` undoes `mount`
+  - `export <CONTAINER>` tars the rootfs
+- execution
+  - `attach <CONTAINER>` attaches to the main process
+    - `start` by default starts the main process in the background
+    - this subcommand attaches to the main process
+  - `exec <CONTAINER> [COMMAND...]` executes a command inside a started
+    container
+  - `logs` shows the stdout/stderr of the main process
+    - by default, the stdout/stderr of the main process are pipes owned by the
+      runtime
+    - this subcommand shows the contents
+  - `top <CONTAINER>` shows the processes in the container
+  - `checkpoint` snapshots the current state of a container
+  - `restore` restores the state of a container
+- `create` args
+  - `--attach` or `-a` is for??
+  - `--device` binds a host device node into the container
+  - `--env` or `-e` sets an environment variable
+    - this affects all processes (the main one, and those started with `exec`)
+      spawned by the runtime
+  - `--init` binds mount `catatonit` to `/run/podman-init` and starts it as
+    pid 1
+  - `--interactive` or `-i` keeps stdin open
     - `podman run busybox ls -l /proc/self/fd` says
       - stdin is `/dev/null`
       - stdout and stderr are pipes
     - `podman run -i busybox ls -l /proc/self/fd` says
       - stdin, stdout, and stderr are pipes
-  - `-t` allocates pty
-    - `podman run -it busybox ls -l /proc/self/fd` says
-      - stdin, stdout, and stderr are `/dev/pts/0`
-  - `-e NAME=VAL` sets an envvar
-  - `-p host_port:container_port` maps host port to container port
-  - `-v host_dir:container_dir` creates a bind-mount
-  - `--init` binds mount `catatonit` to `/run/podman-init` and starts it as
-    pid 1
-  - `--detach` runs the container detached
-    - `podman` exits and `conmon`/`slirp4netns` lives on
-  - `--name NAME` assigns the given name to the container
-    - otherwise, podman assigns a randomly generated name
-  - `--privileged` gives the container the same access as the user launching
-    the container
-  - `--restart POLICY` specifies what to do when the process terminates
-  - `--network MODE` specifies the network mode
+  - `--name` sets the name for the container
+    - otherwise, a randomly generated name is used
+  - `--network <MODE>` specifies the network mode
     - `slirp4netns` is the default for rootless containers
     - `bridge` is the default for rootful containers
       - all rootful containers in this mode are on the same bridge
     - `host` shares the network namespace with the host
+  - `--privileged` gives the container the same access as the user launching
+    the container
+  - `--publish` or `-p host_port:container_port` maps host port to container
+    port
+  - `--restart <POLICY>` specifies what to do when the main process terminates
+  - `--rm` removes the container on stop
+  - `--tty` or `-t` allocates pty
+    - `podman run -it busybox ls -l /proc/self/fd` says
+      - stdin, stdout, and stderr are `/dev/pts/0`
+  - `--tz <TZ>` bind-mounts the timezone to `/etc/localtime`
+  - `--user` or `-u` specifies the uid of all processes spawned by the runtime
+    in the container
+    - otherwise, the runtime uses what's specified by the image which is
+      usually 0
+  - `--volume` or `-v host_dir:container_dir` creates a bind-mount
+  - `--workdir` or `-w` specifies the initial directory of all processes
+    spawned by the runtime
 
 ## Dockerfile
 
