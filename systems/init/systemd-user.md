@@ -34,16 +34,6 @@ systemd user sessions
   - user sessions are also not affected (they get the variables from the
     display server through other means)
 
-## `loginctl`
-
-- show/control sessions, users, and seats
-- `loginctl seat-status seat0`
-  - shows user sessions and devices assigned to this seat
-- `loginctl seat-status $UID`
-  - shows the user slice
-- `loginctl session-status <session>`
-  - shows the user session
-
 ## systemd for the session
 
 - goals

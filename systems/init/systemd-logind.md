@@ -11,6 +11,18 @@ systemd-logind
   - it handles power/lid keys
   - and more
 
+## `loginctl`
+
+- show/control sessions, users, and seats
+- `loginctl seat-status seat0`
+  - shows user sessions and devices assigned to this seat
+  - `/usr/lib/udev/rules.d/71-seat.rules` decides which devices belong to a
+    seat
+- `loginctl seat-status $UID`
+  - shows the user slice
+- `loginctl session-status <session>`
+  - shows the user session
+
 ## Manager
 
 - `Manager` is logind itself and is a singleton

@@ -52,6 +52,43 @@ Systemd Unit Configuration
     - on stop, other units are stopped before this unit
   - `After=`: the opposite of `Before=`
 
+## Scopes and Slices
+
+- `man systemd.scope`
+  - scopes manage externally-created processes
+    - contrary to processes created by service units 
+  - `systemctl status init.scope` has pid1, which is externally-created
+  - `systemctl --user status init.scope` has the systemd user instance, which
+    is externally-created
+  - `systemctl status session-c1.scope` has `login` and processes forked from
+    it, which are externally-created
+- `man systemd.slice`
+  - slices manage resources for processes (that is, scopes and services)
+    hierarchically
+  - `systemctl status -- -.slice` is the root slice and has
+    - `init.scope` for pid1
+    - `machine.slice` for vms/containers
+    - `system.slice` for service units
+    - `user.slice` for per-user slices
+  - `systemctl status machine.slice` is the machine slice
+    - a podman container creates two scopes in the machine slice, one for
+      `conmon` that manages the container and one for the processes in the
+      container
+  - `systemctl status system.slice` is the system slice and consists of
+    service units
+  - `systemctl status user.slice` consists of per-user slices
+    (`user-$UID.slice`)
+    - `systemctl status user-$UID.slice` has
+      - `session-c1.scope`
+      - `user@$UID.service`
+  - the systemd user instance is similar but different
+    - `systemctl --user status -- -.slice` is actually
+      `/user.slice/user-$UID.slice/user@$UID.service` and has
+      - `init.scope` for the systemd user instance
+      - `app.slice` is the defaut slice for service units
+      - `session.slice` should be used for essential service units such as
+        dbus
+
 ## Timer Units
 
 - there is `at`
