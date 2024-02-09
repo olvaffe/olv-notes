@@ -221,7 +221,7 @@ Podman
   - `podman pull <IMAGE>`
 - before podman 4.4,
   - `podman container create --name foo <IMAGE> <COMMAND>`
-  - `podman generate systemd --name foo --restart-policy always \
+  - `podman generate systemd --name foo --new --restart-policy always \
        --start-timeout 600 --stop-timeout 60 > \
        ~/.config/systemd/user/container-foo.service` to generate the unit
   - `systemctl --user daemon-reload`
@@ -232,18 +232,21 @@ Podman
     - `Description=foo`
     - `[Container]`
     - `Image=bar`
-    - `Environment=abc=xyz`
-    - `PublishPort=8080`
     - `Pull=never`
-    - `Ulimit=nofile:4096:8192`
+    - `Ulimit=nofile=4096:8192`
+    - `Timezone=local`
     - `Volume=/source:/dest`
+    - `PublishPort=8080:8080`
+    - `Environment=abc=xyz`
     - `[Service]`
     - `Restart=always`
+    - `TimeoutStartSec=60`
     - `TimeoutStopSec=60`
     - `[Install]`
     - `WantedBy=default.target`
   - `/usr/lib/systemd/system-generators/podman-system-generator --user --dryrun`
-  - `systemctl --user daemon-reload`
+  - `systemctl --user daemon-reload` to generate and reload
+    `$XDG_RUNTIME_DIR/systemd/generator/foo.service`
 
 ## Dockerfile
 
