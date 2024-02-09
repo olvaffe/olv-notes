@@ -132,6 +132,8 @@ Podman
     - it sends `SIGTERM` to the main process, followed by `SIGKILL` if the
       main process does not terminate in 10 seconds
   - `rm <CONTAINER>` removes a container
+    - if a container is stuck in `stopping` status forever, `rm -f` to force
+      removal
 - other lifecycle
   - `init <CONTAINER>` initializes a created container
     - status is `initialized`
