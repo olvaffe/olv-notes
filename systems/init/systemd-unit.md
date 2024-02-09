@@ -43,6 +43,8 @@ Systemd Unit Configuration
 - `man systemd.unit`
   - `Wants=`: if this unit gets started, other units listed are also started;
     it is fine for other units to fail
+    - this does not express ordering; this unit and the wanted units may be
+      started simultaneously unless `Before=` and `After=` are specified
   - `Requires=`: if this unit gets started, other units listed are also
     started; if any of other unit fails to start, this unit is not started
   - `Conflicts=`: if this unit gets started, other units listed are stopped
@@ -51,6 +53,20 @@ Systemd Unit Configuration
     - this does not express dependency; use `Wants=` for that
     - on stop, other units are stopped before this unit
   - `After=`: the opposite of `Before=`
+
+## Specifiers
+
+- `%g` and `%G` are group name and gid of the systemd instance
+- `%h` is the home dir of the systemd instance
+- `%H` is the hostname
+- `%i` is the instance name, the string between the first `@` and the type
+  suffix
+- `%n` and `%N` are the unit name, with or without the type suffix
+- `%p` is the string before the first `@`, or `%N`
+- `%s` is the shell of the systemd instance
+- `%t` is the runtime dir (`/run` or `/run/users/$UID`) of the systemd
+  instance
+- `%u` and `%U` are user name and uid of the systemd instance
 
 ## Scopes and Slices
 
@@ -88,6 +104,37 @@ Systemd Unit Configuration
       - `app.slice` is the defaut slice for service units
       - `session.slice` should be used for essential service units such as
         dbus
+
+## Service Units
+
+- `man systemd.service`
+- `Type=` specifies when the manager considers the service ready
+  - to start a service, the manager process calls `fork` to create a process
+    which calls `execve` to execute the service binary
+    - the forked process is considered the main process except for `forking`
+  - `simple` means after the manager process calls `fork`
+    - use `exec` instead
+  - `exec` means after the forked process calls `execve`
+  - `forking` means after the forked process terminates
+    - the forked process is expected to fork again (i.e., call `daemon`)
+    - the main process should be specified by `PIDFile=`, otherwise it is
+      whatever process forked by the forked process
+  - `oneshot` means after the forked process terminates
+    - the main process is the forked process and has terminated
+    - `RemainAfterExit=yes` should usually be set
+  - `dbus` means after the dbus name is acquired
+    - `BusName=` must be specified
+  - `notify` means after `sd_notify("READY=1")` is received
+  - `notify-reload` is similar to `notify`, except the service also supports
+    reloading using signals
+- `ExecStart=` is the command(s) to execute when starting the service
+  - `ExecCondition=` and `ExecStartPre=` are optional and are executed before
+    `ExecStart=`
+  - `ExecStartPost=` is optional and is executed after `ExecStart=`
+- `ExecStop=` is the command(s) to execute when stopping the service
+  - this is optional and all remaining processes are always killed
+  - `ExecStopPost=` is optional and is executed after `ExecStop=`
+    - it can be executed without `ExecStop=` when service startup failed
 
 ## Timer Units
 

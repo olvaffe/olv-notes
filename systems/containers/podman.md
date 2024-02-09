@@ -209,6 +209,16 @@ Podman
   - `--workdir` or `-w` specifies the initial directory of all processes
     spawned by the runtime
 
+## systemd service
+
+- before podman 4.4,
+  - `podman container create --name foo <IMAGE> <COMMAND>`
+  - `podman generate systemd --name foo --restart-policy always \
+       --start-timeout 600 --stop-timeout 60 > \
+       ~/.config/systemd/user/container-foo.service` to generate the unit
+  - `systemctl --user daemon-reload`
+  - `systemctl --user enable --now container-foo`
+
 ## Dockerfile
 
 - <https://github.com/mbentley/docker-omada-controller/blob/master/Dockerfile.v5.x>
