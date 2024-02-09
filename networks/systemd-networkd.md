@@ -14,49 +14,33 @@ systemd-networkd
   - for wireless, the link is ready when `wpa_supplicant` or `iwd` sets it up
 - `networkctl` lists all links and their states
 
-## Manual Link Setup without systemd-networkd
+## ifup / ifdown
 
-- for wired, automatic or `ip link set eth0 up`
-- for wireless with `iwd`
-  - `systemctl enable --now iwd`
-  - `iwctl`
-    - `device list`
-    - `station <dev> scan`
-    - `station <dev> get-networks`
-    - `station <dev> connect "<ssid>"`
-      - password will be prompted
-  - the link and password will be saved to `/var/lib/iwd`
-- for wireless with `wpa_supplicant`
-  - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
+- ifup / ifdown uses `/etc/network/interfaces`
+- systemd-networkd replaces ifup / ifdown
 
-      network={
-        ssid="<ssid>"
-        psk="<password>"
-      }
-  - `systemctl enable --now wpa_supplicant@<iface>`
+## NetworkManager
 
-## Manual Network Configuration without systemd-networkd
+- NetworkManager competes with systemd-networkd and is more suitable for
+  laptops where the network environment changes dynamically
+- see <NetworkManager.md>
 
-- for static ip,
-  - `ip addr add 192.168.0.1/24 dev eth0`
-  - `ip route add 192.168.0.0/24 dev eth0`
-  - `ip route add default via <gateway>`
-- for dynamic ip,
-  - `dhcpcd --debug --nobackground eth0`
-- `iwd` also has a built-in DHCP client, if desirable
-  - create `/etc/iwd/main.conf`
+## `systemd.link`
 
-      [General]
-      EnableNetworkConfiguration=true
+- a `.link` file can be added to `/etc/systemd/network` to manage a link
+  - this is used by `systemd-udevd` rather than `systemd-networkd`
+- it can match by mac address and configure the iface name, mtu size, etc.
 
-## Automatic Network Configuration with systemd-networkd
+## `systemd.network`
 
 - `systemctl enable --now systemd-networkd`
-- a `.network` file can be added to `/etc/systemd/network` to manage a link
+- a `.network` file can be added to `/etc/systemd/network` to manage a network
   - it normally contains
 
       [Match]
       Name=eth0
+      # or match by type: ether, wlan, etc.
+      Type=ether
       [Network]
       # static
       Address=192.168.0.1/24 
@@ -69,10 +53,10 @@ systemd-networkd
 - a network is configured only after the matching link is ready
   - automatic for wired
   - manual for wireless
-- there are also `DHCPServer` and `IPMasquerade` that can automate NAT setup?
+- there are also `DHCPServer` and `IPMasquerade` that can automate NAT setup
   - for manual setup, see <dnsmasq.md> and <nftables.md>
 
-## systemd.netdev
+## `systemd.netdev`
 
 - a `.netdev` file can be added to `/etc/systemd/network` to create a virtual
   link
@@ -90,11 +74,17 @@ systemd-networkd
       Kind=veth
       [Peer]
       Name=veth0peer
-- see <tuntap.md> for manual setup
+- see <iproute2.md> for manual setup
 - a network can be further configured using a `.network` file
-  - Does a bridge need an IP? It depends.
-    - yes when the bridge is also used as the gateway of the networks in
-      containers
+- Does a bridge need an IP? It depends.
+  - a bridge is a switch
+    - frames received on one port are forwarded and sent from another port
+    - ifaces added to `br0` become ports on the switch
+  - `br0` is both the switch itself as well as an iface connecting to the
+    switch
+    - `br0` refers to the switch itself when we do switch management
+    - `br0` refers to an iface connecting to the switch when we assign ip,
+      routing, etc.
 
 ## D-Bus
 
@@ -104,41 +94,54 @@ systemd-networkd
     - object names are derived from filenames (e.g., `20-wan.network` becomes
       `_320_2dwan`)
 
-## Names
+## Names and Name Resolutions
 
-- `hostname`
-  - kernel defaults hostname to `CONFIG_DEFAULT_HOSTNAME`, which is usually
-    `(none)`
-  - `systemd` uses first of
-    - `systemd.hostname=` from kernel cmdline
-    - `/etc/hostname`
-      - `man 5 hostname` recommends a single label without any dot
-      - some apps might break though
-    - DHCP lease
-    - hard-coded `localhost`
-  - `gethostname` uses `uname` syscall to get the hostname
-- `domainname`
-  - this is NIS domain name and is irrelevant nowaday
-- `dnsdomainname` and FQDN
-  - the canonical name returned by calling `getaddrinfo` for `gethostname` is
-    the FQDN
-  - the part after the first dot is the DNS domain name
-- addr-to-name
-  - `getnameinfo`, which obsoletes `gethostbyaddr`
-- name-to-addr
-  - `getaddrinfo`, which obsoletes `gethostbyname`
-  - the behavior is configured by `/etc/nsswitch.conf`
-- systemd recommends `hosts: mymachines resolve files myhostname dns` in
-  `nsswitch.conf`
+- POSIX functions
+  - `gethostname` uses `uname` syscall to query `utsname` and retruns
+    `utsname::nodename`
+  - `sethostname` uses `sethostname` syscall to set `utsname::nodename`
+  - `getnameinfo`, which obsoletes `gethostbyaddr`, resolves addr to name
+  - `getaddrinfo`, which obsoletes `gethostbyname`, resolves name to addr
+    - the behavior is configured by `/etc/nsswitch.conf`
+- GLIBC Resolver
+  - `man resolver` and `man resolv.conf`
+  - DNS name resolution
+  - `getaddrinfo` can be configured to use the resolver
+- POSIX tools
+  - `hostname` calls `gethostname` to return the hostname
+    - kernel defaults to `CONFIG_DEFAULT_HOSTNAME`, which is usually `(none)`
+    - systemd calls `sethostname` with the first of
+      - `systemd.hostname=` from kernel cmdline
+      - `/etc/hostname`
+        - `man 5 hostname` recommends a single label without any dot
+        - some apps might break though
+      - DHCP lease
+      - hard-coded `localhost`
+  - `domainname`
+    - this is NIS domain name and is irrelevant nowadays
+  - `dnsdomainname` and FQDN
+    - FQDN is `addrinfo::ai_canonname` queried from `getaddrinfo`
+    - the part after the first dot is the DNS domain name
+- `getaddrinfo` and `nsswitch.conf`
+  - systemd recommendations for name resolution
+    - `hosts: mymachines resolve [!UNAVAIL=return] files myhostname dns`
   - `mymachines` resolves with `systemd-machined` for vms/containers
   - `resolve` resolves with `systemd-resolved` but may not be available
+    - `!UNAVAIL=return` means, if the return code is not `UNAVAIL`, return
+      immediately
   - `files` resolves with `/etc/hosts`
-    - when manually configured, `/etc/hostname` should be a short nickname for
-      the local machine and `/etc/hosts` should have the canonical name for
-      the local machine as well as the short nickname as an alias
+    - systemd recommends a short nickname for `/etc/hostname`, which is not
+      used here
+    - on the othe hand, both the canonical name as well as the short nickname
+      (alias) should be listed in `/etc/hosts`
     - this way, `getaddrinfo` can resolve the short nickname to the canonical
       name, which is the FQDN of the local machine
-  - `myhostname` resolves `localhost.localdomain` to `127.0.0.1`
+  - `myhostname` resolves local names
+    - it resolves the current hostname to `127.0.0.2`
+    - it resolves `localhost`, `localhost.localdomain`, `.localdomain`, and
+      `.localhost.localdomain` to `127.0.0.1`
+    - it resolves `_gateway` to the current default gateway
+    - it resolves `_outbound` to the current ip addr
   - `dns` resolves with DNS configured by `/etc/resolv.conf`
 - special-use domain names
   - <https://www.iana.org/assignments/special-use-domain-names/special-use-domain-names.xhtml>
@@ -162,20 +165,57 @@ systemd-networkd
 
 ## systemd-resolved
 
-- systemd-resolved can manage `/etc/resolv.conf` or just be a client of
-  `/etc/resolv.conf`
+- systemd-resolved is mainly a service that provides name resolutions to local
+  apps
+  - it synthesizes DNS resource records for these local names
+    - the current hostname maps to the current ip addrs, or `127.0.0.2` if no
+      current ip addr
+    - `localhost`, `localhost.localdomain`, `.localhost` and
+      `.localhost.localdomain` map to `127.0.0.1`
+    - `_gateway` maps to the current default gateway addrs
+    - `_outbound` maps to the current ip addr
+    - `_localdnsstub` maps to `127.0.0.53`
+    - `_localdnsproxy` maps to `127.0.0.54`
+    - `/etc/hosts` are parsed
+  - the name may be resolved locally, or resolved by upstream DNS, LLMNR, or
+    mDNS
+    - names matching the synthetic records are always resolved locally
+    - single-label (no dots) non-synthesized names are resolved using LLMNR if
+      enabled
+    - single-label non-synthesized names are resolved using DNS with search
+      domains
+    - multi-label names with `.local` suffix are resolved using mDNS if
+      enabled
+    - multi-label names with other suffices are resolved using DNS
+    - addr lookups (reverse lookups) are handled similar to multi-label names,
+      with the exception of link-local addr lookups (`169.254.0.0/16`) which
+      are resolved by LLMNR/mDNS if enabled
+- note that systemd-resolved is also an LLMNR/mDNS resolver/responder
+  - `man systemd.dnssd`
+- it provides 3 interfaces for name resolutions
+  - the native d-bus interface, `org.freedesktop.resolve1`
+  - the posix `getaddrinfo`
+    - `nsswitch.conf` must be configured to use `nss-resolve` provided by
+      systemd-resolved
+  - a local DNS stub listener on `127.0.0.53` and `127.0.0.54` of `lo`
+    - this is for apps who use glibc resolver directly
+    - `resolv.conf` must be configured to point to the local DNS stub listener
+    - the `.54` one is a proxy, in that it passes DNS messages through
+      unmodified mostly
+- there are 4 options for `/etc/resolv.conf`
+  - a symlink to `/run/systemd/resolve/stub-resolv.conf` (recommended)
+    - it lists `127.0.0.53` as the only server and updates search domains
+      dynamically
+  - a symlink to `/usr/lib/systemd/resolv.conf`
+    - it lists `127.0.0.53` as the only server with no search domains
+  - a symlink to `/run/systemd/resolve/resolv.conf`
+    - it lists the upstream DNS server and allows systemd-resolved to be
+      bypassed
+  - externally-maintained 
+    - systemd-resolved becomes a consumer and parses the file for upstream DNS
+      server
 - when systemd-networkd receives DNS servers from the DHCP server, it tells
-  `systemd-resolved`
-  - in manual setup, `dhcpcd` invokes `resolvconf`
-- `resolvectl status`
-
-## ifup / ifdown
-
-- ifup / ifdown uses `/etc/network/interfaces`
-- systemd-networkd replaces ifup / ifdown
-
-## NetworkManager
-
-- NetworkManager competes with systemd-networkd and is more suitable for
-  laptops
-- see <NetworkManager.md>
+  `systemd-resolved` to use them as the upstream DNS servers
+  - when systemd-networkd is not used, programs such as `dhcpcd` invokes
+    `resolvconf` to manage `/etc/resolv.conf`
+- `resolvectl --help`

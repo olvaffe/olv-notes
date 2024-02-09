@@ -18,11 +18,60 @@ iproute2
   - <https://git.kernel.org/pub/scm/network/bridge/bridge-utils.git>
   - use ioctl to communicate with the kernel
 
-## Static IP and Routing
+## OSI
 
-- `ip addr add 192.168.0.1/24 dev eth0`
-- `ip route add 192.168.0.0/24 dev eth0`
-- `ip route add default via <gateway>`
+- L7 - Application layer
+  - e.g., HTTP, SSH
+- L6 - Presentation layer
+- L5 - Session layer
+- L4 - Transport layer
+  - e.g., TCP, UDP
+- L3 - Network layer
+  - e.g., IPv4, IPv6
+- L2 - Data link layer
+  - e.g., Ethernet MAC
+- L1 - Physical layer
+  - e.g., Ethernet PHY interfaces between analog and digital
+    - it connects to MAC over MII
+
+## Link Config
+
+- ethernet
+  - `ip link set eth0 up`
+- wifi with `iwd`
+  - `systemctl enable --now iwd`
+  - `iwctl`
+    - `device list`
+    - `station <dev> scan`
+    - `station <dev> get-networks`
+    - `station <dev> connect "<ssid>"`
+      - password will be prompted
+  - the link and password will be saved to `/var/lib/iwd`
+- wifi with `wpa_supplicant`
+  - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
+
+      network={
+        ssid="<ssid>"
+        psk="<password>"
+      }
+  - `systemctl enable --now wpa_supplicant@<iface>`
+
+## IP and Routing
+
+- for static ip,
+  - `ip addr add 192.168.0.1/24 dev eth0`
+  - `ip route add 192.168.0.0/24 dev eth0`
+  - `ip route add default via <gateway>`
+- DHCPv4
+  - `systemd-networkd` supports DHCPv4
+  - `iwd` also has a built-in DHCPv4 client, if desirable
+    - create `/etc/iwd/main.conf`
+
+        [General]
+        EnableNetworkConfiguration=true
+  - there is also `dhcpcd --debug --nobackground eth0`
+- IPv6 RA and DHCPv6
+  - `systemd-networkd` supports both and enables RA by default
 
 ## Socket Statistics
 
