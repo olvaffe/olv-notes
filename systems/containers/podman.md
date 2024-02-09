@@ -227,7 +227,23 @@ Podman
   - `systemctl --user daemon-reload`
   - `systemctl --user enable --now container-foo`
 - after podman 4.4,
-  - `man podman-systemd`
+  - edit `~/.config/containers/systemd/foo.container`
+    - `[Unit]`
+    - `Description=foo`
+    - `[Container]`
+    - `Image=bar`
+    - `Environment=abc=xyz`
+    - `PublishPort=8080`
+    - `Pull=never`
+    - `Ulimit=nofile:4096:8192`
+    - `Volume=/source:/dest`
+    - `[Service]`
+    - `Restart=always`
+    - `TimeoutStopSec=60`
+    - `[Install]`
+    - `WantedBy=default.target`
+  - `/usr/lib/systemd/system-generators/podman-system-generator --user --dryrun`
+  - `systemctl --user daemon-reload`
 
 ## Dockerfile
 
