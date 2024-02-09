@@ -83,6 +83,7 @@ Podman
 
 - <https://github.com/containers/skopeo>
   - it is a client for the distribution spec
+  - it is a frontend for <https://github.com/containers/image>
   - `skopeo inspect docker://docker.io/library/busybox`
   - `skopeo inspect --config docker://docker.io/library/busybox`
   - `skopeo copy docker://docker.io/library/busybox dir:my-dir`
@@ -103,8 +104,12 @@ Podman
   - it is a rust implementation of the runtime spec
 - <https://github.com/containers/crun>
   - it is a c implementation of the runtime spec
+- <https://github.com/containers/podman>
+- <https://github.com/containers/storage>
+  - on debian, `containers-storage` must be installed to default to `overlay`
 - <https://github.com/containers/netavark>
 - <https://github.com/containers/conmon>
+- <https://github.com/containers/podman-compose>
 - <https://github.com/containers/bubblewrap>
 
 ## `podman container`
@@ -203,6 +208,8 @@ Podman
     - `podman run -it busybox ls -l /proc/self/fd` says
       - stdin, stdout, and stderr are `/dev/pts/0`
   - `--tz <TZ>` bind-mounts the timezone to `/etc/localtime`
+    - `local` to bind-mount host timezone
+    - some guides set `TZ` instead, which is parsed by glibc
   - `--user` or `-u` specifies the uid of all processes spawned by the runtime
     in the container
     - otherwise, the runtime uses what's specified by the image which is

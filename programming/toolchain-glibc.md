@@ -290,3 +290,16 @@ glibc
   `sysdeps/unix/sysv/linux/syscalls.list`
 - `setvbuf` is defined by `weak_alias (_IO_setvbuf, setvbuf)`
 
+## Time Zone
+
+- `man tzset`
+- `tzset` is an alias for `__tzset`
+  - `TZ` is sanitized
+    - if unset, it defaults to `TZDEFAULT` (`/etc/localtime`)
+    - if set but empty, it defaults to `Universal` (which is also a zonefile)
+    - the beginning `:` is skipped
+  - `__tzfile_read` treats `TZ` as a path
+    - if relative, the base dir defaults to `/usr/share/zoneinfo` and can be
+      set by `TZDIR`
+  - if `__tzfile_read` fails, and `TZ` was unset, it assumes `UTC`
+  - else, `__tzset_parse_tz` parses `TZ` as a spec
