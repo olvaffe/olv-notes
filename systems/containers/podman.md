@@ -218,6 +218,39 @@ Podman
   - `--workdir` or `-w` specifies the initial directory of all processes
     spawned by the runtime
 
+## `podman image`
+
+- <https://docs.podman.io/en/latest/markdown/podman-image.1.html>
+  - `build` builds an image using a `Containerfile` or `Dockerfile`
+    - this uses code from `buildah`
+  - `diff` shows delta between the last two layers of an image, or between two
+    images
+  - `exists` returns 0 if an image exists locally
+  - `history` shows info about layers of an image
+  - `import` imports an image from a tarball
+    - `podman container export` can create a tarball
+    - the imported image has a single layer
+  - `inspect` shows the config of an image
+  - `list` lists local images
+  - `load` loads an image from a tarball
+    - `podman image save` can create a tarball
+    - the image may have multiple layers
+  - `mount` mounts an image for host access
+  - `prune` removes all unused images
+  - `pull` pulls an image from a registry
+  - `push` pushes an image to a registry
+  - `rm` removes an image
+  - `save` saves an image to a tarball
+  - `scp` copyes an image between hosts or between storages
+  - `search` searches a registry for images
+  - `sign` creates a signature for an image
+  - `tag` adds a new name for an image
+    - this creates a new image pointing to the same blob
+  - `tree` shows layers of an image in a tree format
+  - `trust` manages registry trust policy
+  - `unmount` undoes `mount`
+  - `untag` undoes `untag`
+
 ## systemd service
 
 - create a system user with subuid/subgid for rootless containers
