@@ -195,3 +195,26 @@ WiFi
     - 8: 256-QAM 3/4
     - 9: 256-QAM 5/6
 - `iw dev <dev> station dump` shows the AP capabilities
+
+## My APs
+
+- Google Wifi
+  - qcom ipq4019 (A7 x4 @717Mhz), 512MB ram, 4GB emmc
+  - wifi 5 (802.11ac)
+  - AC1200
+    - 300Mbps at 2.4GHz: MCS 7 (64-QAM), 400ns GI, 40MHz ch, 2x2 MIMO
+    - 900Mbps at 5GHz: MCS 9 (256-QAM), 400ns GI, 80MHz ch, 2x2 MIMO
+- TP-Link EAP610
+  - qcom ipq6000 (A53 x4 @1.2GHz), 256MB ram, 128MB flash
+  - wifi 6 (802.11ax): qcom qcn5022, qorvo qpf4588, skyworks sky85340-11
+  - 1gb ethernet: realtek RTL8211F
+  - AX1800
+    - 574Mbps at 2.4GHz: MCS 11 (1024-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
+    - 1201Mbps at 5GHz: MCS 11 (1024-QAM), 800ns GI, 80MHz ch, 2x2 MIMO
+- on a client with with BCM4352
+  - 130Mbps at 2.4GHz: MCS 7 (64-QAM), 800ns GI, 20MHz ch, 2x2 MIMO
+  - 270Mbps at 5GHz: MCS 7 (64-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
+  - looks like,
+    - the ap picks a 20MHz ch at 2.4GHz and a 40MHz ch at 5.GHz (due to
+      inferences)
+    - the client is only capable of MCS 7 and 800ns GI
