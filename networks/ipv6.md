@@ -1,6 +1,34 @@
 IPv6
 ====
 
+## IPv4 Addresses
+
+- an IPV4 address has 32 bit and is represented by `192.168.0.1`
+  - four groups of 3 digits
+  - each group representing 8 bits
+  - groups are separated by dots
+- CIDR notation `192.168.0.1/24`
+  - the addr is followed by a slash and the count of consecutive 1 bits
+  - `/24` means `255.255.255.0` which is the routing prefix / subnet mask
+- special-use addresses
+  - `0.0.0.0/8`: local network
+  - `10.0.0.0/8`: private network
+  - `100.64.0.0/10`: for isp and subscribers
+  - `127.0.0.0/8`: loopback
+  - `169.254.0.0/16`: link-local
+  - `172.16.0.0/12`: private network
+  - `192.0.0.0/24`: protocol assignment
+  - `192.0.2.0/24`: docs and examples
+  - `192.88.99.0/24`: reserved
+  - `192.168.0.0/16`: private network
+  - `198.18.0.0/15`: benchmark
+  - `198.51.100.0/24`: docs and examples
+  - `203.0.113.0/24`: docs and examples
+  - `224.0.0.0/4`: multicast
+    - `233.252.0.0/24`: docs and examples
+  - `240.0.0.0/4`: reserved
+  - `255.255.255.255/32`: limited broadcast
+
 ## Addresses
 
 - an IPv6 address has 128 bits and is represented by
