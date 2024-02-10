@@ -55,6 +55,11 @@ systemd-networkd
   - manual for wireless
 - there are also `DHCPServer` and `IPMasquerade` that can automate NAT setup
   - for manual setup, see <dnsmasq.md> and <nftables.md>
+- `[DHCPv4]` configures the DHCPv4 client, if enabled with `DHCP=`
+  - `SendHostname=` and `Hostname=` set the hostname sent to the DHCPv4 server
+    - on google wifi, which provides both DHCPv4 and DNS, the hostname is used
+      to create an A record for `<hostname>.lan`
+  - `UseDomains=` controls whether domain names received are used
 
 ## `systemd.netdev`
 
@@ -190,8 +195,13 @@ systemd-networkd
     - addr lookups (reverse lookups) are handled similar to multi-label names,
       with the exception of link-local addr lookups (`169.254.0.0/16`) which
       are resolved by LLMNR/mDNS if enabled
-- note that systemd-resolved is also an LLMNR/mDNS resolver/responder
-  - `man systemd.dnssd`
+- note that systemd-resolved is also an LLMNR/mDNS responder
+  - `man systemd.dnssd` documents how to announce a network service in mDNS
+    - the service is assumed to be hosted on the local machine whose name is
+      `<hostname>.local`
+  - as far as I can see, it only responds to `<hostname>.local` resolution,
+    but not others configured in `/etc/hosts`
+    - this appears to be different from avahi and `/etc/avahi/hosts`
 - it provides 3 interfaces for name resolutions
   - the native d-bus interface, `org.freedesktop.resolve1`
   - the posix `getaddrinfo`
