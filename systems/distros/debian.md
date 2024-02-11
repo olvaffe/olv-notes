@@ -38,21 +38,30 @@ Debian
 
 ## Initial Setup
 
-- base package
-  - `locales`, `vim`, `man-db`, `sudo`
-  - `systemd-resolved`, `systemd-zram-generator`
+- packages
+  - `apt-mark` packages appropriately
+  - boot: `init linux-image-arm64`
+  - admin
+    - `locales man-db sudo systemd-zram-generator systemd-resolved vim whiptail`
+    - `dosfstools fdisk`
+  - network
+    - `iproute2 iputils-ping nftables`
+    - `wireless-regdb wpasupplicant` (or `iwd`)
+    - `ssh`
+  - container
+    - `containers-storage podman`
+  - rpi
+    - `bluez-firmware firmware-brcm80211 raspi-firmware`
+    - remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
+      `/usr/local`, and `/boot/firmware`
+  - extra
+    - `file git lsof strace`
+    - `pciutils usbutils`
 - base setup
-  - `dpkg-reconfigure tzdata`
-  - `dpkg-reconfigure locales`
-  - `systemctl enable --now systemd-networkd`
+  - `dpkg-reconfigure locales tzdata`
+  - `systemctl enable --now systemd-networkd systemd-resolved`
   - `visudo`
   - `useradd -m olv`
-- extra packages
-  - `git`, `strace`, `lsof`
-- cleanup
-  - minimize packages
-  - if rpi, remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
-    `/usr/local`, and `/boot/firmware`
 
 ## APT
 
@@ -87,6 +96,9 @@ Debian
   - `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
   - `apt autoremove --dry-run` to selectively mark packages manual
   - `apt autoremove` to remove unneeded ones
+- to find orphaned files,
+  - `cat /var/lib/dpkg/info/*.list | sed -e 's,^/\(bin\|lib\|sbin\),/usr/\1,' | sort | uniq > dpkg.list`
+  - `find / -xdev -path /home/* -prune -o -print | sort > find.list`
 
 ## dpkg
 

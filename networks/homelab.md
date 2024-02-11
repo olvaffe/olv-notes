@@ -105,3 +105,23 @@ Homelab
   - `resolved.conf`
     - `DNSStubListenerExtra=192.168.0.254` to listen on the interface
   - `/etc/hosts` for local host names
+
+## Omada Controller
+
+- an omada controller manages omada devices
+  - this includes omada routers, switches, and aps
+  - devices can be from different sites
+  - the controller can discover devices on the same subset
+  - for devices on different subsets,
+    - one can log in into the devices and point them to the controller
+    - or, for aps, one can run the omada discovery utilities on those
+      different subsets
+  - discovered devices are "pending" and the controller must "adopt" them
+- global view
+  - there are 3 tabs: dashboard, devices, and logs
+  - there are also account and settings (of the controller)
+- per-site view
+  - there are 9 tabs: dashboard, statistics, map, devices, clients, insights,
+    logs, tools, and reports
+  - there is also settings (of the site)
+    - this is probably the most important tab
