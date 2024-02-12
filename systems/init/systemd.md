@@ -3,17 +3,39 @@ systemd
 
 ## Booting
 
-- systemd will activate `default.target` on boot
-  - it is a symlink to `graphical.target`
-  - it has this dependency tree
-
-    graphical.target
-     -> multi-user.target
-       -> basic.target
-         -> sysinit.target
-           -> local-fs.target
-           -> swap.target
-         -> sockets.target
+- `man bootup`
+  - systemd will activate `default.target` on boot
+    - it is usually a symlink to `graphical.target` or `multi-user.target`
+  - systemd will activate `poweroff.target` or `reboot.target` on shutdown
+    - fwiw, `halt.target` halts the system, making it safe to cut the power
+      but does not cut the power
+- `systemctl list-dependencies graphical.target`
+  - it depends on `multi-user.target` and a few other services
+  - `display-manager.service` is one of the services, which is usually a
+    symlink to `gdm.service`
+- `systemctl list-dependencies multi-user.target`
+  - it depends on several targets and many services
+  - targets are `basic.target`, `getty.target`, `machines.target`, and
+    `remote-fs.target`
+  - services include `dbus.service`, `ssh.service`, `systemd-logind.service`,
+    `systemd-user-sessions.service`, etc.
+- `systemctl list-dependencies basic.target`
+  - it depends on several targets and others
+  - targets are `paths.target`, `slices.target`, `sockets.target`,
+    `sysinit.target`, and `timers.target`
+- `systemctl list-dependencies sysinit.target`
+  - it depends on several targets and many services
+  - targets are `cryptsetup.target`, `integritysetup.target`,
+    `local-fs.target`, `swap.target`, and `veritysetup.target`
+  - services include `systemd-journald.service`, `systemd-timesyncd.service`,
+    `systemd-udevd.service`, etc.
+- shutdown is a bit different
+  - `poweroff.target` depends on `systemd-poweroff.service`
+  - `systemd-poweroff.service` depends on `final.target`, `shutdown.target`,
+    and `umount.target`
+  - by default, a service unit has `DefaultDependencies=yes` which implies
+    `Requires=sysinit.target` and `Conflicts=shutdown.target`
+    - this means a service is stopped by default before `shutdown.target`
 
 ## Old SysVinit (`/sbin/init`)
 
@@ -271,7 +293,6 @@ systemd
     - `libudev` provides internal `libudev-private`
     - `udev` provides internal `libudev-core`
 
-
 ## Source tree
 
 - `bash-completion/systemd-bash-completion.sh`
@@ -285,25 +306,6 @@ systemd
   - config files for `systemd-tmpfiles`
   - they define temporary files/directories to be created, removed, or cleaned
 - `units` see units below
-
-
-## suspend
-
-- systemd-logind opens evdev devices for
-  - `KEY_POWER`/`KEY_POWER2`: power key
-  - `KEY_SLEEP`: suspend key
-  - `KEY_SUSPEND`: hibernate key
-  - `SW_LID`: lid opened/closed
-  - `SW_DOCK`: machine docked/undocked
-- when lid closed, `button_lid_switch_handle_action` is called
-  - enumerate DRM connectors in sysfs to see if any external display connected
-  - enumerate `/sys/class/power_supply` to see if AC is online
-  - depending on whether there are external display or whether AC is online,
-    different actions can be taken
-    - such as ignore, poweroff, reboot, halt, suspend, lock, etc.
-  - by default, 
-    - when external displays are connected, lid closed is ignored
-    - otherwise, suspend
 
 ## namespaces
 
