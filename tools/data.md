@@ -1,7 +1,19 @@
-Compressions
-============
+Data Manipulation
+=================
 
-## History
+## Data Manipulations
+
+- compression
+  - lossless compression
+  - lossy compression
+- cryptography
+  - symmetric-key cryptography
+  - public-key (asymmetric) cryptography
+- hash function
+  - non-cryptographic
+  - cryptographic
+
+## Compression
 
 - compression process
   - dictionary coding
@@ -47,7 +59,7 @@ Compressions
     - 1996, bzip2
     - 2016, zstd
 
-## Data
+## Data Compressions
 
 - using numbers from lzbench
 - traditionally, best ratio, balanced, and best speed compressors are
@@ -78,7 +90,7 @@ Compressions
 | lz4 1.9.2               |   737 MB/s |  4448 MB/s |   100880800 | 47.60 |
 | lzo1x 2.10 -11          |   735 MB/s |   893 MB/s |   106604629 | 50.30 |
 
-## Videos
+## Video Compressions
 
 - MPEG
   - MPEG-1 part-2
@@ -115,7 +127,7 @@ Compressions
     - 2018
     - used by streaming
 
-## Audio
+## Audio Compressions
 
 - MPEG
   - MPEG-1 (and 2) part-3 Layer III / MP3
@@ -146,7 +158,7 @@ Compressions
   - Opus
     - 2012
 
-## Images
+## Image Compressions
 
 - GIF
   - 1992
@@ -173,3 +185,33 @@ Compressions
   - 2021
   - lossy outperforms AV1 / HEVC / WebP
   - lossless outperforms WebP / PNG
+
+## Cryptography
+
+- common encryption algorithms
+  - symmetric
+    - DES, 1977
+    - Blowfish, 1993
+    - AES, 2001
+    - ChaCha20, 2008
+  - asymmetric
+    - RSA, 1977
+    - DSA, 1994
+    - ECDSA, 2000
+    - EdDSA, 2011 (ED25519)
+
+## Hash Functions
+
+- common hash functions
+  - non-cryptographic
+    - CRC-32
+    - FNV-1a
+    - SipHash, 2012
+    - MurmurHash3, 2012
+    - xxHash3, 2019
+  - cryptographic
+    - MD5, 1992
+    - SHA-1, 1995
+    - SHA-2, 2001 (SHA-256, SHA-512, etc.)
+    - SHA-3, 2016
+    - BLAKE3, 2020
