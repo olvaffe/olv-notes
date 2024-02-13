@@ -237,6 +237,9 @@ Arch Linux
 - `pacman -D --asdeps` to mark them deps
 - `pacman -D --asexplicit` to mark desired packages explicit
 - `pacman -Qtdq` to get packages to remove
+- to find orphaned files,
+  - `pacman -Ql $(pacman -Qq) | cut -d' ' -f2- | sort | uniq > pacman.list`
+  - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
 
 ## Pacman
 

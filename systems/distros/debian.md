@@ -98,7 +98,7 @@ Debian
   - `apt autoremove` to remove unneeded ones
 - to find orphaned files,
   - `cat /var/lib/dpkg/info/*.list | sed -e 's,^/\(bin\|lib\|sbin\),/usr/\1,' | sort | uniq > dpkg.list`
-  - `find / -xdev -path /home/* -prune -o -print | sort > find.list`
+  - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
 
 ## dpkg
 
