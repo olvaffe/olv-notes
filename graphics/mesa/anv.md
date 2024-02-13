@@ -481,3 +481,20 @@ Mesa ANV
         - `GpuBusy` is `gpu-busy-cycles * 100 / GpuCoreClocks` (%)
 - `intel_perf_open`
 - `intel_perf_close`
+
+## WAs
+
+- `intel_device_info` is initialized by `intel_get_device_info_from_fd`
+  - the pci bus info is from `DRM_DEVICE_GET_PCI_REVISION`
+  - the static dev info is from `intel_device_info_init_common` which maps pci
+    id to statically-defined tables
+    - e.g., `8086:7d45` maps to `intel_device_info_mtl_h`
+- `intel_device_info_init_was` initializes WAs
+  - `intel_device_info_wa_stepping` returns one of
+    - `INTEL_STEPPING_A0`
+    - `INTEL_STEPPING_B0`
+    - `INTEL_STEPPING_C0`
+    - `INTEL_STEPPING_RELEASE`
+    - on mtl, it only returns `A0` or `B0`
+  - once the stepping is known, `devinfo->workarounds` bitmask is initialized
+- `intel_needs_workaround` checks against `devinfo->workarounds`

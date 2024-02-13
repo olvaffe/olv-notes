@@ -52,6 +52,44 @@ DRM i915
   - `i915_hwmon_register` registers a hwmon for dgpu
   - `intel_display_driver_register` registers display
 
+## `intel_device_info` and `intel_runtime_info`
+
+- `INTEL_INFO(i915)` returns the per-device `intel_device_info`
+  - it is defined in the pci id table, `pciidlist`, and is initialized by
+    `intel_device_info_driver_create` during `i915_driver_create`
+  - it is read-only
+- `INTEL_INFO(i915)` returns the per-device `intel_runtime_info`
+  - it is initialized from `intel_device_info` in
+    `intel_device_info_driver_create`
+  - it is read-write and is modified by other init functions
+- `intel_device_info` for mtl is `mtl_info`
+  - `.__runtime.graphics.ip.ver` is 12
+  - `.__runtime.graphics.ip.rel` is 70
+  - `.__runtime.media.ip.ver` is 13
+  - `.has_gmd_id` is 1
+  - `.has_llc` is 0
+- `intel_runtime_info` for mtl
+  - `intel_ipver_early_init` initializes `runtime->graphics.ip` and
+    `runtime->media.ip`
+    - mtl reads `GMD_ID_GRAPHICS` and `GMD_ID_MEDIA`
+  - `intel_step_init` initializes `RUNTIME_INFO(i915)->step`
+    - `STEP_XY` where `X` is `[A, J]` and `Y` is `[0, 3]`
+
+## `intel_display_device_info` and `intel_display_runtime_info`
+
+- `DISPLAY_INFO(i915)` returns the per-device `intel_display_device_info`
+  - it is defined in `intel_display_ids` and `gmdid_display_map`, and is
+    initialized by `intel_display_device_probe` during `i915_driver_create`
+  - it is read-only
+- `DISPLAY_RUNTIME_INFO(i915)` returns the per-device `intel_display_runtime_info`
+  - it is initialized from `intel_display_device_info` in
+    `intel_display_device_probe`
+  - it is read-write and it modified by other init functions
+- `intel_display_device_info` for mtl is probably `xe2_lpd_display`
+- `intel_display_runtime_info` for mtl
+  - `intel_display_device_probe` initializes `DISPLAY_RUNTIME_INFO(i915)->ip`
+    from `GMD_ID_DISPLAY`
+
 ## Display Planes
 
 - `intel_crtc_init` calls `skl_universal_plane_create` or
