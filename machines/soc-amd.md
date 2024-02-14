@@ -201,3 +201,15 @@ AMD CPUs
     - H high-performance mobile (TDP 45W)
     - GE energy-efficient deskop (TDP 35W)
     - G deskop (TDP 65W)
+
+## SMU, System Management Unit
+
+- SMU consists of MP0, MP1, and MP2
+- MP0 is known as PSP, platform security processor
+  - aka ASP, AMD secure processor
+  - appears to be a cortex-a5
+- MP1 is often referred to simply as SMU
+  - appears to be a xtensa cpu
+  - responsible for power, clock, thermal, etc.
+- MP2 is known as SFH, sensor fusion hub
+  - responsible for external sensors
