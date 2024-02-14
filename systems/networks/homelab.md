@@ -3,16 +3,20 @@ Homelab
 
 ## Home Network
 
-- modem
+- modem: ARRIS SURFboard SB8200
+  - DOCSIS 3.1
   - 1Gb uplink
-  - 1Gb ethernet port
-- router
-  - pfsense netgate advertises L3 forwarding, firewall, and vpn numbers
-  - fanless home lab
-- switch
-  - unlike hub, a switch inspects the mac addrress and forwards packets to the
-    right ports
-  - power consumption
+  - 1Gb ethernet port x2
+- router: Google Wifi
+  - AC1200 (300@2.4GHz, 900@5GHz)
+  - 1Gb ethernet port x2 (for uplink and downlink)
+- switch: TP-Link TL-SG1005P
+  - 1Gb port x5
+    - 4 of them are poe+
+  - max power consumption
+    - 4.0W without PD
+    - 64.4W with 56W PD
+  - power consumption in general
     - 1Gb x8, max 3W
       - if poe x4, add 3W
       - if poe x8, add 6W
@@ -20,17 +24,13 @@ Homelab
       - if managed (vlan, 802.1x, etc.), no difference
     - 2.5Gb x8, max 7.5W
     - 10Gb x8, max 30W, active cooling
-- ap
-  - x2, poe+
-- Cabling
-  - Cat6a, 23 AWG, U/UTP, CMP: 250ft
-  - Cat6a RJ45 connector: x2
-  - Cat6a punch down keystones: x2+4
-  - Wall plates: x2
-  - 8-port patch panel: x1
-  - Cat6 patch cable: x4
-  - 12.5ft telescoping extension ladder
-  - or, moca adapters for coax
+- ap: TP-Link EAP610 V2
+  - AX1800 (574@2.4GHz, 1201@GHz)
+- considerations
+  - add another ap
+  - replace router by fanless homelab
+    - consult pfsense netgate for L3 forwarding, firewall, and vpn numbers
+    - should i run services on a separate server?
 
 ## Distros
 
@@ -72,7 +72,7 @@ Homelab
   - trusted clients (laptops, phones, etc.)
   - untrusted clients (most iot)
   - servers (ssh, cast, etc.)
-  - network management (dhcp, dns, omada, etc.)
+  - network management (router/firewall, dhcp, dns, omada, etc.)
 - WAN
   - ISP is Xfinity
   - need to reboot the modem to get a new DHCP lease
@@ -105,6 +105,7 @@ Homelab
   - `resolved.conf`
     - `DNSStubListenerExtra=192.168.0.254` to listen on the interface
   - `/etc/hosts` for local host names
+- it might be better to use dnsmasq for both dhcp and dns
 
 ## Omada Controller
 

@@ -120,6 +120,7 @@ iproute2
   - hubs are L1 (physical layer) devices
   - switches are L2 (data link layer) devices
     - they understand ethernet frames
+    - they inspect the mac addrresses and forward frames to the right ports
   - routers are L3 (network layer) devices
     - they understand ip packets
 - bridges are switches
