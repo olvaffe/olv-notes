@@ -65,3 +65,21 @@ ACPI sleep
   - `P1`: slower than `P0`
   - `P2`: slower than `P1`
   - `Pn`: slower than `P(n-1)`
+
+## Initialization
+
+- `acpi_sleep_init` is called from `acpi_bus_init`
+- `acpi_sleep_syscore_init` calls `register_syscore_ops` to register
+  `acpi_sleep_syscore_ops`
+- `acpi_sleep_suspend_setup` calls `suspend_set_ops` to register
+  `acpi_suspend_ops`
+  - the ops use `acpi_suspend_states` to map `PM_SUSPEND_xxx` to
+    `SCPI_STATE_Sx`
+    - `PM_SUSPEND_ON` to `ACPI_STATE_S0`
+    - `PM_SUSPEND_STANDBY` to `ACPI_STATE_S1`
+    - `PM_SUSPEND_MEM` to `ACPI_STATE_S3`
+    - `PM_SUSPEND_MAX` to `ACPI_STATE_S5`
+- `acpi_s2idle_setup` calls `s2idle_set_ops` to register `acpi_s2idle_ops`
+- `acpi_sleep_hibernate_setup` calls `hibernation_set_ops` to register
+  `acpi_hibernation_ops`
+  - the ops enter `ACPI_STATE_S4`
