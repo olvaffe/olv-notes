@@ -444,3 +444,29 @@ DRM amdgpu
     - `TILE` is
       - `AMD_FMT_MOD_TILE_GFX9_64K_D`
       - `AMD_FMT_MOD_TILE_GFX9_64K_S`
+
+## PM
+
+- `amdgpu_pm_ops` is the PM ops
+  - `amdgpu_pmops_suspend` sets one of `adev->in_s0ix` or `adev->in_s3` and
+    calls `amdgpu_device_suspend` which sets `adev->in_suspend`
+  - `amdgpu_pmops_freeze` sets `adev->in_s4 = true` and calls
+    `amdgpu_device_suspend` too
+- when `echo foo > /sys/power/state`, `state_store` from
+  `kernel/power/main.c` is called
+  - `disk` is mapped to `PM_SUSPEND_MAX` (S4)
+  - `mem` is mapped to `PM_SUSPEND_MEM` first
+    - it then gets remapped using `mem_sleep_current`, which usually results
+      in `PM_SUSPEND_TO_IDLE` (S0ix) or `PM_SUSPEND_MEM` (S3)
+- `amdgpu_acpi_is_s0ix_active` returns true when the followings are all true
+  - the gpu is integrated,
+  - `pm_suspend_target_state` is S0ix
+  - `adev->asic_type` is at least `CHIP_RAVEN`
+  - `adev->pm.pp_feature` has `PP_GFXOFF_MASK`
+  - acpi `FDAT` has `ACPI_FADT_LOW_POWER_S0`
+- `amdgpu_acpi_is_s3_active` returns true when
+  - the gpu is discrete, or
+  - the gpu is integrated, and `pm_suspend_target_state` is S3
+- `amdgpu_acpi_should_gpu_reset` returns true when
+  - the gpu is discreted and `pm_suspend_target_state` is S3 or S4, or
+  - the gpu is integrated and `pm_suspend_target_state` is S4

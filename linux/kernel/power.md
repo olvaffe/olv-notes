@@ -90,6 +90,7 @@ Kernel power
     - that is, abort after processes are freezed
   - `Suspending system (%s)`
   - `suspend_devices_and_enter`
+    - `pm_suspend_target_state` is set to the target state
     - `platform_suspend_begin`
       - on x86, this calls `acpi_s2idle_begin` or `acpi_suspend_begin`
         - `PM_SUSPEND_ON` maps to `ACPI_STATE_S0`
