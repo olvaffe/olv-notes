@@ -174,20 +174,104 @@ WiFi
 
 ## `iw`
 
-- `iw dev <dev> link` shows the current link
-  - `freq: 5180`
-    - channel 36 (=(5180-5000)/5)
-  - rx bitrate: 780.0 MBit/s VHT-MCS 8 80MHz short GI VHT-NSS 2
-    - VHT-MCS: Very High Throughput Modulation and Coding Scheme
-      - 8: 256-QAM, code rate 3/4
-    - 80MHz: bandwidth
-      - 4 (=80/20) channels are used
-    - short GI: 0.4us guard interval
-    - VHT-NSS: number of spatial streams
-      - 2: 2 spatial streams
-  - tx bitrate: 866.7 MBit/s VHT-MCS 9 80MHz short GI VHT-NSS 2
-    - VHT-MCS 9: 256-QAM, code rate 5/6
+- nl80211
+  - `iw features` shows nl80211 features
+  - `iw commands` list nl80211 commands
+  - `iw monitor` monitors nl80211 events
+- regulatory database
+  - `iw reg <set|get|reload>` sets/gets/reloads the regulartory database
+- phy
+  - `iw phy` or `iw list` lists all phys and all their info
+  - `iw phy phy0 channels` shows channel info
+  - `iw phy phy0 coalesce show` shows coalesce status
+  - `iw phy phy0 get txq` shows txq params
+  - `iw phy phy0 info` shows all info
+  - `iw phy phy0 interface add` adds an interface
+    - there is a hw limit on interface types and combinations
+    - each interface is assigned a wdev index
+      - interfaces of certain interface types (e.g., `managed`) are also
+        assigned netdevs
+    - by default, there is an interface of type `P2P-device` and an interface
+      of type `managed`
+  - `iw phy phy0 reg get` shows regulatory domain info
+  - `iw phy phy0 wowlan show` shows WoWLAN status
+- interface
+  - `iw dev <name>...` can be replaced by `iw wdev <idx>...`
+  - `iw dev` lists all interfaces of all phys and their info
+  - `it dev <name> ftm get_stats` gets FTM responder stats
+  - `it dev <name> get power_save` shows powersave status
+  - `it dev <name> info` shows the info of an interface
+  - `it dev <name> link` shows the info of the current link
+  - `it dev <name> mesh_param dump` shows supported mesh params
+  - `it dev <name> mpath dump` shows known mesh paths
+  - `it dev <name> mpp dump` shows known mesh proxy paths
+  - `it dev <name> scan dump -u` shows the current scan results
+  - `it dev <name> station dump` shows the station (ap) info
+  - `it dev <name> survey dump --radio` shows gathered channel survey data
+  - `iw wdev <idx> p2p <start|stop>` starts/stops p2p
 - `iw phy` shows the device capabilities
+  - `max # scan SSIDs: 20` means a scan that detects up to 20 SSIDs
+  - `Device supports RSN-IBSS.` means Robust Security Network protocols and
+    Independent Basic Service Set mode
+  - `Device supports AP-side u-APSD.` means unscheduled Automatic Power Save
+    Delivery, allowing the ap to put the device to power saving mode
+  - `Device supports T-DLS.` means Tunneled Direct Link Setup (802.11z)
+  - `Available Antennas: TX 0x3 RX 0x3` means 2 TX and 2 RX antennas
+  - `Supported interface modes:`
+    - `IBSS` is ad-hoc
+    - `managed` is the standard wifi client
+    - `AP` functions as ap
+  - `Band x:`
+    - there can be up to 3 bands at 2.4GHz, 5GHz, and 6GHz
+    - wifi standards
+      - non-HT: 802.11g, wifi 3
+      - HT: high throughput, 802.11n, wifi 4
+      - VHT: very high throughput, 802.11ac, wifi 5
+      - HE: high efficiency, 802.11ax, wifi 6
+      - EHT: extremely high throughput, 802.11be, wifi 7
+    - 802.11n
+      - `Capabilities: 0x19ef`
+        - `HT20/HT40` high-throughput 20MHz and 40MHz channels
+        - `RX HT20 SGI` short GI at 20MHz
+        - `RX HT40 SGI` short GI at 40MHz
+      - `HT Max RX data rate: 300 Mbps`
+        - MCS 15 allows 300Mbps at 40MHz and short GI
+      - `HT TX/RX MCS rate indexes supported: 0-15`
+        - MCS 15 means 2 spatial streams, 64-QAM, 5/6 coding rate
+    - 802.11ac
+      - `VHT Capabilities (0x039071f6):` for VHT (very high-throughput,
+        802.11ac)
+        - `Supported Channel Width: 160 MHz` for 160MHz channels
+        - `short GI (80 MHz)`
+        - `short GI (160/80+80 MHz)`
+      - `VHT RX MCS set:` lists supported RX MCS indices
+        - MCS 9 means 256-QAM, coding rate 5/6
+          - 400Mbps with 2 streams, 40MHz, and short GI
+      - `VHT TX MCS set:` lists supported TX MCS indices
+    - 802.11ax
+      - `HE Iftypes: managed`
+      - `HE MAC Capabilities (0x78018a30abc0):` lists mac caps
+      - `HE PHY Capabilities: (0x0c3f0e09fd098c160ff001):` lists phy caps
+        - `HE40/2.4GHz` supports 40MHz at 2.4GHz
+        - `HE40/HE80/5GHz` supports 40MHz and 80MHz at 5GHz
+        - `HE160/5GHz` supports 160MHz at 5GHz
+      - `HE RX MCS and NSS set <= 80 MHz` lists supported RX MCS indices
+        - MCS 11 means 1024-QAM, coding rate 5/6
+          - 574Mbps with 2 streams, 40MHz, and short GI
+      - `HE TX MCS and NSS set <= 80 MHz` lists supported TX MCS indices
+    - 802.11be
+      - `EHT Iftypes: managed`
+    - 802.11g
+      - `Bitrates (non-HT):` lists supported non-HT bitrates
+    - `Frequencies:` lists supported channels
+  - `Supported commands:` are commands supported by device
+  - `WoWLAN support:` is WoWLAN support
+  - `valid interface combinations:` gives the valid interface combinations
+  - `HT Capability overrides:` lists HT params that can be overriden
+  - `Device supports foo` for various features
+  - `max # scan plans: 2`, a scan plan refers to a predefined set of scanning
+    parameters
+  - `Supported extended features:` for various features
   - non-HT (non-high-throughput): 802.11g
   - HT (high-throughput): 802.11n
   - VHT (very-high-throughput): 802.11ac
@@ -195,6 +279,44 @@ WiFi
     - 8: 256-QAM 3/4
     - 9: 256-QAM 5/6
 - `iw dev <dev> station dump` shows the AP capabilities
+- `iw dev <dev> link` shows the current link
+  - `freq: 5180`
+    - channel 36 (`(5180-5000)/5`)
+  - `rx bitrate:` varies depending on signal strengths and other factors
+    - walking around with my laptop, I've seen
+    - `rx bitrate: 24.0 MBit/s`
+      - this is 802.11g
+    - `rx bitrate: 51.6 MBit/s 40MHz HE-MCS 2 HE-NSS 1 HE-GI 0 HE-DCM 0`
+      - `40MHz` is channel width
+      - `HE` is 802.11ax
+      - `MCS 2` is QPSK, 3/4
+      - `NSS 1` is 1 spatial stream
+      - `GI 0` is short (800ns) GI
+      - `DCM 0` disables DCM
+        - DCM halves the bandwidth for stronger signal
+    - `rx bitrate: 68.8 MBit/s 40MHz HE-MCS 1 HE-NSS 2 HE-GI 0 HE-DCM 0`
+      - `MCS 1` is QPSK, 1/2
+      - `NSS 2` is 2 spatial stream
+    - `rx bitrate: 68.8 MBit/s 40MHz HE-MCS 3 HE-NSS 1 HE-GI 0 HE-DCM 0`
+      - `MCS 3` is 16-QAM, 1/2
+    - `rx bitrate: 103.2 MBit/s 40MHz HE-MCS 2 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 103.2 MBit/s 40MHz HE-MCS 4 HE-NSS 1 HE-GI 0 HE-DCM 0`
+      - `MCS 4` is 16-QAM, 3/4
+    - `rx bitrate: 309.7 MBit/s 40MHz HE-MCS 6 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 344.1 MBit/s 40MHz HE-MCS 7 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 413.0 MBit/s 40MHz HE-MCS 8 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 458.8 MBit/s 40MHz HE-MCS 9 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 516.0 MBit/s 40MHz HE-MCS 10 HE-NSS 2 HE-GI 0 HE-DCM 0`
+    - `rx bitrate: 573.5 MBit/s 40MHz HE-MCS 11 HE-NSS 2 HE-GI 0 HE-DCM 0`
+      - `MCS 6` is 64-QAM, 3/4
+      - `MCS 7` is 64-QAM, 5/6
+      - `MCS 8` is 256-QAM, 3/4
+      - `MCS 9` is 256-QAM, 5/6
+      - `MCS 10` is 1024-QAM, 3/4
+      - `MCS 11` is 1024-QAM, 5/6
+    - when using 802.11ac
+      - `VHT` is 802.11ac
+      - `short GI` is 400ns GI
 
 ## My APs
 
