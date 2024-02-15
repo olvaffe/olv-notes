@@ -74,3 +74,60 @@ nftables
             oifname "wlp2s0" masquerade
         }
     }
+
+## `iptables`
+
+- the kernel provides two interfaces
+  - the older xtables which consists of iptables, ip6tables, arptables, etc.
+  - the newer nftables which is just nftables
+- the userspace provides two sets of tools
+  - `iptables-legacy` is a symlink to `xtables-legacy-multi`, which uses the
+    older xtables interface
+  - `iptables-nft` is a symlink to `xtables-nft-multi`, which uses the newer
+    nftables interface
+  - `iptables` is a symlink to either `iptables-legacy` or `iptables-nft`
+  - but `nft` should be used directly nowadays
+- `iptables` can manipulate 5 tables, each has their own chains
+  - `filter` is the default when `-t` is not specified
+    - `INPUT`
+    - `FORWARD`
+    - `OUTPUT`
+  - `nat`
+    - `PREROUTING`
+    - `INPUT`
+    - `OUTPUT`
+    - `POSTROUTING`
+  - `mangle`
+    - `PREROUTING`
+    - `INPUT`
+    - `FORWARD`
+    - `OUTPUT`
+    - `POSTROUTING`
+  - `raw`
+    - `PREROUTING`
+    - `OUTPUT`
+  - `security`
+    - `INPUT`
+    - `FORWARD`
+    - `OUTPUT`
+- `iptables -t <table> -L` list all rules in the table
+- for a simple firewall, we only need to manipulate `filter` table
+  - `INPUT`
+    - `iptables -P INPUT DROP` sets the policy drop, meaning an ingress packet
+      is dropped unless it is explicitly accepted by a rule
+    - `iptables -A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT`
+      accepts any ingress packet that has state `RELATED` or `ESTABLISHED`
+      - the other two states are `NEW` and `INVALID`
+    - `iptables -A INPUT -i lo -j ACCEPT` accepts any ingress packet on `lo`
+    - `iptables -A INPUT -p icmp -j ACCEPT` accepts ingress packets that are
+      ping
+    - `iptables -A INPUT -p udp --dport 5353 -j ACCEPT` accepts ingress
+      packets to udp port 5353 (mdns)
+    - `iptables -A INPUT -p tcp --dport 22 -j ACCEPT` accepts ingress packets
+      to tcp port 22 (ssh)
+  - `FORWARD`
+    - `iptables -P FORWARD DROP` sets the policy to drop, meaning an forwarded
+      packet is dropped unless it is explicitly accepted
+  - `OUTPUT`
+    - `iptables -P OUTPUT ACCEPT` sets the policy to accept, meaning an egress
+      packet is accepted unless it is explicitly dropped
