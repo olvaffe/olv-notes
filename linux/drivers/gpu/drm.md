@@ -185,6 +185,22 @@ Kernel DRM
     - lock `drm_global_mutex` if `DRIVER_LEGACY` and this bit is not set
   - `DRM_RENDER_ALLOW`
     - disallow if `drm_is_render_client(file_priv)`
+- ioctl hex val
+  - according to `_IOC(dir,type,nr,size)` macro,
+    - bit 0..7: `nr`
+    - bit 8..15: `type`
+      - always `DRM_IOCTL_BASE` (0x64) for drm ioctls
+    - bit 16..29: `size`
+      - `sizeof(arg)`
+    - bit 30..31: `dir`
+      - `_IOC_WRITE` is 1
+      - `_IOC_READ` is 2
+  - `DRM_IOCTL_GEM_CLOSE` is `0x40086409`
+    - it expands to `DRM_IOW(0x09, struct drm_gem_close)`
+    - `nr` is `0x09`
+    - `type` is `0x64`
+    - `size` is `sizeof(struct drm_gem_close)` which is 8
+    - `nr` is `0x01` which is `_IOC_WRITE`
 
 ## Memories
 
