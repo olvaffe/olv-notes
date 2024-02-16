@@ -204,6 +204,10 @@ Podman
     port
   - `--restart <POLICY>` specifies what to do when the main process terminates
   - `--rm` removes the container on stop
+  - `--stop-timeout` sets the stop timeout
+    - by default, `stop` or `rm -f` sends `SIGTERM`, waits for 10s, and sends
+      `SIGKILL`
+    - this overrides the default stop timeout for the container
   - `--tty` or `-t` allocates pty
     - `podman run -it busybox ls -l /proc/self/fd` says
       - stdin, stdout, and stderr are `/dev/pts/0`
