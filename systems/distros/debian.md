@@ -6,7 +6,8 @@ Debian
 - schedule
   - debian has a stable release roughly every 2 years
   - a stable release has a point release roughly every 2 months
-  - after a new release, the old release has security support for 1 year
+  - after a new stable release, the old stable release has security support
+    for 1 year
 - suites/repos
   - a release uses `stable` repo
     - use codenames such as `bookworm` instead to avoid unexpected upgrade to
@@ -31,6 +32,7 @@ Debian
   - 10, buster, 4.19
   - 11, bullseye, 5.10
   - 12, bookworm, 6.1
+  - 13, trixie, 6.??
 - bookworm
   - `deb http://deb.debian.org/debian bookworm main non-free-firmware`
   - `deb http://deb.debian.org/debian-security/ bookworm-security main non-free-firmware`
@@ -42,10 +44,10 @@ Debian
   - `apt-mark` packages appropriately
   - boot: `init linux-image-arm64`
   - admin
-    - `locales man-db sudo systemd-zram-generator systemd-resolved vim whiptail`
+    - `locales man-db sudo systemd-resolved systemd-zram-generator vim whiptail`
     - `dosfstools fdisk`
   - network
-    - `iproute2 iputils-ping nftables`
+    - `iproute2 iputils-ping nftables wireguard`
     - `wireless-regdb wpasupplicant` (or `iwd`)
     - `ssh`
   - container

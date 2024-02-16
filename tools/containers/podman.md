@@ -202,6 +202,7 @@ Podman
     the container
   - `--publish` or `-p host_port:container_port` maps host port to container
     port
+  - `--pull never` fails creation when the image is missing
   - `--restart <POLICY>` specifies what to do when the main process terminates
   - `--rm` removes the container on stop
   - `--stop-timeout` sets the stop timeout

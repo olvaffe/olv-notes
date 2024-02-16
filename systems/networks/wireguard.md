@@ -11,7 +11,8 @@ WireGuard
   - `wg genkey > ./private`
   - `wg set wg0 private-key ./private`
   - the interface derives the public key automatically
-  - the interface also has a listening udp port which is 51820 by default
+- a wireguard interface also needs a listening udp port
+  - `wg set wg0 listen-port 51820`
 - a wireguard interface also has a list of peers (remote wireguard interfaces)
   - `wg set wg0 peer <public-key-of-peer> allowed-ips <allowed-subnet> endpoint
     <public-ip-and-udp-port-of-peer>`
@@ -33,6 +34,17 @@ WireGuard
       - it then remembers the src addr as the current endpoint of the peer
     - it checks if the src addr of the ip packet is on `allowed-ips` of the
       peer to accept the ip packet
+- persistent keepalive
+  - when a host has a dynamic ip or is behind firewall, a remote peer might
+    not able to send data to the host after a long pause
+    - this is because the host might have changed ip but the remote peer still
+      considers the old ip as the endpoint of the host
+    - or the firewall might no lnoger consider the connection "established"
+      and drop the data
+  - by configuring `persistent-keepalive` on the host, the host sends data to
+    the remote peer periodically
+    - when the host changes ip, the remote peer is made aware of the new ip
+    - the firewall will consider the connection "established"
 
 ## Protocol
 
