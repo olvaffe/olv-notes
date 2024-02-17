@@ -503,4 +503,5 @@ Mesa ANV
 
 - because of RT, anv has some new dependencies
   - arch: `clang libclc spirv-llvm-translator python-ply`
+    - 32-bit: `lib32-clang lib32-spirv-llvm-translator`
   - debian: `libclang-dev libclang-cpp-dev libclc-16 libclc-16-dev libllvmspirvlib-16-dev python3-ply`
