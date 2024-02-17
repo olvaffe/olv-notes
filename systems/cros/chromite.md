@@ -132,3 +132,22 @@ CrOS chromite
     builders
   - <gs://chromeos-prebuilt/> hosts binpkgs to speed up builds
   - <gs://chromeos-releases/> hosts signed images
+
+## More GS Buckets
+
+- <https://www.chromium.org/chromium-os/developer-library/reference/third-party/archive-mirrors/>
+  - these appear to be files used by ebuilds
+  - public access
+    - <gs://chromeos-mirror/> hosts mirrored gentoo distfiles
+    - <gs://chromeos-localmirror/> hosts mirrored files manually uploaded by
+      devs
+  - private access
+    - <gs://chromeos-localmirror-private/> hosts mirrored files manually
+      uploaded by devs
+    - <gs://chromeos-binaries/> hosts mirrored partner files from CPFE
+- <https://chromium.googlesource.com/chromiumos/platform/tast/+/HEAD/docs/writing_tests.md>
+  - these appear to be files used by tests
+  - public access
+    - <gs://chromiumos-test-assets-public/> hosts public test assets
+  - private access
+    - <gs://chromeos-test-assets-private/> hosts private test assets
