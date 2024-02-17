@@ -11,6 +11,10 @@ systemd-networkd
     - `Type=ether`
     - `[Network]`
     - `DHCP=yes`
+    - `MulticastDNS=yes`
+    - `LLMNR=no`
+    - `[DHCPv4]`
+    - `UseDomains=yes`
 - after a link is ready, a network is configured according to the `.network` file
   - for wired, the link is ready when it is connected
   - for wireless, the link is ready when `wpa_supplicant` or `iwd` sets it up
