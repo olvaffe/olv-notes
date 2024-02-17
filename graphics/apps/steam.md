@@ -65,10 +65,11 @@ Steam
 ## Steam Runtimes
 
 - <https://gitlab.steamos.cloud/steamrt>
-- v1, scount
-  - <https://gitlab.steamos.cloud/steamrt/scout>
+- v1, scout
+  - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/scout>
+    - <https://gitlab.steamos.cloud/steamrt/scout>
+    - <https://steamdb.info/app/1070560/>
     - <https://github.com/ValveSoftware/steam-runtime>
-  - <https://steamdb.info/app/1070560/>
   - v1 is `LD_LIBRARY_PATH`-based
   - manual
     - `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh
@@ -76,21 +77,29 @@ Steam
       <arguments>`
     - `installdir`, `executable`, and `arguments` are from the app database
 - v2, soldier
-  - <https://gitlab.steamos.cloud/steamrt/soldier>
-  - <https://steamdb.info/app/1391110/>
+  - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/soldier>
+    - <https://gitlab.steamos.cloud/steamrt/soldier>
+    - <https://steamdb.info/app/1391110/>
   - v2 is container-based
+    - debian 10
+    - for use with proton 5.13, 6.3, and 7.0
   - manual
     - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run
       ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
 - v3, sniper
-  - <https://gitlab.steamos.cloud/steamrt/sniper>
-  - <https://steamdb.info/app/1628350/>
+  - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/sniper>
+    - <https://gitlab.steamos.cloud/steamrt/sniper>
+    - <https://steamdb.info/app/1628350/>
+  - v2 is also container-based
+    - debian 11
+    - for use with proton 8.0
 
 ## Proton
 
 - proton is installed as apps
   - since proton 5.13, it should be run under steam runtime v2
+  - since proton 8.0, it shoud be run under steam runtime v3
 - 7.0, <https://steamdb.info/app/1887720/>
 - 8.0, <https://steamdb.info/app/2348590/>
 - manual
