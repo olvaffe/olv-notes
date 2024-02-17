@@ -8,7 +8,9 @@ systemd-networkd
   under `/etc/systemd/network` (and other places)
   - the `.network` has lines such as these to match a link
     - `[Match]`
-    - `Name=eth0`
+    - `Type=ether`
+    - `[Network]`
+    - `DHCP=yes`
 - after a link is ready, a network is configured according to the `.network` file
   - for wired, the link is ready when it is connected
   - for wireless, the link is ready when `wpa_supplicant` or `iwd` sets it up

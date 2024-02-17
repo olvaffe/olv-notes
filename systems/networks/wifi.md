@@ -318,6 +318,56 @@ WiFi
       - `VHT` is 802.11ac
       - `short GI` is 400ns GI
 
+## `iwd`
+
+- quick connect
+  - `systemctl enable --now iwd`
+  - `iwctl`
+    - `device list`
+    - `station <dev> scan`
+    - `station <dev> get-networks`
+    - `station <dev> connect "<ssid>"`
+      - password will be prompted
+  - the link and password will be saved to `/var/lib/iwd`
+
+## `wpa_supplicant`
+
+- quick connect
+  - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
+
+      ctrl_interface=DIR=/run/wpa_supplicant
+      network={
+        ssid="<ssid>"
+        psk="<password>"
+      }
+  - `chmod 600`
+  - `systemctl enable --now wpa_supplicant@<iface>`
+- operation modes
+  - `wpa_supplicant` can be started with `-u`
+    - this enables the dbus service
+    - network-manager uses the dbus service to add and config interfaces
+  - `wpa_supplicant` can be started with `-i <dev>` and
+    `-C /run/wpa_supplicant`
+    - this enables `/run/wpa_supplicant/<dev>` socket
+    - `wpa_cli` uses the socket to config `<dev>`
+  - `wpa_supplicant` can be started with `-i <dev>` and
+    `-c /etc/wpa_supplicant/wpa_supplicant-<dev>.conf`
+    - the config file can optionall have
+      `ctrl_interface=DIR=/run/wpa_supplicant` to enable the control socket
+      for `wpa_cli`
+- `wpa_cli`
+  - `interface` lists interfaces or selects interface
+  - `status` shows current status
+  - `signal_poll` shows current signal params
+  - `scan` requests a BSS scan
+  - `scan_results` shows the latest scan results
+  - `list_networks` lists configured networks
+  - `add_network` adds a new network
+  - `remove_network` removes a network
+  - `set_network <id> <key> <val>` sets a network var
+    - `set_network` lists available network vars, such as `ssid` and `psk`
+  - `select_network` selects a network and disables others
+
 ## My APs
 
 - Google Wifi

@@ -38,23 +38,8 @@ iproute2
 
 - ethernet
   - `ip link set eth0 up`
-- wifi with `iwd`
-  - `systemctl enable --now iwd`
-  - `iwctl`
-    - `device list`
-    - `station <dev> scan`
-    - `station <dev> get-networks`
-    - `station <dev> connect "<ssid>"`
-      - password will be prompted
-  - the link and password will be saved to `/var/lib/iwd`
-- wifi with `wpa_supplicant`
-  - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
-
-      network={
-        ssid="<ssid>"
-        psk="<password>"
-      }
-  - `systemctl enable --now wpa_supplicant@<iface>`
+- wifi
+  - see `iwd` or `wpa_supplicant` in <wifi.md>
 
 ## IP and Routing
 
