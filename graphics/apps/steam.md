@@ -64,8 +64,11 @@ Steam
 
 ## Steam Runtimes
 
-- v1, scout
-  - <https://github.com/ValveSoftware/steam-runtime>
+- <https://gitlab.steamos.cloud/steamrt>
+- v1, scount
+  - <https://gitlab.steamos.cloud/steamrt/scout>
+    - <https://github.com/ValveSoftware/steam-runtime>
+  - <https://steamdb.info/app/1070560/>
   - v1 is `LD_LIBRARY_PATH`-based
   - manual
     - `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh
@@ -73,17 +76,23 @@ Steam
       <arguments>`
     - `installdir`, `executable`, and `arguments` are from the app database
 - v2, soldier
-  - <https://gitlab.steamos.cloud/steamrt>
-    - it is installed as an app, <https://steamdb.info/app/1391110/>
+  - <https://gitlab.steamos.cloud/steamrt/soldier>
+  - <https://steamdb.info/app/1391110/>
   - v2 is container-based
   - manual
     - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_soldier/run
       ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
+- v3, sniper
+  - <https://gitlab.steamos.cloud/steamrt/sniper>
+  - <https://steamdb.info/app/1628350/>
 
 ## Proton
 
-- since proton 5.13, it should be run under steam runtime v2
+- proton is installed as apps
+  - since proton 5.13, it should be run under steam runtime v2
+- 7.0, <https://steamdb.info/app/1887720/>
+- 8.0, <https://steamdb.info/app/2348590/>
 - manual
   - `STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
      STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/<appid>
@@ -92,3 +101,28 @@ Steam
      waitforexitandrun
      ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
+
+## Using runtime and proton directly
+
+- use runtime directly
+  - `cp -a ~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper .`
+  - parse runtime vdf for cmdline
+    - `apt install python3-vdf`
+    - `cp /usr/share/doc/python3-vdf/examples/vdf2json .`
+    - `./vdf2json SteamLinuxRuntime_sniper/toolmanifest.vdf tmp`
+    - we will get `/_v2-entry-point --verb=%verb% --`
+  - run any cmd
+    - `./SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- ls`
+- use proton under runtime directly
+  - `cp -a ~/.local/share/Steam/steamapps/common/Proton\ 8.0 .`
+  - parse proton vdf for cmdline
+    - we will get `/proton %verb%`
+  - prepare env
+    - mkdir `prefix`
+    - `export STEAM_COMPAT_DATA_PATH=$PWD/prefix`
+    - `export DXVK_STATE_CACHE_PATH=$PWD/prefix`
+    - `export STEAM_COMPAT_MOUNTS=`, no additional bind-mount
+    - `export STEAM_COMPAT_CLIENT_INSTALL_PATH=`
+    - `export PROTON_LOG=1`
+  - run any cmd
+    - `./SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- $PWD/Proton\ 8.0/proton waitforexitandrun notepad`
