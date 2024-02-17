@@ -498,3 +498,9 @@ Mesa ANV
     - on mtl, it only returns `A0` or `B0`
   - once the stepping is known, `devinfo->workarounds` bitmask is initialized
 - `intel_needs_workaround` checks against `devinfo->workarounds`
+
+## Ray Tracing
+
+- because of RT, anv has some new dependencies
+  - arch: `clang libclc spirv-llvm-translator python-ply`
+  - debian: `libclang-dev libclang-cpp-dev libclc-16 libclc-16-dev libllvmspirvlib-16-dev python3-ply`
