@@ -59,6 +59,7 @@ Debian
   - extra
     - `file git lsof strace`
     - `pciutils usbutils`
+    - `curl`
 - base setup
   - `dpkg-reconfigure locales tzdata`
   - `systemctl enable --now systemd-networkd systemd-resolved`
