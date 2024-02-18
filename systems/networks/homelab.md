@@ -126,3 +126,22 @@ Homelab
     logs, tools, and reports
   - there is also settings (of the site)
     - this is probably the most important tab
+
+## Duck DNS
+
+- <https://www.duckdns.org/>
+- `https://www.duckdns.org/update?domains={YOURVALUE}&token={YOURVALUE}[&ip={YOURVALUE}][&ipv6={YOURVALUE}][&verbose=true][&clear=true]`
+  - `domains` is a comma-separated list of subdomains to update
+  - `token` is the account token
+  - `ip` and `ipv6` update ipv4 and ipv6 records respectively
+    - if `ipv6` is missing or empty, it updates the ipv4 record
+      - if `ip` is missing or empty, it auto-detects the ipv4 addr
+    - if `ipv6` is non-empty, it updates the ipv6 record
+      - if `ip` is non-empty, it updates the ipv4 record as well
+  - `verbose=true` requests verbose responses
+  - `clear=true` clears both ipv4 and ipv6 records
+- public ip detection
+  - `curl [-4|-6] <url>`, where `<url>` is
+  - `https://ifconfig.me`
+  - `https://icanhazip.com`
+  - `https://ipecho.net/plain`
