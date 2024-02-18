@@ -98,6 +98,11 @@ Debian
   - `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
   - `apt autoremove --dry-run` to selectively mark packages manual
   - `apt autoremove` to remove unneeded ones
+  - this ignores packages that are on `Recommends` or `Suggests`
+    - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
+    - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
+    - A recommends B when A is pointless without B for most users
+    - A suggests B when A is enhanced by B
 - to find orphaned files,
   - `cat /var/lib/dpkg/info/*.list | sed -e 's,^/\(bin\|lib\|sbin\),/usr/\1,' | sort | uniq > dpkg.list`
   - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`

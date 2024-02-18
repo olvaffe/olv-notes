@@ -229,3 +229,29 @@ Homelab
     - the script updates/restores nginx config directly
 - `acme.sh --install-cert` installs certificates for use by daemons
   - `acme.sh --install-cert -d <domain> --key-file <dst-path-1> --fullchain-file <dst-path-2>`
+
+## `gcloud`
+
+- free tier
+  - <https://cloud.google.com/free/docs/free-cloud-features#free-tier>
+  - compute engine
+    - `e2-micro`
+    - `us-west1`
+    - 30 GB-months standard persistent disk
+- <https://cloud.google.com/sdk/docs>
+  - untar the tarball
+  - `install.sh` or use `google-cloud-sdk/bin/gcloud` directly
+- components
+  - `gcloud components list`
+  - `gcloud components update`
+- init
+  - `gcloud init`
+- compute
+  - os login
+    - `gcloud compute project-info add-metadata --metadata=enable-oslogin=true`
+    - `gcloud compute os-login ssh-keys add --key-file ~/.ssh/id_rsa.pub`
+    - the user name is the email with special characters (`@` or `.`) replaced
+      by `_`
+  - quick ssh
+    - `gcloud compute ssh <vm-instance>`
+    - this adds the ssh key to the vm temporarily and ssh to it
