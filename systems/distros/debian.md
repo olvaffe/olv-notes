@@ -46,6 +46,7 @@ Debian
   - admin
     - `locales man-db sudo systemd-resolved systemd-zram-generator vim whiptail`
     - `dosfstools fdisk`
+    - `unattended-upgrades`
   - network
     - `iproute2 iputils-ping nftables wireguard`
     - `wireless-regdb wpasupplicant` (or `iwd`)
