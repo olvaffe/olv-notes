@@ -199,6 +199,15 @@ Data Manipulation
     - DSA, 1994
     - ECDSA, 2000
     - EdDSA, 2011 (ED25519)
+- key exchange algorithms
+  - DH, 1976 (Diffie–Hellman)
+    - A and B publicly agree `x` and `p`
+    - A picks `a` privately
+    - B picks `b` privately
+    - A sends the result of `x^a mod p` to B
+    - B sends the result of `x^b mod p` to A
+    - both A and B use the result of `x^(ab) mod p` as the secret key
+  - ECDH (Elliptic-curve Diffie–Hellman)
 
 ## Hash Functions
 
