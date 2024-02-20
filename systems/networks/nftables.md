@@ -71,6 +71,86 @@ nftables
   - `nft add element <family> <table-name> <set-name> ...` creates an element
   - `nft delete element <family> <table-name> <set-name> ...` deletes an element
 
+## Rules
+
+- each rule consists of zero or more expressions followed by one or more statements
+  - each expression tests whether a packet matches a specific payload field or
+    packet/flow metadata
+  - multiple expressions are linearly evaluated from left to right: if the
+    first expression matches, then the next expression is evaluated and so on
+  - if we reach the final expression, then the packet matches all of the
+    expressions in the rule, and the rule's statements are executed
+  - each statement takes an action, such as setting the netfilter mark,
+    counting the packet, logging the packet, or rendering a verdict such as
+    accepting or dropping the packet or jumping to another chain
+  - as with expressions, multiple statements are linearly evaluated from left
+    to right: a single rule can take multiple actions by using multiple
+    statements
+  - do note that a verdict statement by its nature ends the rule
+- expressions evalute to typed values
+  - they can be constants
+  - the can be derived from packet metadata or payload
+  - they can be combined from other expressions
+- primary expressions
+  - `meta` refers to metadata associated with a packet
+  - `socket` refers to socket associated with a packet
+  - `osf` refers to os fingerprinting associated with a packet
+  - `fib` refers to fib (forwarding info base) associated with a packet
+  - `rt` refers to routing data associated with a packet
+  - `ipsec` refers to ipsec data associated with a packet
+  - `numgen`, `jhash`, and `symhash` generate a number, usually used for
+    load-balancing
+- payload expressions refer to data from the packet payload
+  - `ether` refers to ethernet header fields
+  - `vlan` refers to vlan header fields
+  - `arp` refers to arp header fields
+  - `ip` refers to ipv4 header fields
+  - `icmp` refers to icmp header fields
+  - `igmp` refers to igmp header fields
+  - `ip6` refers to ipv6 header fields
+  - `icmpv6` refers to icmpv6 header fields
+  - `tcp` refers to tcp header fields
+  - `udp` refers to udp header fields
+  - `udp-lite` refers to udp-lite header fields
+  - `sctp` refers to sctp header fields
+  - `dccp` refers to dccp header fields
+  - `ah` refers to authentication header fields
+  - `esp` refers to encrypted security payload header fields
+  - `comp` refers to ipcomp header fields
+  - `gre` refers to gre header fields
+  - `geneve` refers to geneve header fields
+  - `gretap` refers to encapsulated ethernet frame within the gre header
+  - `vxlan` refers to vxlan header fields
+  - `@base,offset,len` refers to raw bytes
+  - a bunch of extension header expressions refer to variable-sized protocol
+    headers
+  - `ct` refers to conntrack metadata associated with a packet
+- statements
+  - `accept`, `drop`, `queue`, `continue`, `return`, `jump`, and `goto` alter
+    the control flow
+    - there are known as verdict statements
+  - `<payload-expr> set <val>` alters packet content
+  - `log` logs a packet
+  - `reject` drops the packet and sends back an error packet
+  - `counter` updates the hit count
+  - `ct` sets conntrack marks/labels
+  - `notrack` disables conntrack for a packet
+  - `meta` sets a metadata
+  - `limit` matches a packet until the limit is reached
+    - if `over` is specified, it matches a packet after the limit is exceeded
+  - `snat`, `dnat`, `masquerade`, and `redirect` alter saddr/daddr
+  - `tproxy` redirects a packet to another local socket
+  - `synproxy`
+  - `flow`
+  - `queue` passes a packet to userspace over `nfnetlink_queue`
+  - `dup` duplicates a packet and sends the copy to a different dst
+  - `fwd` redirects a packet to another dst
+  - `add` and `update` adds a packet to a set
+    - the difference is `update` refreshes the timeout
+  - `map` performs table lookup
+  - `vmap` is like a map, except that the values are verdict statements
+  - `xt` executes a legacy xtables statement
+
 ## Address Families
 
 - concept
