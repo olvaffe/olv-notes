@@ -66,6 +66,12 @@ Homelab
   - debian
     - `unattended-upgrades`
 
+## Credentials
+
+- google app password (gmail)
+- duckdns access token
+- wireguard private key
+
 ## Networking
 
 - types of devices

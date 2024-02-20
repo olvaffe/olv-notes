@@ -32,6 +32,20 @@ FIDO
   - the browser conforms to WebAuthn Client
   - the authenticator conforms to CTAP1/UAF or CTAP2
 
+## Command Line
+
+- `fido2-token -L [<dev>]` lists various stuff
+  - `-L` lists authenticators
+- `fido2-token -I <dev>` shows various stuff
+  - `-I` shows protocol version and caps
+- `fido2-token -G <dev>` gets various stuff
+- `fido2-token -S <dev>` sets various stuff
+  - `-S` sets pin
+- `fido2-token -D <dev>` deletes/disables various stuff
+- `fido2-token -C <dev>` changes various stuff
+  - `-C` changes pin
+- `fido2-token -R <dev>` resets device
+
 ## Yubikey
 
 - <https://wiki.archlinux.org/title/YubiKey>

@@ -3,30 +3,73 @@ nftables
 
 ## Basics
 
-- listing
-  - `nft list ruleset` lists current ruleset
-  - `nft list tables` lists current tables
-  - `nft list table <family> <name>` lists chains in a table
-  - `nft list chain <family> <table-name> <chain-name>` lists rules in a chain
-- save and restore
-  - `echo "flush ruleset" > saved`
-  - `nft -s list ruleset >> saved`
-  - `nft -f saved`
+- ruleset
+  - `nft list ruleset` lists the ruleset
+  - `nft flush ruleset` flushes the ruleset
+  - save and restore
+    - `echo "flush ruleset" > saved`
+    - `nft -s list ruleset >> saved`
+    - `nft -f saved`
+  - `nft list tables` lists table names in the ruleset
 - tables
-  - to create a table,
-    - `nft add table <family> <name>`
-    - family is ip, ip6, inet, arp, bridge, etc.
-  - to delete a table,
-    - `nft delete table <family> <name>`
-  - to flush a table,
-    - `nft flush table <family> <name>`
-- chains
-  - to create a base chain in a table,
-    - `nft add chain <family> <table_name> <chain_name> '...'`
-    - a base chain is an entrypoint for a packet
-  - to create a regular chain in a table,
-    - `nft add chain <family> <table_name> <chain_name>`
-    - a regular chain is like a helper function
+  - `nft add table <family> <name>` creates a table
+    - `family` is `ip`, `ip6`, `inet` (both `ip` and `ip6`), `arp`, `bridge`,
+      etc.
+  - `nft delete table <family> <name>` deletes a table
+  - `nft list table <family> <table-name>` lists all chains and sets in a table
+  - `nft flush table <family> <name>` flushes all chains and sets in a table
+- chains in a table
+  - `nft add chain <family> <table-name> <chain-name>` creates a chain
+    - this form creates a regular chain
+      - a regular chain is not attached to any netfilter hook and will be used
+        like a helper function
+    - adding `{ type <type> hook <hook> priority <prio>; policy <policy>; }`
+      creates a base chian
+      - a base chain is attached to `<hook>` and will be used like a `main`
+        function
+      - `type` is `filter`, `route`, `nat`, etc.
+      - `hook` is `ingress`, `prerouting`, `input`, `forward`, `output`,
+        `postrouting`, etc.
+      - `prio` is an integer; a lower number has a higher priority
+        higher priority
+        - it can also be specified as `keyword +/- offset`
+        - valid keywords and their meanings differ depending on `family`
+        - for `inet`,
+          - `raw` is -300
+          - `mangle` is -150
+          - `dstnat` is -100
+          - `filter` is 0
+          - `security` is 50
+          - `srcnat` is 100
+      - `policy` is `accept` (default) or `drop`
+  - `nft delete chain <family> <table-name> <chain-name>` deletes a chain
+  - `nft list chain <family> <table-name> <chain-name>` lists all rules in a
+    chain
+  - `nft flush chain <family> <table-name> <chain-name>` flushes (deletes) all
+    rules in a chain
+- rules in a chain
+  - `nft add rule <family> <table-name> <chain-name> ...` adds a rule
+  - `nft delete rule <family> <table-name> <chain-name> handle <handle>`
+    delete a rule
+    - `nft -a list chain <family> <table-name> <chain-name>` to see the rule
+      handles
+- sets in a table
+  - `nft add set <family> <table-name> <set-name> { ... }` creates a set
+    - `type` is `ipv4_addr`, `ipv6_addr`, `inet_proto`, etc.
+    - `timeout` is the timeout before an element is deleted automatically
+    - `flags` is
+      - `constant` means the set is immutable
+      - `interval` means elements can be intervals
+      - `timeout` means the set has a timeout
+      - `dynamic` means rules can add/remove elements
+  - `nft delete set <family> <table-name> <set-name>` deletes a set
+  - `nft list set <family> <table-name> <set-name>` lists all elements in a
+    set
+  - `nft flush set <family> <table-name> <set-name>` flushes (deletes) all
+    elements a set
+- elements in a set
+  - `nft add element <family> <table-name> <set-name> ...` creates an element
+  - `nft delete element <family> <table-name> <set-name> ...` deletes an element
 
 ## Address Families
 

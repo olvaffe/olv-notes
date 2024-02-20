@@ -50,7 +50,7 @@ Debian
   - network
     - `iproute2 iputils-ping nftables wireguard`
     - `wireless-regdb wpasupplicant` (or `iwd`)
-    - `ssh msmtp fail2ban`
+    - `ssh msmtp`
   - container
     - `containers-storage podman`
   - rpi
