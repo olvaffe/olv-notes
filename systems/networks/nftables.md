@@ -137,7 +137,14 @@ nftables
   - `notrack` disables conntrack for a packet
   - `meta` sets a metadata
   - `limit` matches a packet until the limit is reached
+    - it uses the token bucket algorithm
+      - the bucket capacity is given by `burst`, which is 5 by default
+      - the bucket refills tokens at the specified rate
+      - a packet matches when there are sufficient tokens in the bucket to be
+        taken by the packet
     - if `over` is specified, it matches a packet after the limit is exceeded
+      - that is, a packet matches when there are insufficent tokens in the
+        bucket
   - `snat`, `dnat`, `masquerade`, and `redirect` alter saddr/daddr
   - `tproxy` redirects a packet to another local socket
   - `synproxy`
@@ -197,6 +204,37 @@ nftables
             oifname "wlp2s0" masquerade
         }
     }
+
+## Ban with Rate Limiting
+
+- e.g.,
+
+    table ip ssh-ratelimit {
+        set track {
+            type ipv4_addr
+            flags dynamic
+            timeout 30s
+        }
+        set ban {
+            type ipv4_addr
+            flags dynamic
+            timeout 5m
+        }
+        chain ratelimit {
+            type filter hook input priority filter + 1; policy accept;
+            ct state new tcp dport 22 \
+              update @track { ip saddr limit rate over 4/minute burst 3 packets } \
+              update @ban { ip saddr } \
+              drop
+            ip saddr @ban drop
+        }
+    }
+- what it does is,
+  - for each new connection to tcp port 22, rate limit on its `saddr`
+  - if `saddr` makes more than 4 connections per minute on average, add to
+    `ban` for 5 minutes
+    - if `saddr` makes no connection in 30s, remove rate limit tracking for it
+  - else accept by policy
 
 ## `iptables`
 
