@@ -46,6 +46,40 @@ WireGuard
     - when the host changes ip, the remote peer is made aware of the new ip
     - the firewall will consider the connection "established"
 
+## Config File
+
+- `wg showconf wg0` and `wg setconf wg0` can be used to save/restore the
+  config
+- format
+  - `[Interface]`
+    - there can only be one
+    - `PrivateKey` specifies the private key; required
+    - `ListenPort` specifies the litening port, or random if unspecified
+  - `[Peer]`
+    - there can only be multiple
+    - `PublicKey` specifies the public key of the peer; required
+    - `PresharedKey` specifies the psk key; optional
+    - `AllowedIPs` specifies a comma-separated list of allowed ips
+      - for incoming packets, this specifies the allowed saddr
+      - for outgoing packets, this specifies the allowed daddr
+      - `0.0.0.0/0` or `::/0` matches all
+    - `Endpoint` specifies the initial `ip:port` of the peer; optional
+      - the endpoint is updated dynamically using the saddr of the peer's udp
+        packets
+    - `PersistentKeepalive` sends a packet to the peer periodically
+- `wg-quick` adds its own keys
+  - the script parses the config file, strips keys that are specific to
+    `wg-quick`, and passes the remaining to `wg`
+  - `[Interface]`
+    - `Address` specifies a comma-separated list of ipv4/ipv6 addrs for the
+      interface
+    - `DNS` specifies a comma-serated list of dns servers using `resolvconf`
+    - `MTU` specifies the MTU explicitly
+    - `Table` enables/disables updates to the routing table; default to `auto`
+    - `PreUp`, `PostUp`, `PreDown`, `PostDown` are shell scrips to be executed
+      pre/post up/down
+    - `SaveConfig` saves config on shutdown
+
 ## Protocol
 
 - <https://www.wireguard.com/protocol/>
