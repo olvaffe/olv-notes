@@ -65,6 +65,46 @@ Kernel TPM
   - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx`
     - this saves a small amount of user data to tpm instead
     - to read back, `tpm2 unseal -c blob.ctx`
+- PCRs
+  - Platform Configuration Registers
+  - there are 24 PCRs
+    - they are registers that can be read or extended
+      - extension means `pcr-x = hash(pcr-x + new-data)`
+    - there are usually 2 banks, for sha1 and sha256
+    - `tpm2 pcrread` dumps the current values
+  - usage
+    - we can seal the key to disk encryption to tpm
+    - tpm would unseal it when PCR values match pre-calculated values
+    - this makes sure the disk is unlocked only when all code and data used
+      before unlock are not tampered
+  - <https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/>
+    - pcr 0-7 is reserved for firmware (uefi)
+    - pcr 8-15 is reserved for os
+    - pcr 16 is for debug
+    - pcr 23 is for app support
+  - pcr-0 is for SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs
+    and PI Drivers
+    - e.g., the firmware measures itself to pcr-0; the value may change after
+      firmware update
+  - pcr-1 is for Host Platform Configuration
+    - e.g., the firmware measures its config to pcr-1; the value may change
+      after config change
+  - pcr-2 is for 2 UEFI driver and application Code
+    - e.g., the firwware measures uefi drivers and apps to pcr-2
+  - pcr-3 is for 3 UEFI driver and application Configuration and Data
+    - e.g., the firwware measures uefi driver and app configs to pcr-3
+  - pcr-4 is for UEFI Boot Manager Code (usually the MBR) and Boot Attempts
+    - e.g., the firwware measures the bootloader to pcr-4; the vlaue may
+      change after bootloader update
+  - pcr-5 is for Boot Manager Code Configuration and Data (for use by the Boot
+    Manager Code) and GPT/Partition Table 
+    - e.g., the firwware measures the bootloader config and the partition
+      table to pcr-5; the vlaue may change after partition table change
+  - pcr-6 is for Host Platform Manufacturer Specific
+    - it is reserved for motherboard manufacturer
+  - pcr-7 is for Secure Boot Policy
+    - e.g., the firwware measures secure boot related variables (SecureBoot,
+      PK, KEK, DB, DBX, etc.) to pcr-7
 
 ## `tpm2-tools`
 
