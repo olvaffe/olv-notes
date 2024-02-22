@@ -37,6 +37,15 @@ UEFI
   - shim then implements its own chain of trust
     - it contains a distro key that is used to verify that the real bootloader
       is signed by the distro
+- <https://github.com/rhboot/shim-review> is how a distro gets its build of
+  shim plus distro certificate signed by microsoft
+  - e.g., <https://github.com/rhboot/shim-review/issues/315> is for shim 15.7
+    on debian bookworm
+  - the unsigned shim embeds a cert for debian uefi ca
+  - the signed shim is signed by MS 3rd party key
+  - IOW, the signed shim is bootable on any machine with ms 3rd party key in
+    KEK, and it only loads executables signed by debian uefi ca (indirectly)
+    - this includes official debian grub2, linux, and fwupd
 
 ## shim
 
