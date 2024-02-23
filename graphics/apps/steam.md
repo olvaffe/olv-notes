@@ -151,3 +151,12 @@ Steam
       - `__EGL_VENDOR_LIBRARY_FILENAMES=/usr/lib/pressure-vessel/overrides/share/glvnd/egl_vendor.d/50_mesa.json`
   - `steam-runtime-launcher-interface-0`
     - <https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/bin/launcher-interface-0.md>
+- debug
+  - `PRESSURE_VESSEL_TERMINAL=tty ... bash` to get shell
+    - the envvar keeps stdin open
+  - `VK_LOADER_DEBUG=all` is passed through and just works
+  - `VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation` is passed through and
+    just works thanks to bind-mounts
+  - `VK_DRIVER_FILES=...` is passed through and semi-works
+    - it works inside the container
+    - it does not work inside proton
