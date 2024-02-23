@@ -259,7 +259,7 @@ Podman
 ## systemd service
 
 - create a system user with subuid/subgid for rootless containers
-  - `useradd -r -b /srv -F -m <name>`
+  - `useradd -r -F -m <name>`
 - start the user systemd instance on boot
   - `loginctl enable-linger <user>`
 - pull the image beforehand

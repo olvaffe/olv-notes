@@ -114,4 +114,4 @@ Base Utils
   - `-s` for shell, default to `SHELL` defined in `/etc/default/useradd`
 - system account
   - `useradd -r -d /nonexistent -s /usr/sbin/nologin <name>`
-  - `useradd -r -b /srv -F -m <name>`
+  - `useradd -r -F -m <name>`
