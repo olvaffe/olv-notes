@@ -94,6 +94,8 @@ Steam
   - v2 is also container-based
     - debian 11
     - for use with proton 8.0
+- <https://gitlab.steamos.cloud/steamrt/steam-runtime-tools>
+  - tools included in all runtime v2 and later
 
 ## Proton
 
@@ -135,3 +137,17 @@ Steam
     - `export PROTON_LOG=1`
   - run any cmd
     - `./SteamLinuxRuntime_sniper/_v2-entry-point --verb=waitforexitandrun -- $PWD/Proton\ 8.0/proton waitforexitandrun notepad`
+- runtime internals
+  - `_v2-entry-point` execs `run pressure-vessel/bin/steam-runtime-launcher-interface-0 container-runtime $@`
+  - `run` execs `pressure-vessel/bin/pressure-vessel-unruntime $@`
+  - `pressure-vessel-unruntime` escapes steam runtime and execs `pressure-vessel/bin/pressure-vessel-wrap $@`
+  - `pressure-vessel-wrap` enters the container
+    - <https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/pressure-vessel/wrap.1.md>
+    - `env` shows that the container has these changes
+      - `XDG_DATA_DIRS=/usr/lib/pressure-vessel/overrides/share:$XDG_DATA_DIRS:/run/host/user-share:/run/host/share`
+      - `LD_LIBRARY_PATH=/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/aliases`
+      - `VK_DRIVER_FILES=/usr/lib/pressure-vessel/overrides/share/vulkan/icd.d...`
+      - `LIBGL_DRIVERS_PATH=/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/dri:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/dri`
+      - `__EGL_VENDOR_LIBRARY_FILENAMES=/usr/lib/pressure-vessel/overrides/share/glvnd/egl_vendor.d/50_mesa.json`
+  - `steam-runtime-launcher-interface-0`
+    - <https://gitlab.steamos.cloud/steamrt/steam-runtime-tools/-/blob/main/bin/launcher-interface-0.md>
