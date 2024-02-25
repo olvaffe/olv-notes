@@ -113,5 +113,16 @@ Base Utils
     - no home dir unles `-m`
   - `-s` for shell, default to `SHELL` defined in `/etc/default/useradd`
 - system account
-  - `useradd -r -d /nonexistent -s /usr/sbin/nologin <name>`
-  - `useradd -r -F -m <name>`
+  - normal accounts and system accounts are no different to most tools
+    except for those who choose to distinguish them
+    - systemd uses `uid_is_system` to distinguish them
+  - system accounts usually do not need a home directory and do not need a
+    shell
+    - `useradd -r -d /nonexistent -s /usr/sbin/nologin <name>`
+    - if a home directory is desired, `/var/lib/<name>` is one option
+  - rootless podman containers are a bit ambiguous
+    - they should be run by system accounts
+    - but they usually need home dirs and `XDG_RUNTIME_DIR`, where the latter
+      is usually created by `pam_systemd` during normal login
+    - `useradd -r -F -m <name>`
+    - `loginctl enable-linger <name>` to start the user instance on boot

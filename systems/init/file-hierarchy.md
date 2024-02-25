@@ -14,6 +14,22 @@ Filesystem Hierarchy
   - user packages go to `~/.local`
     - originated from <https://www.python.org/dev/peps/pep-0370/>
 
+## summary
+
+- `/`, `/usr`, `/usr/local`, and `/opt/<package>` are for installed
+  packages
+  - they more or less have the same subdirectories such as `bin`, `sbin`,
+    `lib`, `share`, etc.
+  - `/` is for distro packges that are needed during boot
+    - with initramfs, this is out of fashion now
+  - `/usr` is for distro packages that are not needed during boot
+  - `/usr/local` is for locally-installed packages
+  - `/opt/<package>` is for locally-installed, self-contained packages
+- `/var` is for package-generated data (state, logs, etc.)
+- `/run` is for package-generated transient runtime data (that are needed only
+  when they are running)
+- `/srv` is for data that can be retrieved by others over network
+
 ## `/`
 
 - these subdirectories or symbolic links are required
