@@ -271,3 +271,49 @@ Intel CPUs
     - it is an i468 and it executes the CSME firmware on the ROM
     - root-of-trust
   - then CPU starts execution
+
+## cpuid
+
+- <https://en.wikipedia.org/wiki/CPUID>
+- `cpuid` instruction implicitly uses `eax` and optionally `ecx`
+  - `eax` specifies the leaf (category)
+  - for some leaves, `ecx` specifies the subleaves
+- `cpuid.h`
+  - `for (unsigned int i = 0; i <= __get_cpuid_max(0, NULL); i++)`
+  - `  if (__get_cpuid(i, ...)) ...;`
+- `eax=0x0`: Highest Function Parameter and Manufacturer ID
+  - it returns the highest leaf in `eax`
+  - it returns the manufacturer id in `ebx`, `edx`, and `ecx`, 12 chars in
+    total
+    - `GenuineIntel` for intel
+    - `AuthenticAMD` for amd
+- `eax=0x1`: Processor Info and Feature Bits
+  - `eax` holds the cpu signature
+    - bit 0..3: stepping
+    - bit 4..7: model
+    - bit 8..11: family
+    - bit 12..13: processor type
+    - bit 16..19: extended model id
+      - the higher bits of model
+    - bit 20..27: extended family id
+      - the higher bits of family
+    - the same info is availabe in `/proc/cpuinfo`
+    - microcode file naming: `<family>-<model>-<stepping>`
+  - `ebx` holds the additional info
+    - bit 0..7: band index
+    - bit 8..15: clflush line size in qwords
+    - more
+  - `edx` and `ecx` hold the feature flags
+    - fpe, tsc, msr, mtrr, pat, sse, sse2, sse3, sse4.1, sse4.2, x2apic,
+      popcnt, aes-ni, avx, rdrnd, etc.
+- `eax=0x2`: Cache and TLB Descriptor information
+- `eax=0x3`: Processor Serial Number
+- `eax=0x4` and `eax=b`: Intel thread/core and cache topology
+- `eax=0x6`: Thermal and power management
+- `eax=0x7`: Extended Features
+  - fsgsbase, avx2, clflushopt, etc.
+- `eax=0xd`: XSAVE features and state-components
+- `eax=0x12`: SGX capabilities
+- `eax=0x14`: Processor Trace
+- `eax=0x19`: AES Key Locker features
+- `eax=0x24`: AVX10 Features
