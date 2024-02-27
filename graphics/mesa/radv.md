@@ -61,12 +61,6 @@ Mesa RADV
   - `radv_rra_trace_init` initializes rra
   - when triggered, `radv_rra_dump_trace` dumps the accel structs
 
-## Tools
-
-- umr
-  - <https://gitlab.freedesktop.org/tomstdenis/umr.git>
-- RGP
-
 ## Winsys
 
 - `radv_amdgpu_winsys_create` is called for each physical device

@@ -913,3 +913,38 @@ AMD
 - 12.18.1. Flat Instructions
 - 12.18.2. Scratch Instructions
 - 12.18.3. Global Instructions
+
+## umr
+
+- <https://gitlab.freedesktop.org/tomstdenis/umr.git>
+  - `cmake -S. -Bout -GNinja`
+    - optional: `-DUMR_NO_LLVM=ON -DUMR_NO_GUI=ON -DUMR_NO_SERVER=ON`
+  - device info
+    - `--config` shows the default gpu info
+    - `--enumerate` enumerates and shows all gpu info
+    - `--list-blocks` lists ip blocks and versions
+    - `--list-regs` lists regs of an ip block
+    - `--dump-discovery-table`
+  - reg access
+    - `--write` writes a reg
+    - `--read` reads a reg
+    - `--scan` reads all regs in an ip block
+  - utilization
+    - `--top` shows utilization
+    - `--waves` shows active waves
+  - vm access
+  - pm4 decode
+    - `--ring-stream` decodes a ring buffer
+    - `--dump-ib` decodes an in-memory IB
+    - `--print-cpc` prints cpc regs
+    - `--print-sdma` prints sdma regs
+  - power
+    - `--power` shows clocks, temperatures, loading, etc.
+    - `--clock-scan` shows all clocks
+    - `--gpu-metrics` prints gpu metrics
+  - vbios
+    - `--vbios-info` prints vbios info
+
+## Tools
+
+- RGP
