@@ -155,3 +155,26 @@ Mesa Vulkan Runtime
     - `VK_SYNC_FEATURE_TIMELINE`
     - `VK_SYNC_FEATURE_GPU_WAIT`
     - `VK_SYNC_FEATURE_CPU_WAIT`
+
+## `vk_common_QueueSubmit2`
+
+- `vk_queue_submit` submits each `VkSubmitInfo2` one by one
+  - `VkSubmitInfo2` is converted to `vulkan_submit_info` first
+  - `vulkan_submit_info` is parsed into `struct vk_queue_submit`
+  - `struct vk_queue_submit` is submitted depending on the queue submit mode
+- queue submit modes
+  - `VK_QUEUE_SUBMIT_MODE_IMMEDIATE` calls `vk_queue_submit_final` immediately
+    - this calls `queue->driver_submit` after pre-processing
+    - timeline semaphores allow wait-before-submit and this mode normally does
+      not work j
+    - e.g., if submit A waits on a semaphore that is signaled by submit B on a
+      different queue, the runtime may get submit A before submit B but the
+      kernel requires submit B before submit A
+  - `VK_QUEUE_SUBMIT_MODE_DEFERRED` calls `vk_queue_push_submit` and
+    `vk_device_flush`
+    - this uses `VK_SYNC_WAIT_PENDING` to check if all dependencies of a
+      submit have become pending (submitted) before calling
+      `vk_queue_submit_final`
+  - `VK_QUEUE_SUBMIT_MODE_THREADED` calls `vk_queue_push_submit`
+    - the queue thread uses `VK_SYNC_WAIT_PENDING` to wait all dependencies of
+      a submit before calling `vk_queue_submit_final`

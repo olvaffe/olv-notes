@@ -156,6 +156,44 @@ Mesa RADV
     - `AMDGPU_INFO_VIS_VRAM_USAGE`, and
     - `AMDGPU_INFO_GTT_USAGE` respectively
 
+## Queues
+
+- `radv_get_physical_device_queue_family_properties` enumerates up to 5 queue
+  families
+  - family 0 is `RADV_QUEUE_GENERAL`
+  - family 1 is `RADV_QUEUE_COMPUTE`, if supported and not disabled
+  - family 2 is `RADV_QUEUE_VIDEO_DEC`, if supported and enabled
+  - family 3 is `RADV_QUEUE_TRANSFER`, if supported and enabled
+  - family 4 is `RADV_QUEUE_SPARSE`
+    - unless `radv_legacy_sparse_binding` is set, this is the only queue
+      supporting `VK_QUEUE_SPARSE_BINDING_BIT`
+- `radv_queue_init` picks `radv_queue_submit` or `radv_queue_sparse_submit`
+  depending on the queue family
+  - the device timeline and submit modes are
+    `VK_DEVICE_TIMELINE_MODE_ASSISTED` and
+    `VK_QUEUE_SUBMIT_MODE_THREADED_ON_DEMAND`
+    - or, on older kernels, `VK_DEVICE_TIMELINE_MODE_EMULATED` and
+      `VK_QUEUE_SUBMIT_MODE_DEFERRED`
+  - `vk_queue_init` converts `VK_QUEUE_SUBMIT_MODE_THREADED_ON_DEMAND` to
+    `VK_QUEUE_SUBMIT_MODE_IMMEDIATE`
+    - `vk_queue_submit` will call `vk_queue_enable_submit_thread` on demand to
+      convert to `VK_QUEUE_SUBMIT_MODE_THREADED`
+    - `vk_queue_enable_submit_thread` can also be explicitly called
+- `radv_queue_submit`
+  - if legacy sparse binding is enabled,
+    `radv_queue_submit_bind_sparse_memory` updates sparse bindings
+  - `radv_update_preambles` initializes preamble cs
+    - this initializes per-queue `initial_full_flush_preamble_cs`,
+      `initial_preamble_cs` and `continue_preamble_cs`
+  - cs are chained and submitted to winsys, together with the wait/signal
+    semaphores
+- `radv_queue_sparse_submit`
+  - `radv_queue_submit_bind_sparse_memory` updates sparse bindings
+  - this uses `DRM_AMDGPU_GEM_VA` ioctl with `AMDGPU_VA_OP_REPLACE`
+    - it uses implicit fencing to make sure the va is replaced after the bo is
+      idle
+    - there is ongoing work to switch to explicit fencing
+
 ## Formats
 
 - `radv_physical_device_get_format_properties`
