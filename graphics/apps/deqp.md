@@ -57,6 +57,47 @@ dEQP
     - all arguments required becaues of surfaceless?
     - replace gles2 by gles3 and gles31
 
+## Mustpass
+
+- `external/vulkancts/scripts/build_mustpass.py`
+  - it calls `genMustpassLists` with `MUSTPASS_LISTS`
+    - `PROJECT` has `external/vulkancts/mustpass` as the path
+    - there are `VULKAN_MAIN_PKG` and `VULKAN_SC_MAIN_PKG` packages
+  - `VULKAN_MAIN_PKG` package has two configurations
+    - `default` configuration generates `vk-default.txt`
+      - it includes tests defined in `main.txt` and excludes tests defined in
+        `test-issues.txt`, `excluded-tests.txt`, `android-tests.txt`
+      - it splits up `dEQP-VK.*`, `dEQP-VK.pipeline.*`, `dEQP-VK.image.*`,
+        `dEQP-VK.shader_object.*`
+    - `fraction-mandatory-tests` configuration generates
+      `vk-fraction-mandatory-tests.txt`
+      - it includes tests defined in `fraction-mandatory-tests.txt`
+  - what happens is
+    - it builds `deqp-vk` and `deqp-vksc` in `/tmp/deqp-caselists/null-Debug`
+    - it invokes them with `--deqp-runmode=txt-caselist` to generate the
+      caselists
+    - it applies the configurations to generate the mustpass lists
+- `external/openglcts/scripts/build_mustpass.py`
+  - it calls `genMustpassLists` with `ES_MUSTPASS_LISTS`
+    - projects have these as the paths
+      - `external/openglcts/data/mustpass/gles/khronos_mustpass`
+      - `external/openglcts/data/mustpass/gles/khronos_mustpass_noctx`
+      - `external/openglcts/data/mustpass/gles/khronos_mustpass_single`
+      - `external/openglcts/data/mustpass/egl/aosp_mustpass`
+      - `external/openglcts/data/mustpass/gles/aosp_mustpass`
+    - there are many packages
+  - it also calls `genMustpassLists` with `gl_mustpass_lists`
+    - projects have these as the paths
+      - `external/openglcts/data/mustpass/gl/khronos_mustpass`
+      - `external/openglcts/data/mustpass/gl/khronos_mustpass_noctx`
+      - `external/openglcts/data/mustpass/gl/khronos_mustpass_single`
+      - `external/openglcts/data/mustpass/gl/aosp_mustpass`
+- `scripts/build_android_mustpass.py`
+  - it calls `genMustpassLists` with `MUSTPASS_LISTS`
+    - `PROJECT` has `android/cts` as the path
+    - there are `MAIN_EGL_PKG`, `MAIN_GLES2_PKG`, `MAIN_GLES3_PKG`,
+      `MAIN_GLES31_PKG`, and `MAIN_VULKAN_PKG` packages
+
 ## Android
 
 - Build

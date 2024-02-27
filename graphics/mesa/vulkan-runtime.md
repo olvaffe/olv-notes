@@ -103,3 +103,55 @@ Mesa Vulkan Runtime
   `vk_graphics_pipeline_state`
 - `FOREACH_STATE_GROUP(INIT_STATE_IF_NEEDED)` initializes each needed
   graphics state groups
+
+## `vk_sync_type`
+
+- sync types provided by the runtime
+  - `vk_drm_syncobj_get_type` uses native syncobj
+  - `vk_sync_binary_get_type` provides binary sync over timeline sync
+  - `vk_sync_timeline_get_type` provides timeline sync over binary sync
+    - `vk_sync_timeline_type_validate` has requirements for the binary sync
+  - `vk_sync_dummy_type` is fake and does not sync at all
+    - it is used by WSI in some cases
+- `vk_physical_device::supported_sync_types` is initialized during physical
+  device enumeration
+  - drivers usually call `vk_drm_syncobj_get_type` to get the sync type for
+    native syncobj
+    - `drmSyncobjCreate` and `DRM_SYNCOBJ_CREATE_SIGNALED` map to
+      - `VK_SYNC_FEATURE_BINARY`
+      - `VK_SYNC_FEATURE_GPU_WAIT`
+      - `VK_SYNC_FEATURE_CPU_RESET`
+      - `VK_SYNC_FEATURE_CPU_SIGNAL`
+      - `VK_SYNC_FEATURE_WAIT_PENDING`
+    - `drmSyncobjWait` and `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_ALL` map to
+      - `VK_SYNC_FEATURE_CPU_WAIT`
+      - `VK_SYNC_FEATURE_WAIT_ANY`
+    - `DRM_CAP_SYNCOBJ_TIMELINE` maps to `VK_SYNC_FEATURE_TIMELINE`
+      - this is a relatively newer feature
+  - `vk_sync_timeline_get_type` can wrap a binary sync type to provides
+    emulated `VK_SYNC_FEATURE_TIMELINE` support
+    - timeline can be fully emulated except for export/import
+- `vk_device::timeline_mode` and `vk_device::submit_mode` are initialized in
+  `vk_device_init`
+  - `get_timeline_mode` checks `vk_physical_device::supported_sync_types`
+    - if no timeline sync, `VK_DEVICE_TIMELINE_MODE_NONE`
+    - if emulated timeline sync, `VK_DEVICE_TIMELINE_MODE_EMULATED`
+    - if `VK_SYNC_FEATURE_WAIT_BEFORE_SIGNAL`, which is only supported by
+      dozen, `VK_DEVICE_TIMELINE_MODE_NATIVE`
+    - else `VK_DEVICE_TIMELINE_MODE_ASSISTED`
+  - `vk_device::submit_mode` is based on `vk_device::timeline_mode`
+    - the effective submit mode of a queue will be determined in
+      `vk_queue_init`
+- `get_fence_sync_type` determines the sync type for a `VkFence`
+  - it returns the first sync type with
+  - `VK_SYNC_FEATURE_BINARY`,
+  - `VK_SYNC_FEATURE_CPU_WAIT`
+  - `VK_SYNC_FEATURE_CPU_RESET`
+- `get_semaphore_sync_type` determines the sync type for a `VkSemaphore`
+  - for binary semaphores, it returns the first sync type with
+    - `VK_SYNC_FEATURE_BINARY`
+    - `VK_SYNC_FEATURE_GPU_WAIT`
+  - for timeline semaphores, it returns the first sync type with
+    - `VK_SYNC_FEATURE_TIMELINE`
+    - `VK_SYNC_FEATURE_GPU_WAIT`
+    - `VK_SYNC_FEATURE_CPU_WAIT`

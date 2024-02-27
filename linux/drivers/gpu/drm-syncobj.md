@@ -75,8 +75,9 @@
 
 ## History
 
-- In June 2017, `drm_syncobj` was merged to support external VkSemaphore with
-  only
+- In June 2017, `drm_syncobj` was merged in 4.13 to support external
+  VkSemaphore
+  - `DRM_CAP_SYNCOBJ` to check support
   - `DRM_IOCTL_SYNCOBJ_CREATE`
     - a `drm_syncobj` has a pointer to a `dma_fence`
       - initially, the pointer is NULL and cannot be waited by execbuffer
@@ -91,7 +92,8 @@
       - exporting to a `sync_file` returns a `sync_file` for the current
         dma-fence
       - importing a `sync_file` updates the pointer
-- In August 2017, `drm_syncobj` was extended to support external VkFence with
+- In August 2017, `drm_syncobj` was extended in 4.14 to support external
+  VkFence
   - `DRM_IOCTL_SYNCOBJ_RESET`
     - points dma-fence pointer to NULL
     - modeled after `vkResetFences`
@@ -103,8 +105,8 @@
     - modeled after `vkWaitForFences`
     - `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_FOR_SUBMIT` for wait-before-submit behavior
       - it waits until a syncobj gets a dma-fence, and then waits on the fence
-- In April 2019, `drm_syncobj` was extended to support external timeline
-  VkSemaphore with
+- In April 2019, `drm_syncobj` was extended in 5.2 to support external
+  timeline VkSemaphore
   - conceptually,
     - a syncobj's dma-fence pointer is replaced by {0, dma-fence}
     - there is a list of {seqno, dma-fence}
@@ -122,6 +124,14 @@
       latest point
   - `DRM_IOCTL_SYNCOBJ_TRANSFER`
     - convert between binary and timeline syncobjs?
+- Driver Support
+  - `DRIVER_SYNCOBJ`
+    - amdgpu: 4.13
+    - i915: 4.13
+    - msm: 5.8
+  - `DRIVER_SYNCOBJ_TIMELINE`
+    - amdgpu: 5.6
+    - i915: 5.10
 
 ## `struct drm_syncobj`
 
