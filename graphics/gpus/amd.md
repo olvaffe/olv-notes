@@ -919,6 +919,9 @@ AMD
 - <https://gitlab.freedesktop.org/tomstdenis/umr.git>
   - `cmake -S. -Bout -GNinja`
     - optional: `-DUMR_NO_LLVM=ON -DUMR_NO_GUI=ON -DUMR_NO_SERVER=ON`
+  - device selection
+    - `--force` to override the asic
+      - e.g., `--force yellow_carp`
   - device info
     - `--config` shows the default gpu info
     - `--enumerate` enumerates and shows all gpu info
@@ -944,6 +947,13 @@ AMD
     - `--gpu-metrics` prints gpu metrics
   - vbios
     - `--vbios-info` prints vbios info
+- `get_asic`
+  - `umr_discover_asic` uses `/sys/kernel/debug/dri/%d/name` to get the pci
+    bus info
+    - `umr_discover_asic_by_did` looks up the pci did in `pci.did` database
+      - `pci.did` maps `0x15E7` to `renoir.asic`
+      - `umr_discover_asic_by_discovery_table` uses
+        `/sys/class/drm/card0/device/ip_discovery`
 
 ## Tools
 
