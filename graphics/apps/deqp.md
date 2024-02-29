@@ -894,6 +894,144 @@ dEQP
     - `vkCmdDrawIndexed` with 6 vertices
   - `vkCmdCopyImageToBuffer` to verify
 
+## Test Case: `dEQP-VK.robustness.robustness2.bind.notemplate.r32i.unroll.nonvolatile.storage_image.fmt_qual.img.samples_1.2d.rgen`
+
+- `createRobustness2Tests` creates the tests
+  - `pushCases` is `bind` or `push`
+  - `tempCases` is `notemplate` or `template`
+  - `fmtCases` is `r32i`, `r32ui`, `r32f`, etc.
+  - `unrollCases` is `dontunroll` or `unroll`
+  - `volCases` is `nonvolatile` or `volatile`
+  - `fullDescCases` is `uniform_buffer`, `storage_buffer`, `storage_image`,
+    etc.
+  - `fmtQualCases` is `no_fmt_qual` or `fmt_qual`
+  - `fullLenCases32Bit` is `null_descriptor`, `img`, `len_4`, etc.
+  - `sampCases` is `samples_1` or `samples_4`
+  - `viewCases` is `1d`, `2d`, `3d`, etc.
+  - `stageCases` is `comp`, `frag`, `vert`, `rgen`
+  - for this specific test, `CaseDef` has
+    - `format` is `VK_FORMAT_R32_SINT`
+    - `stage` is `STAGE_RAYGEN`
+    - `allShaderStages` is all `VK_SHADER_STAGE_*_BIT`
+    - `allPipelineStages` is all `VK_PIPELINE_STAGE_*_SHADER_BIT`
+    - `descriptorType` is `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+    - `viewType` is `VK_IMAGE_VIEW_TYPE_2D`
+    - `samples` is `VK_SAMPLE_COUNT_1_BIT`
+    - `bufferLen` is `0`
+    - `unroll` is `true`
+    - `vol` is `false`
+    - `nullDescriptor` is `false`
+    - `useTemplate` is `false`
+    - `formatQualifier` is `true`
+    - `pushDescriptor` is `false`
+    - `testRobustness2` is `true`
+    - `pipelineRobustnessCase` is `false`
+    - `imageDim[3]` is `{5, 11, 6}`
+    - `readOnly` is `false`
+- `RobustnessExtsTestCase::checkSupport` checks for test requirements
+- `RobustnessExtsTestCase::initPrograms` initializes the shaders
+
+    uvec4 abs(uvec4 x) { return x; }
+    int smod(int a, int b) { if (a < 0) a += b*(abs(a)/b+1); return a%b; }
+    int refData[4] = {305419896, 591751049, 878082192, 1164413185};
+    ivec4 zzzz = ivec4(0);
+    ivec4 zzzo = ivec4(0, 0, 0, 1);
+    ivec4 expectedIB;
+    layout(r32i, set = 0, binding = 0) uniform iimage2D image0_0;
+    layout(r32i, set = 0, binding = 1) uniform iimage2D image0_1;
+    void main()
+    {
+      ivec4 accum = ivec4(0);
+      ivec4 temp;
+      int temp_ql;
+      int inboundcoords, clampedLayer;
+      ivec4 expectedIB2;
+      [[unroll]] for (int c = -10; c <= 10; ++c) {
+        int idx = smod(c * 1, 4);
+        expectedIB.x = refData[0];
+        expectedIB.y = 0;
+        expectedIB.z = 0;
+        expectedIB.w = 1;
+        inboundcoords = 5;
+        if (c < 0 || c >= inboundcoords) imageStore(image0_1, ivec2(c, 0), ivec4(123));
+        if (c < 0 || c >= inboundcoords) imageAtomicAdd(image0_1, ivec2(c, 0), int(10));
+        inboundcoords = 11;
+        if (c < 0 || c >= inboundcoords) imageStore(image0_1, ivec2(0, c), ivec4(123));
+        if (c < 0 || c >= inboundcoords) imageAtomicAdd(image0_1, ivec2(0, c), int(10));
+        inboundcoords = 5;
+        temp = imageLoad(image0_1, ivec2(c, 0));
+        expectedIB2 = expectedIB;
+        if (c >= 0 && c < inboundcoords) {
+           if (temp == expectedIB2) temp = ivec4(0); else temp = ivec4(1);
+        }
+        else if (temp == zzzo) temp = ivec4(0);
+        else if (temp == ivec4(123)) temp = ivec4(0);
+        else temp = ivec4(1);
+        accum += abs(temp);
+        inboundcoords = 11;
+        temp = imageLoad(image0_1, ivec2(0, c));
+        expectedIB2 = expectedIB;
+        if (c >= 0 && c < inboundcoords) {
+           if (temp == expectedIB2) temp = ivec4(0); else temp = ivec4(1);
+        }
+        else if (temp == zzzo) temp = ivec4(0);
+        else if (temp == ivec4(123)) temp = ivec4(0);
+        else temp = ivec4(1);
+        accum += abs(temp);
+      }
+      ivec4 color = (accum != ivec4(0)) ? ivec4(0,0,0,0) : ivec4(1,0,0,1);
+      imageStore(image0_0, ivec2(gl_LaunchIDEXT.xy), color);
+    }
+- `RobustnessExtsTestCase::createInstance` creates a
+  `RobustnessExtsTestInstance`
+- `RobustnessExtsTestInstance::iterate`
+  - `descriptorSetLayout` is a descriptor set layout with 2 bindings
+    - binding 0 is the output image of type `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+    - binding 1 is the test image of type `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+  - `descriptorPool` is a descriptor pool
+  - `descriptorSet` is a descriptor set
+  - `buffer` is a buffer of size 256 and is memset to `0x3f`
+  - `cmdPool` is a command pool
+  - `cmdBuffer` is a command buffer
+  - `images` are the output and the test images
+    - the output image is always 2D of size 8x8
+      - it is `vkCmdClearColorImage` to 0
+      - it is transitioned to `VK_IMAGE_LAYOUT_GENERAL` /
+        `VK_ACCESS_SHADER_READ_BIT`
+    - the test image is specified by `CaseDef`, 2D of size 5x11 in this test
+      case
+      - it is `vkCmdClearColorImage` to `refData`, which is `0x12345678`
+      - it is transitioned to `VK_IMAGE_LAYOUT_GENERAL` /
+        `VK_ACCESS_SHADER_READ_BIT`
+  - `imageViews` are the output and the test image views
+  - `sampler` is a sampler
+  - `pipelineLayout` is a pipeline layout
+  - `copyBuffer` is for readback of `images[0]`
+  - `descriptorSet` is updated and bound
+    - the two bindings are updated to the two images in `images`
+  - `sgHandleSize` is set to
+    `VkPhysicalDeviceRayTracingPipelinePropertiesKHR::shaderGroupHandleSize`
+    - it is 32 on radv
+  - `pipeline` is created with `vkCreateRayTracingPipelinesKHR`
+    - the only shader has stage `VK_SHADER_STAGE_RAYGEN_BIT_KHR`
+    - there is only one `VkRayTracingShaderGroupCreateInfoKHR`
+  - `sbtBuffer` is of size `sgHandleSize`
+  - `vkGetRayTracingShaderGroupHandlesKHR` writes the opaque group handle into
+    `sbtBuffer`
+  - `sbtAddress` is the device address of `sbtBuffer`
+  - `rgenSBTRegion` is initialized to `sbtAddress` and `sgHandleSize`
+  - `images[0]` is transitioned from undefined to general
+    - the initialization above becomes pointless..
+  - `pipeline` is bound
+  - `images[0]` is `vkCmdClearColorImage` to 0 again
+  - `vkCmdPipelineBarrier` is emitted for shader read/write
+  - `vkCmdTraceRaysKHR` is called with dim of the output image (8x8)
+  - `vkCmdPipelineBarrier` is emitted for xfer read/write
+  - `vkCmdCopyImageToBuffer` copies from `images[0]` to `copyBuffer`
+  - `vkCmdPipelineBarrier` is emitted for host read
+  - `vkQueueSubmit` and `vkWaitForFences`
+  - `copyBuffer` is validated (all values should be 1)
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
