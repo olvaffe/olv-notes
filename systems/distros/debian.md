@@ -220,3 +220,53 @@ Debian
     libraries... for convenience?
   - this conflicts with `gcc-multilib`... which is another way to
     cross-compile for i686?
+
+## Minimum Package
+
+- minimum packaging files
+  - `debian/changelog`
+    - `man deb-changelog`
+    - `debchange --create --package <name> --version <ver>`
+  - `debian/source/format`
+    - `man dpkg-source`
+    - `mkdir debian/source`
+    - `echo '3.0 (native)' > debian/source/format`
+  - `debian/control`
+    - `man deb-src-control`
+    - source package stanza
+      - `Source: <name>`
+      - `Maintainer: <author> <email>`
+      - `Build-Depends: debhelper-compat (= 13)`
+    - binary package stanza
+      - `Package: <name>`
+      - `Architecture: all`
+  - `debian/rules`
+    - `man deb-src-rules`
+    - `vi debian/rules`
+      - `#!/usr/bin/make -f`
+      - `%:`
+      - `	dh $@`
+    - `chmod +x debian/rules`
+- build source and binary packages
+  - `dpkg-buildpackage --no-sign`
+- fix warnings
+  - `debian/control` source package stanza
+    - `Standards-Version: 4.6.2`
+    - `Section: metapackages`
+    - `Priority: optional`
+  - `debian/control` binary package stanza
+    - `Description: <desc> (metapackage)`
+- fix lintian
+  - `debian/control` binary package stanza
+    - `Description: <desc> (metapackage)\n <extended-desc>`
+  - `debian/copyright`
+    - <https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/>
+    - header stanza
+      - `Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/`
+    - files stanza
+      - `Files: *`
+      - `Copyright: <year> <name>`
+      - `License: MIT`
+- build with equivs
+  - `echo "Version: <ver>" >> debian/control`
+  - `equivs-build debian/control`
