@@ -8,6 +8,13 @@ Mesa RADV
     - `radv_check_gpu_hangs` is called after each queue submit.  If the submit
       hangs, a report is written to `$HOME/radv_dumps`
   - `RADV_DEBUG=shaders` dumps shader disassembly
+    - it calls `nir_print_shader` to dump the final nir before
+      `radv_shader_nir_to_asm`
+    - if `RADV_DEBUG=preoptir`,
+      - it calls `nir_print_shader` again before instruction selection
+      - if calls `aco_print_program` after instruction selection
+    - it calls `aco_print_program` after RA
+    - it calls `get_disasm_string` after codegen
 - `RADV_PERFTEST` for radv perf flags
 - `ACO_DEBUG` for compiler debug flags
 - `MESA_VK_TRACE`
