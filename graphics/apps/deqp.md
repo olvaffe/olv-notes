@@ -1032,6 +1032,212 @@ dEQP
   - `vkQueueSubmit` and `vkWaitForFences`
   - `copyBuffer` is validated (all values should be 1)
 
+## Test Case: `dEQP-VK.fragment_shading_rate.renderpass2.monolithic.fragdepth_baselevel.dynamic.attachment.noshaderrate.keep.replace.4x4.samples1.vs`
+
+- `FragmentShadingRate::createTests` calls
+  `createPipelineConstructionTypePermutations` to create the tests
+  - `FragmentShadingRate::SharedGroupParams`
+    - `useDynamicRendering` is false
+    - `useSecondaryCmdBuffer` is false
+    - `secondaryCmdBufferCompletelyContainsDynamicRenderpass` is false
+    - `pipelineConstructionType` is `PIPELINE_CONSTRUCTION_TYPE_MONOLITHIC`
+      - that is, `monolithic`
+  - `createTests` calls `createBasicTests`
+    - `groupCases` is `basic`, `fragdepth`, `fragstencil`,
+      `fragdepth_baselevel`, etc.
+    - `dynCases` is `dynamic` or `static`
+    - `attCases` is `noattachment`, `attachment`, etc.
+    - `shdCases` is `noshaderrate` or `shaderrate`
+    - `combCases` is `keep`, `replace`, `min`, `max`, or `mul`
+    - `extentCases` is `1x1`, `4x4`, `35x35`, etc.
+    - `sampCases` is `samples1`, `samples2`, etc.
+    - `shaderCases` is `vs`, `gs`, or `ms`
+  - for this specific test, `CaseDef` is
+    - `groupParams` is from `FragmentShadingRate::SharedGroupParams`
+    - `seed` is a sequential number
+    - `framebufferDim` is `4x4`
+    - `samples` is `VK_SAMPLE_COUNT_1_BIT`
+    - `combinerOp[2]` is `{ VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR, VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR }`
+    - `attachmentUsage` is `AttachmentUsage::WITH_ATTACHMENT`
+    - `shaderWritesRate` is false
+    - `geometryShader` is false
+    - `meshShader` is false
+    - `useDynamicState` is `true`
+    - `useApiSampleMask` is false
+    - `useSampleMaskIn` is false
+    - `conservativeEnable` is false
+    - `conservativeMode` is `VK_CONSERVATIVE_RASTERIZATION_MODE_OVERESTIMATE_EXT`
+    - `useDepthStencil` is `true`
+    - `fragDepth` is `true`
+    - `fragStencil` is false
+    - `multiViewport` is false
+    - `colorLayered` is false
+    - `srLayered` is false
+    - `numColorLayers` is 1
+    - `multiView` is false
+    - `correlationMask` is false
+    - `interlock` is false
+    - `sampleLocations` is false
+    - `sampleShadingEnable` is false
+    - `sampleShadingInput` is false
+    - `sampleMaskTest` is false
+    - `earlyAndLateTest` is false
+    - `garbageAttachment` is false
+    - `dsClearOp` is false
+    - `dsBaseMipLevel` is `1`
+    - `multiSubpasses` is false
+    - `maintenance6` is false
+- `FSRTestCase::checkSupport` checks for support
+- `FSRTestCase::initPrograms` initializes shaders
+  - `comp`
+
+    layout(set = 0, binding = 1) uniform utexture2DArray colorTex;
+    layout(set = 0, binding = 2, std430) buffer Block0 { uvec4 b[]; } colorbuf;
+    layout(set = 0, binding = 4, std430) buffer Block1 { float b[]; } depthbuf;
+    layout(set = 0, binding = 5, std430) buffer Block2 { uint b[]; } stencilbuf;
+    layout(set = 0, binding = 6) uniform texture2DArray depthTex;
+    layout(set = 0, binding = 7) uniform utexture2DArray stencilTex;
+    layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+    void main()
+    {
+       for (int i = 0; i < 1; ++i) {
+          uint idx = ((gl_GlobalInvocationID.z * 4 + gl_GlobalInvocationID.y) * 4 + gl_GlobalInvocationID.x) * 1 + i;
+          colorbuf.b[idx] = texelFetch(colorTex, ivec3(gl_GlobalInvocationID.xyz), i);
+          depthbuf.b[idx] = texelFetch(depthTex, ivec3(gl_GlobalInvocationID.xyz), i).x;
+       }
+    }
+  - `frag`
+
+    layout(location = 0) out uvec4 col0;
+    layout(set = 0, binding = 0) buffer Block { uint counter; } buf;
+    layout(set = 0, binding = 3) uniform usampler2D tex;
+    layout(location = 0) flat in int instanceIndex;
+    layout(location = 1) flat in int readbackok;
+    layout(location = 2) in float zero;
+    void main()
+    {
+      col0.x = gl_ShadingRateEXT;
+      col0.y = 0;
+      col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);
+      ivec2 fragCoordXY = ivec2(gl_FragCoord.xy);
+      ivec2 fragSize = ivec2(1<<((gl_ShadingRateEXT/4)&3), 1<<(gl_ShadingRateEXT&3));
+      col0.w = uint(zero);
+      if (((fragCoordXY - fragSize / 2) % fragSize) != ivec2(0,0))
+        col0.w = 1;
+      if (dFdx(gl_FragCoord.xy) != ivec2(fragSize.x, 0) || dFdy(gl_FragCoord.xy) != ivec2(0, fragSize.y))
+        col0.w = (fragSize.y << 26) | (fragSize.x << 20) | (int(dFdx(gl_FragCoord.xy)) << 14) | (int(dFdx(gl_FragCoord.xy)) << 8) | 3;
+      uint implicitDerivX = texture(tex, vec2(gl_FragCoord.x / textureSize(tex, 0).x, 0)).x;
+      uint implicitDerivY = texture(tex, vec2(0, gl_FragCoord.y / textureSize(tex, 0).y)).x;
+      if (implicitDerivX != fragSize.x || implicitDerivY != fragSize.y)
+        col0.w = (fragSize.y << 26) | (fragSize.x << 20) | (implicitDerivY << 14) | (implicitDerivX << 8) | 4;
+      gl_FragDepth = float(instanceIndex) / float(81);
+    }
+  - `vert`
+
+    layout(push_constant) uniform PC {
+            int shadingRate;
+    } pc;
+    layout(location = 0) in vec2 pos;
+    layout(location = 0) out int instanceIndex;
+    layout(location = 1) out int readbackok;
+    layout(location = 2) out float zero;
+    out gl_PerVertex
+    {
+       vec4 gl_Position;
+    };
+    void main()
+    {
+      gl_Position = vec4(pos, 0, 1);
+      instanceIndex = gl_InstanceIndex;
+      readbackok = 1;
+      zero = 0;
+    }
+  - `frag_simple`
+  - `vert_simple`
+- `FSRTestCase::createInstance` creates a `FSRTestInstance`
+- `FSRTestInstance::iterate` runs the test
+  - `dsFormat` is set to `VK_FORMAT_D32_SFLOAT_S8_UINT` or
+    `VK_FORMAT_D24_UNORM_S8_UINT`, depending on support
+  - `atomicBuffer` is a buffer of size 4
+  - `vertexBuffer` is a buffer of size 1944 (81 triangles)
+  - `colorOutputBuffer` and `secColorOutputBuffer` are buffers of size 256
+    - extent 4x4, with 4 uint32 channels
+  - `depthOutputBufferSize` and `stencilOutputBufferSize` are buffers of size 64
+    - extent 4x4, with 1 float or uint32 channel
+  - `srFillBuffer` is a buffer of size 32
+    - on radv, `minFragmentShadingRateAttachmentTexelSize` is 8x8
+  - `cbImage` and `cbImageView` have extent 4x4 and format
+    `VK_FORMAT_R32G32B32A32_UINT`
+  - `dsImage` and `dsImageView` have extent 8x8 and format
+    `VK_FORMAT_D32_SFLOAT_S8_UINT` or `VK_FORMAT_D24_UNORM_S8_UINT`
+    - because `dsBaseMipLevel` is 1, it is mipmapped and the base extent is
+      doubled
+  - `dImageView` and `sImageView` are views to `dsImage` with single aspect
+  - `derivImage` and `derivImageView` have extent `maxFragmentSize` and format
+    `VK_FORMAT_R32_UINT`
+    - it is mipmapped
+    - on radv, `maxFragmentSize` is 2x2 and the image has two mipmaps
+  - `sampler` is for `derivImage`
+  - `descriptorSetLayouts[0]` has 8 bindings
+    - `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+    - `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+    - `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+    - `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`
+    - `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+    - `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+    - `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+    - `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+  - `PipelineLayoutWrapper` is for `descriptorSetLayouts`
+    - there is one push const range of size 4
+  - `cs` is created from `comp`
+  - `computePipeline` is created from `cs` and `pipelineLayout`
+  - it then iterates over
+    - `modeIdx` is `AttachmentModes`
+      - `ATTACHMENT_MODE_DEFAULT`, `ATTACHMENT_MODE_LAYOUT_OPTIMAL`, etc.
+    - `srTexelWidth` and `srTexelHeight` are from `minFragmentShadingRateAttachmentTexelSize` to `maxFragmentShadingRateAttachmentTexelSize`
+      - on radv, they are 8x8
+    - `formatIdx` is all uint formats
+  - `descriptorPool` and `descriptorSets` are created for
+    `descriptorSetLayouts`
+  - `srImage` and `srImageView` have extent `srWidth x srHeight` and format
+    `srFormat`
+  - `descriptorSets` are updated
+    - binding 0 is `atomicBuffer`
+    - binding 1 is `cbImageView`
+    - binding 2 is `colorOutputBuffer`
+    - binding 3 is `derivImageView`
+    - binding 4 is `depthOutputBuffer`
+    - binding 5 is `stencilOutputBuffer`
+    - binding 6 is `dImageView`
+    - binding 7 is `sImageView`
+  - `renderPass` is created
+    - there are 3 attachments: `cbImageView`, `srImageView`, and `dsImageView`
+    - there is 1 subpass, with all 3 attachments having layout
+      `VK_IMAGE_LAYOUT_GENERAL`
+      - the sr layout is `srLayout` and depends on `modeIdx`
+  - `fragShader` is created from `frag`
+  - `vertShader` is created from `vert`
+  - `cmdPool` and `cmdBuffer` are the cmdbuf
+  - `secVertexBuf` is created but unused
+  - `fragSimpleShader` is created from `frag_simple` but unused
+  - `vertSimpleShader` is created from `vert_simple` but unused
+  - `pipelineLayout1` is created but unused
+  - `vkBeginCommandBuffer`
+  - render
+    - `preRenderCommands`
+    - `beginLegacyRender` begins the render pass
+    - `drawCommands`
+    - `vkCmdEndRenderPass`
+  - `vkCmdPipelineBarrier`
+  - it binds `computePipeline` and calls `vkCmdDispatch`
+  - `vkCmdPipelineBarrier`
+  - `vkEndCommandBuffer`
+  - it checks the results
+    - it iterates over `numColorLayers`, `framebufferDim`, and `samples`
+    - `colorptr` is mapped `colorOutputBuffer`
+    - `depthptr` is mapped `depthOutputBuffer`
+    - `fillPtr` is mapped `srFillBuffer`
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
