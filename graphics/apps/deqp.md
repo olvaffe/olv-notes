@@ -1225,8 +1225,31 @@ dEQP
   - `vkBeginCommandBuffer`
   - render
     - `preRenderCommands`
+      - it transitions all images to `VK_IMAGE_LAYOUT_GENERAL`
+      - it clears `derivImage` to `(1<<lv, 0, 0, 0)`
+      - it clears `cbImage` to `(0, 0, 0, 0)`
+      - it clears `dsImage` to `(0.0f, 0)`
+      - it initializes `srFillBuffer` to `SanitizeRate`
+      - it `vkCmdCopyBufferToImage` from `srFillBuffer` to `srImage`
+      - barriers
     - `beginLegacyRender` begins the render pass
     - `drawCommands`
+      - it binds `pipelineLayout` and `descriptorSets` to
+        `VK_PIPELINE_BIND_POINT_GRAPHICS`
+      - it creates and binds `pipelines[0]` to
+        `VK_PIPELINE_BIND_POINT_GRAPHICS`
+      - for each of `NUM_TRIANGLES` (81) triangles
+        - it `vkCmdBindVertexBuffers` `vertexBuffer` with the right offset
+        - it `vkCmdPushConstants` `PrimIDToPrimitiveShadingRate`
+          - `PrimIDToPipelineShadingRate`
+            - `width = 1 << ((primID/9) % 3)`
+            - `height = 1 << (((primID/9)/3) % 3)`
+            - `ShadingRateExtentToEnum` encodes the w/h using 4 bits
+          - `ShadingRateEnumToExtent` decodes the w/h
+        - it `vkCmdSetFragmentShadingRateKHR`
+          - the two combiner ops are keep and replace; that is, the final
+            shading rate is determined by the contents of `srImage`
+        - it `vkCmdDraw` with `gl_InstanceIndex` being the prim id
     - `vkCmdEndRenderPass`
   - `vkCmdPipelineBarrier`
   - it binds `computePipeline` and calls `vkCmdDispatch`
@@ -1237,6 +1260,23 @@ dEQP
     - `colorptr` is mapped `colorOutputBuffer`
     - `depthptr` is mapped `depthOutputBuffer`
     - `fillPtr` is mapped `srFillBuffer`
+- for this specific test on radv,
+  - `framebufferDim` is `4x4`
+  - `srTexelWidth x srTexelHeight` is `8x8`
+  - `srWidth x srHeight` is `1x1`
+  - pipeline rate is set by `vkCmdSetFragmentShadingRateKHR` and varies for
+    each 9 triangles
+  - primitive rate is set by `gl_PrimitiveShadingRateEXT` and is not set
+    - only gs/ms sets it to push const
+  - attachment rate is set by `srImage` contents and is 0
+    - `preRenderCommands` fills `0` to `srImage`
+  - the fs outputs
+    - `gl_FragDepth = float(instanceIndex) / float(81);`, where
+      `instanceIndex` is the triangle primid from 0 to 80
+    - `col0.x = gl_ShadingRateEXT;`
+    - `col0.y = 0;`
+    - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
+    - `col0.w` is the error code; non-zero means failure
 
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
