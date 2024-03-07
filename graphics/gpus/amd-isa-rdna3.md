@@ -4,6 +4,12 @@ RDNA3 Instruction Set Architecture
 ## Chapter 1. Introduction
 
 - 1.1. Terminology
+  - a workgroup is a collection of waves
+    - a wave is a collection of 32 or 64 work items
+    - a work item is aka thread, lane, etc.
+  - a shader engine is a collection of shader arrays
+    - a shader array is a collection of WGPs (compute unit pairs)
+    - a shader array is aka processor array
 - 1.2. Hardware Overview
   - block diagram
     - memory controller
@@ -11,13 +17,13 @@ RDNA3 Instruction Set Architecture
     - ultra-threaded dispatch processor
     - processor array consisting of WGPs, where each WGP consists of
       - CU pair
-      - Local Data Share
+      - LDS (Local Data Share)
     - caches
       - L2 RW
       - L1 RO
       - Constant
       - Instruction
-      - Global Data Share
+      - GDS (Global Data Share)
   - data paths
     - memory controller has direct access to
       - host cpu mmio
@@ -31,10 +37,23 @@ RDNA3 Instruction Set Architecture
       - L1 RO Cache
       - Instruction Cache
       - Constant Cache
+  - data sharing between work items
+    - each WGP (CU pair) has 128KB LDS shared by work items
+    - each SA (shader array) has 4KB GDS shared by WGPs
 
 ## Chapter 2. Shader Concepts
 
+- conceptually, the shader program (aka kernel) executes independently on each
+  work item
+  - SMEM instructions transfer data between memory and SGPRs
+  - VMEM instructions transfer data between memory and VGPRs
+  - SALU instructions operate on up to two operands, from SGPRs or literals
+  - VALU instructions operate on up to three operands, from VGPRs, SGPRs, or
+    literals
 - 2.1. Wave32 and Wave64
+  - a wave has 32 or 64 work items
+  - how Wave64 works is to issue each VMEM and VALU instruction twice, for the
+    lower half and the higher half of work items respectively
 - 2.2. Shader Types
 - 2.3. Work-groups
 - 2.4. Shader Padding Requirement
