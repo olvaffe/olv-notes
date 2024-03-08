@@ -340,6 +340,20 @@ Chromium Browser
   - OOP-VD moves accelerated video decoding from the gpu process to the
     utility process
 
+## Threads
+
+- <https://chromium.googlesource.com/chromium/src/+/HEAD/docs/threading_and_tasks.md>
+- <https://chromium.googlesource.com/chromium/src/+/HEAD/docs/callback.md>
+- browser process
+  - the main thread ends up in `BrowserMainLoop::RunMainMessageLoop`, running
+    `RunLoop`
+  - the io thread is created by `BrowserMainLoop::CreateThreads`
+  - the thread pool is created by `StartBrowserThreadPool`
+- gpu process
+  - the main thread ends up in `GpuMain`, running `RunLoop`
+  - the io thread is created by `ChildProcess`
+  - the thread pool is also created by `ChildProcess`
+
 ## Switches, Features, and Flags
 
 - switches
