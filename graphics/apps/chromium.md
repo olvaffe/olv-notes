@@ -12,7 +12,7 @@ Chromium Browser
   - `gclient runhooks`
 - update
   - `git pull --rebase`
-  - `gclient sync`
+  - `gclient sync -D`
 - setup
   - `gn gen out/Default`
   - the default will be a debug component build
@@ -82,7 +82,7 @@ Chromium Browser
     - `custom_vars`
       - `"cros_boards": "board1:board2"`
       - `"checkout_src_internal": True`
-        - might require `gsutil.py config`
+        - might require `gcloud auth login`
       - `"download_remoteexec_cfg": True`
     - `target_os = ["chromeos"]`
     - this affects what `DEPS` does when `gclient sync` runs
@@ -90,7 +90,7 @@ Chromium Browser
         - download the toolchain to `src/build/cros_cache`
         - download gn args to `src/build/args/chromeos`
         - create `src/out_$BOARD/Release/args.gn`
-  - `gclient sync`
+  - `gclient sync -D`
 - setup
   - `gn gen out_$BOARD/Release`
     - the pre-generated `args.gn` has
@@ -162,23 +162,6 @@ Chromium Browser
     - `is_official_build = true`
     - `use_thin_lto = true`
 
-## Versioning
-
-- `chrome/VERSION`
-  - `MAJOR` is incremented every 4 weeks
-  - `MINOR` is always 0
-  - `BUILD` is incremented every 12 hours
-  - `PATCH` is not used on main
-- branching
-  - when `BUILD` is incremented to `X+1`, it concludes the development of
-    BUILD `X`
-  - `refs/branch-heads/<X>` branch is created from some earlier commit
-    - the branch is not fetched by default
-  - a commit to add `chrome_branch_deps.json` is added and tagged on the
-    branch
-  - `PATCH` version is incremented once a day (or on-demand) if there are
-    changes
-
 ## Directory Structure
 
 - browsers
@@ -228,8 +211,6 @@ Chromium Browser
   - `//net` provides network support
     - fetch a resource over http/ftp/etc.
   - `//services` provides foundation services
-  - `//third_party/blink` provides the blink renderer
-  - `//third_party/dawn` provides webgpu support
   - `//url` provides url parsing support
   - `//v8` provides v8 javascript engine
 - low-level internal components
@@ -240,7 +221,7 @@ Chromium Browser
   - `//gpu` provides gpu support
   - `//media` provides media (audio, video, camera, etc.) support
   - `//sandbox` provides sandboxing support
-  - `//skia` provides skia with extensions
+  - `//skia` provides skia extensions
   - `//ui` provides ui support
     - `//ui/ozone` provides window system support
 - misc
@@ -253,83 +234,111 @@ Chromium Browser
   - `//styleguide` provides the style guide
   - `//testing` provides testing tools
   - `//third_party` consists of third-party projects
+    - `//third_party/angle` provides gles (for webgl and skia-gl)
+    - `//third_party/blink` provides the blink renderer
+    - `//third_party/dawn` provides webgpu support
+    - `//third_party/skia` provides 2D graphics (with gles and vk backends)
   - `//tools` provides dev tools
+
+## Versioning
+
+- `chrome/VERSION`
+  - `MAJOR` is incremented every 4 weeks
+  - `MINOR` is always 0
+  - `BUILD` is incremented every 12 hours
+  - `PATCH` is not used on main
+- branching
+  - when `BUILD` is incremented to `X+1`, it concludes the development of
+    BUILD `X`
+  - `refs/branch-heads/<X>` branch is created from some earlier commit
+    - the branch is not fetched by default
+  - a commit to add `chrome_branch_deps.json` is added and tagged on the
+    branch
+  - `PATCH` version is incremented once a day (or on-demand) if there are
+    changes
 
 ## Multi-process architecture
 
 - every process is an instance of `chrome`, the executable/dll
 - the type (browser/render/gpu/...) of a process is determined by its command
-  line switch, `-type <type>`
-- gpu process history
-  - initially,
-    - the gpu process provides remote gles
-      - clients use a gles implementation that serializes commands into
-        command buffers
-      - the gpu process deserializes command buffers and executes the gles
-        command
-      - that is, a client serializes commands into `CommandBufferProxyImpl`
-        and the gpu process deserializes them from `GLES2CommandBufferStub`
-    - the per-tab renderer process runs the renderer compositor
-      - the renderer comopsitor composites html elements into a frame
-      - it uses skia-over-gles which the gles impl is remote
-      - frames are submitted to the browser process
-        - renderer: `blink -> LayerTreeHost -> LayerTreeHostImpl -> ClientLayerTreeFrameSink`
-        - browser: `RenderWidgetHostImpl -> RenderWidgetHostViewAura -> DelegatedFrameHost -> CompositorFrameSinkSupport`
-    - the ui thread in the browser process runs the ui compositor and the
-      display compositor
-      - the ui compositor draws the ui
-      - the display compositor composites renderer frames and the ui frames
-      - when gpu compositing, it uses skia-over-gles where the gles impl is
-        remote
-      - the ui compositor submits `CompositorFrame` to
-        `DirectLayerTreeFrameSink` which submits it to
-        `CompositorFrameSinkSupport`
-      - the display compositor has
-        `HostFrameSinkManager`/`FrameSinkManagerImpl` and
-        `GpuProcessTransportFactory`/`viz::Display`
-  - OOP-D, Out-Of-Process Display Compositor
-    - the display compositor is moved from the ui thread in the browser
-      process to a new `VizCompositorThread` thread in the gpu process
-      - because the new thread and the main thread are both in the gpu
-        process, a new `InProcessCommandBuffer` is introduced in place of
-        `CommandBufferProxyImpl` and `GLES2CommandBufferStub`
-      - `HostFrameSinkManager` is in the browser process and
-        `FrameSinkManagerImpl` is in the gpu process
-        - the ipc is `mojom::FrameSinkManager` and
-          `mojom::FrameSinkManagerClient`
-      - `VizProcessTransportFactory` is in the browser process and
-        `RootCompositorFrameSinkImpl`/`viz::Display` is in the gpu process
-        - the ipc is `mojom::DisplayPrivate`
-    - the per-tab renderer process runs the renderer compositor
-      - there is almost no change to the renderer compositor
-      - except `CompositorFrame` is submitted to the gpu process directly
-    - the ui thread in the browser process runs the ui compositor
-      - `ClientLayerTreeFrameSink` is in the browser process and
-        `RootCompositorFrameSinkImpl`/`CompositorFrameSinkSupport` is in the
-        gpu process
-        - the ipc is `mojom::CompositorFrameSink` and `mojom::CompositorFrameSinkClient`
-  - OOP-R, Out-Of-Process Rasterization
-    - the motivation is skia-vk
-    - the renderer process raster pipeline is
-      - paint to `SkPicture`
-      - raster task
-      - raster with skia
-      - serialize to gles2 command buffer
-      - gl in gpu process
-    - with oopr, it becomes
-      - pait to paint ops
-      - raster task
-      - serialize to raster command buffer
-      - raster with skia in gpu process
-    - paint ops
+  line switch, `--type <type>`
+- initially,
+  - the gpu process provides remote gles
+    - clients use a gles implementation that serializes commands into
+      command buffers
+    - the gpu process deserializes command buffers and executes the gles
+      command
+    - that is, a client serializes commands into `CommandBufferProxyImpl`
+      and the gpu process deserializes them from `GLES2CommandBufferStub`
+  - the per-tab renderer process runs the renderer compositor
+    - the renderer comopsitor composites html elements into a frame
+    - it uses skia-over-gles which the gles impl is remote
+    - frames are submitted to the browser process
+      - renderer: `blink -> LayerTreeHost -> LayerTreeHostImpl -> ClientLayerTreeFrameSink`
+      - browser: `RenderWidgetHostImpl -> RenderWidgetHostViewAura -> DelegatedFrameHost -> CompositorFrameSinkSupport`
+  - the ui thread in the browser process runs the ui compositor and the
+    display compositor
+    - the ui compositor draws the ui
+    - the display compositor composites renderer frames and the ui frames
+    - when gpu compositing, it uses skia-over-gles where the gles impl is
+      remote
+    - the ui compositor submits `CompositorFrame` to
+      `DirectLayerTreeFrameSink` which submits it to
+      `CompositorFrameSinkSupport`
+    - the display compositor has
+      `HostFrameSinkManager`/`FrameSinkManagerImpl` and
+      `GpuProcessTransportFactory`/`viz::Display`
+- OOP-D, Out-Of-Process Display Compositor
+  - the display compositor is moved from the ui thread in the browser
+    process to a new `VizCompositorThread` thread in the gpu process
+    - because the new thread and the main thread are both in the gpu
+      process, a new `InProcessCommandBuffer` is introduced in place of
+      `CommandBufferProxyImpl` and `GLES2CommandBufferStub`
+    - `HostFrameSinkManager` is in the browser process and
+      `FrameSinkManagerImpl` is in the gpu process
+      - the ipc is `mojom::FrameSinkManager` and
+        `mojom::FrameSinkManagerClient`
+    - `VizProcessTransportFactory` is in the browser process and
+      `RootCompositorFrameSinkImpl`/`viz::Display` is in the gpu process
+      - the ipc is `mojom::DisplayPrivate`
+  - the per-tab renderer process runs the renderer compositor
+    - there is almost no change to the renderer compositor
+    - except `CompositorFrame` is submitted to the gpu process directly
+  - the ui thread in the browser process runs the ui compositor
+    - `ClientLayerTreeFrameSink` is in the browser process and
+      `RootCompositorFrameSinkImpl`/`CompositorFrameSinkSupport` is in the
+      gpu process
+      - the ipc is `mojom::CompositorFrameSink` and `mojom::CompositorFrameSinkClient`
+- OOP-R, Out-Of-Process Rasterization
+  - the motivation is skia-vk
+  - the renderer process raster pipeline was
+    - paint to `SkPicture`
+    - raster task
+      - skia-gl serialize to gles2 command buffer
+    - gpu process deserializes and executes gles2 commands
+  - with oopr, it becomes
+    - pait to paint ops
       - `SkCanvas -> PaintCanvas`
       - `SkPaint -> PaintFlags`
       - `SkPicture -> PaintRecord/PaintOpBuffer`
       - `SkShader -> PaintShader`
       - `SkImage -> PaintImage`
-  - OOP-C, Out-Of-Process Rasterization for Canvas
-    - OOP-R applies to the rasterization of non-canvas HTML elements
-    - OOP-C applies to the rasterization of 2D canvas
+    - raster task
+      - serialize to raster command buffer
+    - gpu processs deserializes and executes raster commands using skia-gl or
+      skia-vk
+  - `UseRasterDecoderForBrowserContext` feature
+    - the browser uses raster command buffer rather than gles2 command buffer
+      to draw the ui
+- OOP-C, Out-Of-Process Rasterization for Canvas
+  - OOP-R applies to the rasterization of non-canvas HTML elements
+  - OOP-C applies to the rasterization of 2D canvas
+- OOP-VD, Out-Of-Process Video Decode
+  - OOP-D moves the display compositor from the browser process to the gpu process
+  - OOP-R and OOP-C move rasterization from the renderer process to the gpu
+    process
+  - OOP-VD moves accelerated video decoding from the gpu process to the
+    utility process
 
 ## Switches, Features, and Flags
 
@@ -358,7 +367,7 @@ Chromium Browser
       - `FEATURE_DISABLED_BY_DEFAULT` defaults to disabled
   - <https://chromium.googlesource.com/chromium/src/+/main/testing/variations/>
     - `VariationsFieldTrialCreatorBase::SetUpFieldTrials` sets up field trials
-    - on a on-chrome dev build, `FIELDTRIAL_TESTING_ENABLED` is set by default
+    - on a non-chrome dev build, `FIELDTRIAL_TESTING_ENABLED` is set by default
       - `VariationsFieldTrialCreatorBase::ApplyFieldTrialTestingConfig`
         applies the testing config generated from
         `fieldtrial_testing_config.json`
@@ -367,16 +376,15 @@ Chromium Browser
   - each flag is associated with a switch or a feature
     - it provides a means to set switches/features persistently
     - not all switches/features have associated flags
-- `chrome://about`
-  - `chrome://version`
-  - `chrome://gpu`
-  - `chrome://policy`
-  - `chrome://flags`
 - gpu
   - <https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/debugging_gpu_related_code.md>
   - `--disable-gpu-sandbox`
   - `--no-sandbox`
-  - `--enable-features=Vulkan`
+  - `--enable-features=Vulkan,DefaultANGLEVulkan,VulkanFromANGLE`
+    - `Vulkan` uses skia-vk rather than skia-gl
+    - `DefaultANGLEVulkan` usea angle-vk rather than angle-gl (passthrough)
+    - `VulkanFromANGLE` makes skia-vk and angle-vk share VkInstance and
+      VkDevice
   - `--disable-gpu-process-crash-limit`
 - logging
   - `--enable-logging=stderr`
@@ -399,6 +407,24 @@ Chromium Browser
   - `DLOG` and `DVLOG` are enabled when `DCHECK_ALWAYS_ON` is enabled at
     compile time and the respective sevrity/verbosity is enabled at runtime
 
+## WebUI
+
+- <https://chromium.googlesource.com/chromium/src/+/main/docs/webui_explainer.md>
+- `chrome:` protocol
+  - `chrome://about`
+  - `chrome://version`
+  - `chrome://gpu`
+  - `chrome://policy`
+  - `chrome://flags`
+  - more
+- `chrome://gpu`
+  - `RegisterContentWebUIConfigs` registers `GpuInternalsUIConfig` to handle
+    `chrome://gpu`
+  - when the url is requested, `config->CreateWebUIController` creates a
+    `GpuInternalsUI`
+  - `GpuInternalsUI` loads resources (html) from
+    `content/browser/resources/gpu`
+
 ## Startup
 
 - `chrome/app` defines the entrypoint
@@ -409,36 +435,49 @@ Chromium Browser
   - `content_main.cc` defines `ContentMain` and calls `RunContentProcess`
   - `RunContentProcess` calls `ContentMainRunner::{Initialize,Run}`
   - `content_main_runner_impl.cc` defines `ContentMainRunnerImpl::{Initialize,Run}`
-    - because `process_type.empty()`, it enters `RunBrowser`,
+    - `Initialize` calls `ChromeMainDelegate::PreSandboxStartup` which calls
+      `crash_reporter::InitializeCrashpad` to fork `chrome_crashpad_handler`
+    - because `process_type.empty()` is true, `Initialize` calls
+      `InitializeZygoteSandboxForBrowserProcess` to fork two zygote processes
+    - because `process_type.empty()` is true, `Run` calls `RunBrowser`,
       `RunBrowserProcessMain`, and `BrowserMain`
+      - this process becomes the browser process
 - `content/browser` defines the browser process
   - `browser_main.cc` defines `BrowserMain` and calls
     `BrowserMainRunner::{Initialize,Run}`
   - `browser_main_runner_impl.cc` defines
     `BrowserMainRunnerImpl::{Initialize,Run}`
-  - `GpuDataManagerImpl` defines how to launch the gpu process
-    - `InitializeGpuModes` initializes the possible modes
-      - `gpu::GpuMode::HARDWARE_GL` is always on
-      - `gpu::GpuMode::HARDWARE_VULKAN` is based on
-        `ParseVulkanImplementationName`, which checks
-        `features::IsUsingVulkan` (`--enable-features=Vulkan`)
-  - `GpuProcessHost::Get` launches the gpu process on demand
-    - I guess this executes `chrome` again (or use the zygote) with
-      `--type=gpu-process`.  `ContentMainRunnerImpl::Run` calls
-      `RunOtherNamedProcessTypeMain` which calls `GpuMain`
+    - `Initialize` calls `BrowserMainLoop::CreateStartupTasks` for various
+      startup tasks
+      - `GpuDataManagerImpl::GetInstance` initializes `GpuDataManagerImpl`
+        which defines how to launch the gpu process
+        - `InitializeGpuModes` initializes the possible modes
+          - `gpu::GpuMode::HARDWARE_GL` is always on
+          - `gpu::GpuMode::HARDWARE_VULKAN` is based on
+            `ParseVulkanImplementationName`, which checks
+            `features::IsUsingVulkan` (`--enable-features=Vulkan`)
+      - `BrowserGpuChannelHostFactory::Initialize` establishes the gpu channel
+        - `GpuProcessHost::Get` launches the gpu process by calling
+          `LaunchGpuProcess`
+          - `ChildProcessLauncherHelper::LaunchProcessOnLauncherThread` calls
+            `ZygoteCommunication::ForkRequest` or `base::LaunchProcess` to
+            fork the gpu process
+          - because of `--type=gpu-process`, the gpu process's
+            `ContentMainRunnerImpl::Run` calls `RunOtherNamedProcessTypeMain`
+            which calls `GpuMain`
 - `content/gpu` defines the gpu process
   - `gpu_main.cc` defines `GpuMain` and calls `GpuInit::InitializeAndStartSandbox`
-  - stack on cros
-    - `base::RunLoop::Run()`
-    - `content::GpuMain()`
-    - `content::RunZygote()`
-    - `content::RunOtherNamedProcessTypeMain()`
-    - `content::ContentMainRunnerImpl::Run()`
-    - `content::RunContentProcess()`
-    - `content::ContentMain()`
-    - `ChromeMain`
-- `gpu/ipc` defines the `GpuInit` class
-  - `service/gpu_init.cc` defines `GpuInit::InitializeAndStartSandbox`
+    - stack on cros
+      - `base::RunLoop::Run()`
+      - `content::GpuMain()`
+      - `content::RunZygote()`
+      - `content::RunOtherNamedProcessTypeMain()`
+      - `content::ContentMainRunnerImpl::Run()`
+      - `content::RunContentProcess()`
+      - `content::ContentMain()`
+      - `ChromeMain`
+  - `gpu/ipc` defines the `GpuInit` class
+    - `service/gpu_init.cc` defines `GpuInit::InitializeAndStartSandbox`
 
 ## GPU and Initialization
 
