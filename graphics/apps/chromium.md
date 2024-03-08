@@ -505,8 +505,58 @@ Chromium Browser
       - `DrmThreadProxy` is created
       - `GbmSurfaceFactory` is created
       - `DrmOverlayManagerGpu` is created
+  - `gl::init::InitializeStaticGLBindingsOneOff` loads EGL/GLES
+    - nowadays, `kGLImplementationEGLANGLE` is used and this loads angle
+      shipped with chrome
+    - `GetRequestedGLImplementation` returns the `GLImplementationParts`
+      - `GetAllowedGLImplementations` returns allowed implementations and is
+        platform-specific on ozone
+      - because angle and cmd passthrough are both enabled, angle
+        implementations are moved to the head of the vector
+      - if `--use-gl=foo` is specified,
+        `GetRequestedGLImplementationFromCommandLine` return `foo` impl
+      - otherwise, it falls back to the first implementation
+        - on drm, it is `kGLImplementationEGLANGLE` and
+          `ANGLEImplementation::kDefault`
+        - on wayland, it is `kGLImplementationEGLANGLE` and
+          `gl::ANGLEImplementation::kOpenGL`
+    - `InitializeStaticGLBindingsImplementation`
+      - this calls `GLOzoneEGL::InitializeStaticGLBindings` on drm and wayland
+      - on both platforms, `LoadDefaultEGLGLES2Bindings` is used to dlopen
+        angle's `libEGL.so` and `libGLESv2.so`
+  - `gl::init::InitializeGLNoExtensionsOneOff` initializes EGL display
+    - on ozone, `InitializeGLOneOffPlatform` calls
+      - `GetDisplayInitializationParams` to collect supported `DisplayType`s
+        - it often returns `ANGLE_OPENGL`, `ANGLE_OPENGLES`, and `ANGLE_VULKAN`
+        - it checks for allowed implementations and angle's EGL client
+          extensions
+          - `EGL_ANGLE_platform_angle`
+          - `EGL_ANGLE_platform_angle_opengl`
+          - `EGL_ANGLE_platform_angle_vulkan`
+          - `EGL_ANGLE_platform_angle_device_type_egl_angle`
+      - `GLOzoneEGL::InitializeGLOneOffPlatform` to initialize a display
+        - it calls `GLDisplayEGL::Initialize` which calls `eglInitialize`
+  - `use_passthrough_cmd_decoder` means chrome decodes and passes through
+    gles2 cmds to the driver without validation
+    - the idea is, when the driver is angle, angle will validate
+  - `CollectGraphicsInfo` creates a temp EGL surface/context to query driver
+    GL caps
+  - `ComputeGpuFeatureInfo` is based on driver GL caps with driver WAs applied
+  - if vulkan is enabled, `InitializeVulkan` loads vk and initializes a vk
+    instance
+    - `VulkanInstance::InitializeInstance` reuses the vk instance from
+      angle when `VulkanFromANGLE` is enabled
+  - `gl::init::InitializeExtensionSettingsOneOffPlatform` parses EGL
+    extensions
+  - `gl::init::CreateOffscreenGLSurface` creates a offscreen EGL surface
+    - it is either pbuffer or no surface at all if the driver supports
+      surfaceless
 - `GpuChildThread` starts the gpu (main) thread
   - `GpuChildThread` has a `VizMainImpl`
+  - `VizMainImpl::VizMainImpl` creates a `GpuServiceImpl`
+
+## GPU and Ozone
+
 - `SurfaceFactoryOzone::GetGLOzone`
   - on wayland, `GLOzoneEGLWayland` is returned
   - on cros, `GLOzoneEGLGbm` is returned
@@ -556,6 +606,9 @@ Chromium Browser
     - `viz::OutputPresenterGL::AllocateImages()`
   - other places such as `OzoneImageBacking::UploadFromMemory` call
     `ProduceSkiaGanesh` which also import the native pixmap
+
+## GPU and Mojo
+
 - clients
   - there is a priviledged client from the browser process
     - the browser process has a `GpuHostImpl` that implements `mojom::GpuHost`
@@ -575,39 +628,6 @@ Chromium Browser
       - `GpuChannelManager::EstablishChannel` in the gpu process
       - create a `GpuChannel` in the gpu process
       - create a `GpuChannelHost` in the renderer process
-
-## GPU and GL
-
-- GL is initialized in `GpuInit::InitializeAndStartSandbox`
-- `gl::init::InitializeStaticGLBindingsOneOff` loads GL
-  - `GetRequestedGLImplementation` returns the `GLImplementationParts`
-    - `GetAllowedGLImplementations` returns allowed implementations and is
-      platform-specific on ozone
-    - because angle and cmd passthrough are both enabled, angle
-      implementations are moved to the head of the vector
-    - if `--use-gl=foo` is specified,
-      `GetRequestedGLImplementationFromCommandLine` return `foo` impl
-    - otherwise, it falls back to the first implementation
-      - on drm, it is `kGLImplementationEGLANGLE` and
-        `ANGLEImplementation::kDefault`
-      - on wayland, it is `kGLImplementationEGLANGLE` and
-        `gl::ANGLEImplementation::kOpenGL`
-  - `InitializeStaticGLBindingsImplementation`
-    - this calls `GLOzoneEGL::InitializeStaticGLBindings` on drm and wayland
-    - on both platforms, `LoadDefaultEGLGLES2Bindings` is used to dlopen
-      angle's `libEGL.so` and `libGLESv2.so`
-- `gl::init::InitializeGLNoExtensionsOneOff` initializes GL
-  - on ozone, `InitializeGLOneOffPlatform` calls
-    - `GetDisplayInitializationParams` to collect supported `DisplayType`s
-      - it often returns `ANGLE_OPENGL`, `ANGLE_OPENGLES`, and `ANGLE_VULKAN`
-      - it checks for allowed implementations and angle's EGL client
-        extensions
-        - `EGL_ANGLE_platform_angle`
-        - `EGL_ANGLE_platform_angle_opengl`
-        - `EGL_ANGLE_platform_angle_vulkan`
-        - `EGL_ANGLE_platform_angle_device_type_egl_angle`
-    - `GLOzoneEGL::InitializeGLOneOffPlatform` to initialize a display
-      - it calls `GLDisplayEGL::Initialize` which calls `eglInitialize`
 
 ## GPU and viz
 
