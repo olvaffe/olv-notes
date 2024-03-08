@@ -609,25 +609,52 @@ Chromium Browser
 
 ## GPU and Mojo
 
-- clients
-  - there is a priviledged client from the browser process
-    - the browser process has a `GpuHostImpl` that implements `mojom::GpuHost`
-    - `GpuHostImpl` calls `VizMain::CreateGpuService` to create a `GpuService`
-      in the gpu process
-  - there is a public client for each renderer process
-    - `RenderThreadImpl::Init` calls `viz::Gpu::Create` to create a `viz::Gpu`
-    - that creates a `viz::GpuClient` in the browser process
-    - `viz::GpuClient` communites with `viz::GpuHostImpl` in the browser
+- viz privileged interfaces
+  - these are between browser and gpu processes
+  - `interface GpuHost`
+    - browser process has a `content::GpuProcessHost` to manage the gpu
       process
-    - gpu channel
-      - `RenderThreadImpl::EstablishGpuChannel` in renderer process
-      - `Gpu::EstablishGpuChannel` in renderer process
-      - `GpuClient::EstablishGpuChannel` in the browser process
-      - `GpuHostImpl::EstablishGpuChannel` in the browser process
-      - `GpuServiceImpl::EstablishGpuChannel` in the gpu process
-      - `GpuChannelManager::EstablishChannel` in the gpu process
-      - create a `GpuChannel` in the gpu process
-      - create a `GpuChannelHost` in the renderer process
+    - `content::GpuProcessHost` has a `viz::GpuHostImpl` to implement
+      `mojom::GpuHost` interface
+  - `interface VizMain`
+    - gpu process has a `viz::VizMainImpl` to implement `mojom::VizMain`
+      interface
+  - `interface GpuService`
+    - gpu process also a `viz::GpuServiceImpl` to implement
+      `mojom::GpuService` interface
+    - browser `GpuHostImpl::GpuHostImpl` calls gpu
+      `VizMainImpl::CreateGpuService` to initialize `viz::GpuServiceImpl`
+- public interfaces
+  - these are between browser and renderer processes
+  - `interface Gpu` and `interface GpuMemoryBufferFactory`
+    - browser process has a `RenderProcessHostImpl` to manage each renderer
+      process
+    - each `RenderProcessHostImpl` has a `viz::GpuClient` to implement both
+      `mojom::Gpu` and `mojom::GpuMemoryBufferFactory` interfaces
+- gpu channel establishment
+  - renderer `RenderThreadImpl::Init` calls `viz::Gpu::Create` to create a
+    `viz::Gpu`
+  - renderer `content::RenderThreadImpl::EstablishGpuChannel`
+  - renderer `viz::Gpu::EstablishGpuChannel`
+  - renderer `viz::Gpu::GpuPtrIO::EstablishGpuChannel`
+  - browser `viz::GpuClient::EstablishGpuChannel`
+  - browser `viz::GpuHostImpl::EstablishGpuChannel`
+  - gpu `viz::GpuServiceImpl::EstablishGpuChannel`
+  - gpu `gpu::GpuChannelManager::EstablishChannel`
+    - create a `gpu::GpuChannel` in the gpu process
+    - create a `GpuChannelHost` in the renderer process
+- gpu memory buffer
+  - renderer `viz::Gpu::Gpu` also creates a `ClientGpuMemoryBufferManager`
+    - it wraps `mojom::GpuMemoryBufferFactory` and `mojom::ClientGmbInterface`
+    - both interfaces provide the same functionality, except
+      `mojom::GpuMemoryBufferFactory` communicates with the browser process
+      and `mojom::ClientGmbInterface` communicates with the gpu process
+    - nowadays, `UseClientGmbInterface` is on by default
+- gpu command buffer
+  - renderer creates a `ContextProviderCommandBuffer`
+    - it provides a gles context or a raster context over a command buffer to
+      the gpu process
+    - it internally has a `CommandBufferProxyImpl`
 
 ## GPU and viz
 
