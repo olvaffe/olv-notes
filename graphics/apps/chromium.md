@@ -737,6 +737,12 @@ Chromium Browser
     - it provides a gles context or a raster context over a command buffer to
       the gpu process
     - it internally has a `CommandBufferProxyImpl`
+  - renderer `gpu::CommandBufferProxyImpl::Initialize` calls `CreateCommandBuffer`
+  - gpu `gpu::GpuChannel::CreateCommandBuffer` creates a `CommandBufferStub`
+    to handle mojo messages
+    - it implements `mojom::CommandBuffer` interface
+    - it is one of `WebGPUCommandBufferStub`, `RasterCommandBufferStub`, or
+      `GLES2CommandBufferStub`
 
 ## GPU and viz
 
