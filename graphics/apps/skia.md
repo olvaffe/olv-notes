@@ -339,6 +339,13 @@ Skia
     - it is `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
   - `kRGB_888x_SkColorType` uses `Op::load_8888` and `Op::force_opaque`
   - `kBGRA_8888_SkColorType` uses `Op::load_8888` and `Op::swap_rb`
+- according to `docs/examples/Color_Type_*.cpp`,
+  - `kARGB_4444_SkColorType` is `VK_FORMAT_R4G4B4A4_UNORM_PACK16`
+  - `kBGRA_8888_SkColorType` is `VK_FORMAT_A8R8G8B8_UNORM_PACK32`
+  - `kRGB_565_SkColorType` is `VK_FORMAT_R5G6B5_UNORM_PACK16`
+  - `kRGBA_1010102_SkColorType` is `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
+  - `kRGBA_8888_SkColorType` is `VK_FORMAT_A8B8G8R8_UNORM_PACK32`
+  - `kRGBA_F16_SkColorType` is `VK_FORMAT_R16G16B16A16_SFLOAT`
 
 ## GPU
 
