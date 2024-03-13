@@ -1,6 +1,36 @@
 Mesa ANV
 ========
 
+## Build Deps
+
+- because of RT and indirect draw generation, anv has some new dependencies
+  - arch: `clang libclc llvm spirv-llvm-translator python-ply`
+    - 32-bit: `lib32-clang lib32-spirv-llvm-translator`
+  - debian: `libclang-dev libclang-cpp-dev libclc-16 libclc-16-dev libllvmspirvlib-16-dev python3-ply`
+- top-level meson
+  - `intel-clc` is `auto` by default
+    - `with_intel_clc` is true by default when anv or iris is enabled
+  - `intel-rt` is `auto` by default
+    - `with_intel_vk_rt` is true by default when anv is enabled
+  - as a result,
+    - `with_clc` is true by default
+      - this requires `libclc`, `llvm`, `clang`, and `clang-cpp`
+    - `with_opencl_spirv` is true by default
+      - this requires `SPIRV-Tools` and `LLVMSPIRVLib`
+- clc
+  - `clc_compile_c_to_spirv` uses `clang` and `libclc` to translate OpenCL C
+    to LLVM IR, and then uses `LLVMSPIRVLib` to translate LLVM IR to SPIR-V
+  - `nir_load_libclc_shader` reads the spirv provided by `libclc`, and
+    translates it to nir
+- intel-clc
+  - `intel_clc` is a standalone compiler that uses clc to translate OpenCL C
+    to SPIR-V, and use the intel backend compiler to translate SPIR-V to
+    binary
+- ray tracing
+  - intel-clc is used to compile CL code under `src/intel/vulkan/grl`
+- indirect draw generation
+  - intel-clc is used to compile CL code under `src/intel/shaders`
+
 ## Initialization
 
 - `anv_physical_device::info` is a `struct intel_device_info`
@@ -498,10 +528,3 @@ Mesa ANV
     - on mtl, it only returns `A0` or `B0`
   - once the stepping is known, `devinfo->workarounds` bitmask is initialized
 - `intel_needs_workaround` checks against `devinfo->workarounds`
-
-## Ray Tracing
-
-- because of RT, anv has some new dependencies
-  - arch: `clang libclc llvm spirv-llvm-translator python-ply`
-    - 32-bit: `lib32-clang lib32-spirv-llvm-translator`
-  - debian: `libclang-dev libclang-cpp-dev libclc-16 libclc-16-dev libllvmspirvlib-16-dev python3-ply`
