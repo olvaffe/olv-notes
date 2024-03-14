@@ -1,6 +1,113 @@
 GLSL
 ====
 
+## Chapter 1. Introduction
+
+- 1.1. Changes
+- 1.2. Overview
+- 1.3. Error Handling
+- 1.4. Typographical Conventions
+- 1.5. Deprecation
+
+## Chapter 2. Overview of Shading
+
+- 2.1. Vertex Processor
+- 2.2. Tessellation Control Processor
+- 2.3. Tessellation Evaluation Processor
+- 2.4. Geometry Processor
+- 2.5. Fragment Processor
+- 2.6. Compute Processor
+
+## Chapter 3. Basics
+
+- 3.1. Character Set and Phases of Compilation
+- 3.2. Source Strings
+- 3.3. Preprocessor
+- 3.4. Comments
+- 3.5. Tokens
+- 3.6. Keywords
+- 3.7. Identifiers
+- 3.8. Definitions
+
+## Chapter 4. Variables and Types
+
+- 4.1. Basic Types
+- 4.2. Scoping
+- 4.3. Storage Qualifiers
+- 4.4. Layout Qualifiers
+- 4.5. Interpolation Qualifiers
+- 4.6. Parameter Qualifiers
+- 4.7. Precision and Precision Qualifiers
+- 4.8. Variance and the Invariant Qualifier
+- 4.9. The Precise Qualifier
+- 4.10. Memory Qualifiers
+- 4.11. Specialization-Constant Qualifier
+- 4.12. Order and Repetition of Qualification
+- 4.13. Empty Declarations
+
+## Chapter 5. Operators and Expressions
+
+- 5.1. Operators
+- 5.2. Array Operations
+- 5.3. Function Calls
+- 5.4. Constructors
+- 5.5. Vector and Scalar Components and Length
+- 5.6. Matrix Components
+- 5.7. Structure and Array Operations
+- 5.8. Assignments
+- 5.9. Expressions
+- 5.10. Vector and Matrix Operations
+- 5.11. Out-of-Bounds Accesses
+- 5.12. Specialization-Constant Operations
+
+## Chapter 6. Statements and Structure
+
+- 6.1. Function Definitions
+- 6.2. Selection
+- 6.3. Iteration
+- 6.4. Jumps
+
+## Chapter 7. Built-In Variables
+
+- 7.1. Built-In Language Variables
+- 7.2. Compatibility Profile Vertex Shader Built-In Inputs
+- 7.3. Built-In Constants
+- 7.4. Built-In Uniform State
+- 7.5. Redeclaring Built-In Blocks
+
+## Chapter 8. Built-In Functions
+
+- 8.1. Angle and Trigonometry Functions
+- 8.2. Exponential Functions
+- 8.3. Common Functions
+- 8.4. Floating-Point Pack and Unpack Functions
+- 8.5. Geometric Functions
+- 8.6. Matrix Functions
+- 8.7. Vector Relational Functions
+- 8.8. Integer Functions
+- 8.9. Texture Functions
+- 8.10. Atomic Counter Functions
+- 8.11. Atomic Memory Functions
+- 8.12. Image Functions
+- 8.13. Geometry Shader Functions
+- 8.14. Fragment Processing Functions
+- 8.15. Noise Functions
+- 8.16. Shader Invocation Control Functions
+- 8.17. Shader Memory Control Functions
+- 8.18. Subpass-Input Functions
+- 8.19. Shader Invocation Group Functions
+
+## Chapter 9. Shading Language Grammar
+
+## Chapter 10. Acknowledgments
+
+## Chapter 11. Normative References
+
+## Chapter 12. Non-Normative SPIR-V Mappings
+
+- 12.1. Feature Comparisons
+- 12.2. Mapping from GLSL to SPIR-V
+
 ## GLSL (1.3)
 
 - Matrix

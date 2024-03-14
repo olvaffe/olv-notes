@@ -146,6 +146,208 @@ OpenGL
   - floating-pint RT
   - TBOs, multisample 2D array, cubemap arrays
 
+## Chapter 1. Introduction
+
+- 1.1. Formatting of the OpenGL Specification
+- 1.2. What is the OpenGL Graphics System?
+- 1.3. Related APIs
+- 1.4. Filing Bug Reports
+
+## Chapter 2. OpenGL Fundamentals
+
+- 2.1. Execution Model
+- 2.2. Command Syntax
+- 2.3. Command Execution
+- 2.4. Rendering Commands
+- 2.5. Context State
+- 2.6. Objects and the Object Model
+
+## Chapter 3. Dataflow Model
+
+## Chapter 4. Event Model
+
+- 4.1. Sync Objects and Fences
+- 4.2. Query Objects and Asynchronous Queries
+- 4.3. Time Queries
+
+## Chapter 5. Shared Objects and Multiple Contexts
+
+- 5.1. Object Deletion Behavior
+- 5.2. Sync Objects and Multiple Contexts
+- 5.3. Propagating Changes to Objects
+
+## Chapter 6. Buffer Objects
+
+- 6.1. Creating and Binding Buffer Objects
+- 6.2. Creating and Modifying Buffer Object Data Stores
+- 6.3. Mapping and Unmapping Buffer Data
+- 6.4. Effects of Accessing Outside Buffer Bounds
+- 6.5. Invalidating Buffer Data
+- 6.6. Copying Between Buffers
+- 6.7. Buffer Object Queries
+- 6.8. Buffer Object State
+
+## Chapter 7. Programs and Shaders
+
+- 7.1. Shader Objects
+- 7.2. Shader Binaries
+- 7.3. Program Objects
+- 7.4. Program Pipeline Objects
+- 7.5. Program Binaries
+- 7.6. Uniform Variables
+- 7.7. Atomic Counter Buffers
+- 7.8. Shader Buffer Variables and Shader Storage Blocks
+- 7.9. Invocation Groups
+- 7.10. Subroutine Uniform Variables
+- 7.11. Samplers
+- 7.12. Images
+- 7.13. Shader Memory Access
+- 7.14. Shader, Program, and Program Pipeline Queries
+- 7.15. Required State
+
+## Chapter 8. Textures and Samplers
+
+- 8.1. Texture Objects
+- 8.2. Sampler Objects
+- 8.3. Sampler Object Queries
+- 8.4. Pixel Rectangles
+- 8.5. Texture Image Specification
+- 8.6. Alternate Texture Image Specification Commands
+- 8.7. Compressed Texture Images
+- 8.8. Multisample Textures
+- 8.9. Buffer Textures
+- 8.10. Texture Parameters
+- 8.11. Texture Queries
+- 8.12. Depth Component Textures
+- 8.13. Cube Map Texture Selection
+- 8.14. Texture Minification
+- 8.15. Texture Magnification
+- 8.16. Combined Depth/Stencil Textures
+- 8.17. Texture Completeness
+- 8.18. Texture Views
+- 8.19. Immutable-Format Texture Images
+- 8.20. Invalidating Texture Image Data
+- 8.21. Clearing Texture Image Data
+- 8.22. Texture State and Proxy State
+- 8.23. Texture Comparison Modes
+- 8.24. sRGB Texture Color Conversion
+- 8.25. Shared Exponent Texture Color Conversion
+- 8.26. Texture Image Loads and Stores
+
+## Chapter 9. Framebuffers and Framebuffer Objects
+
+- 9.1. Framebuffer Overview
+- 9.2. Binding and Managing Framebuffer Objects
+- 9.3. Feedback Loops Between Textures and the Framebuffer
+- 9.4. Framebuffer Completeness
+- 9.5. Mapping between Pixel and Element in Attached Image
+- 9.6. Conversion to Framebuffer-Attachable Image Components
+- 9.7. Conversion to RGBA Values
+- 9.8. Layered Framebuffers
+
+## Chapter 10. Vertex Specification and Drawing Commands
+
+- 10.1. Primitive Types
+- 10.2. Current Vertex Attribute Values
+- 10.3. Vertex Arrays
+- 10.4. Drawing Commands Using Vertex Arrays
+- 10.5. Vertex Array and Vertex Array Object Queries
+- 10.6. Required State
+- 10.7
+- 10.8
+- 10.9. Conditional Rendering
+- 10.10. Submission Queries
+
+## Chapter 11. Programmable Vertex Processing
+
+- 11.1. Vertex Shaders
+- 11.2. Tessellation
+- 11.3. Geometry Shaders
+
+## Chapter 12
+
+## Chapter 13. Fixed-Function Vertex Post-Processing
+
+- 13.1
+- 13.2. The Last Vertex Processing Stage
+- 13.3. Transform Feedback
+- 13.4. Primitive Queries
+- 13.5. Transform Feedback Overflow Queries
+- 13.6. Flatshading
+- 13.7. Primitive Clipping
+- 13.8. Coordinate Transformations
+- 13.9
+
+## Chapter 14. Fixed-Function Primitive Assembly and Rasterization
+
+- 14.1 Discarding Primitives Before Rasterization
+- 14.2 Invariance
+- 14.3 Antialiasing
+- 14.4 Points
+- 14.5 Line Segments
+- 14.6 Polygons
+- 14.7
+- 14.8
+- 14.9 Early Per-Fragment Tests
+
+## Chapter 15. Programmable Fragment Processing
+
+- 15.1. Fragment Shader Variables
+- 15.2. Shader Execution
+- 15.3. Fragment Shader Queries
+
+## Chapter 16
+
+## Chapter 17. Writing Fragments and Samples to the Framebuffer
+
+- 17.1. Antialiasing Application
+- 17.2. Multisample Point Fade
+- 17.3. Per-Fragment Operations
+- 17.4. Whole Framebuffer Operations
+
+## Chapter 18. Reading and Copying Pixels
+
+- 18.1
+- 18.2. Reading Pixels
+- 18.3. Copying Pixels
+- 18.4. Pixel Draw and Read State
+
+## Chapter 19. Compute Shaders
+
+- 19.1. Compute Shader Variables
+- 19.2. Compute Shader Queries
+
+## Chapter 20. Debug Output
+
+- 20.1. Debug Messages
+- 20.2. Debug Message Callback
+- 20.3. Debug Message Log
+- 20.4. Controlling Debug Messages
+- 20.5. Externally Generated Messages
+- 20.6. Debug Groups
+- 20.7. Debug Labels
+- 20.8. Asynchronous and Synchronous Debug Output
+- 20.9. Debug Output Queries
+
+## Chapter 21. Special Functions
+
+- 21.1
+- 21.2
+- 21.3
+- 21.4
+- 21.5. Hints
+- 21.6
+
+## Chapter 22. Context State Queries
+
+- 22.1. Simple Queries
+- 22.2. Pointer, String, and Related Context Queries
+- 22.3. Internal Format Queries
+- 22.4. Transform Feedback State Queries
+- 22.5. Indexed Binding State Queries
+
+## Chapter 23. State Tables
+
 ## Core Profile
 
 - Deprecation Model

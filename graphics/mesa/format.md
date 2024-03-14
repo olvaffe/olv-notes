@@ -48,6 +48,22 @@ Mesa Formats
       `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
     - `AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM` is `VK_FORMAT_R5G6B5_UNORM_PACK16`
 - `WL_SHM_FORMAT`
+  - this is the same as `DRM_FORMAT`
+- `SkColorType`
+  - there is no rule because some color types are misnamed
+  - according to `docs/examples/Color_Type_*.cpp`
+    - `kRGBA_1010102_SkColorType` is `VK_FORMAT_A2B10G10R10_UNORM_PACK32`
+    - `kRGBA_8888_SkColorType` is `VK_FORMAT_A8B8G8R8_UNORM_PACK32`
+    - `kBGRA_8888_SkColorType` is `VK_FORMAT_A8R8G8B8_UNORM_PACK32`
+    - `kRGBA_F16_SkColorType` is `VK_FORMAT_R16G16B16A16_SFLOAT`
+    - `kARGB_4444_SkColorType` is `VK_FORMAT_R4G4B4A4_UNORM_PACK16`
+    - `kRGB_565_SkColorType` is `VK_FORMAT_R5G6B5_UNORM_PACK16`
+  - according to `GrColorType` and `SkColorTypeToGrColorType`,
+    - `kARGB_4444_SkColorType` should have been `kABGR_4444_SkColorType`
+    - `kRGB_565_SkColorType` should have been `kBGR_565_SkColorType`
+    - iow, `GrColorType` is fixed and has rules
+      - when channel size is 8 or less, the format is packed
+      - when packed, channels are given from the LSB to the MSB
 
 ## Internal Formats
 

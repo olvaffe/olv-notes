@@ -32,6 +32,70 @@ OpenCL
 - http://llvm.org/devmtg/2009-10/OpenCLWithLLVM.pdf (generic presentation about how Apple did their OpenCL Clang integration)
 - http://llvm.org/docs/CodeGenerator.html (how LLVM code generators work) 
 
+## Chapter 1. Introduction
+
+- 1.1. Normative References
+- 1.2. Version Numbers
+- 1.3. Unified Specification
+
+## Chapter 2. Glossary
+
+## Chapter 3. The OpenCL Architecture
+
+- 3.1. Platform Model
+- 3.2. Execution Model
+- 3.3. Memory Model
+- 3.4. The OpenCL Framework
+
+## Chapter 4. The OpenCL Platform Layer
+
+- 4.1. Querying Platform Info
+- 4.2. Querying Devices
+- 4.3. Partitioning a Device
+- 4.4. Contexts
+
+## Chapter 5. The OpenCL Runtime
+
+- 5.1. Command-Queues
+- 5.2. Buffer Objects
+- 5.3. Image Objects
+- 5.4. Pipes
+- 5.5. Querying, Unmapping, Migrating, Retaining and Releasing Memory Objects
+- 5.6. Shared Virtual Memory
+- 5.7. Sampler Objects
+- 5.8. Program Objects
+- 5.9. Kernel Objects
+- 5.10. Executing Kernels
+- 5.11. Event Objects
+- 5.12. Markers, Barriers and Waiting for Events
+- 5.13. Out-of-order Execution of Kernels and Memory Object Commands
+- 5.14. Profiling Operations on Memory Objects and Kernels
+- 5.15. Flush and Finish
+
+## Chapter 6. Associated OpenCL specification
+
+- 6.1. SPIR-V Intermediate Language
+- 6.2. Extensions to OpenCL
+- 6.3. The OpenCL C Kernel Language
+
+## Chapter 7. OpenCL Embedded Profile
+
+## Appendix A: Host environment and thread safety
+
+## Appendix B: Portability
+
+## Appendix C: Application Data Types
+
+## Appendix D: Checking for Memory Copy Overlap
+
+## Appendix E: Changes to OpenCL
+
+## Appendix F: Error Codes
+
+## Appendix G: Other Miscellaneous Enums
+
+## Appendix H: OpenCL 3.0 Backwards Compatibility
+
 ## Work-Groups
 
 - `clEnqueueNDRangeKernel`

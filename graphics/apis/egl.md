@@ -28,6 +28,42 @@ EGL
   - `EGL_KHR_get_all_proc_addresses`
   - `EGL_KHR_surfaceless_context`
 
+## Chapter 1. Overview
+
+## Chapter 2. EGL Operation
+
+- 2.1 Native Platforms and Rendering APIs
+- 2.2 Rendering Contexts and Drawing Surfaces
+- 2.3 Direct Rendering and Address Spaces
+- 2.4 Shared State
+- 2.5 EGLImages
+- 2.6 Multiple Threads
+- 2.7 Power Management
+- 2.8 Extensions
+
+## Chapter 3. EGL Functions and Errors
+
+- 3.1 Errors
+- 3.2 Initialization
+- 3.3 EGL Queries
+- 3.4 Configuration Management
+- 3.5 Rendering Surfaces
+- 3.6 Rendering to Textures
+- 3.7 Rendering Contexts
+- 3.8 Synchronization Primitives
+- 3.9 EGLImage Specification and Management
+- 3.10 Posting the Color Buffer
+- 3.11 Obtaining Function Pointers
+- 3.12 Releasing Thread State
+
+## Chapter 4. Extending EGL
+
+## Chapter 5. EGL Versions, Header Files, and Enumerants
+
+- 5.1 Header Files
+- 5.2 Compile-Time Version Detection
+- 5.3 Enumerant Values and Header Portability
+
 ## EGL
 
 - `eglSwapBuffers` posts color buffer to a native window.  It has no effect on
