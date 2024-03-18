@@ -23,6 +23,9 @@ GLSL
 - 3.1. Character Set and Phases of Compilation
 - 3.2. Source Strings
 - 3.3. Preprocessor
+  - `#version 130` is required for GLSL after 1.30
+    - 1.10 is assumed if not specified
+  - By default, `#extension all : disable` is declared
 - 3.4. Comments
 - 3.5. Tokens
 - 3.6. Keywords
@@ -31,19 +34,78 @@ GLSL
 
 ## Chapter 4. Variables and Types
 
+- all variables and functions must be declared before being used
+  - they must have types and optionally qualifiers
 - 4.1. Basic Types
+  - basic types
+    - void, bool, int, uint, float
+    - vec2, vec3, vec4, and boolean and signed/unsigned integer variants
+    - mat2, mat3, mat4, and matMxN (column major)
+    - samplers
+      - only in function parameters or uniforms
+    - struct
+    - NO pointers
+  - `mat2x3` is a 3 by 2 matrix.  That is, 3 rows and 2 columns.
+  - a matrix is initialized in a column major fashion, just as in
+    `glLoadMatrix`.
+    - unrelated, but recall that `glMultMatrix` is applied on the right side of
+      the current matrix
+  - there are texture-combined sampler types
+    - `gsampler*`
+    - both GL and VK use them
+  - there are also (separated) texture and sampler types
+    - VK only
+  - `layout(location=2, binding=3) uniform sampler2D s;`
+    - this binds the sampler to unit 3
+    - `glUniformi(2, 3)`
+  - Arrays
+    - arrays may be declared with or without a size
+    - an array without a size can only be indexed with a constant expression
+      - so that the compiler can derive its size
+  - implicit conversions
+    - int and uint to float
+    - ivec[234] and uvec[234] to vec[234]
 - 4.2. Scoping
 - 4.3. Storage Qualifiers
+  - local read/write memory if no qualifier
+  - `const`: a compile-time constant or a function parameter that is read-only
+  - `in`, `centroid in`: linkage into a shader from a previous stage
+    - `attribute`: deprecated
+    - `centroid`: is ignored for single-sample rasterization.  For multisample
+      rasterization, the interpolation must be evaluated at any location in the
+      pixel or any of the sample point, and the location must fall inside the
+      primitive.  When `centroid` is not given, the interpolation may be
+      evaluated at any location in the pixel or any of the sample point.
+  - `out`, `centroid out`: linkage out of a shader to a subsequent stage
+    - `varying`, `centroid varying`: deprecated
+  - `uniform`
+  - outputs from a VS and inputs to a FS can be further qualified with
+    - `smooth`: perspective correct interpolation
+    - `flat`: no interpolation
+    - `noperspective`: linear interpolation
+  - It is expected that the graphic hardware will have a small number of fixed
+    vector locations in FS.  Each non-matrix input variable takes up one such
+    location.  A matrix input takes up multisample locations, equal to the
+    number of columns.
 - 4.4. Layout Qualifiers
 - 4.5. Interpolation Qualifiers
 - 4.6. Parameter Qualifiers
+  - `in`, `out`, `inout`
 - 4.7. Precision and Precision Qualifiers
+  - `highp`, `mediump`, and `lowp`
+  - the syntax is defined, but it has not effect
+  - `precision <precision-qualifier> <type>` can change the default precision of
+    a type
 - 4.8. Variance and the Invariant Qualifier
+  - a output variable may have different values from the same expression in
+    different shaders.  To avoid that for multi-pass rendering, `invariant` may
+    be used.
 - 4.9. The Precise Qualifier
 - 4.10. Memory Qualifiers
 - 4.11. Specialization-Constant Qualifier
 - 4.12. Order and Repetition of Qualification
 - 4.13. Empty Declarations
+
 
 ## Chapter 5. Operators and Expressions
 
@@ -51,18 +113,36 @@ GLSL
 - 5.2. Array Operations
 - 5.3. Function Calls
 - 5.4. Constructors
+  - texture-combined sampler constructors
+    - a `sampler2D` can be constructed from a separated pair of `sampler s`
+      and `texture2D t` through `sampler2D(t, s)`
+    - VK only
 - 5.5. Vector and Scalar Components and Length
+  - vector components
+    - `{x,y,z,w}`
+    - `{r,g,b,a}`
+    - `{s,t,p,q}`
 - 5.6. Matrix Components
 - 5.7. Structure and Array Operations
 - 5.8. Assignments
 - 5.9. Expressions
 - 5.10. Vector and Matrix Operations
+  - Multiplications of two matrices or one matrix and one vector is defined in
+    `Expressions`
+    - A right vector operand is treated as a column vector.  A left vector operand
+      is treated as a row vector.
+    - the rule is the same as in math.
+    - the number of columns of the left operand must be the same as the number of
+      rows of the right operand.
+    - the result has the same number of rows as the left operand and the same
+      number of columns as the right operand
 - 5.11. Out-of-Bounds Accesses
 - 5.12. Specialization-Constant Operations
 
 ## Chapter 6. Statements and Structure
 
 - 6.1. Function Definitions
+  - functions can be overloaded
 - 6.2. Selection
 - 6.3. Iteration
 - 6.4. Jumps
@@ -70,6 +150,37 @@ GLSL
 ## Chapter 7. Built-In Variables
 
 - 7.1. Built-In Language Variables
+  - vs
+    - `gl_ClipDistance` must be written to for the user clip planes that are
+      enabled.  If not, the fixed-function may calculate the clip distances to
+      user planes from `gl_Position`, but it is deprecated.
+    - Why is `gl_Position` optional in GLSL 1.4?
+      - because it may be the GS to write it?
+  - fs
+    - `gl_PointCoord` is defined only for point sprite
+    - Why is `gl_FragColor` deprecated?
+      - `glBindFragDataLocation` can bind arbitrary output variable to a color
+        number.
+  - compute
+    - `in uvec3 gl_NumWorkGroups;`
+      - the numbers of work groups in each dimension, as specified by
+        `vkCmdDispatch`
+    - `const uvec3 gl_WorkGroupSize;`
+      - the sizes of a work group in each dimension, as specified by
+        `local_size_[xyz]`
+    - `in uvec3 gl_WorkGroupID;`
+      - the work group of the current invocation
+      - range is `[0, gl_NumWorkGroups)` for each dimension
+    - `in uvec3 gl_LocalInvocationID;`
+      - the work item in the work group of the current invocation
+      - range is `[0, gl_WorkGroupSize)` for each dimension
+    - `in uvec3 gl_GlobalInvocationID;`
+      - this is `gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID` which
+        uniquely identify the work item of the current invocation
+    - `in uint gl_LocalInvocationIndex;`
+      - this is `gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
+        gl_LocalInvocationID.y * gl_WorkGroupSize.x + gl_LocalInvocationID.x`
+        which is the 1D representation of `gl_LocalInvocationID`
 - 7.2. Compatibility Profile Vertex Shader Built-In Inputs
 - 7.3. Built-In Constants
 - 7.4. Built-In Uniform State
@@ -86,6 +197,29 @@ GLSL
 - 8.7. Vector Relational Functions
 - 8.8. Integer Functions
 - 8.9. Texture Functions
+  - to sample a texture-compined sampler, `texture()`
+  - `int/ivec* textureSize(gsampler* sampler[, int lod])`
+    - return the dimension of the texture
+  - `float/gvec4 texture(gsampler *sampler, float/vec* P[, float bias])`
+    - texture lookup
+  - `float/gvec4 textureProj(gsampler *sampler, float/vec* P[, float bias])`
+    - project `P` and then `texture`
+  - `float/gvec4 textureLod(gsampler *sampler, float/vec* P, float lod)`
+    - texture lookup with explicit lod
+  - `float/gvec4 textureOffset(gsampler *sampler, float/vec* P, int/ivec* offset[, float bias])`
+    - texture lookup with offset (to the texture coordinates)
+  - `textureProjOffset`: combination of `textureProj` and `textureOffset`
+  - `textureLodOffset`: combination of `textureLod` and `textureOffset`
+  - `textureProjLod`: combination of `textureProj` and `textureLod`
+  - `textureProjLodOffset`: combination of `textureProj`, `textureLod`, and `textureOffset`
+  - `textureGrad`
+    - texture lookup with explicit gradient
+  - `textureGradOffset`, `textureProjGrad`, `textureProjGradOffset`: blah
+  - `gvec4 texelFetch(gsampler *sampler, int/ivec P, int lod/sample)`
+    - fetch a texel
+  - `texelFetchOffset`: `texelFetch` with offset
+  - `texture1D*`, `texture2D*`, `texture3D*`, `textureCube*`, `shadow*`
+    - deprecated
 - 8.10. Atomic Counter Functions
 - 8.11. Atomic Memory Functions
 - 8.12. Image Functions
@@ -107,213 +241,6 @@ GLSL
 
 - 12.1. Feature Comparisons
 - 12.2. Mapping from GLSL to SPIR-V
-
-## GLSL (1.3)
-
-- Matrix
-  - `mat2x3` is a 3 by 2 matrix.  That is, 3 rows and 2 columns.
-  - a matrix is initialized in a column major fashion, just as in
-    `glLoadMatrix`.
-    - unrelated, but recall that `glMultMatrix` is applied on the right side of
-      the current matrix
-  - Multiplications of two matrices or one matrix and one vector is defined in
-    `Expressions`
-    - A right vector operand is treated as a column vector.  A left vector operand
-      is treated as a row vector.
-    - the rule is the same as in math.
-    - the number of columns of the left operand must be the same as the number of
-      rows of the right operand.
-    - the result has the same number of rows as the left operand and the same
-      number of columns as the right operand
-- `#version 130` is required for GLSL after 1.30
-  - 1.10 is assumed if not specified
-- different shaders linked together must have the same version
-- By default, `#extension all : disable` is declared
-- all variables and functions must be declared before being used
-  - they must have types and optionally qualifiers
-- basic types
-  - void, bool, int, uint, float
-  - vec2, vec3, vec4, and boolean and signed/unsigned integer variants
-  - mat2, mat3, mat4, and matMxN (column major)
-  - samplers
-    - only in function parameters or uniforms
-  - struct
-  - NO pointers
-- Arrays
-  - arrays may be declared with or without a size
-  - an array without a size can only be indexed with a constant expression
-    - so that the compiler can derive its size
-- implicit conversions
-  - int and uint to float
-  - ivec[234] and uvec[234] to vec[234]
-- storage qualifiers
-  - local read/write memory if no qualifier
-  - `const`: a compile-time constant or a function parameter that is read-only
-  - `in`, `centroid in`: linkage into a shader from a previous stage
-    - `attribute`: deprecated
-    - `centroid`: is ignored for single-sample rasterization.  For multisample
-      rasterization, the interpolation must be evaluated at any location in the
-      pixel or any of the sample point, and the location must fall inside the
-      primitive.  When `centroid` is not given, the interpolation may be
-      evaluated at any location in the pixel or any of the sample point.
-  - `out`, `centroid out`: linkage out of a shader to a subsequent stage
-    - `varying`, `centroid varying`: deprecated
-  - `uniform`
-  - outputs from a VS and inputs to a FS can be further qualified with
-    - `smooth`: perspective correct interpolation
-    - `flat`: no interpolation
-    - `noperspective`: linear interpolation
-- It is expected that the graphic hardware will have a small number of fixed
-  vector locations in FS.  Each non-matrix input variable takes up one such
-  location.  A matrix input takes up multisample locations, equal to the number
-  of columns.
-- parameter qualifiers
-  - `in`, `out`, `inout`
-- precision qualifiers
-  - `highp`, `mediump`, and `lowp`
-  - the syntax is defined, but it has not effect
-  - `precision <precision-qualifier> <type>` can change the default precision of
-    a type
-- invariant qualifiers
-  - a output variable may have different values from the same expression in
-    different shaders.  To avoid that for multi-pass rendering, `invariant` may
-    be used.
-- vector components
-  - `{x,y,z,w}`
-  - `{r,g,b,a}`
-  - `{s,t,p,q}`
-- functions
-  - functions can be overloaded
-- Built-in Variables
-  - VS special variables
-  
-      out vec4  gl_Position;       // must be written to
-      float     gl_PointSize;      // may be written to
-      in  int   gl_VertexID;
-      out float gl_ClipDistance[]; // may be written to
-      out vec4  gl_ClipVertex;     // may be written to, deprecated
-    - `gl_ClipDistance` must be written to for the user clip planes that are
-      enabled.  If not, the fixed-function may calculate the clip distances to
-      user planes from `gl_Position`, but it is deprecated.
-  - FS special variables
-  
-      in  vec4  gl_FragCoord;
-      in  bool  gl_FrontFacing;
-      in  float gl_ClipDistance[];
-      out vec4  gl_FragColor;                   // deprecated
-      out vec4  gl_FragData[gl_MaxDrawBuffers]; // deprecated
-      out float gl_FragDepth;
-  - VS built-in inputs
-
-      in vec4  gl_Color;          // deprecated
-      in vec4  gl_SecondaryColor; // deprecated
-      in vec3  gl_Normal;         // deprecated
-      in vec4  gl_Vertex;         // deprecated
-      in vec4  gl_MultiTexCoord0; // deprecated
-      in vec4  gl_MultiTexCoord1; // deprecated
-      in vec4  gl_MultiTexCoord2; // deprecated
-      in vec4  gl_MultiTexCoord3; // deprecated
-      in vec4  gl_MultiTexCoord4; // deprecated
-      in vec4  gl_MultiTexCoord5; // deprecated
-      in vec4  gl_MultiTexCoord6; // deprecated
-      in vec4  gl_MultiTexCoord7; // deprecated
-      in float gl_FogCoord;       // deprecated
-  - Built-in Uniform State
-    - a whole lot of uniforms for current matrices, material, and etc.  All
-      deprecated.
-  - Built-in VS output variables
-
-      out vec4  gl_FrontColor;          // deprecated
-      out vec4  gl_BackColor;           // deprecated
-      out vec4  gl_FrontSecondaryColor; // deprecated
-      out vec4  gl_BackSecondaryColor;  // deprecated
-      out vec4  gl_TexCoord[]; // deprecated, at most will be gl_MaxTextureCoords
-      out float gl_FogFragCoord;// deprecated
-  - Built-in FS input variables
-
-      in   vec2   gl_PointCoord;
-      in   float  gl_FogFragCoord;              //   deprecated
-      in   vec4   gl_TexCoord[];                //   deprecated
-      in   vec4   gl_Color;                     //   deprecated
-      in   vec4   gl_SecondaryColor;            //   deprecated
-    - `gl_PointCoord` is defined only for point sprite
-- Why is `gl_FragColor` deprecated?
-  - `glBindFragDataLocation` can bind arbitrary output variable to a color
-    number.
-- Why is `gl_Position` optional in GLSL 1.4?
-  - because it may be the GS to write it?
-
-## GLSL texture
-
-- `int/ivec* textureSize(gsampler* sampler[, int lod])`
-  - return the dimension of the texture
-- `float/gvec4 texture(gsampler *sampler, float/vec* P[, float bias])`
-  - texture lookup
-- `float/gvec4 textureProj(gsampler *sampler, float/vec* P[, float bias])`
-  - project `P` and then `texture`
-- `float/gvec4 textureLod(gsampler *sampler, float/vec* P, float lod)`
-  - texture lookup with explicit lod
-- `float/gvec4 textureOffset(gsampler *sampler, float/vec* P, int/ivec* offset[, float bias])`
-  - texture lookup with offset (to the texture coordinates)
-- `textureProjOffset`: combination of `textureProj` and `textureOffset`
-- `textureLodOffset`: combination of `textureLod` and `textureOffset`
-- `textureProjLod`: combination of `textureProj` and `textureLod`
-- `textureProjLodOffset`: combination of `textureProj`, `textureLod`, and `textureOffset`
-- `textureGrad`
-  - texture lookup with explicit gradient
-- `textureGradOffset`, `textureProjGrad`, `textureProjGradOffset`: blah
-- `gvec4 texelFetch(gsampler *sampler, int/ivec P, int lod/sample)`
-  - fetch a texel
-- `texelFetchOffset`: `texelFetch` with offset
-- `texture1D*`, `texture2D*`, `texture3D*`, `textureCube*`, `shadow*`
-  - deprecated
-
-## Chapter 4. Variables and Types
-
-- there are texture-combined sampler types
-  - `gsampler*`
-  - both GL and VK use them
-- there are also (separated) texture and sampler types
-  - VK only
-- `layout(location=2, binding=3) uniform sampler2D s;`
-  - this binds the sampler to unit 3
-  - `glUniformi(2, 3)`
-
-## Chapter 5. Operators and Expressions
-
-- texture-combined sampler constructors
-  - a `sampler2D` can be constructed from a separated pair of `sampler s` and
-    `texture2D t` through `sampler2D(t, s)`
-  - VK only
-
-## Chapter 6. Statements and Structure
-
-## Chapter 7. Built-In Variables
-
-- compute
-  - `in uvec3 gl_NumWorkGroups;`
-    - the numbers of work groups in each dimension, as specified by
-      `vkCmdDispatch`
-  - `const uvec3 gl_WorkGroupSize;`
-    - the sizes of a work group in each dimension, as specified by
-      `local_size_[xyz]`
-  - `in uvec3 gl_WorkGroupID;`
-    - the work group of the current invocation
-    - range is `[0, gl_NumWorkGroups)` for each dimension
-  - `in uvec3 gl_LocalInvocationID;`
-    - the work item in the work group of the current invocation
-    - range is `[0, gl_WorkGroupSize)` for each dimension
-  - `in uvec3 gl_GlobalInvocationID;`
-    - this is `gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID` which
-      uniquely identify the work item of the current invocation
-  - `in uint gl_LocalInvocationIndex;`
-    - this is `gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
-      gl_LocalInvocationID.y * gl_WorkGroupSize.x + gl_LocalInvocationID.x`
-      which is the 1D representation of `gl_LocalInvocationID`
-
-## Chapter 8. Built-In Functions
-
-- to sample a texture-compined sampler, `texture()`
 
 ## C Terminologies
 
