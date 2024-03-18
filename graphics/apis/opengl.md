@@ -150,24 +150,83 @@ OpenGL
 
 - 1.1. Formatting of the OpenGL Specification
 - 1.2. What is the OpenGL Graphics System?
+  - Programmer's View
+    - opengl expects hw framebuffer
+    - for most part, opengl provides immediate-mode interface
+    - calls to open a window into the framebuffer into which the program will draw
+    - calls to create a context and associate it with the window
+    - some calls draw simple geometric objects
+    - some calls affect how the geom. objects are rendered (colored, lit, or mapped)
+    - also calls to read/write framebuffer
+  - Implementator's View
+    - divide operations between HW and CPU
+    - maintains a large set of states, where some of them are directly controllable by users
+  - KRH's View
+    - a state machine that controls a set of drawing operations
 - 1.3. Related APIs
 - 1.4. Filing Bug Reports
 
 ## Chapter 2. OpenGL Fundamentals
 
 - 2.1. Execution Model
+  - GL draws primitives subject to a number of selectable modes
+  - primitives: point, line segment, polygon, pixel rectangle
+  - modes are independent from each other
+  - primitives are defined by vertices
+  - vertices is associated with data (positional and texture coord, colors,
+    normals)
+  - provides parameters such as transformation matrix, lightning,
+    antialiasing, and pixel update ops
+  - how GL is initialized, how large is the allocated window are not defined
+    here, but defined by the window system
 - 2.2. Command Syntax
+  - `rtype Name{1234}{bsifd ub us ui}{v}`
 - 2.3. Command Execution
+  - GL Errors
+    - only a subset of errors is detected
+    - when error happens, a flag is set and the error code is recorded
+    - further errors are ignored, until GetError is called
+    - however, there could be multiple flag-code pairs;  multiple GetError
+      clear and return each pairs
+  - Flushing
+    - `glFlush` flushes buffered commands.  It should be called before, for
+      example, the program waits for user input.
+    - `glFinish` returns only after all previous commands are executed.
+    - The buffer being drawn is controlled by `glDrawBuffer`, which is not
+      available in OpenGL ES.
 - 2.4. Rendering Commands
 - 2.5. Context State
+  - most are server states
+  - some are client states
 - 2.6. Objects and the Object Model
+
 
 ## Chapter 3. Dataflow Model
 
 ## Chapter 4. Event Model
 
 - 4.1. Sync Objects and Fences
+  - `glFenceSync` inserts a fence command in the GL command stream and associates
+    it wit the sync object.
 - 4.2. Query Objects and Asynchronous Queries
+  - Basic
+    - `glGenQueries`
+    - `glBeginQuery`
+    - `glEndQuery`
+    - `glDeleteQueries`
+    - It is asynchronous because a begin or command will be added to the command
+      queue when a query object begins or ends.  The query does not begin or end
+      immediately when the respective function is called.
+  - Primitive queries
+    - `GL_PRIMITIVES_GENERATED`
+    - `GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN`
+  - Occlusion queries
+    - `GL_SAMPLES_PASSED`
+    - `GL_ANY_SAMPLES_PASSED`
+  - Timer queries
+    - `GL_TIME_ELAPSED`
+    - `glQueryCounter`
+    - `glGetIntegerv(GL_TIMESTAMP)`
 - 4.3. Time Queries
 
 ## Chapter 5. Shared Objects and Multiple Contexts
@@ -233,244 +292,6 @@ OpenGL
 - 8.24. sRGB Texture Color Conversion
 - 8.25. Shared Exponent Texture Color Conversion
 - 8.26. Texture Image Loads and Stores
-
-## Chapter 9. Framebuffers and Framebuffer Objects
-
-- 9.1. Framebuffer Overview
-- 9.2. Binding and Managing Framebuffer Objects
-- 9.3. Feedback Loops Between Textures and the Framebuffer
-- 9.4. Framebuffer Completeness
-- 9.5. Mapping between Pixel and Element in Attached Image
-- 9.6. Conversion to Framebuffer-Attachable Image Components
-- 9.7. Conversion to RGBA Values
-- 9.8. Layered Framebuffers
-
-## Chapter 10. Vertex Specification and Drawing Commands
-
-- 10.1. Primitive Types
-- 10.2. Current Vertex Attribute Values
-- 10.3. Vertex Arrays
-- 10.4. Drawing Commands Using Vertex Arrays
-- 10.5. Vertex Array and Vertex Array Object Queries
-- 10.6. Required State
-- 10.7
-- 10.8
-- 10.9. Conditional Rendering
-- 10.10. Submission Queries
-
-## Chapter 11. Programmable Vertex Processing
-
-- 11.1. Vertex Shaders
-- 11.2. Tessellation
-- 11.3. Geometry Shaders
-
-## Chapter 12
-
-## Chapter 13. Fixed-Function Vertex Post-Processing
-
-- 13.1
-- 13.2. The Last Vertex Processing Stage
-- 13.3. Transform Feedback
-- 13.4. Primitive Queries
-- 13.5. Transform Feedback Overflow Queries
-- 13.6. Flatshading
-- 13.7. Primitive Clipping
-- 13.8. Coordinate Transformations
-- 13.9
-
-## Chapter 14. Fixed-Function Primitive Assembly and Rasterization
-
-- 14.1 Discarding Primitives Before Rasterization
-- 14.2 Invariance
-- 14.3 Antialiasing
-- 14.4 Points
-- 14.5 Line Segments
-- 14.6 Polygons
-- 14.7
-- 14.8
-- 14.9 Early Per-Fragment Tests
-
-## Chapter 15. Programmable Fragment Processing
-
-- 15.1. Fragment Shader Variables
-- 15.2. Shader Execution
-- 15.3. Fragment Shader Queries
-
-## Chapter 16
-
-## Chapter 17. Writing Fragments and Samples to the Framebuffer
-
-- 17.1. Antialiasing Application
-- 17.2. Multisample Point Fade
-- 17.3. Per-Fragment Operations
-- 17.4. Whole Framebuffer Operations
-
-## Chapter 18. Reading and Copying Pixels
-
-- 18.1
-- 18.2. Reading Pixels
-- 18.3. Copying Pixels
-- 18.4. Pixel Draw and Read State
-
-## Chapter 19. Compute Shaders
-
-- 19.1. Compute Shader Variables
-- 19.2. Compute Shader Queries
-
-## Chapter 20. Debug Output
-
-- 20.1. Debug Messages
-- 20.2. Debug Message Callback
-- 20.3. Debug Message Log
-- 20.4. Controlling Debug Messages
-- 20.5. Externally Generated Messages
-- 20.6. Debug Groups
-- 20.7. Debug Labels
-- 20.8. Asynchronous and Synchronous Debug Output
-- 20.9. Debug Output Queries
-
-## Chapter 21. Special Functions
-
-- 21.1
-- 21.2
-- 21.3
-- 21.4
-- 21.5. Hints
-- 21.6
-
-## Chapter 22. Context State Queries
-
-- 22.1. Simple Queries
-- 22.2. Pointer, String, and Related Context Queries
-- 22.3. Internal Format Queries
-- 22.4. Transform Feedback State Queries
-- 22.5. Indexed Binding State Queries
-
-## Chapter 23. State Tables
-
-## Core Profile
-
-- Deprecation Model
-  - some features are marked for deprecation in OpenGL 3.0
-  - most of them are removed from OpenGL 3.1 and are added back through `GL_ARB_compatibility`
-  - In OpenGL 3.2, removed features are only available in compatibility profile
-  - A forward-compatible context removes deprecated features, in addtion to removed features
-- Removed Features
-  - all objects must be pre-generated with `glGen*`
-  - no more color index mode
-  - GLSL 1.1 and 1.2
-  - glBegin and glEnd
-  - edge flags and fixed-function vertex processing
-    (`gl*Pointer`, `gl*ClientState`, matrix, frustum/ortho, lighting)
-  - client vertex and index arrays (must use buffer object)
-  - `glRect*`
-  - glRasterPos
-  - non-sprite point
-  - POLYGON, QUADS, `QUAD_STRIP`
-  - PolygonMode and PolygonStipple
-  - pixel transfer modes and operations
-  - pixel drawing
-  - bitmap
-  - legacy pixel formats - alpha, luminance, intensity
-  - depth texture mode
-  - texture CLAMP mode
-  - texture border
-  - automatic mipmap generation
-  - fixed-function fragment processing (TexEnv, Fog)
-  - alpha test
-  - accumulation buffers
-  - glCopyPixels
-  - auxiliary buffers
-  - evaluators
-  - selection and feedback modes
-  - display lists
-  - glHints
-  - attribute stack
-  - unified extension string
-  - (Deprecated only) glLineWidth
-
-## Chapter 2: OpenGL Fundamentals
-
-- Programmer's View
-  - opengl expects hw framebuffer
-  - for most part, opengl provides immediate-mode interface
-  - calls to open a window into the framebuffer into which the program will draw
-  - calls to create a context and associate it with the window
-  - some calls draw simple geometric objects
-  - some calls affect how the geom. objects are rendered (colored, lit, or mapped)
-  - also calls to read/write framebuffer
-- Implementator's View
-  - divide operations between HW and CPU
-  - maintains a large set of states, where some of them are directly controllable by users
-- KRH's View
-  - a state machine that controls a set of drawing operations
-- Fundamentals
-  - GL draws primitives subject to a number of selectable modes
-  - primitives: point, line segment, polygon, pixel rectangle
-  - modes are independent from each other
-  - primitives are defined by vertices
-  - vertices is associated with data (positional and texture coord, colors, normals)
-  - provides parameters such as transformation matrix, lightning, antialiasing, and pixel update ops
-  - how GL is initialized, how large is the allocated window are not defined here, but defined by the window system
-- States
-  - most are server states
-  - some are client states
-- syntax
-  - `rtype Name{1234}{bsifd ub us ui}{v}`
-- GL Errors
-  - only a subset of errors is detected
-  - when error happens, a flag is set and the error code is recorded
-  - further errors are ignored, until GetError is called
-  - however, there could be multiple flag-code pairs;  multiple GetError clear and return each pairs
-- Flushing
-  - `glFlush` flushes buffered commands.  It should be called before, for example,
-    the program waits for user input.
-  - `glFinish` returns only after all previous commands are executed.
-  - The buffer being drawn is controlled by `glDrawBuffer`, which is not
-    available in OpenGL ES.
-
-## Chapter 3: Dataflow Model
-
-- basic operation
-
-       > display list >
-      /                \
-    --------------------> evaluator -> per-vertex operation primitive assembly -> rasterization -> per-fragment operations -> framebuffer
-    									     /       ^
-                                                               pixel operations --- texture memory
-
-## Chapter 4: Event Model
-
-- Asynchronous queries
-  - Basic
-    - `glGenQueries`
-    - `glBeginQuery`
-    - `glEndQuery`
-    - `glDeleteQueries`
-    - It is asynchronous because a begin or command will be added to the command
-      queue when a query object begins or ends.  The query does not begin or end
-      immediately when the respective function is called.
-  - Primitive queries
-    - `GL_PRIMITIVES_GENERATED`
-    - `GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN`
-  - Occlusion queries
-    - `GL_SAMPLES_PASSED`
-    - `GL_ANY_SAMPLES_PASSED`
-  - Timer queries
-    - `GL_TIME_ELAPSED`
-    - `glQueryCounter`
-    - `glGetIntegerv(GL_TIMESTAMP)`
-- `glFenceSync` inserts a fence command in the GL command stream and associates
-  it wit the sync object.
-
-## Chapter 5: Shared Objects and Multiple Contexts
-
-## Chapter 6: Buffer Objects
-
-## Chapter 7: Programs and Shaders 
-
-## Chapter 8: Textures and Samplers 
-
 - From the hardware' view, each shader stage have fixed numbers of slots for
   samplers and resource views
   - A resource view is a view of a resource, with swizzling and etc.  It can be
@@ -521,7 +342,6 @@ OpenGL
       attributes
   - see `GL_ARB_fragment_program` to find out what operations use
     `GL_MAX_TEXTURE_COORDS` and what operations use `GL_MAX_TEXTURE_IMAGE_UNITS`
-
 - There are pixel storage operations and pixel transfer operations
   - the former affects things like LSB/MSB, byte swapping, etc.
 - Data in client buffer or PBO is said to be packed
@@ -635,10 +455,29 @@ OpenGL
     - r is the final value.  Its interpretation depends on
       `GL_DEPTH_TEXTURE_MODE`.
 
-## Chapter 9: Framebuffers and Framebuffer Objects
+## Chapter 9. Framebuffers and Framebuffer Objects
 
-## Chapter 10: Vertex Specification and Drawing Commands
+- 9.1. Framebuffer Overview
+- 9.2. Binding and Managing Framebuffer Objects
+- 9.3. Feedback Loops Between Textures and the Framebuffer
+- 9.4. Framebuffer Completeness
+- 9.5. Mapping between Pixel and Element in Attached Image
+- 9.6. Conversion to Framebuffer-Attachable Image Components
+- 9.7. Conversion to RGBA Values
+- 9.8. Layered Framebuffers
 
+## Chapter 10. Vertex Specification and Drawing Commands
+
+- 10.1. Primitive Types
+- 10.2. Current Vertex Attribute Values
+- 10.3. Vertex Arrays
+- 10.4. Drawing Commands Using Vertex Arrays
+- 10.5. Vertex Array and Vertex Array Object Queries
+- 10.6. Required State
+- 10.7
+- 10.8
+- 10.9. Conditional Rendering
+- 10.10. Submission Queries
 - The last paragraph of Vertex Specification says
   - 4 floats for each texture unit
   - 3 floats for normal
@@ -733,17 +572,40 @@ OpenGL
     bounding box of a complex object with occlusion query and then draw the
     object with conditional rendering.
 
-## Chapter 11: Programmable Vertex Processing
+## Chapter 11. Programmable Vertex Processing
 
-## Chapter 13: Fixed-Function Vertex Post-Processing
+- 11.1. Vertex Shaders
+- 11.2. Tessellation
+- 11.3. Geometry Shaders
 
-- Transform Feedback
+## Chapter 12
+
+## Chapter 13. Fixed-Function Vertex Post-Processing
+
+- 13.1
+- 13.2. The Last Vertex Processing Stage
+- 13.3. Transform Feedback
   - `glBeginTransformFeedback`
   - `glEndTransformFeedback`
   - `glTransformFeedbackVaryings`
+- 13.4. Primitive Queries
+- 13.5. Transform Feedback Overflow Queries
+- 13.6. Flatshading
+- 13.7. Primitive Clipping
+- 13.8. Coordinate Transformations
+- 13.9
 
-## Chapter 14: Fixed-Function Primitive Assembly and Rasterization
+## Chapter 14. Fixed-Function Primitive Assembly and Rasterization
 
+- 14.1 Discarding Primitives Before Rasterization
+- 14.2 Invariance
+- 14.3 Antialiasing
+- 14.4 Points
+- 14.5 Line Segments
+- 14.6 Polygons
+- 14.7
+- 14.8
+- 14.9 Early Per-Fragment Tests
 - Rasterization
   - a primitive is rasterized using solely the positions of the vertices.  Each
     pixel occupied by the primitive is passed to the fragment shader.
@@ -857,38 +719,132 @@ OpenGL
   - `GL_MAX_SAMPLES` maximum number of samples supported for multisampling
     - not a impl dependent value?
 
-## Chapter 15: Programmable Fragment Processing
+## Chapter 15. Programmable Fragment Processing
 
-## Chapter 17: Writing Fragments and Samples to the Framebuffer
+- 15.1. Fragment Shader Variables
+- 15.2. Shader Execution
+- 15.3. Fragment Shader Queries
 
-- Stencil and depth tests happen at fragment operation.
-- The depth buffer is used for depth test.  It is enabled by
-  `glEnable(GL_DEPTH_TEST)`.
-- For objects that have been drawn, their depth information is stored in the
-  depth buffer.  When a new object is to be drawn, only pixels with z satisfying
-  `glDepthFunc()` are drawn.
-- Stencil are used for multi-pass rendering.  The first pass draws some object
-  to the stencil buffer to create a mask.  The second pass draws another object
-  to the color buffer with the stencil buffer as the mask.
-- e.g. a ball is reflected by the floor.  We draw the floor to the stencil
-  buffer.  And then draw the reflection of the ball with the stencil buffer.
-- How to draw a scene with translucent objecsts
-  1. Draw opaque objects (the scene) first
-  2. Disable depth test
-  3. Draw translucent objects, from farthest to nearest
-- Lesson 09 of NeHe shows a cheap way to blend an irregular RGB (no alpha)
-  bitmap onto the scene.  It uses `glBlendFunc(GL_SRC_ALPHA, GL_ONE)`, with the
-  unwanted part of the bitmap being black.
+## Chapter 16
 
-## Chapter 18: Reading and Copying Pixels
+## Chapter 17. Writing Fragments and Samples to the Framebuffer
 
-- `glReadPixels` reads data from the frame buffer.
+- 17.1. Antialiasing Application
+- 17.2. Multisample Point Fade
+- 17.3. Per-Fragment Operations
+  - Stencil and depth tests happen at fragment operation.
+  - The depth buffer is used for depth test.  It is enabled by
+    `glEnable(GL_DEPTH_TEST)`.
+  - For objects that have been drawn, their depth information is stored in the
+    depth buffer.  When a new object is to be drawn, only pixels with z
+    satisfying `glDepthFunc()` are drawn.
+  - Stencil are used for multi-pass rendering.  The first pass draws some
+    object to the stencil buffer to create a mask.  The second pass draws
+    another object to the color buffer with the stencil buffer as the mask.
+    - e.g. a ball is reflected by the floor.  We draw the floor to the stencil
+      buffer.  And then draw the reflection of the ball with the stencil
+      buffer.
+  - How to draw a scene with translucent objecsts
+    1. Draw opaque objects (the scene) first
+    2. Disable depth test
+    3. Draw translucent objects, from farthest to nearest
+  - Lesson 09 of NeHe shows a cheap way to blend an irregular RGB (no alpha)
+    bitmap onto the scene.  It uses `glBlendFunc(GL_SRC_ALPHA, GL_ONE)`, with
+    the unwanted part of the bitmap being black.
+- 17.4. Whole Framebuffer Operations
 
-## Chapter 19: Compute Shaders
+## Chapter 18. Reading and Copying Pixels
 
-## Chapter 20: Debug Output
+- 18.1
+- 18.2. Reading Pixels
+  - `glReadPixels` reads data from the frame buffer.
+- 18.3. Copying Pixels
+- 18.4. Pixel Draw and Read State
 
-## Chapter 22:  Context State Queries
+## Chapter 19. Compute Shaders
+
+- 19.1. Compute Shader Variables
+- 19.2. Compute Shader Queries
+
+## Chapter 20. Debug Output
+
+- 20.1. Debug Messages
+- 20.2. Debug Message Callback
+- 20.3. Debug Message Log
+- 20.4. Controlling Debug Messages
+- 20.5. Externally Generated Messages
+- 20.6. Debug Groups
+- 20.7. Debug Labels
+- 20.8. Asynchronous and Synchronous Debug Output
+- 20.9. Debug Output Queries
+
+## Chapter 21. Special Functions
+
+- 21.1
+- 21.2
+- 21.3
+- 21.4
+- 21.5. Hints
+- 21.6
+
+## Chapter 22. Context State Queries
+
+- 22.1. Simple Queries
+- 22.2. Pointer, String, and Related Context Queries
+- 22.3. Internal Format Queries
+- 22.4. Transform Feedback State Queries
+- 22.5. Indexed Binding State Queries
+
+## Chapter 23. State Tables
+
+## Appendix A: Invariance
+
+## Appendix B: Corollaries
+
+## Appendix C: The OpenGL SPIR-V Execution Environment
+
+## Appendix D: Compressed Texture Image Formats
+
+## Appendix E: Profiles and the Deprecation Model
+
+- Deprecation Model
+  - some features are marked for deprecation in OpenGL 3.0
+  - most of them are removed from OpenGL 3.1 and are added back through `GL_ARB_compatibility`
+  - In OpenGL 3.2, removed features are only available in compatibility profile
+  - A forward-compatible context removes deprecated features, in addtion to removed features
+- Removed Features
+  - all objects must be pre-generated with `glGen*`
+  - no more color index mode
+  - GLSL 1.1 and 1.2
+  - glBegin and glEnd
+  - edge flags and fixed-function vertex processing
+    (`gl*Pointer`, `gl*ClientState`, matrix, frustum/ortho, lighting)
+  - client vertex and index arrays (must use buffer object)
+  - `glRect*`
+  - glRasterPos
+  - non-sprite point
+  - POLYGON, QUADS, `QUAD_STRIP`
+  - PolygonMode and PolygonStipple
+  - pixel transfer modes and operations
+  - pixel drawing
+  - bitmap
+  - legacy pixel formats - alpha, luminance, intensity
+  - depth texture mode
+  - texture CLAMP mode
+  - texture border
+  - automatic mipmap generation
+  - fixed-function fragment processing (TexEnv, Fog)
+  - alpha test
+  - accumulation buffers
+  - glCopyPixels
+  - auxiliary buffers
+  - evaluators
+  - selection and feedback modes
+  - display lists
+  - glHints
+  - attribute stack
+  - unified extension string
+  - (Deprecated only) glLineWidth
 
 ## Legacy Concepts
 
