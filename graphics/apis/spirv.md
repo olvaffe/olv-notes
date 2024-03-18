@@ -1,97 +1,6 @@
 SPIR-V
 ======
 
-## Chapter 1. Introduction
-
-- 1.1. Goals
-- 1.2. Execution Environment and Client API
-- 1.3. About This Document
-- 1.4. Extendability
-- 1.5. Debuggability
-- 1.6. Design Principles
-- 1.7. Static Single Assignment (SSA)
-- 1.8. Built-In Variables
-- 1.9. Specialization
-- 1.10. Example
-
-## Chapter 2. Specification
-
-- 2.1. Language Capabilities
-- 2.2. Terms
-- 2.3. Physical Layout of a SPIR-V Module and Instruction
-- 2.4. Logical Layout of a Module
-- 2.5. Instructions
-- 2.6. Entry Point and Execution Model
-- 2.7. Execution Modes
-- 2.8. Types and Variables
-- 2.9. Function Calling
-- 2.10. Extended Instruction Sets
-- 2.11. Structured Control Flow
-- 2.12. Specialization
-- 2.13. Linkage
-- 2.14. Relaxed Precision
-- 2.15. Debug Information
-- 2.16. Validation Rules
-- 2.17. Universal Limits
-- 2.18. Memory Model
-- 2.19. Derivatives
-- 2.20. Code Motion
-- 2.21. Deprecation
-- 2.22. Unified Specification
-- 2.23. Uniformity
-
-## Chapter 3. Binary Form
-
-- 3.1. Magic Number
-- 3.2. Source Language
-- 3.3. Execution Model
-- 3.4. Addressing Model
-- 3.5. Memory Model
-- 3.6. Execution Mode
-- 3.7. Storage Class
-- 3.8. Dim
-- 3.9. Sampler Addressing Mode
-- 3.10. Sampler Filter Mode
-- 3.11. Image Format
-- 3.12. Image Channel Order
-- 3.13. Image Channel Data Type
-- 3.14. Image Operands
-- 3.15. FP Fast Math Mode
-- 3.16. FP Rounding Mode
-- 3.17. Linkage Type
-- 3.18. Access Qualifier
-- 3.19. Function Parameter Attribute
-- 3.20. Decoration
-- 3.21. BuiltIn
-- 3.22. Selection Control
-- 3.23. Loop Control
-- 3.24. Function Control
-- 3.25. Memory Semantics <id>
-- 3.26. Memory Operands
-- 3.27. Scope <id>
-- 3.28. Group Operation
-- 3.29. Kernel Enqueue Flags
-- 3.30. Kernel Profiling Info
-- 3.31. Capability
-- 3.32. Ray Flags
-- 3.33. Ray Query Intersection
-- 3.34. Ray Query Committed Type
-- 3.35. Ray Query Candidate Type
-- 3.36. Fragment Shading Rate
-- 3.37. FP Denorm Mode
-- 3.38. FP Operation Mode
-- 3.39. Quantization Mode
-- 3.40. Overflow Mode
-- 3.41. Packed Vector Format
-- 3.42. Cooperative Matrix Operands
-- 3.43. Cooperative Matrix Layout
-- 3.44. Cooperative Matrix Use
-- 3.45. Initialization Mode Qualifier
-- 3.46. Host Access Qualifier
-- 3.47. Load Cache Control
-- 3.48. Store Cache Control
-- 3.49. Instructions
-
 ## Tools
 
 - spec
@@ -188,8 +97,23 @@ SPIR-V
                    OpReturn
                    OpFunctionEnd
 
-## Spec
+## Chapter 1. Introduction
 
+- 1.1. Goals
+- 1.2. Execution Environment and Client API
+- 1.3. About This Document
+- 1.4. Extendability
+- 1.5. Debuggability
+- 1.6. Design Principles
+- 1.7. Static Single Assignment (SSA)
+- 1.8. Built-In Variables
+- 1.9. Specialization
+- 1.10. Example
+
+## Chapter 2. Specification
+
+- 2.1. Language Capabilities
+- 2.2. Terms
 - 2.3. Physical Layout of a SPIR-V Module and Instruction
   - header
     - word 0: magic number 0x07230203
@@ -234,6 +158,34 @@ SPIR-V
       - all `OpVariable` must have a storage class of `Function`
       - ended with a termination instruction
     - `OpFunctionEnd`
+- 2.5. Instructions
+- 2.6. Entry Point and Execution Model
+- 2.7. Execution Modes
+- 2.8. Types and Variables
+- 2.9. Function Calling
+- 2.10. Extended Instruction Sets
+- 2.11. Structured Control Flow
+- 2.12. Specialization
+- 2.13. Linkage
+- 2.14. Relaxed Precision
+- 2.15. Debug Information
+- 2.16. Validation Rules
+- 2.17. Universal Limits
+- 2.18. Memory Model
+- 2.19. Derivatives
+- 2.20. Code Motion
+- 2.21. Deprecation
+- 2.22. Unified Specification
+- 2.23. Uniformity
+
+## Chapter 3. Binary Form
+
+- 3.1. Magic Number
+- 3.2. Source Language
+- 3.3. Execution Model
+- 3.4. Addressing Model
+- 3.5. Memory Model
+- 3.6. Execution Mode
 - 3.7. Storage Class
   - used by
     - `OpTypePointer`
@@ -252,6 +204,48 @@ SPIR-V
   - `AtomicCounter`: Atomic counter-specific memory
   - `Image`: For holding image memory
   - `StorageBuffer` GL SSBO
+- 3.8. Dim
+- 3.9. Sampler Addressing Mode
+- 3.10. Sampler Filter Mode
+- 3.11. Image Format
+- 3.12. Image Channel Order
+- 3.13. Image Channel Data Type
+- 3.14. Image Operands
+- 3.15. FP Fast Math Mode
+- 3.16. FP Rounding Mode
+- 3.17. Linkage Type
+- 3.18. Access Qualifier
+- 3.19. Function Parameter Attribute
+- 3.20. Decoration
+- 3.21. BuiltIn
+- 3.22. Selection Control
+- 3.23. Loop Control
+- 3.24. Function Control
+- 3.25. Memory Semantics <id>
+- 3.26. Memory Operands
+- 3.27. Scope <id>
+- 3.28. Group Operation
+- 3.29. Kernel Enqueue Flags
+- 3.30. Kernel Profiling Info
+- 3.31. Capability
+- 3.32. Ray Flags
+- 3.33. Ray Query Intersection
+- 3.34. Ray Query Committed Type
+- 3.35. Ray Query Candidate Type
+- 3.36. Fragment Shading Rate
+- 3.37. FP Denorm Mode
+- 3.38. FP Operation Mode
+- 3.39. Quantization Mode
+- 3.40. Overflow Mode
+- 3.41. Packed Vector Format
+- 3.42. Cooperative Matrix Operands
+- 3.43. Cooperative Matrix Layout
+- 3.44. Cooperative Matrix Use
+- 3.45. Initialization Mode Qualifier
+- 3.46. Host Access Qualifier
+- 3.47. Load Cache Control
+- 3.48. Store Cache Control
+- 3.49. Instructions
 
 ## UBOs
 
