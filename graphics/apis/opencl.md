@@ -45,12 +45,45 @@ OpenCL
 - 3.1. Platform Model
 - 3.2. Execution Model
 - 3.3. Memory Model
+  - Host Memory
+    - system ram
+  - Device Memory
+    - `global`
+      - device ram
+    - `constant`
+      - also device ram?
+      - read-only
+    - `local`
+      - where is this?
+    - `private`
+      - register file
 - 3.4. The OpenCL Framework
 
 ## Chapter 4. The OpenCL Platform Layer
 
 - 4.1. Querying Platform Info
 - 4.2. Querying Devices
+  - `clGetDeviceInfo`
+    - `CL_DEVICE_MAX_COMPUTE_UNITS`
+    - `CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS`, at least 3 and normally 3
+    - `CL_DEVICE_MAX_WORK_ITEM_SIZES`, max number of work-items in each
+      dimension in a work-group
+    - `CL_DEVICE_MAX_WORK_GROUP_SIZE`, max number of work-items in a work-group
+    - `CL_DEVICE_MAX_PARAMETER_SIZE` at least 1024 bytes (full) or 256 bytes
+      (embedded)
+      - push constants?
+    - `CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE`
+    - `CL_DEVICE_GLOBAL_MEM_CACHE_SIZE`
+    - `CL_DEVICE_GLOBAL_MEM_SIZE`
+    - `CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE` at least 64KB (full) or 1KB
+      (embedded)
+    - `CL_DEVICE_LOCAL_MEM_SIZE` at least 32KB (full) or 1KB (embedded)
+    - `CL_DEVICE_MAX_NUM_SUB_GROUPS`
+      - max queued waves
+    - `CL_DEVICE_SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS`
+      - true
+    - `CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE`
+      - minimum wave size?
 - 4.3. Partitioning a Device
 - 4.4. Contexts
 
@@ -65,7 +98,37 @@ OpenCL
 - 5.7. Sampler Objects
 - 5.8. Program Objects
 - 5.9. Kernel Objects
+  - `clGetKernelWorkGroupInfo`
+    - `CL_KERNEL_WORK_GROUP_SIZE`
+      - `CL_DEVICE_LOCAL_MEM_SIZE` divided by `CL_KERNEL_LOCAL_MEM_SIZE`?
+    - `CL_KERNEL_LOCAL_MEM_SIZE`
+      - where is local memory?
+    - `CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE`
+      - wave size?
+    - `CL_KERNEL_PRIVATE_MEM_SIZE`
+      - kernel register usage
+  - `clGetKernelSubGroupInfo`
+    - `CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE`
+      - this is the wave size so probably 16, 32, 64, 128
+    - `CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE`
+      - work-group size divided by wave size?
+    - `CL_KERNEL_LOCAL_SIZE_FOR_SUB_GROUP_COUNT`
+      - ?
+    - `CL_KERNEL_MAX_NUM_SUB_GROUPS`
+      - register file size divided by kernel register usage?
 - 5.10. Executing Kernels
+  - `clEnqueueNDRangeKernel`
+    - `work_dim`
+      - number of dimensions
+      - 1, 2, or 3
+    - `global_work_size`
+      - numbers of work-items in each dimension
+      - total number must not exceed `sizeof(size_t)`
+    - `local_work_size`
+      - numbers of work-items that make up a work-group
+      - `global_work_size[dim]` must be a multiple of `local_work_size[dim]`
+      - total number must not exceed `CL_DEVICE_MAX_WORK_GROUP_SIZE`
+      - each dimension must not exceed `CL_DEVICE_MAX_WORK_ITEM_SIZES[dim]`
 - 5.11. Event Objects
 - 5.12. Markers, Barriers and Waiting for Events
 - 5.13. Out-of-order Execution of Kernels and Memory Object Commands
@@ -95,75 +158,6 @@ OpenCL
 ## Appendix G: Other Miscellaneous Enums
 
 ## Appendix H: OpenCL 3.0 Backwards Compatibility
-
-## Work-Groups
-
-- `clEnqueueNDRangeKernel`
-  - `work_dim`
-    - number of dimensions
-    - 1, 2, or 3
-  - `global_work_size`
-    - numbers of work-items in each dimension
-    - total number must not exceed `sizeof(size_t)`
-  - `local_work_size`
-    - numbers of work-items that make up a work-group
-    - `global_work_size[dim]` must be a multiple of `local_work_size[dim]`
-    - total number must not exceed `CL_DEVICE_MAX_WORK_GROUP_SIZE`
-    - each dimension must not exceed `CL_DEVICE_MAX_WORK_ITEM_SIZES[dim]`
-- `clGetDeviceInfo`
-  - `CL_DEVICE_MAX_COMPUTE_UNITS`
-  - `CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS`, at least 3 and normally 3
-  - `CL_DEVICE_MAX_WORK_ITEM_SIZES`, max number of work-items in each
-    dimension in a work-group
-  - `CL_DEVICE_MAX_WORK_GROUP_SIZE`, max number of work-items in a work-group
-  - `CL_DEVICE_MAX_PARAMETER_SIZE` at least 1024 bytes (full) or 256 bytes
-    (embedded)
-    - push constants?
-  - `CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE`
-  - `CL_DEVICE_GLOBAL_MEM_CACHE_SIZE`
-  - `CL_DEVICE_GLOBAL_MEM_SIZE`
-  - `CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE` at least 64KB (full) or 1KB
-    (embedded)
-  - `CL_DEVICE_LOCAL_MEM_SIZE` at least 32KB (full) or 1KB (embedded)
-  - `CL_DEVICE_MAX_NUM_SUB_GROUPS`
-    - max queued waves
-  - `CL_DEVICE_SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS`
-    - true
-  - `CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE`
-    - minimum wave size?
-- `clGetKernelWorkGroupInfo`
-  - `CL_KERNEL_WORK_GROUP_SIZE` 
-    - `CL_DEVICE_LOCAL_MEM_SIZE` divided by `CL_KERNEL_LOCAL_MEM_SIZE`?
-  - `CL_KERNEL_LOCAL_MEM_SIZE`
-    - where is local memory?
-  - `CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE`
-    - wave size?
-  - `CL_KERNEL_PRIVATE_MEM_SIZE`
-    - kernel register usage
-- `clGetKernelSubGroupInfo`
-  - `CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE`
-    - this is the wave size so probably 16, 32, 64, 128
-  - `CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE`
-    - work-group size divided by wave size?
-  - `CL_KERNEL_LOCAL_SIZE_FOR_SUB_GROUP_COUNT`
-    - ?
-  - `CL_KERNEL_MAX_NUM_SUB_GROUPS`
-    - register file size divided by kernel register usage?
-
-## Memory Model
-
-- Host Memory
-  - system ram
-- Device Memory
-  - `global`
-    - device ram
-  - `constant`
-    - also device ram?
-    - read-only
-  - `local`
-    - where is this?
-  - `private`
-    - register file
 
 ## Rounding
 
