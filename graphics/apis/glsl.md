@@ -23,74 +23,187 @@ GLSL
 - 3.1. Character Set and Phases of Compilation
 - 3.2. Source Strings
 - 3.3. Preprocessor
-  - `#version 130` is required for GLSL after 1.30
-    - 1.10 is assumed if not specified
-  - By default, `#extension all : disable` is declared
+  - `#version number profile_opt`
+    - `#version 100` targets ES
+    - `#version 110` is the default when missing
+    - `#version 150` or later supports the optional `profile_opt`
+      - valid values are `core`, `compatibility`, or `es`
+      - when missing, `core` is assumed
+    - `#version 300 es` and `#version 310 es` target ES and `profile_opt` is
+      required
+    - `#version` must occur before anything else except for comments and white
+      spaces
+  - `#extension extension_name : behavior`
+    - `extension_name` is the name of the extension or `all` to indicate all
+      supported extensions
+    - `behavior` can be `require`, `enable`, `warn`, or `disable`
+    - the initial state is `#extension all : disable`
 - 3.4. Comments
+  - both `//` and `/* */` are supported
 - 3.5. Tokens
 - 3.6. Keywords
 - 3.7. Identifiers
 - 3.8. Definitions
+  - static use
+  - dynamically uniform
+  - uniform control flow
 
 ## Chapter 4. Variables and Types
 
 - all variables and functions must be declared before being used
   - they must have types and optionally qualifiers
 - 4.1. Basic Types
-  - basic types
-    - void, bool, int, uint, float
-    - vec2, vec3, vec4, and boolean and signed/unsigned integer variants
-    - mat2, mat3, mat4, and matMxN (column major)
-    - samplers
-      - only in function parameters or uniforms
-    - struct
-    - NO pointers
-  - `mat2x3` is a 3 by 2 matrix.  That is, 3 rows and 2 columns.
-  - a matrix is initialized in a column major fashion, just as in
-    `glLoadMatrix`.
-    - unrelated, but recall that `glMultMatrix` is applied on the right side of
-      the current matrix
-  - there are texture-combined sampler types
-    - `gsampler*`
-    - both GL and VK use them
-  - there are also (separated) texture and sampler types
-    - VK only
-  - `layout(location=2, binding=3) uniform sampler2D s;`
-    - this binds the sampler to unit 3
-    - `glUniformi(2, 3)`
-  - Arrays
+  - basic types are typed defined by keywords
+    - Transparent Types
+      - `void`, `bool`, `int`, `uint`, `float`, `double`
+      - `vec2`, `vec3`, `vec4`, and their boolean/signed/unsigned/double
+        variants
+      - `mat2`, `mat3`, `mat4`, `matMxN` (column major), and their double
+        variants
+        - `mat2x3` is a 3 by 2 matrix.  That is, 3 rows and 2 columns.
+    - Floating-Point Opaque Types
+      - `{sampler,texture,image}1D{,Shadow,Array,ArrayShadow}`
+      - `{sampler,texture,image}2D{,Shadow,Array,ArrayShadow,MS,MSArray,Rect,RectShadow}`
+      - `{sampler,texture,image}3D`
+      - `{sampler,texture,image}Cube{,Shadow,Array,ArrayShadow}`
+      - `{sampler,texture,image}Buffer`
+      - `subpassInput{,MS}`
+    - Signed/unsigned Integer Opaque Types
+      - `{i,u}{sampler,texture,image}1D{,Array}`
+      - `{i,u}{sampler,texture,image}2D{,Array,MS,MSArray,Rect}`
+      - `{i,u}{sampler,texture,image}3D`
+      - `{i,u}{sampler,texture,image}Cube{,Array}`
+      - `{i,u}{sampler,texture,image}Buffer`
+      - `{i,u}subpassInput{,MS}`
+      - `atomic_uint`
+    - Sampler Opaque Types
+      - `sampler{,Shadow}`
+    - there is no pointer type
+  - composites
+    - aggregates, matrices, and vertors are collectively referred to as
+      composites
+    - an aggregate is a structure or an array
+  - opaque types
+    - they are accessed via built-in functions, no direct access
+    - they can only be declared as function parameters or `uniform`-qualified
+      variables
+    - there can be both storage and memory qualifiers
+      - the storage qualifier qualifies the opaque handle
+      - the memory qualifier qualifies the object the opaque handle refers to
+    - texture-combined samplers: `sampler2D`, etc.
+    - images: `image2D`, etc.
+    - atomic counters: `atomic_uint`
+      - gl-only
+    - texture and sampler types: `texture2D`, `sampler`, etc.
+      - vk-only
+    - subpass inputs: `subpassInput`, etc.
+      - vk-only
+  - structures
+  - arrays
     - arrays may be declared with or without a size
     - an array without a size can only be indexed with a constant expression
       - so that the compiler can derive its size
+    - they support `length()` method
   - implicit conversions
-    - int and uint to float
-    - ivec[234] and uvec[234] to vec[234]
+    - `int` can be implicitly converted to `uint`
+    - `int`/`uint` can be implicitly converted to `float`
+    - `int`/`uint`/`float` can be implicitly converted to `double`
+    - the same applies to vectors and matrices
 - 4.2. Scoping
 - 4.3. Storage Qualifiers
-  - local read/write memory if no qualifier
-  - `const`: a compile-time constant or a function parameter that is read-only
-  - `in`, `centroid in`: linkage into a shader from a previous stage
-    - `attribute`: deprecated
-    - `centroid`: is ignored for single-sample rasterization.  For multisample
-      rasterization, the interpolation must be evaluated at any location in the
-      pixel or any of the sample point, and the location must fall inside the
-      primitive.  When `centroid` is not given, the interpolation may be
-      evaluated at any location in the pixel or any of the sample point.
-  - `out`, `centroid out`: linkage out of a shader to a subsequent stage
-    - `varying`, `centroid varying`: deprecated
-  - `uniform`
-  - outputs from a VS and inputs to a FS can be further qualified with
-    - `smooth`: perspective correct interpolation
-    - `flat`: no interpolation
-    - `noperspective`: linear interpolation
-  - It is expected that the graphic hardware will have a small number of fixed
-    vector locations in FS.  Each non-matrix input variable takes up one such
-    location.  A matrix input takes up multisample locations, equal to the
-    number of columns.
+  - there can be at most one storage qualifier
+    - no qualifier: local read/write memory, or input function parameter
+    - `const`: a compile-time constant or a function parameter that is read-only
+    - `in`: linkage into a shader from a previous stage
+      - `attribute`: deprecated
+    - `out`: linkage out of a shader to a subsequent stage
+      - `varying`: deprecated
+    - `uniform`: linkage between a shader, API, and the application
+    - `buffer`: value is stored in a buffer object
+    - `shared`: variable storage is shared across all work items in a
+      workgroup
+      - CS-only
+  - there can be at most one auxiliary storage qualifier for `in`/`out`
+    - `centroid`: centroid-based interpolation
+      - For multisample rasterization, the interpolation must be evaluated at
+        any location in the pixel or any of the sample point, and the location
+        must fall inside the primitive.  When `centroid` is not given, the
+        interpolation may be evaluated at any location in the pixel or any of
+        the sample point.
+    - `sample`: per-sample interpolation
+    - `patch`: per-tessellation-patch attributes
+      - only for TCS `out` and TES `in`
+      - Per-patch input variables in the TES are filled with the values of
+        per-patch output variables written by the TCS
 - 4.4. Layout Qualifiers
+  - input
+    - `location =`
+    - `component =`
+    - TES only
+      - primitive mode: `triangles`, `quads`, or `isolines`
+      - vertex spacing: `equal_spacing`, `fractional_even_spacing`, or
+        `fractional_odd_spacing`
+      - ordering: `cw` or `ccw`
+      - piont mode: `point_mode`
+    - GS only
+      - primitive: `points`, `lines`, `lines_adjacency`, `triangles`, or
+        `triangles_adjacency`
+      - invocation count: `invocations =`
+    - FS only
+      - `gl_FragCoord`: `origin_upper_left` or `pixel_center_integer`
+      - there is also `layout(early_fragment_tests) in;`
+    - CS only
+      - `local_size_x =`
+      - `local_size_y =`
+      - `local_size_z =`
+  - output
+    - `location =`
+    - `component =`
+    - transform feedback
+      - `xfb_buffer =`
+      - `xfb_offset =`
+      - `xfb_stride =`
+    - TCS only
+      - `vertices =`
+    - GS only
+      - `points`, `line_strip`, `triangle_strip`
+      - `max_vertices =`
+      - `stream =`
+    - FS only
+      - `gl_FragDepth`: `depth_any`, `depth_greater`, `depth_less`, or
+        `depth_unchanged`
+      - `index =`
+  - uniform
+    - `location =`
+    - vk only
+      - `push_constant`
+  - subroutine function
+    - `index =`
+  - uniform and shader storage block
+    - `shared`, `packed`, `std140`, `std430`
+    - `row_major`, `column_major`
+    - `binding =`
+    - `offset =`
+    - `align =`
+  - opaque uniform
+    - `binding =`
+  - atomic counter
+    - `binding =`
+    - `offset =`
+  - format (for `image2D`, etc.)
+    - `rgba32f`, etc.
+  - subpass input
+    - `input_attachment_index =`
 - 4.5. Interpolation Qualifiers
+  - `smooth`: perspective correct interpolation
+  - `flat`: no interpolation
+  - `noperspective`: linear interpolation
 - 4.6. Parameter Qualifiers
-  - `in`, `out`, `inout`
+  - none: same as `in`
+  - `const`: const input parameter
+  - `in`: input parameter
+  - `out`: output parameter
+  - `inout`: in/out parameter
 - 4.7. Precision and Precision Qualifiers
   - `highp`, `mediump`, and `lowp`
   - the syntax is defined, but it has not effect
@@ -101,11 +214,20 @@ GLSL
     different shaders.  To avoid that for multi-pass rendering, `invariant` may
     be used.
 - 4.9. The Precise Qualifier
+  - `precise`
 - 4.10. Memory Qualifiers
+  - `coherent`
+  - `volatile`
+  - `restrict`
+  - `readonly`
+  - `writeonly`
 - 4.11. Specialization-Constant Qualifier
+  - `constant_id =`
+  - `local_size_x_id =`
+  - `local_size_y_id =`
+  - `local_size_z_id =`
 - 4.12. Order and Repetition of Qualification
 - 4.13. Empty Declarations
-
 
 ## Chapter 5. Operators and Expressions
 
@@ -117,6 +239,13 @@ GLSL
     - a `sampler2D` can be constructed from a separated pair of `sampler s`
       and `texture2D t` through `sampler2D(t, s)`
     - VK only
+  - a matrix is initialized in a column major fashion, just as in
+    `glLoadMatrix`.
+    - unrelated, but recall that `glMultMatrix` is applied on the right side of
+      the current matrix
+  - `layout(location=2, binding=3) uniform sampler2D s;`
+    - this binds the sampler to unit 3
+    - `glUniformi(2, 3)`
 - 5.5. Vector and Scalar Components and Length
   - vector components
     - `{x,y,z,w}`
