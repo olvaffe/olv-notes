@@ -445,29 +445,38 @@ GLSL
   - `bitfieldExtract`, `bitfieldInsert`, `bitfieldReverse`
   - `bitCount`, `findLSB`, `findMSB`
 - 8.9. Texture Functions
-  - to sample a texture-compined sampler, `texture()`
-  - `int/ivec* textureSize(gsampler* sampler[, int lod])`
-    - return the dimension of the texture
-  - `float/gvec4 texture(gsampler *sampler, float/vec* P[, float bias])`
-    - texture lookup
-  - `float/gvec4 textureProj(gsampler *sampler, float/vec* P[, float bias])`
-    - project `P` and then `texture`
-  - `float/gvec4 textureLod(gsampler *sampler, float/vec* P, float lod)`
-    - texture lookup with explicit lod
-  - `float/gvec4 textureOffset(gsampler *sampler, float/vec* P, int/ivec* offset[, float bias])`
-    - texture lookup with offset (to the texture coordinates)
-  - `textureProjOffset`: combination of `textureProj` and `textureOffset`
-  - `textureLodOffset`: combination of `textureLod` and `textureOffset`
-  - `textureProjLod`: combination of `textureProj` and `textureLod`
-  - `textureProjLodOffset`: combination of `textureProj`, `textureLod`, and `textureOffset`
-  - `textureGrad`
-    - texture lookup with explicit gradient
-  - `textureGradOffset`, `textureProjGrad`, `textureProjGradOffset`: blah
-  - `gvec4 texelFetch(gsampler *sampler, int/ivec P, int lod/sample)`
-    - fetch a texel
-  - `texelFetchOffset`: `texelFetch` with offset
-  - `texture1D*`, `texture2D*`, `texture3D*`, `textureCube*`, `shadow*`
-    - deprecated
+  - `textureSize` queries the size of the lod
+  - `textureQueryLod` queries the lods that would be accessed
+  - `textureQueryLevels` queries the available lods
+  - `textureSamples` queries the sample count
+  - `texture` performs texture lookup
+    - it supports all samplers, including shadow and array samplers
+  - `textureProj` is the same as `texture`, after projecting the texcoords
+  - `textureLod` is the same as `texture`, except with explicit lod
+  - `textureOffset` is the same as `texture`, except an offset is applied
+    - useful for box blur, and hw might be able to prefetch?
+  - `texelFetch` fetches a specific texel
+  - `texelFetchOffset` is the same as `texelFetch`, except an offset is
+    applied
+  - `textureProjOffset`
+  - `textureLodOffset`
+  - `textureProjLod`
+  - `textureProjLodOffset`
+  - `textureGrad` is the same as `texture`, except with explicit gradients
+  - `textureGradOffset`
+  - `textureProjGrad`
+  - `textureProjGradOffset`
+  - `textureGather` fetches 4 texels that would be fetched and used for linear
+    filtering
+  - `textureGatherOffset`
+  - `textureGatherOffsets`
+  - compat-only
+    - `texture1D{,Proj,Lod,ProjLod}`
+    - `texture2D{,Proj,Lod,ProjLod}`
+    - `texture3D{,Proj,Lod,ProjLod}`
+    - `textureCube{,Lod}`
+    - `shadow1D{,Proj,Lod,ProjLod}`
+    - `shadow2D{,Proj,Lod,ProjLod}`
 - 8.10. Atomic Counter Functions
   - `atomicCounterIncrement`, `atomicCounterDecrement`, `atomicCounter`
   - `atomicCounterAdd`, `atomicCounterSubtract`
