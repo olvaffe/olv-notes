@@ -405,13 +405,45 @@ GLSL
 ## Chapter 8. Built-In Functions
 
 - 8.1. Angle and Trigonometry Functions
+  - `radians`, `degrees`
+  - `sin`, `cos`, `tan`
+  - `asin`, `acos`, `atan`
+  - `sinh`, `cosh`, `tanh`
+  - `asinh`, `acosh`, `atanh`
 - 8.2. Exponential Functions
+  - `pow`, `exp`, `log`
+  - `exp2`, `log2`
+  - `sqrt`, `inversesqrt`
 - 8.3. Common Functions
+  - `abs`, `sign`
+  - `floor`, `trunc`, `round`, `roundEven`, `ceil`, `fract`
+  - `mod`, `modf`
+  - `min`, `max`, `clamp`
+  - `mix`, `step`, `smoothstep`
+  - `isnan`, `isinf`
+  - `floatBitsToInt`, `floatBitsToUint`, `intBitsToFloat`, `uintBitsToFloat`
+  - `fma`
+  - `frexp`, `ldexp`
 - 8.4. Floating-Point Pack and Unpack Functions
+  - `packUnorm2x16`, `packSnorm2x16`, `packUnorm4x8`, `packSnorm4x8`
+  - `unpackUnorm2x16`, `unpackSnorm2x16`, `unpackUnorm4x8`, `unpackSnorm4x8`
+  - `packHalf2x16`, `unpackHalf2x16`
+  - `packDouble2x32`, `unpackDouble2x32`
 - 8.5. Geometric Functions
+  - `length`, `distance`, `dot`, `cross`, `normalize`
+  - compat-only: `ftransform`,
+  - `faceforward`
+  - `reflect`, `refract`
 - 8.6. Matrix Functions
+  - `matrixCompMult`, `outerProduct`, `transpose`, `determinant`, `inverse`
 - 8.7. Vector Relational Functions
+  - `lessThan`, `lessThanEqual`, `greaterThan`, `greaterThanEqual`, `equal`, `notEqual`
+  - `any`, `all`
+  - `not`
 - 8.8. Integer Functions
+  - `uaddCarry`, `usubBorrow`, `umulExtended`
+  - `bitfieldExtract`, `bitfieldInsert`, `bitfieldReverse`
+  - `bitCount`, `findLSB`, `findMSB`
 - 8.9. Texture Functions
   - to sample a texture-compined sampler, `texture()`
   - `int/ivec* textureSize(gsampler* sampler[, int lod])`
@@ -437,15 +469,45 @@ GLSL
   - `texture1D*`, `texture2D*`, `texture3D*`, `textureCube*`, `shadow*`
     - deprecated
 - 8.10. Atomic Counter Functions
+  - `atomicCounterIncrement`, `atomicCounterDecrement`, `atomicCounter`
+  - `atomicCounterAdd`, `atomicCounterSubtract`
+  - `atomicCounterMin`, `atomicCounterMax`
+  - `atomicCounterAnd`, `atomicCounterOr`, `atomicCounterXor`
+  - `atomicCounterExchange`, `atomicCounterCompSwap`
 - 8.11. Atomic Memory Functions
+  - `atomicAdd`
+  - `atomicMin`, `atomicMax`
+  - `atomicAnd`, `atomicOr`, `atomicXor`
+  - `atomicExchange`, `atomicCompSwap`
 - 8.12. Image Functions
+  - `imageSize`, `imageSamples`
+  - `imageLoad`, `imageStore`
+  - `imageAtomicAdd`
+  - `imageAtomicMin`, `imageAtomicMax`
+  - `imageAtomicAnd`, `imageAtomicOr`, `imageAtomicXor`
+  - `imageAtomicExchange`, `imageAtomicCompSwap`
 - 8.13. Geometry Shader Functions
+  - `EmitStreamVertex`, `EndStreamPrimitive`
+  - `EmitVertex`, `EndPrimitive`
 - 8.14. Fragment Processing Functions
+  - `dFdx`, `dFdy`, `dFdxFine`, `dFdyFine`, `dFdxCoarse`, `dFdyCoarse`
+  - `fwidth`, `fwidthFine`, `fwidthCoarse`
+  - `interpolateAtCentroid`, `interpolateAtSample`, `interpolateAtOffset`
 - 8.15. Noise Functions
+  - deprecated: `noise1` to `noise4`
 - 8.16. Shader Invocation Control Functions
+  - `barrier`
 - 8.17. Shader Memory Control Functions
+  - `memoryBarrier`
+  - `memoryBarrierAtomicCounter`
+  - `memoryBarrierBuffer`
+  - `memoryBarrierShared`
+  - `memoryBarrierImage`
+  - `groupMemoryBarrier`
 - 8.18. Subpass-Input Functions
+  - `subpassLoad`
 - 8.19. Shader Invocation Group Functions
+  - `anyInvocation`, `allInvocations`, `allInvocationsEqual`
 
 ## Chapter 9. Shading Language Grammar
 
