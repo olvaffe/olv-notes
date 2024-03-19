@@ -187,6 +187,9 @@ GLSL
     - `align =`
   - opaque uniform
     - `binding =`
+    - `layout(location = 2, binding = 3) uniform sampler2D s;`
+      - this binds the sampler to unit 3
+      - same as `glUniformi(2, 3)`
   - atomic counter
     - `binding =`
     - `offset =`
@@ -235,17 +238,14 @@ GLSL
 - 5.2. Array Operations
 - 5.3. Function Calls
 - 5.4. Constructors
-  - texture-combined sampler constructors
-    - a `sampler2D` can be constructed from a separated pair of `sampler s`
-      and `texture2D t` through `sampler2D(t, s)`
-    - VK only
   - a matrix is initialized in a column major fashion, just as in
     `glLoadMatrix`.
     - unrelated, but recall that `glMultMatrix` is applied on the right side of
       the current matrix
-  - `layout(location=2, binding=3) uniform sampler2D s;`
-    - this binds the sampler to unit 3
-    - `glUniformi(2, 3)`
+  - texture-combined sampler constructors
+    - a `sampler2D` can be constructed from a separated pair of `sampler s`
+      and `texture2D t` through `sampler2D(t, s)`
+    - VK only
 - 5.5. Vector and Scalar Components and Length
   - vector components
     - `{x,y,z,w}`
@@ -256,11 +256,10 @@ GLSL
 - 5.8. Assignments
 - 5.9. Expressions
 - 5.10. Vector and Matrix Operations
-  - Multiplications of two matrices or one matrix and one vector is defined in
-    `Expressions`
-    - A right vector operand is treated as a column vector.  A left vector operand
-      is treated as a row vector.
+  - matrix multiplication
     - the rule is the same as in math.
+    - A left vector operand is treated as a row vector.
+    - A right vector operand is treated as a column vector.
     - the number of columns of the left operand must be the same as the number of
       rows of the right operand.
     - the result has the same number of rows as the left operand and the same
@@ -272,25 +271,71 @@ GLSL
 
 - 6.1. Function Definitions
   - functions can be overloaded
+  - `subroutine`
 - 6.2. Selection
+  - `if`, `if-else`, and `switch`
 - 6.3. Iteration
+  - `for`, `while`, and `do-while`
 - 6.4. Jumps
+  - `continue` and `break`
+  - `return`
+  - `discard`, only available in FS
 
 ## Chapter 7. Built-In Variables
 
 - 7.1. Built-In Language Variables
-  - vs
-    - `gl_ClipDistance` must be written to for the user clip planes that are
-      enabled.  If not, the fixed-function may calculate the clip distances to
-      user planes from `gl_Position`, but it is deprecated.
-    - Why is `gl_Position` optional in GLSL 1.4?
-      - because it may be the GS to write it?
-  - fs
-    - `gl_PointCoord` is defined only for point sprite
-    - Why is `gl_FragColor` deprecated?
-      - `glBindFragDataLocation` can bind arbitrary output variable to a color
-        number.
-  - compute
+  - vs inputs
+    - gl-only: `gl_VertexID` and `gl_InstanceID`
+    - vk-only: `gl_VertexIndex` and `gl_InstanceIndex`
+    - `gl_DrawID`, `gl_BaseVertex`, and `gl_BaseInstance`
+  - vs outputs:
+    - `gl_PerVertex`
+      - `gl_Position`
+        - undefined if not written to
+      - `gl_PointSize`
+        - undefined if not written to
+      - `gl_ClipDistance[]`
+        - must be written to for the user clip planes that are enabled.  If
+          not, the fixed-function may calculate the clip distances to user
+          planes from `gl_Position`, but it is deprecated.
+      - `gl_CullDistance[]`
+  - tcs inputs
+    - `gl_PerVertex gl_in[gl_MaxPatchVertices]`
+    - `gl_PatchVerticesIn`, `gl_PrimitiveID`, `gl_InvocationID`
+  - tcs outputs
+    - `gl_PerVertex gl_out[]`
+    - `gl_TessLevelOuter[4]` and `gl_TessLevelInner[2]`
+  - tes inputs
+    - `gl_PerVertex gl_in[gl_MaxPatchVertices]`
+    - `gl_PatchVerticesIn` and `gl_PrimitiveID`
+    - `gl_TessCoord`
+    - `gl_TessLevelOuter[4]`and `gl_TessLevelInner[2]`
+  - tes outputs
+    - `gl_PerVertex`
+  - gs inputs
+    - `gl_PerVertex gl_in[]`
+    - `gl_PrimitiveIDIn` and `gl_InvocationID`
+  - gs outputs
+    - `gl_PerVertex`
+    - `gl_PrimitiveID`, `gl_Layer`, `gl_ViewportIndex`
+  - fs inputs
+    - `gl_FragCoord`
+    - `gl_FrontFacing`
+    - `gl_ClipDistance[]`
+    - `gl_CullDistance[]`
+    - `gl_PointCoord`
+      - defined only for point sprite
+    - `gl_PrimitiveID`
+    - `gl_SampleID`
+    - `gl_SamplePosition`
+    - `gl_SampleMaskIn[]`
+    - `gl_Layer`
+    - `gl_ViewportIndex`
+    - `gl_HelperInvocation`
+  - fs outputs
+    - `gl_FragDepth`
+    - `gl_SampleMask[]`
+  - compute inputs
     - `in uvec3 gl_NumWorkGroups;`
       - the numbers of work groups in each dimension, as specified by
         `vkCmdDispatch`
@@ -310,10 +355,52 @@ GLSL
       - this is `gl_LocalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
         gl_LocalInvocationID.y * gl_WorkGroupSize.x + gl_LocalInvocationID.x`
         which is the 1D representation of `gl_LocalInvocationID`
+  - compatibility profile
+    - `gl_PerVertex` gains
+      - `gl_ClipVertex`
+      - `gl_FrontColor`
+      - `gl_BackColor`
+      - `gl_FrontSecondaryColor`
+      - `gl_BackSecondaryColor`
+      - `gl_TexCoord[]`
+      - `gl_FogFragCoord`
+    - fs input: `gl_PerFragment`
+      - `gl_FogFragCoord`
+      - `gl_TexCoord[]`
+      - `gl_Color`
+      - `gl_SecondaryColor`
+    - fs outputs
+      - `gl_FragColor`
+      - `gl_FragData`
+        - it is deprecated because `glBindFragDataLocation` can bind arbitrary
+          output variable to a color number.
 - 7.2. Compatibility Profile Vertex Shader Built-In Inputs
+  - `gl_Color` and `gl_SecondaryColor`
+  - `gl_Normal`
+  - `gl_Vertex`
+  - `gl_MultiTexCoord0` to `gl_MultiTexCoord7`
+  - `gl_FogCoord`
 - 7.3. Built-In Constants
+  - `gl_Max*`
 - 7.4. Built-In Uniform State
+  - gl-only
+    - `gl_DepthRange`
+    - `gl_NumSamples`
+  - compatibility profile
+    - `gl_*Matrix` such as `gl_ModelViewMatrix`
+    - `gl_*MatrixInverse`
+    - `gl_NormalScale`
+    - `gl_ClipPlane`
+    - `gl_Point`
+    - `gl_FrontMaterial` and `gl_BackMaterial`
+    - `gl_*Light*` such as `gl_LightSource`
+    - `gl_TextureEnvColor`
+    - `gl_EyePlane{S,T,R,Q}`
+    - `gl_ObjectPlane{S,T,R,Q}`
+    - `gl_Fog`
 - 7.5. Redeclaring Built-In Blocks
+  - `out gl_PerVertex` can be redeclared to explicitly indicate the subset of
+    members accessed
 
 ## Chapter 8. Built-In Functions
 
