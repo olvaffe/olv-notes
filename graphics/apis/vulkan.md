@@ -1086,6 +1086,130 @@ Vulkan
 
 ## Chapter 16. Image Operations
 
+- 16.1. Image Operations Overview
+  - image operations are spir-v image instructions which take an `OpTypeImage`
+    (`VkImageView`) or `OpTypeSampledImage` (`(VkImageView, VkSampler)` pair)
+    - `OpImageSample*` and `OpImageSparseSample*`
+    - `OpImageFetch` and `OpImageSparseFetch`
+      - no sampler needed
+    - `OpImage*Gather` and `OpImageSparse*Gather`
+    - `OpImageRead`, `OpImageSparseRead`, and `OpImageWrite`
+      - no sampler needed
+    - `OpImage*Dref*`
+    - `OpImageSparse*`
+    - `OpImageQuerySize`, `OpImageQuerySizeLod`, `OpImageQueryLevels`, and `OpImageQuerySamples`
+    - `OpImageQueryLod`
+  - texel coordinate systems
+    - normalized/unnormalized texel coordinates are used when a sampler is
+      used
+    - integer texel coordinates are used when no sampler is used
+    - normalized texel coordinates are referred to as `(s,t,r,q,a)`
+      - `(s, t, r)` are for the 3 dimensions
+      - `q` is for homogeneous (projective) coordinates
+      - `a` is for array index
+    - unnormalized texel coordinates are referred to as `(u,v,w,a)`
+      - `(u, v, w)` are for the 3 dimensions
+      - `a` is for array index
+    - integer texel coordinates are referred to as `(i,j,k,l,n)`
+      - `(i, j, k)` are for the 3 dimensions
+      - `l` is for array index
+      - `n` is for sample index
+    - given `(s, t)` or `(u, v)`,
+      - linear filtering selects the closest 4 texels
+      - nearest filtering selects the closest 1 texel
+- 16.2. Conversion Formulas
+- 16.3. Texel Input Operations
+  - texel input instructions are SPIR-V image instructions that read from an image
+  - texel input operations are a set of ordered steps that are performed on
+    state, coordinates, and texel values while processing a texel input
+    instruction
+    - for texel input instructions involving multiple texels (for sampling or
+      gathering), these steps are applied for each texel that is used in the
+      instruction
+  - Texel Input Validation Operations
+    - Instruction/Sampler/Image validation
+      - texel value is undefined if this validation fails
+      - ycbcr conversion
+        - only `OpImageSample*` and `OpImageSparseSample*` can be used
+        - `OpImageFetch`, `OpImageSparseFetch`, `OpImage*Gather`, and
+          `OpImageSparse*Gather` must not be used
+        - the `ConstOffset` and `Offset` operands must not be used
+      - if the underlying VkImage format has an X component in its format
+        description, undefined values are read from those bits.
+    - Coordinate validation
+      - the texel may be a valid texel, a border texel, or an invalid texel
+    - Sparse validation
+      - the texevel may be a sparse unbound texel
+    - Layout validation
+      - if disjoint and ycbcr conversion, all planes must be in the same
+        layout
+  - Format Conversion
+    - color formats have 1 to 4 components
+    - depth/stencil formats have 1 component, selected by `aspectMask`
+    - each component is converted based on the channel type/size
+  - Texel Replacement
+    - if the texel is a border texel, it is replaced by the border color
+    - if the texel is an invalid texel, and `robustBufferAccess`,
+      `robustImageAccess`, or `robustImageAccess2` is enabled, it is replaced
+      accordingly
+    - if the texel is a sparse unbound texel, and `residencyNonResidentStrict`
+      is set, it is replaced accordingly
+    - otherwise, the texel value is undefined
+  - Depth Compare Operation
+    - if the format is depth/stencil, the aspect is depth, and the instruction
+      is `OpImage*Dref*`, the component is replaced by `1.0` or `0.0`
+  - Conversion to RGBA
+    - the texel value is expanded to 4-component RGBA
+  - Component Swizzle
+    - swizzles specified by `VkImageViewCreateInfo::components` or
+      `VkSamplerYcbcrConversionCreateInfo::components` are applied
+  - Sparse Residency
+    - `OpImageSparseTexelsResident` can convert residency into a bool
+  - Chroma Reconstruction
+    - for `422` and `420` formats, the chroma planes are downsampled and need
+      to be reconstructed
+  - Sampler Y′CbCr Conversion
+    - range expansion
+    - model conversion
+- 16.4. Texel Output Operations
+  - texel output instructions are SPIR-V image instructions that write to an image
+  - texel output operations are a set of ordered steps that are performed on
+    state, coordinates, and texel values while processing a texel output
+    instruction
+  - Texel Output Validation Operations
+    - the written value is undefined if this op falis
+  - Integer Texel Coordinate Validation
+    - the write has no effect if this op fails
+  - Sparse Texel Operation
+    - `residencyNonResidentStrict`-dependent if this op fails
+  - Texel Output Format Conversion
+    - each component is converted based on the channel type/size
+    - if the image or view format has an X component, undefined values are
+      written to those bits
+- 16.5. Normalized Texel Coordinate Operations
+  - for `Proj` instructions, `s`, `t`, `r`, and `Dref` are divided by `q`
+  - derivatives are implicitly calculated or explicitly specified by the
+    instruction
+    - in fs, 4 invocations for neighboring fragments form a quad
+      - for each input, the interpolated values at the 4 fragments are known
+      - `dFdx` is the delta between the left/right fragments
+      - `dFdy` is the delta between the bottom/top fragment
+  - cube map face selection
+  - LOD is calculated and biased
+    - for fs, roughly,
+      - it calculated the number of texels would be needed by the fragment
+      - if the fragment needs 2 texels, we should pick LOD 1 instead
+        - LOD is thus `log2(number of texels)`
+- 16.6. Unnormalized Texel Coordinate Operations
+- 16.7. Integer Texel Coordinate Operations
+- 16.8. Image Sample Operations
+- 16.9. Texel Footprint Evaluation
+- 16.10. Weight Image Sampling
+- 16.11. Block Matching
+- 16.12. Box Filter Sampling
+- 16.13. Image Operation Steps
+- 16.14. Image Query Instructions
+
 ## Chapter 17. Fragment Density Map Operations
 
 ## Chapter 18. Queries
