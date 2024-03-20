@@ -1200,9 +1200,33 @@ Vulkan
       - it calculated the number of texels would be needed by the fragment
       - if the fragment needs 2 texels, we should pick LOD 1 instead
         - LOD is thus `log2(number of texels)`
+    - LOD is a float
+      - if `VK_SAMPLER_MIPMAP_MODE_NEAREST`, it is rounded and a single level
+        will be used
+      - if `VK_SAMPLER_MIPMAP_MODE_LINEAR`, two levels will be used
+  - normalized `(s,t,r,q,a)` is transformed to unnormalized `(u,v,w,a)`
+    - `(u,v,w)` is `(s,t,r)` scaled by level width/height/depth
+      - offsets from `ConstOffset` or `Offset` are also applied
 - 16.6. Unnormalized Texel Coordinate Operations
+  - unnormalized `(u,v,w,a)` is transformed to integer `(i,j,k,l,n)`
+    - `(i,j,k)` is `(u,v,w)` rounded
+      - if `VK_FILTER_LINEAR`, the neighboring coordinates and weights are
+        calculated as well
+    - `l` is `a` rounded, clamped, and biased
+    - `n` is set to 0
 - 16.7. Integer Texel Coordinate Operations
+  - for instructions that use integer texel coordinates (i.e., without a
+    sampler), LOD may be explicitly specified or is considered 0
 - 16.8. Image Sample Operations
+  - Wrapping Operation
+    - `(i,j,k)` is transformed by `addressMode{U,V,W}`
+  - Texel Gathering
+    - `OpImage*Gather` uses `VK_FILTER_LINEAR` rule to select 4 texels
+    - `OpImage*Gather` must not be used on a sampled image with sampler Y′CbCr
+      conversion enabled
+  - Texel Filtering
+    - `mipmapMode` is used
+    - `minFilter` (`LOD > 0`) or `magFilter` (`LOD <= 0`) is used
 - 16.9. Texel Footprint Evaluation
 - 16.10. Weight Image Sampling
 - 16.11. Block Matching
