@@ -79,6 +79,33 @@ Meson
 - `ninja install` to install
   - `DESTDIR` is supported
 
+## Define Options
+
+- options are defined in `meson.options`
+  - or `meson_options.txt`
+- synax: `option('foo', type : 'bar', value : 'val', description : 'desc')`
+  - `foo` is the name
+  - `type` can be
+    - `string`: a string
+    - `boolean`: `true` or `false`
+      - `true` is the default if no `value`
+    - `combo`: one of the string specified in `choices` array
+      - the first choice is the default if no `value`
+    - `integer`: an integer
+      - optional `min` and `max`  to specify the min/max valid values
+    - `array`: an array of strings
+      - optional `choices` array for valid strings
+      - `choices` array is also the default if no `value`
+    - `feature`: one of `enabled`, `disabled`, or `auto`
+  - `value` is the default value
+  - `description` is the description
+  - `deprecated` marks an option deprecated
+    - if `true`, the option is deprecated
+    - if an array, choices in the array are deprecated
+    - if a dict, choices in the dict keys are deprecated and are replaced by
+      the corresponding dict values
+    - if another option, the option is deprecated by the other option
+
 ## Dependencies
 
 - to find an external dependency,
