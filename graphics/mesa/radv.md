@@ -913,3 +913,36 @@ Mesa RADV
     - `nir_intrinsic_atomic_add_shader_invocation_count_amd` increments
       `RADV_SHADER_QUERY_GS_INVOCATION_OFFSET` in gds
   - those two intrinsics are emitted by `ac_nir_gs_shader_query`
+
+## LLVM
+
+- radv integraion with ac llvm
+  - it calls `ac_init_llvm_once` on-demand to initialize LLVM
+  - it calls `llvm_compile_shader` to compile nir to binary
+    - it calls `radv_init_llvm_compiler` to initialize a per-thread compiler
+      on-demand
+      - it calls `ac_init_llvm_compiler` to inialize a `ac_llvm_compiler`
+      - it calls `ac_create_llvm_passes` to create a `ac_compiler_passes`
+    - it calls `ac_translate_nir_to_llvm` to translate `nir_shader` to
+      `LLVMModuleRef`
+    - it calls `radv_compile_to_elf` to compile llvm ir to binary
+      - it calls `ac_compile_module_to_elf` to do the work
+- IOW, these functions from ac llvm are used
+  - `ac_init_llvm_once` calls `ac_init_llvm_target` once
+    - when a process loads both the gpu and the video drivers, and when shared
+      llvm is enabled, it has a hack to make sure `ac_init_llvm_target` is
+      still called once
+      - it makes `ac_init_shared_llvm_once` public, such that both drivers
+        resolve to the same definition of `ac_init_shared_llvm_once`
+    - `ac_llvm_run_atexit_for_destructors` makes sure llvm's static variables
+      are destructed after mesa's atexit handlers
+  - `ac_init_llvm_compiler` calls
+    - `ac_create_target_machine` to create a `LLVMTargetMachineRef`
+    - `ac_create_target_library_info` to create a `LLVMTargetLibraryInfoRef`
+    - `ac_create_passmgr` to create a `LLVMPassManagerRef`
+      - this passmgr is used after nir to llvm ir translation
+  - `ac_create_llvm_passes` creates a `legacy::PassManager`
+    - this passmgr is used to codegen
+  - various functions from `ac_llvm_build.c`
+    - they translate nir to llvm ir
+  - `ac_compile_module_to_elf` compiles llvm ir to binary
