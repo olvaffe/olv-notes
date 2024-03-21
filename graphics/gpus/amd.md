@@ -919,6 +919,11 @@ AMD
 - <https://gitlab.freedesktop.org/tomstdenis/umr.git>
   - `cmake -S. -Bout -GNinja`
     - optional: `-DUMR_NO_LLVM=ON -DUMR_NO_GUI=ON -DUMR_NO_SERVER=ON`
+- deploy
+  - `scp -C out/src/app/umr dut:/usr/local/bin`
+  - `ssh dut mkdir -p /usr/local/share/umr`
+  - `tar -zc database | ssh dut tar -zx -C /usr/local/share/umr`
+- run
   - device selection
     - `--force` to override the asic
       - e.g., `--force yellow_carp`
