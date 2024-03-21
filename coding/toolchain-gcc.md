@@ -102,6 +102,35 @@ GNU Toolchain
 - `libc.so` is a linker script
   - `/usr/aarch64-linux-gnu/lib/libc.so` hard-codes a wrong library on arch
 
+## Options for Linking
+
+- `Options for Linking` section of `man gcc`
+- `-fuse-ld` selects the linker
+  - `-fuse-ld=gold` or `-fuse-ld=lld`
+- the compiler automatically links some standard helpers/libraries
+  - `-nostartfiles` to skip startup files
+    - e.g., `cannot find entry symbol _start`
+    - according to `-v`, these files are skipped
+      - `Scrt1.o`
+      - `crti.o`
+      - `crtbeginS.o`
+      - `crtendS.o`
+      - `crtn.o`
+  - `-nodefaultlibs` to skip default runtime
+    - e.g., `undefined reference to '__libc_start_main'`
+    - according to `-v`, these are skipped
+      - `-lgcc`
+      - `-lgcc_s`
+      - `-lc`
+  - `-nolibc` to skip c runtime
+    - e.g., `undefined reference to '__libc_start_main'`
+    - according to `-v`, `-lc` is skipped
+  - `-nostdlib` to skip everything mentioned above
+- `-stdlib` selects the c++ runtime
+  - `libstdc++` or `libc++`
+- `-static-libstdc++` static links the c++ runtime
+- `-static` static links all libraries
+
 ## gcc specs
 
 - `gcc -dumpspecs` to show built-in specs.

@@ -497,21 +497,6 @@ the sizeof(long) actually varies between the targets we care about.
   - Follow GNU99 and use `inline` with definition in headers.  It has the same
     effect as GNU89's `extern inline`.  So some file must define it.
 
-## Options for Linking
-
-- `Options for Linking` section of `man gcc`
-- the compiler automatically links some standard helpers/libraries
-- `-fuse-ld` selects the linker
-  - `-fuse-ld=gold` or `-fuse-ld=lld`
-- `-nostartfiles` to skip startup files such as `crtbegin.o`
-- `-nodefaultlibs` to skip compiler runtime such as `libgcc`
-- `-nolibc` to skip c/c++ runtime; that is, skip `libc` or `libstdc++`
-- `-nostdlib` implies all above
-- `-stdlib` selects the c++ runtime
-  - `libstdc++` or `libc++`
-- `-static-libstdc++` static links the c++ runtime
-- `-static` static links all libraries
-
 ## Concurrent Programming History
 
 - First Mutual Exclusion Problem and Solution
