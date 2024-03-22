@@ -96,9 +96,8 @@ Mesa RADV
     - if a client opens the same render node twice to get two fds,
       `amdgpu_device_initialize` return the same `amdgpu_device` for the two
       fds
-    - those fds however refer to different `drm_file`s and the assumption
-      behinds `bo_handles` is incorrect
-    - IOW, this is an invalid usage of the `libdrm_amdgpu`
+    - `amdgpu_device` does not use the second fd at all and the second
+      `drm_file` is ignored completely
 - device query
   - `amdgpu_device_get_fd` returns the original fd
   - `amdgpu_get_marketing_name` reutrns the pretty name
@@ -220,6 +219,7 @@ Mesa RADV
           address space)
   - there is a 1:1 mapping between `amdgpu_device_handle` and
     `radv_amdgpu_winsys`
+    - `winsys_creation_mutex` and `winsyses` are for that purpose
   - `ac_query_gpu_info` is called to initialize `radeon_info`
     - `meminfo` is from kernel's `AMDGPU_INFO_MEMORY`
       - on a renoir apu,
