@@ -220,6 +220,12 @@ Mesa RADV
   - there is a 1:1 mapping between `amdgpu_device_handle` and
     `radv_amdgpu_winsys`
     - `winsys_creation_mutex` and `winsyses` are for that purpose
+    - this was done for memory budget
+      - <https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/9651>
+    - because of this, while two phsyical devices in two vk instances have
+      their own `physical_dev->local_fd`, they share the same
+      `physical_dev->ws`
+      - as such, they are not isolated within the same process
   - `ac_query_gpu_info` is called to initialize `radeon_info`
     - `meminfo` is from kernel's `AMDGPU_INFO_MEMORY`
       - on a renoir apu,

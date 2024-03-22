@@ -34,16 +34,44 @@ Gallium Radeon SI
   - the function calls back to `radeonsi_screen_create_impl` to create the
     screen
 - `amdgpu_screen_winsys`, `amdgpu_winsys`, and `amdgpu_device_handle`
-  - `amdgpu_device_handle` wraps a `struct drm_device`
+  - `amdgpu_device_handle` wraps a kernel `struct drm_device`
     - when `amdgpu_device_initialize` is called twice, and the fds refer to
-      the same `struct drm_device`, the same `amdgpu_device_handle` is
+      the same kernel `struct drm_device`, the same `amdgpu_device_handle` is
       returned
+    - when the two fds refer to the same kernel `struct drm_device` but
+      different kernel `struct drm_file`, things get tricky
+      - `amdgpu_device_handle` only uses the first fd
+      - the second fd is completely ignored
   - `amdgpu_winsys` wraps a `amdgpu_device_handle`
-    - `dev_tab` makes sure there is a 1:1 mapping
+    - `dev_tab` and `dev_tab_mutex` make sure there is a 1:1 mapping
     - `amdgpu_winsys::fd` and `amdgpu_device_get_fd()` always refer to the
       same `struct drm_file`
   - `amdgpu_screen_winsys` wraps a `struct drm_file`
-    - when `amdgpu_winsys_create` is called twoce, and the fds refer to the same `struct drm_file`,
-      the same `amdgpu_screen_winsys` is returned
+    - when `amdgpu_winsys_create` is called twice, and the fds refer to the
+      same kernel `struct drm_file`, the same `amdgpu_screen_winsys` is
+      returned
   - `are_file_descriptions_equal` returns true when two fds refer to the same
     `struct drm_file`
+- `amdgpu_bo_real` and `amdgpu_bo_handle`
+  - `amdgpu_bo_handle` wraps a kernel `struct drm_gem_object`
+    - `amdgpu_device_handle` makes sure there is a 1:1 mapping
+      - when `amdgpu_bo_alloc` allocates a new bo, the userspace creates a new
+        `amdgpu_bo_handle` and the kernel creates a new `drm_gem_object`
+      - when `amdgpu_bo_import` imports a dma-buf, the userspace creates a new
+        `amdgpu_bo_handle` only when the kernel creates a new `drm_gem_object`
+  - `amdgpu_bo_real` wraps a `amdgpu_bo_handle`
+- when a client opens a render node and passes the fd to `gbm_create_device`
+  - if there is no pre-existing `amdgpu_device_handle` for the render node,
+    this
+    - creates `amdgpu_device_handle` with the fd
+    - creates `amdgpu_winsys` with the fd
+    - creates `amdgpu_screen_winsys` with the fd
+    - `gbm_bo_create` allocates the bo using the fd
+  - but if there is a pre-existing `amdgpu_device_handle` for the render node,
+    because the fd refers to a different kernel `struct drm_file`, it
+    - reuses `amdgpu_device_handle` with a different fd
+    - reuses or creates `amdgpu_winsys`, depending on the pre-xisting
+      `amdgpu_device_handle` is created by `amdgpu_winsys_create` or not
+    - creates `amdgpu_screen_winsys` with the fd
+    - `gbm_bo_create` allocates the bo using the different fd
+      - then exported as dma-buf and imported into this fd
