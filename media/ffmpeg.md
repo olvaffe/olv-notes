@@ -81,3 +81,12 @@ FFmpeg
 - one buffer is allocated for AVFrame, another buffer is allocated for
   compressed data
 - `avcodec_encode_video` encodes a frame and outputs to the second buffer.
+
+## mpv
+
+- `mpv -v <file>` shows that
+  - `demux` uses `libavformat`
+  - `vo` uses `vo/gpu/opengl` and `vo/gpu/x11`
+  - `vd` uses sw
+- `--hwdec=vaapi` to use vaapi for `vd`
+  - or `--hwdec=auto` to try all supported apis

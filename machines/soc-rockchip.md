@@ -25,6 +25,7 @@ Rockchip SoCs
   - RK3566, A55 x4
   - RK3568, A55 x4 @2.0GHz
   - RK3568J, A55 x4
+  - RK3582, A76 x2 + A55 x4, no GPU
   - RK3588, A76 x4 + A55 x4
 - RK Power series
   - PX2, A9 x2 @1.4GHz

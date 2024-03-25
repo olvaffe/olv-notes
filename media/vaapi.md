@@ -17,6 +17,7 @@ Codecs
       - old: <https://github.com/intel/intel-vaapi-driver>
     - vdpau adapter
     - nvdec adapter
+  - `LIBVA_DRIVERS_PATH` to specify an alternative driver path
 - VDPAU
   - <https://gitlab.freedesktop.org/vdpau/libvdpau>
   - open api designed by nvidia
