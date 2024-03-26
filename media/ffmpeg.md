@@ -4,6 +4,23 @@ FFmpeg
 ## Overview
 
 - <https://git.ffmpeg.org/ffmpeg.git>
+- libraries
+  - `libavutil` provides string functions, rng, math, etc.
+  - `libswscale` provides image scaling, color space and format conversions,
+    etc.
+  - `libswresample` provides audio resampling, format conversion, and
+    rematrixing
+  - `libavcodec` provides decoders and encoders (codecs) for audio, video,
+    and subtitle streams
+    - `ffmpeg -codecs` lists them
+  - `libavformat` provides demuxers and muxers for audio, video, and subtitle
+    streams
+    - it also supports several input and output protocols
+    - `ffmpeg -formats` and `ffmpeg -protocols` list them
+  - `libavdevice` provides input/output devices such as v4l2, alsa, opengl, etc.
+      - `ffmpeg -devices` list them
+  - `libavfilter` provides filters for audio and video streams
+      - `ffmpeg -filters` list them
 - `ffmpeg <options> <inputs> <outputs>`
   - `<options>` are global options
   - `<inputs>` are arbitrary number of inputs and input options
@@ -31,6 +48,9 @@ FFmpeg
   - it is similar to an input
   - `ffmpeg -muxers` shows the supported formats that are muxers
   - `ffmpeg -encoders` shows the supported codec encoders
+- stream specifier
+  - `-codec ac3` selects ac3 for all streams
+  - `-codec:a:0 ac3` selects ac3 for audio stream #0
 
 ## Hardware Acceleration
 

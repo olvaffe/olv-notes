@@ -81,3 +81,9 @@ Gentoo
   - require USE: `app-misc/foo[-bar,baz]`
     - `foo` must have `baz` and must not have `bar`
     - `app-misc/foo[bar?]` is shorthand for `bar? ( app-misc/foo[bar] ) !bar? ( app-misc/foo )`
+
+## USE Flags
+
+- <https://devmanual.gentoo.org/general-concepts/use-flags/index.html>
+- `IUSE` defaults
+  - `+`/`-` enables/disables a USE flag by default
