@@ -440,3 +440,15 @@ Chrome OS Testing
     - `vp9_1080_30fps_ash`
     - `h264_1080_30fps_lacros`
     - `vp9_1080_30fps_lacros`
+
+## Test Suites
+
+- `src/third_party/autotest/files/test_suites/control.graphics_per-week`
+  - this defines test suite `graphics_per-week`
+- `src/third_party/autotest/files/client/site_tests/graphics_parallel_dEQP/control.vk.0`
+  - this test has `suite:graphics_per-week` and is a member of the test suite
+  - it runs `graphics_parallel_dEQP` autotest with the specified args
+- `src/third_party/autotest/files/server/site_tests/tast/control.graphics-weekly`
+  - this test has `suite:graphics_per-week` and is a member of the test suite
+  - it runs `tast` autotest with the specified args
+    - this in turn runs tast tests that match the specified args
