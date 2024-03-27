@@ -99,3 +99,20 @@ Gallium Radeon SI
         - creates a new `amdgpu_winsys` (instead of reusing)
         - creates a new `amdgpu_screen_winsys`
         - creates a new `si_screen`
+
+## Flush
+
+- `glFlush` dispatches to `_mesa_Flush`
+  - `PIPE_FLUSH_ASYNC` is set unless the gl context uses egl images and
+    `ctx->Shared->HasExternallySharedImages` is true
+- `eglSwapBuffers` dispatches to `dri2_swap_buffers`
+  - all platforms call `dri2_flush_drawable_for_swapbuffers` to flush
+  - that jumps to `dri_flush` in the DRI driver with `__DRI2_FLUSH_DRAWABLE`
+    and `__DRI2_FLUSH_INVALIDATE_ANCILLARY` as the flags and
+    `__DRI2_THROTTLE_SWAPBUFFER` as the reason
+  - `st_context_flush` is called `ST_FLUSH_END_OF_FRAME`
+    - it translate the flag to `PIPE_FLUSH_END_OF_FRAME`
+- `si_flush_from_st` always calls `si_flush_gfx_cs` with `PIPE_FLUSH_ASYNC`
+  - `RADEON_FLUSH_START_NEXT_GFX_IB_NOW` is set on newer kernels
+- `amdgpu_cs_flush` adds the submit to the queue
+  - because `PIPE_FLUSH_ASYNC` is set, it happens some time later
