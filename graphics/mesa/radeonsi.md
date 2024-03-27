@@ -75,3 +75,27 @@ Gallium Radeon SI
     - creates `amdgpu_screen_winsys` with the fd
     - `gbm_bo_create` allocates the bo using the different fd
       - then exported as dma-buf and imported into this fd
+- `eglInitialize`, `gbm_create_device`, and `vaInitialize`
+  - all three call `radeonsi_screen_create`
+    - `amdgpu_winsys_create` calls `radeonsi_screen_create_impl`
+    - `radeonsi_screen_create_impl` calls `si_create_context` twice for
+      `aux_contexts`
+  - when they are all called for the same render node from the same process
+    - the first `amdgpu_winsys_create` call
+      - creates a new `amdgpu_winsys`
+      - creates a new `amdgpu_screen_winsys`
+      - creates a new `si_screen`
+    - the rest `amdgpu_winsys_create` calls
+      - reuse the same `amdgpu_winsys`
+      - create new `amdgpu_winsys`
+      - creates new `si_screen`
+      - `are_file_descriptions_equal` should be false
+    - but if `amdgpu_winsys_create` is made a private symbol,
+      - `eglInitialize` and `gbm_create_device` both load `radeonsi_dri.so`
+      - `vaInitialize` loads `radeonsi_drv_video.so`
+      - the first `amdgpu_winsys_create` call behaves the same as before
+      - the second `amdgpu_winsys_create` call, if called from a different
+        library,
+        - creates a new `amdgpu_winsys` (instead of reusing)
+        - creates a new `amdgpu_screen_winsys`
+        - creates a new `si_screen`
