@@ -1,6 +1,26 @@
 Mesa meson
 ==========
 
+## Common Options
+
+- vulkan-only build
+  - `-Dgallium-drivers= -Dvulkan-drivers=foo`
+  - all other apis depending on gallium are automatically disabled
+- gallium-only build
+  - `-Dgallium-drivers=foo -Dvulkan-drivers=`
+  - if the system is GLVND-enabled, `-Dglvnd=enabled`
+  - OpenGL/ES are enabled automatically
+    - to disable OpenGL, `-Dopengl=false`
+    - to disable ES, `-Dgles1=false` and `-Dgles2=false`
+  - EGL/GLX/GBM are enabled automatically when OpenGL/ES are enabled
+    - to disable EGL, `-Degl=disabled`
+    - to disable GLX, `-Dglx=disabled`
+    - to disable GBM, `-Dgbm=disabled`
+  - VAAPI/VDPAU driver is enabled automatically,
+    - to disable VAAPI driver, `-Dgallium-va=disabled`
+    - to disable VDPAU driver, `-Dgallium-vdpau=disabled`
+    - to enable proprietary codecs, `-Dvideo-codecs=all`
+
 ## Options
 
 - `allow-kcmp` defines `-DALLOW_KCMP`
