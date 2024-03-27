@@ -52,6 +52,15 @@ Chrome OS SDK
   - `crossystem devsw_boot` should return 1
   - if not, re-enter the developer mode
 
+## Exit Developer Mode
+
+- if a dev-signed firmware is flashed,
+  - copy `chromeos-firmwareupdate` from a signed image and
+    `chromeos-firmwareupdate -m recovery --force` to flash a MP-signed
+    firmware
+- flash a signed image
+- return to secure mode
+
 ## Get Source
 
 - <https://chromium.googlesource.com/chromiumos/docs/+/main/developer_guide.md>
