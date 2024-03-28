@@ -54,12 +54,16 @@ Chrome OS SDK
 
 ## Exit Developer Mode
 
-- if a dev-signed firmware is flashed,
-  - copy `chromeos-firmwareupdate` from a signed image and
-    `chromeos-firmwareupdate -m recovery --force` to flash a MP-signed
-    firmware
-- flash a signed image
+- enable usb boot
+  - if a dev-signed firmware is flashed, recovery mode does not work
+  - it is possible to copy `chromeos-firmwareupdate` from a signed image and
+    `chromeos-firmwareupdate -m factory --force` to flash a MP-signed firmware
+    manually, but usb boot is simpler
+- flash a signed image to usb
+- boot from usb
+  - this will flash both the mp-signed firmware and image
 - return to secure mode
+  - or not
 
 ## Get Source
 
