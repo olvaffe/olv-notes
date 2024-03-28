@@ -182,6 +182,16 @@ Chrome OS SDK
   - these flash `~/trunk/src/build/images/$BOARD/latest`
 - flash using a devserver
   - `cros flash ssh://<DUT-IP> xbuddy://remote/<<BOARD>/<VERSION>/<TYPE>`
+  - `TYPE` can be
+    - `test` (default) is `base` plus dev and test packages
+      - `chromiumos_test_image.tar.xz`
+    - `base` is the base image signed with dev key
+      - `chromiumos_base_image.tar.xz`
+    - `recovery` is the recovery image signed with dev key
+      - `recovery_image.tar.xz`
+      - this requires `dev_boot_usb=1`
+    - `signed` is `recovery` signed with mp key
+      - this is for use with the recovery mode
 - flash using a usb disk
   - after flashing the image to a usb disk, boot from usb and run
   - `chromeos-install`
