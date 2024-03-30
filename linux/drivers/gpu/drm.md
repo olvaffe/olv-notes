@@ -173,18 +173,19 @@ Kernel DRM
   - rendernode-allowed ops must be explicitly whitelisted
   - while rendernode is assumed authenticated, the autenticated-only ops above
     are not on the white list
-- ioctl flags
+- `drm_ioctl_kernel` and ioctl flags
   - `DRM_ROOT_ONLY`
-    - allow if `capable(CAP_SYS_ADMIN)`
-  - `DRM_MASTER`: the ioctl requires master
-    - allow if `drm_is_current_master(file_priv)`
+    - allow only if `capable(CAP_SYS_ADMIN)`
   - `DRM_AUTH`
-    - allow if `drm_is_render_client(file_priv)` or `file_priv->authenticated`
+    - allow only if `drm_is_render_client(file_priv)` or
+      `file_priv->authenticated`
     - `authenticated` if root or master or authed by master
-  - `DRM_UNLOCKED`
-    - lock `drm_global_mutex` if `DRIVER_LEGACY` and this bit is not set
+  - `DRM_MASTER`
+    - allow only if `drm_is_current_master(file_priv)`
   - `DRM_RENDER_ALLOW`
-    - disallow if `drm_is_render_client(file_priv)`
+    - when cleared, deny if `drm_is_render_client(file_priv)`
+  - `DRM_UNLOCKED`
+    - when cleared, lock `drm_global_mutex` if `DRIVER_LEGACY`
 - ioctl hex val
   - according to `_IOC(dir,type,nr,size)` macro,
     - bit 0..7: `nr`

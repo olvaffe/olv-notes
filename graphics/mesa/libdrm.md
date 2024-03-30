@@ -1,6 +1,257 @@
 libdrm
 ======
 
+## API
+
+- enumeration functions
+  - `drmGetDevices2` and `drmGetDevices` enumerate available drm devices
+  - `drmFreeDevices` and `drmFreeDevice` free `drmDevicePtr`
+- `dev_t` functions
+  - `drmGetDeviceFromDevId` returns `drmDevicePtr` from `dev_t`
+  - `drmGetNodeTypeFromDevId` returns the node type (primary or render) of a
+    `dev_t`
+- query functions
+  - `drmGetVersion` wraps `DRM_IOCTL_VERSION`
+    - it queries driver version and name
+  - `drmFreeVersion` wraps `free`
+  - `drmGetCap` wraps `DRM_IOCTL_GET_CAP`
+    - it queries a driver cap such as dumb, prime, etc.
+  - `drmGetNodeTypeFromFd` returns the node type (primary or render) of an fd
+  - `drmGetDeviceNameFromFd` returns the primary node path for fd
+  - `drmGetDeviceNameFromFd2` returns the node path for fd
+  - `drmGetPrimaryDeviceNameFromFd` returns the primary node path for fd
+  - `drmGetRenderDeviceNameFromFd` returns the render node path for fd
+- vblank functions
+  - `drmCrtcGetSequence` wraps `DRM_IOCTL_CRTC_GET_SEQUENCE`
+  - `drmCrtcQueueSequence` wraps `DRM_IOCTL_CRTC_QUEUE_SEQUENCE`
+  - `drmWaitVBlank` wraps `DRM_IOCTL_WAIT_VBLANK`
+    - `DRM_IOCTL_CRTC_QUEUE_SEQUENCE` is the newer replacement
+  - `drmHandleEvent` reads a DRM event (vblank, flip, or crtc seq)
+- prime functions
+  - `drmPrimeFDToHandle` wraps `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+  - `drmPrimeHandleToFD` wraps `DRM_IOCTL_PRIME_HANDLE_TO_FD`
+  - `drmCloseBufferHandle` wraps `DRM_IOCTL_GEM_CLOSE`
+- syncobj functions
+  - `drmSyncobjCreate` wraps `DRM_IOCTL_SYNCOBJ_CREATE`
+  - `drmSyncobjDestroy` wraps `DRM_IOCTL_SYNCOBJ_DESTROY`
+  - `drmSyncobjReset` wraps `DRM_IOCTL_SYNCOBJ_RESET`
+  - `drmSyncobjSignal` wraps `DRM_IOCTL_SYNCOBJ_SIGNAL`
+  - `drmSyncobjWait` wraps `DRM_IOCTL_SYNCOBJ_WAIT`
+  - `drmSyncobjTimelineSignal` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_SIGNAL`
+  - `drmSyncobjTimelineWait` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT`
+  - `drmSyncobjTransfer` wraps `DRM_IOCTL_SYNCOBJ_TRANSFER`
+  - `drmSyncobjQuery2` and `drmSyncobjQuery` wrap `DRM_IOCTL_SYNCOBJ_QUERY`
+  - `drmSyncobjEventfd` wraps `DRM_IOCTL_SYNCOBJ_EVENTFD`
+  - `drmSyncobjFDToHandle` and `drmSyncobjImportSyncFile` wrap
+    `DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE`
+  - `drmSyncobjHandleToFD` and `drmSyncobjExportSyncFile` wrap
+    `DRM_IOCTL_SYNCOBJ_HANDLE_TO_FD`
+- master functions
+  - `drmIsMaster` returns true if the `drm_file` is master
+  - `drmSetMaster` wraps `DRM_IOCTL_SET_MASTER`
+  - `drmDropMaster` wraps `DRM_IOCTL_DROP_MASTER`
+- atomic modeset functions
+  - `drmIsKMS` checks `DRM_IOCTL_MODE_GETRESOURCES` to see if modeset is
+    supported
+  - `drmSetClientCap` wraps `DRM_IOCTL_SET_CLIENT_CAP`
+    - modeset clients use this to enable atomic modesetting, universal planes,
+      etc.
+  - `drmModeAddFB` wraps `DRM_IOCTL_MODE_ADDFB`
+  - `drmModeAddFB2` and `drmModeAddFB2WithModifiers` wrap
+    `DRM_IOCTL_MODE_ADDFB2`
+  - `drmModeCloseFB` wraps `DRM_IOCTL_MODE_CLOSEFB`
+  - `drmModeAtomicAddProperty`
+  - `drmModeAtomicAlloc`
+  - `drmModeAtomicCommit` wraps `DRM_IOCTL_MODE_ATOMIC`
+  - `drmModeAtomicDuplicate`
+  - `drmModeAtomicFree`
+  - `drmModeAtomicGetCursor`
+  - `drmModeAtomicMerge`
+  - `drmModeAtomicSetCursor`
+- legacy modeset functions
+  - `drmModeAttachMode` wraps `DRM_IOCTL_MODE_ATTACHMODE`
+    - it is stubbed out in kernel
+- modeset functions
+  - `drmModeConnectorGetPossibleCrtcs`
+  - `drmModeConnectorSetProperty` wraps `DRM_IOCTL_MODE_SETPROPERTY`
+  - `drmModeCreateDumbBuffer` wraps `DRM_IOCTL_MODE_CREATE_DUMB`
+  - `drmModeCreateLease` wraps `DRM_IOCTL_MODE_CREATE_LEASE`
+  - `drmModeCreatePropertyBlob` wraps `DRM_IOCTL_MODE_CREATEPROPBLOB`
+  - `drmModeCrtcGetGamma` wraps `DRM_IOCTL_MODE_GETGAMMA`
+  - `drmModeCrtcSetGamma` wraps `DRM_IOCTL_MODE_SETGAMMA`
+  - `drmModeDestroyDumbBuffer` wraps `DRM_IOCTL_MODE_DESTROY_DUMB`
+  - `drmModeDestroyPropertyBlob` wraps `DRM_IOCTL_MODE_DESTROYPROPBLOB`
+  - `drmModeDetachMode` wraps `DRM_IOCTL_MODE_DETACHMODE`
+    - it is stubbed out in kernel
+  - `drmModeDirtyFB` wraps `DRM_IOCTL_MODE_DIRTYFB`
+  - `drmModeFormatModifierBlobIterNext`
+  - `drmModeFreeConnector`
+  - `drmModeFreeCrtc`
+  - `drmModeFreeEncoder`
+  - `drmModeFreeFB`
+  - `drmModeFreeFB2`
+  - `drmModeFreeModeInfo`
+  - `drmModeFreeObjectProperties`
+  - `drmModeFreePlane`
+  - `drmModeFreePlaneResources`
+  - `drmModeFreeProperty`
+  - `drmModeFreePropertyBlob`
+  - `drmModeFreeResources`
+  - `drmModeGetConnector` wraps `DRM_IOCTL_MODE_GETCONNECTOR`
+  - `drmModeGetConnectorCurrent` wraps `DRM_IOCTL_MODE_GETCONNECTOR`
+  - `drmModeGetConnectorTypeName`
+  - `drmModeGetCrtc` wraps `DRM_IOCTL_MODE_GETCRTC`
+  - `drmModeGetEncoder` wraps `DRM_IOCTL_MODE_GETENCODER`
+  - `drmModeGetFB` wraps `DRM_IOCTL_MODE_GETFB`
+  - `drmModeGetFB2` wraps `DRM_IOCTL_MODE_GETFB2`
+  - `drmModeGetLease` wraps `DRM_IOCTL_MODE_GET_LEASE`
+  - `drmModeGetPlane` wraps `DRM_IOCTL_MODE_GETPLANE`
+  - `drmModeGetPlaneResources` wraps `DRM_IOCTL_MODE_GETPLANERESOURCES`
+  - `drmModeGetProperty` wraps `DRM_IOCTL_MODE_GETPROPERTY`
+  - `drmModeGetPropertyBlob` wraps `DRM_IOCTL_MODE_GETPROPBLOB`
+  - `drmModeGetResources` wraps `DRM_IOCTL_MODE_GETRESOURCES`
+  - `drmModeListLessees` wraps `DRM_IOCTL_MODE_LIST_LESSEES`
+  - `drmModeMapDumbBuffer` wraps `DRM_IOCTL_MODE_MAP_DUMB`
+  - `drmModeMoveCursor` wraps `DRM_IOCTL_MODE_CURSOR`
+  - `drmModeObjectGetProperties` wraps `DRM_IOCTL_MODE_OBJ_GETPROPERTIES`
+  - `drmModeObjectSetProperty` wraps `DRM_IOCTL_MODE_OBJ_SETPROPERTY`
+  - `drmModePageFlip` wraps `DRM_IOCTL_MODE_PAGE_FLIP`
+  - `drmModePageFlipTarget` wraps `DRM_IOCTL_MODE_PAGE_FLIP`
+  - `drmModeRevokeLease` wraps `DRM_IOCTL_MODE_REVOKE_LEASE`
+  - `drmModeRmFB` wraps `DRM_IOCTL_MODE_RMFB`
+  - `drmModeSetCrtc` wraps `DRM_IOCTL_MODE_SETCRTC`
+  - `drmModeSetCursor` wraps `DRM_IOCTL_MODE_CURSOR`
+  - `drmModeSetCursor2` wraps `DRM_IOCTL_MODE_CURSOR2`
+  - `drmModeSetPlane` wraps `DRM_IOCTL_MODE_SETPLANE`
+- misc functions
+  - `drmIoctl` wraps `ioctl`
+  - `drmGetFormatName` returns the fourcc string of a fourcc format
+  - `drmGetFormatModifierName` returns the descriptive name of a modifier
+  - `drmGetFormatModifierVendor` returns the vendor name of a modifier
+- legacy misc functions
+  - `drmGetLibVersion` returns libdrm version
+  - `drmAvailable` returns true if it can open the first primary node
+  - `drmGetDevice2` and `drmGetDevice` returns `drmDevicePtr` from an fd
+  - `drmDevicesEqual` returns true if two `drmDevicePtr` point to the same drm
+    device
+  - `drmGetMagic` wraps `DRM_IOCTL_GET_MAGIC`
+    - this queries the magic of a primary `drm_file`
+    - the magic can be sent to master for auth
+  - `drmAuthMagic` wraps `DRM_IOCTL_AUTH_MAGIC`
+  - `drmGetClient` wraps `DRM_IOCTL_GET_CLIENT`
+    - it returns whether the `drm_file` is authenticated
+  - `drmCommandNone`, `drmCommandRead`, `drmCommandWrite`, and
+    `drmCommandWriteRead` wrap `drmIoctl`
+  - `drmGetHashTable` returns the global `drmHashTable`
+  - `drmGetEntry` queries the hash entry associated with the fd
+  - `drmMsg` wraps `vfprintf`
+  - `drmMalloc` wraps `calloc`
+  - `drmFree` wraps `free`
+  - `drmMap` wraps `mmap`
+  - `drmUnmap` wraps `munmap`
+- legacy busid functions
+  - `drmSetInterfaceVersion` wraps `DRM_IOCTL_SET_VERSION`
+    - kernel sets the busid for the device
+  - `drmSetBusid` wraps `DRM_IOCTL_SET_UNIQUE`
+    - kernel always returns `-EINVAL`
+  - `drmGetBusid` wraps `DRM_IOCTL_GET_UNIQUE`
+    - it returns the busid if previously set
+  - `drmFreeBusid` wraps `free`
+  - `drmCheckModesettingSupported` returns true if busid supports modesetting
+- legacy open functions
+  - modern way is to enumerate and `open`/`close` directly instead
+  - `drmOpenWithType` opens by driver name or busid
+  - `drmOpen` wraps `drmOpenWithType` to open a primary node
+  - `drmOpenRender` opens a render node by its minor number
+  - `drmOpenControl` opens a control node by its minor number
+    - kernel never creates control nodes
+  - `drmClose` updates global `drmHashTable` before `close`
+  - `drmOpenOnceWithType` opens by busid
+    - if the same busid is opened multiple times, the same fd is returned
+  - `drmOpenOnce` wraps `drmOpenOnceWithType` to open a primary node
+  - `drmCloseOnce` wraps `drmClose` when the last ref to fd is closed
+
+## Legacy DRI1 API
+
+- legacy context functions
+  - `drmCreateContext` wraps `DRM_IOCTL_ADD_CTX`
+  - `drmDestroyContext` wraps `DRM_IOCTL_RM_CTX`
+  - `drmSetContextFlags` wraps `DRM_IOCTL_MOD_CTX`
+  - `drmGetContextFlags` wraps `DRM_IOCTL_GET_CTX`
+  - `drmSwitchToContext` wraps `DRM_IOCTL_SWITCH_CTX`
+  - `drmGetReservedContextList` wraps `DRM_IOCTL_RES_CTX`
+  - `drmFreeReservedContextList` wraps `free`
+  - `drmAddContextPrivateMapping` wraps `DRM_IOCTL_SET_SAREA_CTX`
+  - `drmGetContextPrivateMapping` wraps `DRM_IOCTL_GET_SAREA_CTX`
+  - `drmAddContextTag`, `drmDelContextTag`, and `drmGetContextTag` manipulate
+    a global `drmHashTable`
+- legacy drawable functions
+  - `drmCreateDrawable` wraps `DRM_IOCTL_ADD_DRAW`
+  - `drmDestroyDrawable` wraps `DRM_IOCTL_RM_DRAW`
+  - `drmUpdateDrawableInfo` wraps `DRM_IOCTL_UPDATE_DRAW`
+- legacy agp functions
+  - `drmAgpAcquire` wraps `DRM_IOCTL_AGP_ACQUIRE`
+  - `drmAgpAlloc` wraps `DRM_IOCTL_AGP_ALLOC`
+  - `drmAgpBind` wraps `DRM_IOCTL_AGP_BIND`
+  - `drmAgpEnable` wraps `DRM_IOCTL_AGP_ENABLE`
+  - `drmAgpFree` wraps `DRM_IOCTL_AGP_FREE`
+  - `drmAgpRelease` wraps `DRM_IOCTL_AGP_RELEASE`
+  - `drmAgpUnbind` wraps `DRM_IOCTL_AGP_UNBIND`
+  - `drmAgpBase`, `drmAgpDeviceId`, `drmAgpGetMode`, `drmAgpMemoryAvail`,
+    `drmAgpMemoryUsed`, `drmAgpSize`, `drmAgpVendorId`, `drmAgpVersionMajor`,
+    and `drmAgpVersionMinor` wrap `DRM_IOCTL_AGP_INFO`
+- legacy dma functions
+  - `drmGetMap` wraps `DRM_IOCTL_GET_MAP`
+  - `drmAddMap` wraps `DRM_IOCTL_ADD_MAP`
+  - `drmRmMap` wraps `DRM_IOCTL_RM_MAP`
+  - `drmAddBufs` wraps `DRM_IOCTL_ADD_BUFS`
+  - `drmFreeBufs` wraps `DRM_IOCTL_FREE_BUFS`
+  - `drmGetBufInfo` wraps `DRM_IOCTL_INFO_BUFS`
+  - `drmMapBufs` wraps `DRM_IOCTL_MAP_BUFS`
+  - `drmUnmapBufs` wraps `munmap`
+  - `drmMarkBufs` wraps `DRM_IOCTL_MARK_BUFS`
+  - `drmDMA` wraps `DRM_IOCTL_DMA`
+- legacy irq functions
+  - `drmCtlInstHandler` and `drmCtlUninstHandler` wrap `DRM_IOCTL_CONTROL`
+  - `drmGetInterruptFromBusID` wraps `DRM_IOCTL_IRQ_BUSID`
+- legacy lock functions
+  - `drmGetLock` wraps `DRM_IOCTL_LOCK`
+  - `drmUnlock` wraps `DRM_IOCTL_UNLOCK`
+- legacy scatter-gather functions
+  - `drmScatterGatherAlloc` wraps `DRM_IOCTL_SG_ALLOC`
+  - `drmScatterGatherFree` wraps `DRM_IOCTL_SG_FREE`
+- legacy misc functions
+  - `drmGetStats` wraps `DRM_IOCTL_GET_STATS`
+    - it is stubbed out in kernel
+  - `drmFinish` wraps `DRM_IOCTL_FINISH`
+  - `drmSetServerInfo` sets `drm_server_info`
+    - it is used by xserver DRI1 to change permissions, load kernel modules,
+      etc.
+  - `drmError` returns the string of an drm error code
+- legacy hash functions
+  - `drmHashCreate`
+  - `drmHashDelete`
+  - `drmHashDestroy`
+  - `drmHashFirst`
+  - `drmHashInsert`
+  - `drmHashLookup`
+  - `drmHashNext`
+- legacy rng functions
+  - `drmRandom`
+  - `drmRandomCreate`
+  - `drmRandomDestroy`
+  - `drmRandomDouble`
+- legacy skip list functions
+  - `drmSLCreate`
+  - `drmSLDelete`
+  - `drmSLDestroy`
+  - `drmSLDump`
+  - `drmSLFirst`
+  - `drmSLInsert`
+  - `drmSLLookup`
+  - `drmSLLookupNeighbors`
+  - `drmSLNext`
+
 ## `drmdevice`
 
 - it is to demonstrate `drmGetDevices2` and `drmGetDevice2`
