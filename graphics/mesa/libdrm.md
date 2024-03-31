@@ -1,7 +1,7 @@
 libdrm
 ======
 
-## API
+## Core API
 
 - enumeration functions
   - `drmGetDevices2` and `drmGetDevices` enumerate available drm devices
@@ -27,102 +27,6 @@ libdrm
   - `drmWaitVBlank` wraps `DRM_IOCTL_WAIT_VBLANK`
     - `DRM_IOCTL_CRTC_QUEUE_SEQUENCE` is the newer replacement
   - `drmHandleEvent` reads a DRM event (vblank, flip, or crtc seq)
-- prime functions
-  - `drmPrimeFDToHandle` wraps `DRM_IOCTL_PRIME_FD_TO_HANDLE`
-  - `drmPrimeHandleToFD` wraps `DRM_IOCTL_PRIME_HANDLE_TO_FD`
-  - `drmCloseBufferHandle` wraps `DRM_IOCTL_GEM_CLOSE`
-- syncobj functions
-  - `drmSyncobjCreate` wraps `DRM_IOCTL_SYNCOBJ_CREATE`
-  - `drmSyncobjDestroy` wraps `DRM_IOCTL_SYNCOBJ_DESTROY`
-  - `drmSyncobjReset` wraps `DRM_IOCTL_SYNCOBJ_RESET`
-  - `drmSyncobjSignal` wraps `DRM_IOCTL_SYNCOBJ_SIGNAL`
-  - `drmSyncobjWait` wraps `DRM_IOCTL_SYNCOBJ_WAIT`
-  - `drmSyncobjTimelineSignal` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_SIGNAL`
-  - `drmSyncobjTimelineWait` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT`
-  - `drmSyncobjTransfer` wraps `DRM_IOCTL_SYNCOBJ_TRANSFER`
-  - `drmSyncobjQuery2` and `drmSyncobjQuery` wrap `DRM_IOCTL_SYNCOBJ_QUERY`
-  - `drmSyncobjEventfd` wraps `DRM_IOCTL_SYNCOBJ_EVENTFD`
-  - `drmSyncobjFDToHandle` and `drmSyncobjImportSyncFile` wrap
-    `DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE`
-  - `drmSyncobjHandleToFD` and `drmSyncobjExportSyncFile` wrap
-    `DRM_IOCTL_SYNCOBJ_HANDLE_TO_FD`
-- master functions
-  - `drmIsMaster` returns true if the `drm_file` is master
-  - `drmSetMaster` wraps `DRM_IOCTL_SET_MASTER`
-  - `drmDropMaster` wraps `DRM_IOCTL_DROP_MASTER`
-- atomic modeset functions
-  - `drmIsKMS` checks `DRM_IOCTL_MODE_GETRESOURCES` to see if modeset is
-    supported
-  - `drmSetClientCap` wraps `DRM_IOCTL_SET_CLIENT_CAP`
-    - modeset clients use this to enable atomic modesetting, universal planes,
-      etc.
-  - `drmModeAddFB` wraps `DRM_IOCTL_MODE_ADDFB`
-  - `drmModeAddFB2` and `drmModeAddFB2WithModifiers` wrap
-    `DRM_IOCTL_MODE_ADDFB2`
-  - `drmModeCloseFB` wraps `DRM_IOCTL_MODE_CLOSEFB`
-  - `drmModeAtomicAddProperty`
-  - `drmModeAtomicAlloc`
-  - `drmModeAtomicCommit` wraps `DRM_IOCTL_MODE_ATOMIC`
-  - `drmModeAtomicDuplicate`
-  - `drmModeAtomicFree`
-  - `drmModeAtomicGetCursor`
-  - `drmModeAtomicMerge`
-  - `drmModeAtomicSetCursor`
-- legacy modeset functions
-  - `drmModeAttachMode` wraps `DRM_IOCTL_MODE_ATTACHMODE`
-    - it is stubbed out in kernel
-- modeset functions
-  - `drmModeConnectorGetPossibleCrtcs`
-  - `drmModeConnectorSetProperty` wraps `DRM_IOCTL_MODE_SETPROPERTY`
-  - `drmModeCreateDumbBuffer` wraps `DRM_IOCTL_MODE_CREATE_DUMB`
-  - `drmModeCreateLease` wraps `DRM_IOCTL_MODE_CREATE_LEASE`
-  - `drmModeCreatePropertyBlob` wraps `DRM_IOCTL_MODE_CREATEPROPBLOB`
-  - `drmModeCrtcGetGamma` wraps `DRM_IOCTL_MODE_GETGAMMA`
-  - `drmModeCrtcSetGamma` wraps `DRM_IOCTL_MODE_SETGAMMA`
-  - `drmModeDestroyDumbBuffer` wraps `DRM_IOCTL_MODE_DESTROY_DUMB`
-  - `drmModeDestroyPropertyBlob` wraps `DRM_IOCTL_MODE_DESTROYPROPBLOB`
-  - `drmModeDetachMode` wraps `DRM_IOCTL_MODE_DETACHMODE`
-    - it is stubbed out in kernel
-  - `drmModeDirtyFB` wraps `DRM_IOCTL_MODE_DIRTYFB`
-  - `drmModeFormatModifierBlobIterNext`
-  - `drmModeFreeConnector`
-  - `drmModeFreeCrtc`
-  - `drmModeFreeEncoder`
-  - `drmModeFreeFB`
-  - `drmModeFreeFB2`
-  - `drmModeFreeModeInfo`
-  - `drmModeFreeObjectProperties`
-  - `drmModeFreePlane`
-  - `drmModeFreePlaneResources`
-  - `drmModeFreeProperty`
-  - `drmModeFreePropertyBlob`
-  - `drmModeFreeResources`
-  - `drmModeGetConnector` wraps `DRM_IOCTL_MODE_GETCONNECTOR`
-  - `drmModeGetConnectorCurrent` wraps `DRM_IOCTL_MODE_GETCONNECTOR`
-  - `drmModeGetConnectorTypeName`
-  - `drmModeGetCrtc` wraps `DRM_IOCTL_MODE_GETCRTC`
-  - `drmModeGetEncoder` wraps `DRM_IOCTL_MODE_GETENCODER`
-  - `drmModeGetFB` wraps `DRM_IOCTL_MODE_GETFB`
-  - `drmModeGetFB2` wraps `DRM_IOCTL_MODE_GETFB2`
-  - `drmModeGetLease` wraps `DRM_IOCTL_MODE_GET_LEASE`
-  - `drmModeGetPlane` wraps `DRM_IOCTL_MODE_GETPLANE`
-  - `drmModeGetPlaneResources` wraps `DRM_IOCTL_MODE_GETPLANERESOURCES`
-  - `drmModeGetProperty` wraps `DRM_IOCTL_MODE_GETPROPERTY`
-  - `drmModeGetPropertyBlob` wraps `DRM_IOCTL_MODE_GETPROPBLOB`
-  - `drmModeGetResources` wraps `DRM_IOCTL_MODE_GETRESOURCES`
-  - `drmModeListLessees` wraps `DRM_IOCTL_MODE_LIST_LESSEES`
-  - `drmModeMapDumbBuffer` wraps `DRM_IOCTL_MODE_MAP_DUMB`
-  - `drmModeMoveCursor` wraps `DRM_IOCTL_MODE_CURSOR`
-  - `drmModeObjectGetProperties` wraps `DRM_IOCTL_MODE_OBJ_GETPROPERTIES`
-  - `drmModeObjectSetProperty` wraps `DRM_IOCTL_MODE_OBJ_SETPROPERTY`
-  - `drmModePageFlip` wraps `DRM_IOCTL_MODE_PAGE_FLIP`
-  - `drmModePageFlipTarget` wraps `DRM_IOCTL_MODE_PAGE_FLIP`
-  - `drmModeRevokeLease` wraps `DRM_IOCTL_MODE_REVOKE_LEASE`
-  - `drmModeRmFB` wraps `DRM_IOCTL_MODE_RMFB`
-  - `drmModeSetCrtc` wraps `DRM_IOCTL_MODE_SETCRTC`
-  - `drmModeSetCursor` wraps `DRM_IOCTL_MODE_CURSOR`
-  - `drmModeSetCursor2` wraps `DRM_IOCTL_MODE_CURSOR2`
-  - `drmModeSetPlane` wraps `DRM_IOCTL_MODE_SETPLANE`
 - misc functions
   - `drmIoctl` wraps `ioctl`
   - `drmGetFormatName` returns the fourcc string of a fourcc format
@@ -170,6 +74,130 @@ libdrm
     - if the same busid is opened multiple times, the same fd is returned
   - `drmOpenOnce` wraps `drmOpenOnceWithType` to open a primary node
   - `drmCloseOnce` wraps `drmClose` when the last ref to fd is closed
+
+## Interop API
+
+- prime functions
+  - `drmPrimeFDToHandle` wraps `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+  - `drmPrimeHandleToFD` wraps `DRM_IOCTL_PRIME_HANDLE_TO_FD`
+  - `drmCloseBufferHandle` wraps `DRM_IOCTL_GEM_CLOSE`
+- syncobj functions
+  - `drmSyncobjCreate` wraps `DRM_IOCTL_SYNCOBJ_CREATE`
+  - `drmSyncobjDestroy` wraps `DRM_IOCTL_SYNCOBJ_DESTROY`
+  - `drmSyncobjReset` wraps `DRM_IOCTL_SYNCOBJ_RESET`
+  - `drmSyncobjSignal` wraps `DRM_IOCTL_SYNCOBJ_SIGNAL`
+  - `drmSyncobjWait` wraps `DRM_IOCTL_SYNCOBJ_WAIT`
+  - `drmSyncobjTimelineSignal` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_SIGNAL`
+  - `drmSyncobjTimelineWait` wraps `DRM_IOCTL_SYNCOBJ_TIMELINE_WAIT`
+  - `drmSyncobjTransfer` wraps `DRM_IOCTL_SYNCOBJ_TRANSFER`
+  - `drmSyncobjQuery2` and `drmSyncobjQuery` wrap `DRM_IOCTL_SYNCOBJ_QUERY`
+  - `drmSyncobjEventfd` wraps `DRM_IOCTL_SYNCOBJ_EVENTFD`
+  - `drmSyncobjFDToHandle` and `drmSyncobjImportSyncFile` wrap
+    `DRM_IOCTL_SYNCOBJ_FD_TO_HANDLE`
+  - `drmSyncobjHandleToFD` and `drmSyncobjExportSyncFile` wrap
+    `DRM_IOCTL_SYNCOBJ_HANDLE_TO_FD`
+
+## Modeset API
+
+- negotiation functions
+  - `drmSetClientCap` wraps `DRM_IOCTL_SET_CLIENT_CAP`
+    - modeset clients use this to enable atomic modesetting, universal planes,
+      etc.
+  - `drmIsKMS` calls `DRM_IOCTL_MODE_GETRESOURCES` to see if modeset is
+    supported
+- master functions
+  - `drmIsMaster` returns true if the `drm_file` is master
+  - `drmSetMaster` wraps `DRM_IOCTL_SET_MASTER`
+  - `drmDropMaster` wraps `DRM_IOCTL_DROP_MASTER`
+- lease functions
+  - `drmModeCreateLease` wraps `DRM_IOCTL_MODE_CREATE_LEASE`
+  - `drmModeRevokeLease` wraps `DRM_IOCTL_MODE_REVOKE_LEASE`
+  - `drmModeGetLease` wraps `DRM_IOCTL_MODE_GET_LEASE`
+  - `drmModeListLessees` wraps `DRM_IOCTL_MODE_LIST_LESSEES`
+- resource functions
+  - `drmModeGetResources` wraps `DRM_IOCTL_MODE_GETRESOURCES`
+    - it returns resource ids for fbs, crtcs, connectors, and encoders
+  - `drmModeFreeResources`
+  - `drmModeGetFB` wraps `DRM_IOCTL_MODE_GETFB`
+    - it queries fb info from a fb id
+  - `drmModeFreeFB`
+  - `drmModeGetFB2` wraps `DRM_IOCTL_MODE_GETFB2`
+  - `drmModeFreeFB2`
+  - `drmModeGetCrtc` wraps `DRM_IOCTL_MODE_GETCRTC`
+    - it queries crtc info from a crtc id
+  - `drmModeFreeCrtc`
+  - `drmModeGetConnector` and `drmModeGetConnectorCurrent` wrap
+    `DRM_IOCTL_MODE_GETCONNECTOR`
+    - it queries connector info from a connector id
+    - `drmModeGetConnectorCurrent` limits the supported modes to the current
+      mode
+  - `drmModeFreeConnector`
+  - `drmModeGetEncoder` wraps `DRM_IOCTL_MODE_GETENCODER`
+    - it queries encoder info from an encoder id
+  - `drmModeFreeEncoder`
+  - `drmModeConnectorGetPossibleCrtcs`
+    - it calls `drmModeGetEncoder` on all encoders of the connector
+  - `drmModeGetPlaneResources` wraps `DRM_IOCTL_MODE_GETPLANERESOURCES`
+    - it returns resource ids for planes
+  - `drmModeFreePlaneResources`
+  - `drmModeGetPlane` wraps `DRM_IOCTL_MODE_GETPLANE`
+    - it queries plane info from a plane id
+  - `drmModeFreePlane`
+- property functions
+  - `drmModeObjectGetProperties` wraps `DRM_IOCTL_MODE_OBJ_GETPROPERTIES`
+    - it returns prop ids for a resource
+  - `drmModeFreeObjectProperties`
+  - `drmModeGetProperty` wraps `DRM_IOCTL_MODE_GETPROPERTY`
+    - it queries prop info from a prop id
+  - `drmModeFreeProperty`
+  - `drmModeGetPropertyBlob` wraps `DRM_IOCTL_MODE_GETPROPBLOB`
+    - it queries blob info from a blob id
+  - `drmModeFreePropertyBlob`
+  - `drmModeCreatePropertyBlob` wraps `DRM_IOCTL_MODE_CREATEPROPBLOB`
+  - `drmModeDestroyPropertyBlob` wraps `DRM_IOCTL_MODE_DESTROYPROPBLOB`
+- dumb buffer functions
+  - `drmModeCreateDumbBuffer` wraps `DRM_IOCTL_MODE_CREATE_DUMB`
+  - `drmModeDestroyDumbBuffer` wraps `DRM_IOCTL_MODE_DESTROY_DUMB`
+  - `drmModeMapDumbBuffer` wraps `DRM_IOCTL_MODE_MAP_DUMB`
+- fb functions
+  - `drmModeAddFB` wraps `DRM_IOCTL_MODE_ADDFB`
+  - `drmModeAddFB2` and `drmModeAddFB2WithModifiers` wrap
+    `DRM_IOCTL_MODE_ADDFB2`
+  - `drmModeRmFB` wraps `DRM_IOCTL_MODE_RMFB`
+  - `drmModeCloseFB` wraps `DRM_IOCTL_MODE_CLOSEFB`
+    - it removes the fb without disabling crtc/plane
+  - `drmModeDirtyFB` wraps `DRM_IOCTL_MODE_DIRTYFB`
+- atomic functions
+  - `drmModeAtomicAlloc`
+  - `drmModeAtomicFree`
+  - `drmModeAtomicDuplicate`
+  - `drmModeAtomicMerge`
+  - `drmModeAtomicSetCursor`
+  - `drmModeAtomicGetCursor`
+  - `drmModeAtomicAddProperty`
+  - `drmModeAtomicCommit` wraps `DRM_IOCTL_MODE_ATOMIC`
+- non-atomic functions
+  - `drmModeObjectSetProperty` wraps `DRM_IOCTL_MODE_OBJ_SETPROPERTY`
+  - `drmModeConnectorSetProperty` wraps `DRM_IOCTL_MODE_SETPROPERTY`
+    - `DRM_IOCTL_MODE_OBJ_SETPROPERTY` is the newer replacement
+  - `drmModeCrtcSetGamma` wraps `DRM_IOCTL_MODE_SETGAMMA`
+    - blobs are newer replacement
+  - `drmModeCrtcGetGamma` wraps `DRM_IOCTL_MODE_GETGAMMA`
+  - `drmModeSetCrtc` wraps `DRM_IOCTL_MODE_SETCRTC`
+  - `drmModeSetPlane` wraps `DRM_IOCTL_MODE_SETPLANE`
+  - `drmModeSetCursor` and `drmModeMoveCursor` wrap `DRM_IOCTL_MODE_CURSOR`
+  - `drmModeSetCursor2` wraps `DRM_IOCTL_MODE_CURSOR2`
+  - `drmModePageFlip` and `drmModePageFlipTarget` wrap
+    `DRM_IOCTL_MODE_PAGE_FLIP`
+- misc functions
+  - `drmModeGetConnectorTypeName` returns the connector type name
+  - `drmModeFormatModifierBlobIterNext` parses the `IN_FORMATS` prop blob
+- legacy functions
+  - `drmModeAttachMode` wraps `DRM_IOCTL_MODE_ATTACHMODE`
+    - it is stubbed out in kernel
+  - `drmModeDetachMode` wraps `DRM_IOCTL_MODE_DETACHMODE`
+    - it is stubbed out in kernel
+  - `drmModeFreeModeInfo` is unused
 
 ## Legacy DRI1 API
 
