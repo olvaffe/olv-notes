@@ -6,18 +6,28 @@ libdrm
 - enumeration functions
   - `drmGetDevices2` and `drmGetDevices` enumerate available drm devices
   - `drmFreeDevices` and `drmFreeDevice` free `drmDevicePtr`
-- `dev_t` functions
+- `dev_t` (dev major/minor) functions
   - `drmGetDeviceFromDevId` returns `drmDevicePtr` from `dev_t`
   - `drmGetNodeTypeFromDevId` returns the node type (primary or render) of a
     `dev_t`
+- auth functions
+  - this is not necessary when a render node is used
+  - `drmGetMagic` wraps `DRM_IOCTL_GET_MAGIC`
+    - this queries the magic of a primary `drm_file`
+    - the magic can be sent to master for auth
+  - `drmAuthMagic` wraps `DRM_IOCTL_AUTH_MAGIC`
 - query functions
+  - `drmGetDevice2` and `drmGetDevice` returns `drmDevicePtr` from an fd
+  - `drmDevicesEqual` returns true if two `drmDevicePtr` point to the same drm
+    device
   - `drmGetVersion` wraps `DRM_IOCTL_VERSION`
     - it queries driver version and name
   - `drmFreeVersion` wraps `free`
   - `drmGetCap` wraps `DRM_IOCTL_GET_CAP`
-    - it queries a driver cap such as dumb, prime, etc.
+    - it queries a driver cap such as prime, syncobj, dumb, modifier, etc.
   - `drmGetNodeTypeFromFd` returns the node type (primary or render) of an fd
   - `drmGetDeviceNameFromFd` returns the primary node path for fd
+    - `drmGetPrimaryDeviceNameFromFd` is the newer replacement
   - `drmGetDeviceNameFromFd2` returns the node path for fd
   - `drmGetPrimaryDeviceNameFromFd` returns the primary node path for fd
   - `drmGetRenderDeviceNameFromFd` returns the render node path for fd
@@ -26,34 +36,28 @@ libdrm
   - `drmCrtcQueueSequence` wraps `DRM_IOCTL_CRTC_QUEUE_SEQUENCE`
   - `drmWaitVBlank` wraps `DRM_IOCTL_WAIT_VBLANK`
     - `DRM_IOCTL_CRTC_QUEUE_SEQUENCE` is the newer replacement
+    - it is still used by xserver modesetting as fallback
   - `drmHandleEvent` reads a DRM event (vblank, flip, or crtc seq)
 - misc functions
   - `drmIoctl` wraps `ioctl`
+  - `drmCommandNone`, `drmCommandRead`, `drmCommandWrite`, and
+    `drmCommandWriteRead` wrap `drmIoctl`
   - `drmGetFormatName` returns the fourcc string of a fourcc format
   - `drmGetFormatModifierName` returns the descriptive name of a modifier
   - `drmGetFormatModifierVendor` returns the vendor name of a modifier
 - legacy misc functions
   - `drmGetLibVersion` returns libdrm version
   - `drmAvailable` returns true if it can open the first primary node
-  - `drmGetDevice2` and `drmGetDevice` returns `drmDevicePtr` from an fd
-  - `drmDevicesEqual` returns true if two `drmDevicePtr` point to the same drm
-    device
-  - `drmGetMagic` wraps `DRM_IOCTL_GET_MAGIC`
-    - this queries the magic of a primary `drm_file`
-    - the magic can be sent to master for auth
-  - `drmAuthMagic` wraps `DRM_IOCTL_AUTH_MAGIC`
+    - this is still used by xserver DRI1
   - `drmGetClient` wraps `DRM_IOCTL_GET_CLIENT`
     - it returns whether the `drm_file` is authenticated
-  - `drmCommandNone`, `drmCommandRead`, `drmCommandWrite`, and
-    `drmCommandWriteRead` wrap `drmIoctl`
-  - `drmGetHashTable` returns the global `drmHashTable`
-  - `drmGetEntry` queries the hash entry associated with the fd
   - `drmMsg` wraps `vfprintf`
   - `drmMalloc` wraps `calloc`
   - `drmFree` wraps `free`
   - `drmMap` wraps `mmap`
   - `drmUnmap` wraps `munmap`
 - legacy busid functions
+  - some are still used by xserver DRI1 and modesetting
   - `drmSetInterfaceVersion` wraps `DRM_IOCTL_SET_VERSION`
     - kernel sets the busid for the device
   - `drmSetBusid` wraps `DRM_IOCTL_SET_UNIQUE`
@@ -64,12 +68,15 @@ libdrm
   - `drmCheckModesettingSupported` returns true if busid supports modesetting
 - legacy open functions
   - modern way is to enumerate and `open`/`close` directly instead
-  - `drmOpenWithType` opens by driver name or busid
+  - `drmOpenWithType` opens by driver name (or busid)
+    - this is still used by some mesa tools
   - `drmOpen` wraps `drmOpenWithType` to open a primary node
+    - this is still used by xserver DRI1 and modesetting
   - `drmOpenRender` opens a render node by its minor number
   - `drmOpenControl` opens a control node by its minor number
     - kernel never creates control nodes
   - `drmClose` updates global `drmHashTable` before `close`
+    - this is still used by xserver DRI1 and modesetting
   - `drmOpenOnceWithType` opens by busid
     - if the same busid is opened multiple times, the same fd is returned
   - `drmOpenOnce` wraps `drmOpenOnceWithType` to open a primary node
@@ -132,11 +139,12 @@ libdrm
     - `drmModeGetConnectorCurrent` limits the supported modes to the current
       mode
   - `drmModeFreeConnector`
-  - `drmModeGetEncoder` wraps `DRM_IOCTL_MODE_GETENCODER`
-    - it queries encoder info from an encoder id
-  - `drmModeFreeEncoder`
   - `drmModeConnectorGetPossibleCrtcs`
     - it calls `drmModeGetEncoder` on all encoders of the connector
+  - `drmModeGetEncoder` wraps `DRM_IOCTL_MODE_GETENCODER`
+    - it queries encoder info from an encoder id
+    - props are newer replacement
+  - `drmModeFreeEncoder`
   - `drmModeGetPlaneResources` wraps `DRM_IOCTL_MODE_GETPLANERESOURCES`
     - it returns resource ids for planes
   - `drmModeFreePlaneResources`
@@ -167,12 +175,14 @@ libdrm
   - `drmModeCloseFB` wraps `DRM_IOCTL_MODE_CLOSEFB`
     - it removes the fb without disabling crtc/plane
   - `drmModeDirtyFB` wraps `DRM_IOCTL_MODE_DIRTYFB`
+    - it is only used by xserver modesetting
 - atomic functions
   - `drmModeAtomicAlloc`
   - `drmModeAtomicFree`
   - `drmModeAtomicDuplicate`
   - `drmModeAtomicMerge`
   - `drmModeAtomicSetCursor`
+    - this is not mouse cursor, but the idx into the prop array
   - `drmModeAtomicGetCursor`
   - `drmModeAtomicAddProperty`
   - `drmModeAtomicCommit` wraps `DRM_IOCTL_MODE_ATOMIC`
@@ -202,6 +212,7 @@ libdrm
 ## Legacy DRI1 API
 
 - legacy context functions
+  - many are still used by xserver DRI1
   - `drmCreateContext` wraps `DRM_IOCTL_ADD_CTX`
   - `drmDestroyContext` wraps `DRM_IOCTL_RM_CTX`
   - `drmSetContextFlags` wraps `DRM_IOCTL_MOD_CTX`
@@ -212,8 +223,9 @@ libdrm
   - `drmAddContextPrivateMapping` wraps `DRM_IOCTL_SET_SAREA_CTX`
   - `drmGetContextPrivateMapping` wraps `DRM_IOCTL_GET_SAREA_CTX`
   - `drmAddContextTag`, `drmDelContextTag`, and `drmGetContextTag` manipulate
-    a global `drmHashTable`
+    the global `drmHashTable`
 - legacy drawable functions
+  - these are still used by xserver DRI1
   - `drmCreateDrawable` wraps `DRM_IOCTL_ADD_DRAW`
   - `drmDestroyDrawable` wraps `DRM_IOCTL_RM_DRAW`
   - `drmUpdateDrawableInfo` wraps `DRM_IOCTL_UPDATE_DRAW`
@@ -229,6 +241,7 @@ libdrm
     `drmAgpMemoryUsed`, `drmAgpSize`, `drmAgpVendorId`, `drmAgpVersionMajor`,
     and `drmAgpVersionMinor` wrap `DRM_IOCTL_AGP_INFO`
 - legacy dma functions
+  - some are still used by xserver DRI1
   - `drmGetMap` wraps `DRM_IOCTL_GET_MAP`
   - `drmAddMap` wraps `DRM_IOCTL_ADD_MAP`
   - `drmRmMap` wraps `DRM_IOCTL_RM_MAP`
@@ -245,6 +258,7 @@ libdrm
 - legacy lock functions
   - `drmGetLock` wraps `DRM_IOCTL_LOCK`
   - `drmUnlock` wraps `DRM_IOCTL_UNLOCK`
+    - it is still used by xserver DRI1
 - legacy scatter-gather functions
   - `drmScatterGatherAlloc` wraps `DRM_IOCTL_SG_ALLOC`
   - `drmScatterGatherFree` wraps `DRM_IOCTL_SG_FREE`
@@ -252,11 +266,15 @@ libdrm
   - `drmGetStats` wraps `DRM_IOCTL_GET_STATS`
     - it is stubbed out in kernel
   - `drmFinish` wraps `DRM_IOCTL_FINISH`
+    - it is stubbed out in kernel
   - `drmSetServerInfo` sets `drm_server_info`
-    - it is used by xserver DRI1 to change permissions, load kernel modules,
-      etc.
+    - it is still used by xserver DRI1 to change permissions, load kernel
+      modules, etc.
   - `drmError` returns the string of an drm error code
 - legacy hash functions
+  - many are still used by xserver DRI1
+  - `drmGetHashTable` returns the global `drmHashTable`
+  - `drmGetEntry` queries the hash entry associated with the fd
   - `drmHashCreate`
   - `drmHashDelete`
   - `drmHashDestroy`
