@@ -5,17 +5,21 @@ libdrm
 
 - enumeration functions
   - `drmGetDevices2` and `drmGetDevices` enumerate available drm devices
+    - they scan `/dev/dri`, stat for `dev_t`, and parse `/sys` for device info
   - `drmFreeDevices` and `drmFreeDevice` free `drmDevicePtr`
 - `dev_t` (dev major/minor) functions
   - `drmGetDeviceFromDevId` returns `drmDevicePtr` from `dev_t`
+    - it pretty much `drmGetDevices2` and filters by `dev_t`
   - `drmGetNodeTypeFromDevId` returns the node type (primary or render) of a
     `dev_t`
 - query functions
   - `drmGetDevice2` and `drmGetDevice` returns `drmDevicePtr` from an fd
+    - they `fstat` the fd to get `dev_t` and call `drmGetDeviceFromDevId`
   - `drmDevicesEqual` returns true if two `drmDevicePtr` point to the same drm
     device
+    - for pci devices, it compares pci domain/bus/dev/func
   - `drmGetVersion` wraps `DRM_IOCTL_VERSION`
-    - it queries driver version and name
+    - it queries kernel driver version and name
   - `drmFreeVersion` wraps `free`
   - `drmGetCap` wraps `DRM_IOCTL_GET_CAP`
     - it queries a driver cap such as prime, syncobj, dumb, modifier, etc.
