@@ -39,6 +39,8 @@ Skia
     - `skia_use_egl = false`
       - true to use egl rather than glx
       - always true on android
+      - some tools will fail to build on linux
+        - `ninja -C out skia` to build just the library
     - `skia_use_gl = true`
       - true to enable gl/gles backend
     - `skia_use_vulkan = false`
