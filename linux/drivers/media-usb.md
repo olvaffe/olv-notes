@@ -11,6 +11,8 @@ Linux media usb
   - `uvc_ctrl_init_device` adds ctrls to entities
   - `uvc_register_chains` calls `uvc_register_video` to register a
     `video_device` for each stream
+    - `uvc_fops` is the `v4l2_file_operations`
+    - `uvc_ioctl_ops` is the `v4l2_ioctl_ops`
 - `uvc_parse_streaming` parses UVC control descriptor and adds a
   `uvc_streaming`
   - `streaming->type` is either `V4L2_BUF_TYPE_VIDEO_OUTPUT` or

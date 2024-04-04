@@ -1,7 +1,32 @@
 Linux V4L2
 ==========
 
-## query ioctls
+## Core
+
+- drivers call `v4l2_device_register` to register a `v4l2_device` in their
+  probe functions
+  - this is not exposed to userspace
+- drivers also call `video_register_device` to register one or more
+  `video_device`
+  - depending on `vfl_devnode_type`, this creates
+    - `/dev/videoX` for `VFL_TYPE_VIDEO`
+    - `/dev/vbiX` for `VFL_TYPE_VBI`
+    - `/dev/radioX` for `VFL_TYPE_RADIO`
+    - `/dev/v4l-subdevX` for `VFL_TYPE_SUBDEV`
+    - `/dev/swradioX` for `VFL_TYPE_SDR`
+    - `/dev/v4l-touch` for `VFL_TYPE_TOUCH`
+  - `v4l2_fops` is the `file_operations`
+- `v4l2_fops`
+  - `v4l2_open` calls `v4l2_file_operations::open`
+    - `video_devdata` uses the inode to look up `video_device` from `file`
+    - drivers use `video_drvdata` to look up driver private data
+      - for uvc, the private data is `uvc_streaming`
+      - uvc also allocates a `uvc_fh` and saves it to `file->private_data`
+  - `v4l2_ioctl` calls `v4l2_file_operations::unlocked_ioctl`
+    - it is usually the generic `video_ioctl2` which dispatches using
+      `v4l2_ioctls`
+
+## Query ioctls
 
 - `VIDIOC_QUERYCAP`
   - `V4L2_CAP_VIDEO_CAPTURE` captures signals and stores them in memory
@@ -65,6 +90,30 @@ Linux V4L2
       current dev node (e.g., `/dev/video0`)
     - `capabilities` gives the caps of the hw, which can expose multiple dev
       nodes
+- `VIDIOC_ENUM_FMT`, `VIDIOC_ENUM_FRAMESIZES`, and
+  `VIDIOC_ENUM_FRAMEINTERVALS`
+  - the `video_device` has an array of supported formats for each buftype
+    - for each supported format, there is an array of supported frame sizes
+      (resolutions)
+    - for each supported format and resolution, there is an array of supported
+      frame intervals (framerates)
+  - these ioctls enumerate the format arrays
+- `VIDIOC_ENUMINPUT`
+  - the `video_device` may support multiple input sources
+  - this ioctl enumerates input sources
+
+## Stateful ioctls
+
+- `VIDIOC_G_FMT` and `VIDIOC_G_FMT`
+  - the `video_device` has the concept of "current format" for each buftype
+    - this includes pix format, width, height, stride, etc.
+  - these ioctls query or set the current formats
+- `VIDIOC_G_PARM` and `VIDIOC_S_PARM`
+  - this is mainly used to set capture interval (framerate)
+  - the `video_device` has the concept of "current interval" for each buftype
+- `VIDIOC_G_INPUT` and `VIDIOC_S_INPUT`
+  - the hw might support multiple inputs
+  - these query or set the current input
 
 ## Old
 
