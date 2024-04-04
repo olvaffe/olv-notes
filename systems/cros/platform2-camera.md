@@ -55,6 +55,73 @@ Platform2 Camera
       and to return to the idle state
     - `Close` closes the camera device
 
+## USB HAL
+
+- initialization
+  - the hal exposes these public symbols
+    - `CROS_CAMERA_HAL_INFO_SYM`
+    - `HAL_MODULE_INFO_SYM`
+    - all calls are dispatched to `CameraHal::GetInstance()`
+  - `CameraHal::Init`
+    - `UdevWatcher::EnumerateExistingDevices` calls `CameraHal::OnDeviceAdded`
+      on all devices
+      - `V4L2CameraDevice::IsCameraDevice` checks if the device is a camera
+      - the device is added to `device_infos_`
+  - `CameraHal::OpenDevice` creates a `CameraClient` and calls
+    `CameraClient::OpenDevice`
+    - this creates a `V4L2CameraDevice` and calls various methods
+- `V4L2CameraDevice`
+  - `V4L2CameraDevice::GetDeviceSupportedFormats`
+    - this opens the devnode and calls `VIDIOC_ENUM_FMT`,
+      `VIDIOC_ENUM_FRAMESIZES`, and `VIDIOC_ENUM_FRAMEINTERVALS` to enumerate
+      all formats for buf type `V4L2_BUF_TYPE_VIDEO_CAPTURE`
+  - `V4L2CameraDevice::Connect`
+    - this opens the devnode
+    - it does `VIDIOC_G_FMT` and `VIDIOC_S_FMT` to "own" the device
+  - `V4L2CameraDevice::StreamOn`
+    - it calls `VIDIOC_S_FMT` to set the format
+    - it calls `VIDIOC_REQBUFS` to allocate buffers
+      - the type is `V4L2_BUF_TYPE_VIDEO_CAPTURE`
+      - the memory is `V4L2_MEMORY_MMAP`
+      - the count is `kNumVideoBuffers` (4)
+    - it calls `VIDIOC_EXPBUF` to export buffers
+      - they are shmems
+    - it calls `VIDIOC_QBUF` to queue buffers
+    - it calls `VIDIOC_STREAMON` to start capturing
+  - `V4L2CameraDevice::StreamOff`
+    - it calls `VIDIOC_STREAMOFF` to stop capturing
+    - it calls `VIDIOC_REQBUFS` to free buffers
+  - `V4L2CameraDevice::IsBufferFilled`
+    - it calls `VIDIOC_QUERYBUF` to check if a buffer is ready for readback
+  - `V4L2CameraDevice::GetNextFrameBuffer`
+    - it calls `VIDIOC_DQBUF` to dequeue a buffer that is ready for readback
+  - `V4L2CameraDevice::ReuseFrameBuffer`
+    - it calls `VIDIOC_QBUF` to queue a buffer again after readback
+- `CameraClient`
+  - `CameraClient::ConfigureStreams` starts capturing
+    - `CameraClient::RequestHandler::StreamOnImpl` calls
+      `V4L2CameraDevice::StreamOn` and remebers the shmem fds in
+      `input_buffers_`
+  - `CameraClient::ProcessCaptureRequest` writes captured frames to
+    `output_buffers`
+    - `output_buffers` are gbm bos with associated fences
+    - `CameraClient::RequestHandler::DequeueV4L2Buffer` calls
+      `V4L2CameraDevice::GetNextFrameBuffer`
+    - `CameraClient::RequestHandler::WriteStreamBuffers` copies from the shmem
+      input to gbm bo output
+      - the shmem input is wrapped in `V4L2FrameBuffer`
+      - the gbm bo output output is wrapped in `GrallocFrameBuffer`
+      - `CachedFrame::Convert` does the coversion/copying
+    - `CameraClient::RequestHandler::EnqueueV4L2Buffer` calls
+      `V4L2CameraDevice::ReuseFrameBuffer`
+- `CachedFrame::Convert`
+  - the shmem input is decoded or converted to NV12
+    - `CachedFrame::DecodeToNV12` tries JDA (chrome jpeg decode accel) first
+      and falls back to `ImageProcessor::ConvertFormat`
+    - `ImageProcessor::ConvertFormat` uses libyuv
+  - the gbm bo output is encoded or converted from NV12
+    - `CachedFrame::ConvertFromNV12`
+
 ## Effects
 
 - `CameraHalAdapter::OpenDevice` creates a `CameraDeviceAdapter` with a
