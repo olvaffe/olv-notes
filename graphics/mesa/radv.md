@@ -1086,3 +1086,15 @@ Mesa RADV
   - various functions from `ac_llvm_build.c`
     - they translate nir to llvm ir
   - `ac_compile_module_to_elf` compiles llvm ir to binary
+
+## `radv_CmdCopyImage2`
+
+- `copy_image` executes each `VkImageCopy2` one by one
+  - each `VkImageCopy2` may copy multiple layers/slices
+  - a 2d image can have multiple layers
+  - a 3d image can have multiple slices, but always has 1 layer
+- `blit_surf_for_image_level_layer` returns a `radv_meta_blit2d_surf` to
+  describe a layer/slice
+- `radv_meta_blit2d_rect` is in texel blocks
+- there is a loop to copy each layer/slice one by one
+  - `radv_meta_blit2d_surf::layer` is incremented each time
