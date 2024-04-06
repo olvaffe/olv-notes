@@ -115,6 +115,28 @@ Linux V4L2
   - the hw might support multiple inputs
   - these query or set the current input
 
+## Buffer ioctls
+
+- `VIDIOC_CREATE_BUFS`
+  - it dispatches to driver `vidioc_create_bufs` which usually calls
+    `vb2_create_bufs`
+  - `enum v4l2_memory`
+    - `V4L2_MEMORY_MMAP` means kernel allocates buffers that userspace can
+      mmap
+    - `V4L2_MEMORY_DMABUF` means kernel imports dmabufs from usersapce?
+  - `__vb2_buf_mem_alloc` makes the allocation
+    - `call_ptr_memop(alloc, ...)` calls `vb2_vmalloc_alloc` when the
+      `mem_ops` is `vb2_vmalloc_memops`
+    - the buffer is allocated by `vmalloc_user`
+- `VIDIOC_EXPBUF`
+  - it dispatches to driver `vidioc_expbuf` which usually calls
+    `vb2_expbuf`
+  - the memory type must be `V4L2_MEMORY_MMAP`
+  - the `mem_ops` must support `get_dmabuf`
+    - all `vb2_vmalloc_memops`, `vb2_dma_sg_memops`, and
+      `vb2_dma_contig_memops` support `get_dmabuf`
+    - e.g., uvc uses `vb2_vmalloc_memops`
+
 ## Old
 
 V4L2 buffers

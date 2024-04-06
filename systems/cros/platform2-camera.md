@@ -84,8 +84,7 @@ Platform2 Camera
       - the type is `V4L2_BUF_TYPE_VIDEO_CAPTURE`
       - the memory is `V4L2_MEMORY_MMAP`
       - the count is `kNumVideoBuffers` (4)
-    - it calls `VIDIOC_EXPBUF` to export buffers
-      - they are shmems
+    - it calls `VIDIOC_EXPBUF` to export buffers as dmabufs
     - it calls `VIDIOC_QBUF` to queue buffers
     - it calls `VIDIOC_STREAMON` to start capturing
   - `V4L2CameraDevice::StreamOff`
@@ -100,22 +99,22 @@ Platform2 Camera
 - `CameraClient`
   - `CameraClient::ConfigureStreams` starts capturing
     - `CameraClient::RequestHandler::StreamOnImpl` calls
-      `V4L2CameraDevice::StreamOn` and remebers the shmem fds in
+      `V4L2CameraDevice::StreamOn` and remebers the dmabufs in
       `input_buffers_`
   - `CameraClient::ProcessCaptureRequest` writes captured frames to
     `output_buffers`
     - `output_buffers` are gbm bos with associated fences
     - `CameraClient::RequestHandler::DequeueV4L2Buffer` calls
       `V4L2CameraDevice::GetNextFrameBuffer`
-    - `CameraClient::RequestHandler::WriteStreamBuffers` copies from the shmem
-      input to gbm bo output
-      - the shmem input is wrapped in `V4L2FrameBuffer`
+    - `CameraClient::RequestHandler::WriteStreamBuffers` copies from the
+      dmabuf input to gbm bo output
+      - the dmabuf input is wrapped in `V4L2FrameBuffer`
       - the gbm bo output output is wrapped in `GrallocFrameBuffer`
       - `CachedFrame::Convert` does the coversion/copying
     - `CameraClient::RequestHandler::EnqueueV4L2Buffer` calls
       `V4L2CameraDevice::ReuseFrameBuffer`
 - `CachedFrame::Convert`
-  - the shmem input is decoded or converted to NV12
+  - the dmabuf input is decoded or converted to NV12
     - `CachedFrame::DecodeToNV12` tries JDA (chrome jpeg decode accel) first
       and falls back to `ImageProcessor::ConvertFormat`
     - `ImageProcessor::ConvertFormat` uses libyuv
