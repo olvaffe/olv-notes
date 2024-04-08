@@ -44,6 +44,19 @@ OpenCL
 
 - 3.1. Platform Model
 - 3.2. Execution Model
+  - ND-range
+    - `work_dim` specifies the dimension
+    - `global_work_offset` specifies the offset in each dimension
+    - `global_work_size` specifies the size in each dimension
+    - `local_work_size` specifies the size of a work-group in each dimension
+    - e.g., let's say we have `float[64]` and we want to copy `float[16..47]`
+      one by one.  The most straightforward way is to
+      - set `work_dim` to 1, because the array is 1-dimensional
+      - set `global_work_offset` to 16, because it starts at `float[16]`
+      - set `global_work_size` to 32, because we want to copy 32 floats
+      - leave `local_work_size` implementation-determined, because each copy
+        is independent and we don't care about the size of a work-group
+      - the kernel can just `dst[get_global_id()] = src[get_global_id()]`
 - 3.3. Memory Model
   - Host Memory
     - system ram
@@ -158,6 +171,46 @@ OpenCL
 ## Appendix G: Other Miscellaneous Enums
 
 ## Appendix H: OpenCL 3.0 Backwards Compatibility
+
+## The OpenCL C Specification
+
+- Chapter 6. The OpenCL C Programming Language
+  - 6.1. Unified Specification
+  - 6.2. Optional functionality
+  - 6.3. Supported Data Types
+  - 6.4. Conversions and Type Casting
+  - 6.5. Operators
+  - 6.6. Vector Operations
+  - 6.7. Address Space Qualifiers
+  - 6.8. Access Qualifiers
+  - 6.9. Function Qualifiers
+  - 6.10. Storage-Class Specifiers
+  - 6.11. Restrictions
+  - 6.12. Preprocessor Directives and Macros
+  - 6.13. Attribute Qualifiers
+  - 6.14. Blocks
+  - 6.15. Built-in Functions
+    - work-item functions
+      - `get_work_dim` returns `work_dim`
+      - `get_global_size` returns `global_work_size`
+      - `get_global_id` returns an id between `[global_work_offset, global_work_offset + get_global_size - 1]`
+      - `get_local_size` returns `local_work_size`
+        - if not specified, this returns the implicit local work size picked by impl
+      - `get_local_id` returns an id between `[0, local_work_size - 1]`
+      - `get_num_groups` returns `global_work_size / global_local_size`
+      - `get_group_id` returns an id between `[0, get_num_groups - 1]`
+      - `get_global_offset` returns `global_work_offset`
+- Chapter 7. OpenCL Numerical Compliance
+  - 7.1. Rounding Modes
+  - 7.2. INF, NaN and Denormalized Numbers
+  - 7.3. Floating-Point Exceptions
+  - 7.4. Relative Error as ULPs
+  - 7.5. Edge Case Behavior
+- Chapter 8. Image Addressing and Filtering
+  - 8.1. Image Coordinates
+  - 8.2. Addressing and Filter Modes
+  - 8.3. Conversion Rules
+  - 8.4. Selecting an Image From an Image Array
 
 ## Rounding
 
