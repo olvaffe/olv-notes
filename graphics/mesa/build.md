@@ -20,6 +20,10 @@ Mesa meson
     - to disable VAAPI driver, `-Dgallium-va=disabled`
     - to disable VDPAU driver, `-Dgallium-vdpau=disabled`
     - to enable proprietary codecs, `-Dvideo-codecs=all`
+- one-liners
+  - rusticl-only build
+    - `meson setup out-rusticl -Dbuildtype=debug -Dplatforms= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dopengl=false -Dgles1=disabled -Dgles2=disabled -Dgallium-va=disabled -Dgallium-rusticl=true -Dgallium-drivers=radeonsi -Dvulkan-drivers=`
+    - `pacman -S rust rust-bindgen libclc spirv-llvm-translator llvm clang`
 
 ## Options
 

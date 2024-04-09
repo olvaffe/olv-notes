@@ -43,6 +43,34 @@ clvk
 - packaging
   - `strip -g out/libOpenCL.so.1 && scp -C out/libOpenCL.so.1 <remote>:`
 
+## OpenCL ICD Loaders
+
+- `libOpenCL.so.1` is provided by
+  - <https://github.com/KhronosGroup/OpenCL-ICD-Loader>, or more commonly,
+  - <https://github.com/OCL-dev/ocl-icd>
+- `OpenCL-ICD-Loader`
+  - `OCL_ICD_ENABLE_TRACE=1` enables loader debug messages
+  - `OCL_ICD_FILENAMES` specifies addtional ICDs that are `dlopen`ed before
+    scanning the vendors path
+  - `OCL_ICD_VENDORS` specifies an alternative vendors path rather than the
+    default `/etc/OpenCL/vendors`
+  - each `.icd` file under the vendors path contains a path that is `dlopen`ed
+- `ocl-icd`
+  - `OCL_ICD_DEBUG=15` enables loader debug messages
+    - `1` for warnings
+    - `2` for infos
+    - `4` for function enter/leave
+    - `8` dumps icd info
+  - `OCL_ICD_VENDORS` specifies
+    - the vendors path to be scanned,
+    - the `.icd` file to be parsed, or
+    - the icd library to be `dlopen`ed
+
+## Rusticl
+
+- `RUSTICL_ENABLE` must be specified to enable drivers
+  - by default, no driver is enabled
+
 ## Build CTS
 
 - steps
