@@ -659,7 +659,19 @@ Mesa Gallium
       the call into the current batch
   - some functions require synchronization
     - e.g., `tc_texture_map` calls `tc_sync_msg` to wait the current batch
+  - the pipe context fluch function is `tc_flush`
+    - if the flush is async or can be deferred, it calls `tc_add_call` to
+      record the call to the current batch and calls `tc_batch_flush` to flush
+      the current batch
+    - otherwise, it calls `_tc_sync` to wait for the `gdrv` thread to become
+      idle and calls `pipe->flush`
 - `tc_batch_flush` calls `util_queue_add_job` to submit the current batch
   - `gdrv` thread calls `tc_batch_execute` to execute the batch
-- `_tc_sync` waits for `gdrv` and also calls `tc_batch_execute` to execute the
-  current batch directly
+  - `tc->execute_func` is the dispatch table
+  - `set_sampler_views` is dispatched to `tc_call_set_sampler_views`
+    - it calls `pipe->set_sampler_views`
+  - `flush`, when async or deferred, is dispatched to `tc_call_flush` or
+    `tc_call_flush_deferred`
+    - they call `pipe->flush`
+- `_tc_sync` waits for `gdrv` to become idle and also calls `tc_batch_execute`
+  to execute the current batch directly

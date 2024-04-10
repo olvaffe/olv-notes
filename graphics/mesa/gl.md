@@ -404,14 +404,42 @@ Mesa and Its Main Context
 
 ## GLThread
 
-- glthread
-  - `_mesa_glthread_init` spawns a `gl` thread to execute GL commands
-  - `_mesa_glthread_flush_batch` submits the current batch to the `gl` thread
-  - `_mesa_glthread_finish` waits for the `gl` thread to become idle
-  - `gl_marshal.py` generates the marshal/unmarshal functions
 - `dri_create_context` optionally calls `_mesa_glthread_init` to enable
   glthread
   - `mesa_glthread` envvar overrides the decision
   - otherwise, `mesa_glthread_app_profile` driconf overrides the decision
   - otherwise, `mesa_glthread_driver` driconf plus cpu core count make the
     decision
+- `_mesa_glthread_init`
+  - it spawns a `gl` thread to execute GL commands
+  - `_mesa_glthread_init_dispatch` initializes `ctx->MarshalExec` dispatch
+    table
+  - `_mesa_glthread_enable` sets `ctx->GLApi = ctx->MarshalExec` and calls
+    `_glapi_set_dispatch(ctx->GLApi)`
+- `gl_marshal.py` generates the marshal/unmarshal functions
+- GL call marshaling
+  - `glClear` is dispatched to `_mesa_marshal_Clear`
+    - it records the cmd to the batch and returns
+  - `glVertexAttribPointer` is dispatched to
+    `_mesa_marshal_VertexAttribPointer`
+    - it records the cmd to the batch and returns
+  - `glDrawArrays` is dispatched to `_mesa_marshal_DrawArrays`
+    - it is hand-written, but the idea is the same
+    - it records `DISPATCH_CMD_DrawArraysInstanced` and the like
+  - `glFlush` is dispatched to `_mesa_marshal_Flush`
+    - it records the cmd to the batch
+    - before turning, it cals
+      - `_mesa_glthread_flush_batch` to send the current batch to the `gl`
+        thread
+      - if `HasExternallySharedImages`, `_mesa_glthread_finish` to wait for
+        the `gl` thread to become idle
+- `gl` thread `glthread_unmarshal_batch`
+  - it dispatches the cmd using the generated `_mesa_unmarshal_dispatch` table
+  - `glClear` is dispatched to `_mesa_unmarshal_Clear`
+    - it calls `_mesa_Clear`
+  - `glVertexAttribPointer` is dispatched to `_mesa_unmarshal_VertexAttribPointer`
+    - it calls `_mesa_VertexAttribPointer`
+  - `glDrawArrays` is dispatched to `_mesa_unmarshal_DrawArraysInstanced`
+    - it calls `_mesa_DrawArraysInstanced`
+  - `glFlush` is dispatched to `_mesa_unmarshal_Flush`
+    - it calls `_mesa_Flush`
