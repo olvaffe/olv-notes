@@ -201,6 +201,139 @@ Mesa and DRI
       `EGL_KHR_mutable_render_buffer`
 - note that swrast uses different extensions
 
+## `__DRI2_FLUSH`
+
+- loaders need to flush bufferred rendering commands in a context in several
+  cases
+- GBM
+  - `gbm_bo_unmap` might imply a blit that needs to be flushed
+    - `gbm_dri_bo_unmap`
+    - `__DRI2_FLUSH_CONTEXT`
+- EGL/X11
+  - `eglCopyBuffers` copies from a surface to a pixmap
+    - `dri2_copy_buffers`
+    - `dri2_egl_display_vtbl::copy_buffers`
+    - `dri3_copy_buffers`
+    - `loader_dri3_copy_drawable`
+      - we need to flush such that the pending gl commands to the fake front
+        are implicitly fenced when the xserver does the copy
+  - `eglWaitClient` waits for the gl rendering
+    - `dri2_wait_client`
+    - flush with implied `__DRI2_FLUSH_DRAWABLE`
+      - we need to flush such that the pending gl commands are implicitly
+        fenced when the xserver does anything
+  - `eglSwapBuffers`
+    - `dri2_swap_buffers`
+    - `dri2_egl_display_vtbl::swap_buffers`
+    - `dri3_swap_buffers`
+    - `dri3_swap_buffers_with_damage`
+    - `loader_dri3_swap_buffers_msc`
+    - `loader_dri3_vtable::flush_drawable`
+    - `egl_dri3_flush_drawable`
+    - `dri2_flush_drawable_for_swapbuffers`
+    - `dri2_flush_drawable_for_swapbuffers_flags`
+    - `__DRI2_FLUSH_DRAWABLE | __DRI2_FLUSH_INVALIDATE_ANCILLARY` and
+      `__DRI2_THROTTLE_SWAPBUFFER`
+- EGL/WAYLAND
+  - `eglCopyBuffers` is not supported
+  - `eglWaitClient` is the same as EGL/X11
+  - `eglSwapBuffers`
+    - `dri2_swap_buffers`
+    - `dri2_egl_display_vtbl::swap_buffers`
+    - `dri2_wl_swap_buffers`
+    - `dri2_wl_swap_buffers_with_damage`
+    - `dri2_flush_drawable_for_swapbuffers`, which is the same as in EGL/X11
+- GLX
+  - `glXCopySubBufferMESA` asks the xserver to copy from the back buffer to
+    the front buffer
+    - `__GLXDRIscreenRec::copySubBuffer`
+    - `dri3_copy_sub_buffer`
+      - `flush` is always true
+    - `loader_dri3_copy_sub_buffer`
+    - `__DRI2_FLUSH_DRAWABLE | __DRI2_FLUSH_CONTEXT` and
+      `__DRI2_THROTTLE_COPYSUBBUFFER`
+      - we need to flush such that the pending gl commands are implicitly
+        fenced when the xserver does the copy
+  - `glXWaitX` waits for the xserver rendering
+    - `glx_context_vtable::wait_x`
+    - `dri3_wait_x`
+    - `loader_dri3_wait_x`
+      - normally, the xserver commands are implicitly fenced and there is no
+        wait needed
+      - but a window always has a fake front in dri3 and we need to copy from
+        the real front to the fake front
+    - `loader_dri3_copy_drawable`
+    - `__DRI2_FLUSH_DRAWABLE` and `__DRI2_THROTTLE_COPYSUBBUFFER`
+      - we need to flush such that the pending gl commands to the fake front
+        are implicitly fenced when the xserver does the copy
+  - `glXWaitGL` waits for GL rendering
+    - `glx_context_vtable::wait_gl`
+    - `dri3_wait_gl`
+    - `loader_dri3_wait_gl`
+      - normally, the gl commands are implicitly fenced and there is no wait
+        needed
+      - but a window always has a fake front in dri3 and we need to copy from
+        the fake front to the real front
+    - `loader_dri3_copy_drawable`, same reason as other call sites
+  - `glXSwapBuffers` or `glXSwapBuffersMscOML`
+    - `__GLXDRIscreenRec::swapBuffers`
+    - `dri3_swap_buffers`
+      - `flush` may be true or false depending on whether the drawable is
+        current
+    - `loader_dri3_swap_buffers_msc`
+    - `loader_dri3_vtable::flush_drawable`
+    - `glx_dri3_flush_drawable`
+    - `__DRI2_FLUSH_DRAWABLE` and `__DRI2_THROTTLE_SWAPBUFFER`
+      - `__DRI2_FLUSH_CONTEXT` is set too when the drawable is current
+  - `glFlush`, if frontbuffer rendering
+    - `_mesa_Flush`
+    - `_mesa_flush`
+    - `st_glFlush`
+    - `st_manager_flush_frontbuffer`
+    - `pipe_frontend_drawable::flush_front`
+    - `dri_st_framebuffer_flush_front`
+    - `dri_drawable::flush_frontbuffer`
+    - `dri2_flush_frontbuffer`
+    - `__DRIimageLoaderExtensionRec::flushFrontBuffer`
+    - `dri3_flush_front_buffer`
+    - `__DRI2_FLUSH_DRAWABLE` and `__DRI2_THROTTLE_FLUSHFRONT`
+- there is also `__DRI2flushExtensionRec::invalidate`
+  - it tells the DRI driver to invalidate the backing storage of the drawable
+  - EGL/X11 `eglQuerySurface`
+    - `dri2_query_surface`
+    - `dri2_egl_display_vtbl::query_surface`
+    - `dri3_query_surface`
+    - `loader_dri3_update_drawable_geometry`
+    - invalidate if geometry change detected
+  - EGL/X11 `eglSwapBuffers`
+    - `dri2_swap_buffers`
+    - `dri2_egl_display_vtbl::swap_buffers`
+    - `dri3_swap_buffers`
+    - `dri3_swap_buffers_with_damage`
+    - `loader_dri3_swap_buffers_msc`
+    - invalidate as the front/back is swapped
+  - here is how gl validates the drawable
+    - `st_manager_validate_framebuffers`
+    - `pipe_frontend_drawable::validate`
+    - `dri_st_framebuffer_validate`
+    - `dri_drawable::allocate_textures`
+    - `dri2_allocate_textures`
+    - `dri_image_drawable_get_buffers`
+    - `__DRIimageLoaderExtensionRec::getBuffers`
+    - `loader_dri3_get_buffers` (egl/x11, glx) or `image_get_buffers` (egl/wl)
+- `dri_flush_drawable` implements `__DRI2flushExtensionRec::flush`
+  - it calls `dri_flush` with `__DRI2_FLUSH_DRAWABLE`
+- `dri_flush` implements `__DRI2flushExtensionRec::flush_with_flags`
+  - `_mesa_glthread_finish` waits for the gl thread to become idle
+  - `__DRI2_FLUSH_CONTEXT` is mapped to `ST_FLUSH_FRONT`
+  - `__DRI2_THROTTLE_SWAPBUFFER` is mapped to `ST_FLUSH_END_OF_FRAME`
+  - `screen->throttle` is from `PIPE_CAP_THROTTLE` which is usually true
+  - `st_context_flush` flushes the gl context
+- `st_context_flush`
+  - `ST_FLUSH_END_OF_FRAME` is mapped to `PIPE_FLUSH_END_OF_FRAME`
+  - `ST_FLUSH_FENCE_FD` is mapped to `PIPE_FLUSH_FENCE_FD`
+  - `ST_FLUSH_FRONT` causes `st_manager_flush_frontbuffer`
+
 ## Gallium DRI Megadriver
 
 - `src/gallium/targets/dri/target.c` defines `__driDriverGetExtensions_<name>`
