@@ -1,49 +1,90 @@
 Mesa and DRI
 ============
 
-## DRI driver loading
+## DRI interface
 
-- GLX
-  - `__glXInitialize`
-  - `AllocAndFetchScreenConfigs`
-  - `dri3_create_screen`
-    - `loader_dri3_open` is called to get the fd from the server
-    - `loader_get_user_preferred_fd` potentially picks another fd when
-      `DRI_PRIME` is set or driconf is configured
-    - `loader_get_driver_for_fd` returns the driver name using pci id mapping,
-      kernel driver name, or `MESA_LOADER_DRIVER_OVERRIDE`
-  - `driOpenDriver`
-  - `loader_open_driver` dlopens `<name>_dri.so`, calls
-    `__driDriverGetExtensions_<name>`, and returns an array of
-    `__DRIextension *`
-- GBM
-  - `gbm_create_device`
-  - `_gbm_create_device`
-  - `find_backend`
-  - `dri_device_create`
-  - `dri_screen_create`, where `loader_get_driver_for_fd` is called on the
-    user-provided fd
-  - `dri_screen_create_for_driver`
-  - `dri_open_driver`
-  - `loader_open_driver`
-- EGL
+- `dri_interface.h` defines the DRI interface
+  - it should be considered internal to mesa nowadays
+  - the only external users are xserver and minigbm
+    - the plan is to make the legacy extensions that xserver relies stable
+      ABI, and the rest is fully internal
+
+## DRI Loaders
+
+- egl, glx, and gbm use `loader.h` to load DRI drivers
+- egl/x11
   - `eglInitialize`
   - `dri2_initialize`
   - `dri2_initialize_x11`
-    - `dri2_initialize_x11_dri3`, where `loader_dri3_open`,
-      `loader_get_user_preferred_fd`, and `loader_get_driver_for_fd` are
-      called
-    - `dri2_load_driver_dri3`
-    - `dri2_load_driver_common`
-    - `dri2_open_driver`
-    - `loader_open_driver`
-  - or, `dri2_initialize_drm`
-    - `gbm_create_device`
-- note that swrast (or wayland) uses different paths
+  - `dri2_initialize_x11_dri3`
+  - `dri3_x11_connect`
+    - `loader_dri3_open` queries the fd from the xserver
+    - `loader_get_user_preferred_fd` distinguishes render and display fds,
+      if prime is enabled
+    - `loader_get_driver_for_fd` queries the driver name from the fd
+  - `dri2_load_driver_dri3`
+    - `loader_open_driver` loads the DRI driver and returns
+      `__DRIextensionRec` array of the driver
+    - `loader_bind_extensions` binds the driver extensions listed in
+      `dri3_driver_extensions`
+  - `dri2_create_screen`
+  - `dri2_setup_extensions`
+    - `loader_bind_extensions` again binds the driver extensions listed in
+      `dri2_core_extensions` and `optional_core_extensions`
+- egl/wayland
+  - `dri2_initialize_wayland` instead of `dri2_initialize_x11`
+  - `dri2_initialize_wayland_drm`
+  - `dri2_initialize_wayland_drm_extensions`
+    - `default_dmabuf_feedback_main_device`, if the compositor is modern
+      - `loader_get_render_node` returns the render node path from `dev_t`
+      - `loader_open_device` opens the render node
+    - `wl_drm_bind`, if the compositor is older
+      - `loader_open_device` opens the device (primary or render) node path
+  - the rest is just like egl/x11
+- glx
+  - `__glXInitialize`
+  - `AllocAndFetchScreenConfigs`
+  - `dri3_create_screen`
+    - `loader_dri3_open`, `loader_get_user_preferred_fd`, and
+      `loader_get_driver_for_fd`, `loader_open_driver` and
+      `loader_bind_extensions` are just like in egl/x11
+    - `loader_bind_extensions` is called with `exts` array instead
+  - `dri3_bind_extensions`
+    - `loader_bind_extensions` again with another `exts` array
+- gbm
+  - `gbm_create_device`
+  - `_gbm_create_device`
+  - `find_backend`
+  - `backend_create_device`
+  - `dri_device_create`
+  - `dri_screen_create`
+    - `loader_get_driver_for_fd` just like in egl
+  - `dri_screen_create_for_driver`
+    - `loader_open_driver` and `loader_bind_extensions` just like in egl
+    - `loader_bind_extensions` is called with `gbm_dri_device_extensions`
+    - `loader_bind_extensions` is called again with `dri_core_extensions`
 
-## DRI driver extensions
+## DRI extensions
 
-- driver extensions
+- driver/loader extension exchanges
+  - `loader_open_driver` uses `dlsym` to get the static list of driver
+    extensions, which is `galliumdrm_driver_extensions`
+    - if swrast, it is `galliumsw_driver_extensions` or
+      `dri_swrast_kms_driver_extensions`
+  - loaders call `driCreateNewScreen2` from the DRI driver to create a screen
+    - the list of loader extensions is passed to the driver
+      - egl/x11 uses `dri3_image_loader_extensions`
+      - egl/wayland uses `dri2_loader_extensions`
+      - glx uses static `loader_extensions`
+      - gbm uses static `gbm_dri_screen_extensions`
+    - the list of static driver extensions is passed back to the driver
+      - this is done because hw drivers and swrast drivers, which have
+        different static driver extensions, live in the same DRI driver
+        library
+  - loaders call `driGetExtensions` from the DRI driver to get the per-screen
+    list of driver extensions
+    - the list is initialized by `dri2_init_screen_extensions` dynamically
+- static driver extensions
   - `loader_bind_extensions` is called after `loader_open_driver`
     - the loader (GLX, GBM, or EGL) provides a list of required and optional
       extensions
@@ -56,12 +97,35 @@ Mesa and DRI
   - GBM asks for `gbm_dri_device_extensions`
     - `__DRI_CORE`
     - `__DRI_MESA`
-    - `__DRI_DRI2`
+    - `__DRI_IMAGE_DRIVER`
   - EGL asks for `dri3_driver_extensions`
     - `__DRI_CORE`
     - `__DRI_MESA`
     - `__DRI_IMAGE_DRIVER`
     - `__DRI_CONFIG_OPTIONS`
+  - these functions are used
+    - `__DRImesaCoreExtensionRec::queryCompatibleRenderOnlyDeviceFd`
+      - when the display server gives the loader an fd whose device is
+        kms-only, this returns an fd for another device that is capable of
+        rendering
+    - `__DRImesaCoreExtensionRec::createNewScreen` create a new screen
+      - `__DRIimageDriverExtensionRec::createNewScreen2` is the older way
+      - `__DRIimageDriverExtensionRec::getAPIMask` is the older way to query
+        supported apis (gl, gles2, gles3, etc.)
+    - `__DRIcoreExtensionRec::destroyScreen` destroys a screen
+    - `__DRIcoreExtensionRec::getExtensions` returns the per-screen extensions
+      - this depends on the caps of the `pipe_screen`
+    - `__DRIconfigOptionsExtensionRec::getXml` is for `EGL_MESA_query_driver`
+      - it is used by driconf gui app
+    - `__DRIcoreExtensionRec::getConfigAttrib` queries a config attr
+    - `__DRIcoreExtensionRec::indexConfigAttrib` enumerates config attrs
+    - `__DRImesaCoreExtensionRec::createContext` creates a new context
+      - `__DRIimageDriverExtensionRec::createContextAttribs` is the older way
+    - `__DRIcoreExtensionRec::destroyContext` destroys a context
+    - `__DRIcoreExtensionRec::bindContext` binds a context
+    - `__DRIcoreExtensionRec::unbindContext` unbinds a context
+    - `__DRIimageDriverExtensionRec::createNewDrawable` creates a new drawable
+    - `__DRIcoreExtensionRec::destroyDrawable` destroys a drawable
 - loader extensions
   - loader provides a list of extensions to the driver in `createNewScreen`
   - GLX provides `loader_extensions`
@@ -75,11 +139,23 @@ Mesa and DRI
     - `__DRI_IMAGE_LOADER`
     - `__DRI_SWRAST_LOADER`
     - `__DRI_KOPPER_LOADER`
-  - EGL provides `dri3_image_loader_extensions`
+  - EGL/X11 provides `dri3_image_loader_extensions`
     - `__DRI_IMAGE_LOADER`
     - `__DRI_IMAGE_LOOKUP`
     - `__DRI_USE_INVALIDATE`
     - `__DRI_BACKGROUND_CALLABLE`
+  - EGL/WAYLAND provides `dri2_loader_extensions`
+    - `__DRI_IMAGE_LOADER`
+    - `__DRI_IMAGE_LOOKUP`
+    - `__DRI_USE_INVALIDATE`
+  - these functions are used
+    - `__DRIimageLoaderExtensionRec` is for working with drawables
+      - the loader is supposed to provide the backing storage, which is an
+        array of `__DRIimage`, for a `__DRIdrawable`
+    - `__DRIimageLookupExtensionRec` is for egl image import
+      - e.g., when `glEGLImageTargetTexture2DOES` gets an egl image
+    - `__DRIbackgroundCallableExtensionRec` is for glthread
+      - egl/wayland does not support glthread?
 - screen extensions
   - after a screen is created, `__DRIcoreExtensionRec::getExtensions` queries
     the screen extensions
@@ -100,11 +176,29 @@ Mesa and DRI
     - `__DRI2_FENCE`
     - `__DRI2_BUFFER_DAMAGE`
     - `__DRI2_INTEROP`
-    - `__DRI_IMAGE`
     - `__DRI2_FLUSH_CONTROL`
     - `__DRI2_BLOB`
     - `__DRI_MUTABLE_RENDER_BUFFER_DRIVER`
     - `__DRI_KOPPER`
+  - these functions are used
+    - `__DRI2flushExtensionRec` is used when the loader is about to swap
+      buffers or copy buffers, and needs an implicit flush
+    - `__DRIimageExtensionRec` is for working with `__DRIimage`
+      - it can allocate `__DRIimage`, which is `pipe_resource`
+      - it can import texobj, rb, dmabuf, etc. as `__DRIimage`
+      - it can map/umap `__DRIimage`, which is for gbm
+      - it can blit between `__DRIimage`s, which is for prime blit
+      - it can add a sync-file fd (e.g., from the display) to a `__DRIimage`,
+        which is for android
+    - `__DRI2interopExtensionRec` is for `EGL_MESA_gl_interop` and
+      `GLX_MESA_gl_interop`
+    - `__DRI2configQueryExtensionRec` queries driconf from the driver
+    - `__DRI2fenceExtensionRec` is for various EGL fence extensions
+    - `__DRI2bufferDamageExtensionRec` is for `EGL_KHR_partial_update`
+    - `__DRI2flushControlExtensionRec` is for `EGL_KHR_context_flush_control`
+    - `__DRI2blobExtensionRec` is for `EGL_ANDROID_blob_cache`
+    - `__DRImutableRenderBufferDriverExtensionRec` is for
+      `EGL_KHR_mutable_render_buffer`
 - note that swrast uses different extensions
 
 ## Gallium DRI Megadriver
