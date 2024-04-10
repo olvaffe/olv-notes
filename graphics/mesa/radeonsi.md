@@ -116,3 +116,30 @@ Gallium Radeon SI
   - `RADEON_FLUSH_START_NEXT_GFX_IB_NOW` is set on newer kernels
 - `amdgpu_cs_flush` adds the submit to the queue
   - because `PIPE_FLUSH_ASYNC` is set, it happens some time later
+
+## glxgears and threads
+
+- `glxgears` relies on `glXSwapBuffers` to flush
+- `glXSwapBuffers` calls `dri_flush` in st/dri
+  - because we are about the share the image with the x server, we need to
+    flush all userspace commands so that the image will be implicitly fenced
+    by the kernel space
+  - the flush is done by `_mesa_glthread_finish` followed by
+    `st_context_flush`
+- `_mesa_glthread_finish` waits for the `gl` thread to become idle and
+  executes all GL commands that have been recorded to the current batch
+  - because we did not submit any batch to the `gl` thread, there is no need
+    to wait
+- `st_context_flush` calls `pipe->flush` which points to `tc_flush`
+  - the flush flag has only `PIPE_FLUSH_END_OF_FRAME` and the flush is
+    executed directly
+  - `tc_sync_msg` waits for the `gdrv` first, and because there is no
+    submitted batches, there is no need to wait
+  - `si_flush_from_st` is then called
+- `si_flush_from_st`
+  - `si_flush_all_queues` calls `si_flush_gfx_cs` which calls `amdgpu_cs_flush`
+    - because `PIPE_FLUSH_ASYNC` is always set, `amdgpu_cs_flush` submits the
+      job to the `cs` thread
+    - the `cs` thread calls `amdgpu_cs_submit_ib` to submit the job to the
+      kernel driver
+  - it also call `amdgpu_cs_sync_flush` to wait for the submit
