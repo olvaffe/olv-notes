@@ -443,3 +443,23 @@ Mesa and Its Main Context
     - it calls `_mesa_DrawArraysInstanced`
   - `glFlush` is dispatched to `_mesa_unmarshal_Flush`
     - it calls `_mesa_Flush`
+- when an app relies on swap buffers to flush,
+  - `glXSwapBuffers`
+    - it calls `swapBuffers` which points to `dri3_swap_buffers` on dri3
+    - `loader_dri3_swap_buffers_msc` calls `draw->vtable->flush_drawable`
+      which points to `glx_dri3_flush_drawable`
+    - `loader_dri3_flush` calls `flush_with_flags` which points to `dri_flush`
+  - `eglSwapBuffers` on x11
+    - `dri2_swap_buffers` calls `swap_buffers` which points to `dri2_x11_swap_buffers`
+    - `dri2_x11_swap_buffers_msc` calls `dri2_flush_drawable_for_swapbuffers`
+    - `dri2_flush_drawable_for_swapbuffers_flags` calls `flush_with_flags`
+      which points to `dri_flush`
+  - `eglSwapBuffers` on wayland
+    - `dri2_swap_buffers` calls `swap_buffers` which points to `dri2_wl_swap_buffers`
+    - `dri2_wl_swap_buffers_with_damage` calls `dri2_flush_drawable_for_swapbuffers`
+    - `dri2_flush_drawable_for_swapbuffers_flags` calls `flush_with_flags`
+      which points to `dri_flush`
+  - `dri_flush`
+    - it calls `_mesa_glthread_finish` first, because we are about the share
+      the result with the display server
+    - it calls `st_context_flush` to flush the context
