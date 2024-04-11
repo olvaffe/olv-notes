@@ -8,7 +8,7 @@ OBS Studio
   - install dependencies
   - `cmake -S . -B out -G Ninja -DLINUX_PORTABLE=ON \
            -DENABLE_AJA=OFF -DENABLE_BROWSER=OFF \
-           -DENABLE_NATIVE_NVENC=OFF -DENABLE_WEBRTC=OFF \
+           -DENABLE_NATIVE_NVENC=OFF -DENABLE_PIPEWIRE=OFF -DENABLE_WEBRTC=OFF \
            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `ninja -C out`
   - `ninja -C out install`
@@ -44,3 +44,45 @@ OBS Studio
   - `-DENABLE_SNDIO=OFF` disables sndio audio support
   - `-DENABLE_FREETYPE=ON` enables freetype text support
   - `-DENABLE_VLC=ON` enables vlc support
+
+## Recording
+
+- when `Start Recording` is clicked,
+  - with <https://github.com/obsproject/obs-studio/pull/10137>
+  - `OBSBasic::on_recordButton_clicked`
+  - `OBSBasic::StartRecording`
+  - `AdvancedOutput::StartRecording`
+  - `obs_output_start`
+  - `obs_output_actual_start`
+  - `ffmpeg_mux_start`
+  - `ffmpeg_mux_start_internal`
+  - `obs_output_initialize_encoders`
+    - `initialize_video_encoders`
+    - `obs_encoder_initialize`
+    - `obs_encoder_initialize_internal`
+    - `h264_vaapi_create_tex`
+    - `vaapi_create_tex_internal`
+    - `vaapi_test_texencode`
+    - `vaapi_create_surface`
+    - `gs_texture_create_from_dmabuf`
+    - `device_texture_create_from_dmabuf`
+    - `gl_wayland_egl_device_texture_create_from_dmabuf`
+  - `obs_output_begin_data_capture`
+    - `hook_data_capture`
+    - `start_video_encoders`
+    - `obs_encoder_start`
+    - `obs_encoder_start_internal`
+    - `add_connection`
+    - `start_gpu_encode`
+- the gpu encode thread
+  - `gpu_encode_thread`
+  - `vaapi_encode_tex`
+    - `vaapi_create_surface` creates a va surface, exports the dmabuf, and
+      calls `gs_texture_create_from_dmabuf` to import it as egl image
+    - `gs_copy_texture` copies from the src tex to the egl image
+      - `device_copy_texture`
+      - `device_copy_texture_region`
+      - `gl_copy_texture` calls `glCopyImageSubData`
+    - `gs_flush`
+      - `device_flush` calls `glFlush`
+    - `vaapi_encode_internal` encodes the va surface
