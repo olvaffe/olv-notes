@@ -42,6 +42,7 @@ mpv
           - `decode_frame`
           - `avcodec_receive_frame`
     - `add_new_frame`
+  - `vo_queue_frame` wakes up the vo thread
 - vo thread stack
   - `vo_thread`
   - `render_frame`
