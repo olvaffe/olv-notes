@@ -22,7 +22,27 @@ mpv
 ## case study
 
 - `mpv --no-config --hwdec=vaapi foo.mkv`
-- stack
+- main thread stack
+  - `main`
+  - `mpv_main`
+  - `mp_play_files`
+  - `play_current_file`
+  - `run_playloop`
+  - `write_video`
+  - `video_output_image`
+    - `mp_pin_out_read`
+      - `mp_pin_out_request_data`
+      - `filter_recursive`
+      - `mp_filter_graph_run`
+      - `vd_lavc_process`
+      - `lavc_process`
+        - `send_packet`
+          - `avcodec_send_packet`
+        - `receive_frame`
+          - `decode_frame`
+          - `avcodec_receive_frame`
+    - `add_new_frame`
+- vo thread stack
   - `vo_thread`
   - `render_frame`
   - `draw_frame` from `vo_gpu.c`
