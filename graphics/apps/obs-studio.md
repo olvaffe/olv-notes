@@ -53,17 +53,43 @@ OBS Studio
   - `OBSApp::OBSInit`
   - `OBSBasic::OBSInit`
   - `OBSBasic::ResetVideo`
-  - `AttemptToResetVideo`
-  - `obs_reset_video`
-  - `obs_init_video` starts the graphics thread to run `obs_graphics_thread`
+    - `AttemptToResetVideo`
+    - `obs_reset_video`
+    - `obs_init_video` starts the graphics thread to run `obs_graphics_thread`
+  - `OBSBasic::ResetOutputs`
+    - `CreateAdvancedOutputHandler`
+      - `outputHandler` is initialized to `CreateAdvancedOutputHandler`
+    - `AdvancedOutput::AdvancedOutput`
+    - `obs_output_create`
+      - `ffmpegOutput` is false and `fileOutput` is initialized to
+        `obs_output_create("ffmpeg_muxer", ...)`
+- the graphics thread
+  - `obs_graphics_thread`
+  - `obs_graphics_thread_loop`
+  - `output_frames`
+    - `output_frame`
+    - `render_video`
+      - `render_main_texture`
+        - `obs_view_render`
+        - `obs_source_video_render`
+        - `render_video`
+        - `obs_source_main_render`
+        - `source_render`
+      - `output_gpu_encoders` if recording
+        - `encode_gpu`
+        - `queue_frame` moves a frame from `gpu_encoder_avail_queue` to
+          `gpu_encoder_queue` and posts to `gpu_encode_semaphore`
+  - `render_displays`
+    - `render_display`
+    - `gs_present`
+    - `device_present`
+    - `gl_wayland_egl_device_present`
+    - `eglSwapBuffers`
 - when `Start Recording` is clicked,
   - with <https://github.com/obsproject/obs-studio/pull/10137>
   - `OBSBasic::on_recordButton_clicked`
   - `OBSBasic::StartRecording`
-    - `outputHandler` has been initialized to `CreateAdvancedOutputHandler`
   - `AdvancedOutput::StartRecording`
-    - `ffmpegOutput` has been initialize to false and `fileOutput` has been
-      initialized to `obs_output_create("ffmpeg_muxer", ...)`
   - `obs_output_start`
   - `obs_output_actual_start`
   - `ffmpeg_mux_start`
@@ -83,16 +109,6 @@ OBS Studio
     - `start_gpu_encode`
       - `init_gpu_encoding` creates textures and starts gpu encode thread
         to run `gpu_encode_thread`
-- the graphics thread
-  - `obs_graphics_thread`
-  - `obs_graphics_thread_loop`
-  - `output_frames`
-  - `output_frame`
-  - `render_video`
-  - `output_gpu_encoders`
-  - `encode_gpu`
-  - `queue_frame` moves a frame from `gpu_encoder_avail_queue` to
-    `gpu_encoder_queue` and posts to `gpu_encode_semaphore`
 - the gpu encode thread
   - `gpu_encode_thread` wakes up and pops a frame from `gpu_encoder_queue`
   - `vaapi_encode_tex`
