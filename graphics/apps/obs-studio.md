@@ -63,9 +63,28 @@ OBS Studio
     - `obs_output_create`
       - `ffmpegOutput` is false and `fileOutput` is initialized to
         `obs_output_create("ffmpeg_muxer", ...)`
+  - `OBSBasic::Load`
+    - `OBSBasic::LoadData`
+    - `obs_load_sources`
+    - `obs_load_source`
+    - `obs_load_source_type`
+    - `obs_source_create_set_last_ver`
+    - `obs_source_create_internal`
+    - `v4l2_create`
+    - `v4l2_update`
+    - `v4l2_init` starts the v4l2 thread to run `v4l2_thread`
+- the v4l2 thread
+  - `v4l2_thread` keeps capturing new frames
+  - `obs_source_output_video`
+  - `obs_source_output_video_internal` adds frames to `source->async_frames`
 - the graphics thread
   - `obs_graphics_thread`
   - `obs_graphics_thread_loop`
+  - `tick_sources`
+    - `obs_source_video_tick`
+    - `async_tick` sets `cur_async_frame` to the closest frame
+    - `get_closest_frame`
+    - `ready_async_frame`
   - `output_frames`
     - `output_frame`
     - `render_video`
@@ -75,6 +94,11 @@ OBS Studio
         - `render_video`
         - `obs_source_main_render`
         - `source_render`
+        - ...
+        - `obs_source_update_async_video`
+          - `obs_source_get_frame` returns `source->cur_async_frame`
+        - `obs_source_render_async_video`
+          - `obs_source_draw_texture` draws
       - `output_gpu_encoders` if recording
         - `encode_gpu`
         - `queue_frame` moves a frame from `gpu_encoder_avail_queue` to
