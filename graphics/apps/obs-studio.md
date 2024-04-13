@@ -47,11 +47,23 @@ OBS Studio
 
 ## Recording
 
+- initialization
+  - `main`
+  - `run_program`
+  - `OBSApp::OBSInit`
+  - `OBSBasic::OBSInit`
+  - `OBSBasic::ResetVideo`
+  - `AttemptToResetVideo`
+  - `obs_reset_video`
+  - `obs_init_video` starts the graphics thread to run `obs_graphics_thread`
 - when `Start Recording` is clicked,
   - with <https://github.com/obsproject/obs-studio/pull/10137>
   - `OBSBasic::on_recordButton_clicked`
   - `OBSBasic::StartRecording`
+    - `outputHandler` has been initialized to `CreateAdvancedOutputHandler`
   - `AdvancedOutput::StartRecording`
+    - `ffmpegOutput` has been initialize to false and `fileOutput` has been
+      initialized to `obs_output_create("ffmpeg_muxer", ...)`
   - `obs_output_start`
   - `obs_output_actual_start`
   - `ffmpeg_mux_start`
@@ -62,11 +74,6 @@ OBS Studio
     - `obs_encoder_initialize_internal`
     - `h264_vaapi_create_tex`
     - `vaapi_create_tex_internal`
-    - `vaapi_test_texencode`
-    - `vaapi_create_surface`
-    - `gs_texture_create_from_dmabuf`
-    - `device_texture_create_from_dmabuf`
-    - `gl_wayland_egl_device_texture_create_from_dmabuf`
   - `obs_output_begin_data_capture`
     - `hook_data_capture`
     - `start_video_encoders`
@@ -74,11 +81,26 @@ OBS Studio
     - `obs_encoder_start_internal`
     - `add_connection`
     - `start_gpu_encode`
+      - `init_gpu_encoding` creates textures and starts gpu encode thread
+        to run `gpu_encode_thread`
+- the graphics thread
+  - `obs_graphics_thread`
+  - `obs_graphics_thread_loop`
+  - `output_frames`
+  - `output_frame`
+  - `render_video`
+  - `output_gpu_encoders`
+  - `encode_gpu`
+  - `queue_frame` moves a frame from `gpu_encoder_avail_queue` to
+    `gpu_encoder_queue` and posts to `gpu_encode_semaphore`
 - the gpu encode thread
-  - `gpu_encode_thread`
+  - `gpu_encode_thread` wakes up and pops a frame from `gpu_encoder_queue`
   - `vaapi_encode_tex`
     - `vaapi_create_surface` creates a va surface, exports the dmabuf, and
       calls `gs_texture_create_from_dmabuf` to import it as egl image
+      - `gs_texture_create_from_dmabuf`
+      - `device_texture_create_from_dmabuf`
+      - `gl_wayland_egl_device_texture_create_from_dmabuf`
     - `gs_copy_texture` copies from the src tex to the egl image
       - `device_copy_texture`
       - `device_copy_texture_region`
