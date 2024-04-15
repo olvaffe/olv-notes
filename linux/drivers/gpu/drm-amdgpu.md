@@ -398,6 +398,95 @@ DRM amdgpu
   - `DRM_IOCTL_AMDGPU_WAIT_FENCES` waits an array of `drm_amdgpu_fence`s
     - no user
 
+## `DRM_IOCTL_AMDGPU_CS`
+
+- `drm_amdgpu_cs_in`
+  - `ctx_id` is the context
+  - `bo_list_handle` and `flags` are no longer used nowadays
+  - `chunks` and `num_chunks` point to an array of `drm_amdgpu_cs_chunk`
+  - each `drm_amdgpu_cs_chunk` has
+    - `chunk_id` is the data type
+    - `length_dw` is the data size
+    - `chunk_data` points to the data
+- radv submits using `amdgpu_cs_submit_raw2` helper
+  - there is a `drm_amdgpu_cs_chunk_ib` chunk for each IB
+    - `flags` is `AMDGPU_IB_FLAG_x` such as `AMDGPU_IB_FLAG_PREEMPT`
+    - `va_start` is the ib addr
+    - `ib_bytes` is the ib size
+    - `ip_type` is `AMDGPU_HW_IP_x` such as `AMDGPU_HW_IP_GFX`
+      - umd uses `AMD_IP_x` such as `AMD_IP_GFX`
+    - `ip_instance` is always 0
+    - `ring` is the ring idx of the ip type
+      - e.g., `AMD_IP_COMPUTE` has 4 or more rings
+  - there is a `drm_amdgpu_cs_chunk_fence` chunk for gfx/compute submit
+    - `handle` is the bo
+    - `offset` is the offset
+    - this tells the kernel to write 4 fence seqnos to the offset for
+      userspace fencing
+  - there is an array of `drm_amdgpu_cs_chunk_syncobj` chunks, one for each
+    syncobj wait
+    - `handle` is the syncobj
+    - `flags` is `DRM_SYNCOBJ_WAIT_FLAGS_x` such as
+      `DRM_SYNCOBJ_WAIT_FLAGS_WAIT_ALL`
+    - `point` is the timeline value
+  - there is an array of `drm_amdgpu_cs_chunk_syncobj` chunks, one for each
+    syncobj signal
+  - there is a `drm_amdgpu_bo_list_in`
+    - `operation` and `list_handle` are ~0
+      - it is always assumed to be `AMDGPU_BO_LIST_OP_CREATE`
+    - `bo_number`, `bo_info_size`, and `bo_info_ptr` are an array of
+      `drm_amdgpu_bo_list_entry` to specify the bos
+- radeonsi also submits using `amdgpu_cs_submit_raw2` helper
+  - comparing to radv, there is some minor differences
+  - `drm_amdgpu_cs_chunk_sem` instead of `drm_amdgpu_cs_chunk_syncobj` because
+    the syncobjs are binary
+  - `drm_amdgpu_cs_chunk_cp_gfx_shadow` for gfx11+
+- `amdgpu_cs_parser_init` initializes the parser
+  - it looks up the context id
+  - `p->sync` is initialized by `amdgpu_sync_create`
+  - `p->exec` is initialized by `drm_exec_init`
+- `amdgpu_cs_pass1` copies all chunks and parses some of them
+  - `amdgpu_cs_p1_ib` initializes `p->entities`, `p->gang_size`, etc. from
+    `drm_amdgpu_cs_chunk_ib`
+  - `amdgpu_cs_p1_user_fence` initializes `p->uf_bo` from
+    `drm_amdgpu_cs_chunk_fence`
+  - `amdgpu_cs_p1_bo_handles` initializes `p->bo_list` from
+    `drm_amdgpu_bo_list_in`
+  - `p->jobs` is also initialized
+- `amdgpu_cs_pass2` parses more chunks
+  - `amdgpu_cs_p2_ib` initializes `p->jobs[x]->ibs[y]` from
+    `drm_amdgpu_cs_chunk_ib`
+  - `amdgpu_cs_p2_syncobj_timeline_wait` adds wait fences from from
+    `drm_amdgpu_cs_chunk_syncobj`
+    - fences are added to `p->sync`
+  - `amdgpu_cs_p2_syncobj_timeline_signal` initializes `p->post_deps` from
+    `drm_amdgpu_cs_chunk_syncobj`
+- `amdgpu_cs_parser_bos` parses `p->bo_list`
+  - `amdgpu_ttm_tt_get_user_pages` gets the user pages for userptr bos
+  - `drm_exec_prepare_obj` locks each gem bo for access
+  - `amdgpu_ttm_tt_set_user_pages` sets the user pages for userptr bos
+  - `amdgpu_cs_bo_validate` validate all bos
+- `amdgpu_cs_patch_jobs` patches job for legacy uvd/vce
+- `amdgpu_cs_vm_handling` updates vm
+  - `amdgpu_vm_clear_freed` updates the page table for freed bos
+  - `amdgpu_vm_handle_moved` updates the page table for moved bos
+  - `amdgpu_vm_bo_update` updates the page table for bos
+  - `amdgpu_vm_update_pdes` updates the higher-level page table
+  - more fences are added to `p->sync`
+- `amdgpu_cs_sync_rings`
+  - `amdgpu_ctx_wait_prev_fence` blocks to wait on prev fence
+  - `amdgpu_sync_resv` adds all bo resvs to `p->sync`
+  - `amdgpu_sync_push_to_job` adds `p->sync` as the dep of a job
+- `amdgpu_cs_submit` submits the jobs
+  - `drm_sched_job_arm` arms all jobs
+  - `p->fence` is set to the finished fence
+  - `ttm_bo_move_to_lru_tail_unlocked` marks the bos used (so that they are
+    less likely to be evicted)
+  - `amdgpu_ctx_add_fence` adds `p->fence` to `p->entities[x]`
+  - `amdgpu_cs_post_dependencies` updates fences for signaled syncobjs
+  - `drm_sched_entity_push_job` submits all jobs
+- `amdgpu_cs_parser_fini` cleans up
+
 ## Display
 
 - display ip blocks
