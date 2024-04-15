@@ -667,6 +667,7 @@ Kernel Config
     - select `MediaTek CMDQ Mailbox Support` if mtk
     - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
+    - select `AMD IOMMU support` if amd
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
