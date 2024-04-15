@@ -6,14 +6,22 @@ OBS Studio
 - <https://github.com/obsproject/obs-studio/wiki/build-instructions-for-linux>
   - `git clone --recursive https://github.com/obsproject/obs-studio.git`
   - install dependencies
+    - `pacman -S librist qt6-base qt6-svg qt6-wayland uthash`
   - `cmake -S . -B out -G Ninja -DLINUX_PORTABLE=ON \
-           -DENABLE_AJA=OFF -DENABLE_BROWSER=OFF \
-           -DENABLE_NATIVE_NVENC=OFF -DENABLE_PIPEWIRE=OFF -DENABLE_WEBRTC=OFF \
+           -DENABLE_AJA=OFF -DENABLE_BROWSER=OFF -DENABLE_NATIVE_NVENC=OFF \
+           -DENABLE_PIPEWIRE=OFF -DENABLE_SCRIPTING=OFF -DENABLE_VLC=OFF \
+           -DENABLE_WEBRTC=OFF -DENABLE_WEBSOCKET=OFF \
            -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `ninja -C out`
   - `ninja -C out install`
   - `cd out/install/bin/64bit`
   - `./obs`
+- `out/rundir/Debug` directory structure
+  - `bin/ARCH` holds the executables and libraries
+  - `data/libobs` holds libobs data files
+  - `data/obs-plugins` holds plugin data files
+  - `data/obs-studio` holds ui data files
+  - `obs-plugins/ARCH` holds plugin libraries
 - top-level options
   - `-DENABLE_UI=ON` enables ui
   - `-DENABLE_SCRIPTING=ON` enables scripting
