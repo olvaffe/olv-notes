@@ -914,6 +914,52 @@ AMD
 - 12.18.2. Scratch Instructions
 - 12.18.3. Global Instructions
 
+## Video IP Block
+
+- UVD and VCE
+  - uvd 1.0/2.0 since terascale 1
+    - vc1/wmv9 decode
+    - h264/avc decode
+  - uvd 2.2 since terascale 2
+  - uvd 3.0 since terascale 3
+    - mpeg1 decode added
+    - h262/mpeg2 decode added
+    - h263/mpeg4 decode added
+  - uvd 4.0 and vce 1.0 since gcn
+    - h264/avc encode added
+  - uvd 4.2 and vce 2.0 since gcn2
+  - uvd 5.0/6.0 and vce 3.0/3.1 since gcn3
+    - h265/hevc decode added
+    - jpeg decode added
+  - uvd 6.3 and vce 3.4 since gcn4
+    - h265/hevc encode added
+  - uvd 7.0 and vce 4.0 since gcn5
+- VCN
+  - 1.0 since raven, picaso
+    - jpeg decode
+    - h262/mpeg2 decode
+    - vc1/wmv9 decode
+    - h264/avc encode/decode
+    - h265/hevc encode/decode
+    - vp9 decode
+  - 2.0 since navi 1x
+  - 2.2 since renoir, cezanne, barcelo, etc.
+  - 2.5 since arcturus
+  - 2.6 since aldebaran
+  - 3.0 since navi 2x
+    - av1 decode added
+  - 3.1.0 since van gogh
+  - 3.1.1 since rembrandt, mendocino
+    - h262/mpeg2 support removed
+    - vc1/wmv9 support removed
+  - 3.1.2 since raphael
+  - 4.0 since navi 3x, phoenix
+    - av1 encode added
+- VPE
+  - 2024+
+  - no codecs
+  - post-processing only
+
 ## umr
 
 - <https://gitlab.freedesktop.org/tomstdenis/umr.git>
