@@ -146,6 +146,13 @@ AMD CPUs
   - gpu `1002:1506`
   - `CHIP_ID_DISCOVERY|AMD_IS_APU`
   - `AMDGPU_FAMILY_GC_10_3_6`
+  - gpu info
+    - `num_shader_engines = 1`
+    - `num_shader_arrays_per_engine = 1`
+    - `num_cu_per_sh = 2`
+    - `cu_active_number = 2`
+    - each cu has 2 SIMD32, meaning it can perform `2*32*2=128` ops per cycle
+    - at 1900MHZ, it peaks at 243 GOPS
 - typical hw
   - intel: N4000 (2C@1.1G), N4120 (4C@1.1G), N4500 (2C@1.1G), N6000 (4C@1.1G)
   - amd: 9120C (2C@1.6G), 3015Ce (2C@1.2G)

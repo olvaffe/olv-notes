@@ -42,6 +42,14 @@ clvk
   - `simple_test`
 - packaging
   - `strip -g out/libOpenCL.so.1 && scp -C out/libOpenCL.so.1 <remote>:`
+- env
+  - env `CLVK_<OPT_IN_UPPERCASE>` sets option `<opt_in_lowercase>` in
+    `src/config.def`
+  - `CLVK_LOG=4` to log everything
+    - from 4 to 0: debug, info, warn, error, fatal
+  - `CLVK_CLSPV_OPTIONS=foo` to pass extra options to clspv
+    - options from `clBuildProgram`, clvk-generated, and this env var are
+      combined
 
 ## OpenCL ICD Loaders
 
