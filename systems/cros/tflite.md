@@ -47,6 +47,24 @@ CrOS TensorFlow Lite
     - `mlbenchmark.ULM.*`
     - `mlbenchmark.ULMEstimator.*`
 
+## `benchmark_model`
+
+- it seems after initial setup and inference, each inference does
+  - `clEnqueueWriteBuffer`
+  - `clSetKernelArg` and `clEnqueueNDRangeKernel` for
+    - `bhwc_to_tensor` once
+    - `main_function` many times
+    - `clFlush`
+    - `tensor_to_bhwc` once
+  - `clEnqueueReadBuffer`
+  - `clFinish`
+- gpu time breakdown
+  - `clEnqueueWriteBuffer`: 2.5%
+  - `clEnqueueNDRangeKernel(bhwc_to_tensor)`: 1.5%
+  - `clEnqueueNDRangeKernel(main_function)`: 84%
+  - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
+  - `clEnqueueReadBuffer`: 11%
+
 ## Tast `mlbenchmark.TFLite.*`
 
 - <https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/main/src/go.chromium.org/tast-tests/cros/local/bundles/cros/mlbenchmark/>

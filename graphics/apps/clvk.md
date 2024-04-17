@@ -74,6 +74,51 @@ clvk
     - the `.icd` file to be parsed, or
     - the icd library to be `dlopen`ed
 
+## Intercept Layer for OpenCL
+
+- build
+  - `git clone https://github.com/intel/opencl-intercept-layer.git`
+  - `cmake -S . -B out -G Ninja`
+- config `~/clintercept.conf`
+  - env `CLI_<option>` sets the same option
+  - Setup and Loading Controls
+    - `OpenCLFileName` (string)
+      - the path of the real icd loader
+  - Logging Controls
+    - `LogToFile` (bool)
+      - log to `clintercept_log.txt` instead of stderr
+    - `CallLogging` (bool)
+      - log all cl calls
+    - `CallLoggingThreadId` or `CallLoggingThreadNumber` (bool)
+      - log thread id or number
+    - `CallLoggingElapsedTime` (bool)
+      - log call time
+    - `ErrorLogging` (bool)
+      - log cl errors
+    - `FlushFiles` (bool)
+      - flush after each log write
+    - `DumpDir` (string)
+      - default to `~/CLIntercept_Dump/<Process Name>`
+  - Reporting Controls
+  - Controls for Dumping and Injecting Programs and Build Options
+    - `DumpProgramSource` (bool)
+      - dump all program source
+    - `DumpProgramBinaries` (bool)
+      - dump all program binaries
+    - `AppendBuildOptions` (string)
+      - append build options
+    - `AppendLinkOptions` (string)
+      - append link options
+  - Controls for Emulating Features
+  - Controls for Automatically Creating SPIR-V Modules
+  - Controls for Dumping Buffers and Images
+  - Device Partitioning Controls
+  - Capture and Replay Controls
+  - AubCapture Controls
+  - Execution Controls
+  - Platform and Device Query Overrides
+  - Precompiled Kernel and Builtin Kernel Override Controls
+
 ## Rusticl
 
 - `RUSTICL_ENABLE` must be specified to enable drivers
