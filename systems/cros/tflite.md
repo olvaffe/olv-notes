@@ -14,6 +14,10 @@ CrOS TensorFlow Lite
     - <https://github.com/google/ruy>
     - <https://github.com/jax-ml/ml_dtypes>
     - <https://gitlab.com/libeigen/eigen>
+- build with cmake
+  - `git clone https://github.com/tensorflow/tensorflow.git`
+  - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON`
+  - `ninja -C out tensorflow-lite benchmark_model`
 - installed files
   - `/usr/include/tensorflow`
     - `fp16`
