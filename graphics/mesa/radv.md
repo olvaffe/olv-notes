@@ -34,31 +34,57 @@ Mesa RADV
 
 - `MESA_VK_TRACE` for a comma-separated list of trace types
   - initializes `instance->trace_mode`
-  - available trace types
-    - `rgp` for Radeon GPU Profiler
+  - common trace types
     - `rmv` for Radeon Memory Visualizer
+  - `vk_instance_add_driver_trace_modes` parses driver trace types
+    - `rgp` for Radeon GPU Profiler
     - `rra` for Radeon Raytracing Analyzer
-  - `MESA_VK_TRACE_FRAME` specifies the frame trigger
-    - initializes `instance->trace_frame`
-  - `MESA_VK_TRACE_TRIGGER` specifies the file trigger
-    - initializes `instance->trace_trigger_file`
-  - `wsi_common_queue_present` triggers the capturing
-    - it tracks frame count and compares against `instance->trace_frame` to
-      trigger
-    - it also checks and removes `instance->trace_trigger_file` to trigger
+    - `ctxroll` for context rolls
+- `MESA_VK_TRACE_FRAME` specifies the frame trigger
+  - initializes `instance->trace_frame`
+- `MESA_VK_TRACE_TRIGGER` specifies the file trigger
+  - initializes `instance->trace_trigger_file`
+- tracing is triggered from wsi
+  - `wsi_common_queue_present` calls `handle_trace`
+  - tracing can be triggered for a single frame in a few ways
+    - `device->current_frame` is incremented for each frame and triggers
+      tracing when `device->current_frame == instance->trace_frame`
+    - `instance->trace_trigger_file` is checked for each frame and triggers
+      tracing when it exists and is removed
+    - `device->trace_hotkey_trigger` is set by a hot key, which is `F1` on X11
+  - when triggered, `device->capture_trace` is called
 - `RADV_TRACE_MODE_RGP`
   - `radv_amdgpu_winsys_create` is called with a reserved vmid
   - `radv_GetPhysicalDeviceToolProperties` reports the tool
-  - `init_dispatch_tables` initializes the dispatch tables
+  - `radv_physical_device_get_supported_extensions` disables
+    `VK_KHR_performance_query`
+  - `init_dispatch_tables` uses the sqtt dispatch table
   - `radv_sqtt_init` initializes sqtt
-  - `RADV_THREAD_TRACE_CACHE_COUNTERS` enables cache counter tracing as well
-  - when triggered, `capture_trace` sets `device->sqtt_triggered`
-    - `radv_handle_sqtt` is called after each successful `sqtt_QueuePresentKHR`
-      - if `MESA_VK_TRACE_FRAME=100`,
-      - `radv_begin_sqtt` is called before frame #100
-      - `radv_end_sqtt` is called after frame #100
-      - `radv_get_sqtt_trace` is called to retrieve the trace
-      - `ac_dump_rgp_capture` saves the trace to `/tmp/*.rgp`
+    - `radv_is_instruction_timing_enabled` is optional and is enabled by
+      default
+    - `radv_spm_trace_enabled` is optional and is enabled by default
+    - `radv_sqtt_queue_events_enabled` is optional and is enabled by default
+  - when triggered from wsi, `capture_trace` sets `device->sqtt_triggered`
+  - `radv_handle_sqtt` is called after each successful `sqtt_QueuePresentKHR`
+    - if sqtt is triggerd for the frame,
+      - `radv_begin_sqtt` begins tracing
+      - `device->sqtt_enabled` is set
+    - if `device->sqtt_enabled` was set for the last frame,
+      - `device->sqtt_enabled` is cleared
+      - `radv_end_sqtt` ends tracing
+      - `radv_get_sqtt_trace` retrives the trace
+      - `ac_dump_rgp_capture` dumps the trace
+    - that is, tracing is triggered and enabled for a single frame
+  - sqtt dispatch table intercepts many calls
+    - `sqtt_Create*Pipelines` and `sqtt_DestroyPipeline`
+      - `radv_register_pipeline` and `radv_unregister_records`
+        register/unregister the pipelines
+    - `sqtt_Cmd*` that are actions
+      - these mainly records api markers
+    - `sqtt_QueuePresentKHR`
+      - to be able to call `radv_handle_sqtt` after each present to see if
+        tracing needs to be begun/ended
+    - `sqtt_QueueSubmit2` records the submit if tracing has begun
 - `VK_TRACE_MODE_RMV` is similar
   - `vk_memory_trace_init` initializes the runtime
   - `radv_memory_trace_init` initializes radv-specific stuff
@@ -67,6 +93,7 @@ Mesa RADV
 - `RADV_TRACE_MODE_RRA` is similar
   - `radv_rra_trace_init` initializes rra
   - when triggered, `radv_rra_dump_trace` dumps the accel structs
+- `RADV_TRACE_MODE_CTX_ROLLS` is similar
 
 ## `libdrm_amdgpu`
 
