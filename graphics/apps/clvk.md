@@ -62,7 +62,13 @@ clvk
     scanning the vendors path
   - `OCL_ICD_VENDORS` specifies an alternative vendors path rather than the
     default `/etc/OpenCL/vendors`
-  - each `.icd` file under the vendors path contains a path that is `dlopen`ed
+    - each `.icd` file under the vendors path contains a path that is `dlopen`ed
+  - `OPENCL_LAYER_PATH` specifies an alternative layers path rather than the
+    default `/etc/OpenCL/layers`
+    - each `.lay` file under the layers path contains a path that is `dlopen`ed
+    - all layers are implicitly loaded?
+  - `OPENCL_LAYERS` specifies additional layers that are `dlopen`ed after
+    scanning the layers path
 - `ocl-icd`
   - `OCL_ICD_DEBUG=15` enables loader debug messages
     - `1` for warnings
@@ -118,6 +124,16 @@ clvk
   - Execution Controls
   - Platform and Device Query Overrides
   - Precompiled Kernel and Builtin Kernel Override Controls
+
+## OpenCL Kernel Profiler
+
+- build
+  - `git clone https://github.com/rjodinchr/opencl-kernel-profiler.git`
+  - `cmake -S . -B out -G Ninja -DPERFETTO_SDK_PATH=~/projects/perfetto/sdk -DOPENCL_HEADER_PATH=/usr/include`
+- use
+  - `OPENCL_LAYERS=<path>/libopencl-kernel-profiler.so CLKP_TRACE_MAX_SIZE=100000 prog` will generate
+    `opencl-kernel-profiler.trace`
+    - without `CLKP_TRACE_MAX_SIZE`, the trace file is truncated after 1MB
 
 ## Rusticl
 
