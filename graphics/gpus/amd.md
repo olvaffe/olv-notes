@@ -171,6 +171,48 @@ AMD
   - ? vecor ALUs and vector GPRs
 - there is a total of `1 (gcd) * 6 (se) * 2 (sa) * 4 (wcp) * 2 (cu) = 96` CUs
 
+## RDNA 2
+
+- AMD Ryzen 5 7520C
+- frequency
+  - SCLK: max 1899MHz
+  - MCLK: max 687MHz
+- shader engine
+  - there is one shader engine
+    - `num_shader_engines = 1`
+  - inside the shader engine, there is one shader array
+    - `num_shader_arrays_per_engine = 1`
+  - inside the shader array, there is one WCP
+- WCP
+  - inside the WCP, there are two CUs
+    - `num_cu_per_sh = 2`
+  - these are shared by the two CUs
+    - L0 scalar cache
+    - L0 instruction cache
+    - shared memory (LDS)
+- CU
+  - inside each CU, there are two SIMDs
+  - there are shared by the two SIMDs
+    - L0 vector cache
+    - texture filters
+    - LD/ST/Tex addr
+    - ray accelerator
+- SIMD
+  - scheduler
+    - there can be up to 16 wavefronts scheduled
+      - it was 20 wavefronts in rdna1
+    - the idea is, when the current wavefront stalls due to memory access,
+      another wavefront can preeempt to better utilize the ALUs
+    - <https://gpuopen.com/learn/occupancy-explained/>
+  - scalar gpr
+    - each wavefront gets assigned 128 32-bit SGPRs
+    - there is a total of 16x128 SGPRs so it does not affect occupancy
+  - scalar alu
+  - vector gpr
+    - each VGPR has 32-lanes that are 32-bit wide
+    - there is a total of 1024 VGPRs
+  - vector alu
+
 ## RDNA
 
 - <https://www.amd.com/system/files/documents/rdna-whitepaper.pdf>
