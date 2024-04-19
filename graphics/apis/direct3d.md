@@ -333,3 +333,32 @@ Direct3D
     - `ID3D11DeviceContext::CopySubresourceRegion` copies between two
       `ID3D11Resource`
     - `ID3D11DeviceContext::Map` maps a `ID3D11Resource`
+
+## Resource Types
+
+- <https://www.lei.chat/posts/hlsl-for-vulkan-resources/>
+- d3d descriptor types
+  - sampler, read-only
+  - CBV (constant buffer view), read-only
+  - SRV (shader resource view), read-only
+  - UAV (unordered access view), read-write
+- table
+
+| HLSL                      | D3D     | VK                   | GLSL                     |
+| ------------------------- | ------- | -------------------- | ------------------------ |
+| `SamplerState`            | Sampler | Sampler              | `uniform sampler*`       |
+| `SamplerComparisonState`  | Sampler | Sampler              | `uniform sampler*Shadow` |
+| `Buffer`                  | SRV     | Uniform Texel Buffer | `uniform samplerBuffer`  |
+| `RWBuffer`                | UAV     | Storage Texel Buffer | `uniform imageBuffer`    |
+| `Texture*`                | SRV     | Sampled Image        | `uniform texture*`       |
+| `RWTexture*`              | UAV     | Storage Image        | `uniform image*`         |
+| `cbuffer`                 | CBV     | Uniform Buffer       | `uniform { ... }`        |
+| `ConstantBuffer`          | CBV     | Uniform Buffer       | `uniform { ... }`        |
+| `tbuffer`                 | CBV     | Storage Buffer       |                          |
+| `TextureBuffer`           | CBV     | Storage Buffer       |                          |
+| `StructuredBuffer`        | SRV     | Storage Buffer       | `buffer { ...  }`        |
+| `RWStructuredBuffer`      | UAV     | Storage Buffer       | `buffer { ...  }`        |
+| `ByteAddressBuffer`       | SRV     | Storage Buffer       |                          |
+| `RWByteAddressBuffer`     | UAV     | Storage Buffer       |                          |
+| `AppendStructuredBuffer`  | UAV     | Storage Buffer       |                          |
+| `ConsumeStructuredBuffer` | UAV     | Storage Buffer       |                          |
