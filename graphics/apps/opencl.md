@@ -91,16 +91,37 @@ OpenCL Apps
 
 ## clvk
 
-- steps
+- build
   - `git clone https://github.com/kpet/clvk.git`
   - `cd clvk`
   - `git submodule update --init --recursive`
   - `./external/clspv/utils/fetch_sources.py --deps llvm`
     - this helps `clspv` fetches `llvm`
   - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLVK_CLSPV_ONLINE_COMPILER=ON -DCLVK_ENABLE_SPIRV_IL=OFF`
+    - `-DCLVK_PERFETTO_ENABLE=ON -DCLVK_PERFETTO_SDK_DIR=<path-to-perfetto-sdk> -DCLVK_PERFETTO_BACKEND=System`
+    - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `ninja -C out`
-  - `ninja -C out install` installs `libOpenCL.so.0.1`
     - no `clspv` because we enable online compiler
+  - `strip -g out/libOpenCL.so.1 && scp -C out/libOpenCL.so.1 <remote>:`
+- build options
+  - `-DCLVK_COMPILER_AVAILABLE=OFF` disables all but
+    `clCreateProgramWithBinary` support
+    - this option only needs `SPIRV-Tools` to work with spirv binary, and do
+      not need `clspv` or `SPIRV-LLVM-Translator` to support source/il
+  - `-DCLVK_ENABLE_SPIRV_IL=OFF` disables `clCreateProgramWithIL` support
+    - this option removes need for `SPIRV-LLVM-Translator`
+  - `-DCLVK_CLSPV_ONLINE_COMPILER=ON` links to static libraries from `clspv`
+    and `SPIRV-LLVM-Translator`, removing the dependencies on `clspv` and
+    `llvm-spirv` standalone tools
+  - `-DCLVK_BUILD_TESTS=OFF` disables tests
+- env
+  - env `CLVK_<OPT_IN_UPPERCASE>` sets option `<opt_in_lowercase>` in
+    `src/config.def`
+  - `CLVK_LOG=4` to log everything
+    - from 4 to 0: debug, info, warn, error, fatal
+  - `CLVK_CLSPV_OPTIONS=foo` to pass extra options to clspv
+    - options from `clBuildProgram`, clvk-generated, and this env var are
+      combined
 - compiler
   - apis
     - `clCreateProgramWithSource` accepts opencl c
@@ -114,30 +135,9 @@ OpenCL Apps
       - `TO` can be `spv` (spirv) or `bc` (llvm bitcode)
     - `llvm-spirv -r` reverse-translates spirv to llvm ir
     - this allows clvk to support all 3 of source/binary/il
-- options
-  - `-DCLVK_COMPILER_AVAILABLE=OFF` disables all but
-    `clCreateProgramWithBinary` support
-    - this option only needs `SPIRV-Tools` to work with spirv binary, and do
-      not need `clspv` or `SPIRV-LLVM-Translator` to support source/il
-  - `-DCLVK_ENABLE_SPIRV_IL=OFF` disables `clCreateProgramWithIL` support
-    - this option removes need for `SPIRV-LLVM-Translator`
-  - `-DCLVK_CLSPV_ONLINE_COMPILER=ON` links to static libraries from `clspv`
-    and `SPIRV-LLVM-Translator`, removing the dependencies on `clspv` and
-    `llvm-spirv` standalone tools
-  - `-DCLVK_BUILD_TESTS=OFF` disables tests
 - tests
   - `api_test`
   - `simple_test`
-- packaging
-  - `strip -g out/libOpenCL.so.1 && scp -C out/libOpenCL.so.1 <remote>:`
-- env
-  - env `CLVK_<OPT_IN_UPPERCASE>` sets option `<opt_in_lowercase>` in
-    `src/config.def`
-  - `CLVK_LOG=4` to log everything
-    - from 4 to 0: debug, info, warn, error, fatal
-  - `CLVK_CLSPV_OPTIONS=foo` to pass extra options to clspv
-    - options from `clBuildProgram`, clvk-generated, and this env var are
-      combined
 
 ## CTS
 
