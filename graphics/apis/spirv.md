@@ -1,7 +1,7 @@
 SPIR-V
 ======
 
-## Tools
+## Links
 
 - spec
   - <https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html>
@@ -13,26 +13,6 @@ SPIR-V
   - depends on SPIRV-Headers
   - provides tools (assembler, disassembler, optimizer, linker, etc.) and
     `libSPIRV-Tools.a` for working with SPIR-V
-- glslang
-  - <https://github.com/KhronosGroup/glslang>
-  - depends on SPIRV-Tools
-  - provides `glslangValidator` to convert GLSL/HLSL to SPIR-V
-  - build
-    - `./update_glslang_sources.py`
-    - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug`
-- SPIRV-Cross
-  - <https://github.com/KhronosGroup/SPIRV-Cross>
-  - provides `spirv-cross` to convert SPIR-V to GLSL/HLSL/MSL
-- shaderc
-  - <https://github.com/google/shaderc>
-  - depends on glslang and SPIRV-Tools
-  - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
-    to SPIR-V
-- `glslangValidator`
-  - `glslangValidator -V -o a.spirv a.frag`
-  - `-x` to output something for inclusion by C source code
-  - `-g` to include debug info
-  - `-H` to print human-readable form of spirv
 
 ## Example
 
