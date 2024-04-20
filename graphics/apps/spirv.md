@@ -45,3 +45,22 @@ SPIR-V Apps
   - `-x` to output something for inclusion by C source code
   - `-g` to include debug info
   - `-H` to print human-readable form of spirv
+
+## SPIRV-Cross
+
+- <https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide>
+- table
+  | GLSL declaration                | HLSL declaration                      | SPIRV-Cross             | Vulkan concept                      |
+  | ------------------------------- | ------------------------------------- | ----------------------- | ----------------------------------- |
+  | `sampler2D`                     | N/A                                   | `sampled_images`        | `COMBINED_IMAGE_SAMPLER`            |
+  | `texture2D`                     | `Texture2D`                           | `separate_images`       | `SAMPLED_IMAGE`                     |
+  | `image2D`                       | `RWTexture2D`                         | `storage_images`        | `STORAGE_IMAGE`                     |
+  | `samplerBuffer`                 | `Buffer`                              | `separate_images`       | `UNIFORM_TEXEL_BUFFER`              |
+  | `imageBuffer`                   | `RWBuffer`                            | `storage_images`        | `STORAGE_TEXEL_BUFFER`              |
+  | `sampler`                       | `SamplerState`                        | `separate_samplers`     | `SAMPLER`                           |
+  | `uniform UBO {}`                | `cbuffer buf {}`                      | `uniform_buffers`       | `UNIFORM_BUFFER(_DYNAMIC)`          |
+  | `layout(push_constant) uniform` | N/A (root constants?)                 | `push_constant_buffers` | `VkPushConstantRange`               |
+  | `subpassInput`                  | N/A                                   | `subpass_inputs`        | `INPUT_ATTACHMENT`                  |
+  | `in vec2 uv (vs)`               | `void VertexMain (in uv : TEXCOORD0)` | `stage_inputs`          | `VkVertexInputAttributeDescription` |
+  | `out vec4 FragColor (fs)`       | `float4 FragmentMain() : SV_Target0`  | `stage_outputs`         |                                     |
+  | `buffer SSBO {}`                | `(RW)StructuredBuffer` / etc          | `storage_buffer`        | `STORAGE_BUFFER(_DYNAMIC)`          |
