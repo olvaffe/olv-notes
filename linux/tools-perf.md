@@ -84,3 +84,5 @@ Linux perf
 - `perf record` has debuginfod integration
   - when `DEBUGINFOD_URLS` is set, it downloads all symbols and is slow at the
     end of the first run
+  - the debuginfod server for arch linux only has debug symbols for the latest
+    packages; remember to update/reboot first
