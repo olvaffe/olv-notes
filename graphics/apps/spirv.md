@@ -46,6 +46,21 @@ SPIR-V Apps
   - `-g` to include debug info
   - `-H` to print human-readable form of spirv
 
+## SPIRV-Reflect
+
+- build
+  - `cmake -S. -Bout -GNinj -DSPIRV_REFLECT_STATIC_LIB=ON`
+  - `ninja -C out spirv-reflect-static`
+- meson
+
+    cpp = meson.get_compiler('cpp')
+    dep_spirv_reflect = cpp.find_library(
+      'spirv-reflect-static',
+      dirs: [spirv_reflect_path / 'out'],
+      has_headers: ['spirv_reflect.h'],
+      header_include_directories: include_directories(spirv_reflect_path),
+    )
+
 ## SPIRV-Cross
 
 - <https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide>
