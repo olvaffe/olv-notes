@@ -103,23 +103,64 @@ Machine Learning
     - `clEnqueueNDRangeKernel(main_function)`: 84%
     - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
     - `clEnqueueReadBuffer`: 11%
-- initialization
-  - `BenchmarkModel::Run` is the entrypoint
-  - `BenchmarkTfLiteModel::ValidateParams` validates params
-  - `BenchmarkTfLiteModel::LogParams` prints params
-  - `BenchmarkTfLiteModel::Init` initializes
-    - `BenchmarkTfLiteModel::LoadModel` loads the model
-      - `tflite::FlatBufferModel::BuildFromBuffer` creates a
-        `tflite::FlatBufferModel`
-    - `BenchmarkTfLiteModel::InitInterpreter`
-      - `tflite::InterpreterBuilder` creates a `tflite::Interpreter`
-    - `ProvidedDelegateList::CreateAllRankedDelegates` creates delegates
-      - `GpuDelegateProvider::CreateTfLiteDelegate` calls
-        `TfLiteGpuDelegateV2Create` indirectly to create a `TfLiteDelegate`
-    - `tflite::InterpreterBuilder::ModifyGraphWithDelegate` modifies the graph
-      - `tflite::Subgraph::ModifyGraphWithDelegateImpl` calls
-        `TfLiteDelegatePrepareInternal` to prepare the delegate
-      - `tflite::gpu::cl::DelegatePrepare` is the callback
-    - `tflite::InterpreterBuilder::AllocateTensors` allocates tensors
-  - `BenchmarkTfLiteModel::PrepareInputData` prepares input data
-
+  - basic flow
+    - `BenchmarkModel::Run` is the entrypoint
+    - `BenchmarkTfLiteModel::ValidateParams` validates params
+    - `BenchmarkTfLiteModel::LogParams` prints params
+    - `BenchmarkTfLiteModel::Init` initializes
+      - `BenchmarkTfLiteModel::LoadModel` loads the model
+        - `tflite::FlatBufferModel::BuildFromBuffer` creates a
+          `tflite::FlatBufferModel`
+      - `BenchmarkTfLiteModel::InitInterpreter`
+        - `tflite::InterpreterBuilder` creates a `tflite::Interpreter`
+      - `ProvidedDelegateList::CreateAllRankedDelegates` creates delegates
+        - `GpuDelegateProvider::CreateTfLiteDelegate` calls
+          `TfLiteGpuDelegateV2Create` indirectly to create a `TfLiteDelegate`
+      - `tflite::InterpreterBuilder::ModifyGraphWithDelegate` modifies the graph
+        - `tflite::Subgraph::ModifyGraphWithDelegateImpl` calls
+          `TfLiteDelegatePrepareInternal` to prepare the delegate
+        - `tflite::gpu::DelegatePrepare` is the callback
+      - `tflite::InterpreterBuilder::AllocateTensors` allocates tensors
+    - `BenchmarkTfLiteModel::PrepareInputData` prepares input data
+    - `BenchmarkModel::Run` is called twice
+      - first time is warmup
+      - `BenchmarkTfLiteModel::RunImpl` calls `tflite::Interpreter::Invoke`
+        for each iteration
+- gpu cl delegate
+  - `TfLiteGpuDelegateV2Create` creates a `tflite::gpu::Delegate`
+  - on `tflite::InterpreterBuilder::ModifyGraphWithDelegate`,
+    `TfLiteDelegatePrepareInternal` is indirectly called
+    - `tflite::gpu::DelegatePrepare` is the callback
+    - `tflite::Subgraph::ReplaceNodeSubsetsWithDelegateKernels` calls
+      `tflite::Subgraph::AddNodeWithParameters` with the registration created
+      by `tflite::gpu::CreateRegistration`
+      - it calls `init` callback of the registration
+        - this creates and prepares a `tflite::gpu::DelegateKernel`
+        - `DelegateKernelCore::Prepare` calls `DelegateKernelCore::Setup`
+          which calls `DelegateKernelCore::InitializeOpenClApi`
+        - `tflite::gpu::cl::NewInferenceEnvironment` creates a
+          `tflite::gpu::cl::InferenceEnvironmentImpl`
+          - this is where cl is initialized
+        - `tflite::gpu::cl::InferenceEnvironmentImpl::NewInferenceBuilder`
+          creates and inits a `tflite::gpu::cl::InferenceBuilderImpl`
+          - `tflite::gpu::cl::InferenceContext::InitFromGraph` calls
+            `tflite::gpu::cl::InferenceContext::AllocateMemory` to create cl
+            buffers and images
+          - `tflite::gpu::cl::InferenceContext::Compile` creates more cl
+            buffers and creates cl programs
+  - on `tflite::impl::Interpreter::Invoke`, the `invoke` callback of the
+    registration created by `tflite::gpu::CreateRegistration` is called
+    - it calls `tflite::gpu::DelegateKernel::Invoke`
+    - `tflite::gpu::cl::InferenceRunnerImpl::Run` does
+      - `CopyFromExternalObject`
+        - `tflite::gpu::cl::CpuCopier::Convert` calls `clEnqueueWriteBuffer`
+        - `tflite::gpu::cl::BHWCBufferToTensorConverter::Convert` calls
+          `clEnqueueNDRangeKernel`
+      - `RunWithoutExternalBufferCopy`
+        - `tflite::gpu::cl::InferenceContext::AddToQueue` calls
+          `tflite::gpu::cl::CLCommandQueue::Dispatch` which calls
+          `clEnqueueNDRangeKernel`
+        - it also calls `clFlush` directly at the end
+      - `CopyToExternalObject`
+        - `tflite::gpu::cl::CpuCopier::Convert` calls `clEnqueueReadBuffer`
+      - `WaitForCompletion` calls `clFinish` directly
