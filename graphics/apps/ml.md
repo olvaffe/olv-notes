@@ -103,3 +103,23 @@ Machine Learning
     - `clEnqueueNDRangeKernel(main_function)`: 84%
     - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
     - `clEnqueueReadBuffer`: 11%
+- initialization
+  - `BenchmarkModel::Run` is the entrypoint
+  - `BenchmarkTfLiteModel::ValidateParams` validates params
+  - `BenchmarkTfLiteModel::LogParams` prints params
+  - `BenchmarkTfLiteModel::Init` initializes
+    - `BenchmarkTfLiteModel::LoadModel` loads the model
+      - `tflite::FlatBufferModel::BuildFromBuffer` creates a
+        `tflite::FlatBufferModel`
+    - `BenchmarkTfLiteModel::InitInterpreter`
+      - `tflite::InterpreterBuilder` creates a `tflite::Interpreter`
+    - `ProvidedDelegateList::CreateAllRankedDelegates` creates delegates
+      - `GpuDelegateProvider::CreateTfLiteDelegate` calls
+        `TfLiteGpuDelegateV2Create` indirectly to create a `TfLiteDelegate`
+    - `tflite::InterpreterBuilder::ModifyGraphWithDelegate` modifies the graph
+      - `tflite::Subgraph::ModifyGraphWithDelegateImpl` calls
+        `TfLiteDelegatePrepareInternal` to prepare the delegate
+      - `tflite::gpu::cl::DelegatePrepare` is the callback
+    - `tflite::InterpreterBuilder::AllocateTensors` allocates tensors
+  - `BenchmarkTfLiteModel::PrepareInputData` prepares input data
+
