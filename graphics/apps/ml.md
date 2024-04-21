@@ -80,3 +80,26 @@ Machine Learning
   - Google BERT, LaMDA, PaLM, and Gemini
   - OpenAI GPT-{1,2,3,3.5,4}
   - Meta Llama
+
+## TensorFlow Lite
+
+- build with cmake
+  - `git clone https://github.com/tensorflow/tensorflow.git`
+  - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON`
+  - `ninja -C out tensorflow-lite benchmark_model`
+- `benchmark_model`
+  - it seems after initial setup and inference, each inference does
+    - `clEnqueueWriteBuffer`
+    - `clSetKernelArg` and `clEnqueueNDRangeKernel` for
+      - `bhwc_to_tensor` once
+      - `main_function` many times
+      - `clFlush`
+      - `tensor_to_bhwc` once
+    - `clEnqueueReadBuffer`
+    - `clFinish`
+  - gpu time breakdown
+    - `clEnqueueWriteBuffer`: 2.5%
+    - `clEnqueueNDRangeKernel(bhwc_to_tensor)`: 1.5%
+    - `clEnqueueNDRangeKernel(main_function)`: 84%
+    - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
+    - `clEnqueueReadBuffer`: 11%

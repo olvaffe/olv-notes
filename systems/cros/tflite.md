@@ -14,10 +14,6 @@ CrOS TensorFlow Lite
     - <https://github.com/google/ruy>
     - <https://github.com/jax-ml/ml_dtypes>
     - <https://gitlab.com/libeigen/eigen>
-- build with cmake
-  - `git clone https://github.com/tensorflow/tensorflow.git`
-  - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON`
-  - `ninja -C out tensorflow-lite benchmark_model`
 - installed files
   - `/usr/include/tensorflow`
     - `fp16`
@@ -46,24 +42,6 @@ CrOS TensorFlow Lite
     - `mlbenchmark.TFLiteInternal.*`
     - `mlbenchmark.ULM.*`
     - `mlbenchmark.ULMEstimator.*`
-
-## `benchmark_model`
-
-- it seems after initial setup and inference, each inference does
-  - `clEnqueueWriteBuffer`
-  - `clSetKernelArg` and `clEnqueueNDRangeKernel` for
-    - `bhwc_to_tensor` once
-    - `main_function` many times
-    - `clFlush`
-    - `tensor_to_bhwc` once
-  - `clEnqueueReadBuffer`
-  - `clFinish`
-- gpu time breakdown
-  - `clEnqueueWriteBuffer`: 2.5%
-  - `clEnqueueNDRangeKernel(bhwc_to_tensor)`: 1.5%
-  - `clEnqueueNDRangeKernel(main_function)`: 84%
-  - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
-  - `clEnqueueReadBuffer`: 11%
 
 ## Tast `mlbenchmark.TFLite.*`
 
