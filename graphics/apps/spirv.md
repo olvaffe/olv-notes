@@ -33,6 +33,11 @@ SPIR-V Apps
   - depends on glslang and SPIRV-Tools
   - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
     to SPIR-V
+- clspv
+  - <https://github.com/google/clspv>
+  - depends on clang, llvm, SPIRV-Headers, and SPIRV-Tools
+  - provides tool (`clspv`) and library (`libclspv_core`) to convert opencl c
+    to vk-ready spirv
 
 ## glslang
 
@@ -46,10 +51,21 @@ SPIR-V Apps
   - `-g` to include debug info
   - `-H` to print human-readable form of spirv
 
+## clspv
+
+- build
+  - `git clone https://github.com/google/clspv`
+  - `python3 utils/fetch_sources.py`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLSPV_SHARED_LIB=ON`
+    - `-DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_CXX_VISIBILITY_PRESET=hidden`
+      - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
+    - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
+  - `ninja -C out clspv_core`
+
 ## SPIRV-Reflect
 
 - build
-  - `cmake -S. -Bout -GNinj -DSPIRV_REFLECT_STATIC_LIB=ON`
+  - `cmake -S. -Bout -GNinja -DSPIRV_REFLECT_STATIC_LIB=ON`
   - `ninja -C out spirv-reflect-static`
 - meson
 
