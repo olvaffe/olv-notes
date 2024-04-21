@@ -61,6 +61,34 @@ SPIR-V Apps
       - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
     - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `ninja -C out clspv_core`
+- the only entrypoint is `clspvCompileFromSourcesString`
+  - compiler options
+    - `-cl-std=CL3.0` selects CLC std
+    - `-inline-entry-points` inlines all entrypoints
+      - required for `__opencl_c_generic_address_space` feature
+    - `-cl-single-precision-constant` treats double-precision float literals
+      as single-precision
+    - `-cl-kernel-arg-info` produces kernel argument info
+    - `-rounding-mode-rte=16,32,64` sets `RoundingModeRTE`
+    - `-rewrite-packed-structs` rewrites packed structs as i8 array
+      - vk must support `storageBuffer8BitAccess`
+    - `-std430-ubo-layout` uses more packed std430 layout
+      - vk must support `uniformBufferStandardLayout`
+    - `-decorate-nonuniform` decorates `NonUniform`
+      - vk must support non-uniform descriptor indexing
+    - `-hack-convert-to-float` adds a workaround for radv/aco
+    - `-arch=spir` selects 32-bit pointers
+    - `-spv-version=1.5` targets spirv 1.5
+    - `-max-pushconstant-size=128` sets push contant size limit
+      - it should match vk `maxPushConstantsSize`
+    - `-max-ubo-size=16384`
+      - it should match vk `maxUniformBufferRange`
+    - `-global-offset` enables support for global offset (`get_global_offset`?)
+    - `-long-vector` enables support for vectors of width 8 and 16
+    - `-module-constants-in-storage-buffer` collects module-socped
+      `__constants` into an ssbo
+    - `-cl-arm-non-uniform-work-group-size` enables
+      `cl_arm_non_uniform_work_group_size` extension
 
 ## SPIRV-Reflect
 
