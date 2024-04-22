@@ -78,3 +78,31 @@ CrOS TensorFlow Lite
   - `avg_latency` is parsed from `avg=`
   - `std_dev` is parsed from `std=`
   - `peak_memory` is parsed from the peak memory line
+- for `convolution_benchmark_288_512_1.tflite`
+  - `tflite::gpu::cl::InferenceContext::InitFromGpuModel`
+    - `tflite::gpu::cl::InferenceContext::AllocateMemory` calls
+      `clCreateBuffer` of size 14155776, followed by 28 `clCreateSubBuffer`
+      for the buffer and 28 `clCreateImage` for the subbuffers
+    - `tflite::gpu::cl::InferenceContext::Compile` calls `clCreateBuffer`,
+      `clCreateImage`, `clCreateProgramWithSource`, `clBuildProgram`, and
+      `clCreateKernel`
+      - it creates 11 programs
+      - some `ClOperation` share the same program so there are more kernels
+        than programs
+      - the buffers are mostly a few bytes to  kilobytes, except one that is
+        221184
+      - the images are 10x8, 10x16, 10x48, and 8
+  - `tflite::gpu::cl::InferenceBuilderImpl::Build` calls
+    `tflite::gpu::cl::InferenceRunnerImpl::LinkTensors`
+    - `tflite::gpu::cl::BHWCBufferToTensorConverter::Init` creates a program
+    - `tflite::gpu::cl::TensorToBHWCBufferConverter::Init` creates a program
+    - `tflite::gpu::cl::AllocateTensorMemory` calls `clCreateBuffer`
+      - there are two buffer of size 2359296
+  - `tflite::gpu::cl::InferenceRunnerImpl::Run`
+      - `CopyFromExternalObject` calls `clEnqueueWriteBuffer` and
+        `clEnqueueNDRangeKernel`
+      - `RunWithoutExternalBufferCopy` calls `clEnqueueNDRangeKernel` 27 times
+        and `clFlush`
+      - `CopyToExternalObject` calls `clEnqueueNDRangeKernel` and
+        `clEnqueueReadBuffer`
+      - `WaitForCompletion` calls `clFinish`
