@@ -162,5 +162,7 @@ Machine Learning
           `clEnqueueNDRangeKernel`
         - it also calls `clFlush` directly at the end
       - `CopyToExternalObject`
+        - `tflite::gpu::cl::BHWCBufferToTensorConverter::Convert` calls
+          `clEnqueueNDRangeKernel`
         - `tflite::gpu::cl::CpuCopier::Convert` calls `clEnqueueReadBuffer`
       - `WaitForCompletion` calls `clFinish` directly
