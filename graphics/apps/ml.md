@@ -81,6 +81,15 @@ Machine Learning
   - OpenAI GPT-{1,2,3,3.5,4}
   - Meta Llama
 
+## Netron
+
+- <https://netron.app/> is a model visualizer
+- e.g.,
+  - <https://storage.googleapis.com/chromiumos-test-assets-public/tast/cros/mlbenchmark/ml-test-assets-0.0.6_20230921.tar.gz>
+  - `convolution_benchmark_288_512_1.tflite`
+    - input: `float32[1,288,512,3]`
+    - output: `float32[1,288,512,3]`
+
 ## TensorFlow Lite
 
 - build with cmake
@@ -122,8 +131,13 @@ Machine Learning
         - `tflite::gpu::DelegatePrepare` is the callback
       - `tflite::InterpreterBuilder::AllocateTensors` allocates tensors
     - `BenchmarkTfLiteModel::PrepareInputData` prepares input data
+      - `CreateRandomTensorData` generates random input data for each input
+        tensor
     - `BenchmarkModel::Run` is called twice
       - first time is warmup
+      - `BenchmarkTfLiteModel::ResetInputsAndOutputs` resets inputs/outputs
+        for each iteration
+        - it copies the generated random input data to `t->data.raw`
       - `BenchmarkTfLiteModel::RunImpl` calls `tflite::Interpreter::Invoke`
         for each iteration
 - gpu cl delegate
@@ -148,8 +162,12 @@ Machine Learning
             buffers and images
           - `tflite::gpu::cl::InferenceContext::Compile` creates more cl
             buffers and creates cl programs
-            - `tflite::gpu::cl::ClOperation::Compile` generates the kernel
-              source and builds it
+            - `tflite::gpu::ConvertOperations` has called
+              `GPUOperationFromNode` to convert nodes to operations and
+              `tflite::gpu::ConvGeneric::GenerateCode` has generated the
+              generic convert code
+            - `tflite::gpu::cl::ClOperation::Compile` adds defines for the
+              kernel source and builds it
         - `tflite::gpu::cl::InferenceBuilderImpl::Build` calls
           `tflite::gpu::cl::InferenceRunnerImpl::LinkTensors`
           - `tflite::gpu::cl::DefaultTensorTie::New` calls
@@ -157,8 +175,13 @@ Machine Learning
             create
             - `tflite::gpu::cl::BHWCBufferToTensorConverter::Init` generates
               the kernel source and build it
+              - `CreateBhwcBufferToTensorOp` returns the source template
             - `tflite::gpu::cl::TensorToBHWCBufferConverter::Init` generates
               the kernel source and build it
+              - `CreateTensorToBhwcBufferOp` returns the source template
+          - it also calls
+            `tflite::gpu::cl::DefaultTensorTie::MaybeAllocateExternalObject`
+            to allocate cl buffer
   - on `tflite::impl::Interpreter::Invoke`, the `invoke` callback of the
     registration created by `tflite::gpu::CreateRegistration` is called
     - it calls `tflite::gpu::DelegateKernel::Invoke`

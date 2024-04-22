@@ -97,7 +97,7 @@ CrOS TensorFlow Lite
     - `tflite::gpu::cl::BHWCBufferToTensorConverter::Init` creates a program
     - `tflite::gpu::cl::TensorToBHWCBufferConverter::Init` creates a program
     - `tflite::gpu::cl::AllocateTensorMemory` calls `clCreateBuffer`
-      - there are two buffer of size 2359296
+      - there are two buffer of size 2359296 (`512*288*4*4`)
   - `tflite::gpu::cl::InferenceRunnerImpl::Run`
       - `CopyFromExternalObject` calls `clEnqueueWriteBuffer` and
         `clEnqueueNDRangeKernel`
