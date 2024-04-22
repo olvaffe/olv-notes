@@ -148,6 +148,17 @@ Machine Learning
             buffers and images
           - `tflite::gpu::cl::InferenceContext::Compile` creates more cl
             buffers and creates cl programs
+            - `tflite::gpu::cl::ClOperation::Compile` generates the kernel
+              source and builds it
+        - `tflite::gpu::cl::InferenceBuilderImpl::Build` calls
+          `tflite::gpu::cl::InferenceRunnerImpl::LinkTensors`
+          - `tflite::gpu::cl::DefaultTensorTie::New` calls
+            `tflite::gpu::cl::OpenClTensorConverterBuilder::MakeConverter` to
+            create
+            - `tflite::gpu::cl::BHWCBufferToTensorConverter::Init` generates
+              the kernel source and build it
+            - `tflite::gpu::cl::TensorToBHWCBufferConverter::Init` generates
+              the kernel source and build it
   - on `tflite::impl::Interpreter::Invoke`, the `invoke` callback of the
     registration created by `tflite::gpu::CreateRegistration` is called
     - it calls `tflite::gpu::DelegateKernel::Invoke`
