@@ -1125,3 +1125,32 @@ Mesa RADV
 - `radv_meta_blit2d_rect` is in texel blocks
 - there is a loop to copy each layer/slice one by one
   - `radv_meta_blit2d_surf::layer` is incremented each time
+
+## Barriers
+
+- `radv_cs_emit_cache_flush` emits flush commands to the cs
+  - L1
+    - `RADV_CMD_FLAG_INV_ICACHE` invalidates I$
+    - `RADV_CMD_FLAG_INV_SCACHE` invalidates scalar L1
+    - `RADV_CMD_FLAG_INV_VCACHE` invalidates vector L1
+  - L2, one of
+    - `RADV_CMD_FLAG_INV_L2` flushes and invalidates L2
+    - `RADV_CMD_FLAG_WB_L2` flushes L2
+    - `RADV_CMD_FLAG_INV_L2_METADATA` invalidates image metadata
+  - CB/DB
+    - `RADV_CMD_FLAG_FLUSH_AND_INV_CB` flushes and invalidates CB cache
+    - `RADV_CMD_FLAG_FLUSH_AND_INV_DB` flushes and invalidates DB cache
+  - barrier
+    - `RADV_CMD_FLAG_PS_PARTIAL_FLUSH` waits for PS idle
+    - `RADV_CMD_FLAG_VS_PARTIAL_FLUSH` waits for VS idle
+    - `RADV_CMD_FLAG_CS_PARTIAL_FLUSH` waits for CS idle
+    - `RADV_CMD_FLAG_VGT_FLUSH` waits for VGT (vertex/geometry translator)
+      idle
+  - pipeline stats
+    - `RADV_CMD_FLAG_START_PIPELINE_STATS`
+    - `RADV_CMD_FLAG_STOP_PIPELINE_STATS`
+- `radv_CmdPipelineBarrier2` (and other commands) sets flush bits in
+  `cmd_buffer->state.flush_bits`
+  - it also handles image transitions, but that's entirely separated
+- before draw or dispatch, `radv_emit_cache_flush` calls
+  `radv_cs_emit_cache_flush` to flush `cmd_buffer->state.flush_bits`
