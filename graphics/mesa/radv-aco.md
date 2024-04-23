@@ -1,7 +1,47 @@
 Mesa RADV ACO
 =============
 
-## ACO
+## Overview
+
+- `aco_compile_shader` compiles a shader
+  - `aco::init` initializes `debug_flags` from `ACO_DEBUG`
+  - `aco::select_program` translates nir to aco ir
+    - `visit_cf_list` visits each nir control flow node to translate nir to
+      aco ir instruction-by-instruction
+  - `aco_postprocess_shader` schedules aco ir, performs reg alloc, optimizes,
+    eliminates pseudo ops, etc.
+    - `aco::lower_phis` lowers phis
+    - `aco::optimize` performs pre-RA optimizations
+    - `aco::spill` spills if necessary
+    - `aco::schedule_program` schedules instructions
+    - `aco::register_allocation` allocates regs
+    - `aco::optimize_postRA` performs post-RA optimizations
+    - `aco::ssa_elimination` eliminates ssa
+    - `aco::lower_to_hw_instr` translates aco ir to hw instructions
+    - `aco::schedule_vopd` schedules to use VOPD (dual-issue,
+      rdna3+)
+    - `aco::schedule_ilp` schedules to improve instruction-level parallelism
+    - `aco::insert_wait_states` inserts `s_waitcnt`
+    - `aco::insert_NOPs` inserts `s_nop`
+    - `aco::form_hard_clauses` inserts `s_clause`
+  - `aco::emit_program` emits the binary
+  - `radv_aco_build_shader_binary` allocs a `radv_shader_binary_legacy` to
+    hold the binary
+
+## ACO IR Pesudo Opcodes
+
+- `aco_opcode::p_parallelcopy`
+  - `bld.copy` uses this opcode
+- `aco_opcode::p_create_vector`
+- `aco_opcode::p_extract_vector`
+  - `emit_extract_vector` uses this opcode
+- `aco_opcode::p_split_vector`
+  - `emit_split_vector` uses this opcode
+- `aco_opcode::p_as_uniform`
+  - `bld.as_uniform` uses this opcode
+  - it gets translated to `aco_opcode::v_readfirstlane_b32`
+
+## Loads
 
 - `emit_load` emits load instructions
   - `LoadEmitInfo` describes the load
@@ -79,3 +119,8 @@ Mesa RADV ACO
   - `nir_lower_int64` would lower it with `lower_iadd64`
     - unpack, two additions with carry, repack
   - `visit_alu_instr` is similar?
+
+## `aco::lower_to_hw_instr`
+
+- `p_parallelcopy` requires `handle_operands` which calls `do_swap`
+  - it uses xor to swap, <https://en.wikipedia.org/wiki/XOR_swap_algorithm>
