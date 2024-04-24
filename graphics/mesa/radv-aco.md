@@ -28,6 +28,15 @@ Mesa RADV ACO
   - `radv_aco_build_shader_binary` allocs a `radv_shader_binary_legacy` to
     hold the binary
 
+## `aco::select_program`
+
+- `aco::setup_isel_context` sets up the instruction selection context
+- `aco::init_context` initializes isel context
+  - `nir_divergence_analysis` marks non-uniform ssas as `divergent`
+  - it loops over all nir instructions to intialize
+    `ctx->program->temp_rc.data`
+- `aco::visit_alu_instr` selects the aco instruction for a `nir_alu_instr`
+
 ## ACO IR Pesudo Opcodes
 
 - `aco_opcode::p_parallelcopy`
