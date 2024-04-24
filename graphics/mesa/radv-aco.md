@@ -28,6 +28,67 @@ Mesa RADV ACO
   - `radv_aco_build_shader_binary` allocs a `radv_shader_binary_legacy` to
     hold the binary
 
+## ACO IR
+
+- `class Program`
+  - `blocks` is `std::vector<Block>`
+  - `temp_rc` is `std::vector<RegClass>`
+  - `stage` is `Stage`
+- `struct Block`
+  - `instructions` is `std::vector<aco_ptr<Instruction>>`
+- `struct Instruction`
+  - `opcode` is `aco_opcode`
+  - `operands` is `aco::span<Operand>`
+  - `definitions` is `aco::span<Definition>`
+  - subclasses
+    - `SALU_instruction`
+    - `SMEM_instruction`
+    - `VALU_instruction`
+      - `VINTERP_inreg_instruction`
+      - `VOPD_instruction`
+      - `DPP16_instruction`
+      - `DPP8_instruction`
+      - `SDWA_instruction`
+    - `VINTRP_instruction`
+    - `DS_instruction`
+    - `LDSDIR_instruction`
+    - `MUBUF_instruction`
+    - `MTBUF_instruction`
+    - `MIMG_instruction`
+    - `FLAT_instruction`
+    - `Export_instruction`
+    - `Pseudo_instruction`
+      - `Pseudo_branch_instruction`
+      - `Pseudo_barrier_instruction`
+      - `Pseudo_reduction_instruction`
+- `class Definition`
+  - `temp` is `Temp`
+  - `reg_` is `PhysReg`
+- `class Operand`
+  - `data_` is a union of `Temp`, `uint32_t`, or `float`
+  - `reg_` is `PhysReg`
+- `struct PhysReg`
+  - `reg_b` is `uint16_t`
+- `struct Temp`
+  - `id_` is `uint32_t:24`
+  - `reg_class` is `uint32_t:8`
+- `struct RegClass`
+  - `rc` is `RC`
+  - `enum RC : uint8_t`
+    - there are `s1`, `s2`, `s3`, `s4`, `s6`, `s8`, and `s16`
+      - these represent N consecutive sgprs
+    - there are `v1`, `v2`, `v3`, `v4`, `v5`, `v6`, `v7`, and `v8`
+      - these represent N consecutive vgprs
+    - there are `v1b`, `v2b`, `v3b`, `v4b`, `v6b`, and `v8b`
+      - these represent N consecutive byte-sized pesudo vgprs
+    - there are `v1_linear` and `v2_linear`
+      - these represent N consecutive linear pesudo vgprs
+    - bits
+      - bit 0..4: N consecutive regs, up to 31
+      - bit 5: vgpr rather than sgpr
+      - bit 6: byte-sized
+      - bit 7: linear
+
 ## `aco::select_program`
 
 - `aco::setup_isel_context` sets up the instruction selection context
@@ -35,6 +96,21 @@ Mesa RADV ACO
   - `nir_divergence_analysis` marks non-uniform ssas as `divergent`
   - it loops over all nir instructions to intialize
     `ctx->program->temp_rc.data`
+    - for `nir_instr_type_alu`, there are a few possiblities
+      - for moves such as `nir_op_mov`, def is vgpr or sgpr depending on
+        whether the instruction is divergent or uniform
+      - for float ops such as `nir_op_fmul`, def is vgpr
+        - because only valu supports float ops
+      - for int ops such as `nir_op_imul`, def is vgpr if it has 2 components
+        - because only valu supports packed math
+        - `nir_lower_alu_width` has lower the widths to 1 (mostly) or 2
+          (16-bit components)
+      - if any of the src is vgpr, def is vgpr
+    - `get_reg_class` returns the reg class
+      - `type` is vgpr or sgpr
+      - `components` is number of components
+      - `bitsize` is the component size
+      - it returns `sX`, `vX`, or `vXb`
 - `aco::visit_alu_instr` selects the aco instruction for a `nir_alu_instr`
 
 ## ACO IR Pesudo Opcodes
@@ -95,6 +171,41 @@ Mesa RADV ACO
       - `scratch_mubuf_load_params` false
       - `scratch_flat_load_params` false
       - `global_load_params` true
+
+## fp16
+
+- example: self-multiplication of `f16vec2`
+  - nir
+
+    con 16x2  %3 = vec2 %1, %2
+    con 16x2  %4 = fmul %3, %3
+    con 16    %5 = mov %4.x
+    con 16    %6 = mov %4.y
+  - aco
+
+    s1: %3 = s_pack_ll_b32_b16 %1, %2
+    s1: %4 = p_parallelcopy %3
+    v1: %5 = p_parallelcopy %3
+    v1: %6 = v_pk_mul_f16 %4, %5
+    v2b: %7 = p_extract_vector %6, 0
+    s1: %8 = p_as_uniform %7
+    v2b: %9 = p_extract_vector %6, 1
+    s1: %10 = p_as_uniform %9
+  - `nir_op_vec2`
+    - `use_s_pack` is true on gfx9+
+    - `bld.sop2(aco_opcode::s_pack_ll_b32_b16)` packs the two fp16 in
+      `packed[0]` and `packed[1]` and replaces `packed[0]`
+    - `bld.copy(Definition(dst), packed[0])` copies from `packed[0]` to `dst`
+  - `nir_op_fmul`
+    - `emit_vop3p_instruction(aco_opcode::v_pk_mul_f16)` does packed fmul
+      - when both src0 and src1 are both sgpr, `as_vgpr` forces src1 to vgpr
+  - `nir_op_mov`
+    - because src is vgpr, and has 2 components, bitsize 16, and swizzle,
+      `emit_extract_vector` returns a `v2b`
+    - because dst is sgpr, `bld.pseudo(aco_opcode::p_as_uniform)` does the
+      conversion
+  - when multiplying repeated, it is more ideal to stay in vgpr than to keep
+    converting back and forth...
 
 ## int64
 
