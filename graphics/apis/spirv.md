@@ -94,6 +94,23 @@ SPIR-V
 
 - 2.1. Language Capabilities
 - 2.2. Terms
+  - control flow
+    - Block: a contiguous sequence of instructions that starts with
+      `OpLabel` and ends with a block termination instruction such as
+      `OpBranch` or `OpReturn`
+    - CFG: a graph whose nodes are blocks and edges are branches
+  - structured control flow
+    - a header block that contains `OpLoopMerge` followed by `OpBranch*`
+    - a back-edge block that points back to the header block
+    - a continue target which "continue" jumps to
+    - a merge block where the control flow converges
+    - simply put,
+      - the control flow enters from the header block
+      - it branches to the back-edge block
+      - it either branches back to the header block, to the continue target,
+        or to the merge block
+    - a single-block loop is a loop construct where the header block, the
+      continue target, and the back-edge block are the same block
 - 2.3. Physical Layout of a SPIR-V Module and Instruction
   - header
     - word 0: magic number 0x07230203

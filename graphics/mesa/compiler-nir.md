@@ -120,8 +120,10 @@ NIR
     - which is not the special end block
 - `nir_loop`
   - `body` is a list of the children nodes
+  - `continue_list` is a list of continue targets
   - `nir_loop_create` always adds a block as the first child
 - `nir_if`
+  - `condition` determines which path to take
   - `then_list` and `else_list` are two lists of the children nodes
   - `nir_if_create` always adds a block to each list as the first children
 - `nir_block`
@@ -434,6 +436,8 @@ NIR
         `align_offset` is the offset of the member
       - a misaligned `uint32_t` array could have `align_mul` 4 and
         `align_offse` 2
+- `nir_opt_if`
+  - `opt_split_alu_of_phi`
 
 ## `nir_opt_algebraic`
 
