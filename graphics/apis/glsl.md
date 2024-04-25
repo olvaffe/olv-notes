@@ -1,6 +1,11 @@
 GLSL
 ====
 
+## Links
+
+- <https://registry.khronos.org/OpenGL/specs/gl/GLSLangSpec.4.60.html>
+- <https://github.com/KhronosGroup/GLSL>
+
 ## Chapter 1. Introduction
 
 - 1.1. Changes
@@ -422,7 +427,12 @@ GLSL
   - `mix`, `step`, `smoothstep`
   - `isnan`, `isinf`
   - `floatBitsToInt`, `floatBitsToUint`, `intBitsToFloat`, `uintBitsToFloat`
-  - `fma`
+  - `fma` returns `a * b + c` with a twist
+    - if the returned value is eventually consumed by a variable declared as
+      `precise`,
+      - `a * b + c` is two operations and is rounded twice
+      - `fma(a, b, c)` is one operation and is rounded once
+    - othterwise, the two are the same
   - `frexp`, `ldexp`
 - 8.4. Floating-Point Pack and Unpack Functions
   - `packUnorm2x16`, `packSnorm2x16`, `packUnorm4x8`, `packSnorm4x8`
@@ -528,6 +538,23 @@ GLSL
 
 - 12.1. Feature Comparisons
 - 12.2. Mapping from GLSL to SPIR-V
+
+## Extensions
+
+- <https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GL_EXT_control_flow_attributes.txt>
+  - `[[unroll]]`
+  - `[[dont_unroll]]`
+  - `[[dependency_infinite]]`
+  - `[[dependency_length(N)]]`
+  - `[[flatten]]`
+  - `[[dont_flatten]]`
+- <https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GL_EXT_null_initializer.txt>
+  - `{}`, such as `vec4 x = {};`
+- <https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GL_EXT_samplerless_texture_functions.txt>
+  - texture functions that do not require a sampler (`texelFetch`,
+    `textureSize`, etc.) can be used with `gtexture*D*`
+- <https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GL_EXT_shader_explicit_arithmetic_types.txt>
+  - explicitly-sized ints and floats
 
 ## C Terminologies
 

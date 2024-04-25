@@ -110,6 +110,11 @@ OpenCL
 - 5.6. Shared Virtual Memory
 - 5.7. Sampler Objects
 - 5.8. Program Objects
+  - math compiler options
+    - `-cl-single-precision-constant` treats fp64 literals as fp32 ones; e.g.,
+      `0.123` is treated as `0.123f`
+    - `-cl-mad-enable` allows `a * b + c` to be replaced by `mad(a, b, c)`
+    - `-cl-fast-relaxed-math` implies all unsafe math optimizations
 - 5.9. Kernel Objects
   - `clGetKernelWorkGroupInfo`
     - `CL_KERNEL_WORK_GROUP_SIZE`
@@ -187,7 +192,11 @@ OpenCL
   - 6.10. Storage-Class Specifiers
   - 6.11. Restrictions
   - 6.12. Preprocessor Directives and Macros
+    - `#pragma OPENCL EXTENSION extensionname : behavior`
   - 6.13. Attribute Qualifiers
+    - `__attribute__((opencl_unroll_hint(N)))`
+      - there is also the non-standard `#pragma unroll N` and
+        `#pragma nounroll`
   - 6.14. Blocks
   - 6.15. Built-in Functions
     - work-item functions
@@ -200,6 +209,25 @@ OpenCL
       - `get_num_groups` returns `global_work_size / global_local_size`
       - `get_group_id` returns an id between `[0, get_num_groups - 1]`
       - `get_global_offset` returns `global_work_offset`
+    - math functions
+      - `fma` returns `a * b + c` with one rounding
+        - it is by definition more precise than `a * b + c` which rounds twice
+        - with native hw support, it is one operation and can be twice as fast
+          - for fp16 at least
+          - for fp32, it can be extremely slow because it might need
+            simulation
+      - `mad` returns `a * b + c` with a twist
+        - on full profile, it is the same as either `fma` or `a * b + c`
+        - on embedded profile, it can be any value
+        - with native hw support, it is one operation and can be twice as fast
+      - `#pragma OPENCL FP_CONTRACT on-off-switch`
+        - c11 states that, `#pragma STDC FP_CONTRACT ON` allows contracting of
+          float-point expressions; that is, optimizations that omit rounding
+          errors
+        - essentially, this means `a * b + c` can be replaced by
+          `fma(a, b, c)`
+          - note that `-cl-mad-enable` allows `a * b + c ` to be replaced by
+            `mad(a, b, c)`
 - Chapter 7. OpenCL Numerical Compliance
   - 7.1. Rounding Modes
   - 7.2. INF, NaN and Denormalized Numbers
