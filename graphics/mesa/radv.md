@@ -883,6 +883,10 @@ Mesa RADV
   - `radv_aco_convert_shader_info` converts `radv_shader_info` to
     `aco_shader_info`
   - `aco_compile_shader` (or `llvm_compile_shader`) compiles nir to asm
+  - `radv_postprocess_binary_config` updates `binary->config`
+    - for aco, `binary->config` is kept updated
+    - for llvm, `ac_rtld_read_config` initializes `binary->config` from elf
+      `.AMDGPU.config` section
 - `aco_compile_shader`
   - `aco::select_program` translates nir to aco ir
   - `aco_postprocess_shader` schedules aco ir, performs reg alloc, optimizes,
@@ -890,6 +894,7 @@ Mesa RADV
   - `aco::emit_program` emits the binary
   - `radv_aco_build_shader_binary` allocs a `radv_shader_binary_legacy` to
     hold the binary
+  - see <radv-aco.md>
 - prolog and epilog
   - I guess
     - vs can get inputs from fixed-function or from a "prolog" shader

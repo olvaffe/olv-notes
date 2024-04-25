@@ -92,6 +92,10 @@ Mesa RADV ACO
 ## `aco::select_program`
 
 - `aco::setup_isel_context` sets up the instruction selection context
+  - `aco::init_program` initializes the program
+    - `sgpr_alloc_granule` and `vgpr_alloc_granule` are set here
+      - llvm uses `wave64_vgpr_alloc_granularity` which is different?
+    - `vgpr_limit`, max number of vgprs available to a shader, is 256 on gfx10+
 - `aco::init_context` initializes isel context
   - `nir_divergence_analysis` marks non-uniform ssas as `divergent`
   - it loops over all nir instructions to intialize
