@@ -435,6 +435,25 @@ NIR
       - a misaligned `uint32_t` array could have `align_mul` 4 and
         `align_offse` 2
 
+## `nir_opt_algebraic`
+
+- `nir_opt_algebraic.py` generates `nir_opt_algebraic` variants
+  - `nir_algebraic.AlgebraicPass` generates 4 variants
+  - `nir_opt_algebraic` uses `optimizations`
+  - `nir_opt_algebraic_before_ffma` uses `before_ffma_optimizations`
+  - `nir_opt_algebraic_late` uses `late_optimizations`
+  - `nir_opt_algebraic_distribute_src_mods` uses `distribute_src_mods`
+- `nir_opt_algebraic` and `nir_opt_algebraic_late` are generic
+  - `nir_opt_algebraic` should be called as a part of the regular optimization
+    loop; e.g., after `spirv_to_nir` and regular lowering
+  - `nir_opt_algebraic_late` should be called before codegen
+- each optimization replaces a single instruction
+  - the search expr can match multiple instructions, but only the outer most
+    instruction is replaced
+    - dce will get rid of the inner instructions
+  - the replace expr can replace the single instruction by one or more
+    instructions
+
 ## Subgroup
 
 - `GL_ARB_shader_group_vote`

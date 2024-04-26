@@ -89,6 +89,33 @@ SPIR-V Apps
       `__constants` into an ssbo
     - `-cl-arm-non-uniform-work-group-size` enables
       `cl_arm_non_uniform_work_group_size` extension
+- `clspvCompileFromSourcesString` internal
+  - `ProgramToModule` uses clang to translate CLC to `llvm::Module`
+  - `CompileModule` compiles the module to spirv
+    - `LinkBuiltinLibrary` links in the built-in library
+      - `clspv--.bc` and `clspv64--.bc` are from libclc
+      - they are parsed into an `llvm::Module` and linked into the source
+        module
+    - `RunPassPipeline` runs the passes to produce spirv
+      - `clspv::RegisterClspvPasses` registers clspv passes to llvm
+      - a `llvm::PassBuilder` is used to build the pass pipeline
+      - the default optimization level is `llvm::OptimizationLevel::O2`
+      - `registerPipelineStartEPCallback` adds passes to the start of
+        the default pipeline
+      - `registerOptimizerLastEPCallback` adds passes to the end of the
+        default pipeline
+        - `clspv::SPIRVProducerPass` is the last pass that generates spirv
+      - `clspv::SPIRVProducerPass::run` generates spirv
+        - `outputHeader` generates the header
+        - `GenerateSamplers` generates samplers
+        - `GenerateGlobalVar` generates global variables
+        - `GenerateResourceVars` generates resource variables
+        - `GenerateWorkgroupVars` generates workgroup variables
+        - `GenerateFuncPrologue`, `GenerateFuncBody`, and
+          `GenerateFuncEpilogue` generate functions
+        - `GenerateModuleInfo` generates module info
+        - `GenerateReflection` generates reflection
+        - `WriteSPIRVBinary` generates the binary
 
 ## SPIRV-Reflect
 
