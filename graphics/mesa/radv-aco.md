@@ -11,7 +11,9 @@ Mesa RADV ACO
   - `aco_postprocess_shader` schedules aco ir, performs reg alloc, optimizes,
     eliminates pseudo ops, etc.
     - `aco::lower_phis` lowers phis
+    - `aco::value_numbering` performs value numbering
     - `aco::optimize` performs pre-RA optimizations
+    - `aco::insert_exec_mask` inserts exec mask
     - `aco::spill` spills if necessary
     - `aco::schedule_program` schedules instructions
     - `aco::register_allocation` allocates regs

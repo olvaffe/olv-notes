@@ -217,3 +217,44 @@ Android CTS
     - plane 1
       - offset 2228224
       - format `VK_FORMAT_R8G8_UNORM`
+
+## `android.media.encoder.cts.VideoEncoderTest#testEncode`
+
+- `VideoEncoderTest::input`
+  - the test is parameterized and `input` returns a list of parameters
+  - for each encoder returned by `MediaUtils.getEncoderNamesForMime`
+    - `TEST_MODE_DETAILED` tests common sizes
+    - `TEST_MODE_INTRAREFRESH` tests `480x360`
+    - `TEST_MODE_SPECIFIC` tests supported sizes
+      - `EncoderSize` queries codec supported sizes
+    - `flexYuv` can be true or false
+- `VideoEncoderTest::VideoEncoderTest`
+  - `getEncHandle` returns an `Encoder`
+  - e.g., `[31(c2.v4l2.avc.encoder_video/avc_66x2,158_false_TEST_MODE_SPECIFIC)]`
+    - `encoderName` is `c2.v4l2.avc.encoder`
+    - `mime` is `video/avc`
+    - `width` is 66
+    - `height` is 2158
+    - `flexYuv` is false
+    - `mode` is `TEST_MODE_SPECIFIC`
+- `VideoEncoderTest::testEncode` picks the test depending on the mode
+- `VideoEncoderTest::specific` calls `Encoder::testSpecific`
+  - `processor` is `VideoProcessor` or `SurfaceVideoProcessor` depending on
+    `flexYuv`
+- `SurfaceVideoProcessor::processLoop`
+  - `open` initializes `mExtractor`, `mDecFormat`, and `mEncodedStream` from
+    `video_480x360_mp4_h264_871kbps_30fps.mp4`
+  - `initCodecsAndConfigureEncoder` initializes `mDecoder` and `mEncoder`
+  - `mEncSurface` and `mDecSurface` are created
+  - when the decoder can receive the next buffer, `onInputBufferAvailable`
+    calls `fillDecoderInputBuffer` to read a buffer from the extractor and
+    queue it into the decoder
+  - after the decoder decodes a buffer, `onOutputBufferAvailable` calls
+    `renderDecodedBuffer` to set `mFrameAvailable`
+  - the process loop calls `mDecSurface.latchImage` and
+    `mDecSurface.drawImage` to draw the decoded image to the encoder's input,
+    and calls `mEncSurface.swapBuffers` to start encoding
+  - after the encoder encodes a buffer, `onOutputBufferAvailable` calls
+    `emptyEncoderOutputBuffer` to add the buffer to `mEncodedStream`
+- `VideoProcessorBase::playBack` decodes `mEncodedStream` and plays the
+  buffers
