@@ -182,6 +182,275 @@ OpenCL Apps
   - `api_test`
   - `simple_test`
 
+## clspv
+
+- clspv
+  - <https://github.com/google/clspv>
+  - depends on clang, llvm, SPIRV-Headers, and SPIRV-Tools
+  - provides tool (`clspv`) and library (`libclspv_core`) to convert opencl c
+    to vk-ready spirv
+- build
+  - `git clone https://github.com/google/clspv`
+  - `python3 utils/fetch_sources.py`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLSPV_SHARED_LIB=ON`
+    - `-DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_CXX_VISIBILITY_PRESET=hidden`
+      - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
+    - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
+  - `ninja -C out clspv_core`
+- the only entrypoint is `clspvCompileFromSourcesString`
+  - compiler options
+    - `-cl-std=CL3.0` selects CLC std
+    - `-inline-entry-points` inlines all entrypoints
+      - required for `__opencl_c_generic_address_space` feature
+    - `-cl-single-precision-constant` treats double-precision float literals
+      as single-precision
+    - `-cl-kernel-arg-info` produces kernel argument info
+    - `-rounding-mode-rte=16,32,64` sets `RoundingModeRTE`
+    - `-rewrite-packed-structs` rewrites packed structs as i8 array
+      - vk must support `storageBuffer8BitAccess`
+    - `-std430-ubo-layout` uses more packed std430 layout
+      - vk must support `uniformBufferStandardLayout`
+    - `-decorate-nonuniform` decorates `NonUniform`
+      - vk must support non-uniform descriptor indexing
+    - `-hack-convert-to-float` adds a workaround for radv/aco
+    - `-arch=spir` selects 32-bit pointers
+    - `-spv-version=1.5` targets spirv 1.5
+    - `-max-pushconstant-size=128` sets push contant size limit
+      - it should match vk `maxPushConstantsSize`
+    - `-max-ubo-size=16384`
+      - it should match vk `maxUniformBufferRange`
+    - `-global-offset` enables support for global offset (`get_global_offset`?)
+    - `-long-vector` enables support for vectors of width 8 and 16
+    - `-module-constants-in-storage-buffer` collects module-socped
+      `__constants` into an ssbo
+    - `-cl-arm-non-uniform-work-group-size` enables
+      `cl_arm_non_uniform_work_group_size` extension
+- `clspvCompileFromSourcesString` internal
+  - `ProgramToModule` uses clang to translate CLC to `llvm::Module`
+  - `CompileModule` compiles the module to spirv
+    - `LinkBuiltinLibrary` links in the built-in library
+      - `clspv--.bc` and `clspv64--.bc` are from libclc
+      - they are parsed into an `llvm::Module` and linked into the source
+        module
+    - `RunPassPipeline` runs the passes to produce spirv
+      - `clspv::RegisterClspvPasses` registers clspv passes to llvm
+      - a `llvm::PassBuilder` is used to build the pass pipeline
+      - the default optimization level is `llvm::OptimizationLevel::O2`
+      - `registerPipelineStartEPCallback` adds passes to the start of
+        the default pipeline
+      - `registerOptimizerLastEPCallback` adds passes to the end of the
+        default pipeline
+        - `clspv::SPIRVProducerPass` is the last pass that generates spirv
+      - `clspv::SPIRVProducerPass::run` generates spirv
+        - `outputHeader` generates the header
+        - `GenerateSamplers` generates samplers
+        - `GenerateGlobalVar` generates global variables
+        - `GenerateResourceVars` generates resource variables
+        - `GenerateWorkgroupVars` generates workgroup variables
+        - `GenerateFuncPrologue`, `GenerateFuncBody`, and
+          `GenerateFuncEpilogue` generate functions
+        - `GenerateModuleInfo` generates module info
+        - `GenerateReflection` generates reflection
+        - `WriteSPIRVBinary` generates the binary
+- llvm supports `-print-after-all` to print IRs after each pass; it looks like
+  clspv applies these passes in order
+  - llvm early passes
+    - `AlwaysInlinerPass`
+    - `CoroConditionalWrapper`
+    - `AnnotationRemarksPass`
+    - `Annotation2MetadataPass`
+    - `ForceFunctionAttrsPass`
+  - `registerPipelineStartEPCallback`
+    - `clspv::AnnotationToMetadataPass`
+    - `clspv::WrapKernelPass`
+    - `clspv::NativeMathPass`
+    - `clspv::ZeroInitializeAllocasPass`
+    - `clspv::KernelArgNamesToMetadataPass`
+    - `clspv::AddFunctionAttributesPass`
+    - `clspv::AutoPodArgsPass`
+    - `clspv::DeclarePushConstantsPass`
+    - `clspv::DefineOpenCLWorkItemBuiltinsPass`
+    - `clspv::OpenCLInlinerPass`
+    - `clspv::UndoByvalPass`
+    - `clspv::UndoSRetPass`
+    - `InferAddressSpacesPass`
+    - `PromotePass`
+    - `clspv::ClusterPodKernelArgumentsPass`
+    - `clspv::InlineEntryPointsPass`
+    - `clspv::FunctionInternalizerPass`
+    - `clspv::ReplaceOpenCLBuiltinPass`
+    - `clspv::FixupBuiltinsPass`
+    - `clspv::ThreeElementVectorLoweringPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::ReplacePointerBitcastPass`
+    - `DCEPass`
+    - `clspv::HideConstantLoadsPass`
+    - `InstCombinePass`
+    - `clspv::InlineFuncWithImageMetadataGetterPass`
+    - `clspv::InlineFuncWithPointerBitCastArgPass`
+    - `clspv::InlineFuncWithPointerToFunctionArgPass`
+    - `clspv::InlineFuncWithSingleCallSitePass`
+    - `clspv::InlineFuncWithReadImage3DNonLiteralSamplerPass`
+    - `PromotePass`
+    - `clspv::LogicalPointerToIntPass`
+    - `PromotePass`
+    - `SROAPass`
+    - `InstCombinePass`
+    - `InferAddressSpacesPass`
+  - llvm default passes
+    - `InferFunctionAttrsPass`
+    - `CoroEarlyPass`
+    - `LowerExpectIntrinsicPass`
+    - `SimplifyCFGPass`
+    - `SROAPass`
+    - `EarlyCSEPass`
+    - `OpenMPOptPass`
+    - `IPSCCPPass`
+    - `CalledValuePropagationPass`
+    - `GlobalOptPass`
+    - `PromotePass`
+    - `InstCombinePass`
+    - `SimplifyCFGPass`
+    - `AlwaysInlinerPass`
+    - `RequireAnalysisPass<GlobalsAA, Module>`
+    - `InvalidateAnalysisPass<AAManager>`
+    - `RequireAnalysisPass<ProfileSummaryAnalysis, Module>`
+    - `InlinerPass`
+    - `PostOrderFunctionAttrsPass`
+    - `OpenMPOptCGSCCPass`
+    - `SROAPass`
+    - `EarlyCSEPass`
+    - `SpeculativeExecutionPass`
+    - `JumpThreadingPass`
+    - `CorrelatedValuePropagationPass`
+    - `SimplifyCFGPass`
+    - `InstCombinePass`
+    - `AggressiveInstCombinePass`
+    - `LibCallsShrinkWrapPass`
+    - `TailCallElimPass`
+    - `SimplifyCFGPass`
+    - `ReassociatePass`
+    - `ConstraintEliminationPass`
+    - `LoopSimplifyPass`
+    - `LCSSAPass`
+    - `LoopInstSimplifyPass`
+    - `LoopSimplifyCFGPass`
+    - `LICMPass`
+    - `LoopRotatePass`
+    - `LICMPass`
+    - `SimpleLoopUnswitchPass`
+    - `SimplifyCFGPass`
+    - `InstCombinePass`
+    - `LoopSimplifyPass`
+    - `LCSSAPass`
+    - `LoopIdiomRecognizePass`
+    - `IndVarSimplifyPass`
+    - `LoopDeletionPass`
+    - `LoopFullUnrollPass`
+    - `SROAPass`
+    - `VectorCombinePass`
+    - `MergedLoadStoreMotionPass`
+    - `GVNPass`
+    - `SCCPPass`
+    - `BDCEPass`
+    - `InstCombinePass`
+    - `JumpThreadingPass`
+    - `CorrelatedValuePropagationPass`
+    - `ADCEPass`
+    - `MemCpyOptPass`
+    - `DSEPass`
+    - `MoveAutoInitPass`
+    - `LoopSimplifyPass`
+    - `LCSSAPass`
+    - `LICMPass`
+    - `CoroElidePass`
+    - `SimplifyCFGPass`
+    - `InstCombinePass`
+    - `PostOrderFunctionAttrsPass`
+    - `RequireAnalysisPass<ShouldNotRunFunctionPassesAnalysis, Function>`
+    - `CoroSplitPass`
+    - `InvalidateAnalysisPass<ShouldNotRunFunctionPassesAnalysis>`
+    - `DeadArgumentEliminationPass`
+    - `CoroCleanupPass`
+    - `GlobalOptPass`
+    - `GlobalDCEPass`
+    - `EliminateAvailableExternallyPass`
+    - `ReversePostOrderFunctionAttrsPass`
+    - `RecomputeGlobalsAAPass`
+    - `Float2IntPass`
+    - `LowerConstantIntrinsicsPass`
+    - `LoopSimplifyPass`
+    - `LCSSAPass`
+    - `LoopRotatePass`
+    - `LoopDeletionPass`
+    - `LoopDistributePass`
+    - `InjectTLIMappings`
+    - `LoopVectorizePass`
+    - `InferAlignmentPass`
+    - `LoopLoadEliminationPass`
+    - `InstCombinePass`
+    - `SimplifyCFGPass`
+    - `VectorCombinePass`
+    - `InstCombinePass`
+    - `LoopUnrollPass`
+    - `WarnMissedTransformationsPass`
+    - `SROAPass`
+    - `InferAlignmentPass`
+    - `InstCombinePass`
+    - `LoopSimplifyPass`
+    - `LCSSAPass`
+    - `LICMPass`
+    - `AlignmentFromAssumptionsPass`
+    - `LoopSinkPass`
+    - `InstSimplifyPass`
+    - `DivRemPairsPass`
+    - `TailCallElimPass`
+    - `SimplifyCFGPass`
+  - `registerOptimizerLastEPCallback`
+    - `clspv::StripFreezePass`
+    - `clspv::UnhideConstantLoadsPass`
+    - `clspv::UndoInstCombinePass`
+    - `clspv::FunctionInternalizerPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::ReplaceLLVMIntrinsicsPass`
+    - `DCEPass`
+    - `clspv::UndoBoolPass`
+    - `clspv::UndoTruncateToOddIntegerPass`
+    - `LowerSwitchPass`
+    - `StructurizeCFGPass`
+    - `clspv::FixupStructuredCFGPass`
+    - `clspv::ReorderBasicBlocksPass`
+    - `clspv::UndoGetElementPtrConstantExprPass`
+    - `clspv::SplatArgPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::ReplacePointerBitcastPass`
+    - `DCEPass`
+    - `clspv::UndoTranslateSamplerFoldPass`
+    - `clspv::ShareModuleScopeVariablesPass`
+    - `clspv::SpecializeImageTypesPass`
+    - `clspv::AllocateDescriptorsPass`
+    - `clspv::DirectResourceAccessPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::RemoveUnusedArguments`
+    - `DCEPass`
+    - `clspv::SplatSelectConditionPass`
+    - `clspv::SignedCompareFixupPass`
+    - `clspv::ScalarizePass`
+    - `clspv::RewriteInsertsPass`
+    - `clspv::LowerPrivatePointerPHIPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::ReplacePointerBitcastPass`
+    - `clspv::SimplifyPointerBitcastPass`
+    - `clspv::UBOTypeTransformPass`
+    - `clspv::SetImageMetadataPass`
+    - `clspv::SPIRVProducerPass`
+  - llvm late passes
+    - `GlobalDCEPass`
+    - `ConstantMergePass`
+    - `CGProfilePass`
+    - `RelLookupTableConverterPass`
+    - `AnnotationRemarksPass`
+
 ## CTS
 
 - steps

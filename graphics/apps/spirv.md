@@ -33,11 +33,6 @@ SPIR-V Apps
   - depends on glslang and SPIRV-Tools
   - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
     to SPIR-V
-- clspv
-  - <https://github.com/google/clspv>
-  - depends on clang, llvm, SPIRV-Headers, and SPIRV-Tools
-  - provides tool (`clspv`) and library (`libclspv_core`) to convert opencl c
-    to vk-ready spirv
 
 ## glslang
 
@@ -69,72 +64,6 @@ SPIR-V Apps
     default version line when none is specified
     - e.g., when `#version 460 core` is missing
     - when the client is vulkan, use `100` and `GLSLANG_NO_PROFILE`
-
-## clspv
-
-- build
-  - `git clone https://github.com/google/clspv`
-  - `python3 utils/fetch_sources.py`
-  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLSPV_SHARED_LIB=ON`
-    - `-DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_CXX_VISIBILITY_PRESET=hidden`
-      - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
-    - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
-  - `ninja -C out clspv_core`
-- the only entrypoint is `clspvCompileFromSourcesString`
-  - compiler options
-    - `-cl-std=CL3.0` selects CLC std
-    - `-inline-entry-points` inlines all entrypoints
-      - required for `__opencl_c_generic_address_space` feature
-    - `-cl-single-precision-constant` treats double-precision float literals
-      as single-precision
-    - `-cl-kernel-arg-info` produces kernel argument info
-    - `-rounding-mode-rte=16,32,64` sets `RoundingModeRTE`
-    - `-rewrite-packed-structs` rewrites packed structs as i8 array
-      - vk must support `storageBuffer8BitAccess`
-    - `-std430-ubo-layout` uses more packed std430 layout
-      - vk must support `uniformBufferStandardLayout`
-    - `-decorate-nonuniform` decorates `NonUniform`
-      - vk must support non-uniform descriptor indexing
-    - `-hack-convert-to-float` adds a workaround for radv/aco
-    - `-arch=spir` selects 32-bit pointers
-    - `-spv-version=1.5` targets spirv 1.5
-    - `-max-pushconstant-size=128` sets push contant size limit
-      - it should match vk `maxPushConstantsSize`
-    - `-max-ubo-size=16384`
-      - it should match vk `maxUniformBufferRange`
-    - `-global-offset` enables support for global offset (`get_global_offset`?)
-    - `-long-vector` enables support for vectors of width 8 and 16
-    - `-module-constants-in-storage-buffer` collects module-socped
-      `__constants` into an ssbo
-    - `-cl-arm-non-uniform-work-group-size` enables
-      `cl_arm_non_uniform_work_group_size` extension
-- `clspvCompileFromSourcesString` internal
-  - `ProgramToModule` uses clang to translate CLC to `llvm::Module`
-  - `CompileModule` compiles the module to spirv
-    - `LinkBuiltinLibrary` links in the built-in library
-      - `clspv--.bc` and `clspv64--.bc` are from libclc
-      - they are parsed into an `llvm::Module` and linked into the source
-        module
-    - `RunPassPipeline` runs the passes to produce spirv
-      - `clspv::RegisterClspvPasses` registers clspv passes to llvm
-      - a `llvm::PassBuilder` is used to build the pass pipeline
-      - the default optimization level is `llvm::OptimizationLevel::O2`
-      - `registerPipelineStartEPCallback` adds passes to the start of
-        the default pipeline
-      - `registerOptimizerLastEPCallback` adds passes to the end of the
-        default pipeline
-        - `clspv::SPIRVProducerPass` is the last pass that generates spirv
-      - `clspv::SPIRVProducerPass::run` generates spirv
-        - `outputHeader` generates the header
-        - `GenerateSamplers` generates samplers
-        - `GenerateGlobalVar` generates global variables
-        - `GenerateResourceVars` generates resource variables
-        - `GenerateWorkgroupVars` generates workgroup variables
-        - `GenerateFuncPrologue`, `GenerateFuncBody`, and
-          `GenerateFuncEpilogue` generate functions
-        - `GenerateModuleInfo` generates module info
-        - `GenerateReflection` generates reflection
-        - `WriteSPIRVBinary` generates the binary
 
 ## SPIRV-Reflect
 

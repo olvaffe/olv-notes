@@ -330,6 +330,102 @@ NIR
                   block block_1:
           }
 
+## Common NIR Lowerings
+
+- common lowering coming out of high-level language
+  - the main goal is to convert variable loads/stores to ssas for
+    optimizations
+  - `nir_opt_reuse_constants` deduplicates and moves all `load_const` to the
+    first block
+  - `nir_inline_functions` inlines all functions into their callers
+  - `nir_lower_global_vars_to_local` lowers global variables to local
+    variables when they are used by a single function
+  - `nir_lower_vars_to_ssa` lowers local variables to ssa
+    - this replaces local variable loads/stores by phis
+  - `nir_lower_system_values` lowers sysval loads to intrinsics
+    - e.g., `SYSTEM_VALUE_GLOBAL_INVOCATION_ID` var load is replaced by
+      `load_global_invocation_id` intrinsic
+  - `nir_lower_compute_system_values` lowers compute sysval loads
+    - e.g., `load_global_invocation_id` intrinsic is replaced by
+      `load_workgroup_id`, `load_local_invocation_id`, and alus
+  - `nir_remove_dead_variables` removes dead variables
+  - `nir_lower_load_const_to_scalar` lowers vector `load_const` to scalar
+    `load_const`
+    - e.g., a const load of vec3 is replaced by 3 const loads of float
+      followed by a `nir_op_vec3`
+- common optimizations coming out of high-level language
+  - these are applied repeatedly in a loop
+    - `nir_lower_alu_width` replaces vector alus by scalar alus
+      - e.g., a iadd of vec3 is replaced by 3 iadd of float followed by a
+        `nir_op_vec3`
+    - `nir_lower_phis_to_scalar` replaces vector phis by scalar phis
+      - e.g., a phi of vec3 is replaced by
+        - 3 phis of float and a vec3
+        - 3 movs at the end of the two predecessors respectively
+    - `nir_copy_prop` performs copy propogation
+      - if an instruction is mov, replace all uses of its def by its src
+      - movs created by `nir_lower_phis_to_scalar` above are usually removed as
+        a result
+    - `nir_opt_dce` performs dead code elimination
+    - `nir_opt_loop` eliminates unnecessary loop blocks
+    - `nir_opt_if` optimizes if+loop blocks
+    - `nir_opt_cse` performs common subexpression elimination
+      - if two instructions produce the same value, eliminate all but one
+    - `nir_opt_peephole_select` replaces phis by bcsels when cheap
+    - `nir_opt_constant_folding` performs constant folding
+      - it evalutes constant expressions at compile time
+      - it is most effective after copy propagation
+    - `nir_opt_algebraic` matches and replaces instructions based on the rules
+      defined in `nir_opt_algebraic.py`
+    - `nir_opt_loop_unroll` unrolls simple loops
+  - these are applied once
+    - `nir_opt_move` moves defs to just before their first uses within the
+      same block
+      - this can reduce reg pressure
+- 2nd round of lowering coming out of high-level language
+  - the main goal is to lower to instructions that are closer-to-hw
+  - `nir_opt_access` infers readonly, writeonly, etc.
+  - `nir_lower_explicit_io` lowers loads of explicitly-laid-out buffers (ubo,
+    ssbo, push consts, etc.) by intrinsics in addrs and offsets
+    - load of `nir_var_mem_push_const` is replaced by `load_push_constant`
+    - load of `nir_var_mem_ubo` is replaced by `load_global_constant*` or
+      `load_ubo` depending on the addr format
+    - load of `nir_var_mem_ssbo` is replaced by `load_global` or `load_ssbo`
+    - store of `nir_var_mem_ssbo` is replaced by `store_global*` or `store_ssbo`
+- 2nd round of optimizations coming out of high-level language
+  - same as the first round after 2nd round of lowering
+- common lowering before passing nir to backend
+  - this is more hw-dependent
+  - `nir_opt_load_store_vectorize` coalesces loads/stores
+    - e.g., 3 loads to consecutive floats can be replaced by a load to 3
+      floats
+  - `nir_vk_lower_ycbcr_tex` emulates ycbcr sampling
+  - a backend-specific pass applies vk pipeline layout
+    - e.g., the generic `vulkan_resource_index`, `load_vulkan_descriptor`, and
+      `store_ssbo` may be replaced by backend-specific intrinsics to
+      - load the descriptor set address
+      - calculate the descriptor offset in the descriptor set
+      - load the descriptor from the descriptor set
+      - store via the descriptor
+  - `nir_opt_sink` moves defs to the least common ancestor block of consuming
+    instructions
+    - this is different from `nir_opt_move`, which moves within the same block
+  - `nir_lower_int64` emulates 64-bit ints
+  - `nir_opt_idiv_const` and `nir_lower_idiv` emulate integer division
+- common optimizations before passing nir to backend
+  - some are the same as the prior optimizations; the new ones are
+  - `nir_opt_offsets` performs constant folding for load/store offset
+    - load/store intrinsics supports offset in src as well as a compile-time
+      base; this pass folds the compile-time const from src to base
+  - `nir_opt_algebraic_late` uses another set of rules defined in
+    `nir_opt_algebraic.py`
+- 2nd round of lowering/optimizations before passing nir to backend
+  - some are the same as the prior optimizations; the new ones are
+  - `nir_lower_fp16_casts` emulates casts between fp16/fp32/fp64
+  - `nir_opt_vectorize` vectorizes alus but seems limited
+    - e.g., 3 fadds for xyz components of the same ssa respectively are
+      replaced by 1 fadd of 3 components
+
 ## NIR to backend
 
 - after translation from GLSL/SPIR-V and a pass to SSA, NIR still uses
