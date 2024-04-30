@@ -1159,3 +1159,23 @@ Mesa RADV
   - it also handles image transitions, but that's entirely separated
 - before draw or dispatch, `radv_emit_cache_flush` calls
   `radv_cs_emit_cache_flush` to flush `cmd_buffer->state.flush_bits`
+
+## fp16
+
+- glsl `f16vec2`
+  - `a * b` is translated to nir `16x2  %3 = fmul %1, %2`
+    - `nir_lower_alu_width` does not scalarize it because
+      - `vectorize_vec2_16bit` returns 2 for the fmul
+      - `opt_vectorize_callback` also returns 2 for the fmul
+    - aco selects `aco_opcode::v_pk_mul_f16` for the instruction
+  - `f16vec2(vec2(a, b))` is translated to nir `16x2  %2 = f2f16 %1`
+    - `nir_lower_alu_width` scalarizes it to `con 16  %3 = f2f16 %2.x` and
+      `con 16  %4 = f2f16 %2.y` because, while `vectorize_vec2_16bit` returns
+      2, `opt_vectorize_callback` returns 1 because
+      `aco_nir_op_supports_packed_math_16bit` returns false
+    - aco selects `aco_opcode::v_cvt_f16_f32` for the two f2f16
+      - fwiw, the hw only supports `aco_opcode::v_cvt_pkrtz_f16_f32` which
+        forces rtz
+  - when there is a phi node for the f16vec2,
+    - `nir_lower_phis_to_scalar` scalarizes the phi node
+      - this seems to cause inefficiency
