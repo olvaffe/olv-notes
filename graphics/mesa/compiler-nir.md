@@ -670,3 +670,114 @@ NIR
   - some texops require implicit derivs and some don't
     - `nir_tex_instr_has_implicit_derivative`
     - `nir_shader_supports_implicit_lod`
+
+## Push Constants
+
+- glsl: `layout(push_constant) uniform CONSTS { uint repeat; } consts;`
+- spirv
+  - `%CONSTS = OpTypeStruct %uint`
+    - this declares a struct type
+  - `%_ptr_PushConstant_CONSTS = OpTypePointer PushConstant %CONSTS`
+    - this declares a pointer type (to the struct)
+  - `%consts = OpVariable %_ptr_PushConstant_CONSTS PushConstant`
+    - this defines a variable (which is a pointer to the struct)
+  - `%_ptr_PushConstant_uint = OpTypePointer PushConstant %uint`
+    - this declares a pointer type (to an uint)
+  - `%42 = OpAccessChain %_ptr_PushConstant_uint %consts %int_0`
+    - this defines a variable (which is a pointer to the struct member)
+  - `%43 = OpLoad %uint %42`
+    - this loads from the var
+- nir
+  - `decl_var push_const INTERP_MODE_NONE none CONSTS consts`
+    - this defines the variable (of the struct)
+  - `32    %26 = deref_var &consts (push_const CONSTS)`
+    - this derefs the variable
+  - `32    %27 = deref_struct &%26->repeat (push_const uint)  // &consts.repeat`
+    - this derefs the struct member
+  - `32    %28 = @load_deref (%27) (access=none)`
+    - this loads from the member
+- lowered nir
+  - `32    %14 = @load_push_constant (%15 (0x0)) (base=0, range=4, align_mul=256, align_offset=0)`
+    - the address format must be `nir_address_format_32bit_offset`
+
+## SSBO
+
+- glsl: `layout(set = 0, binding = 0) buffer DST { float data[]; } dst;`,
+- spirv
+  - `%_runtimearr_float = OpTypeRuntimeArray %float`
+    - this declares an array type, whose length is unknown
+  - `%DST = OpTypeStruct %_runtimearr_float`
+    - this declares a struct type
+  - `%_ptr_Uniform_DST = OpTypePointer Uniform %DST`
+    - this declares a pointer type (to the struct)
+  - `%dst = OpVariable %_ptr_Uniform_DST Uniform`
+    - this defines a variable (which is a pointer to the struct)
+  - `%_ptr_Uniform_float = OpTypePointer Uniform %float`
+    - this declares a pointer type (to a float)
+  - `%59 = OpAccessChain %_ptr_Uniform_float %dst %int_0 %int_0`
+    - this defines a variable (which is a pointer to the first elem of the struct member)
+  - `OpStore %59 %float_0`
+    - this stores 0.0f to the var
+- nir
+  - `decl_var ssbo INTERP_MODE_NONE restrict DST dst (~0, 0, 0)`
+    - this defines the variable (of the struct)
+  - `32x3  %45 = @vulkan_resource_index (%16 (0x0)) (desc_set=0, binding=0, desc_type=SSBO)`
+    - this defines the handle to the vulkan resource
+  - `32x3  %46 = @load_vulkan_descriptor (%45) (desc_type=SSBO)`
+    - this loads the vulkan resource descriptor
+  - `32x3  %47 = deref_cast (DST *)%46 (ssbo DST)  (ptr_stride=0, align_mul=0, align_offset=0)`
+    - this derefs the vulkan resource descriptor
+  - `32x3  %48 = deref_struct &%47->data (ssbo float[])  // &((DST *)%46)->data`
+    - this derefs the struct member
+  - `32x3  %50 = deref_array &(*%48)[0] (ssbo float)  // &((DST *)%46)->data[0]`
+    - this derefs the array elem
+  - `@store_deref (%50, %16 (0.000000)) (wrmask=x, access=none)`
+    - this stores 0.0 to the array elem
+- lowered nir
+  - `32x3  %1 = @vulkan_resource_index (%0 (0x0)) (desc_set=0, binding=0, desc_type=SSBO)`
+  - `32x3  %2 = @load_vulkan_descriptor (%1) (desc_type=SSBO)`
+    - with `nir_address_format_vec2_index_32bit_offset`, the result consists
+      of 64-bit handle and 32-bit offset
+  - `32    %3 = mov %2.z`
+  - `32x2  %4 = vec2 %2.x, %2.y`
+  - `@store_ssbo (%0 (0x0), %4, %3) (wrmask=x, access=writeonly, align_mul=1073741824, align_offset=0)`
+    - this stores 0 to the descriptor/offset
+
+## Compute
+
+- glsl: `gl_GlobalInvocationID.x`
+- spirv
+  - `OpDecorate %gl_GlobalInvocationID BuiltIn GlobalInvocationId`
+    - this decorates the variable (that haven't been defined yet)
+  - `%v3uint = OpTypeVector %uint 3`
+    - this declares vector type, uvec3
+  - `%_ptr_Input_v3uint = OpTypePointer Input %v3uint`
+    - this declares a pointer type (to uvec3)
+  - `%gl_GlobalInvocationID = OpVariable %_ptr_Input_v3uint Input`
+    - this defines a variable (which is a pointer to uvec3)
+  - `%_ptr_Input_uint = OpTypePointer Input %uint`
+    - this declares a pointer type (to uint)
+  - `%15 = OpAccessChain %_ptr_Input_uint %gl_GlobalInvocationID %uint_0`
+    - this defines a variable (which is a pointer to the first member of the
+      variable)
+  - `%16 = OpLoad %uint %15`
+    - this loads from the struct member
+- nir
+  - `decl_var system INTERP_MODE_NONE none uvec3 gl_GlobalInvocationID (SYSTEM_VALUE_GLOBAL_INVOCATION_ID)`
+    - this defines the variable
+  - `32     %0 = deref_var &gl_GlobalInvocationID (system uvec3)`
+    - this derefs the variable
+  - `32x3   %3 = @load_deref (%0) (access=none)`
+    - this loads from the variable
+  - `32     %4 = mov %3.x`
+    - this moves out the x member
+- lowered nir
+  - `32x3   %1 = @load_workgroup_id`
+    - this loads the workgroup id (`gl_WorkGroupID`)
+  - `32x3   %2 = @load_local_invocation_id`
+    - this loads the local id (`gl_LocalInvocationID`)
+  - `32     %4 = ishl %1.x, %3 (0x6)`
+    - because of `layout(local_size_x = 64) in;`, this left-shifts the
+      workgroup id by 6
+  - `32     %5 = iadd %4, %2.x`
+    - this sums both up

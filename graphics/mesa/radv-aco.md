@@ -132,6 +132,66 @@ Mesa RADV ACO
   - `bld.as_uniform` uses this opcode
   - it gets translated to `aco_opcode::v_readfirstlane_b32`
 
+## Push Constants
+
+- `visit_load_push_constant` lowers `nir_intrinsic_load_push_constant`
+- if the push constant is inlined,
+  - `ctx->args->inline_push_consts` defines how it is inlined
+  - `aco_opcode::p_create_vector` creates the vector
+    - e.g., when the type is `vec2`, it is pushed as two `s1` regs.  aco needs
+      to create an `s2` reg from the two `s1` regs
+- if the push constant is not inlined,
+  - `ctx->args->push_constants` defines the location of the push constant
+    block
+  - `convert_pointer_to_64_bit` converts the 32-bit location to 64-bit addr
+    using `aco_opcode::p_create_vector`
+    - `ctx->options->address32_hi` is `0xffff8000`
+  - `aco_opcode::s_load_dword*` loads
+
+## System Values
+
+- `nir_intrinsic_load_workgroup_id`
+  - `aco_opcode::p_create_vector` creates an `s3` reg from
+    `ctx->args->workgroup_ids`
+  - `aco_opcode::p_split_vector` splits the `s3` reg into 3 `s1` regs
+- `nir_intrinsic_load_local_invocation_id`
+  - `aco_opcode::p_parallelcopy` copies `ctx->args->local_invocation_ids` from
+    a `v3` reg to a `v3` reg
+  - `aco_opcode::p_split_vector` splits the `v3` reg into 3 `v3` regs
+
+## SSBO
+
+- `nir_lower_explicit_io` lowers derefs to `store_ssbo`
+  - `32x3  %1 = @vulkan_resource_index (%0 (0x0)) (desc_set=0, binding=0, desc_type=SSBO)`
+  - `32x3  %2 = @load_vulkan_descriptor (%1) (desc_type=SSBO)`
+  - `32    %3 = mov %2.z`
+  - `32x2  %4 = vec2 %2.x, %2.y`
+  - `@store_ssbo (%0 (0x0), %4, %3) (wrmask=x, access=writeonly, align_mul=1073741824, align_offset=0)`
+- `radv_nir_apply_pipeline_layout` lowers them to, after optimizations,
+  - `con 32    %0 = @load_scalar_arg_amd (base=1, arg_upper_bound_u32_amd=0)`
+  - `con 32    %1 = load_const (0xffff8000 = -32768 = 4294934528)`
+  - `con 64    %2 = pack_64_2x32_split %0, %1 (0xffff8000)`
+  - `con 32    %3 = load_const (0x00000000)`
+  - `con 32x4  %4 = @load_smem_amd (%2, %3 (0x0)) (align_mul=16, align_offset=0)`
+  - `@store_ssbo (%3 (0x0), %4, %3 (0x0)) (wrmask=x, access=writeonly, align_mul=1073741824, align_offset=0)`
+- `radv_nir_apply_pipeline_layout`
+  - `visit_vulkan_resource_index` lowers `nir_intrinsic_vulkan_resource_index`
+    - `nir_load_scalar_arg_amd` loads the set addr
+    - the returned vec3 is replaced by `(set_ptr, binding_ptr, stride)`
+  - `visit_load_vulkan_descriptor` lowers `nir_intrinsic_load_vulkan_descriptor`
+    - the returned vec3 is replaced by `(set_ptr, binding_ptr, 0)`
+  - `load_buffer_descriptor` lowers` nir_intrinsic_store_ssbo`
+    - `convert_pointer_to_64_bit` returns the 64b addr of the descriptor
+      - `address32_hi` is `0xffff8000`
+    - `nir_load_smem_amd` loads the descriptor
+    - `@store_ssbo` is kept
+- `visit_intrinsic` lowers `load_scalar_arg_amd`
+  - `aco_opcode::p_parallelcopy` copies from `s1` to `s1`
+  - no `aco_opcode::p_split_vector` needed
+- `visit_load_smem` lowers `load_smem_amd` to `aco_opcode::s_load_dwordx4`
+  - it loads the 4-dword descriptor from the descriptor set
+- `visit_store_ssbo` lowers `store_ssbo` to `aco_opcode::buffer_store_dword`
+
 ## Loads
 
 - `emit_load` emits load instructions
