@@ -54,25 +54,77 @@ NIR
 
 ## Instructions
 
-- use `nir_alu_instr` as an example
-  - created with `nir_alu_instr_create`
-  - `op` specifies the alu op such as `nir_op_mov` or `nir_op_fadd`
-  - real size depends on the number of srcs of `op`
-  - `exact` means transforms must result in bit-exact result
-  - a `nir_alu_dest` is a `nir_dest` plus
-    - `saturate`
-    - `write_mask`
-  - a `nir_alu_src` is a `nir_src` plus
-    - `negate`
-    - `abs`
-    - `swizzle`
-- a `nir_instr` works with `nir_dest` and `nir_src`
-  - a `nir_dest` is either a `nir_reg_dest` or a `nir_ssa_def`, depending on
-    whether it is in SSA form or not
-  - a `nir_src` is either a `nir_reg_src` or a `nir_ssa_def`,  depending on
-    whether it is in SSA form or not
-  - after converting out of SSA form, we use `nir_reg_dest` or `nir_reg_src`,
-    which has a pointer to a `nir_register` to represent a physical register
+- `nir_instr` is the base class of instructions
+  - `struct exec_node node` is how the instr is managed by a block
+  - `struct nir_block *block` is the block the instr belongs to
+  - `nir_instr_type type` is one of
+    - `nir_instr_type_alu`
+    - `nir_instr_type_deref`
+    - `nir_instr_type_call`
+    - `nir_instr_type_tex`
+    - `nir_instr_type_intrinsic`
+    - `nir_instr_type_load_const`
+    - `nir_instr_type_jump`
+    - `nir_instr_type_undef`
+    - `nir_instr_type_phi`
+    - `nir_instr_type_parallel_copy`
+  - `uint8_t pass_flags` is for arbitrary temp data
+    - a pass can call `nir_shader_clear_pass_flags` to clear it to 0 and use
+      it for any purpose
+  - `uint32_t index` is the seqno of the instr
+    - `nir_index_instrs` reindexes them
+- each instruction has zero or more `nir_def` and zero or more `nir_src`
+  - `nir_def` is def, aka ssa or dst
+    - `nir_instr *parent_instr` is the instr that creates the def
+      - being an ssa, each `nir_def` is created by some instr
+    - `struct list_head uses` is the list of `nir_src` that references this ssa
+      - when `nir_instr_insert` inserts an instr into a block, `add_defs_uses`
+        adds the srcs to the list
+    - `unsigned index` is the seqno of the ssa within the function
+      - when `nir_instr_insert` inserts an instr into a block, `add_defs_uses`
+        sets the seqno
+      - `nir_index_ssa_defs` reindexes them
+    - `uint8_t num_components` is the type width (`[1, NIR_MAX_VEC_COMPONENTS]`)
+    - `uint8_t bit_size` is the type size (1, 8, 16, 32, or 64)
+    - `bool divergent` is whether the ssa is divergent or uniform
+      - `nir_divergence_analysis` sets it
+  - `nir_src` is src
+    - `uintptr_t _parent` is the instr that consumes the src
+      - when `nir_instr_insert` inserts an instr into a block, `add_defs_uses`
+        calls `nir_src_set_parent_instr` to init this
+    - `struct list_head use_link` is managed by `nir_def::uses`
+    - `nir_def *ssa` is the referenced `nir_def`
+      - `nir_src_for_ssa` returns a `nir_src` that refers to the ssa
+- life of an alu instruction
+  - `nir_alu_instr_create` allocs a `nir_alu_instr`
+  - `nir_def_init` inits `alu->def`
+  - `alu->src[]` is initialized using `nir_src_for_ssa`
+  - `nir_instr_insert` inserts the instr to `block->instr_list`
+    - `nir_cursor_before_block` inserts to the head of the list
+    - `nir_cursor_after_block` inserts to the tail of the list
+    - `nir_cursor_before_instr` inserts before another instr in the list
+    - `nir_cursor_after_instr` inserts after another instr in the list
+    - `add_defs_uses` updates `src->_parent`, `src->use_link`, `def->uses`,
+      and `def->index`
+- when a pass replaces `old` by `new`
+  - `nir_instr_insert_before(old, new)` inserts `new` before `old`
+  - `nir_instr_remove(old)` removes `old`
+    - `remove_defs_uses` loops through all old srcs and removes them from uses
+    - the instr is then removed from the list
+  - `nir_def_rewrite_uses(&old->def, &new->def)` calls `nir_src_rewrite` on
+    all uses of `old->def`
+    - if an src uses `old->def`, `nir_src_rewrite` remove the srct from
+      `old->def.uses`, update `src->ssa` to `new->def`, and add src to
+      `new->def.uses`
+  - optional `nir_instr_free` to free the instr now
+- `nir_alu_instr` has type `nir_instr_type_alu`
+  - `nir_op op` is the alu op
+    - `nir_op_mov`, `nir_op_fadd`, etc.
+  - `bool exact` means any pass must ensure bit-for-bit identical val
+  - `nir_def def` is the def
+  - `nir_alu_src src[]` is the alu srcs
+    - the array size is looked up from `nir_op_infos[op]`
+    - `uint8_t swizzle[NIR_MAX_VEC_COMPONENTS]` is the swizzle
 - a `nir_variable` should be derefed and loaded using special `nir_instr`s to
   create a `nir_dest`, before it is usable by normal `nir_instr`
 - `nir_op`
