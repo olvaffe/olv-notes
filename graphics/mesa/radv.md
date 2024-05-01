@@ -324,6 +324,31 @@ Mesa RADV
     - `AMDGPU_INFO_VIS_VRAM_USAGE`, and
     - `AMDGPU_INFO_GTT_USAGE` respectively
 
+## Heaps and Memory Mapping
+
+- radv heaps and memory types are
+  - heap 0: vram minus cpu-accessible-vram
+  - heap 1: cpu-accessible-vram
+  - heap 2: gtt (`radeon_info` calls it gart, but it is gtt)
+  - type 0 is called VRAM: use heap 0
+  - type 1 is called `GTT_WRITE_COMBINE`: use heap 2 w/ coherency w/o cache
+  - type 2 is called `VRAM_CPU_ACCESS`: use heap 1 w/ coherency w/o cache
+  - type 3 is called `GTT_CACHED`: use heap 2 w/ coherency w/ cache
+- `vkAllocateMemory`
+  - userspace is responsbile for managing the VM of GPU for itself
+  - it find a VA in the VM
+  - it allocate a BO with `DRM_IOCTL_AMDGPU_GEM_CREATE`
+  - it maps the BO into the VM with `DRM_IOCTL_AMDGPU_GEM_VA`
+- External Memory Import
+  - getting the BO handle
+    - for prime, it is the standard `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+    - for userptr, it is `DRM_IOCTL_AMDGPU_GEM_USERPTR`
+  - it is then followed by finding a VA for the imported BO and map it into
+    the VM
+- `vkMapMemory`
+  - if userptr, return directly
+  - otherse, `DRM_IOCTL_AMDGPU_GEM_MMAP` followed by an mmap
+
 ## Queues
 
 - `radv_get_physical_device_queue_family_properties` enumerates up to 5 queue

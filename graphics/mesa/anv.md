@@ -528,3 +528,67 @@ Mesa ANV
     - on mtl, it only returns `A0` or `B0`
   - once the stepping is known, `devinfo->workarounds` bitmask is initialized
 - `intel_needs_workaround` checks against `devinfo->workarounds`
+
+## ioctls of a simple vk frame
+
+- acquire the frame image
+  - `anv_AcquireNextImageKHR`
+    - no ioctl
+- make sure the frame is "idle" because we reuse frame objects
+  - `anv_WaitForFences`
+    - `DRM_IOCTL_SYNCOBJ_WAIT`
+  - `anv_ResetFences`
+    - `DRM_IOCTL_SYNCOBJ_RESET`
+- submit the command buffer
+  - `anv_QueueSubmit`
+    - `DRM_IOCTL_I915_GET_RESET_STATS` to make sure GPU is healthy
+    - `DRM_IOCTL_SYNCOBJ_RESET` to reset `pSignalSemaphores` and `fence`
+      - for reasons
+    - `DRM_IOCTL_I915_GEM_EXECBUFFER2`
+- present the frame
+  - `anv_QueuePresentKHR`, which calls `wsi_common_queue_present`
+    - `anv_WaitForFences` because common wsi reuses frame objects
+    - `anv_ResetFences`
+    - `anv_QueueSubmit` which is an empty submit with `pWaitSemaphores` from
+      `VkPresentInfoKHR` and fence from common wsi
+
+## Images
+
+- `isl_drm_modifier_info`
+  - describes relations between `I915_FORMAT_MOD_*`, `ISL_TILING_*`,
+    `ISL_AUX_USAGE_*`
+- `anv_format`
+  - describes relations between `VK_FORMAT_*`, `ISL_FORMAT_` and isl planes
+  - most vk formats have 1 isl plane
+  - `VK_FORMAT_D24_UNORM_S8_UINT` has `ISL_FORMAT_R24_UNORM_X8_TYPELESS` and
+    `ISL_FORMAT_R8_UINT` planes
+  - `VK_FORMAT_*_nPLANE_*` has `n` isl planes
+- `add_all_surfaces_implicit_layout` loops through all aspects
+  - `VK_IMAGE_ASPECT_*` decides the isl plane index and `anv_format_plane`
+  - `VK_IMAGE_ASPECT_*` and `VK_IMAGE_USAGE_*` decide `ISL_SURF_USAGE_*`
+  - `add_primary_surface`
+    - this initializes `isl_surf` for the main surface state(s)
+    - `image_binding_grow` calculates the offset/size of the data in the bo
+  - `add_aux_surface_if_supported`
+  - after this function, we know the surface states of the image and the
+    (offset, size) of each surface which can be used to calculate the memory
+    requirements
+
+## Implicit Fencing
+
+- in anv, an `anv_bo` is allocated by `anv_device_alloc_bo`
+- all VkDeviceMemory are tracked globally
+  - `anv_AllocateMemory` adds them to `dev->memory_objects`
+- in `anv_queue_execbuf_locked`, `anv_execbuf` is initialized from
+  `anv_queue_submit`
+  - `anv_execbuf_add_bo` is used to add an `anv_bo` to `anv_execbuf`
+  - all but wsi bos are added without `EXEC_OBJECT_WRITE`
+  - in `setup_execbuf_for_cmd_buffer`, all internally tracked bos and all
+    VkDeviceMemory bos are added to `anv_execbuf`
+- in kernel `i915_gem_do_execbuffer`,
+  - `eb_lookup_vmas` makes sure each `drm_i915_gem_object` has a `i915_vma`
+  - `eb_relocate_parse` calls `eb_validate_vmas`, which calls
+    `eb_pin_vma` to pin bo pages inside `i915_vma_pin_ww`
+  - `eb_submit` calls `eb_move_to_gpu`, where `i915_vma_move_to_active` calls
+    `dma_resv_add_excl_fence` or `dma_resv_add_shared_fence` depending on
+    whether `EXEC_OBJECT_WRITE` is set

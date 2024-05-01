@@ -339,6 +339,90 @@ DRM i915
   - `aubinator_error_decode` from mesa can be used to decode the dump
     - `intel_error_decode` from igt works too, but has less info
 
+## i915 directory structure
+
+- `display/` is for modesetting
+- `gem/` is for gem ioctls
+- `gt/` is code that talks to the hw (GT, Graphics Technology)
+  - `shaders/` is shader code
+  - `uc/` is microcontrollers inside GT
+    - there are GuC (graphics microcontroller?) and HuC (HEVC
+      microcontroller?)
+    - there is also GSC, graphics system controller, which is a chassis
+      controller for discrete cards
+- `gvt/` is for GVT-g, mediated passthrough based on vfio
+- `pxp/` is protected Xe path for gen12+, to establish hardware protected
+  session and to manage software session
+- `soc/` is for things not really about the gpu
+  - `intel_detect_pch` detects the PCH
+  - `intel_dram_detect` detects dram types and channels
+  - `intel_dram_edram_detect` detects the size of eDRAM
+    - embedded dram for gpu, from haswell to coffee lake
+  - GMCH: Graphics and Memory Controller Hub
+- <https://igor-blue.github.io/2021/02/10/graphics-part1.html>
+
+## Firmwares
+
+- <https://01.org/group/43/downloads/firmware>
+  - GuC is designed to perform graphics workload scheduling on the various
+    graphics parallel engines. In this scheduling model, host software submits
+    work through one of the 256 graphics doorbells and this invokes the
+    scheduling operation on the appropriate graphics engine. Scheduling
+    operations include determining which workload to run next, submitting a
+    workload to a command streamer, pre-empting existing workloads running on
+    an engine, monitoring progress and notifying host software when work is
+    done.
+  - DMC provides additional graphics low-power idle states. It provides
+    capability to save and restore display registers across these low-power
+    states independently from the OS/Kernel.
+  - HuC is designed to offload some of the media functions from the CPU to
+    GPU.  These include but are not limited to bitrate control, header
+    parsing. For example in the case of bitrate control, driver invokes HuC in
+    the beginning of each frame encoding pass, encode bitrate is adjusted by
+    the calculation done by HuC. Both the HuC hardware and the encode hardcode
+    reside in GPU.  Using HuC will save unnecessary CPU-GPU synchronization.
+- `intel_uc_fw_init_early` calls `__uc_fw_auto_select` to select the fw
+  - `INTEL_GUC_FIRMWARE_DEFS` and `INTEL_HUC_FIRMWARE_DEFS`
+  - take `fw_def(TIGERLAKE,    0, guc_mmp(tgl,  70, 1, 1))` for example
+    - `MAKE_GUC_FW_PATH_MMP` expand it to `i915/tgl_guc_70.1.1.bin`
+    - mmp stands for major, minor, and patch
+  - in another example, `fw_def(ALDERLAKE_P,  0, guc_maj(adlp, 70, 5))`,
+    - `MAKE_GUC_FW_PATH_MAJOR` expands it to `i915/adlp_guc_70.bin`
+    - that is, the firmware promises backward compat within the same major
+      version
+  - actually for the same `ALDERLAKE_P`, different kernel versions request
+    different firmware versions
+    - 5.15 asks for 62.0.3
+    - 5.18 asks for 69.0.3
+    - 5.19 asks for 70.1.1
+    - 6.1 asks for 70, then 70.1.1, and then 69.0.3
+
+## Caching
+
+- `i915_gem_object_pin_map` is called when the kernel needs to access the
+  BO from CPU
+  - e.g., cmd parsing, reloc patching
+  - it calls vmap internally to set up a WB or WC mapping
+  - this does not modify the kernel linear map
+- `i915_gem_mmap_ioctl` is called when ther userspace needs to access the BO
+  from CPU
+  - it calls `vm_mmap` to set up a vma for the shmem file, and modifies
+    `vma->vm_page_prot` to use the desired cache mode
+
+## IRQs
+
+- `gen8_de_irq_handler` for display engine related interrupts
+  - `GEN8_PIPE_VBLANK` is generated on vblank, if anyone holds on to vblank
+    with `drm_vblank_get`
+- `gen8_gt_irq_handler` for graphics related interrupts
+  - `GT_RENDER_USER_INTERRUPT` is generated in response to `MI_USER_INTERRUPT` cmd
+  - `GT_CONTEXT_SWITCH_INTERRUPT` is generated on context switch
+    - always on
+    - programmed to be generated at the end of each request
+    - requests are submitted to the HW on this interrupt.
+    - when GPU is idle, it runs the idle context.  A single request causes
+      two context switches: idle->req->idle
+
 ## Old
 
 aperture
