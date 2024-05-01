@@ -881,7 +881,63 @@ Mesa RADV
 - there is a sampler descriptor
   - `radv_init_sampler` initializes the sampler descriptor
 
-## Pipelines
+## Compute Pipelines
+
+- `radv_CreateComputePipelines` calls `radv_compute_pipeline_create` for each
+  pipeline
+  - `radv_pipeline_init` initializes the struct
+  - `radv_compute_pipeline_compile` compiles the shader
+    - `radv_pipeline_stage_init` initializes a local `radv_shader_stage`
+    - `radv_compile_cs` compiles
+  - `radv_compute_pipeline_init` emits the pm4 packets
+- `radv_compile_cs`
+  - `radv_shader_spirv_to_nir` translates spirv to nir, lowers nir, and calls
+    `radv_optimize_nir` to apply common optimizations
+  - `nir_shader_gather_info` reflects the nir shader and initializes the
+    generic `nir->info`
+  - `radv_nir_shader_info_pass` reflects the nir shader and init radv-specific
+    `radv_shader_info`
+  - `radv_declare_shader_args` uses the reflections to initalize
+    `radv_shader_args`
+  - `radv_postprocess_nir` lowers nir again before sending it to the backend
+    compiler
+  - `radv_shader_nir_to_asm` compiles nir to `radv_shader_binary`
+    - `shader_compile` calls either `aco_compile_shader` or
+      `llvm_compile_shader`
+    - `radv_postprocess_binary_config` updates `ac_shader_config` associated
+      with the binary
+  - `radv_shader_create` creates a `radv_shader` to wrap `radv_shader_binary`
+    and upload the binary to a bo
+- `radv_nir_shader_info_pass`
+  - `info->cs.block_size` is initialized from `nir->info.workgroup_size`
+  - `gather_shader_info_cs` initializes `info->wave_size`
+    - it uses `VkPipelineShaderStageRequiredSubgroupSizeCreateInfo` if
+      specified,
+    - it forces to `RADV_SUBGROUP_SIZE` (64) if
+      `VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT` is set or
+      if the shader uses features that require full subgroup
+    - it uses 32 if supported and the local workgroup size is small, or
+    - it uses `pdev->cs_wave_size` which is 64 unless `RADV_PERFTEST=cswave32`
+      is set
+- `radv_shader_create`
+  - `radv_get_max_waves` computes the max waves
+    - this does not compute the wave size (64 or 32), but the max number of
+      waves per simd32 which determines occupancy
+    - `gpu_info->max_waves_per_simd` is 16 on rdna2+ and 20 on rdna
+    - the use of lds affects max waves
+    - the use of sgprs affects max waves before rdna
+      - on rdna2+, there are 16x128 sgprs and a shader can use at most 128
+        sgprs.  It does not affect the result.
+    - the use of vgprs affects max waves
+      - on rdna2+, there are 1024 vgprs and a shader can use up to 512(?)
+        vgprs
+    - `gpu_info->num_simd_per_compute_unit` is 2
+      - `simd_per_workgroup` is doubled on rdna because CU count reported by
+        amdgpu is actually WGP count, and each WGP consists of a pair of CUs
+  - `radv_alloc_shader_memory` suballocates a bo
+  - `radv_shader_upload` memcpys the binary to the bo
+
+## Graphics Pipelines
 
 - `radv_CreateGraphicsPipelines` calls `radv_graphics_pipeline_create` for
   each pipeline
