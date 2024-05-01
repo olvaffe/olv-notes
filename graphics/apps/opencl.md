@@ -478,34 +478,6 @@ OpenCL Apps
   - `strip -g $oclctsdir/*`
   - `tar --zstd -hcf $oclctsdir.tar.zst $oclctsdir`
 
-## clpeak
-
-- `device_info_t`
-  - `maxAllocSize` is `CL_DEVICE_MAX_MEM_ALLOC_SIZE` (e.g., 4GB)
-  - `maxGlobalSize` is `CL_DEVICE_GLOBAL_MEM_SIZE` (e.g., 32GB)
-  - `maxWGSize` is `CL_DEVICE_MAX_WORK_ITEM_SIZES[0]` (e.g., 512)
-  - `numCUs` is `CL_DEVICE_MAX_COMPUTE_UNITS` (e.g., 96)
-  - `globalBWMaxSize` is hardcoded to 512MB
-  - `computeWgsPerCU` is hardcoded to 2048
-- `clPeak::runGlobalBandwidthTest`
-  - `global_bandwidth_v1_local_offset` kernel
-    - it sums `FETCH_PER_WI` values, each `get_local_size` apart, and writes
-      the result
-  - `global_bandwidth_v1_global_offset` kernel
-    - it sums `FETCH_PER_WI` values, each `get_global_size` apart, and writes
-      the result
-    - that's bogus
-- `clPeak::runComputeSP`
-  - `compute_sp_v1` kernel
-    - it computes `mad` with `get_local_id` for 1024 times and writes the
-      result
-  - `globalSize` is scaled by `numCUs` and `maxWGSize`
-- `clPeak::runComputeInteger`
-  - `compute_integer_v1` kernel
-    - it computes `a*b+c` with `get_local_id` for 1024 times and writes the
-      result
-  - `globalSize` is scaled by `numCUs` and `maxWGSize`
-
 ## CTS: `test_conversions`
 
 - `InitCL`, among other things, queries and prints device info

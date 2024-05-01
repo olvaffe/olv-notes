@@ -34,37 +34,6 @@ SPIR-V Apps
   - provides tool (`glslc`) and library (`libshaderc`) to convert GLSL/HLSL
     to SPIR-V
 
-## glslang
-
-- build
-  - `git clone https://github.com/KhronosGroup/glslang`
-  - `./update_glslang_sources.py`
-  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug`
-- `glslangValidator`
-  - `glslangValidator -V -o a.spirv a.frag`
-  - `-x` to output something for inclusion by C source code
-  - `-g` to include debug info
-  - `-H` to print human-readable form of spirv
-- `glslang_input_t`
-  - `glslang_source_t language` is the language
-    - `GLSLANG_SOURCE_GLSL` or `GLSLANG_SOURCE_HLSL`
-  - `glslang_stage_t stage` is the stage
-    - one of `GLSLANG_STAGE_*`
-  - `glslang_client_t client` is the glsl dialect
-    - `GLSLANG_CLIENT_VULKAN` or `GLSLANG_CLIENT_OPENGL`
-  - `glslang_target_client_version_t client_version` is the glsl dialect
-    version
-    - `GLSLANG_TARGET_VULKAN_*` or `GLSLANG_TARGET_OPENGL_*`
-  - `glslang_target_language_t target_language` is the codegen target
-    - only `GLSLANG_TARGET_SPV`
-  - `glslang_target_language_version_t target_language_version` is the codegen
-    target version
-    - one of `GLSLANG_TARGET_SPV_1_*`
-  - `int default_version` and `glslang_profile_t default_profile` are the
-    default version line when none is specified
-    - e.g., when `#version 460 core` is missing
-    - when the client is vulkan, use `100` and `GLSLANG_NO_PROFILE`
-
 ## SPIRV-Reflect
 
 - build
