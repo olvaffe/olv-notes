@@ -251,6 +251,14 @@ Vulkan
 
 - 5.1. Physical Devices
   - `VkPhysicalDevice` is used to query device caps and features
+  - subgroup size props
+    - `minSubgroupSize`, `maxSubgroupSize`, and `subgroupSize`
+      - anv: min 8 or 16 (xe2+), max 32, def 32
+      - nvk: min 32, max 32, def 32
+      - panvk: min 8, max 8, def 8
+      - radv: min 32 (gfx10+) or 64, max 64, def 64
+      - tu: min 64, max 128 or 64 (budget a6xx), def 128 (if supported)
+      - v3dv: min 16, max 16, def 16
 - 5.2. Devices
   - `VkDevice` and the available `VkQueue`'s are created together
 
@@ -499,6 +507,31 @@ Vulkan
     instruction using the pointer, the entry point statically uses the object
   - a shader entry point also statically uses all variables explicitly
     declared in its interface
+- 9.25. Scope
+  - types of scopes
+    - cross device scope
+    - device scope
+    - queue family scope
+    - command scope
+    - primitive scope
+    - shader calle scope
+    - workgroup scope
+    - subgroup scope
+    - quad scope
+    - fragment interlock scope
+    - invocation scope
+  - a shader invocation belongs to mutiple scopes
+    - e.g., when a shader invocation is created by `vkCmdDispatch`, it belongs
+      to
+      - its own invocation scope instance
+      - some subgroup scope instance, because it is a member of some subgroup
+      - some workgroup scope instance, because it is a member of some workgroup
+      - some command scope instance, because it is created by `vkCmdDispatch`
+      - some queue family scope instance, because it is executed on some queue
+        family
+      - some device scope instance, because it is executed on some device
+      - some cross device scope instance, because it is executed on some
+        device which belongs to some device group
 
 ## Chapter 10. Pipelines
 
@@ -556,7 +589,13 @@ Vulkan
         pipeline being created should have LTO applied on the pipeline libraries
         - on the other hand, when the flag is omitted, the pipeline should be
           fast-linked
-- 10.1. Compute Pipelines
+- 10.1. Multiple Pipeline Creation
+  - the create functions can create multiple pipelines at a time
+  - if it fails to create for a pipeline, the object will be set to
+    `VK_NULL_HANDLE` and the create function will return the error
+    - if multiple pipelines fails, it returns the error code of any of the
+      failed creation
+- 10.2. Compute Pipelines
   - `VkComputePipelineCreateInfo` mainly consists of
     - `VkPipelineCreateFlags`
       - `VK_PIPELINE_CREATE_DISABLE_OPTIMIZATION_BIT` disables shader
@@ -576,6 +615,26 @@ Vulkan
         pipeline creation
       - there are more bits that are not in core
     - `VkPipelineShaderStageCreateInfo`
+      - `VK_PIPELINE_SHADER_STAGE_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT`
+        allows varying subgroup sizes
+        - without the flag, all dispatched subgroups will have the fixed size
+          of `subgroupSize`
+        - with the flag, all dispatched subgroups (even from the same dispatch
+          command) will have sizes between `[minSubgroupSize,
+          maxSubgroupSize]`
+        - this is the default for spirv 1.6 and the flag is effectively
+          deprecated
+      - `VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT` requires
+        all invocations in all subgroups to be active
+        - the VUIDs require the X dim of the local workgroup size to be a
+          multiple of any possible subgroup size
+        - this is the default for spirv 1.6 and the flag is effectively
+          deprecated
+          - except when the X dim of the local workgroup size is not a
+            multiple
+      - `VkPipelineShaderStageRequiredSubgroupSizeCreateInfo` requires all
+        subgroups to have the size specified by `requiredSubgroupSize`
+        - this overrides the impl-determined subgroup sizes
     - `VkPipelineLayout` describes the pipeline layout (descriptor set
       layouts, push constants, etc.)
       - the layout is "consumed", in the sense that the pipeline can outlive
@@ -584,7 +643,7 @@ Vulkan
         - shader refers to the descriptor with `set` and `binding`
         - impl uses the layout to, for example, map `set` and `binding` to the
           offset of the descriptor
-- 10.2. Graphics Pipelines
+- 10.3. Graphics Pipelines
   - `VkGraphicsPipelineCreateInfo` is divided into 4 state groups
     - Vertex Input State
       - this state group is required for a complete graphipcs pipeline if the
@@ -625,13 +684,7 @@ Vulkan
     - if dynamic rendering, `VkPipelineRenderingCreateInfo` is provided in
       place of `renderPass`
       - if both are specified, `VkPipelineRenderingCreateInfo` is ignored
-- 10.3. Ray Tracing Pipelines
-- 10.5. Multiple Pipeline Creation
-  - the create functions can create multiple pipelines at a time
-  - if it fails to create for a pipeline, the object will be set to
-    `VK_NULL_HANDLE` and the create function will return the error
-    - if multiple pipelines fails, it returns the error code of any of the
-      failed creation
+- 10.4. Ray Tracing Pipelines
 - 10.7. Pipeline Cache
   - `VkPipelineCache` is for faster pipeline creation
 
@@ -1083,6 +1136,16 @@ Vulkan
 - 15.8. Shader Resource Interface
   - 15.8.3 has a big note on variables sharing the same `DescriptorSet` and
     `Binding`
+- 15.9. Built-In Variables
+  - `NumSubgroups` is the number of subgroups in the local workgroup
+  - `SubgroupId` is the id (`[0, NumSubgroups)`) of the subgroup in the local
+    workgroup
+  - `SubgroupEqMask`, `SubgroupGeMask`, `SubgroupGtMask`, `SubgroupLeMask`,
+    and `SubgroupLtMask` are similar
+    - e.g., `SubgroupGeMask` is `((1 << SubgroupSize) - 1) & ~((1 << SubgroupLocalInvocationId) - 1)`
+  - `SubgroupLocalInvocationId` is the id (`[0, SubgroupSize)`) of the
+    invocation in the subgroup
+  - `SubgroupSize` is the size (number of invocations) of the subgroup
 
 ## Chapter 16. Image Operations
 
