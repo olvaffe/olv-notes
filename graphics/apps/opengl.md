@@ -1,7 +1,7 @@
-libglvnd
-========
+Open GL (ES) Helpers
+====================
 
-## Overview
+## glvnd
 
 - glvnd provides these public headers
   - `/usr/include/{EGL,GL,GLES,GLES2,GLES3,KHR}`
@@ -20,7 +20,7 @@ libglvnd
   - `/usr/lib/pkgconfig/gl.pc`
   - `/usr/lib/pkgconfig/libglvnd.pc`
 
-## `libEGL.so.1`
+## glvnd `libEGL.so.1`
 
 - `libEGL.so.1` exports 44 symbols
   - they are defined by EGL 1.5 (`grep ^EGLAPI egl.h`)
@@ -52,10 +52,60 @@ libglvnd
 - when `eglMakeCurrent` is called,
   - it calls `__glDispatchMakeCurrent` to make `vendor->glDispatch` current
 
-## `libGLX.so.0`
+## glvnd `libGLX.so.0`
 
 - `libGLX.so.0` exports 42 symbols
   - 39 of them are defined by GLX 1.4
   - `glXGetProcAddressARB` for legacy reason
   - `__GLXGL_CORE_FUNCTIONS` and `__glXGLLoadGLXFunction` are exposed to
     `libGL.so.1`
+
+## GLEW
+
+- handling GL function pointers
+  - old
+  - can not be used if GLES-only is desired
+- usage
+  - `glewInit()`
+  - `if (GLEW_ARB_vertex_program) ...`
+- build options
+  - `GLEW_NO_GLU`, do not include glu.h
+  - `GLEW_STATIC`, static library
+  - `GLEW_EGL`, use EGL (`eglGetProcAddress`) instead of GLX
+    (`glXGetProcAddress`)
+- link against libEGL, libGL/libX11, or libOpenGL directly
+
+## epoxy
+
+- handling GL function pointers
+  - newer
+- usage
+  - `#include <epoxy/gl.h>`
+  - `#include <epoxy/glx.h>`
+  - `#include <epoxy/egl.h>`
+- build options
+  - `glx`, enable GLX support
+  - `egl`, enable EGL support
+  - `x11`, control GLX or EGL-X11 support
+- no direct linking
+
+## GLFW
+
+- simple windows, contexts, surfaces, inputs support
+- usage
+  - `glfwInit`
+  - `glfwCreateWindow`
+  - `glfwMakeContextCurrent(win)` to make the internal gl context current
+  - `glfwCreateWindowSurface` to create a `VkSurfaceKHR` from the window
+- build options
+  - `BUILD_SHARED_LIBS`, build shared library
+  - `GLFW_BUILD_X11`, support X11 with libX11 internally
+  - `GLFW_BUILD_WAYLAND`, support wayland
+- no direct linking
+
+## GLM
+
+- OpenGL Mathematics
+- header-only C++ math library
+- same naming convention as GLSL
+- superset of GLSL in functionality
