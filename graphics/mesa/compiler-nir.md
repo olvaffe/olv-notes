@@ -125,6 +125,19 @@ NIR
   - `nir_alu_src src[]` is the alu srcs
     - the array size is looked up from `nir_op_infos[op]`
     - `uint8_t swizzle[NIR_MAX_VEC_COMPONENTS]` is the swizzle
+- `nir_phi_instr` has type `nir_instr_type_phi`
+  - `struct exec_list srcs` is a list of `nir_phi_src`
+    - `nir_phi_instr_add_src` adds an ssa to the list
+  - `nir_def def` is the def
+  - `nir_convert_from_ssa` lowers phis to regs
+    - let's say we have `%3 = phi b1: %1, b2: %2`
+    - the pass declares a reg, `%4 = @decl_reg (...)`
+    - at the end of `b1`, it stores `%1` to the reg
+      - `@store_reg (%1, %4) (...)`
+    - at the end of `b2`, it stores `%2` to the reg
+      - `@store_reg (%2, %4) (...)`
+    - then the phi can be replaced by a reg load
+      - `%5 = @load_reg (%4) (...)`
 - a `nir_variable` should be derefed and loaded using special `nir_instr`s to
   create a `nir_dest`, before it is usable by normal `nir_instr`
 - `nir_op`
