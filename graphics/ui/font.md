@@ -33,20 +33,9 @@ Font
   - on external displays, 11pt is better
     - 11pt is more comfortable
     - the viewing distance is also larger
-- common resolutions
-  - tv standards
-    - HD, 1280x720
-    - FHD, 1920x1080
-    - UHD 4K, 3840x2160
-    - UHD 8K, 7680x4320
-  - pc standards
-    - VGA, 640x480
-    - SVGA, 800x600
-    - XGA, 1024x768
-    - SXGA, 1280x1024
-    - UXGA, 1600x1200
 - common dpis
-  - 14" FHD laptops or 27" 4K external displays are ~160dpi
+  - 14" FHD (1920x1080) laptops or 27" 4K (3840x2160) external displays are
+    ~160dpi
   - 14" 4K laptops are ~320dpi
   - android definitions
     - `mdpi` is 160 and is the baseline

@@ -132,4 +132,19 @@ Display
   - 2022
   - SBTM (Source-Based Tone Mapping)
 
+## Common Resolutions
+
+- tv standards
+  - HD, 1280x720
+  - FHD, 1920x1080
+  - QHD, 2560x1440
+  - 4K UHD, 3840x2160
+  - 8K UHD, 7680x4320
+- pc standards
+  - VGA, 640x480
+  - SVGA, 800x600
+  - XGA, 1024x768
+  - SXGA, 1280x1024
+  - UXGA, 1600x1200
+
 ## Planes
