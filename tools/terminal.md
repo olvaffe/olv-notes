@@ -11,66 +11,83 @@ Terminal
 - ncurses
   - free software re-implements terminfo and curses
 
-## Life of a Key Press
+## Character Sets
 
-- a terminal emulator allocates a pty and starts a shell whose
-  stdin/stdout/stderr are connected to the pty
-- when a key is pressed, the terminal emulator receives the event from the
-  display server.  It feeds the key into the pty
-- the pty sits between the emulator and the shell
-  - it massages the data travel through it
-  - for example, when Ctrl-C is pressed, the terminal feeds ascii code 0x3
-    into pty; pty sends SIGINT to the foreground process (which shell sets via
-    `tcsetpgrp`)
-- experiment
-  - open a terminal and
-
-    $ tty
-    /dev/pts/0
-    $ stty -F /dev/pts/0
-    speed 38400 baud; line = 0;
-    -brkint -imaxbel iutf8
-  - open a second terminal and
-
-    $ stty -F /dev/pts/0
-    speed 38400 baud; line = 0;
-    lnext = <undef>; discard = <undef>; min = 1; time = 0;
-    -brkint -icrnl -imaxbel iutf8
-    -icanon -echo
-  - bash uses readline for line editing
-    - that puts the tty into the raw mode to handle ascii codes as keys are
-      pressed
-  - when bash starts a program, it restores the tty back to cooked mode
-    - the tty driver handles echoing and line editing
-    - the program sees ascii codes only when Enter is pressed
-
-## PTY
-
-- TTY stands for teletype terminal
-- PTY stands for pseudo TTY, or pseudoterminal
-- `man pty`
-  - `posix_openpt` returns an fd that refers to a master
-    - on linux, this `open("/dev/ptmx")`
-    - previously, this opens an unused `/dev/ptyp*`
-  - `grantpt` changes the owner of the slave device to the real uid of the
-    caller
-    - on linux, this is nop.  `/dev/pts` is a `devpts` pseudo fs.  Slave
-      devices are created automatically under `devpts` when the master devices
-      are opened
-    - previously, this invokes an suid program to change the owner of
-      `/dev/ttyp*`
-  - `unlockpt` allows the slave device to be opened
-    - on linux, this is `TIOCSPTLCK`
-  - `ptsname` returns the path to the slave device
-- the terminal emulator holds on to the master fd and forks a child.  The
-  child opens the slave device as stdin/stdout/stderr, and execs the shell
-  - writes to the master (by the terminal emulator) are received by the slave
-    (by the shell)
-  - writes to the slave (by the shell) are received by the master (by the
-    terminal emulator)
+- ASCII
+  - <https://en.wikipedia.org/wiki/ASCII>
+  - 7-bit
+  - developed by ANSI in 1960s
+    - founded in 1918 as AESC (American Engineering Standards Committee)
+    - reorganized in 1928 to ASA (American Standards Association)
+    - reorganized in 1966 to USASI (United States of America Standards Institute)
+    - reorganized in 1969 to ANSI (American National Standards Institute)
+  - character groups
+    - 0x00..0x1f: 32 control codes
+      - some remain but most are unused
+    - 0x20..0x7e: 95 printable characters
+      - symbols
+      - digits (0 is 0x30)
+      - symbols
+      - uppercase letters (A is 0x41)
+      - symbols
+      - lowercase letters (a is 0x61)
+      - symbols
+    - 0x7f: DEL control code
+- ISO/IEC 646
+  - <https://en.wikipedia.org/wiki/ISO/IEC_646>
+  - 7-bit
+  - ISO 646:1991 IRV (International Reference Version) is identical to ASCII
+  - there are national variants where symbols can vary
+    - in JP variant, `\` is replaced by `¥`
+    - in GB variant, `#` is replaced by `£`
+- ISO/IEC 8859
+  - <https://en.wikipedia.org/wiki/ISO/IEC_8859>
+  - 8-bit
+  - there are 16 parts (variants)
+  - ISO/IEC 8859-1
+    - this is part 1 and is the most common one
+    - 0x00..0x1f: 32 undefined codes
+    - 0x20..0x7e: 95 printable characters
+      - identical to ASCII
+    - 0x7f..0x9f: 33 undefined codes
+    - 0xa0..0xff: 96 printable characters
+      - symbols and other latin letters
+- ISO/IEC 10646
+  - <https://en.wikipedia.org/wiki/Universal_Coded_Character_Set>
+  - similar to ISO 8859, it only defines the code points
+    - the code points are the same as unicode
+    - unicode defines rules (normalization, composition, collation,
+      directionality) addtionally
+  - UCS, Universal Coded Character Set, defines 2^31 code points
+    - 7-bit group
+    - 8-bit plane
+    - 8-bit row
+    - 8-bit cell
+  - BMP, Basic Multilingual Plane, has group 0 and plane 0
+  - ISO 8859-1 has group 0, plane 0, and row 0
+  - UTF-32 (UCS-4) encoding
+    - each code point takes 4 bytes
+    - big endian with group at the top and cell at the bottom
+  - UTF-16 (UCS-2) encoding
+    - each code point takes 2 bytes
+    - there is a BOM character to indicate the endianness
+    - direct mapping for code points in BMP
+    - surrogate characters are needed for other planes
+  - UTF-8 encoding
+    - variable length
+      - 1 byte can encode 7 bits
+      - N bytes can encode `(8 - N - 1) + 6 * (N - 1)` bits, when N > 1
+    - 1 byte to cover ASCII
+    - 2 bytes to cover ISO 8859-1
+    - 3 bytes to cover BMP
+    - 6 bytes to cover UCS
 
 ## ANSI Escape Code
 
+- ISO/IEC 6429
+  - <https://en.wikipedia.org/wiki/ANSI_escape_code>
+  - ISO 6429 defines C0 (0x00..0x1f) and C1 (0x7f..0x9f) control codes using
+    the undefined regions of ISO 8859-1
 - it allows a program to send an in-band command to the terminal
 - C0 control codes
   - `echo -ne`
@@ -113,3 +130,36 @@ Terminal
       - 49: default background color
       - 90-97: bright foreground colors
       - 100-107: bright background colors
+
+## Life of a Key Press
+
+- a terminal emulator allocates a pty and starts a shell whose
+  stdin/stdout/stderr are connected to the pty
+- when a key is pressed, the terminal emulator receives the event from the
+  display server.  It feeds the key into the pty
+- the pty sits between the emulator and the shell
+  - it massages the data travel through it
+  - for example, when Ctrl-C is pressed, the terminal feeds ascii code 0x3
+    into pty; pty sends SIGINT to the foreground process (which shell sets via
+    `tcsetpgrp`)
+- experiment
+  - open a terminal and
+
+    $ tty
+    /dev/pts/0
+    $ stty -F /dev/pts/0
+    speed 38400 baud; line = 0;
+    -brkint -imaxbel iutf8
+  - open a second terminal and
+
+    $ stty -F /dev/pts/0
+    speed 38400 baud; line = 0;
+    lnext = <undef>; discard = <undef>; min = 1; time = 0;
+    -brkint -icrnl -imaxbel iutf8
+    -icanon -echo
+  - bash uses readline for line editing
+    - that puts the tty into the raw mode to handle ascii codes as keys are
+      pressed
+  - when bash starts a program, it restores the tty back to cooked mode
+    - the tty driver handles echoing and line editing
+    - the program sees ascii codes only when Enter is pressed
