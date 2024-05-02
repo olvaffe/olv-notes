@@ -11,6 +11,17 @@ systemd-logind
   - it handles power/lid keys
   - and more
 
+## `pam_systemd`
+
+- `man pam_systemd`
+  - `XDG_SESSION_ID`
+  - `XDG_RUNTIME_DIR`
+  - `XDG_SESSION_TYPE`
+  - `XDG_SESSION_CLASS`
+  - `XDG_SESSION_DESKTOP`
+  - `XDG_SEAT`
+  - `XDG_VTNR`
+
 ## `loginctl`
 
 - show/control sessions, users, and seats
