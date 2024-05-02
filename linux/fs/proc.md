@@ -108,6 +108,18 @@ Kernel proc
 - `DirectMap2M`
 - `DirectMap1G`
 
+## `/proc/<pid>/environ`
+
+- `proc_environ_operations` is the `file_operations`
+- `environ_open` looks up and saves the `mm_struct` of the `task_struct`
+- `environ_read` reads `mm->env_start` and `mm->env_end` from the mm
+  - this reads back the string pool that was initialized from `envp`
+    provided to `execve`
+  - glibc `environ` is an array of pointers to the string pool initially
+  - glibc `setenv` updates `environ[i]` to point to a malloc'ed string and the string pool is not updated
+  - while `getenv` returns `environ[i]`, which points to the new value,
+    `/proc/<pid>/environ` has the original environ
+
 ## `/proc/<pid>/status`
 
 - `/proc/<pid>/status`

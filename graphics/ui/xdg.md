@@ -35,6 +35,8 @@ XDG Specs
     found in `OnlyShowIn` then the desktop file is shown. If an entry is found
     in `NotShowIn` then the desktop file is not shown. If none of the strings
     match then the default action is taken (as above).
+  - `$XDG_CURRENT_DESKTOP` should have been set by the login manager,
+    according to the value of the `DesktopNames` found in the session file.
 
 ## Desktop Menu Specification
 

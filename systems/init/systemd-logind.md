@@ -14,13 +14,23 @@ systemd-logind
 ## `pam_systemd`
 
 - `man pam_systemd`
-  - `XDG_SESSION_ID`
-  - `XDG_RUNTIME_DIR`
-  - `XDG_SESSION_TYPE`
-  - `XDG_SESSION_CLASS`
-  - `XDG_SESSION_DESKTOP`
-  - `XDG_SEAT`
-  - `XDG_VTNR`
+- `pam_sm_open_session` gets/updates various env vars
+  - it sends a `org.freedesktop.login1.Manager.CreateSession` to logind to get
+    - `session_id`, which is set to `XDG_SESSION_ID`
+    - `runtime_path`, which is set to `XDG_RUNTIME_DIR`
+    - `seat_id`, which is set to `XDG_SEAT`
+    - `vtnr`, which is set to `XDG_VTNR`
+  - options
+    - `desktop=` option, if specified, is set to `XDG_SESSION_DESKTOP`
+      - no default and is normally unset
+    - `class=` option, if specified, is set to `XDG_SESSION_CLASS`
+      - auto-detects by default and is normally `user`
+    - `type=` option, if specified, is set to `XDG_SESSION_TYPE`
+      - auto-detects by default and is normally `tty`
+  - other than `XDG_RUNTIME_DIR`, these are not standardized and may or may
+    not have any effect
+    - specifically, use the standard `XDG_CURRENT_DESKTOP` instead of
+      `XDG_SESSION_DESKTOP`
 
 ## `loginctl`
 
