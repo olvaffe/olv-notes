@@ -4,31 +4,61 @@ C
 ## C23
 
 - <https://en.cppreference.com/w/c/23>
-- new library features
-  - `stdbit.h`
-    - `__STDC_ENDIAN_NATIVE__`
-    - `stdc_count_ones`
-    - `stdc_first_leading_one`
-    - `stdc_first_trailing_one`
-    - `stdc_has_single_bit`
-    - `stdc_bit_ceil`
-    - many more
-  - `string.h`
-    - `strdup` and `strndup`
-- single-argument `_Static_assert`
-- C++-style function attributes: `nodiscard`, `maybe_unused`, `deprecated`,
-  and `fallthrough`
-- two's complement sign representation is required
-- labels before declarations and at the end of compound statements
-- unnamed parameters in function definitions
-- binary liberals: 0b10101101 and `%b`
-- `#elifdef` and `#elifndef`
-- digit separators: 0xFF'FF'FF'FF
-- `typeof`
-- zero initialization with `{}`
-- `alignas`, `alignof`, `bool`, `true`, `false`, `static_assert`,
-  `thread_local` become keywords
-- no `__VA_OPT__`??
+- <https://en.wikipedia.org/wiki/C23_(C_standard_revision)>
+- `constexpr`
+- `nullptr`
+- `static_assert` with one param
+- `typeof`, `typeof_unqual`, and `auto`
+- `enum foo : int {...}`
+- `_BitInt(N)`
+- empty initializer `{}`
+- digit separator `'`
+- binary integer constants such as `0b100101` and `%b`
+- many macros become keywords
+  - `bool`, `true` and `false`
+  - `alignof` and `alignas`
+  - `static_assert`
+  - `thread_local`
+- unnamed function params
+- signed integers must be represented by two's complement
+- `__STDC_IEC_559__` is deprecated
+- pragmas
+  - `#pragma STDC FENV_ROUND arg`
+  - `#pragma STDC FENV_DEC_ROUND arg`
+- attributes
+  - `[[deprecated]]`
+  - `[[fallthrough]]`
+  - `[[maybe_unused]]`
+  - `[[nodiscard]]`
+  - `[[noreturn]]`, replacing `noreturn` macro
+  - `[[reproducible]]` and `[[unsequenced]]`
+- preprocessor directives
+  - `#elifdef` and `#elifndef`
+  - `#warning`
+  - `#embed` includes a binary file
+  - `__has_c_attribute`, `__has_include`, and `__has_embed`
+  - `__VA_OPT__`
+- `stdarg.h`
+  - `va_start`, with one param
+- `stdbit.h`
+  - `__STDC_ENDIAN_NATIVE__`
+  - `stdc_count_ones`
+  - `stdc_first_leading_one`
+  - `stdc_first_trailing_one`
+  - `stdc_has_single_bit`
+  - `stdc_bit_ceil`
+  - many more
+- `stdlib.h`
+  - `strfromf`, etc.
+  - `memalignment`
+  - `realloc` with size 0 is undefined
+- `string.h`
+  - `memset_explicit`
+  - `memccpy`
+  - `strdup` and `strndup`
+- `time.h`
+  - `timespec_getres`
+  - `localtime_r`
 
 ## C17
 
@@ -92,13 +122,15 @@ C
 - integer division (e.g., `4 / 3` or `-4 / 3`) truncates toward zero
 - variable-length arrays, VLA
 - optional IEEE 754 float guarded by `__STDC_IEC_559__`
+- `__STDC_IEC_559__` is deprecated
 - pragmas
   - `#pragma STDC FENV_ACCESS arg`
   - `#pragma STDC FP_CONTRACT arg`
   - `#pragma STDC CX_LIMITED_RANGE arg`
 - variadic macros
-  - `#define log(...) fprintf(stderr, __VA_ARGS__)`
-  - `log()` expands to `fprintf(stderr, )` and does not compile though
+  - `#define log(format, ...) fprintf(stderr, format, __VA_ARGS__)`
+  - `log("foo")` expands to `fprintf(stderr, "foo", )` and does not compile
+    though
 - `__func__`
   - there are some that exist before c99
     - `__FILE__`
