@@ -193,6 +193,111 @@ C
   - `wchar.h`	Extended multibyte and wide character utilities
   - `wctype.h`	Functions to determine the type contained in wide character data
 
+## POSIX Headers
+
+- <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/>
+- extensions to the standard headers
+  - they are marked as `[CX]`
+  - `assert.h`
+  - `complex.h`
+  - `ctype.h`
+    - locale-aware `_l` variants
+  - `errno.h`
+  - `fenv.h`
+  - `float.h`
+  - `inttypes.h`
+  - `iso646.h`
+  - `limits.h`
+    - `CHAR_BIT` must be 8
+    - `WORD_BIT` and `LONG_BIT` must be at least 32
+  - `locale.h`
+  - `setjmp.h`
+  - `math.h`
+  - `signal.h`
+    - `kill`, `sigaction`, `pthread_sigmask`, etc.
+  - `stdarg.h`
+  - `stdbool.h`
+  - `stddef.h`
+  - `stdint.h`
+    - `int*_t` are required
+  - `stdio.h`
+    - `fdopen`, `fileno`, `popen`, etc.
+  - `stdlib.h`
+    - `mkdtemp`, `setenv`, etc.
+  - `string.h`
+  - `tgmath.h`
+  - `time.h`
+    - `clock_gettime`, `clock_nanosleep`, etc.
+  - `wchar.h`
+  - `wctype.h`
+- commonly used
+  - `arpa/inet.h` definitions for internet operations
+  - `dirent.h` format of directory entries
+  - `dlfcn.h` dynamic linking
+  - `fcntl.h` file control options
+  - `grp.h` group structure
+  - `libgen.h` definitions for pattern matching functions
+  - `net/if.h` sockets local interfaces
+  - `netdb.h` definitions for network database operations
+  - `netinet/in.h` Internet address family
+  - `netinet/tcp.h` definitions for the Internet Transmission Control Protocol (TCP)
+  - `poll.h` definitions for the poll() function
+  - `pthread.h` threads
+  - `pwd.h` password structure
+  - `regex.h` regular expression matching types
+  - `sched.h` execution scheduling
+  - `strings.h` string operations
+  - `sys/mman.h` memory management declarations
+  - `sys/resource.h` definitions for XSI resource operations
+  - `sys/socket.h` main sockets header
+  - `sys/stat.h` data returned by the stat() function
+  - `sys/types.h` data types
+  - `sys/uio.h` definitions for vector I/O operations
+  - `sys/un.h` definitions for UNIX domain sockets
+  - `sys/utsname.h` system name structure
+  - `sys/wait.h` declarations for waiting
+  - `syslog.h` definitions for system error logging
+  - `termios.h` define values for termios
+  - `unistd.h` standard symbolic constants and types
+    - `access`, `chown`, etc.
+    - `close`, `dup`, `dup2`, `pipe`, etc.
+    - `ftruncate`, `lseek`, `read`, `write`, etc.
+    - `execve`, `fork`, etc.
+    - `getuid`, `getgid`, `seteuid`, `setegid`, etc.
+    - `isatty`, `ttyname`, etc.
+- less used
+  - `aio.h` asynchronous input and output
+  - `cpio.h` cpio archive values
+  - `fmtmsg.h` message display structures
+  - `fnmatch.h` filename-matching types
+  - `ftw.h` file tree traversal
+  - `glob.h` pathname pattern-matching types
+  - `iconv.h` codeset conversion facility
+  - `langinfo.h` language information constants
+  - `monetary.h` monetary types
+  - `mqueue.h` message queues
+  - `ndbm.h` definitions for ndbm database operations
+  - `nl_types.h` data types
+  - `search.h` search tables
+  - `semaphore.h` semaphores
+  - `spawn.h` spawn
+  - `sys/ipc.h` XSI interprocess communication access structure
+  - `sys/msg.h` XSI message queue structures
+  - `sys/select.h` select types
+  - `sys/sem.h` XSI semaphore facility
+  - `sys/shm.h` XSI shared memory facility
+  - `sys/statvfs.h` VFS File System information structure
+  - `sys/time.h` time types
+  - `sys/times.h` file access and modification times structure
+  - `tar.h` extended tar definitions
+  - `utmpx.h` user accounting database definitions
+  - `wordexp.h` word-expansion types
+- obsoleted
+  - `stropts.h` STREAMS interface
+  - `trace.h` tracing
+  - `ulimit.h` ulimit commands
+  - `utime.h` access and modification times structure
+
 ## Integer Promotion
 
 - Every integer type has an integer conversion rank defined as follows:
