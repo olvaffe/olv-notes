@@ -187,7 +187,9 @@ glibc
 
 ## POSIX Headers
 
+- <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition/>
 - these C standard headers are extended
+  - they are marked as `[CX]`
   - `assert.h`
   - `complex.h`
   - `ctype.h`
@@ -197,19 +199,27 @@ glibc
   - `inttypes.h`
   - `iso646.h`
   - `limits.h`
+    - `CHAR_BIT` must be 8
+    - `WORD_BIT` and `LONG_BIT` must be at least 32
   - `locale.h`
+    - locale-aware `_l` variants
   - `math.h`
   - `setjmp.h`
   - `signal.h`
+    - `kill`, `sigaction`, `pthread_sigmask`, etc.
   - `stdarg.h`
   - `stdbool.h`
   - `stddef.h`
   - `stdint.h`
+    - `int*_t` are required
   - `stdio.h`
+    - `fdopen`, `fileno`, `popen`, etc.
   - `stdlib.h`
+    - `mkdtemp`, `setenv`, etc.
   - `string.h`
   - `tgmath.h`
   - `time.h`
+    - `clock_gettime`, `clock_nanosleep`, etc.
   - `wchar.h`
   - `wctype.h`
 - these are mandatory headers
@@ -250,6 +260,12 @@ glibc
   - `tar.h`, extended tar definitions
   - `termios.h`, define values for termios
   - `unistd.h`, standard symbolic constants and types
+    - `access`, `chown`, etc.
+    - `close`, `dup`, `dup2`, `pipe`, etc.
+    - `ftruncate`, `lseek`, `read`, `write`, etc.
+    - `execve`, `fork`, etc.
+    - `getuid`, `getgid`, `seteuid`, `setegid`, etc.
+    - `isatty`, `ttyname`, etc.
   - `wordexp.h`, word-expansion types
 - these are xsi headers
   - `fmtmsg.h`, message display structures
