@@ -48,6 +48,8 @@ C
   - `stdc_has_single_bit`
   - `stdc_bit_ceil`
   - many more
+- `stddef.h`
+  - `unreachable`
 - `stdlib.h`
   - `strfromf`, etc.
   - `memalignment`
