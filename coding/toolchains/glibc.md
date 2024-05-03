@@ -425,6 +425,65 @@ glibc
   - `ucontext.h`, get or set the user context
   - `utmp.h`, access utmp and wtmp
 
+## GCC Headers
+
+- standard headers
+  - some standard headers are provided by gcc rather than glibc
+  - `float.h`
+  - `iso646.h`
+  - `limits.h`
+    - this is what apps include; there is `#include_next <limits.h>` to
+      include `/usr/include/limits.h` provided by glibc
+  - `stdalign.h`
+  - `stdarg.h`
+  - `stdatomic.h`
+  - `stdbool.h`
+  - `stddef.h`
+  - `stdfix.h`, fixed-point arithmetic
+    - <https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1169.pdf>
+  - `stdint.h`
+    - this is what apps include; but it normally just
+      `#include_next <stdint.h>` to include `/usr/include/stdint.h` provided
+      by glibc
+  - `stdnoreturn.h`
+- gcc headers
+  - `backtrace.h`, libbacktrace
+  - `cpuid.h`, cpuid
+  - `gcov.h`, code coverage
+  - `ISO_Fortran_binding.h`, fortran binding
+  - `mm_malloc.h`, non-standard aligned malloc
+  - `omp.h`, openmp
+  - `openacc.h`, openacc
+  - `quadmath.h`, libquadmath
+  - `unwind.h`, `libgcc_s` unwinder
+- intrinsics
+  - `immintrin.h`, all intel intrinsics
+  - `x86gprintrin.h`, all gpr intrinsics
+  - `x86intrin.h`, all x86 (intel and amd) intrinsics
+  - gpr intrinsics
+    - `popcntintrin.h`, POPCNT
+    - `bmiintrin.h`, BMI
+    - `bmi2intrin.h`, BMI2
+    - many more
+  - simd intrinsics
+    - `mmintrin.h`, MMX
+    - `mm3dnow.h`, 3DNow!
+    - `xmmintrin.h`, SSE
+    - `emmintrin.h`, SSE2
+    - `pmmintrin.h`, SSE3 (Prescott)
+    - `tmmintrin.h`, SSSE3 (Tejas)
+    - `smmintrin.h`, SSE4.1
+    - `nmmintrin.h`, SSE4.2 (Nehalem)
+    - `ammintrin.h`, SSE4a
+    - `wmmintrin.h`, AES (Westmere)
+    - `avxintrin.h`, AVX
+    - `f16cintrin.h`, F16C
+    - `xopintrin.h`, XOP
+    - `fma4intrin.h`, FMA4
+    - `fmaintrin.h`, FMA
+    - `avx2intrin.h`, AVX2
+    - `avx512*intrin.h`/`gfniintrin.h`/`vaesintrin.h`/`vpclmulqdqintrin.h`, AVX-512
+
 ## Random
 
 - PLT
