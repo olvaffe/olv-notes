@@ -4,6 +4,17 @@ C
 ## C23
 
 - <https://en.cppreference.com/w/c/23>
+- new library features
+  - `stdbit.h`
+    - `__STDC_ENDIAN_NATIVE__`
+    - `stdc_count_ones`
+    - `stdc_first_leading_one`
+    - `stdc_first_trailing_one`
+    - `stdc_has_single_bit`
+    - `stdc_bit_ceil`
+    - many more
+  - `string.h`
+    - `strdup` and `strndup`
 - single-argument `_Static_assert`
 - C++-style function attributes: `nodiscard`, `maybe_unused`, `deprecated`,
   and `fallthrough`
@@ -21,23 +32,45 @@ C
 
 ## C17
 
-- a bug-fix release
-- `ATOMIC_VAR_INIT` is not needed and obsoleted
+- <https://en.cppreference.com/w/c/17>
+- <https://en.wikipedia.org/wiki/C17_(C_standard_revision)>
+- `ATOMIC_VAR_INIT` was never needed and is obsoleted
 
 ## C11
 
-- `stdalign.h`: `aligned_alloc`, `alignof`, etc.
-- `stdnoreturn.h`: `noreturn` function specifier to disable some warnings
+- <https://en.cppreference.com/w/c/11>
+- <https://en.wikipedia.org/wiki/C11_(C_standard_revision)>
 - `_Generic`
-- `threads.h`, optional
-- `stdatomic.h`, optional
-- anonymous structures and unions
-- `assert.h`: `static_assert`
-- `time.h`: `timespec`
-- VLA becomes optional
+- anonymous structs and unions
+- VLA becomes optional and guarded by `!__STDC_NO_VLA__`
+- `assert.h`
+  - `static_assert`, with two params
+- `errno.h`
+  - `errno` is `thread_local`
+    - posix guarantees this already
+- `stdalign.h`
+  - `alignof` and `alignas`
+- `stdatomic.h`
+  - optional and guarded by `!__STDC_NO_ATOMICS__`
+  - `atomic_*` types and functions
+- `stdlib.h`
+  - `aligned_malloc`
+  - `quick_exit`
+- `stdnoreturn.h`
+  - `noreturn`
+- `threads.h`
+  - optional and guarded by `!__STDC_NO_THREADS__`
+  - `cnd_*`
+  - `mtx_*`
+  - `thrd_*`
+  - `thread_local`
+  - `tss_*`
+- `time.h`
+  - `timespec_get`
 
 ## C99
 
+- <https://en.cppreference.com/w/c/99>
 - <https://en.wikipedia.org/wiki/C99>
 - `inline`
 - mixed declarations and code
