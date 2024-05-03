@@ -72,36 +72,54 @@ C
 
 - <https://en.cppreference.com/w/c/99>
 - <https://en.wikipedia.org/wiki/C99>
+- `for (int i = 0; ...)`
+- `restrict`
 - `inline`
-- mixed declarations and code
-- `long long int`, `_Bool`
-- variable-length arrays, VLA
-- flexible array members
-  - array with no size (`[]`) as the last member
+- `long long`
+- `void foo(int array[static 10])`
 - `//`-style comments
-- `snprintf`
-- `stdbool.h` `stdint.h`, `inttypes.h`
-- improved support for IEEE floating point
-- designated initializers
+- mix of declarations and statements
+- trailing comma in enumerator-list
+- improved initializer list
+  - non-constant initializers
+  - designated initializers
 - compound literals
   - 3 or 3.14 are called integer constants; unchangeable.
   - literals are changeable in C99; such as compound literals here
   - literals are unchangeable in C++ spec
+- flexible array members
+  - array with no size (`[]`) as the last member
+- integer division (e.g., `4 / 3` or `-4 / 3`) truncates toward zero
+- variable-length arrays, VLA
+- optional IEEE 754 float guarded by `__STDC_IEC_559__`
+- pragmas
+  - `#pragma STDC FENV_ACCESS arg`
+  - `#pragma STDC FP_CONTRACT arg`
+  - `#pragma STDC CX_LIMITED_RANGE arg`
 - variadic macros
-- `restrict` qual
-- `void foo(int array[static 10])`
+  - `#define log(...) fprintf(stderr, __VA_ARGS__)`
+  - `log()` expands to `fprintf(stderr, )` and does not compile though
 - `__func__`
   - there are some that exist before c99
     - `__FILE__`
     - `__LINE__`
     - `__DATE__`
     - `__TIME__`
-- `_Pragma(arg)` operator
-  - there is already `#pragma` directive before c99
-  - c99 also standardizes 3 pragmas
-    - `#pragma STDC FENV_ACCESS arg`
-    - `#pragma STDC FP_CONTRACT arg`
-    - `#pragma STDC CX_LIMITED_RANGE arg`
+- `ctype.h`
+  - `isblank`
+- `inttypes.h`
+  - `PRId32`, etc.
+- `stdarg.h`
+  - `va_copy`
+- `stdbool.h`
+  - `bool`, `true`, and `false`
+- `stdint.h`
+  - `int32_t`, etc.
+  - `intptr_t`
+- `stdio.h`
+  - `snprintf`
+- `stdlib.h`
+  - `_Exit` exits immediately with no cleanup
 
 ## Standard Library Headers
 
