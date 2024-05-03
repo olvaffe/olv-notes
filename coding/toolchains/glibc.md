@@ -291,6 +291,140 @@ glibc
   - `ulimit.h`, ulimit commands
   - `utime.h`, access and modification times structure
 
+## GNU/Linux Headers
+
+- extensions to standard headers
+- extensions to posix headers
+- new headers
+  - `aliases.h`, aliases db of nsswitch
+  - `alloca.h`, alloca
+  - `a.out.h`, a.out format
+  - `argp.h`, arg parser
+  - `argz.h`, argz vectors are vectors of strings in a contiguous block of memory
+  - `ar.h`. archive
+  - `arpa/ftp.h`
+  - `arpa/nameser.h`, name server
+  - `arpa/telnet.h`
+  - `arpa/tftp.h`
+  - `byteswap.h`, `bswap*`
+  - `elf.h`, elf format
+  - `endian.h`, endianness
+  - `envz.h`, extension to argz
+  - `err.h`, formatted error messages
+  - `error.h`, glibc error reporting functions
+  - `execinfo.h`, backtrace
+  - `fpu_control.h`, x87 fpu control
+  - `fstab.h`, `/etc/fstab` parser
+  - `fts.h`, file hierarchy traversal
+  - `getopt.h`, `getopt_long`
+  - `gshadow.h`, get shadow group file entry
+  - `ieee754.h`, `ieee754_float`
+  - `ifaddrs.h`, get interface addresses
+  - `libintl.h`, i18n
+  - `link.h`, auditing API for the dynamic linker
+  - `malloc.h`, more malloc-related functions
+  - `mcheck.h`, heap consistency checking
+  - `mntent.h`, get filesystem descriptor file entry
+  - `netash/ash.h`
+  - `netatalk/at.h`
+  - `netax25/ax25.h`
+  - `neteconet/ec.h`
+  - `net/ethernet.h`
+  - `net/if_arp.h`
+  - `net/if_packet.h`
+  - `net/if_ppp.h`
+  - `net/if_shaper.h`
+  - `net/if_slip.h`
+  - `netinet/ether.h`
+  - `netinet/icmp6.h`
+  - `netinet/if_ether.h`
+  - `netinet/if_fddi.h`
+  - `netinet/if_tr.h`
+  - `netinet/igmp.h`
+  - `netinet/in_systm.h`
+  - `netinet/ip6.h`
+  - `netinet/ip.h`
+  - `netinet/ip_icmp.h`
+  - `netinet/udp.h`
+  - `netipx/ipx.h`
+  - `netiucv/iucv.h`
+  - `netpacket/packet.h`
+  - `net/ppp-comp.h`
+  - `netrom/netrom.h`
+  - `netrose/rose.h`
+  - `net/route.h`
+  - `nfs/nfs.h`
+  - `obstack.h`, An obstack is a pool of memory containing a stack of objects
+  - `paths.h`, defines for common paths
+  - `printf.h`, define custom behavior for printf-like functions
+  - `proc_service.h`, interfaces in `libthread_db` that target process memory access
+  - `protocols/routed.h`
+  - `protocols/rwhod.h`
+  - `protocols/talkd.h`
+  - `protocols/timed.h`
+  - `pty.h`, pseudoterminal interfaces
+  - `resolv.h`, resolver routines
+  - `rpc/netdb.h`, get RPC entry
+  - `scsi/scsi.h`
+  - `scsi/scsi_ioctl.h`
+  - `scsi/sg.h`
+  - `shadow.h`, get shadow password file entry
+  - `stab.h`, stabs debugging data format
+  - `stdio_ext.h`, interfaces to stdio FILE structure
+  - `sysexits.h`, exit codes
+  - `sys/acct.h`, process accounting
+  - `sys/auxv.h`, retrieve a value from the auxiliary vector
+  - `sys/debugreg.h`, gdb only
+  - `sys/epoll.h`, I/O event notification facility
+  - `sys/eventfd.h`, create a file descriptor for event notification
+  - `sys/fanotify.h`, monitoring filesystem events (newer than inotify)
+  - `sys/file.h`, advisory lock
+  - `sys/gmon.h`, gprof profiling
+  - `sys/inotify.h`, monitoring filesystem events (newer than dnotify)
+  - `sys/ioctl.h`, control device
+  - `sys/io.h`, port I/O
+  - `sys/kd.h`, vt keyboard defines
+  - `sys/klog.h`, read and/or clear kernel message ring buffer
+  - `sys/mount.h`, mount filesystem
+  - `sys/mtio.h`, magnetic tape io
+  - `sys/param.h`, defines and macros
+  - `sys/pci.h`, pci-related defines
+  - `sys/personality.h`, set the process execution domain
+  - `sys/pidfd.h`, obtain a file descriptor that refers to a process
+  - `sys/platform/x86.h`, x86-specific
+  - `sys/prctl.h`, operations on a process or thread
+  - `sys/procfs.h`, for gdb only
+  - `sys/profil.h`, execution time profile for disjointed text spaces
+  - `sys/ptrace.h`, process trace
+  - `sys/queue.h`, implementations of linked lists and queues
+  - `sys/quota.h`, manipulate disk quotas
+  - `sys/random.h`, obtain a series of random bytes
+  - `sys/raw.h`, linux raw devices
+  - `sys/reboot.h`, reboot or enable/disable Ctrl-Alt-Del
+  - `sys/reg.h`, cpu reg definitions
+  - `sys/rseq.h`, Restartable sequences
+  - `sys/sdt.h`, systemtap static probe definition macros
+  - `sys/sendfile.h`, transfer data between file descriptors
+  - `sys/signalfd.h`, create a file descriptor for accepting signals
+  - `sys/single_threaded.h`, detecting single-threaded execution
+  - `sys/soundcard.h`
+  - `sys/statfs.h`, get filesystem statistics
+  - `sys/swap.h`, start/stop swapping to file/device
+  - `sys/syscall.h`, syscall numbers
+  - `sys/sysinfo.h`, return system information
+  - `sys/sysmacros.h`, manage a device number
+  - `sys/timerfd.h`, timers that notify via file descriptors
+  - `sys/timex.h`, tune kernel clock
+  - `sys/ttychars.h`
+  - `sys/user.h`, gdb interface
+  - `sys/vm86.h`, enter virtual 8086 mode
+  - `sys/vt.h`
+  - `sys/xattr.h`, extended attribute value
+  - `thread_db.h`, debugger interface for the NPTL library
+  - `ttyent.h`, get ttys file entry
+  - `ucontext.h`, get or set the user context
+  - `utmp.h`, access utmp and wtmp
+
 ## Random
 
 - PLT
