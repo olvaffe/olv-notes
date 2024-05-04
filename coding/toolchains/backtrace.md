@@ -42,8 +42,9 @@ Backtrace
     - `unw_init_local` to initialize
     - `while (unw_step(&cursor))` to step through the stack frames
       - `unw_get_reg` to get ip and sp
+      - `unw_get_proc_name` to get the symbol name
+        - no dwarf support?
   - it can unwind a local process or a remote process
-  - there is no symbol resolve
   - it also provides the c++ exception handling abi
     - that is, the same `unwind.h` itnerface that gcc and llvm provide
 - `libbacktrace`
