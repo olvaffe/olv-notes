@@ -3,78 +3,87 @@ AMD
 
 ## GPU uArchs
 
-- fixed pipeline
-  - ATI Rage released in 1996 to 1999
-- separted VS and FS
-  - R100 released in 2000
+- organized by mesa `enum amd_gfx_level`
+- GFX
+  - ATI Rage released between 1996 to 1999
+    - fixed pipeline
+  - Radeon 7000 released in 2000
+    - fixed VS and programmable FS
     - Direct3D 7.0
     - `radeon_dri.so`
-  - R200 released in 2001
+  - Radeon 8000 released in 2001
+    - separated programmable VS and FS
     - Direct3D 8.1 w/ shader model 1.4
     - `r200_dri.so`
-  - R300 released in 2002
+- `R300`, `R400`, and `R500` (GFX2)
+  - Radeon 9000 released in 2002
     - Direct3D 9.0 w/ shader model 2.0
-    - `r300_dri.so`
-    - `R300`
-  - R400 released in 2004
+  - Radeon X800 released in 2004
     - Direct3D 9.0b w/ shader model 2.0b
-    - `r300_dri.so`
-    - `R400`
-  - R500 released in 2005
+  - Radeon X1000 released in 2005
     - Direct3D 9.0c w/ shader model 3.0
-    - `r300_dri.so`
-    - `R500`
-- TeraScale
+  - separated programmable VS and FS
+  - `r300_dri.so`
+- `R600` and `R700` (GFX3)
+  - Radeon HD 2000/3000/4000 released in 2007/2008
+    - TeraScale 1
+    - Direct3D 10.1 w/ shader model 4.1
   - `r600_dri.so`
-  - R600 released in 2007
-    - Direct3D 10.1 w/ shader model 4.1
-    - `R600`
-  - R700 released in 2008
-    - Direct3D 10.1 w/ shader model 4.1
-    - `R700`
-  - Evergreen released in 2009
+- `EVERGREEN` (GFX4)
+  - Radeon HD 5000 released in 2009
+    - Evergreen
+    - TeraScale 2
     - Direct3D 11.0 w/ `11_0` feature level
-    - `EVERGREEN`
-  - Northern Islands released in 2010
+  - `r600_dri.so`
+- `CAYMAN` (GFX5)
+  - Radeon HD 6000 released in 2010
+    - Northern Islands
+    - TeraScale 3
     - Direct3D 11.0 w/ `11_0` feature level
-    - `CAYMAN`
-- GCN
-  - `radeonsi_dri.so`
-  - Southern Islands released in 2012
-    - Direct3D 12.0 w/ `11_1` feature level
+  - `r600_dri.so`
+- `GFX6`
+  - Radeon HD 7000 released in 2012
+    - Southern Islands
     - GCN1
-    - `GFX6`
-  - Sea Islands released in 2013
     - Direct3D 12.0 w/ `11_1` feature level
-    - GCN2
-    - `GFX7`
-  - Volcanic Islands released in 2014
-    - Direct3D 12.0 w/ `12_0` feature level
-    - GCN3
-    - `GFX8`
-  - Polaris released in 2016
-    - Direct3D 12.0 w/ `12_0` feature level
-    - GCN4
-    - `GFX8`
-  - Vega released in 2017
-    - Direct3D 12.0 w/ `12_1` feature level
-    - GCN5
-    - `GFX9`
-- RDNA
+    - Vulkan
   - `radeonsi_dri.so`
-  - Navi 1x released in 2019
-    - Direct3D 12.0 w/ `12_1` feature level
-    - RDNA
-    - `GFX10`
-  - Navi 2x released in 2020
-    - Direct3D 12.0 w/ `12_2` feature level
-    - RDNA 2
-    - `GFX10_3`
-  - Navi 3x released in 2022
-    - RDNA 3
-    - 5nm
-    - chiplet
-    - `GFX11`
+- `GFX7`
+  - Radeon 200 released in 2013
+    - also Radeon HD 7790 released in 2013
+    - Sea Islands
+    - GCN2
+- `GFX8`
+  - Radeon 300 released in 2015
+    - also Radeon 285 released in 2014
+    - Volcanic Islands
+    - GCN3
+  - Radeon 400/500 released in 2016/2017
+    - Polaris (formerly Arctic Islands)
+    - GCN4
+- `GFX9`
+  - Radeon RX Vega released in 2017
+    - Vega
+    - GCN5
+- `GFX10`
+  - Radeon RX 5000 released in 2019
+    - Navi 1x
+    - RDNA1
+- `GFX10_3`
+  - Radeon RX 6000 released in 2020
+    - Navi 2x
+    - RDNA2
+- `GFX11`
+  - Radeon RX 7000 released in 2022
+    - Navi 3x
+    - RDNA3
+- `GFX11_5`
+  - APU only?
+    - RDNA3 refresh?
+- `GFX12`
+  - Radeon RX 8000 released in ?
+    - Navi 4x
+    - RDNA4
 
 ## Naming
 
