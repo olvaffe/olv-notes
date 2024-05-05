@@ -59,44 +59,233 @@ DRM amdgpu
       locations
       - `adev->is_atom_fw` is set since `CHIP_VEGA10`
   - `amdgpu_device_ip_init` initializes the ip blocks
-- IP blocks
-  - ip blocks are discovered and added with `amdgpu_device_ip_block_add`
+
+## IP Block Discovery
+
+- `amdgpu_device_ip_early_init` adds the ip blocks
+  - `si_set_ip_blocks` is for gfx6 (gcn1, southern islands)
+  - `cik_set_ip_blocks` is for gfx7 (gcn2, sea islands)
+  - `vi_set_ip_blocks` is for gfx8 (gcn3, volcanic islands, and gcn4, polaris)
+  - `amdgpu_discovery_set_ip_blocks` is for gfx9+ (gcn5, vega, all rdnas)
+  - `amdgpu_device_ip_block_add` adds an ip block
   - each IP block goes through `early_init`, `sw_init`, `hw_init`, and
     `late_init`
+- `enum amd_ip_block_type`
   - `AMD_IP_BLOCK_TYPE_COMMON`: GPU Family
-    - `CHIPSET_STONEY` has `vi_common_ip_block`
-    - `CHIPSET_RENOIR` has `vega10_common_ip_block`
   - `AMD_IP_BLOCK_TYPE_GMC`: Graphics Memory Controller
-    - `CHIPSET_STONEY` has `gmc_v8_0_ip_block`
-    - `CHIPSET_RENOIR` has `gmc_v9_0_ip_block`
   - `AMD_IP_BLOCK_TYPE_IH`: Interrupt Handler
-    - `CHIPSET_STONEY` has `cz_ih_ip_block`
-    - `CHIPSET_RENOIR` has `vega10_ih_ip_block`
   - `AMD_IP_BLOCK_TYPE_SMC`: System Management Controller
-    - `CHIPSET_STONEY` has `pp_smu_ip_block`
-    - `CHIPSET_RENOIR` has `smu_v11_0_ip_block` (or later?)
   - `AMD_IP_BLOCK_TYPE_PSP`: Platform Security Processor
-    - `CHIPSET_RENOIR` has `psp_v3_1_ip_block` (or later?)
   - `AMD_IP_BLOCK_TYPE_DCE`: Display and Compositing Engine
-    - `CHIPSET_STONEY` has `dm_ip_block`
-    - `CHIPSET_RENOIR` has `dm_ip_block`
   - `AMD_IP_BLOCK_TYPE_GFX`: Graphics and Compute Engine
-    - `CHIPSET_STONEY` has `gfx_v8_1_ip_block`
-    - `CHIPSET_RENOIR` has `gfx_v9_0_ip_block`
   - `AMD_IP_BLOCK_TYPE_SDMA`: System DMA Engine
-    - `CHIPSET_STONEY` has `sdma_v3_0_ip_block`
-    - `CHIPSET_RENOIR` has `sdma_v4_0_ip_block`
   - `AMD_IP_BLOCK_TYPE_UVD`: Unified Video Decoder
-    - `CHIPSET_STONEY` has `uvd_v6_2_ip_block`
   - `AMD_IP_BLOCK_TYPE_VCE`: Video Compression Engine
-    - `CHIPSET_STONEY` has `vce_v3_4_ip_block`
   - `AMD_IP_BLOCK_TYPE_ACP`: Audio Co-Processor
-    - `CHIPSET_STONEY` has `acp_ip_block`
   - `AMD_IP_BLOCK_TYPE_VCN`: Video Core/Codec Next
-    - `CHIPSET_RENOIR` has `vcn_v2_0_ip_block`
   - `AMD_IP_BLOCK_TYPE_MES`: Micro-Engine Scheduler
   - `AMD_IP_BLOCK_TYPE_JPEG`: JPEG Engine
-    - `CHIPSET_RENOIR` has `jpeg_v2_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VPE`: Video Processing Engine
+  - `AMD_IP_BLOCK_TYPE_UMSCH_MM`: User Mode Schduler for Multimedia
+- gfx6
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `si_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v6_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `si_ih_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `si_smu_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dce_v6_0_ip_block` (legacy)
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v6_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `si_dma_ip_block`
+  - `AMD_IP_BLOCK_TYPE_UVD`
+    - `uvd_v3_1_ip_block`
+- gfx7
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `cik_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v7_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `cik_ih_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `kv_smu_ip_block`
+    - `pp_smu_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dce_v8_1_ip_block` (legacy)
+    - `dce_v8_2_ip_block` (legacy)
+    - `dce_v8_3_ip_block` (legacy)
+    - `dce_v8_5_ip_block` (legacy)
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v7_1_ip_block`
+    - `gfx_v7_2_ip_block`
+    - `gfx_v7_3_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `cik_sdma_ip_block`
+  - `AMD_IP_BLOCK_TYPE_UVD`
+    - `uvd_v4_2_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCE`
+    - `vce_v2_0_ip_block`
+- gfx8
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `vi_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v7_4_ip_block`
+    - `gmc_v8_0_ip_block`
+    - `gmc_v8_1_ip_block`
+    - `gmc_v8_5_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `cz_ih_ip_block`
+    - `iceland_ih_ip_block`
+    - `tonga_ih_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `pp_smu_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dce_v10_0_ip_block` (legacy)
+    - `dce_v10_1_ip_block` (legacy)
+    - `dce_v11_0_ip_block` (legacy)
+    - `dce_v11_2_ip_block` (legacy)
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v8_0_ip_block`
+    - `gfx_v8_1_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `sdma_v2_4_ip_block`
+    - `sdma_v3_0_ip_block`
+    - `sdma_v3_1_ip_block`
+  - `AMD_IP_BLOCK_TYPE_UVD`
+    - `uvd_v5_0_ip_block`
+    - `uvd_v6_0_ip_block`
+    - `uvd_v6_2_ip_block`
+    - `uvd_v6_3_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCE`
+    - `vce_v3_0_ip_block`
+    - `vce_v3_1_ip_block`
+    - `vce_v3_4_ip_block`
+  - `AMD_IP_BLOCK_TYPE_ACP`
+    - `acp_ip_block`
+- gfx9
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `vega10_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v9_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `vega10_ih_ip_block`
+    - `vega20_ih_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `pp_smu_ip_block`
+    - `smu_v11_0_ip_block`
+    - `smu_v12_0_ip_block`
+    - `smu_v13_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v9_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `sdma_v4_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_UVD`
+    - `uvd_v7_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCE`
+    - `vce_v4_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_PSP`
+    - `psp_v3_1_ip_block`
+    - `psp_v10_0_ip_block`
+    - `psp_v11_0_ip_block`
+    - `psp_v12_0_ip_block`
+    - `psp_v13_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCN`
+    - `vcn_v1_0_ip_block`
+    - `vcn_v2_0_ip_block`
+    - `vcn_v2_5_ip_block`
+    - `vcn_v2_6_ip_block`
+  - `AMD_IP_BLOCK_TYPE_JPEG`
+    - `jpeg_v2_0_ip_block`
+    - `jpeg_v2_5_ip_block`
+    - `jpeg_v2_6_ip_block`
+- gfx10 / gfx10.3
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `nv_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v10_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `navi10_ih_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `smu_v11_0_ip_block`
+    - `smu_v13_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v10_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `sdma_v5_0_ip_block`
+    - `sdma_v5_2_ip_block`
+  - `AMD_IP_BLOCK_TYPE_PSP`
+    - `psp_v11_0_8_ip_block`
+    - `psp_v11_0_ip_block`
+    - `psp_v13_0_ip_block`
+    - `psp_v13_0_4_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCN`
+    - `vcn_v2_0_ip_block`
+    - `vcn_v3_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_MES`
+    - `mes_v10_1_ip_block`
+  - `AMD_IP_BLOCK_TYPE_JPEG`
+    - `jpeg_v2_0_ip_block`
+    - `jpeg_v3_0_ip_block`
+- gfx11 / gfx11.5
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `soc21_common_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+    - `gmc_v11_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `ih_v6_0_ip_block`
+    - `ih_v6_1_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+    - `smu_v14_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dm_ip_block`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v11_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `sdma_v6_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_PSP`
+    - `psp_v14_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VCN`
+    - `vcn_v4_0_ip_block`
+    - `vcn_v4_0_3_ip_block`
+    - `vcn_v4_0_5_ip_block`
+  - `AMD_IP_BLOCK_TYPE_MES`
+    - `mes_v11_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_JPEG`
+    - `jpeg_v4_0_ip_block`
+    - `jpeg_v4_0_3_ip_block`
+    - `jpeg_v4_0_5_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VPE`
+    - `vpe_v6_1_ip_block`
+  - `AMD_IP_BLOCK_TYPE_UMSCH_MM`
+    - `umsch_mm_v4_0_ip_block`
+- gfx12
+  - `AMD_IP_BLOCK_TYPE_COMMON`
+  - `AMD_IP_BLOCK_TYPE_GMC`
+  - `AMD_IP_BLOCK_TYPE_IH`
+    - `ih_v7_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_SMC`
+  - `AMD_IP_BLOCK_TYPE_DCE`
+  - `AMD_IP_BLOCK_TYPE_GFX`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+  - `AMD_IP_BLOCK_TYPE_PSP`
+  - `AMD_IP_BLOCK_TYPE_VCN`
+    - `vcn_v5_0_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_MES`
+  - `AMD_IP_BLOCK_TYPE_JPEG`
+    - `jpeg_v5_0_0_ip_block`
+  - `AMD_IP_BLOCK_TYPE_VPE`
+  - `AMD_IP_BLOCK_TYPE_UMSCH_MM`
 
 ## GMC
 
