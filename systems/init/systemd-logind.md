@@ -156,3 +156,38 @@ systemd-logind
   - by default,
     - when external displays are connected, lid closed is ignored
     - otherwise, suspend
+
+## polkit
+
+- some `loginctl` operations such as `kill-session` are privileged
+  - `kill_session` calls `polkit_agent_open_if_enabled` before sending
+    `KillSession` request to logind
+  - by default, `arg_transport` is `BUS_TRANSPORT_LOCAL` and `ask_password` is
+    true
+  - `polkit_agent_open` invokes `pkttyagent --notify-fd <fd-of-pipe> --fallback`
+    - the function waits for the pipe to be closed before returning
+    - after the forked `pkttyagent` registers itself, it will close the pipe
+  - this way, logind asks `pkttyagent` for a password before killing the
+    session
+- logind handles the `KillSession` request in `method_kill_session`
+  - `bus_session_method_kill` calls `bus_verify_polkit_async_full` to
+    authorize
+    - `bus_message_new_polkit_auth_call_for_bus` builds a `CheckAuthorization`
+      request with action `org.freedesktop.login1.manage`
+    - `sd_bus_call_async` sends the request asynchronously
+  - `bus_session_method_kill` returns early because
+    `bus_verify_polkit_async_full` returns 0
+  - some time later, polkit handles the request and sends a reply
+    - it checks `/usr/share/polkit-1/actions/org.freedesktop.login1.policy`
+      for the policy for action `org.freedesktop.login1.manage`
+    - most likely, it asks for the admin password from `pkttyagent`
+    - it then sends a reply to logind
+  - `async_polkit_callback` handles the polkit reply
+    - `async_polkit_read_reply` processes the reply and adds the action to
+      `q->authorized_actions`
+    - the original `KillSession` request is queued again
+  - `bus_session_method_kill` calls `bus_verify_polkit_async_full` again to
+    authorize
+    - `async_polkit_query_check_action` returns 1 because the action is on
+      `q->authorized_actions`
+  - `bus_session_method_kill` continues to call `session_kill` to kill
