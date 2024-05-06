@@ -117,20 +117,39 @@ AMD
 
 ## Documentations
 
-- Radeon R3xx 3D Register Reference Guide
-  - <https://www.amd.com/system/files/TechDocs/R3xx_3D_Registers.pdf>
-- Radeon R6xx/R7xx Acceleration and 3D Register Reference Guide
-  - <https://www.amd.com/system/files/TechDocs/R6xx_R7xx_3D.pdf>
-  - <https://www.amd.com/system/files/TechDocs/R6xx_3D_Registers.pdf>
-- Radeon Evergreen/Northern Islands Acceleration and 3D Register Reference
-  Guide
-  - <https://www.amd.com/system/files/TechDocs/evergreen_cayman_programming_guide.pdf>
-  - <https://www.amd.com/system/files/TechDocs/evergreen_3D_registers_v2.pdf>
-- Radeon Southern Islands Acceleration and 3D/Compute Register Reference Guide
-  - <https://www.amd.com/system/files/TechDocs/si_programming_guide_v2.pdf>
-  - <https://www.amd.com/system/files/TechDocs/SI_3D_registers.pdf>
-- Radeon Sea Islands 3D/Compute Register Reference Guide
-  - <https://www.x.org/docs/AMD/old/CIK_3D_registers_v2.pdf>
+- <https://gpuopen.com/>
+  - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/rdna3-shader-instruction-set-architecture-feb-2023_0.pdf>
+- <https://www.amd.com/en/search/documentation/hub.html>
+  - filter for `Graphics` in `Product Type`
+  - Instruction Set Architectures
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/R600_Instruction_Set_Architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/R700-Family_Instruction_Set_Architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/AMD_Evergreen-Family_Instruction_Set_Architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/AMD_HD_6900_Series_Instruction_Set_Architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/southern-islands-instruction-set-architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/sea-islands-instruction-set-architecture_0.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/gcn3-instruction-set-architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/vega-shader-instruction-set-architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/vega-7nm-shader-instruction-set-architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/rdna-shader-instruction-set-architecture.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/instruction-set-architectures/rdna2-shader-instruction-set-architecture.pdf>
+  - 3D/Compute Register Reference Guides
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/R3xx_3D_Registers.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/R6xx_3D_Registers.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/evergreen_3D_registers_v2.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/SI_3D_registers.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/CIK_3D_registers_v2.pdf>
+  - Accelerations
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/R6xx_R7xx_3D.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/R5xx_Acceleration_v1_5.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/evergreen_cayman_programming_guide.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/si_programming_guide_v2.pdf>
+  - Register Reference Guides
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/RRG-216M56-03oOEM.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/42589_rv630_rrg_1_01o.pdf>
+    - <https://www.amd.com/content/dam/amd/en/documents/radeon-tech-docs/programmer-references/42590_m76_rrg_1_01o.pdf>
+- <https://www.x.org/wiki/RadeonFeature/>
+- <https://www.x.org/docs/AMD/>
 
 ## RDNA 3
 
