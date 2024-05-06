@@ -42,3 +42,41 @@ nvtop
 - ui
   - it uses `halfdelay(10)` and `getch` to update the screen every 1 second
   - it visualizes `results`
+
+## `amdgpu_top`
+
+- build
+  - `git clone https://github.com/Umio-Yasuno/amdgpu_top.git`
+  - `cargo build`
+  - `./target/debug/amdgpu_top`
+- <https://github.com/Umio-Yasuno/libdrm-amdgpu-sys-rs.git>
+  - it is a wrapper for `libdrm_amdgpu` and amdgpu sysfs and hwmon
+  - `DeviceHandle::device_info` queries `AMDGPU_INFO_DEV_INFO`
+  - `DeviceHandle::memory_info` queries `AMDGPU_INFO_MEMORY`
+  - `DeviceHandle::get_vbios_info` queries `AMDGPU_INFO_VBIOS`
+  - `DeviceHandle::sensor_info` calls `amdgpu_query_sensor_info`
+  - `DeviceHandle::get_hw_ip_info` calls `amdgpu_query_hw_ip_info` and
+    `amdgpu_query_hw_ip_count`
+  - `DeviceHandle::get_video_caps_info` calls `amdgpu_query_video_caps_info`
+  - `DeviceHandle::query_firmware_version` calls `amdgpu_query_firmware_version`
+  - `DeviceHandle::get_min_max_gpu_clock` parses amdgpu `pp_dpm_sclk`
+  - `DeviceHandle::get_min_max_memory_clock` parses amdgpu `pp_dpm_mclk`
+  - `DeviceHandle::get_gpu_metrics` parses amdgpu `gpu_metrics`
+  - `IpDieEntry::get_all_entries_from_sysfs` parses amdgpu `ip_discovery/die/`
+  - `PowerProfile::get_all_supported_profiles_from_sysfs` parses amdgpu
+    `pp_power_profile_mode`
+  - `RasErrorCount::get_from_sysfs_with_ras_block` parses amdgpu
+    `ras/*_error_count`
+  - `BUS_INFO::get_min_max_link_info_from_dpm` and
+    `BUS_INFO::get_current_link_info_from_dpm` parses amdgpu `pp_dpm_pcie`
+  - `BUS_INFO::get_max_gpu_link` and `BUS_INFO::get_max_system_link` parses
+    pcie `max_link_speed` or `max_link_width`
+  - `HwmonTemp` parses hwmon `temp*`
+  - `HwmonPower` and `PowerCap` parses hwmon `power*`
+- `PpFeatureMask::get_all_enabled_feature` parses
+  `/sys/module/amdgpu/parameters/ppfeaturemask`
+- `FdInfoStat::get_all_proc_usage` parses `/proc/{pid}/fdinfo/{fd}`
+  - <https://docs.kernel.org/gpu/drm-usage-stats.html>
+- `AppAmdgpuTop`
+  - `new` initializes stats
+  - `update` and `update_pc` update stats

@@ -57,8 +57,27 @@ DRM amdgpu
       `amdgpu_discovery_reg_base_init` to discover the ip blocks
     - `amdgpu_get_bios` reads bios to `adev->bios` from various possible
       locations
-      - `adev->is_atom_fw` is set since `CHIP_VEGA10`
+    - `amdgpu_atombios_init` parses the bios
   - `amdgpu_device_ip_init` initializes the ip blocks
+- `amdgpu_get_bios`
+  - the legacy `radeon_get_bios` supports
+    - `radeon_atrm_get_bios` uses ACPI ATRM
+      - this was added with switcheroo, for dgpu on laptops
+    - `radeon_acpi_vfct_bios` uses ACPI VFCT
+      - this was added for uefi systems
+    - `radeon_read_bios` uses `pci_map_rom`
+      - this was the orignal method where the vga bios was stored in pci rom
+    - `radeon_read_platform_bios` uses `pci_dev::rom`
+      - some platforms used this to access pci rom
+  - `amdgpu_atrm_get_bios` uses ACPI ATRM
+  - `amdgpu_acpi_vfct_bios` uses ACPI VFCT
+    - this seems to be the modern way for igpu
+  - `igp_read_bios_from_vram` checks the start of vram
+  - `amdgpu_read_bios` uses `pci_map_rom`, the pci rom bar
+  - `amdgpu_read_bios_from_rom` uses `amdgpu_asic_read_bios_from_rom`
+    - this seems to be the modern way for dgpu since gcn5
+  - `amdgpu_read_platform_bios` uses `pci_dev::rom`
+  - `adev->is_atom_fw` is set since `CHIP_VEGA10`
 
 ## IP Block Discovery
 
@@ -87,6 +106,50 @@ DRM amdgpu
   - `AMD_IP_BLOCK_TYPE_JPEG`: JPEG Engine
   - `AMD_IP_BLOCK_TYPE_VPE`: Video Processing Engine
   - `AMD_IP_BLOCK_TYPE_UMSCH_MM`: User Mode Schduler for Multimedia
+- `enum amd_hw_ip_block_type`
+  - `amdgpu_discovery_reg_base_init` initializes the hw ip blocks and
+    `ip_versions` on rdna+ (and renoir)
+    - `hw_id_map` maps `*_HWIP` to `*_HWID`, the real hwid
+  - `GC_HWIP` determines
+    - `AMD_IP_BLOCK_TYPE_COMMON`
+    - `AMD_IP_BLOCK_TYPE_GMC`
+    - `AMD_IP_BLOCK_TYPE_GFX`
+    - `AMD_IP_BLOCK_TYPE_MES`
+    - `adev->family`
+    - `adev->flags |= AMD_IS_APU`
+    - `adev->gfxhub.funcs`
+    - `adev->gfx.funcs`
+  - `HDP_HWIP` determines `adev->hdp.funcs`
+  - `SDMA0_HWIP` determines `AMD_IP_BLOCK_TYPE_SDMA`
+  - `SDMA[1-7]_HWIP`
+  - `LSDMA_HWIP` determines `adev->lsdma.funcs`
+  - `MMHUB_HWIP` determines `adev->mmhub.funcs`
+  - `ATHUB_HWIP`
+  - `NBIO_HWIP` determines `adev->nbio.funcs`
+  - `MP0_HWIP` determines `AMD_IP_BLOCK_TYPE_PSP`
+  - `MP1_HWIP` determines `AMD_IP_BLOCK_TYPE_SMC`
+  - `UVD_HWIP` determines
+    - `AMD_IP_BLOCK_TYPE_UVD`
+    - `AMD_IP_BLOCK_TYPE_VCN`
+    - `AMD_IP_BLOCK_TYPE_JPEG`
+    - `AMD_IP_BLOCK_TYPE_UMSCH_MM`
+  - `VCN_HWIP` and `JPEG_HWIP` are alternative names for `UVD_HWIP`
+  - `VCN1_HWIP`
+  - `VCE_HWIP` determines `AMD_IP_BLOCK_TYPE_VCE`
+  - `VPE_HWIP` determines `AMD_IP_BLOCK_TYPE_VPE`
+  - `DF_HWIP` determines `adev->df.funcs`
+  - `DCE_HWIP` determines `AMD_IP_BLOCK_TYPE_DCE`
+  - `OSSSYS_HWIP` determines `AMD_IP_BLOCK_TYPE_IH`
+  - `SMUIO_HWIP` determines `adev->smuio.funcs`
+  - `PWR_HWIP`
+  - `NBIF_HWIP`
+  - `THM_HWIP`
+  - `CLK_HWIP`
+  - `UMC_HWIP` determines `adev->umc`
+  - `RSMU_HWIP`
+  - `XGMI_HWIP` determines `adev->gmc.xgmi`
+  - `DCI_HWIP` determines `AMD_IP_BLOCK_TYPE_DCE`
+  - `PCIE_HWIP`
 - gfx6
   - `AMD_IP_BLOCK_TYPE_COMMON`
     - `si_common_ip_block`

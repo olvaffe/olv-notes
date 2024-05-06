@@ -557,6 +557,21 @@ AMD
     - partially resident texture
   - SA
     - shader array
+  - GRBM
+    - Graphics Register Backbone Manager
+  - SRBM
+    - System Register Backbone Manager
+  - TA
+    - Texture Addresser
+  - EE
+    - Event Engine
+  - `CF_RQ_PENDING`
+    - CP Fetch request pending
+  - `PF_RQ_PENDING`
+    - PFP (PreFetch Parser) Fetch request (PFP is part of the CP)
+  - ME
+    - Micro Engine
+
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
