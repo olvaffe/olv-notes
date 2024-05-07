@@ -512,6 +512,49 @@ DRM amdgpu
       - `[drm] PCIE GART of 1024M enabled.`
 - <https://lore.kernel.org/all/CADnq5_MfSNHP--KyQe2GEWCvg4XAwLV5FAw+0B-0DwvXBcACtw@mail.gmail.com/T/#mb034b7f92c4b3351038c71611d7a6d574fc9bee9>
 
+## GFX
+
+- `AMD_IP_BLOCK_TYPE_GFX` using `IP_VERSION(10, 3, 7)` as an example
+  - `amdgpu_async_gfx_ring` is 1
+  - `amdgpu_mes` is 0
+- `gfx_v10_0_early_init`
+  - `adev->gfx.num_gfx_rings` is set to `GFX10_NUM_GFX_RINGS_Sienna_Cichlid`
+    (2)
+  - `adev->gfx.num_compute_rings` is set to 8
+- `gfx_v10_0_sw_init`
+  - ME, micro engine (graphics)
+    - `adev->gfx.me.num_me = 1`
+    - `adev->gfx.me.num_pipe_per_me = 1`
+    - `adev->gfx.me.num_queue_per_pipe = 1`
+  - MEC, micro engine compute
+    - `adev->gfx.mec.num_mec = 2`
+    - `adev->gfx.mec.num_pipe_per_mec = 4`
+    - `adev->gfx.mec.num_queue_per_pipe = 4`
+  - `gfx_v10_0_me_init`
+    - `adev->gfx.num_gfx_rings` is set to 1 by
+      `amdgpu_gfx_graphics_queue_acquire`
+  - `gfx_v10_0_mec_init`
+    - `adev->gfx.num_compute_rings` remains 8 despite
+      `amdgpu_gfx_compute_queue_acquire`
+  - `gfx_v10_0_gfx_ring_init` inits `adev->gfx.gfx_ring`
+    - these rings are called KGQ, kernel graphics queue
+  - `gfx_v10_0_compute_ring_init` inits `adev->gfx.compute_ring`
+    - these rings are called KCQ, kernel compute queue
+  - `amdgpu_gfx_kiq_init_ring` inits `adev->gfx.kiq[x].ring`
+    - these rings are called KIQ, kernel interface queue
+- `gfx_v10_0_hw_init`
+  - `gfx_v10_0_cp_resume` starts CP
+    - `gfx_v10_0_kiq_resume` starts KIQ
+    - `gfx_v10_0_kcq_resume` starts KCQ
+      - `gfx_v10_0_cp_compute_enable` sets `mmCP_MEC_CNTL_Sienna_Cichlid`
+        - this starts ME1 and ME2
+      - `amdgpu_gfx_enable_kcq` submits cmds to KIQ
+        - it seems some inits are done via commands submitted to KIQ
+    - `gfx_v10_0_cp_async_gfx_ring_resume` starts KGQ
+      - `amdgpu_gfx_enable_kgq` submits cmds to KIQ
+      - `gfx_v10_0_cp_gfx_start` sets `mmCP_ME_CNTL` and submits cmds to KGQ
+        - this starts CE, PFP, and ME
+
 ## PM sysfs
 
 - `amdgpu_pm_sysfs_init` and `amdgpu_debugfs_pm_init`
@@ -747,6 +790,7 @@ DRM amdgpu
 - radv submits using `amdgpu_cs_submit_raw2` helper
   - there is a `drm_amdgpu_cs_chunk_ib` chunk for each IB
     - `flags` is `AMDGPU_IB_FLAG_x` such as `AMDGPU_IB_FLAG_PREEMPT`
+      - when `AMDGPU_IB_FLAG_CE` is set, submits to CE rather than ME
     - `va_start` is the ib addr
     - `ib_bytes` is the ib size
     - `ip_type` is `AMDGPU_HW_IP_x` such as `AMDGPU_HW_IP_GFX`

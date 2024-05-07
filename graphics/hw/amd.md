@@ -981,10 +981,12 @@ AMD
     - surface sync
   - ME
     - surface sync
+    - this is also called DE, drawing engine
   - CP DMA
     - memory copies
     - memory copies via l2
     - gds copies
+    - this is also called CE, constant engine
 - SPI/SQ
   - vmem read/write via l1
   - smem read via K$
