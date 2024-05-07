@@ -524,6 +524,8 @@ AMD
 
 ## Terms
 
+- <https://docs.kernel.org/gpu/amdgpu/amdgpu-glossary.html>
+- <https://github.com/geohot/7900xtx/>
 - R600 pipeline
   - CP & GRBM
     - command processor
@@ -541,9 +543,9 @@ AMD
     - SMX, shader memory exchange
   - SX
   - DB
-    - depth buffer
+    - depth backend
   - CB
-    - color buffer
+    - color backend
   - RB
     - render backend
 - more terms
@@ -571,7 +573,15 @@ AMD
     - PFP (PreFetch Parser) Fetch request (PFP is part of the CP)
   - ME
     - Micro Engine
-
+    - aka the graphics command processor, or CP
+    - this is the only CP pre-CI
+  - MEC
+    - Micro Engine Compute
+    - aka the compute command processor
+    - each MEC has 4 independent threads, referred to as pipes
+      - they are called ACEs in marketing
+  - CPF/CPC/CPG
+    - Command Processor Frontend/Compute/Graphics
 - image compression
   - MSAA can be compressed or uncompressed
     - when compressed, it requires CMASK and FMASK
@@ -935,3 +945,26 @@ AMD
 ## Tools
 
 - RGP
+
+## Registers
+
+- `amdgpu_read_mm_registers` can read allowlisted regs from userspace
+- `GRBM_STATUS`
+- `GRBM_STATUS2`
+- `GRBM_STATUS_SE0`
+- `GRBM_STATUS_SE1`
+- `GRBM_STATUS_SE2`
+- `GRBM_STATUS_SE3`
+- `SDMA0_STATUS_REG`
+- `SDMA1_STATUS_REG`
+- `CP_STAT`
+- `CP_STALLED_STAT1`
+- `CP_STALLED_STAT2`
+- `CP_STALLED_STAT3`
+- `CP_CPF_BUSY_STAT`
+- `CP_CPF_STALLED_STAT1`
+- `CP_CPF_STATUS`
+- `CP_CPC_BUSY_STAT`
+- `CP_CPC_STALLED_STAT1`
+- `CP_CPC_STATUS`
+- `GB_ADDR_CONFIG`
