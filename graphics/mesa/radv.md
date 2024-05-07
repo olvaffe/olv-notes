@@ -1260,3 +1260,19 @@ Mesa RADV
   - when there is a phi node for the f16vec2,
     - `nir_lower_phis_to_scalar` scalarizes the phi node
       - this seems to cause inefficiency
+
+## Registers
+
+- `parse_kernel_headers.py` generates json files from kernel headers
+- `parse_kernel_headers.py gfx103 ~/projects/linux/drivers/gpu/drm/amd/include > gfx103.json`
+  - `asic_reg/gc/gc_10_3_0_offset.h`
+    - reg `mmFOO` has two defines, `mmFOO` and `mmFOO_BASE_IDX`
+    - the real offset is `bases[mmFOO_BASE_IDX] + mmFOO`
+    - the bases are hardcoded
+      - in kernel, they are parsed from in-memory `ip_discovery.bin`
+    - `register_filter` filters out most registers
+  - `asic_reg/gc/gc_10_3_0_sh_mask.h`
+    - reg `mmFOO` has multiple fields, with each field having
+      `FOO__BAR__SHIFT` and `FOO__BAR_MASK`
+  - `navi10_enum.h` has a lot of enum types
+    - `enum_map` maps fields to enum types
