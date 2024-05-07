@@ -942,10 +942,6 @@ AMD
       - `umr_discover_asic_by_discovery_table` uses
         `/sys/class/drm/card0/device/ip_discovery`
 
-## Tools
-
-- RGP
-
 ## Registers
 
 - `amdgpu_read_mm_registers` can read allowlisted regs from userspace
@@ -998,3 +994,27 @@ AMD
   - DB
     - depth read/write/compression
 - bottom of pipe
+
+## Radeon Developer Tool Suite
+
+- <https://gpuopen.com/tools/>
+  - <https://github.com/GPUOpen-Tools>
+- `utils`
+  - `llpc` is from <https://github.com/GPUOpen-Drivers/llpc>
+  - `glc`
+  - `shae` performs shader analysis
+    - `./utils/shae analyse-liveness test.amdisa test.liveness`
+    - `test.amdisa` is disassembly
+- RGA cmdline
+  - `./rga -s opencl -c gfx1035 --isa test.txt test.cl` outputs `<asic>_<kernel>_test.txt`
+  - `--list-asics` lists supported asics
+  - `--list-kernels test.cl` lists kernels in `test.cl`
+  - `--compiler-bin <path>` picks alternative compiler
+    - default is `utils/lc/opencl/bin`, which is llvm 18
+  - `--analysis` generates the analysis csv
+  - `--binary` generates the elf binary
+  - `--cfg` generates the cfg dot with disassembly
+  - `--il` generates the llvm ir
+  - `--isa` generates the disassembly
+  - `--livereg` generates vgpr liveness analysis with disassembly
+  - `--livereg-sgpr` generates sgpr liveness analysis with disassembly
