@@ -968,3 +968,31 @@ AMD
 - `CP_CPC_STALLED_STAT1`
 - `CP_CPC_STATUS`
 - `GB_ADDR_CONFIG`
+
+## Pipeline
+
+- top of pipe
+- command processor
+  - PFP
+    - read indirect buffers
+    - set up indices dma
+    - read commands
+    - read predication
+    - surface sync
+  - ME
+    - surface sync
+  - CP DMA
+    - memory copies
+    - memory copies via l2
+    - gds copies
+- SPI/SQ
+  - vmem read/write via l1
+  - smem read via K$
+  - instruct read via I$
+- bottom of shader
+- render backend
+  - CB
+    - color write/blend/compression
+  - DB
+    - depth read/write/compression
+- bottom of pipe

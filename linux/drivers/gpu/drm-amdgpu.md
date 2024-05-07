@@ -86,6 +86,11 @@ DRM amdgpu
   - `cik_set_ip_blocks` is for gfx7 (gcn2, sea islands)
   - `vi_set_ip_blocks` is for gfx8 (gcn3, volcanic islands, and gcn4, polaris)
   - `amdgpu_discovery_set_ip_blocks` is for gfx9+ (gcn5, vega, all rdnas)
+- `amdgpu_discovery_set_ip_blocks`
+  - `amdgpu_discovery_reg_base_init` reads and parses
+    `amdgpu/ip_discovery.bin` from gpu memory on rdna+ (and renoir)
+    - `hw_id_map` maps `*_HWIP` to `*_HWID`, the real hwid
+    - `ip_versions` are initialized
   - `amdgpu_device_ip_block_add` adds an ip block
   - each IP block goes through `early_init`, `sw_init`, `hw_init`, and
     `late_init`
@@ -107,9 +112,6 @@ DRM amdgpu
   - `AMD_IP_BLOCK_TYPE_VPE`: Video Processing Engine
   - `AMD_IP_BLOCK_TYPE_UMSCH_MM`: User Mode Schduler for Multimedia
 - `enum amd_hw_ip_block_type`
-  - `amdgpu_discovery_reg_base_init` initializes the hw ip blocks and
-    `ip_versions` on rdna+ (and renoir)
-    - `hw_id_map` maps `*_HWIP` to `*_HWID`, the real hwid
   - `GC_HWIP` determines
     - `AMD_IP_BLOCK_TYPE_COMMON`
     - `AMD_IP_BLOCK_TYPE_GMC`
@@ -349,6 +351,88 @@ DRM amdgpu
     - `jpeg_v5_0_0_ip_block`
   - `AMD_IP_BLOCK_TYPE_VPE`
   - `AMD_IP_BLOCK_TYPE_UMSCH_MM`
+
+## Firmwares
+
+- `amdgpu_device_init`
+  - `amdgpu_device_check_arguments` `amdgpu_ucode_get_load_type` to initialize
+    `adev->firmware.load_type`
+    - `AMDGPU_FW_LOAD_SMU` on gfx8
+    - `AMDGPU_FW_LOAD_PSP` on gfx9+
+  - `amdgpu_device_ip_early_init` adds and early inits the ip blocks
+    - `amdgpu_discovery_set_ip_blocks` adds the ip blocks on gfx9+
+    - `amd_ip_funcs::early_init` early inits
+      - firmwares are usually loaded from disk in this phase
+  - `amdgpu_device_ip_init` inits ip blocks
+    - `amd_ip_funcs::sw_init` for all ip blocks
+    - `amd_ip_funcs::hw_init` for common and gmc ip blocks
+    - `amdgpu_ucode_create_bo`
+    - `amdgpu_device_ip_hw_init_phase1` for ih ip block
+    - `amdgpu_device_fw_loading`
+      - `amd_ip_funcs::hw_init` for psp ip block
+    - `amdgpu_device_ip_hw_init_phase2`
+      - `amd_ip_funcs::hw_init` for the rest
+- when `AMDGPU_FW_LOAD_PSP`,
+  - `amdgpu_ucode_create_bo` creates the gpu memory for most firmwares
+    - `amd_ip_funcs::early_init` has loaded the firmwares from disk and
+      incremented `adev->firmware.fw_size`
+    - this function allocates the bo to hold the firmwares
+  - `psp_hw_init` calls `amdgpu_ucode_init_bo` to copy firmwares to the bo
+  - `psp_load_fw` loads the firmwares
+    - `psp_hw_start` starts psp ip block
+    - `psp_load_non_psp_fw` calls `psp_execute_ip_fw_load` to load the
+      firmwares from gpu memory to ip blocks
+- loading firmware from disk
+  - `amdgpu_ucode_ip_version_decode` returns the fw name prefix
+    - `ip_maj_min_rev`, such as `gc_10_3_7`
+      - `GC_HWIP` is `gc`
+      - `SDMA0_HWIP` is `sdma`
+      - `MP0_HWIP` is `psp`
+      - `MP1_HWIP` is `smu`
+      - `UVD_HWIP` is `vcn`
+      - `VPE_HWIP` is `vpe`
+    - `amdgpu_ucode_legacy_naming` might return legacy name prefix; e.g.,
+      - `SDMA0_HWIP` is `yellow_carp_sdma`
+      - `MP0_HWIP` is `yellow_carp`
+      - `UVD_HWIP` is `yellow_carp_vcn`
+  - `amdgpu_ucode_request` calls `request_firmware` to load the fw from
+    filesystem
+- gfx10 (non-exhaustive)
+  - `AMD_IP_BLOCK_TYPE_DCE`
+    - `dm_init_microcode` loads
+      - `amdgpu/dcn_3_1_6_dmcub.bin`
+    - `dm_dmub_hw_init` loads the fw to the ip block and starts the ip block
+  - `AMD_IP_BLOCK_TYPE_GFX`
+    - `gfx_v10_0_init_microcode` loads
+      - `amdgpu/gc_10_3_7_rlc.bin`
+      - `amdgpu/gc_10_3_7_me.bin`
+      - `amdgpu/gc_10_3_7_pfp.bin`
+      - `amdgpu/gc_10_3_7_ce.bin`
+      - `amdgpu/gc_10_3_7_mec.bin`
+      - `amdgpu/gc_10_3_7_mec2.bin`
+    - `gfx_v10_0_hw_init`
+      - `gfx_v10_0_rlc_resume` waits for rlc to start
+      - `gfx_v10_0_cp_resume` calls `gfx_v10_0_cp_async_gfx_ring_resume`
+  - `AMD_IP_BLOCK_TYPE_SDMA`
+    - `amdgpu_sdma_init_microcode` loads
+      - `amdgpu/sdma_5_2_7.bin`
+    - `sdma_v5_2_start` inits and starts SDMA
+  - `AMD_IP_BLOCK_TYPE_PSP`
+    - `psp_v13_0_init_microcode` loads
+      - `amdgpu/psp_13_0_8_ta.bin`
+      - `amdgpu/psp_13_0_8_toc.bin`
+    - `psp_hw_start` starts the hw
+        - `psp_load_toc` loads toc
+    - ta fw seems to consists of multiple binaries
+      - `psp_ras_initialize`
+      - `psp_hdcp_initialize`
+      - `psp_dtm_initialize`
+      - `psp_rap_initialize`
+      - `psp_securedisplay_initialize`
+  - `AMD_IP_BLOCK_TYPE_VCN`
+    - `amdgpu_vcn_early_init` loads
+      - `amdgpu/yellow_carp_vcn.bin`
+    - `nbio_v7_2_vcn_doorbell_range` starts the ip block?
 
 ## GMC
 
