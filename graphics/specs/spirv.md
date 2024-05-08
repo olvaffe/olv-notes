@@ -165,6 +165,13 @@ SPIR-V
 - 2.12. Specialization
 - 2.13. Linkage
 - 2.14. Relaxed Precision
+  - `RelaxedPrecision` allows 32-bit integer/float operations to execute as
+    16-bit integer/float operations
+  - when applied to a variable, function parameter, or struct member, all
+    loads/stores may be treated as though they were decorated with
+    `RelaxedPrecision`
+  - when applied to (the result id of) an instruction, the instruction is to
+    operate at relaxed precision
 - 2.15. Debug Information
 - 2.16. Validation Rules
 - 2.17. Universal Limits
@@ -214,6 +221,7 @@ SPIR-V
 - 3.18. Access Qualifier
 - 3.19. Function Parameter Attribute
 - 3.20. Decoration
+  - `RelaxedPrecision` allows reduced precision operations
 - 3.21. BuiltIn
 - 3.22. Selection Control
 - 3.23. Loop Control
@@ -244,19 +252,40 @@ SPIR-V
 - 3.48. Store Cache Control
 - 3.49. Instructions
 
-## UBOs
+## UBOs/SSBOs
 
 - definition
   - `OpTypeStruct` to define the struct type
-  - `OpTypePointer` to define a pointer type to the struct, with Uniform
-    storage class
-  - `OpVariable` to define a variable of the pointer type, with Uniform
-    storage class as well
-  - one `OpTypePointer` for each of the struct members, with Uniform storage
-    class again
-- load
+  - `OpTypePointer` to define a pointer type to the struct
+    - `Uniform` storage class for UBOs
+    - `StorageBuffer` storage class for SSBOs
+  - `OpVariable` to define a variable of the pointer type, with corresponding
+    storage classes
+  - one `OpTypePointer` for each of the struct members, with corresponding
+    storage classes
+- load/store
   - `OpAccessChain` on the variable to get a pointer to a struct member
+    specified by the indices
   - `OpLoad` to load
+  - `OpStore` to store for SSBOs
+
+## TBOs/IBOs
+
+- definition
+  - `OpTypeImge` to define the image type
+    - typed because TBOs are `gtextureBuffer` and IBOs are `gimageBuffer`
+    - while spirv allows untyped, `VUID-StandaloneSpirv-OpTypeImage-04656` requires typed
+      - `RelaxedPrecision` can be applied to a sampling instruction and to the
+        variable holding the result of a sampling instruction
+  - `OpTypePointer` to define a pointer type to the struct, with
+    `UniformConstant` storage class
+  - `OpVariable` to define a variable of the pointer type, with
+    `UniformConstant` storage class
+- load/store
+  - `OpLoad` the variable to get the image handle
+  - `OpImageFetch` the image handle to load for TBOs
+  - `OpImageRead` the image handle to load for IBOs
+  - `OpImageWrite` the image handle to store for IBOs
 
 ## Rounding
 
