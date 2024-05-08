@@ -2070,16 +2070,20 @@ Vulkan
   - Precision of Individual Operations
     - Correctly Rounded
       - Operations described as "correctly rounded" will return the infinitely
-        precise result, x, rounded so as to be representable in
+        precise result, `x`, rounded so as to be representable in
         floating-point. The rounding mode is not specified, unless the entry
-        point is declared with the RoundingModeRTE or the RoundingModeRTZ
+        point is declared with the `RoundingModeRTE` or the `RoundingModeRTZ`
         Execution Mode. These execution modes affect only correctly rounded
         SPIR-V instructions. These execution modes do not affect
-        OpQuantizeToF16. If the rounding mode is not specified then this
+        `OpQuantizeToF16`. If the rounding mode is not specified then this
         rounding is implementation specific, subject to the following rules.
-        If x is exactly representable then x will be returned. Otherwise,
+        If `x` is exactly representable then `x` will be returned. Otherwise,
         either the floating-point value closest to and no less than x or the
         value closest to and no greater than x will be returned.
+      - these core spirv instructions are "correctly rounded"
+        - `OpFAdd`, `OpFSub`, `OpFMul`
+        - `OpVectorTimesScalar`, `OpMatrixTimesScalar`
+        - `Op*Convert*`
 
 ## Appendix B: Memory Model
 
