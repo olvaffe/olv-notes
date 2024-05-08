@@ -184,6 +184,10 @@ RDNA3 Instruction Set Architecture
 - 16.4. SOPC Instructions
 - 16.5. SOPP Instructions
 - 16.6. SMEM Instructions
+  - `S_LOAD_B32` to `S_LOAD_B512` load 32 to 512 bits from the scalar data
+    cache to sgprs
+  - `S_BUFFER_LOAD_B32` to `S_BUFFER_LOAD_B512` load 32 to 512 bits from the
+    scalar data cache to sgprs, using a buffer resource descriptor
 - 16.7. VOP2 Instructions
 - 16.8. VOP1 Instructions
 - 16.9. VOPC Instructions
@@ -194,7 +198,13 @@ RDNA3 Instruction Set Architecture
 - 16.14. Parameter and Direct Load from LDS Instructions
 - 16.15. LDS & GDS Instructions
 - 16.16. MUBUF Instructions
+  - `BUFFER_LOAD_FORMAT_X` to `BUFFER_LOAD_FORMAT_XYZW` load 1 to 4 components
+    to vgprs, with format encoded in the buffer resource descriptor
+  - `BUFFER_LOAD_U8` to `BUFFER_LOAD_B128` load 8 to 128 bits to vgprs
+    - when less than 32 bits, the values are sign or zero extended
 - 16.17. MTBUF Instructions
+  - `TBUFFER_LOAD_FORMAT_X` to `TBUFFER_LOAD_FORMAT_XYZW` load 1 to 4
+    components to vgprs, with format encoded in the instructions
 - 16.18. MIMG Instructions
 - 16.19. EXPORT Instructions
 - 16.20. FLAT, Scratch and Global Instructions
