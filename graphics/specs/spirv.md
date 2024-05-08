@@ -377,6 +377,14 @@ SPIR-V
   - `OpName` and `OpMemberName` for object names
   - `OpLine` and `OpNoLine` for line numbers
 - 2.16. Validation Rules
+  - universal
+  - `Shader` caps
+    - The `FPRoundingMode` decoration must be applied only to a width-only
+      conversion instruction whose only uses are Object operands of `OpStore`
+      instructions storing through a pointer to a 16-bit floating-point object
+      in the `StorageBuffer`, `PhysicalStorageBuffer`, `Uniform`, or `Output`
+      Storage Classes
+    - IOW, only `OpFConvert` to halfs just before `OpStore`
 - 2.17. Universal Limits
 - 2.18. Memory Model
   - `OpMemoryModel` specifies the addressing model and the memory model
@@ -395,16 +403,26 @@ SPIR-V
 - 3.1. Magic Number
   - `0x07230203`
 - 3.2. Source Language
+  - used by `OpSource`
   - `GLSL`, `OpenCL_C`, `HLSL`, etc.
 - 3.3. Execution Model
+  - used by `OpEntryPoint`
   - `Vertex`, `Fragment`, `GLCompute`, `Kernel`, etc.
 - 3.4. Addressing Model
+  - used by `OpMemoryModel`
   - `Logical`, `Physical32`, `Physical64`, etc.
 - 3.5. Memory Model
+  - used by `OpMemoryModel`
   - `GLSL450`, `OpenCL`, `Vulkan`
 - 3.6. Execution Mode
+  - used by `OpExecutionMode`
   - `RoundingModeRTE`, `RoundingModeRTZ`
-    - if missing, the default rounding mode is defined by client apis
+    - introduced in 1.4 or `SPV_KHR_float_controls`
+    - they specify the default rounding mode for an entry point
+      - if missing, the default rounding mode is defined by client apis
+    - they are ignored when an instruction has an implied rounding mode (e.g.,
+      `OpConvertFToU`) or is decorated with `FPRoundingMode` (e.g.,
+      `OpFConvert`)
   - `Invocations`, `InputPoints`, `InputLines`, etc.
     - gs-specific
   - `LocalSize`, etc.
@@ -444,6 +462,7 @@ SPIR-V
 - 3.15. FP Fast Math Mode
   - `NotNaN`, `NotInf`, etc.
 - 3.16. FP Rounding Mode
+  - used by `FPRoundingMode` decoration
   - `RTE`, `RTZ`, etc.
 - 3.17. Linkage Type
   - `Export`, `Import`, etc.
@@ -454,6 +473,7 @@ SPIR-V
 - 3.20. Decoration
   - `RelaxedPrecision` allows reduced precision operations
   - `BuiltIn` indicates a built-in variable
+  - `FPRoundingMode` indicates a floating-point rounding mode
 - 3.21. BuiltIn
   - vs
     - `Position`, `PointSize`, etc.
@@ -509,7 +529,8 @@ SPIR-V
     - `OpExtInstImport`, `OpExtInst`
   - Mode-Setting
     - `OpMemoryModel`
-    - `OpEntryPoint`, `OpExecutionMode`
+    - `OpEntryPoint`
+    - `OpExecutionMode` declares an execution mode for an entry point
     - `OpCapability`
   - Type-Declaration
     - `OpTypeVoid`, `OpTypeBool`, `OpTypeInt`, `OpTypeFloat`
@@ -592,31 +613,3 @@ SPIR-V
   - `OpImageFetch` the image handle to load for TBOs
   - `OpImageRead` the image handle to load for IBOs
   - `OpImageWrite` the image handle to store for IBOs
-
-## Rounding
-
-- Conversion Instructions
-  - `OpConvertFToU` converts floating point to unsigned int numerically with
-    RTZ
-  - `OpConvertFToS` converts floating point to signed int numerically with RTZ
-  - `OpConvertSToF` converts signed int to floating point numerically
-  - `OpConvertUToF` converts unsigned int to floating point numerically
-  - `OpUConvert` converts unsigned width with truncation or zero-extension
-  - `OpSConvert` converts signed width with truncation or signed-extension
-  - `OpFConvert` converts floating-point width numerically
-  - more
-- `FPRoundingMode` is very limited
-  - The FPRoundingMode decoration must be applied only to a width-only
-    conversion instruction whose only uses are Object operands of OpStore
-    instructions storing through a pointer to a 16-bit floating-point object
-    in the StorageBuffer, PhysicalStorageBuffer, Uniform, or Output Storage
-    Classes.
-  - basically only on `OpFConvert` to halfs what are used in `OpStore`
-- `RoundingModeRTE` and `RoundingModeRTZ`
-  - new capabilities and execution modes introduced in 1.4 or
-    `SPV_KHR_float_controls`
-  - apply to `OpEntryPoint`
-  - they specify the default rounding mode for an entrypoint
-  - they are ignored when an instruction has an implied rounding mode (e.g.,
-    `OpConvertFToU`) or is decorated with `FPRoundingMode` (e.g.,
-    `OpFConvert`)
