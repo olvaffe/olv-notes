@@ -654,6 +654,15 @@ DRM amdgpu
   block
 - `amdgpu_device_ip_set_powergating_state` enables/disables power gating for a
   block
+- `amdgpu_gfx_off_ctrl` enables/disables gfxoff
+  - it calls `amdgpu_dpm_set_powergating_by_smu` on `AMD_IP_BLOCK_TYPE_GFX`
+  - `smu_dpm_set_power_gate` calls `smu_gfx_off_control`
+  - `smu_v13_0_gfx_off_control` calls `smu_cmn_send_smc_msg`
+- `amdgpu_set_pp_power_profile_mode` sets power profile (through debugfs)
+  - `amdgpu_dpm_set_power_profile_mode` calls
+    `pp_funcs->set_power_profile_mode`
+  - `smu_v13_0_7_set_power_profile_mode` calls
+    `smu_cmn_send_smc_msg_with_param`
 
 ## GPU Hang
 
