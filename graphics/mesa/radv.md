@@ -228,6 +228,25 @@ Mesa RADV
     - `amdgpu_cs_import_syncobj`
     - `amdgpu_cs_syncobj_wait`
 
+## Device
+
+- `radv_CreateDevice` calls `init_dispatch_tables` to initialize the dispatch
+  tables
+  - `device->vk.dispatch_table` is always used
+  - when a layer is enabled, its dispatch table is also used
+    - its entry points are added to all dispatch tables that are used and
+      below it
+  - finally, these entry points are added to all used dispatch tables
+    - `radv_device_entrypoints`
+    - `wsi_device_entrypoints`
+    - `vk_common_device_entrypoints`
+  - as a result,
+    - `device->vk.dispatch_table.Foo` points to the first layer that
+      intercepts `vkFoo`
+    - let's say the layer is `bar`
+    - `device->layer_dispatch.bar.Foo` points to the next layer that
+      intercepts `vkFoo`
+
 ## Winsys
 
 - `radv_amdgpu_winsys_create` is called for each physical device
