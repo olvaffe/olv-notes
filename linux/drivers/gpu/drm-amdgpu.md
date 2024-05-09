@@ -832,6 +832,11 @@ DRM amdgpu
       - for `amdgpu_gfxoff_residency`
     - `amdgpu_dpm_get_status_gfxoff`
       - for `amdgpu_gfxoff_status`
+      - `dd if=/sys/kernel/debug/dri/0/amdgpu_gfxoff_status status=none bs=4 count=1 | od -A n -t d4`
+        - 0 means `GFXOFF(default)`
+        - 1 means `Transition out of GFX State`
+        - 2 means `Not in GFXOFF`
+        - 3 means `Transition into GFXOFF`
     - `amdgpu_dpm_get_entrycount_gfxoff`
       - for `amdgpu_gfxoff_count`
   - others
