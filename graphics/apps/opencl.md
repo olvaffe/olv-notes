@@ -181,6 +181,34 @@ OpenCL Apps
 - tests
   - `api_test`
   - `simple_test`
+- `clEnqueueWriteBuffer` creates a `cvk_command` to remember the args and
+  calls `cvk_command_queue::enqueue_command_with_deps`
+  - the args are saved in a `cvk_command_buffer_host_copy`, a subclass of
+    `cvk_command`, with type `CL_COMMAND_WRITE_BUFFER`
+  - because `cvk_command_buffer_host_copy` is not batchable,
+    - `cvk_command_queue::end_current_command_batch` ends and enqueues the
+      current batch, if any
+    - `cvk_command_queue::enqueue_command` enqueues this write buffer cmd,
+      which adds it to `m_groups.back()->commands`
+- `clEnqueueNDRangeKernel` creates a `cvk_command` to remember the args and
+  calls `cvk_command_queue::enqueue_command_with_deps`
+  - the args are saved in a `cvk_command_kernel`, a subclass of `cvk_command`,
+    with type `CL_COMMAND_NDRANGE_KERNEL`
+  - because `cvk_command_kernel` is batchable, it is batched in a
+    `cvk_command_batch`
+- `clFlush` calls `cvk_command_queue::flush`
+  - `m_executor` is initialized to `get_thread_pool()->get_executor()`
+    - `clvk_global_state::init_executors` has created a
+      `cvk_executor_thread_pool` during init
+  - `m_executor->send_group` sends the cmd group to the executor
+  - each `cvk_executor_thread` is a thread running
+    `cvk_executor_thread::executor`
+    - it pops the next `cvk_command_group` from `m_groups`
+    - it calls `cvk_command_group::execute_cmds` to execute the cmds
+- `clFinish` calls `cvk_command_queue::finish`
+  - it flushes as usual
+  - `cvk_command_queue::execute_cmds_required_by_no_lock` steals cmds from the
+    executor and executes them directly
 
 ## clspv
 
