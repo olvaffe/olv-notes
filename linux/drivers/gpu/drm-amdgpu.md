@@ -1038,6 +1038,9 @@ DRM amdgpu
 ## ioctls
 
 - `DRM_IOCTL_AMDGPU_INFO` queries various info about a device
+  - userspace
+    - libdrm: `amdgpu_query_*`, `amdgpu_read_mm_registers`
+    - radv also makes ioctls directly
   - `AMDGPU_INFO_FW_VERSION` queries firmware versions
     - mesa is interested in `AMDGPU_INFO_FW_GFX_{ME,MEC,PFP}` and
       `AMDGPU_INFO_FW_{UVD,VCE}`
@@ -1049,6 +1052,9 @@ DRM amdgpu
       `AMD_IP_GFX`/`AMDGPU_HW_IP_GFX`/`AMD_IP_BLOCK_TYPE_GFX`/`GC_HWIP` to
       determine the gen
 - `DRM_IOCTL_AMDGPU_CTX` allocs/frees/queries a context
+  - userspace
+    - libdrm: `amdgpu_cs_ctx_*`, `amdgpu_cs_query_reset_state*`
+    - `amdgpu_cs_query_reset_state*` only used by radeonsi
   - radv creates a ctx for each `VkQueue`
   - radv uses `AMDGPU_CTX_OP_QUERY_STATE2` for gpu hang check
     - `AMDGPU_CTX_QUERY2_FLAGS_RESET` and `AMDGPU_CTX_QUERY2_FLAGS_GUILTY` are
@@ -1056,36 +1062,67 @@ DRM amdgpu
   - radv uses `AMDGPU_CTX_OP_SET_STABLE_PSTATE` to force peak performance in
     `vkAcquireProfilingLockKHR`
 - `DRM_IOCTL_AMDGPU_VM` reserves the vmid
-  - it is used for shader debugging
+  - userspace
+    - libdrm: `amdgpu_vm_{reserve,unreserve}_vmid`
+    - it is used for shader debugging
 - `DRM_IOCTL_AMDGPU_GEM_CREATE` creates a gem bo
+  - userspace
+    - libdrm: `amdgpu_bo_alloc`
 - `DRM_IOCTL_AMDGPU_GEM_USERPTR` creates a gem bo from userptr
+  - userspace
+    - libdrm: `amdgpu_create_bo_from_user_mem`
 - `DRM_IOCTL_AMDGPU_GEM_MMAP` returns the magic mmap offset for cpu mapping
+  - userspace
+    - libdrm: `amdgpu_bo_cpu_map`
+    - radeonsi uses libdrm wrapper and radv uses ioctl directly
 - `DRM_IOCTL_AMDGPU_GEM_METADATA` sets/gets the bo metadata
-  - it is for userspace export/import
+  - userspace
+    - libdrm: `amdgpu_bo_set_metadata`, `amdgpu_bo_query_info`
+    - it is for bo export/import
   - `drm_amdgpu_gem_metadata` payload has
     - `__u64 flags` is reserved
     - `__u64 tiling_info` is the tiling flags
       - DCE looks at this, likely because the userspace does not handle it
     - `__u32 data[64]` is completely opaque
 - `DRM_IOCTL_AMDGPU_GEM_OP` queries/updates gem bo info
+  - userspace
+    - libdrm: `amdgpu_bo_query_info`
+    - for bo import
+    - no `AMDGPU_GEM_OP_SET_PLACEMENT` support
 - `DRM_IOCTL_AMDGPU_GEM_VA` maps/unmaps/replaces gem bo va
+  - userspace
+    - libdrm: `amdgpu_bo_va_op_raw`, `amdgpu_bo_va_op`
 - `DRM_IOCTL_AMDGPU_CS` submits a job
+  - userspace
+    - libdrm: `amdgpu_cs_submit_raw*`, `amdgpu_cs_submit`
   - `drm_amdgpu_cs_out::handle` is the seqno of the job
 - `DRM_IOCTL_AMDGPU_WAIT_CS` waits for a job
+  - userspace
+    - libdrm: `amdgpu_cs_query_fence_status`
+    - only used by radv; radeonsi uses `amdgpu_bo_wait_for_idle`
 - somewhat legacy
   - `DRM_IOCTL_AMDGPU_SCHED` changes the priority of any context
-    - master only
-    - no user?
+    - userspace
+      - libdrm: `amdgpu_cs_ctx_override_priority`
+      - no user
+    - master node only
   - `DRM_IOCTL_AMDGPU_BO_LIST` creates/destroys/updates a bo list
-    - deprecated by `DRM_IOCTL_AMDGPU_CS` in favor of
-      `AMDGPU_CHUNK_ID_BO_HANDLES`
+    - userspace
+      - libdrm: `amdgpu_bo_list_*`
+      - no user, deprecated by `AMDGPU_CHUNK_ID_BO_HANDLES`
   - `DRM_IOCTL_AMDGPU_GEM_WAIT_IDLE` waits on the implicit fence of a bo
-    - only used by radeonsi
+    - userspace
+      - libdrm: `amdgpu_bo_wait_for_idle`
+      - only used by radeonsi
   - `DRM_IOCTL_AMDGPU_FENCE_TO_HANDLE` converts a `drm_amdgpu_fence` to a
     syncobj, syncobj fd, or sync file fd
-    - only used by radeonsi
+    - userspace
+      - libdrm: `amdgpu_cs_fence_to_handle`
+      - no user since radeonsi moved to syncobj
   - `DRM_IOCTL_AMDGPU_WAIT_FENCES` waits an array of `drm_amdgpu_fence`s
-    - no user
+    - userspace
+      - libdrm: `amdgpu_cs_wait_fences`
+      - no user
 
 ## `DRM_IOCTL_AMDGPU_CS`
 
