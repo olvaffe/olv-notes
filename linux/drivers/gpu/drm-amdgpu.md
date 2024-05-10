@@ -443,6 +443,7 @@ DRM amdgpu
       clock gating
     - `adev->pg_flags` is initialized to indicate which (sub) blocks support
       power gating
+      - `amdgpu.pg_mask=0xfffffffe` masks out `AMD_PG_SUPPORT_GFX_PG`
   - `amdgpu_device_ip_set_clockgating_state` enables/disables clock gating for
     a block
   - `amdgpu_device_ip_set_powergating_state` enables/disables power gating for
