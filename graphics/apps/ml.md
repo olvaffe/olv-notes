@@ -96,6 +96,15 @@ Machine Learning
   - `git clone https://github.com/tensorflow/tensorflow.git`
   - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON`
   - `ninja -C out tensorflow-lite benchmark_model`
+- delegates
+  - `coreml`, Core ML, Apple
+  - `gpu`, CL/GL/Metal
+  - `hexagon`, Hexagon, Qualcomm
+  - `nnapi`, NNAPI, Android
+  - `xnnpack`, XNNPACK, x86/ARM/WebAssembly
+    - <https://github.com/google/XNNPACK>
+  - external delegates
+    - TPU, NPU, WebGPU ,etc.
 - `benchmark_model`
   - it seems after initial setup and inference, each inference does
     - `clEnqueueWriteBuffer`
@@ -112,6 +121,30 @@ Machine Learning
     - `clEnqueueNDRangeKernel(main_function)`: 84%
     - `clEnqueueNDRangeKernel(tensor_to_bhwc)`: 1%
     - `clEnqueueReadBuffer`: 11%
+  - clvk
+    - `clEnqueueWriteBuffer` and `clEnqueueReadBuffer` are handled in
+      `cvk_mem::copy_from` and `cvk_mem::copy_to`
+      - `vkMapMemory`
+      - memcpy
+      - `vkUnmapMemory`
+    - `clEnqueueNDRangeKernel` are batched and are handled in
+      `cvk_command_kernel::build_batchable_inner`
+      - `cvk_kernel_argument_values::setup_descriptor_sets`
+        - `vkAllocateDescriptorSets`
+        - `vkUpdateDescriptorSets`
+      - `vkCmdBindDescriptorSets`
+      - `cvk_command_kernel::update_global_push_constants`
+        - `vkCmdPushConstants`
+      - `cvk_command_kernel::dispatch_uniform_region_within_vklimits`
+        - `vkCmdBindPipeline`
+        - `vkCmdPushConstants`
+        - `vkCmdDispatch`
+      - `vkCmdPipelineBarrier`
+    - `clFlush` is handled in `cvk_command_queue::flush_no_lock`
+      - `cvk_command_batchable::do_action`
+        - `vkQueueSubmit`
+        - `vkQueueWaitIdle`
+        - yeah, clvk follows all submits by waits...
   - basic flow
     - `BenchmarkModel::Run` is the entrypoint
     - `BenchmarkTfLiteModel::ValidateParams` validates params
