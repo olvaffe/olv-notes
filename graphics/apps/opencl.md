@@ -181,6 +181,41 @@ OpenCL Apps
 - tests
   - `api_test`
   - `simple_test`
+- `cvk_event` is pure sw
+  - it tracks the progress of a `cvk_command`, which is a `clEnqueue*` call
+  - `m_status` progresses over several states
+    - `CL_QUEUED` is the initial status, meaning the cmd has been enqueued
+    - `CL_SUBMITTED`
+    - `CL_RUNNING`
+    - `CL_COMPLETE`
+  - `cvk_event::set_status` sets the status
+    - if profiling, `set_profiling_info_from_monotonic_clock` is called to
+      record the timestamp for the new status
+    - if it reaches `CL_COMPLETE`, all registered callbacks are executed and
+      `m_cv.notify_all` is called
+  - `cvk_event::wait` blocks the calling thread until `m_status` reaches
+    `CL_OMPLETE` or error
+  - each `cvk_command` (a `clEnqueue` call) owns a `cvk_event`
+    - the event status is `CL_QUEUED` initially
+    - when `cvk_command_queue` flushes, the event status is set to
+      `CL_SUBMITTED` just before the cmd is moved to `cvk_executor_thread`
+    - when the executor calls `cvk_command::execute`,
+      - the event status is set to `CL_RUNNING`
+      - `do_action` is called and returns a status, normally `CL_COMPLETE`
+      - the event status is set to the returned status
+- `clEnqueue*` enqueues a `cvk_command` to a `cvk_command_queue`
+  - it creates a proper subclass of `cvk_command` to encapsulate all args
+  - it calls `cvk_command_queue::enqueue_command_with_deps` to enqueue the cmd
+    - cmds on the same cmdq will be executed in order
+  - `cvk_command::set_dependencies` sets all input events as dependencies
+    - when `cvk_command::execute` is called later to execute the cmd, all
+      dependencies will be waited before cmd execution
+  - `cvk_command_queue::enqueue_command` adds the cmd to
+    - the current `cvk_command_batch`, if the cmd is batchable, or
+    - the current `cvk_command_group`, if the cmd is not batchable
+  - if `blocking` is true, `clEnqueue*` blocks until the cmd is completed
+    - it calls `wait_for_events` on the event associated with the cmd
+    - this flushes the queue and waits for the event to become completed
 - `clEnqueueWriteBuffer` creates a `cvk_command` to remember the args and
   calls `cvk_command_queue::enqueue_command_with_deps`
   - the args are saved in a `cvk_command_buffer_host_copy`, a subclass of
