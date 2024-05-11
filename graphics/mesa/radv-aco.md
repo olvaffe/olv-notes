@@ -123,9 +123,16 @@ Mesa RADV ACO
 
 - `aco_opcode::p_parallelcopy`
   - `bld.copy` uses this opcode
+  - it can load a const to a temp, or convert from sgpr to vgpr
+    - `s1: %1 = p_parallelcopy 3`
+    - `v1: %2 = p_parallelcopy %1`
 - `aco_opcode::p_create_vector`
 - `aco_opcode::p_extract_vector`
   - `emit_extract_vector` uses this opcode
+  - it can convert a scalar to a vector
+    - `v1: %1 = p_parallelcopy 3`
+    - `v2b: %2 = p_extract_vector %1, 1`
+      - treat `%1` as `v2b` array and extract from idx 1 (higher 16 bits)
 - `aco_opcode::p_split_vector`
   - `emit_split_vector` uses this opcode
 - `aco_opcode::p_as_uniform`
@@ -305,6 +312,91 @@ Mesa RADV ACO
   - `nir_lower_int64` would lower it with `lower_iadd64`
     - unpack, two additions with carry, repack
   - `visit_alu_instr` is similar?
+
+## `aco::visit_cf_list`
+
+- `aco::visit_cf_list` performs instruction selections
+  - we focus on `aco::visit_if` and `aco::visit_loop` here
+- there are logical cfg and linear cfg
+  - logical cfg is a subset of linear cfg
+  - when there are divergent control flows, extra nodes are added to linear
+    cfg
+    - some to avoid critical edges
+    - some to invert the exec mask
+- `aco::visit_if`
+  - nir
+    - `if %1`
+    - `32    %4 = fadd %2, %3`
+    - `else`
+    - `32    %7 = fsub %5, %6`
+  - if `%1` is uniform, the logical and linear cfgs are the same
+    - `bool_to_scalar_condition`
+      - `s2: %3,  s1: %2:scc = s_and_b64 %1, %0:exec` when wave64
+    - `begin_uniform_if_then`
+      - `p_logical_end`
+      - `s2: %4 = p_cbranch_z %2:scc`
+      - `BB1`
+      - `p_logical_start`
+    - `begin_uniform_if_else`
+      - `p_logical_end`
+      - `s2: %5 = p_branch`
+      - `BB2`
+      - `p_logical_start`
+    - `end_uniform_if`
+      - `p_logical_end`
+      - `s2: %6 = p_branch`
+      - `BB3`
+      - `p_logical_start`
+  - if `%1` is divergent, the logical cfg is a subset of the linear cfg
+    - the exec mask has been set up
+    - `begin_divergent_if_then`
+      - `p_logical_end`
+      - `s2: %2 = p_cbranch_z %1`
+      - `BB1` (logical then)
+      - `p_logical_start`
+    - `begin_divergent_if_else`
+      - `p_logical_end`
+      - `s2: %3 = p_branch`
+      - `BB2` (linear then)
+      - `s2: %4 = p_branch`
+      - `BB3` (linear invert, `insert_exec_mask` will invert exec mask here)
+      - `s2: %5 = p_branch`
+      - `BB4` (logical else)
+      - `p_logical_start`
+    - `end_divergent_if`
+      - `p_logical_end`
+      - `s2: %6 = p_branch`
+      - `BB5` (linear else)
+      - `s2: %7 = p_branch`
+      - `BB6`
+      - `p_logical_start`
+
+## `aco::lower_phis`
+
+- when we have a phi of sgpr,
+  - nir
+    - `32    %1 = load_const (0)`
+    - `32    %3 = phi b0: %1 (0), b1: %2`
+  - instruction selection
+    - `s1: %1 = p_parallelcopy 0`
+    - `s1: %3 = p_phi %1, %2`
+  - `aco::lower_phi_to_linear`
+    - `s1: %1 = p_parallelcopy 0`
+    - `s1: %3 = p_linear_phi %1, %2`
+- when we have a phi of fp16,
+  - nir
+    - `16    %1 = load_const (0.0)`
+    - `16    %3 = phi b0: %1 (0.0), b1: %2`
+  - instruction selection
+    - `s1: %1 = p_parallelcopy 0`
+    - `v2b: %3 = p_phi %1, %2`
+  - `aco::lower_subdword_phis` makes sure all operands have the same rc
+    - `s1: %1 = p_parallelcopy 0`
+    - `v1: %4 = p_parallelcopy %1`
+    - `v2b: %5 = p_extract_vector %4, 0`
+    - `v2b: %3 = p_phi %5, %2`
+
+## `aco::ssa_elimination`
 
 ## `aco::lower_to_hw_instr`
 
