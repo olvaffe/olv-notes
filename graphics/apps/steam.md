@@ -161,8 +161,11 @@ Steam
     - it works inside the container
     - it does not work inside proton
 
-## Fossilize Captures and Replays
+## Fossilize
 
+- build
+  - `git clone --recurse-submodules https://github.com/ValveSoftware/Fossilize.git`
+  - `cmake -S. -Bout -GNinja`
 - capture with apis
   - `Fossilize::create_database` to create/open a `.foz` database
     - it returns a `Fossilize::DatabaseInterface` to manipulate the database
@@ -177,7 +180,9 @@ Steam
     database
 - capture with `VK_LAYER_fossilize`
   - automatic create a db and invoke `StateRecorder`
-  - `FOSSILIZE_DUMP_PATH_ENV`
+  - `VK_LAYER_PATH=~/projects/Fossilize/out/layer/ VK_INSTANCE_LAYERS=VK_LAYER_fossilize`
+  - db is saved to `fossilize.<hash>.<seqno>.foz`
+    - `FOSSILIZE_DUMP_PATH=` to override `fossilize` prefix
 
 ## Fossilize Database
 
