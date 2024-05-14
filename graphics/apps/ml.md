@@ -81,6 +81,29 @@ Machine Learning
   - OpenAI GPT-{1,2,3,3.5,4}
   - Meta Llama
 
+## 3Blue1Brown: Deep Learning
+
+- <https://www.youtube.com/watch?v=aircAruvnKk>
+  - a neutral network to recognize the digit in a 28x28 image
+  - first layer has `28x28=784` nodes, representing the intensity of each
+    pixel
+  - second layer has 16 nodes
+    - `f(W * I + B)`
+    - `W`, weights, is a 16x784 matrix
+    - `I`, inputs, is a 784x1 column vector
+    - `B`, biases, is a 16x1 column vector
+    - `f` scales the results to `[0, 1]`
+  - third layer has 16 nodes
+    - `W` is a 16x16 matrix
+    - `I` is a 16x1 column vector
+    - `B` is a 16x1 column vector
+  - last layer has 10 nodes, representing 0 to 9
+    - `W` is a 10x16 matrix
+    - `I` is a 16x1 column vector
+    - `B` is a 10x1 column vector
+  - in total, there are `(16*784+16) + (16*16+16) + (10*16+10) = 13002`
+    parameters to be determined
+
 ## Netron
 
 - <https://netron.app/> is a model visualizer
