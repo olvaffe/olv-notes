@@ -221,6 +221,7 @@ Steam
       before recording
 - `fossilize-list` lists all hashes of a given resource type (tag)
   - the most interesting tags should be
+    - `RESOURCE_SHADER_MODULE` (4)
     - `RESOURCE_GRAPHICS_PIPELINE` (6)
     - `RESOURCE_COMPUTE_PIPELINE` (7)
     - `RESOURCE_RAYTRACING_PIPELINE` (9)
