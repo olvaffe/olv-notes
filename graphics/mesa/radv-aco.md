@@ -396,6 +396,21 @@ Mesa RADV ACO
     - `v2b: %5 = p_extract_vector %4, 0`
     - `v2b: %3 = p_phi %5, %2`
 
+## `aco::live_var_analysis`
+
+- if called before `CompilationProgress::after_ra`, `update_vgpr_sgpr_demand`
+  updates the demands
+  - `sgpr_limit` and `vgpr_limit` are the hw limit
+  - `program->num_waves` is updated based
+    - sgpr and vgpr demands
+    - hw limit (20 on rdna2+)
+    - lds, etc.
+  - `program->max_reg_demand` is updated based on `program->num_waves`
+
+## `aco::schedule_program`
+
+- instruction scheduling can create new sgpr/vgpr demands
+
 ## `aco::ssa_elimination`
 
 ## `aco::lower_to_hw_instr`
