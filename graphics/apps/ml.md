@@ -103,6 +103,29 @@ Machine Learning
     - `B` is a 10x1 column vector
   - in total, there are `(16*784+16) + (16*16+16) + (10*16+10) = 13002`
     parameters to be determined
+- <https://www.youtube.com/watch?v=aircAruvnKk>
+  - cost
+    - randomly pick the 13002 parmeters first
+    - given a sample image, the network can output a 10x1 column vector
+    - since we know the correct digit, we know the correct 10x1 column vector
+    - this allows us to calculate the cost, which is the distance between the
+      two vectors
+  - cost function
+    - given a training set, we can run the entire training set through the
+      network and calculate the average cost
+    - this gives as a cost function, which maps 13002 parameters to a single
+      value
+    - the goal is to find the local minimum of the cost function
+  - gradient descent to find local minimum of the cost function
+    - when there is one parameter, `f(x) = y`
+      - we can start with a randomly picked `x0`
+      - we find the slope of the function at `x0`
+      - if the slope is positive, we pick `x1` that is smaller than `x0`
+      - if the slope is negative, we pick `x1` that is larger than `x0`
+      - if the absolute value of the slope is large, `x1` is picked such that
+        the distance to `x0` is large
+      - we can repeat this process and find a local minimum
+    - when there are 13002 parameters, the idea is the same
 
 ## Netron
 
