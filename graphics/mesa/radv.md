@@ -1025,6 +1025,43 @@ Mesa RADV
     - ngg stands for Next-Gen Geometry
     - it is introduced in gfx10 and is the only supported mechanism in gfx11
 
+## Pipeline Statistics
+
+- `radv_GetPipelineExecutableStatisticsKHR` returns pipeline stats that are
+  useful for shader-db
+- `Driver pipeline hash` is the pipeline hash reported to RGP
+- `SGPRs` is the number of sgprs used
+- `VGPRs` is the number of vgprs used
+- `Spilled SGPRs` is the number of sgprs spilled
+- `Spilled VGPRs` is the number of vgprs spilled
+- `Code size` is the binary size in bytes
+- `LDS size` is the lds size used
+- `Scratch size` is the scratch size used
+- `Subgroups per SIMD` is the max occupancy determined by `radv_get_max_waves`
+- ACO-specific
+  - `collect_presched_stats` is called before spill and scheduling
+    - `aco_statistic_sgpr_presched` is `Pre-Sched SGPRs`, number of sgprs
+      before scheduling
+    - `aco_statistic_vgpr_presched` is `Pre-Sched VGPRs`, number of vgprs
+      before scheduling
+  - `lower_to_hw_instr`
+    - `aco_statistic_copies` is `Copies`
+  - `collect_preasm_stats` is called before codegen
+    - `aco_statistic_instructions` is `Instructions`, number of instrs
+    - `aco_statistic_branches` is `Branches`, number of branches
+    - `aco_statistic_valu` is `VALU`, number of valu instrs
+    - `aco_statistic_salu` is `SALU`, number of salu instrs
+    - `aco_statistic_vopd` is `VOPD`, number of vopd instrs
+    - `aco_statistic_vmem_clauses` is `VMEM Clause`
+    - `aco_statistic_vmem` is `VMEM`, number of vmem instrs
+    - `aco_statistic_smem_clauses` is `SMEM Clause`
+    - `aco_statistic_smem` is `SMEM`, number of smem instrs
+    - `aco_statistic_latency` is `Latency`, estimated cycles per invocation
+    - `aco_statistic_inv_throughput` is `Inverse Throughput`, estimated cycles
+      per wave64
+  - `collect_postasm_stats` is called after codegen
+    - `aco_statistic_hash` is `Hash`
+
 ## Vertex Prolog
 
 - `VK_DYNAMIC_STATE_VERTEX_INPUT_EXT`
