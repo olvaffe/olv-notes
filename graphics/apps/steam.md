@@ -183,12 +183,62 @@ Steam
   - `VK_LAYER_PATH=~/projects/Fossilize/out/layer/ VK_INSTANCE_LAYERS=VK_LAYER_fossilize`
   - db is saved to `fossilize.<hash>.<seqno>.foz`
     - `FOSSILIZE_DUMP_PATH=` to override `fossilize` prefix
-
-## Fossilize Database
-
-- `fossilize-convert-db` unpacks a `.foz` database to (many) json files
-- it looks like each `StateRecorder::record_*` call records a `Vk*Info` to a
-  json snippet, and is saved to the database
+- db internals
+  - there are 3 database formats
+    - `StreamArchive` with `.foz` suffix
+    - `ZipDatabase` with `.zip` suffix
+    - `DumbDirectoryDatabase` if neither
+  - there are `RESOURCE_COUNT` resource types in a database
+    - `RESOURCE_APPLICATION_INFO` is based on `VkApplicationInfo` and
+      `VkPhysicalDeviceFeatures2`
+    - `RESOURCE_SAMPLER` is based on `VkSamplerCreateInfo`
+    - `RESOURCE_DESCRIPTOR_SET_LAYOUT` is based on
+      `VkDescriptorSetLayoutCreateInfo`
+    - `RESOURCE_PIPELINE_LAYOUT` is based on `VkPipelineLayoutCreateInfo`
+    - `RESOURCE_SHADER_MODULE` is based on `VkShaderModuleCreateInfo`
+    - `RESOURCE_RENDER_PASS` is based on `VkRenderPassCreateInfo2` and
+      `VkRenderPassCreateInfo`
+    - `RESOURCE_GRAPHICS_PIPELINE` is based on `VkGraphicsPipelineCreateInfo`
+    - `RESOURCE_COMPUTE_PIPELINE` is based on `VkComputePipelineCreateInfo`
+    - `RESOURCE_APPLICATION_BLOB_LINK` is ???
+    - `RESOURCE_RAYTRACING_PIPELINE` is based on
+      `VkRayTracingPipelineCreateInfoKHR`
+  - each `StateRecorder::record_*` call records a `Vk*Info` to a json snippet,
+    which is saved to the database
+- `fossilize-convert-db` converts between supported database formats
+  - it opens an input db for reading and an output db for writing
+  - it reads all resources from the input db and writes them to the output db
+- `fossilize-merge-db` merges databases
+  - it opens the first db for writing and the rest dbs for reading
+  - it reads all resources from the rest of the dbs and writes them to the
+    first db
+- `fossilize-opt` optimizes spirv
+  - it opens the input db for reading and the output db for writing
+  - it reads resources of certain types from the input db and replays them
+    with `OptimizeReplayer`
+  - `OptimizeReplayer` records all replayed resources
+    - for `RESOURCE_SHADER_MODULE`, it uses `SPIRV-Tools` to optimizes spirv
+      before recording
+- `fossilize-list` lists all hashes of a given resource type (tag)
+  - the most interesting tags should be
+    - `RESOURCE_GRAPHICS_PIPELINE` (6)
+    - `RESOURCE_COMPUTE_PIPELINE` (7)
+    - `RESOURCE_RAYTRACING_PIPELINE` (9)
+  - it opens the input db for reading
+  - it reads the hashes of all resources of the given tag
+  - it prints hashes (and optionally sizes) of resources
+- `fossilize-rehash` recomputes hashes, used to convert an old db from old
+  hash formats to new hash formats
+- `fossilize-sync` synthesizes a db from raw spirv code
+- `fossilize-prune` removes unused/unwanted entries from a db
+- `fossilize-disasm` disassembles spirv
+  - it opens the input db for reading
+  - it replays all interesting resource types
+  - when `--target asm`, it uses `SPIRV-Tools` to print spirv disassembly
+  - when `--target glsl`, it uses `SPIRV-Cross` to print glsl
+  - when `--target isa`, it uses `VK_KHR_pipeline_executable_properties` to
+    dump the binary
+    - for radv, this dumps `NIR Shader(s)`, `ACO IR`, and `Assembly` in text
 
 ## `fossilize-replay`
 
