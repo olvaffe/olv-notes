@@ -58,6 +58,11 @@ binutils
   - `--undefined NAME` adds NAME as an undefined symbol
     - this can be used to pull in more objects from `.a` archive
   - `-z keyword`
+    - `pack-relative-relocs` generates compact relative relocation for PIC
+      libraries and executables.  It adds both `DT_RELR` and
+      `GLIBC_ABI_DT_RELR`
+      - other linkers support `--pack-dyn-relocs=relr` which does not add
+        `GLIBC_ABI_DT_RELR`.  glibc might refuse to load.
   - `--start-group archives --end-group` searches archives repeatedly unless
     there is no new undefined symbol
     - this is useful when archives have mutual dependencies
