@@ -140,12 +140,13 @@ OpenCL Apps
   - `git submodule update --init --recursive`
   - `./external/clspv/utils/fetch_sources.py --deps llvm`
     - this helps `clspv` fetches `llvm`
-  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLVK_CLSPV_ONLINE_COMPILER=ON -DCLVK_ENABLE_SPIRV_IL=OFF`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Release -DCLVK_CLSPV_ONLINE_COMPILER=ON -DCLVK_ENABLE_SPIRV_IL=OFF`
     - `-DCLVK_PERFETTO_ENABLE=ON -DCLVK_PERFETTO_SDK_DIR=<path-to-perfetto-sdk> -DCLVK_PERFETTO_BACKEND=System`
     - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
-  - `ninja -C out`
+  - `ninja -C out OpenCL`
     - no `clspv` because we enable online compiler
-  - `strip -g out/libOpenCL.so.1 && scp -C out/libOpenCL.so.1 <remote>:`
+  - `strip -g out/libOpenCL.so.0.1 && scp -C out/libOpenCL.so.0.1 <remote>:`, or
+  - `clvkdir=clvk-$(date +%Y%m%d) && tar -zcf $clvkdir.tar.gz --transform="s,^,$clvkdir/," -C out libOpenCL.so.0.1`
 - build options
   - `-DCLVK_COMPILER_AVAILABLE=OFF` disables all but
     `clCreateProgramWithBinary` support

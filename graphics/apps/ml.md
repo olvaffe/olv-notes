@@ -140,8 +140,10 @@ Machine Learning
 
 - build with cmake
   - `git clone https://github.com/tensorflow/tensorflow.git`
-  - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON`
+  - `cmake -S tensorflow/lite -B out -G Ninja -DTFLITE_ENABLE_GPU=ON -DCMAKE_BUILD_TYPE=Release`
   - `ninja -C out tensorflow-lite benchmark_model`
+  - `scp -C out/tools/benchmark/benchmark_model dut:`, or
+  - `tflitedir=tflite-$(date +%Y%m%d) && tar -zcf $tflitedir.tar.gz --transform="s,^,$tflitedir/," -C out/tools/benchmark benchmark_model`
 - delegates
   - `coreml`, Core ML, Apple
   - `gpu`, CL/GL/Metal
