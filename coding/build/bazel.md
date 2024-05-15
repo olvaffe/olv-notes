@@ -38,3 +38,6 @@ Bazel
     - `cpu`: `aarch64`, `x86_64`, etc.
     - `os`: `android`, `linux`, `windows`, `emscripten`, `chromiumos`, etc.
   - the legacy way is `bazel build --cpu=... --crosstool_top=...  --compiler=...`
+- <https://bazel.build/docs/cc-toolchain-config-reference>
+  - a toolchain has features that can be enabled/disabled with `--features=`
+    - prefix a `-` to disable
