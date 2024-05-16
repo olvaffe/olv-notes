@@ -3,6 +3,11 @@ Platform2 libsegmentation
 
 ## override device info
 
+- without `USE=feature_management`, `USE_FEATURE_MANAGEMENT` is defined to 0
+  - `FeatureManagementImpl::GetFeatureLevel` always returns
+    `FeatureLevel::FEATURE_LEVEL_0`
+  - `FeatureManagementImpl::GetScopeLevel` always returns
+    `ScopeLevel::SCOPE_LEVEL_0`
 - `echo -n CAIQAh== > /run/libsegmentation/feature_device_info`
   - `kTempDeviceInfoPath` points to the path for temporary override
   - `FeatureManagementUtil::ReadDeviceInfo` base64-decodes the string and
