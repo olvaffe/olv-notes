@@ -277,10 +277,107 @@ Machine Learning
           `clEnqueueNDRangeKernel`
         - it also calls `clFlush` directly at the end
       - `CopyToExternalObject`
-        - `tflite::gpu::cl::BHWCBufferToTensorConverter::Convert` calls
+        - `tflite::gpu::cl::TensorToBHWCBufferConverter::Convert` calls
           `clEnqueueNDRangeKernel`
         - `tflite::gpu::cl::CpuCopier::Convert` calls `clEnqueueReadBuffer`
       - `WaitForCompletion` calls `clFinish` directly
+- `tflite::gpu::ConvGeneric::GuessBestParams`
+  - common inputs are
+    - `dst_shape` is BHWC (batch, height, width, channel)
+      - batch and channel are usually 1
+      - width and height depend on model
+    - some common values are
+      - `512x288` with src/dst depth `1x2` or `6x2` or `2x1`
+      - `256x144` with src/dst depth `2x4` or `12x4`
+      - `128x72` with src/dst depth `4x8` or `24x8`
+      - `64x36` with src/dst depth `8x16` or `48x16`
+      - `32x18` with src/dst depth `16x32`
+      - I guess when the input size is small, it increases depth to process
+        more slices at a time
+    - `x_kernel_is_1` and `y_kernel_is_1` are usually false, unless the shape
+      width/height are small
+    - `different_weights_for_height` is false most of the time
+  - assume
+    - `(src_depth, dst_depth)` is `(6, 2)`
+    - `x_kernel_is_1` and `y_kernel_is_1` are false
+    - `different_weights_for_height` is false
+    - `dst_shape` width and height are `512x288`
+  - AMD uses
+    - `conv_params.weights_data_type` is `DataType::FLOAT16`
+    - `conv_params.block_size` is `int4(4, 2, 1, 2)`
+      - this is the number of outputs to compute per work item
+      - when `dst_depth` is a multiple of 4, it switches to
+        `int4(2, 2, 1, 4)`, etc.
+    - `conv_params.fixed_work_group_size` is false
+    - `conv_params.work_group_size` is undefined and unused
+    - `conv_params.work_group_launch_order` is undefined and unused
+    - `conv_params.linear_spatial` is false
+    - `conv_params.linear_all` is false
+    - `conv_params.different_weights_for_height` is false
+    - `conv_params.groups_support` is false (default)
+    - `conv_params.src_depth_loop_size` is 1
+      - this is the number of slices to process in the inner most loop
+      - `__attribute__((opencl_unroll_hint(src_depth_loop_size)))`
+        conceptually
+    - `conv_params.need_src_loop` is true (default)
+    - `conv_params.need_dst_loop` is true (default)
+    - `conv_params.weights_upload_type` is `WeightsUploadType::CONSTANT_MEM`
+      - this is the address space of the weights
+    - `conv_params.x_kernel_is_1` is false
+    - `conv_params.y_kernel_is_1` is false
+    - `conv_params.z_kernel_is_1` is false
+      - these are the kernel size (as in a box filter)
+    - `conv_params.weights_layout` is `WeightsLayout::kOSpatialIOGroupI4O4`
+    - `conv_params.simd_size` is 1 (default)
+    - `work_group_size_` is `int3(8, 4, 1)`
+      - this is the local work group size
+    - `work_group_launch_order_` is `int3(0, 1, 2)`
+  - Intel uses
+    - `conv_params.weights_data_type` is `DataType::FLOAT16`
+    - `conv_params.block_size` is `int4(1, 1, 1, 2)`
+      - when `dst_depth` is a multiple of 4, it switches to
+        `int4(1, 1, 1, 4)`, etc.
+    - `conv_params.fixed_work_group_size` is true
+    - `conv_params.work_group_size` is undefined and unused
+    - `conv_params.work_group_launch_order` is undefined and unused
+    - `conv_params.linear_spatial` is true
+    - `conv_params.linear_all` is false
+    - `conv_params.different_weights_for_height` is false
+    - `conv_params.groups_support` is false (default)
+    - `conv_params.src_depth_loop_size` is 2
+      - when `src_depth` is a multiple of 4, it switches to 4
+    - `conv_params.need_src_loop` is true (default)
+    - `conv_params.need_dst_loop` is true (default)
+    - `conv_params.weights_upload_type` is `WeightsUploadType::PRIVATE_MEM_SIMD_BROADCAST`
+    - `conv_params.x_kernel_is_1` is false
+    - `conv_params.y_kernel_is_1` is false
+    - `conv_params.z_kernel_is_1` is false
+    - `conv_params.weights_layout` is `WeightsLayout::kOSpatialIOGroupI4O4`
+    - `conv_params.simd_size` is 16
+      - it will be 32 if we use subgroup on amd
+    - `work_group_size_` is `int3(16, 1, 1)`
+      - it will be 32 if we use subgroup on amd
+    - `work_group_launch_order_` is `int3(0, 1, 2)`
+- `tflite::gpu::ConvGeneric::GenerateConv`
+  - the goal is to compute `Output = Weight * Input + Bias` with box filtering
+  - there are `src_tensor.Width * src_tensor.Height * src_tensor.Slices` input values
+    - the type is `half4` (4 channels)
+  - there are `dst_tensor.Width * dst_tensor.Height * dst_tensor.Slices` output values
+    - the type is also `half4`
+  - for each input value, there are `dst_tensor.Slices` weight matrices
+    - the type is 4x4 matrix
+  - for each output value, there is a bias
+    - the type is `half4`
+  - each output value is the average of intermediate output values, plus bias
+    - there are `args.kernel_size_x * args.kernel_size_y * args.src_tensor.Slices`
+      intermediate output values
+    - each intermediate output value is calculated as `weight * input`
+      - `input` varies for different `(x, y, src_slice)`
+      - `weight` varies for different `(x, y, src_slice, dst_slice)`
+  - each work item handles `conv_params.block_size` outputs
+    - e.g., when the block size is `int4(4, 2, 1, 2)`, each work items outputs
+      `4*2*1*2=16` values
+      - they are `r_wX_hY_sW` (no Z because it is 1)
 
 ## MediaPipe Solution Example
 
