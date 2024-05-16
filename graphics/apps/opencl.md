@@ -36,6 +36,14 @@ OpenCL Apps
   - build
     - `git clone https://github.com/intel/opencl-intercept-layer.git`
     - `cmake -S . -B out -G Ninja`
+  - use
+    - it is not a CL layer that can be loaded via `OPENCL_LAYERS`
+    - it is to be used as the CL library for apps, and it will chain load the
+      real CL library
+    - `LD_LIBRARY_PATH=<path-to-intercept-layer>` such that app finds the
+      inteceptor
+    - `CLI_OpenCLFileName=<path-to-real-cl-impl>` tells the interceptor to
+      dlopen the specified cl impl
   - config `~/clintercept.conf`
     - env `CLI_<option>` sets the same option
     - Setup and Loading Controls
