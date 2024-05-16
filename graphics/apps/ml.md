@@ -364,16 +364,17 @@ Machine Learning
     - the type is `half4` (4 channels)
   - there are `dst_tensor.Width * dst_tensor.Height * dst_tensor.Slices` output values
     - the type is also `half4`
-  - for each input value, there are `dst_tensor.Slices` weight matrices
+  - there are `args.kernel_size_x * args.kernel_size_y * dst_tensor.Slices`
+    weight matrices
     - the type is 4x4 matrix
-  - for each output value, there is a bias
+  - there is also a bias for each output value
     - the type is `half4`
   - each output value is the average of intermediate output values, plus bias
     - there are `args.kernel_size_x * args.kernel_size_y * args.src_tensor.Slices`
       intermediate output values
     - each intermediate output value is calculated as `weight * input`
       - `input` varies for different `(x, y, src_slice)`
-      - `weight` varies for different `(x, y, src_slice, dst_slice)`
+      - `weight` varies for different `(kernel_x, kernel_y, dst_slice)`
   - each work item handles `conv_params.block_size` outputs
     - e.g., when the block size is `int4(4, 2, 1, 2)`, each work items outputs
       `4*2*1*2=16` values
