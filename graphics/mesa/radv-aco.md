@@ -36,6 +36,12 @@ Mesa RADV ACO
   - `blocks` is `std::vector<Block>`
   - `temp_rc` is `std::vector<RegClass>`
   - `stage` is `Stage`
+  - `create_and_insert_block` creates and adds a new block to `blocks`
+  - `allocateTmp` creates and adds a new `Temp` to `temp_rc`
+    - `bld.tmp` and `bld.def` make use of this method
+  - `peekAllocationId` returns the number of temps
+    - it returns the next alloc id, and because we allocate temps linearly, it
+      is the same as temp count
 - `struct Block`
   - `instructions` is `std::vector<aco_ptr<Instruction>>`
 - `struct Instruction`
@@ -100,8 +106,13 @@ Mesa RADV ACO
     - `vgpr_limit`, max number of vgprs available to a shader, is 256 on gfx10+
 - `aco::init_context` initializes isel context
   - `nir_divergence_analysis` marks non-uniform ssas as `divergent`
-  - it loops over all nir instructions to intialize
+  - it loops over all nir instructions to intialize a subrange of
     `ctx->program->temp_rc.data`
+    - the goal is to assign a RC for each ssa
+      - after the loop, given a `nir_def`,
+        - `ctx->first_temp_id + def->index` is the temp id of the ssa
+        - `ctx->program->temp_rc[id]` is the RC of the ssa
+        returns its RC
     - for `nir_instr_type_alu`, there are a few possiblities
       - for moves such as `nir_op_mov`, def is vgpr or sgpr depending on
         whether the instruction is divergent or uniform
@@ -117,16 +128,56 @@ Mesa RADV ACO
       - `components` is number of components
       - `bitsize` is the component size
       - it returns `sX`, `vX`, or `vXb`
-- `aco::visit_alu_instr` selects the aco instruction for a `nir_alu_instr`
+- `aco::visit_cf_list` visits the shader entrypoint to select instructions
+  - `aco::visit_block`
+    - `aco::visit_alu_instr` selects the aco instruction for a `nir_alu_instr`
+    - `aco::visit_load_const`
+    - `aco::visit_intrinsic`
+    - `aco::visit_tex`
+    - `aco::visit_phi`
+    - `aco::visit_undef`
+    - `aco::visit_jump`
+  - `aco::visit_if`
+  - `aco::visit_loop`
+- instruction selection for `nir_op_mov` as an example
+  - the `nir_alu_instr` has an src and a def
+  - `get_ssa_temp` returns a `Temp` for the def
+    - `aco::init_context` has assigned unique `(id, rc)` for each def
+  - `get_alu_src` returns a `Temp` for the src
+    - `get_ssa_temp` returns a `Temp` for the src
+    - if src is scalar, the temp is returned
+    - otherwise, `emit_extract_vector` extracts a scalar elem from the temp to
+      a new temp and returns the new temp
+      - `Builder::tmp` or `Builder::def` calls `program->allocateTmp` to
+        allocate a new tmp
+  - `Builder::copy` creates and inserts a `p_parallelcopy` instruction
+    - `aco::create_instruction` creates an `Instruction` with 1 def and 1 op
+    - `instr->definitions[0]` and `instr->operands[0]` are initialized
+    - `Builder::insert` adds the instr to the end of the block
+- `struct isel_context`
+  - `allocated_vec` tracks temps that are vectors
+    - e.g., `nir_op_vec2` creates a vector temp from scalar temps
+    - `allocated_vec[dst.id()]` returns the scalar temps from the vector temp
+    - this is used to avoid excessive copies, which could happen when
+      extracting vectors from vectors if there was no `allocated_vec`
 
 ## ACO IR Pesudo Opcodes
 
 - `aco_opcode::p_parallelcopy`
+  - it copies n operands to n dsts 1:1
+    - each src and dst can have any RC; the only requirement is that each pair
+      must have the same size
+    - if a dst is sgpr, its src must not be vgpr
   - `bld.copy` uses this opcode
   - it can load a const to a temp, or convert from sgpr to vgpr
     - `s1: %1 = p_parallelcopy 3`
     - `v1: %2 = p_parallelcopy %1`
 - `aco_opcode::p_create_vector`
+  - it is conceptually a `writev`
+    - all operands are copied to the same dst consecutively
+    - dst and operands can have any RC; the only requirement is that the dst
+      size must match the sum of operand sizes
+    - if dst is sgpr, operands must not be vgpr
   - it can create a vector
     - `s3: %1 = p_create_vector 2, 1, 0`
   - it can also work like this
@@ -134,16 +185,23 @@ Mesa RADV ACO
     - `v2b: %2 = p_parallelcopy 2`
     - `v1: %3 = p_create_vector %1, %2`
 - `aco_opcode::p_extract_vector`
+  - it copies an element from an array
+    - src is considered an array whose element type is determined by dst
+    - this copies a single element from src to dst
   - `emit_extract_vector` uses this opcode
   - it can convert a scalar to a vector
     - `v1: %1 = p_parallelcopy 3`
     - `v2b: %2 = p_extract_vector %1, 1`
-      - treat `%1` as `v2b` array and extract from idx 1 (higher 16 bits)
 - `aco_opcode::p_split_vector`
+  - it is conceptually a `readv`
+    - src is copied to dsts consecutively
+    - src and dsts can have any RC; the only requirement is that the src size
+      must match the sum of dst sizes
+    - if any dst is sgpr, src must not be vgpr
   - `emit_split_vector` uses this opcode
   - it can split a vector into scalars
     - `s2: %3 = s_load_dwordx2 %1, %2`
-    - `s1: %4,  s1: %5,  s1: %6 = p_split_vector %3`
+    - `s1: %4,  s1: %5 = p_split_vector %3`
   - it can also split a scalar into vectors
     - `v1: %1 = p_parallelcopy 0`
     - `v2b: %2,  v2b: %3 = p_split_vector %1`
@@ -422,6 +480,16 @@ Mesa RADV ACO
 ## `aco::schedule_program`
 
 - instruction scheduling can create new sgpr/vgpr demands
+
+## `aco::register_allocation`
+
+- the goal is to assign a physical reg to each temp
+  - we could assign a unique reg to each temp, but that's insane
+    - high reg pressure
+    - no dce (e.g., `p_parallelcopy` can be eliminated if src and dst are
+      assigned the same reg)
+  - with liveness analysis, we can recycle a reg when the associated temp is
+    dead
 
 ## `aco::ssa_elimination`
 
