@@ -468,6 +468,30 @@ Mesa RADV ACO
 
 ## `aco::live_var_analysis`
 
+- `aco::live`
+  - `live_out` is per-block `IDSet`
+    - it tracks temps used by other blocks
+  - `register_demand` is per-block per-instruction `RegisterDemand`
+- `process_live_temps_per_block` processes blocks and instructions backward
+  - `IDSet live = lives.live_out[block->index]` inits live-in from live-out
+    - e.g., if the block has no instruction, then its live-in and live-out are
+      equal
+  - for each non-phi instruction,
+    - each def is removed from live-in
+    - each op is added to live-in
+    - iow, if an op is not a def of the block, it belongs to live-in
+    - also,
+      - if a def is not in live-in, it means the def has no user in the block
+        (because we traverse backward) and is marked `setKill`
+      - the last op that uses the same temp is marked `setFirstKill` or
+        `setKill`, because the temp has no more user in the block
+  - for each phi instruction,
+    - the def is removed from live-in
+    - each op is added to live-out of the corresponding predecessor
+  - with live-in of the current block known, we can update `live_out` of
+    predecessors
+    - if a predecessor is updated, `worklsit` is updated as well such that the
+      predecessor will be visited again
 - if called before `CompilationProgress::after_ra`, `update_vgpr_sgpr_demand`
   updates the demands
   - `sgpr_limit` and `vgpr_limit` are the hw limit
@@ -490,10 +514,69 @@ Mesa RADV ACO
       assigned the same reg)
   - with liveness analysis, we can recycle a reg when the associated temp is
     dead
+- `ra_ctx`
+  - `assignments` tracks how each temp should be assigned
+    - `affinity` means a temp should be assigned the same reg as another temp
+    - `vcc` means a temp shoudl be assigned special reg `vcc`
+    - `m0` means a temp shoudl be assigned special reg `m0`
+  - `vectors` maps operands of `p_create_vector` back to the instr
+    - used for affinity
+  - `split_vectors` maps operands of `p_split_vector` back to the instr
+    - used for affinity too
+- `get_affinities`
+  - it loops over all phi and non-phi instrs to update `vectors`,
+    `split_vectors`, `temp_to_phi_resources` and `phi_resources`
+    - for `p_create_vector`, `vectors` is updated
+    - for `p_split_vector`, `split_vectors` is updated
+    - for phi, operands that are killed (consumed) are added to
+      `phi_resources[idx]`, and `temp_to_phi_resources[op.id()] = idx` is
+      added
+    - for copy, if def is used as an operand of phi, and the operand of the
+      copy is killed, the operand of copy is also added to `phi_resources`
+  - at the end, it loops over `phi_resources` and updates affinity
+    - `ctx.assignments[op.id()].affinity = def.id()`
+  - e.g., `a = phi b` and `b` has no other user thus killed
+    - `ctx.assignments[b.id()].affinity = a.id()`
+    - since `a` and `b` are assigned the same reg, `phi` can be eliminated
+      later
+- `get_reg` returns a `PhysReg` for a `Temp`
+  - if the temp is an operand of `p_split_vector`, `p_create_vector`, `p_phi`,
+    `p_parallelcopy`, etc., the affinity might have been set and it should be
+    honored
+  - otherwise, `get_reg_impl` allocates a reg for the temp
+  - if there is no more reg,
+    - `compact_linear_vgprs` compacts linear vgrs and retry
+    - `increase_register_file` increases reg limit and retry
+    - `compact_relocate_vars` relocates all regs to make room
+- for each block
+  - `init_reg_file`
+  - `get_regs_for_phis`
+  - for each non-phi instr
+    - for each operand
+    - for each definition
+  - `handle_pseudo`
+  - `emit_parallel_copy`
 
 ## `aco::ssa_elimination`
 
 ## `aco::lower_to_hw_instr`
 
-- `p_parallelcopy` requires `handle_operands` which calls `do_swap`
-  - it uses xor to swap, <https://en.wikipedia.org/wiki/XOR_swap_algorithm>
+- `handle_operands` are called to instrs that copy
+  - it is used for
+    - `p_extract_vector`
+    - `p_create_vector`
+    - `p_start_linear_vgpr`
+    - `p_split_vector`
+    - `p_parallelcopy`
+    - `p_as_uniform`
+  - `copy_map` describes the `copy_operation` for each reg
+    - e.g., `b = p_parallelcopy a`
+      - the reg is `b.physReg()`
+      - `def` is `b`
+      - `op` is `a`
+      - `bytes` is `a.bytes()`
+    - if `a` and `b` have the same reg, the copy can be skipped
+    - `try_coalesce_copies` tries to coalesce copies
+  - `do_copy` emits the instruction to copy
+  - if the copies form a cycle, `do_swap` breaks the cycle
+    - it uses xor to swap, <https://en.wikipedia.org/wiki/XOR_swap_algorithm>
