@@ -178,10 +178,40 @@ Vulkan
     should enable validation layers to get details, or to file a bug against
     the validation layers or the driver
 - 3.9. Numeric Representation and Computation
-  - only applies to computations outside of shader execution, , such as
-    texture image specification and sampling, and per-fragment operations
+  - Floating-Point Computation
+    - only applies to computations outside of shader execution, such as
+      texture image specification and sampling, and per-fragment operations
     - requirements for shader execution differ and are specified by the
       Precision and Operation of SPIR-V Instructions section
+  - Floating-Point Format Conversions
+    - when a value is converted to a defined floating-point representation,
+      - if it falls between two representable finite values, it must be
+        rounded to either of them
+        - the rounding mode is not defined
+      - if its magnitude is larger than that of any representable finite
+        value, it must be rounded to that representable finite value or to
+        appropriately signed infinity
+      - if the destination format is unsigned, negative values are converted
+        to zero
+      - if it is positive infinity, it is converted to positive infinity
+      - if it is negative infinity, it is converted to negative infinity, or
+        zero if the destination format is nsigned
+      - if it is NaN, it is converted to NaN
+    - same rules for fp16/fp32/fp64
+- 3.10. Fixed-Point Data Conversions
+  - Conversion From Normalized Fixed-Point to Floating-Point
+    - unsigned normalized fixed-point represents numbers in `[0, 1]`
+    - from unorm `c` to fp `f`: `f = c / (2^b - 1)`
+    - signed normalized fixed-point represents numbers in `[-1, 1]`
+    - from snorm `c` to fp `f`: `f = max(c / (2^(b - 1) - 1), -1)`
+      - e.g., for SNORM8, both -127 and -128 are converted to -1.0
+  - Conversion From Floating-Point to Normalized Fixed-Point
+    - from fp `f` to unorm `c`: `c = round(clamp(f, 0, 1) * (2^b - 1))`
+    - from fp `f` to snorm `c`: `c = round(clamp(f, -1, 1) * (2^(b - 1) - 1))`
+    - `round`
+      - if the input is an integer, `round` must returns the integer
+      - otherwise, `round` returns one of the two closest b-bit integers
+        - the rounding mode should be RTE, but is not required
 
 ## Chapter 4. Initialization
 
