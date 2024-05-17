@@ -127,6 +127,12 @@ Mesa RADV ACO
     - `s1: %1 = p_parallelcopy 3`
     - `v1: %2 = p_parallelcopy %1`
 - `aco_opcode::p_create_vector`
+  - it can create a vector
+    - `s3: %1 = p_create_vector 2, 1, 0`
+  - it can also work like this
+    - `v2b: %1 = p_parallelcopy 1`
+    - `v2b: %2 = p_parallelcopy 2`
+    - `v1: %3 = p_create_vector %1, %2`
 - `aco_opcode::p_extract_vector`
   - `emit_extract_vector` uses this opcode
   - it can convert a scalar to a vector
@@ -135,6 +141,12 @@ Mesa RADV ACO
       - treat `%1` as `v2b` array and extract from idx 1 (higher 16 bits)
 - `aco_opcode::p_split_vector`
   - `emit_split_vector` uses this opcode
+  - it can split a vector into scalars
+    - `s2: %3 = s_load_dwordx2 %1, %2`
+    - `s1: %4,  s1: %5,  s1: %6 = p_split_vector %3`
+  - it can also split a scalar into vectors
+    - `v1: %1 = p_parallelcopy 0`
+    - `v2b: %2,  v2b: %3 = p_split_vector %1`
 - `aco_opcode::p_as_uniform`
   - `bld.as_uniform` uses this opcode
   - it gets translated to `aco_opcode::v_readfirstlane_b32`
