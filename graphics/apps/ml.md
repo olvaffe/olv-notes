@@ -241,6 +241,8 @@ Machine Learning
           - `tflite::gpu::cl::InferenceContext::InitFromGraph` calls
             `tflite::gpu::cl::InferenceContext::AllocateMemory` to create cl
             buffers and images
+          - it also calls `tflite::gpu::cl::InferenceContext::Tune` to find
+            the best work group sizes for the operations
           - `tflite::gpu::cl::InferenceContext::Compile` creates more cl
             buffers and creates cl programs
             - `tflite::gpu::ConvertOperations` has called
