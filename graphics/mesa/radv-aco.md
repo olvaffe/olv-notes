@@ -550,12 +550,39 @@ Mesa RADV ACO
     - `compact_relocate_vars` relocates all regs to make room
 - for each block
   - `init_reg_file`
-  - `get_regs_for_phis`
+  - `get_regs_for_phis` assigns regs for phis
   - for each non-phi instr
     - for each operand
+      - assert that an reg has been assigned, because we loop forward and the
+        reg was assigned by def of some earlier instruction
+      - if `operand_can_use_reg` returns false, `get_reg_for_operand` renames
+        the reg
     - for each definition
-  - `handle_pseudo`
-  - `emit_parallel_copy`
+      - if it needs a fixed reg, and the reg is already used,
+        `get_regs_for_copies` and `update_renames`
+      - if the instr is pseudo, depending on the instr, we can
+        - `get_reg_specified` to use the same reg as the operand
+        - `get_reg_simple`
+        - `get_reg_create_vector` for `p_create_vector`
+      - otherwise, `get_reg` to allocate a reg
+    - `emit_parallel_copy` handles copies incurred by renames, etc.
+- e.g.,
+  - `BB0` is the entrypoint
+    - there is no phi
+    - for each non-phi instr,
+      - the operands have been assigned
+      - the definitions need assignments
+  - `BB1` is the loop header
+    - phis need assignments
+      - definitions usually need assignments
+      - operands are usually have affinities to the definitions
+    - non-phi definitions need assignment
+  - `BB2` is the loop body
+    - similar to `BB0`
+  - `BB3` is the loop exit
+    - phis need assignments
+      - definitions usually just get the regs from the operands
+    - non-phi definitions need assignment
 
 ## `aco::ssa_elimination`
 
