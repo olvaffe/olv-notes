@@ -688,6 +688,37 @@ NIR
   - `lower_2f` is very complex
   - `lower_f2` uses `nir_ftrunc`, `nir_fdiv`, `nir_frem`, etc.
 
+## `nir_alu_instr`
+
+- `nir_op`
+  - `nir_op_pack_half_2x16_split` takes 2 fp32, converts them to 2 fp16 with
+    undefined rounding mode, and packs them to uint32
+  - `nir_op_pack_half_2x16` takes 1 fp32x2, converts it to fp16x2 with
+    undefined rounding mode, and packs it to uint32
+  - `nir_op_pack_half_2x16_rtz_split` is the same as
+    `nir_op_pack_half_2x16_split`, except the rounding mode is rtz rather than
+    undefined
+  - `nir_op_f2f16_rtz` is the same as `nir_op_f2f16`, except the rounding mode
+    is rtz rather than the default
+  - `nir_op_f2f16_rtne` is the same as `nir_op_f2f16`, except the rounding
+    mode is rtne rather than the default
+  - `nir_op_f2f16` converts fp32 to fp16 with the default rounding mode
+    - unless explicitly specified, the default rounding mode is undefined
+  - `nir_op_f2fmp` is the same as `nir_op_f2f16`, except when the result is
+    immediately converted back to fp32, it can be safely eliminated
+    - `mp` stands for `mediump`
+  - `nir_op_i2i16` converts int32 to int16 with truncation
+    - e.g., 98304 (0x18000) becomes -32768 (0x8000)
+  - `nir_op_i2imp` is the same as `nir_op_i2i16`, except when the result is
+    immediately converted back to int32, it can be safely eliminated
+  - `nir_op_u2u16` converts uint32 to uint16 with truncation
+  - `nir_op_pack_sint_2x16` takes 1 int32x2, converts it to int16x2 with
+    clamping, and packs it to int32
+  - `nir_op_pack_uint_2x16` takes 1 uint32x2, converts it to uint16x2 with
+    clamping, and packs it to uint32
+  - `nir_op_pack_32_2x16_split` takes 2 uint16 and packs them to uint32
+  - `nir_op_pack_32_2x16` takes 1 uint16x2 and packs it to uint32
+
 ## `nir_tex_instr`
 
 - `enum nir_texop`
@@ -942,3 +973,53 @@ NIR
       workgroup id by 6
   - `32     %5 = iadd %4, %2.x`
     - this sums both up
+
+## `nir_opt_16bit_tex_image`
+
+- `nir_opt_16bit_tex_image_options`
+  - `rounding_mode` means the hw rounding mode
+  - `opt_tex_dest_types` means tex dst types (float, int, uint)
+  - `opt_image_dest_types` means img dst types (float, int, uint)
+  - `integer_dest_saturates` means the hw saturates
+  - `opt_image_store_data` is for when 16-bit values are converted to 32-bit
+    just for image store
+  - `opt_image_srcs` is for when 16-bit coords/sample/loc are converted to
+    32-bit just for image instrinsics
+  - `opt_srcs_options_count` and `opt_srcs_options` means tex srcs
+    - `sampler_dims` means sampler dims (1d, 2d, 3d, cube, rect, etc.)
+    - `src_types` means src types (coord, lod, bias, ddx, ddy, etc.)
+- `opt_16bit_store_data` is enabled by `opt_image_store_data`
+  - `can_opt_16bit_src` returns if the src can be optimized
+    - if the src is const, it checks if the val can be represented by 16-bit
+    - if the src is alu, it checks if the alu is 16-bit to 32-bit conversion
+    - if true, it means the 32-bit src can be replaced by a 16-bit val
+  - `opt_16bit_src` replaces the 32-bit src by a 16-bit src
+  - `nir_intrinsic_set_src_type` changes the src type from 32-bit to 16-bit
+  - e.g., `imageStore(image2D, p, data)` requires fp32 data even when the
+    image format is fp16
+    - if the fp32 data is converted from fp16, `opt_16bit_store_data` makes
+      sure nir performs an fp16 store insteaed
+    - when the hw has native fp16 store support, we can dce the fp16-to-fp32
+      conversion and uses fp16 store
+- `opt_16bit_image_srcs` is enabled by `opt_image_srcs`
+  - if `coords`, `sample`, and `lod` are actually int32 converted from int16,
+    replace them by the original int16 values
+  - e.g., `imageStore(image2D, p, data)` requires int32 p even when it is
+    converted from int16
+    - `opt_16bit_store_data` makes sure nir uses the original int16, which
+      allows the i2i32 conversion to be dce'd
+- `opt_16bit_image_dest` is enabled by `opt_image_dest_types`
+  - if the value returned by image load is always converted to 16-bit
+    immediately, `opt_16bit_destination` replaces the conversions by movs or
+    packs
+  - `nir_intrinsic_set_dest_type` changes the dst type from 32-bit to 16-bit
+  - e.g., `imageLoad(image2D, p)` returns fp32 even when the image format is
+    fp16
+    - if the fp32 data is converted to fp16 immediately,
+      `opt_16bit_image_dest` makes sure nir performs an fp16 load insteaed
+    - when the hw has native fp16 load support, we can use fp16 load and dce
+      the fp32-to-fp16 conversion
+- `opt_16bit_tex_dest` is enabled by `opt_tex_dest_types`
+  - it is similar to `opt_16bit_image_dest` but for tex instrs
+- `opt_16bit_tex_srcs` is enabled by `opt_srcs_options`
+  - it is similar to `opt_16bit_image_srcs` but for tex instrs
