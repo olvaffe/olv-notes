@@ -360,7 +360,17 @@ SPIR-V
   - a single-block loop is a loop construct where the header block, the
     continue target, and the back-edge block are the same block
 - 2.12. Specialization
-  - `OpSpecConstant*`
+  - `OpSpecConstantTrue` is `OpConstantTrue`, but can be specialized to
+    `OpConstantTrue` or `OpConstantFalse`
+  - `OpSpecConstantFalse` is `OpConstantFalse`, but can be specialized to
+    `OpConstantTrue` or `OpConstantFalse`
+  - `OpSpecConstant` is `OpConstant`, but can be specialized to a different
+    `OpConstant`
+  - `OpSpecConstantComposite` is `OpConstantComposite`, but can be specialized
+    to a different `OpConstantComposite`
+  - `OpSpecConstantOp` executes the op at compile time and is replaced by
+    `OpSpecConstant*`
+  - to specialize a `OpSpecConstant*`, decorate its `Result <id>` by `SpecId`
 - 2.13. Linkage
   - functions an global variables of a module are private by default
   - they can be decorated with `LinkageAttributes`, to export or import
