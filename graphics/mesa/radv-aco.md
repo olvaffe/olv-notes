@@ -104,6 +104,10 @@ Mesa RADV ACO
     - `sgpr_alloc_granule` and `vgpr_alloc_granule` are set here
       - llvm uses `wave64_vgpr_alloc_granularity` which is different?
     - `vgpr_limit`, max number of vgprs available to a shader, is 256 on gfx10+
+  - `aco::setup_nir` calls
+    - `nir_convert_to_lcssa`
+    - `nir_lower_phis_to_scalar`
+    - `nir_index_ssa_defs`
 - `aco::init_context` initializes isel context
   - `nir_divergence_analysis` marks non-uniform ssas as `divergent`
   - it loops over all nir instructions to intialize a subrange of
@@ -441,6 +445,12 @@ Mesa RADV ACO
       - `BB6`
       - `p_logical_start`
 
+## `aco::dominator_tree`
+
+- it calculates `logical_idom` and `linear_idom` for all blocks
+  - if block A's `logical_idom` points to block B, it means block B
+    immediately dominates A
+
 ## `aco::lower_phis`
 
 - when we have a phi of sgpr,
@@ -465,6 +475,20 @@ Mesa RADV ACO
     - `v1: %4 = p_parallelcopy %1`
     - `v2b: %5 = p_extract_vector %4, 0`
     - `v2b: %3 = p_phi %5, %2`
+
+## `aco::value_numbering`
+
+- it depends on dominator tree and uses value numbering to perform CSE
+
+## `aco::optimize`
+
+## `aco::setup_reduce_temp`
+
+- it insert `p_start_linear_vgpr` and `p_end_linear_vgpr`
+
+## `aco::insert_exec_mask`
+
+- it inserts `exec_mask` maniuplation and updates branching
 
 ## `aco::live_var_analysis`
 
@@ -500,6 +524,10 @@ Mesa RADV ACO
     - hw limit (20 on rdna2+)
     - lds, etc.
   - `program->max_reg_demand` is updated based on `program->num_waves`
+
+## `aco::spill`
+
+- it spills if reg use exceeds hw limit
 
 ## `aco::schedule_program`
 
@@ -584,10 +612,15 @@ Mesa RADV ACO
       - definitions usually just get the regs from the operands
     - non-phi definitions need assignment
 
+## `aco::optimize_postRA`
+
 ## `aco::ssa_elimination`
+
+- it removes empty blocks and inserts copies such that phis can be ignored
 
 ## `aco::lower_to_hw_instr`
 
+- it lowers pseudo instrs to hw instrs
 - `handle_operands` are called to instrs that copy
   - it is used for
     - `p_extract_vector`
@@ -607,3 +640,20 @@ Mesa RADV ACO
   - `do_copy` emits the instruction to copy
   - if the copies form a cycle, `do_swap` breaks the cycle
     - it uses xor to swap, <https://en.wikipedia.org/wiki/XOR_swap_algorithm>
+
+## `aco::schedule_vopd` and `aco::schedule_ilp`
+
+- they schedules instrs for instruction level parallelism
+
+## `aco::insert_wait_states`
+
+- it inserts `aco_opcode::s_waitcnt`, `aco_opcode::s_waitcnt_vscnt`, and
+  `aco_opcode::s_delay_alu` for correctness
+
+## `aco::insert_NOPs`
+
+- it inserts dummy nops and other instrs to work around hw bugs
+
+## `aco::form_hard_clauses`
+
+- it inserts `aco_opcode::s_clause` to improve performance
