@@ -1164,8 +1164,34 @@ Vulkan
 ## Chapter 15. Shader Interfaces
 
 - 15.8. Shader Resource Interface
-  - 15.8.3 has a big note on variables sharing the same `DescriptorSet` and
+  - DescriptorSet and Binding Assignment
+    - there is a big note on variables sharing the same `DescriptorSet` and
     `Binding`
+  - Offset and Stride Assignment
+    - a struct member has one of the 3 alignment reqs
+      - scalar alignment
+        - if a scalar, use the size as the alignment
+        - if a vector, use the component's scalar alignment
+        - if an array, use the element's scalar alignment
+        - if a struct, use the max of all members' scalar alignments
+        - if a matrix, treat it as an array of vectors
+      - base alignment is similar to the scalar alignment
+        - except if a vector, the base alignment is 2 or 4 times the scalar
+          alignment depending on the vector width
+      - extended alignment is similar to the base alignment
+        - except if an array or struct, the extended alignment is the base
+          alignment rounded up to a multiple of 16
+    - every member must be aligned using the first match rule below
+      - if `scalarBlockLayout` or
+        `workgroupMemoryExplicitLayoutScalarBlockLayout` are enabled, and if
+        the storage class is the corresponding one, it must use the
+        scalar alignment
+      - if a vector, it must use the scalar alignment
+      - if `uniformBufferStandardLayout` is not enabled, and the storage class
+        is `Uniform` and the decoration is `Block`, it must use the extended
+        alignment
+      - else, it must use the base alignment
+    - `std430` uses the base alignment; `std140` uses the extended alignment
 - 15.9. Built-In Variables
   - `NumSubgroups` is the number of subgroups in the local workgroup
   - `SubgroupId` is the id (`[0, NumSubgroups)`) of the subgroup in the local
