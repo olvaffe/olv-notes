@@ -246,6 +246,16 @@ OpenCL
       - `reserve_id_t`
       - `event_t`
       - `cl_mem_fence_flags`
+    - Alignment of Types
+      - A data item in memory is always aligned to the size of the data type
+        in bytes. For example, a `float4` variable will be aligned to a
+        16-byte boundary, a `char2` variable will be aligned to a 2-byte
+        boundary.
+      - note that the size of 3-component vector data types are the same as
+        4-component vector data types
+      - A built-in data type that is not a power of two bytes in size must be
+        aligned to the next larger power of two. This rule applies to built-in
+        types only, not structs or unions.
   - 6.4. Conversions and Type Casting
     - implicit conversions and c-style explicit casts
       - between scalar built-in types
