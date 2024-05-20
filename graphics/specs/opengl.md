@@ -254,6 +254,15 @@ OpenGL
 - 7.4. Program Pipeline Objects
 - 7.5. Program Binaries
 - 7.6. Uniform Variables
+  - Standard Uniform Block Layout
+    - `std140` is naturally aligned except for
+      - `vec2` has 2x alignment
+      - `vec3` and `vec4` have 4x alignment
+      - array and struct alignments are rounded up to 16
+    - UBO only supports `std140`
+    - SSBO additionally supports `std430`
+      - it is similar to `std140`, except array and struct alignments are not
+        rounded up
 - 7.7. Atomic Counter Buffers
 - 7.8. Shader Buffer Variables and Shader Storage Blocks
 - 7.9. Invocation Groups
