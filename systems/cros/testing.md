@@ -154,6 +154,32 @@ Chrome OS Testing
       `measurementIterations` (5) times
     - it measures the decode time to calculate the fps
 
+## `tast.video.WebCodecsDecode.*`
+
+- all tests call `webcodecs.RunDecodeTest` with different args
+  - `av1_sw` plays `bear-320x240.av1.mp4` with `webcodecs.PreferSoftware`
+  - `av1_hw` plays `bear-320x240.av1.mp4` with `webcodecs.PreferHardware`
+  - `h264_sw` plays `bear-320x240.h264.mp4` with `webcodecs.PreferSoftware`
+  - `h264_hw` plays `bear-320x240.h264.mp4` with `webcodecs.PreferHardware`
+- `webcodecs.RunDecodeTest`
+  - `webcodecs.prepareWebCodecsTest` starts an http server to serve
+    `webcodecs_decode.html`
+  - it calls `DecodeFrames` from `webcodecs_decode.js` with, for example,
+    - `videoURL` is `bear-320x240.av1.mp4`
+    - `width` is 320
+    - `height` is 240
+    - `numFrames` is 82
+    - `hardwareAcceleration` is `prefer-hardware`
+  - it checks the md5sums of the decoded frames against
+    `bear-320x240_20211201.av1.mp4.json`
+- `DecodeFrames` calls `decodeVideoInURL` to decode the video file
+  - `MP4Demuxer` is the demuxer
+    - it looks like a pure sw demuxer
+  - `VideoDecoder` is the decoder
+    - <https://developer.mozilla.org/en-US/docs/Web/API/VideoDecoder>
+  - `demuxer.start` demuxes the bistream and the data is fed to the decoder
+  - `decoder.decode` decodes the data
+
 ## `tast.ui.MeetCUJ`
 
 - `meetTest`
