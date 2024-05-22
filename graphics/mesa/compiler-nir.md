@@ -626,6 +626,9 @@ NIR
     - e.g., two consecutive 16-bit loads can potentially be combined into a
       single 32-bit load
   - `create_entry` creates an entry for each load/store
+    - `calc_alignment` updates `align_mul` and `align_offset`
+      - e.g., if the offset of a load is the result of `nir_op_ishl %1, 6`, it
+        knows `align_mul` is at least 64
   - `vectorize_entries` sorts entries by offsets and tries to combine them
     - `sort_entries` sorts them
     - `vectorize_sorted_entries` combines them
