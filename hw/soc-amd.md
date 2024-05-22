@@ -18,107 +18,54 @@ AMD CPUs
 ## CPUs and APUs
 
 - 2016: A 9000 series
-  - Bristol Ridge
-    - desktop/mobile
-    - Excavator+ and GCN3
-  - Stoney Ridge
-    - ultra mobile
-    - Excavator+ and GCN3
+  - Bristol Ridge, 35-65W, Excavator+, GCN3
+  - Stoney Ridge, 6-15W,, Excavator+, GCN3
     - cros: grunt
 - 2017: Ryzen 1000 series
-  - Summit Ridge
-    - desktop
-    - Zen and no gpu
-  - Whitehaven
-    - workstation
-    - Zen and no gpu
+  - Whitehaven, 180W, Zen, no GPU
+  - Summit Ridge, 65-95W, Zen, no GPU
 - 2018: Ryzen 2000 series
-  - Pinnacle Ridge
-    - desktop
-    - Zen+ and no gpu
-  - Colfax
-    - workstation
-    - Zen+ and no gpu
-  - Raven Ridge
-    - desktop/mobile
-    - Zen and GCN5
+  - Colfax, 180-250W, Zen+, no GPU
+  - Pinnacle Ridge, 45-105W, Zen+, no GPU
+  - Raven Ridge, 35-65W, Zen, GCN5
 - 2019: Ryzen 3000 series
-  - Matisse
-    - desktop
-    - Zen 2 and no gpu
-  - Castle Peak
-    - workstation
-    - Zen 2 and no gpu
-  - Picasso
-    - desktop/mobile
-    - Zen+ and GCN5
+  - Castle Peak, 280W, Zen 2, no GPU
+  - Matisse, 65-105W, Zen 2, no GPU
+  - Picasso, 15-65W, Zen+, GCN5
     - cros: zork
-  - Dali, Pollock (2020)
-    - ultra mobile
-    - Zen and GCN5
+  - Dali/Pollock (2020), 6-15W, Zen, GCN5
     - cros: zork
 - 2020: Ryzen 4000 series
-  - Renoir
-    - desktop/mobile
-    - Zen 2 and GCN5
+  - Renoir, 15-65W, Zen 2, GCN5
 - 2021: Ryzen 5000 series
-  - Vermeer
-    - desktop
-    - Zen 3 and no gpu
-  - Chagall
-    - workstation
-    - Zen 3 and no gpu
-  - Cezanne
-    - desktop/mobile
-    - Zen 3 and GCN5
-  - Barcelo (2022 refresh of Cezanne)
-    - mobile
-    - Zen 3 and GCN5
+  - Chagall, 280W, Zen 3, no GPU
+  - Vermeer, 65-105W, Zen 3, no GPU
+  - Cezanne, 35-65W, Zen 3, GCN5
+  - Cezanne-U, 10-25W, Zen 3, GCN5
+  - Lucienne, 10-25W, Zen 2, GCN5
+  - Barcelo (2022), 15W, Zen 3, GCN5
     - cros: guybrush
-  - Lucienne
-    - ultra mobile
-    - Zen 2 and GCN5
 - 2022: Ryzen 6000 series
-  - Rembrandt
-    - mobile
-    - Zen 3+ and RDNA2
+  - Rembrandt, 15-45W, Zen 3+, RDNA2
 - 2023: Ryzen 7000 series
-  - Raphael
-    - desktop
-    - Zen 4 (and RDNA2)
-      - the gpu has only 2 CUs and is mostly for display
-  - Dragon Range
-    - mobile
-    - Zen 4 (and RDNA2)
-      - the gpu has only 2 CUs and is mostly for display
-      - this is used on high-end mobile with discrete gpu
-  - Phoenix
-    - mobile
-    - Zen 4 and RDNA3
+  - Storm Peak, 350W, Zen 4, no GPU
+  - Raphael, 65-170W, Zen 4, RDNA2-display
+    - the gpu has only 2 CUs and is mostly for display
+  - Dragon Range, 45-75W, Zen 4, RDNA2-display
+    - the gpu has only 2 CUs and is mostly for display
+    - this is used on high-end mobile with discrete gpu
+  - Phoenix, 15-54W, Zen 4, RDNA3
     - cros: myst
-  - Mendocino
-    - mobile
-    - Zen 2 and RDNA2
+  - Mendocino, 15W, Zen 2, RDNA2
     - cros: skyrim
-  - Rembrandt-R
-    - mobile
-    - Zen 3+ and RDNA2
-  - Barcelo-R
-    - mobile
-    - Zen 3 and GCN5
+  - Rembrandt-R, 15-54W, Zen 3+, RDNA2
+  - Barcelo-R, 15W, Zen 3, GCN5
 - 2024: Ryzen 8000 series
+  - Phoenix, 65W, Zen 4, RDNA3
+  - Hawk Point, 15-54W, Zen 4, RDNA3
   - Granite Ridge
-    - desktop
-    - Zen 5
   - Fire Range
-    - mobile
-    - Zen 5
   - Strix Point
-    - desktop/mobile
-    - Zen 5
-  - Hawk Point
-    - mobile
-    - Zen 4 and RDNA3
 
 ## Chromebooks
 
