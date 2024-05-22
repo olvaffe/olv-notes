@@ -16,7 +16,7 @@ Intel CPUs
   - Raptor Cove   - 2022 - Intel 7
   - Redwood Cove  - 2023 - Intel 4
   - Lion Cove     - 2024 - Intel 20A?
-  - Panther Cove  - 2025 - Intel 20A?
+  - Panther Cove  - 2025 - Intel 18A?
 - Little Cores
   - Silvermont    - 2013 - 22nm
   - Airmont       - 2014 - 14nm
@@ -26,121 +26,61 @@ Intel CPUs
   - Gracemont     - 2021 - Intel 7
   - Crestmont     - 2023 - Intel 4
   - Skymont       - 2024 - Intel 20A?
-  - Darkmont      - 2025 - Intel 20A?
+  - Darkmont      - 2025 - Intel 18A?
 
 ## CPUs
 
 - 11Q4~: Core 2xxx
-  - Sandy Bridge
-    - desktop/mobile
-    - Gen6 GPU
+  - Sandy Bridge, Gen6 GPU
 - 12Q4~: Core 3xxx
-  - Ivy Bridge
-    - desktop/mobile
-    - Gen7 GPU
+  - Ivy Bridge, Gen7 GPU
 - 13Q4~: Core 4xxx
-  - Haswell
-    - desktop/mobile
-    - Gen7.5 GPU
-  - Atom: Bay Trail (Valleyview)
-    - Silvermont and Gen7 GPU
+  - Haswell, Gen7.5 GPU
+  - Atom: Bay Trail (Valleyview), 2-10W, Silvermont, Gen7 GPU
 - 14Q4~: Core 5xxx
-  - Broadwell
-    - desktop/mobile
-    - Gen8 GPU
-  - Atom: Braswell (Cherry Trail, Cherryview)
-    - ultra mobile
-    - Airmont and Gen8 GPU
+  - Broadwell, Gen8 GPU
+  - Atom: Braswell (Cherry Trail, Cherryview), 2-6W, Airmont, Gen8 GPU
 - 15Q4~: Core 6xxx
-  - Skylake
-    - desktop/mobile
-    - Gen9 GPU
+  - Skylake, Gen9 GPU
 - 16Q4~: Core 7xxx
-  - Kaby Lake
-    - desktop/mobile
-    - Skylake and Gen9.5 GPU
+  - Kaby Lake, Skylake uarch, Gen9.5 GPU
     - cros: poppy
-  - Skylake X
-    - desktop
-    - Skylake and Gen9.5 GPU
-  - Atom: Apollo Lake
-    - ultra mobile
-    - Goldmont and Gen9.5 GPU
+  - Atom: Apollo Lake, 6-10W, Goldmont, Gen9.5 GPU
     - cros: reef, coral
 - 17Q4~: Core 8xxx
-  - Coffee Lake
-    - desktop/mobile
-    - Skylake and Gen9.5 GPU
-  - Whiskey Lake
-    - mobile
-    - Skylake and Gen9.5 GPU
-  - Kaby Lake R
-    - mobile
-    - Skylake and Gen9.5 GPU
+  - Coffee Lake, Skylake uarch, Gen9.5 GPU
+  - Whiskey Lake, Skylake uarch, Gen9.5 GPU
+  - Kaby Lake R, Skylake uarch, Gen9.5 GPU
     - cros: fizz, rammus
-  - Amber Lake Y
-    - ultra mobile
-    - Skylake and Gen9.5 GPU
-  - Atom: Gemini Lake
-    - ultra mobile
-    - Goldmont Plus and Gen9.5 GPU
+  - Amber Lake Y, Skylake uarch, Gen9.5 GPU
+  - Atom: Gemini Lake, Goldmont Plus, Gen9.5 GPU
     - cros: octopus
 - 18Q4~: Core 9xxx
-  - Coffee Lake Refresh
-    - desktop
-    - Skylake and Gen9.5 GPU
-  - Cannon Lake (skipped)
-    - Palm Cove and Gen10 GPU
+  - Coffee Lake Refresh, Skylake uarch, Gen9.5 GPU
+  - Cannon Lake (skipped), Palm Cove, Gen10 GPU
 - 19Q4~: Core 10xxx
-  - Ice Lake SP and W
-    - server/workstation
-    - Sunny Cove and Gen11 GPU
-  - Ice Lake
-    - mobile
-    - Sunny Cove and Gen11 GPU
-  - Comet Lake S and W
-    - desktop/workstation
-    - Skylake and Gen9.5 GPU
-  - Comet Lake H and U
-    - mobile
-    - Skylake and Gen9.5 GPU
+  - Ice Lake, Sunny Cove, Gen11 GPU
+  - Comet Lake, Skylake uarch, Gen9.5 GPU
     - cros: hatch, puff, drallion
-  - Amber Lake Y
-    - ultra mobile
-    - Skylake and Gen9.5 GPU
+  - Amber Lake Y, Skylake uarch, Gen9.5 GPU
 - 20Q4~: Core 11xxx
-  - Rocket Lake
-    - desktop
-    - Cypress Cove and Gen12 GPU
-  - Tiger Lake
-    - mobile
-    - Willow Cove and Gen12 GPU
+  - Tiger Lake, Willow Cove, Gen12 GPU
     - cros: volteer
-  - Atom: Jasper Lake
-    - ultra mobile
-    - Tremont and Gen11 GPU
+  - Rocket Lake, Sunny Cove, Gen12 GPU
+  - Atom: Jasper Lake, 6-15W, Tremont, Gen11 GPU
     - cros: dedede
 - 21Q4~: Core 12xxx
-  - Alder Lake
-    - desktop/mobile
-    - Golden Cove, Gracemont, and Gen12 GPU
+  - Alder Lake, Golden Cove, Gracemont, Gen12 GPU
     - cros: brya
 - 22Q4~: Core 13xxx
-  - Raptor Lake
-    - desktop/mobile
-    - Raptor Cove, Gracemont, and Gen12 GPU
+  - Raptor Lake, Raptor Cove, Gracemont, Gen12 GPU
     - cros: skolas
-  - Atom: Alder Lake N
-    - ultra mobile
-    - Gracemont and Gen12 GPU
+  - Atom: Alder Lake N, 6-15W, Gracemont, Gen12 GPU
     - cros: nissa
 - 23Q4~: Core 14xxx
-  - Raptor Lake-R refresh
-    - desktop
+  - Raptor Lake-R, Raptor Cove, Gracemont, Gen12 GPU
 - 23Q4~: Core Ultra 1xx
-  - Meteor Lake
-    - desktop/mobile
-    - Redwood Cove, Crestmont, and Gen12.5 GPU
+  - Meteor Lake ,Redwood Cove, Crestmont, Gen12.5 GPU
     - cros: rex
 - 24Q4~: Core Ultra 2xx?
   - Arrow Lake
