@@ -283,6 +283,18 @@ Machine Learning
           `clEnqueueNDRangeKernel`
         - `tflite::gpu::cl::CpuCopier::Convert` calls `clEnqueueReadBuffer`
       - `WaitForCompletion` calls `clFinish` directly
+- `tflite::gpu::GraphToGpuModel` is called from
+  `InferenceContext::InitFromGraph`
+  - `ConvertOperations` converts `graph.nodes` to `gpu_model->nodes`
+    - `GPUOperationFromNode` creates a `GPUOperationsSubgraph` for the node
+      - a node can require multiple gpu operations
+      - `SelectConcat` handles `CONCAT` node
+      - `SelectConvolution` handles `CONVOLUTION_2D` node
+      - `SelectDWConvolution` handles `DEPTHWISE_CONVOLUTION` node
+      - `SelectReLU` handles `RELU` node
+      - `SelectResize` handles `RESIZE` node
+      - `CreateElementwiseOneInput` handles `TANH` node
+      - more
 - `tflite::gpu::ConvGeneric::GuessBestParams`
   - common inputs are
     - `dst_shape` is BHWC (batch, height, width, channel)
