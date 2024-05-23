@@ -1,6 +1,19 @@
 Android EGL / OpenGL ES
 =======================
 
+## Loader
+
+- `Loader::open`
+  - if `shouldUseAngle`, it loads `lib{EGL,GLESv1_CM,GLESv2}_angle.so`
+  - if `shouldUseNativeDriver`, it loads
+    `lib{EGL,GLESv1_CM,GLESv2}_<name>.so`, where `<name>` is from
+    `ro.hardware.egl`
+  - else, it tries `<name>` from `HAL_SUBNAME_KEY_PROPERTIES` array
+    - `persist.graphics.egl`
+    - `ro.hardware.egl`
+    - `ro.board.platform`
+  - else, it tries non-suffixed `lib{EGL,GLESv1_CM,GLESv2}.so`
+
 ## EGL (froyo)
 
 - there is `Loader.cpp`
