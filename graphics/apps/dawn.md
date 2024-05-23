@@ -7,10 +7,28 @@ Dawn
 - specs
   - webgpu, <https://gpuweb.github.io/gpuweb/>
   - wgsl, <https://gpuweb.github.io/gpuweb/wgsl/>
-- build
+- build with cmake
   - `git clone https://dawn.googlesource.com/dawn`
   - `python tools/fetch_dawn_dependencies.py --use-test-deps`
   - `cmake -S. -Bout -GNinja`
+- build with gn
+  - `git clone https://dawn.googlesource.com/dawn`
+  - `cp scripts/standalone.gclient .gclient`
+  - `gclient sync`
+  - `gn args out`
+  - default args
+    - `is_debug = true`
+    - `dawn_complete_static_libs = false`
+    - `dawn_enable_desktop_gl = true`
+    - `dawn_enable_opengles = true`
+    - `dawn_enable_vulkan = true`
+    - `dawn_enable_vulkan_loader = true`
+    - `dawn_enable_vulkan_validation_layers = true`
+    - `dawn_use_swiftshader = true`
+    - `dawn_use_wayland = false`
+    - `dawn_use_x11 = true`
+  - more args
+    - `cc_wrapper = "ccache"`
 
 ## Build System
 
