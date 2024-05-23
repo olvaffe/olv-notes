@@ -589,3 +589,8 @@ DisplayHardware:
     activity
     - `transparentRegionHint` is just a hint
     - I think it clears the alpha channel to 0.0
+
+## Client Composition
+
+- U defaults to `SKIA_GL_THREADED`
+  - `debug.renderengine.backend` can override
