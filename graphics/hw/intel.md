@@ -42,6 +42,7 @@ Intel GPUs
 - Xe-HPG
   - Arc (DG2, Alchemist), 2022, 6nm, Gen12.5
     - `intel_device_info_dg2_g10`, etc.
+- Xe-LPG
   - Meteor Lake, 2023, Intel 4, 14th gen, Gen12.5
     - `intel_device_info_mtl_u`, etc.
 - Xe2
