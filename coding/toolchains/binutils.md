@@ -63,6 +63,8 @@ binutils
       `GLIBC_ABI_DT_RELR`
       - other linkers support `--pack-dyn-relocs=relr` which does not add
         `GLIBC_ABI_DT_RELR`.  glibc might refuse to load.
+      - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-devel/binutils/files/ldwrapper_lld.hardened>
+        - cros uses `--pack-dyn-relocs=relr`
   - `--start-group archives --end-group` searches archives repeatedly unless
     there is no new undefined symbol
     - this is useful when archives have mutual dependencies
