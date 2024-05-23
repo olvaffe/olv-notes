@@ -471,3 +471,5 @@ Machine Learning
       - while it is a tflite file, it is only compatible with llm api and
         should be named something like `gemma_2b_gpu.bin`
     - `vocab_model_file` is `assets/tokenizer/vocabulary.spm`
+    - `combine_file_only`, if true, skips the conversion but generates the
+      tflite file only
