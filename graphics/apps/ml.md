@@ -450,3 +450,24 @@ Machine Learning
       tflite model
     - `TfLiteTensorsToSegmentationCalculator` converts `TfLiteTensor` into a
       image mask
+
+
+## Gemma
+
+- <https://ai.google.dev/gemma>
+  - download at <https://www.kaggle.com/models/google/gemma>
+  - there is a 4MB `GemmaTokenizer` at `assets/tokenizer/vocabulary.spm`
+    - <https://github.com/google/sentencepiece>
+  - there is a 4.7GB `GemmaBackbone` at `model.weights.h5`
+    - <https://keras.io/guides/serialization_and_saving/>
+- <https://ai.google.dev/edge/mediapipe/solutions/genai/llm_inference/web_js>
+  - <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/python/genai/converter/llm_converter.py>
+    - `input_ckpt` and `ckpt_format`, if the model are in pytorch or
+      safetensors format instead
+    - `model_type` is `GEMMA_2B`
+    - `backend` is `gpu`
+    - `output_dir` is the output dir for per-layer weight files
+    - `output_tflite_file` is the packed tflite file
+      - while it is a tflite file, it is only compatible with llm api and
+        should be named something like `gemma_2b_gpu.bin`
+    - `vocab_model_file` is `assets/tokenizer/vocabulary.spm`
