@@ -1,7 +1,7 @@
 Qualcomm SoC
 ============
 
-## History: Mobile Series
+## History: Discontinued
 
 - Snapdragon S series
   - discontinued
@@ -42,6 +42,9 @@ Qualcomm SoC
     - QM215
     - 28nm
     - Adreno 308
+
+## History: Mobile Series
+
 - Snapdragon 4 series
   - entry level
   - 400
@@ -163,11 +166,11 @@ Qualcomm SoC
     - SM{7435,7475}-AB
     - 4nm
     - Adreno 710/725
-  - 7 Gen3
+  - 7/7+ Gen3
     - 2024
-    - SM7550-AB
+    - SM{7550,7675}-AB
     - 4nm
-    - Adreno 720
+    - Adreno {720,732}
 - Snapdragon 8 series
   - high-end
   - 800, 801, 805
@@ -220,11 +223,11 @@ Qualcomm SoC
     - SM8550
     - 4nm
     - Adreno 740
-  - 8 Gen3
+  - 8/8s Gen3
     - 2024
-    - SM8650-AB
+    - SM{8650,8635}-AB
     - 4nm
-    - Adreno 750
+    - Adreno {750,735}
 
 ## History: Compute Platforms
 
@@ -271,11 +274,25 @@ Qualcomm SoC
     - 5nm
     - Adreno 8cx Gen3 (Adreno 730)
 - Snapdragon X Series
-  - X Elite
+  - X Elite/Plus
     - 2024
     - SC?
     - 4nm
     - Adreno?
+
+## History: Compute Platforms
+
+- Snapdragon G series
+  - G3x Gen 1
+    - 2023
+    - rebranding of 888+
+    - 5nm
+    - Adreno 660
+  - G3x Gen 2
+    - 2023
+    - ?
+    - ?nm
+    - Adreno A32 (based on Adreno 740)
 
 ## Qualcomm Modem/WiFi/BT?
 
