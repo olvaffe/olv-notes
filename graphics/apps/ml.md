@@ -153,6 +153,77 @@ Machine Learning
     - <https://github.com/google/XNNPACK>
   - external delegates
     - TPU, NPU, WebGPU ,etc.
+- tflite high-level view
+  - `tflite::FlatBufferModel::BuildFromBuffer` loads a `.tflite` model as a
+    `tflite::FlatBufferModel`
+  - a `tflite::InterpreterBuilder` is created from the model to build a
+    `tflite::Interpreter`
+  - `TfLiteGpuDelegateV2Create` creates a `TfLiteDelegate`
+  - `tflite::Interpreter::ModifyGraphWithDelegate` modifies the graph
+    according to the delegate
+  - `tflite::InterpreterBuilder::AllocateTensors` allocates tensors
+  - `tflite::Interpreter::Invoke` invokes the graph
+  - inputs and outputs
+    - a interpreter has a vector of `tflite::Subgraph` to represent the
+      subgraphs in the model
+    - each subgroup has a `TfLiteContext`
+    - each context has an array of `TfLiteTensor`
+    - each tensor has a `data`
+- gpu delegate high-level view
+  - `TfLiteGpuDelegateV2Create` creates a `tflite::gpu::Delegate`
+  - `tflite::Interpreter::ModifyGraphWithDelegate` calls
+    `TfLiteDelegatePrepareInternal` which calls `tflite::gpu::DelegatePrepare`
+    - `tflite::gpu::CreateRegistration` creates a `TfLiteRegistration`
+    - `tflite::Subgraph::ReplaceNodeSubsetsWithDelegateKernels` replaces graph
+      nodes with delegate kernels and updates the execution plan
+    - `tflite::Subgraph::PartitionGraph` partitions the nodes to be replaced
+      - it is common(?) for all nodes to be replaced by a single delegate
+        kernel
+    - `tflite::Subgraph::AddNodeWithParameters` adds the new nodes
+    - `tflite::Subgraph::OpInit` inits each new node
+  - `tflite::Interpreter::Invoke` executes `tflite::Subgraph::execution_plan_`
+    - `tflite::Subgraph::PrepareOpsAndTensors` calls
+      `tflite::Subgraph::OpPrepare` on each node
+    - `tflite::Subgraph::OpInvoke` invokes each node
+  - `tflite::gpu::DelegateKernel`
+    - `tflite::Subgraph::OpInit` calls `TfLiteRegistration::init` to create a
+      `tflite::gpu::DelegateKernel` for each node
+      - this also calls `tflite::gpu::DelegateKernel::Prepare` which calls
+        `tflite::gpu::DelegateKernelCore::Setup`
+    - `tflite::Subgraph::OpPrepare` calls `TfLiteRegistration::prepare` which
+      calls `tflite::gpu::DelegateKernel::GetRequiredTemporaries`
+    - `tflite::Subgraph::OpInvoke` calls `TfLiteRegistration::invoke` which
+      calls `tflite::gpu::DelegateKernel::Invoke`
+  - `tflite::gpu::DelegateKernelCore::Setup`
+    - `tflite::gpu::DelegateKernelCore::InitializeGraph` parses the nodes into
+      `GraphFloat32` graph
+      - this is where `TfLiteNode` is parsed into `tflite::gpu::Node`
+    - `tflite::gpu::DelegateKernelCore::InitializeOpenClApi` calls
+      `tflite::gpu::cl::NewInferenceEnvironment` to initialize CL and calls
+      `tflite::gpu::cl::InferenceEnvironment::NewInferenceBuilder` to create a
+      `tflite::gpu::InferenceBuilder`
+    - `tflite::gpu::InferenceBuilder::Build` creates a
+      `tflite::gpu::InferenceRunner`
+- cl delegate high-level view
+  - `tflite::gpu::cl::NewInferenceEnvironment` initializes CL up to a
+    `CLCommandQueue`
+  - `tflite::gpu::cl::InferenceEnvironment::NewInferenceBuilder` calls
+    `tflite::gpu::cl::InferenceBuilderImpl::Initialize`
+    - a `tflite::gpu::cl::InferenceContext` is created
+    - `tflite::gpu::cl::InferenceContext::InitFromGraph` initializes the
+      inference context from the `GraphFloat32` graph
+      - `GraphToGpuModel` converts `GraphFloat32` graph to `GpuModel` model,
+        and is where `GPUOperation`, `cl_program` and `cl_kernel` are created
+      - `InferenceContext::Tune` tunes all gpu operations
+  - `tflite::gpu::cl::InferenceBuilderImpl::Build` creates and initializes a
+    `tflite::gpu::cl::InferenceRunnerImpl`
+  - `tflite::gpu::DelegateKernel::Invoke` calls
+    `tflite::gpu::cl::InferenceRunnerImpl::Run`
+    - `CopyFromExternalObject` copies data to cl buffer and converts from bhwc
+      to tensor
+    - `RunWithoutExternalBufferCopy` queues all gpu operations to cl
+    - `CopyToExternalObject` converts from tensor to bhwc and copies data from
+      cl buffer
 - `benchmark_model`
   - it seems after initial setup and inference, each inference does
     - `clEnqueueWriteBuffer`
@@ -462,7 +533,6 @@ Machine Learning
       tflite model
     - `TfLiteTensorsToSegmentationCalculator` converts `TfLiteTensor` into a
       image mask
-
 
 ## Gemma
 
