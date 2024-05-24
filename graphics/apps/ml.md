@@ -531,6 +531,7 @@ Machine Learning
         a time
         - because each iteration uses all input tokens plus previously
           generated output tokens as the context
+        - similarly, the inference engine paces itself
       - wait for gpu and copy all output tokens from gpu memory
   - `DetokenizerCalculator` runs on cpu
     - it converts tokens to text
