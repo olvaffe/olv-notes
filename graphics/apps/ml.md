@@ -390,6 +390,17 @@ Machine Learning
       - `CreateElementwiseOneInput` handles `TANH` node
       - more
 - `tflite::gpu::ConvGeneric::GuessBestParams`
+  - `CreateConvGeneric` has
+    - `GpuInfo` provides hw caps/limits
+    - `OperationDef` mainly provides `precision`
+    - `Convolution2DAttributes` provides convolution attrs
+      - strides, dilations, paddings, bias
+      - weight shape
+        - kernel width
+        - kernel height
+        - src depth
+        - dst depth
+    - dst shape is `OperationDef::dst_tensors[0].GetBHWDCShape()`
   - common inputs are
     - `dst_shape` is BHWC (batch, height, width, channel)
       - batch and channel are usually 1
