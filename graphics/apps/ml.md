@@ -521,6 +521,9 @@ Machine Learning
     - it encodes all input tokens in one go
       - copy all input tokens to gpu memory
       - loop to submit gpu commands that encode N input tokens at a time
+        - the inference engine paces itself such that there are not too many
+          inflight cmdbufs (to give other processes a chance to submit gpu
+          work?)
       - submit gpu commands to postprocess
       - (wait for gpu only if benchmarking)
     - it decodes all output tokens in one go
