@@ -213,7 +213,10 @@ Machine Learning
     - `tflite::gpu::cl::InferenceContext::InitFromGraph` initializes the
       inference context from the `GraphFloat32` graph
       - `GraphToGpuModel` converts `GraphFloat32` graph to `GpuModel` model,
-        and is where `GPUOperation`, `cl_program` and `cl_kernel` are created
+        and is where `GPUOperation` is created
+      - `InitFromGpuModel` creates `tflite::gpu::cl::CLNode` and
+        `tflite::gpu::cl::Tensor`, and is where `cl_buffer`, `cl_program`, and
+        `cl_kernel` are created
       - `InferenceContext::Tune` tunes all gpu operations
   - `tflite::gpu::cl::InferenceBuilderImpl::Build` creates and initializes a
     `tflite::gpu::cl::InferenceRunnerImpl`
@@ -224,6 +227,26 @@ Machine Learning
     - `RunWithoutExternalBufferCopy` queues all gpu operations to cl
     - `CopyToExternalObject` converts from tensor to bhwc and copies data from
       cl buffer
+- workgroup size
+  - `tflite::gpu::GPUOperation`
+    - `work_groups_count_` is workgroup count
+    - `work_group_size_` is workgroup size
+    - `grid_size_` is workitem count (`work_groups_count_ * work_group_size_`)
+  - `tflite::gpu::cl::InferenceContext::AddToQueue` queues all gpu operations
+    - `tflite::gpu::cl::ClOperation::AddToQueue` uses
+      `GPUOperation::GetWorkGroupsCount` for workgroup count
+      `GPUOperation::work_group_size_` for workgroup size
+  - `tflite::gpu::cl::InferenceContext::Tune` tunes all gpu operations
+    - this is where `RecalculateWorkGroupsCount` is last called and where
+      `work_group_size_` is last updated
+  - `tflite::gpu::cl::ClOperation::Tune`
+    - `GetPossibleDispatches` uses the grid size and hw limit to enumerate all
+      possible workgroup combinations
+      - `ConvGeneric` and some other operations override `GetGridSize`
+      - similarly, `ConvGeneric` and some other operations override
+        `GetPossibleKernelWorkGroups`
+    - `GetBestWorkGroupIndex` dispatches and profiles all combinations to find
+      the best one
 - `benchmark_model`
   - it seems after initial setup and inference, each inference does
     - `clEnqueueWriteBuffer`
