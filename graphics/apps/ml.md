@@ -513,3 +513,21 @@ Machine Learning
         <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/genai/inference/calculators/llm_gpu_calculator.proto>
   - webgpu runner is used to run the graph
     - <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/web/graph_runner/graph_runner_webgpu.ts>
+- pipeline
+  - `TokenizerCalculator` runs on cpu
+    - it converts the prompt into tokens (roughy 130 tokens per 100 words)
+    - it feeds the tokens into `LlmGpuCalculator`
+  - `LlmGpuCalculator` runs on gpu
+    - it encodes all input tokens in one go
+      - copy all input tokens to gpu memory
+      - loop to submit gpu commands that encode N input tokens at a time
+      - submit gpu commands to postprocess
+      - (wait for gpu only if benchmarking)
+    - it decodes all output tokens in one go
+      - loop to submit gpu commands that generate and decode 1 output token at
+        a time
+        - because each iteration uses all input tokens plus previously
+          generated output tokens as the context
+      - wait for gpu and copy all output tokens from gpu memory
+  - `DetokenizerCalculator` runs on cpu
+    - it converts tokens to text
