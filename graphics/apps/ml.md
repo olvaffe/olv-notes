@@ -485,3 +485,31 @@ Machine Learning
     - `vocab_model_file` is `assets/tokenizer/vocabulary.spm`
     - `combine_file_only`, if true, skips the conversion but generates the
       tflite file only
+- <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/web/genai/llm_inference/llm_inference.ts>
+  - the model contains raw weights
+  - `buildLlmInferenceGraph` builds the graph manually
+    - `ModelDataCalculator` node
+      - output side packet is `MODEL_DATA`
+      - options are defined in
+        <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/genai/inference/calculators/model_data_calculator.proto>
+    - `TokenizerCalculator` node
+      - input stream is `PROMPT_AND_INPUT_OPTIONS`
+      - output stream is `IDS_AND_INPUT_OPTIONS`
+      - input side packet is `MODEL_DATA`
+      - output side packet is `PROCESSOR_GETTER`
+      - options are defined in
+        <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/genai/inference/calculators/tokenizer_calculator.proto>
+    - `DetokenizerCalculator` node
+      - input_stream is `IDS_AND_INPUT_OPTIONS`
+      - output streams are `FINISH_AND_INPUT_OPTIONS` and `WORDS`
+      - input side packets are `MODEL_DATA` and `PROCESSOR_GETTER`
+      - options are defined in
+        <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/genai/inference/calculators/detokenizer_calculator.proto>
+    - `LlmGpuCalculator` node
+      - input streams are `IDS_AND_INPUT_OPTIONS` and `FINISH`
+      - output streams are `DECODED_IDS` and `OUTPUT_END`
+      - input side packet is `MODEL_DATA`
+      - options are defined in
+        <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/tasks/cc/genai/inference/calculators/llm_gpu_calculator.proto>
+  - webgpu runner is used to run the graph
+    - <https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/web/graph_runner/graph_runner_webgpu.ts>
