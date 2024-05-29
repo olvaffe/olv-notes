@@ -30,6 +30,21 @@ Chrome OS Testing
 - autotest
   - <https://chromium.googlesource.com/chromiumos/third_party/autotest/>
   - `test_that $DUT $TEST_NAME`
+  - client-side tests lives under `client/site_tests`
+    - these are tests that run entirely on the dut
+    - a host in this context means the dut
+  - server-side tests lives under `server/site_tests`
+    - these are tests that run on the host (i.e., the system that runs
+      `autoserv`) which controls a dut
+    - a host in this context means the host
+  - test suites appear to live under `test_suites`
+    - each test suite is just a servier-side test
+  - a test is defined by its control file
+    - `NAME` is the test name
+    - `TEST_TYPE` is either `Client` or `Server`
+    - `ATTRIBUTES` is a comma-separated list of attrs
+      - `suite:suite-a, suite:suite-b` means the test should be run as a part
+        of both `suite-a` and `suite-b`
 - autotest tests
   - `AUTHOR = "chromeos-gfx"`
     - `graphics_Check` takes some screenshots and verifies they are not black.
