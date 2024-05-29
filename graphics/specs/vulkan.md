@@ -1164,6 +1164,24 @@ Vulkan
 ## Chapter 15. Shader Interfaces
 
 - 15.8. Shader Resource Interface
+  - Descriptor Set Interface
+    - it is comprised of statically used shader variables whose storage
+      classes are `StorageBuffer`, `Uniform`, or `UniformConstant`)
+    - these variables must have `DescriptorSet` and `Binding` decorations
+    - `OpTypeImage` must have a known image format, unless
+      - `shaderStorageImageWriteWithoutFormat` is enabled or
+        `VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT` is set, or
+      - `shaderStorageImageReadWithoutFormat` is enabled or
+        `VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT` is set
+    - arrays can be indexed with constant integral expr
+    - arrays can be indexed with dynamically uniform or non-uniform indices
+      when the features are enabled
+      - `shaderStorageImageArrayDynamicIndexing` and
+        `shaderStorageImageArrayNonUniformIndexing` for storage images
+      - `shaderStorageTexelBufferArrayDynamicIndexing` and
+        `shaderStorageTexelBufferArrayNonUniformIndexing` for storage texel
+        buffers
+      - etc.
   - DescriptorSet and Binding Assignment
     - there is a big note on variables sharing the same `DescriptorSet` and
     `Binding`
@@ -2100,6 +2118,13 @@ Vulkan
 ## Appendix A: Vulkan Environment for SPIR-V
 
 - Validation Rules Within a Module
+  - Standalone SPIR-V Validation
+  - Runtime SPIR-V Validation
+    - VUID-RuntimeSpirv-NonUniform-06274 If an instruction loads from or
+      stores to a resource (including atomics and image instructions) and the
+      resource descriptor being accessed is not dynamically uniform, then the
+      operand corresponding to that resource (e.g. the pointer or sampled
+      image operand) must be decorated with `NonUniform`
   - `VK_KHR_shader_float_controls`
     - it has been promoted to 1.2
     - `VkShaderFloatControlsIndependence`
