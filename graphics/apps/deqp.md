@@ -1292,6 +1292,22 @@ dEQP
   - it then validates that `vkCreateShadersEXT` from the binary is at most 50%
     slower than mempcy
 
+## Test Case: `dEQP-VK.shader_object.performance.draw_static_pipeline`
+
+- `ShaderObjectPerformanceCase` is the test case
+  - `DrawType` is `DRAW`
+  - `TestType` is `DRAW_STATIC_PIPELINE`
+- `ShaderObjectPerformanceInstance` is the test instance
+- `ShaderObjectPerformanceCase::initPrograms` creates very simple vs and fs
+- `ShaderObjectPerformanceInstance::iterate`
+  - `ShaderObjectPerformanceInstance::draw` calls `vkCmdDraw*` and measures
+    the cpu time
+  - it binds the ESOs and calls `draw` to measure the cpu time
+  - it tries again by binding the pipeline and calls `draw` to measure
+    the cpu time
+  - it then validates that ESOs are at most 50% slower than pipeline regarding
+    cpu overhead
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
