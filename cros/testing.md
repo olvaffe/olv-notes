@@ -298,6 +298,19 @@ Chrome OS Testing
     - sign out
     - restart ui
 
+## `tast.camera.CCA*`
+
+- `tast.camera.CCACLI`
+  - setup
+    - `cca setup` to update `/etc/chrome_dev.conf`
+    - `/usr/local/autotest/bin/autologin.py` to login
+  - `cca open` and `cca close` to open and close the camera app
+  - `cca take-photo --output test.jpg` to take a photo
+  - `cca record-video --duration=3 --output test.mp4` to record a video
+  - `cca screenshot --output test.png` to take a screenshot
+- `tast.camera.CCAUIIntent.vm`
+- `tast.camera.CCAUISound`
+
 ## `tast.camera.DecodeAccelJPEG` and `tast.camera.DecodeAccelJPEGPerf`
 
 - `DecodeAccelJPEG`
@@ -334,6 +347,20 @@ Chrome OS Testing
     - `hw_out_dmabuf_frame_`
   - calls `JpegClient::StartDecode` on the thread
     - calls `MjpegDecodeAccelerator::Decode`
+
+## `tast.camera.HAL3Recording`
+
+- setup
+  - autologin
+- `cros_camera_test --gtest_filter=Camera3ModuleFixture.NumberOfCameras:Camera3ModuleFixture.OpenDevice --3a_timeout_multiplier=2 --camera_hal_path=/usr/lib64/camera_hal/usb.so --recording_params=0:1280:720:30:1 --connect_to_camera_service=false`
+- `cros_camera_test '--gtest_filter=Camera3RecordingFixture/*' --3a_timeout_multiplier=2 --camera_hal_path=/usr/lib64/camera_hal/usb.so --recording_params=0:1280:720:30:1 --connect_to_camera_service=false`
+
+## `tast.graphics.OpenclCts.*`
+
+- <https://chromium.googlesource.com/chromiumos/platform/tast-tests/+/refs/heads/main/src/go.chromium.org/tast-tests/cros/local/bundles/cros/graphics/opencl_cts.go>
+  - this is generated
+- `tast.graphics.OpenclCts.compiler_options_include_directory` executes, for
+  example, `/usr/local/opencl/test_compiler options_include_directory`
 
 ## `tast.power.VideoPlayback.h264_1080_30fps_1hr_ash`
 

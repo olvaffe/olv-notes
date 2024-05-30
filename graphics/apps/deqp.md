@@ -1278,6 +1278,20 @@ dEQP
     - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
     - `col0.w` is the error code; non-zero means failure
 
+## Test Case: `dEQP-VK.shader_object.performance.binary_memcpy`
+
+- `ShaderObjectBinaryPerformanceCase` is the test case
+  - `BinaryType` is `BINARY_MEMCPY`
+- `ShaderObjectBinaryPerformanceInstance` is the test instance
+- `ShaderObjectBinaryPerformanceInstance::iterate`
+  - `vkCreateShadersEXT` creates a `VkShaderEXT` from spirv
+  - `vkGetShaderBinaryDataEXT` queries the binary
+  - `vkCreateShadersEXT` creates a `VkShaderEXT` from the binary
+  - `vkCreateBuffer` creates a `VkBuffer`
+  - mempcy to copy the binary to the buffer
+  - it then validates that `vkCreateShadersEXT` from the binary is at most 50%
+    slower than mempcy
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
