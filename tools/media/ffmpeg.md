@@ -52,6 +52,21 @@ FFmpeg
   - `-codec ac3` selects ac3 for all streams
   - `-codec:a:0 ac3` selects ac3 for audio stream #0
 
+## Pixel Formats
+
+- let `a.pnm` be a 64x64 image with solid color `#aabbcc`
+  - assuming bt709 and limited range, it is `(0xae, 0x8a, 0x77)` in yuv
+- `ffmpeg -i a.pnm -pix_fmt <fmt> a.rgb`
+  - `rgb24` outputs `aabbcc` of size `64*64*3`
+  - `argb` outputs `ffaabbcc` of size `64*64*4`
+- `ffmpeg -i a.pnm -pix_fmt <fmt> a.yuv`
+  - `nv12` outputs `ae` for Y and `8a77` for UV of size `64*64*1.5`
+  - `yuv420p` outputs `ae` for Y, `8a` for U, and `77` for V of size
+    `64*64*1.5`
+  - `yuv420p` outputs `ae` for Y, `8a` for U, and `77` for V of size
+    `64*64*1.5`
+    - p stands for planar
+
 ## Hardware Acceleration
 
 - `ffmpeg -hwaccels` shows the supported hwaccel methods
