@@ -103,6 +103,6 @@ MediaTek SoCs
   - 2022, 520 / MT8186
     - 7nm, Cortex-{A76,A55}, Mali-G52 MC2
     - cros: corsola
-  - MT8188G
-    - Cortex-{A76,A55}, Mali-G52 MC2
+  - 2024, 838 / MT8188G
+    - Cortex-{A78,A55}, Mali-G57 MC3
     - cros: geralt
