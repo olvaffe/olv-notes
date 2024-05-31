@@ -83,3 +83,51 @@ Kernel cpufreq
   - changing `scaling_max_freq` has no effect
   - changing `max_perf_pct` has no effect
   - and it works now after a reboot....
+
+## `acpi-cpufreq`
+
+- `acpi_scan_init` calls `acpi_processor_init`
+  - when a processor is discovered, `acpi_processor_add` calls
+    `acpi_processor_get_info`
+  - if the processor object supports `_PCT` method (performance control),
+    `cpufreq_add_device` is called to add `acpi-cpufreq` device
+- `acpi_cpufreq_init` registers `acpi_cpufreq_platdrv`
+  - this is called in `late_initcall` which happens later than amd-pstate
+- `acpi_cpufreq_probe` probes the `acpi-cpufreq` dev
+  - if there is a current driver, it bails
+  - otherwise, it calls `cpufreq_register_driver` to register
+    `acpi_cpufreq_driver`
+
+## `amd_pstate`
+
+- <https://docs.kernel.org/admin-guide/pm/amd-pstate.html>
+- the AMD CPPC interface provides
+  - read-only capabilities
+    - Highest Performance
+      - this is the absolute highest perf level
+      - this is not sustainable
+    - Nominal (Guaranteed) Performance
+      - this is the highest sustainable perf level
+    - Lowest non-linear Performance
+      - this is the most efficient perf level
+    - Lowest Performance
+      - this is the absolute lowest perf level
+- `amd_pstate_init`
+  - it bails unless
+    - the cpu vendor is `X86_VENDOR_AMD`
+    - `acpi_cpc_valid` returns true, indicating `_CPC` (Continuous Performance
+      Control) support
+    - there is no cpufreq driver
+  - `cppc_state` is `AMD_PSTATE_UNDEFINED` initially unless overridden by
+    param
+    - it checks acpi `FADT` table as well as cpu feature `X86_FEATURE_CPPC` to
+      decide if `amd_pstate` should be used
+    - it calls `amd_pstate_set_driver(CONFIG_X86_AMD_PSTATE_DEFAULT_MODE)`,
+      which defaults to `AMD_PSTATE_ACTIVE` (3)
+    - this picks `amd_pstate_epp_driver` (when active) or `amd_pstate_driver`
+      (when passive or guided)
+  - `amd_pstate_enable` enables cppc
+  - `cpufreq_register_driver` registers the driver
+    - note that this can fail, but since `amd_pstate_enable` is not undone,
+      the cpu stays at the lowest perf level even when it falls back to
+      `acpi-cpufreq`
