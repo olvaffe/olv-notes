@@ -32,6 +32,12 @@ Kernel Resource
   - `system_pnp_probe` calls `request_mem_region` to add `pnp %s` res
   - `intel_pinctrl_probe` calls `devm_platform_ioremap_resource` to add
     `INT34C5:00` res
+- device resources
+  - e.g., a pci device has a few resources for mmio (and io)
+    - they describe the resources but are not a part of `iomem_resource` tree
+  - `__request_region` requests a region
+    - `alloc_resource` allocates a new `resource`
+    - `__request_resource` adds the new resource to the tree
 - `walk_system_ram_range`
   - `vmf_insert_*` calls `track_pfn_insert` which calls `lookup_memtype` which
     calls `pat_pagerange_is_ram` which calls `walk_system_ram_range`
