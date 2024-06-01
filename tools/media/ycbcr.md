@@ -39,3 +39,16 @@ YCbCr
   - `4:2:0` are subsampled horizontally and vertically
     - `YV12` has Y plane, V plane, and U plane
     - `NV12` has Y plane and UV plane
+
+## Gamma correction
+
+- for a game asset,
+  - the stored color values are gamma-corrected
+    - that is, linear color values go through OETF before storage
+  - the stored color values can be fed to the display directly
+    - that is, the display applies EOTF to get linear light intensity
+  - the game can choose between
+    - read and output the gamma-corrected values without processing, or with
+      incorrect processing
+    - read the gamma-corrected values, applies EOTF, process in the linear
+      space, applies OETF, and output the gamma-corrected values
