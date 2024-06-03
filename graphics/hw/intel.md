@@ -249,6 +249,37 @@ Intel GPUs
 - the blitter engine (BLT)
   - is added since SNB
 
+## Tiger Lake, Vol 3, GPU Overview
+
+- the gpu consists of several independent engines
+  - display/overlay
+    - controlled by mmio directly
+  - blitter
+    - controlled by mmio directly or MI indirectly
+  - GPE (3D, Media, and 3D/Media Subsystem)
+    - controlled by MI indirectly
+  - VCE
+    - controlled by MI indirectly
+- the 3D/Media subsystem consists of
+  - an array of EUs
+  - URB
+  - shared functions (sampler, math, itc, cc, render cache)
+
+## Tiger Lake, Vol 4, Configurations
+
+- a slice has 2, 3, 5, or 6 dual subslices, depending on the configurations
+- each dual subslice consists of 16 EUs
+- each EU has a 8-wide ALU
+  - the hw can pair 2 EUs for SIMD16 execution, and that's why it is called a
+    dual subslice
+- GFLOPS
+  - at 1.35GHz, `1.35*96*8=1036.5` GOPS
+  - mul takes 1 cycle and thus has 1036.5 GOPS (for both fp32 and int32)
+  - mad also takes 1 cycle; it can be said to be 2073 GFLOPS if we consider
+    mad as mul+add
+  - there is packed math for fp16/int16; it can be said to be 4146 GFLOPS
+  - there is DP4A for int8; it can be said to be 8292 GFLOPS
+
 ## VUE, thread payload, and 3D pipeline FF stages
 
 - A vertex is stored in URB as a VUE.  An FF stage identifies a vertex by the
@@ -332,7 +363,6 @@ Intel GPUs
       - setup data are from SF unit.  The amount of data is determined by
         `Number of Output Attributes` field in `3DSTATE_SF`.  Each attribute
         takes two registers.
-
 
 ## Device Programming Environment
 
