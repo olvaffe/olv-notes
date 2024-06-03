@@ -4,46 +4,46 @@ Intel GPUs
 ## uArchs
 
 - Nehalem
-  - Nehalem, 2008, 45nm, 1st gen, Gen4
+  - Nehalem, 2008, 45nm, 1st gen, Gfx4
     - `intel_device_info_i965`, etc.
-  - Westmere, 2010, 32nm, 1st gen, Gen5
+  - Westmere, 2010, 32nm, 1st gen, Gfx5
     - `intel_device_info_ilk`
 - Sandy Bridge
-  - Sandy Bridge, 2011, 32nm, 2nd gen, Gen6
+  - Sandy Bridge, 2011, 32nm, 2nd gen, Gfx6
     - `intel_device_info_snb_gt1`, etc.
-  - Ivy Bridge, 2012, 22nm, 3th gen, Gen7
+  - Ivy Bridge, 2012, 22nm, 3th gen, Gfx7
     - `intel_device_info_ivb_gt1`, `intel_device_info_byt`, etc.
 - Haswell
-  - Haswell, 2013, 22nm, 4th gen, Gen7.5
+  - Haswell, 2013, 22nm, 4th gen, Gfx7.5
     - `intel_device_info_hsw_gt1`, etc.
-  - Broadwell, 2014, 14nm, 5th gen, Gen8
+  - Broadwell, 2014, 14nm, 5th gen, Gfx8
     - `intel_device_info_bdw_gt1`, `intel_device_info_chv`, etc.
 - Skylake
-  - Skylake, 2015, 14nm, 6th gen, Gen9
+  - Skylake, 2015, 14nm, 6th gen, Gfx9
     - `intel_device_info_skl_gt1`, `intel_device_info_bxt`, etc.
-  - Kaby Lake, 2016, 14nm, 7th gen, Gen9.5
+  - Kaby Lake, 2016, 14nm, 7th gen, Gfx9.5
     - `intel_device_info_kbl_gt1`, `intel_device_info_glk`, etc.
-  - Coffee Lake, 2017, 14nm, 8th/9th gen, Gen9.5
+  - Coffee Lake, 2017, 14nm, 8th/9th gen, Gfx9.5
     - `intel_device_info_cfl_gt1`
-  - (SKIPPED) Cannon Lake, 2018, 10nm, 9th gen, Gen10
-  - Comet Lake, 2019, 14nm, 10th gen, Gen9.5
+  - (SKIPPED) Cannon Lake, 2018, 10nm, 9th gen, Gfx10
+  - Comet Lake, 2019, 14nm, 10th gen, Gfx9.5
 - Ice Lake
-  - Ice Lake, 2019, 10nm, 10th gen, Gen11
+  - Ice Lake, 2019, 10nm, 10th gen, Gfx11
     - `intel_device_info_icl_gt2`, `intel_device_info_ehl_4x8`, etc.
 - Xe-LP
-  - Tiger Lake, 2020, Intel 7 (10nm), 11th gen, Gen12
+  - Tiger Lake, 2020, Intel 7 (10nm), 11th gen, Gfx12
     - `intel_device_info_tgl_gt1`, `intel_device_info_rkl_gt05`, etc.
-  - Xe (DG1), 2021, Intel 7, Gen12
+  - Xe (DG1), 2021, Intel 7, Gfx12
     - `intel_device_info_dg1`, etc.
-  - Alder Lake, 2021, Intel 7, 12th gen, Gen12
+  - Alder Lake, 2021, Intel 7, 12th gen, Gfx12
     - `intel_device_info_adl_gt05`, etc.
-  - Raptor Lake, 2022, Intel 7, 13th gen, Gen12
+  - Raptor Lake, 2022, Intel 7, 13th gen, Gfx12
     - `intel_device_info_rpl`, etc.
 - Xe-HPG
-  - Arc (DG2, Alchemist), 2022, 6nm, Gen12.5
+  - Arc (DG2, Alchemist), 2022, 6nm, Gfx12.5
     - `intel_device_info_dg2_g10`, etc.
 - Xe-LPG
-  - Meteor Lake, 2023, Intel 4, 14th gen, Gen12.5
+  - Meteor Lake, 2023, Intel 4, 14th gen, Gfx12.5
     - `intel_device_info_mtl_u`, etc.
 - Xe2
   - Arc (DG3, Battlemage)
@@ -59,7 +59,7 @@ Intel GPUs
   - display
   - media
   - GPE, graphics processing engine
-- Gen11LP GT2
+- Gfx11LP GT2
   - 1 Unslice, which has
     - 1 GTI
     - 1 Command Streamer
@@ -102,8 +102,140 @@ Intel GPUs
         - 1 Branch unit
         - 1 Send unit
 
-## PRM
+## PRMs
 
+- <https://www.intel.com/content/www/us/en/docs/graphics-for-linux/developer-reference/1-0/overview.html>
+  - Hardware Specifications
+  - 2023 Alchemist/Arctic Sound-M (Gfx12.5)
+    - `intel_device_info_dg2_g10`, `intel_device_info_dg2_g11`,
+      `intel_device_info_dg2_g12`, `intel_device_info_atsm_g10`, and
+      `intel_device_info_atsm_g11`
+  - 2021 Rocket Lake (Gfx12)
+    - `intel_device_info_rkl_gt05` and `intel_device_info_rkl_gt1`
+  - 2020-2021 Tiger Lake (Gfx12)
+    - `intel_device_info_tgl_gt1` and `intel_device_info_tgl_gt2`
+  - 2020 Lakefield (Gfx11)
+    - `intel_device_info_ehl_4x8`, `intel_device_info_ehl_4x6`,
+      `intel_device_info_ehl_4x5`, `intel_device_info_ehl_4x4`,
+      `intel_device_info_ehl_2x8`, and `intel_device_info_ehl_2x4`
+  - 2020 DG1 (Gfx12)
+    - `intel_device_info_dg1` and `intel_device_info_sg1`
+  - 2019 Ice Lake (Gfx11)
+    - `intel_device_info_icl_gt2`, `intel_device_info_icl_gt1_5`,
+      `intel_device_info_icl_gt1`, and `intel_device_info_icl_gt0_5`
+    - vol1: preface
+    - vol2: command reference
+    - vol3: gpu overview
+    - vol4: configurations
+    - vol5: memory data formats
+    - vol6: memory views
+    - vol7: memory cache
+    - vol8: command stream programming
+    - vol9: render engine
+    - vol10: copy engine
+    - vol11: media engines
+    - vol12: display engine
+    - vol13: sw/hw system interface
+    - vol14: workarounds
+  - 2018-2019 Whiskey Lake (Gfx9)
+    - same as coffee lake
+  - 2017-2019 Amber Lake (Gfx9)
+    - same as kaby lake or coffe lake
+  - 2017-2019 Coffee Lake (Gfx9)
+    - `intel_device_info_cfl_gt1`, `intel_device_info_cfl_gt2`, and
+      `intel_device_info_cfl_gt3`
+  - 2019-2020 Comet Lake (Gfx9)
+    - same as coffee lake
+  - 2016 Kaby Lake (Gfx9)
+    - `intel_device_info_kbl_gt1`, `intel_device_info_kbl_gt1_5`,
+      `intel_device_info_kbl_gt2`, `intel_device_info_kbl_gt3`, and
+      `intel_device_info_kbl_gt4`
+    - `intel_device_info_glk` and `intel_device_info_glk_2x6`
+  - 2016 Apollo Lake and Broxton (Gfx9)
+    - `intel_device_info_bxt`, and `intel_device_info_bxt_2x6`
+  - 2015-2016 Skylake (Gfx9)
+    - `intel_device_info_skl_gt1`, `intel_device_info_skl_gt2`,
+      `intel_device_info_skl_gt3`, and `intel_device_info_skl_gt4`
+  - 2014 Bay Trail (Gfx7)
+    - `intel_device_info_byt`
+  - 2014-2015 Cherry Trail and Braswell (Gfx8)
+    - `intel_device_info_chv`
+    - vol1-vol9: same as broadwell
+    - vol10: hevc
+    - vol11: blitter
+    - vol12: display
+    - vol13: mmio
+    - vol14: observability
+    - vol15: graphics pci registers
+    - vol16: workarounds
+  - 2014-2015 Broadwell (Gfx8)
+    - `intel_device_info_bdw_gt1`, `intel_device_info_bdw_gt2`, and
+      `intel_device_info_bdw_gt3`
+    - vol1-vol12: same as haswell
+    - vol13: mmio
+    - vol14: observability
+    - vol15: workarounds
+  - 2013 Haswell (Gfx7.5)
+    - `intel_device_info_hsw_gt1`, `intel_device_info_hsw_gt2`, and
+      `intel_device_info_hsw_gt3`
+    - vol1: preface and overview
+    - vol2: command reference
+      - enumerations
+      - instructions
+      - registers
+      - structures
+    - vol3: gpu overview
+    - vol4: configuration
+    - vol5: memory views
+      - tiling, gtt, faulting, mocs, formats, surfaces
+    - vol6: command stream programming
+      - cmd formats, blitter engine, render engine, video command streamer,
+        video enhancement command streamer, resource streamer
+    - vol7: 3d/media/gpgpu
+    - vol8: media vdbox
+    - vol9: media vebox
+    - vol10: blitter
+    - vol11: display
+    - vol12: pcie configuration registers
+    - observability performance counters
+  - 2012 Ivy Bridge (Gfx7)
+    - `intel_device_info_ivb_gt1` and `intel_device_info_ivb_gt2`
+  - 2011 Sandy Bridge (Gfx6)
+    - `intel_device_info_snb_gt1` and `intel_device_info_snb_gt2`
+  - 2010 Iron Lake (Gfx5)
+    - `intel_device_info_ilk`
+    - vol1: graphics core
+      - mmio, media regs, env
+      - memory interface, render engine
+      - video codec engine
+      - blitter engine
+    - vol2: 3d and media
+    - vol3: display registers
+      - vga
+      - cpu
+      - pch
+    - vol4: subsystem and cores
+      - shared functions
+      - message gateway, urb, video motion, and ISA
+  - G45 (Gfx4.5)
+    - `intel_device_info_g4x`
+    - the gpu is in north bridge
+  - 965 and G35 (Gfx4)
+    - `intel_device_info_i965`
+    - the gpu is in north bridge
+    - vol1: graphics core
+      - this is urb, pipe control, surfaces, memory interface, blt, etc.
+    - vol2: 3d/media
+      - this is 3D pipeline and media pipeline
+    - vol3: display registers
+      - this is display
+    - vol4: subsystem and cores
+      - this is EUs and shared functions
+  - `OpRegion` and software `SCI`
+    - this is for display
+    - the system bios reserves some memory as Operation Regions
+    - the kernel driver maps meory to access system states
+    - the kernel driver can also `SCI` to call into the bios
 - there are 3 engines
   - render engine (vol1 part 3, vol 2, and vol 4)
   - video codec engine (vol1 part 4)
