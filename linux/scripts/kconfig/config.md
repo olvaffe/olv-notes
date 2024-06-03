@@ -207,6 +207,8 @@ Kernel Config
   - select `Timer frequency (1000 HZ)`
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
+- select `Mitigations for CPU vulnerabilities`
+  - deselect `Mitigate speculative RAS overflow on AMD` if amd
 - select `Power management and ACPI options`
   - select `Device power management core functionality`
     - select `Power Management Debug Support` if debug
@@ -216,6 +218,8 @@ Kernel Config
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `AMD Processor P-State driver` if amd
+        - select `AMD Processor P-State default mode` if cros
+          - guybrush requires 2
       - select `ACPI Processor P-States driver` if amd
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations`
