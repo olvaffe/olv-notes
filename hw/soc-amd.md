@@ -13,7 +13,7 @@ AMD CPUs
 - Zen 3       - 2020 - 7nm
 - Zen 3+      - 2022 - 6nm (apu only)
 - Zen 4       - 2022 - 5nm
-- Zen 5?      - 2024 - 3nm
+- Zen 5       - 2024 - 3nm
 
 ## CPUs and APUs
 
@@ -63,9 +63,9 @@ AMD CPUs
 - 2024: Ryzen 8000 series
   - Phoenix, 65W, Zen 4, RDNA3
   - Hawk Point, 15-54W, Zen 4, RDNA3
-  - Granite Ridge
-  - Fire Range
-  - Strix Point
+- 2024: Ryzen 9000 series and AI 300 series
+  - Granite Ridge, 65-170W, Zen 5, RDNA2-display
+  - Strix Point, 28W, Zen 5, RDNA3.5
 
 ## Chromebooks
 

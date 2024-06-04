@@ -15,7 +15,7 @@ Intel CPUs
   - Golden Cove   - 2021 - Intel 7 (was 10nm, but roughly TSMC's 7nm)
   - Raptor Cove   - 2022 - Intel 7
   - Redwood Cove  - 2023 - Intel 4
-  - Lion Cove     - 2024 - Intel 20A?
+  - Lion Cove     - 2024 - 3nm
   - Panther Cove  - 2025 - Intel 18A?
 - Little Cores
   - Silvermont    - 2013 - 22nm
@@ -25,67 +25,67 @@ Intel CPUs
   - Tremont       - 2020 - 10nm
   - Gracemont     - 2021 - Intel 7
   - Crestmont     - 2023 - Intel 4
-  - Skymont       - 2024 - Intel 20A?
+  - Skymont       - 2024 - 3nm
   - Darkmont      - 2025 - Intel 18A?
 
 ## CPUs
 
 - 11Q4~: Core 2xxx
-  - Sandy Bridge, Gen6 GPU
+  - Sandy Bridge, Gfx6 GPU
 - 12Q4~: Core 3xxx
-  - Ivy Bridge, Gen7 GPU
+  - Ivy Bridge, Gfx7 GPU
 - 13Q4~: Core 4xxx
-  - Haswell, Gen7.5 GPU
-  - Atom: Bay Trail (Valleyview), 2-10W, Silvermont, Gen7 GPU
+  - Haswell, Gfx7.5 GPU
+  - Atom: Bay Trail (Valleyview), 2-10W, Silvermont, Gfx7 GPU
 - 14Q4~: Core 5xxx
-  - Broadwell, Gen8 GPU
-  - Atom: Braswell (Cherry Trail, Cherryview), 2-6W, Airmont, Gen8 GPU
+  - Broadwell, Gfx8 GPU
+  - Atom: Braswell (Cherry Trail, Cherryview), 2-6W, Airmont, Gfx8 GPU
 - 15Q4~: Core 6xxx
-  - Skylake, Gen9 GPU
+  - Skylake, Gfx9 GPU
 - 16Q4~: Core 7xxx
-  - Kaby Lake, Skylake uarch, Gen9.5 GPU
+  - Kaby Lake, Skylake uarch, Gfx9.5 GPU
     - cros: poppy
-  - Atom: Apollo Lake, 6-10W, Goldmont, Gen9.5 GPU
+  - Atom: Apollo Lake, 6-10W, Goldmont, Gfx9.5 GPU
     - cros: reef, coral
 - 17Q4~: Core 8xxx
-  - Coffee Lake, Skylake uarch, Gen9.5 GPU
-  - Whiskey Lake, Skylake uarch, Gen9.5 GPU
-  - Kaby Lake R, Skylake uarch, Gen9.5 GPU
+  - Coffee Lake, Skylake uarch, Gfx9.5 GPU
+  - Whiskey Lake, Skylake uarch, Gfx9.5 GPU
+  - Kaby Lake R, Skylake uarch, Gfx9.5 GPU
     - cros: fizz, rammus
-  - Amber Lake Y, Skylake uarch, Gen9.5 GPU
-  - Atom: Gemini Lake, Goldmont Plus, Gen9.5 GPU
+  - Amber Lake Y, Skylake uarch, Gfx9.5 GPU
+  - Atom: Gemini Lake, Goldmont Plus, Gfx9.5 GPU
     - cros: octopus
 - 18Q4~: Core 9xxx
-  - Coffee Lake Refresh, Skylake uarch, Gen9.5 GPU
-  - Cannon Lake (skipped), Palm Cove, Gen10 GPU
+  - Coffee Lake Refresh, Skylake uarch, Gfx9.5 GPU
+  - Cannon Lake (skipped), Palm Cove, Gfx10 GPU
 - 19Q4~: Core 10xxx
-  - Ice Lake, Sunny Cove, Gen11 GPU
-  - Comet Lake, Skylake uarch, Gen9.5 GPU
+  - Ice Lake, Sunny Cove, Gfx11 GPU
+  - Comet Lake, Skylake uarch, Gfx9.5 GPU
     - cros: hatch, puff, drallion
-  - Amber Lake Y, Skylake uarch, Gen9.5 GPU
+  - Amber Lake Y, Skylake uarch, Gfx9.5 GPU
 - 20Q4~: Core 11xxx
-  - Tiger Lake, Willow Cove, Gen12 GPU
+  - Tiger Lake, Willow Cove, Gfx12 GPU
     - cros: volteer
-  - Rocket Lake, Sunny Cove, Gen12 GPU
-  - Atom: Jasper Lake, 6-15W, Tremont, Gen11 GPU
+  - Rocket Lake, Sunny Cove, Gfx12 GPU
+  - Atom: Jasper Lake, 6-15W, Tremont, Gfx11 GPU
     - cros: dedede
 - 21Q4~: Core 12xxx
-  - Alder Lake, Golden Cove, Gracemont, Gen12 GPU
+  - Alder Lake, Golden Cove, Gracemont, Gfx12 GPU
     - cros: brya
 - 22Q4~: Core 13xxx
-  - Raptor Lake, Raptor Cove, Gracemont, Gen12 GPU
+  - Raptor Lake, Raptor Cove, Gracemont, Gfx12 GPU
     - cros: skolas
-  - Atom: Alder Lake N, 6-15W, Gracemont, Gen12 GPU
+  - Atom: Alder Lake N, 6-15W, Gracemont, Gfx12 GPU
     - cros: nissa
 - 23Q4~: Core 14xxx
-  - Raptor Lake-R, Raptor Cove, Gracemont, Gen12 GPU
+  - Raptor Lake-R, Raptor Cove, Gracemont, Gfx12 GPU
 - 23Q4~: Core Ultra 1xx
-  - Meteor Lake ,Redwood Cove, Crestmont, Gen12.5 GPU
+  - Meteor Lake, Redwood Cove, Crestmont, Gfx12.5 GPU
     - cros: rex
 - 24Q4~: Core Ultra 2xx?
+  - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
   - Arrow Lake
 - 25Q4~: Core Ultra 3xx?
-  - Lunar Lake
   - Panther Lake
   - Nova Lake
 
