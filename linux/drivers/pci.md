@@ -112,6 +112,68 @@ PCI
   `pci_msi_domain_info` to create "PCI-MSI" irq domain
 - `pcibios_*` are defined by arch
 
+## Resources
+
+- on x86, `acpi_pci_root_add` calls `pci_acpi_scan_root`
+  - `acpi_pci_root_create` calls `pci_create_root_bus` and
+    `pci_scan_child_bus`
+  - `pci_scan_slot` calls `pci_scan_single_device` to scan the given slot
+  - `pci_scan_device` allocs and sets up an `pci_dev`
+    - `pci_setup_device` calls `pci_read_bases` to reads the base addresses
+      for the bars and converts them to resources
+      - it also prints prints the device info and the bar info
+  - `pci_device_add` configures and adds the dev to the bus
+    - `pci_init_capabilities` calls `pci_pm_init` and many others
+      - this prints supported D states (D0, D1, D2, D3hot D3cold)
+  - `pci_read_bases`
+    - `PCI_BASE_ADDRESS_SPACE_IO` maps to `IORESOURCE_IO`
+    - `PCI_BASE_ADDRESS_SPACE_MEMORY` maps to `IORESOURCE_MEM`
+    - `PCI_BASE_ADDRESS_MEM_PREFETCH` maps to `IORESOURCE_PREFETCH`
+    - `PCI_BASE_ADDRESS_MEM_TYPE_64` maps to `IORESOURCE_MEM_64`
+    - `IORESOURCE_SIZEALIGN` is always set
+    - if the bar is invalid (e.g., >4GB on a 32-bit build),
+      - set `IORESOURCE_UNSET` and `IORESOURCE_DISABLED` and bail
+  - after all devices (including the bridge) are scanned, `pcibios_fixup_bus`
+    fixes up the bus
+    - `pci_read_bridge_bases` sets up non-root bridges
+- also on x86,
+  - `subsys_initcall(pci_subsys_init)`
+    - `pcibios_init` calls `pcibios_resource_survey`
+    - `pci_claim_resource` is called on all resources
+      - this is where `request_resource_conflict` is called
+  - `fs_initcall(pcibios_assign_resources)`
+    - this calls `pci_assign_unassigned_resources` which calls
+      `pci_assign_unassigned_root_bus_resources` on all root buses
+    - `__pci_bus_size_bridges` resizes bridge resources
+    - `__pci_bus_assign_resources` assigns device resources
+      - `pci_setup_bridge` is also called
+    - `pci_bus_dump_resources` dumps resource to dmesg
+- on other archs, the pci controller driver allocates a `pci_host_bridge` and
+  calls `pci_host_probe`
+  - `pci_scan_root_bus_bridge` calls `pci_scan_child_bus`
+  - `pci_bus_size_bridges` resizes bridge resources
+  - `pci_bus_assign_resources` assigns device resources
+- when the driver calls `pci_enable_device`, `pci_enable_resources` is called
+  with all `IORESOURCE_MEM` and `IORESOURCE_IO` bars
+- when a pci device is woken up, `pci_restore_bars` calls
+  `pci_update_resource`
+- for a resizeable bar, driver may call `pci_resize_resource` to resize it
+
+## sysfs
+
+- `/sys/bus/pci/devices/.../remove` removes a device
+  - `pci_stop_and_remove_bus_device_locked` calls
+    - `pci_stop_bus_device`
+    - `pci_remove_bus_device`
+  - `pci_free_resources` calls `release_resource`
+- `/sys/bus/pci/rescan` rescans a bus
+  - `pci_rescan_bus` calls
+    - `pci_scan_child_bus`
+    - `pci_assign_unassigned_bus_resources`
+    - `pci_bus_add_devices`
+  - `pbus_assign_resources_sorted` calls `pci_assign_resource` indirectly
+    - this calls `allocate_resource`
+
 ## PCI Config Space
 
 - `pci_read_config_*`

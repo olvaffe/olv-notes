@@ -45,3 +45,47 @@ Kernel Resource
     - 1 if the range is entirely inside ram
     - 0 if the range is entirely outside ram
     - -1 if the range is partly in ram and partly not in ram
+
+## APIs
+
+- `request_resource_conflict` requests a resource from an immediate parent
+  - this adds the resource as an immediate child of the parent
+  - a future request with an overlapping range will conflict with this one
+  - if a conflict happens, the conflicting resource is returned
+  - `request_resource` is a wrapper
+- `release_resource` releases a resource from its immediate parent
+  - it removes the resource from its immediate parent
+- `release_child_resources` recursively releases children of a resource
+- `insert_resource_conflict` inserts a request to an immediate parent
+  - if there is no conflict, it is the same as `request_resource_conflict`
+  - if there is a conflict, and the conflicting resource is a subset, this new
+    resource replaces the conflicting resource, and the conflicting resource
+    is reparented to this new resource
+  - if a real conflict happens, the conflicting resource is returned
+- `remove_resource` removes a resource from its immediate parent
+  - if the resource has children, the children are reparented
+- `allocate_resource` requests a resource of flexible region from an immediate
+  parent
+  - it determines the final region based on the specified constraints
+  - it then calls `__request_resource`
+- `lookup_resource` finds the resource with matching start from an immediate
+  parent
+- `adjust_resource` updates the region of a resource
+  - it checks for conflicts before updating
+- `resource_alignment` returns the alignment
+  - `IORESOURCE_SIZEALIGN` uses the size as alignment
+  - `IORESOURCE_STARTALIGN` uses the start as alignment
+- `__request_region` requests a region from a parent
+  - it `kzalloc` the resource
+  - if it conflicts with a sibling, and the sibling is not `IORESOURCE_BUSY`,
+    it retries using the sibling as the parent
+- `__release_region` releases a region from a parent
+  - it find the resource corresponding to the region from children and
+    grandchildren
+  - it `kfree` the resource
+- `request_free_mem_region` is similar to `__request_region` except the region
+  is flexible
+  - it determines the final region based on the specified constraints
+- `alloc_free_mem_region` is similar to `allocate_resource`, except the
+  resource is `kalloc`ed
+- `walk_*`
