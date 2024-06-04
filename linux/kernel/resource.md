@@ -89,3 +89,70 @@ Kernel Resource
 - `alloc_free_mem_region` is similar to `allocate_resource`, except the
   resource is `kalloc`ed
 - `walk_*`
+
+## `struct resource`
+
+- `start` and `end` are the range, both inclusive
+- `name` is the descriptive name
+- `flags` are resource flags
+  - bit 0..7 are `IORESOURCE_BITS` and are subsystem-specific
+    - PnP IRQ, DMA, MEM, IO
+    - PCI
+  - bit 8..12 are `IORESOURCE_TYPE_BITS`
+    - `IORESOURCE_IO` is io ports
+    - `IORESOURCE_MEM` is mem addrs
+    - `IORESOURCE_REG` is regs
+    - `IORESOURCE_IRQ` is irqs
+    - `IORESOURCE_DMA` is dma ids
+    - `IORESOURCE_BUS` is bus ids
+  - bit 13 is `IORESOURCE_PREFETCH`
+    - it indicates the resource can be accessed with prefetch enabled (because
+      there is no side-effect)
+    - e.g.., the resource can be mapped with `ioremap_wc` instead of `ioremap`
+  - bit 14 is `IORESOURCE_READONLY`
+    - it indicates the resource is read-only
+  - bit 15 is `IORESOURCE_CACHEABLE` and is pnp-specific
+  - bit 16 is `IORESOURCE_RANGELENGTH` and is pnp-specific
+  - bit 17 is `IORESOURCE_SHADOWABLE` and is pnp-specific
+  - bit 18 is `IORESOURCE_SIZEALIGN`
+    - `resource_alignment` returns `resource_size`
+  - bit 19 is `IORESOURCE_STARTALIGN`
+    - `resource_alignment` returns `start`
+  - bit 20 is `IORESOURCE_MEM_64`
+    - the resource is beyond 4GB
+  - bit 21 is `IORESOURCE_WINDOW`
+    - the resource is reserved by a pci bridge?
+  - bit 22 is `IORESOURCE_MUXED`
+    - it indicates the resource is sw-muxed
+    - two drivers might access the same io port
+    - they should enclose their accesses by `request_muxed_region` and
+      `__release_region` to coordinate
+  - bit 23 is unused
+  - bit 24 is `IORESOURCE_EXT_TYPE_BITS`
+    - this is a modifier for `IORESOURCE_TYPE_BITS`
+    - when the type is `IORESOURCE_MEM`, this bit is called
+      `IORESOURCE_SYSRAM` and indicates system ram
+  - bit 25 is `IORESOURCE_SYSRAM_DRIVER_MANAGED`
+  - bit 26 is `IORESOURCE_SYSRAM_MERGEABLE`
+  - bit 27 is `IORESOURCE_EXCLUSIVE`
+    - it indicates that the resource cannot be accessed from userspace (via
+      `/dev/mem` or sysfs nodes)
+  - bit 28 is `IORESOURCE_DISABLED`
+    - it indicates that the resource is disabled/invalid and should be ignored
+  - bit 29 is `IORESOURCE_UNSET`
+    - it indicates that start/end has not finalized yet
+  - bit 30 is `IORESOURCE_AUTO`
+    - this is only used by pnp
+  - bit 31 is `IORESOURCE_BUSY`
+    - this is mainly used by `request_region`
+    - if `request_region` conflicts with the resource, and the resource is not
+      busy, `request_region` requests a child of the resource instead
+- `desc` is used by `walk_iomem_res_desc` and `region_intersects`
+  - it is used to filter by descriptor types, such as `IORES_DESC_ACPI_TABLES`
+- `parent`, `sibling`, and `child` are used to form a resource tree
+  - `parent` points to the parent, if any
+    - the range of the resource is a subset of the range of the parent
+  - `sibling` points to the next sibling, if any
+    - the range of the resource is before the range of the sibling
+  - `child` points to the first child, if any
+    - the range of the resource is a superset of the ranges of all children
