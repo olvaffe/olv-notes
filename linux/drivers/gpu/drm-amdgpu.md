@@ -569,6 +569,26 @@ DRM amdgpu
       - `amdgpu_gfx_enable_kgq` submits cmds to KIQ
       - `gfx_v10_0_cp_gfx_start` sets `mmCP_ME_CNTL` and submits cmds to KGQ
         - this starts CE, PFP, and ME
+- EOP (End Of Pipeline) IRQ on GFX10
+  - `gfx_v10_0_set_irq_funcs` initializes the IRQ functions
+    - `enum amdgpu_cp_irq` enumerates EOP IRQs
+      - GFX has 1 ME which has 2 PIPEs
+      - COMPUTE has 2 MECs which have 4 PIPEs each
+  - `gfx_v10_0_sw_init` calls `amdgpu_irq_add_id` for EOP irqs
+    - the client id is `SOC15_IH_CLIENTID_GRBM_CP`
+    - the source id is `GFX_10_1__SRCID__CP_EOP_INTERRUPT`
+    - the src is set to `adev->irq.client[client_id].sources[src_id]`
+  - `gfx_v10_0_sw_init` also calls `gfx_v10_0_gfx_ring_init` and
+    `gfx_v10_0_compute_ring_init` to init the rings
+  - `amdgpu_fence_driver_hw_init` calls `amdgpu_irq_get` on the irq of each
+    ring
+    - this calls `gfx_v10_0_set_eop_interrupt_state` to enable the interrupt
+  - when a job completes, `amdgpu_irq_handler` handles the hw interrupt
+    - `amdgpu_ih_process` calls `amdgpu_irq_dispatch`
+    - `amdgpu_ih_decode_iv` can decode the interrupt info to
+      `amdgpu_iv_entry`, which includes the client id and the source id
+    - `gfx_v10_0_eop_irq` calls `amdgpu_fence_process` on the ring
+    - this reads the seqno and `dma_fence_signal` completed fences
 
 ## SMU
 

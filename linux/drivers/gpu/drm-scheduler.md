@@ -40,3 +40,17 @@ DRM Scheduler
     finished jobs from `drm_gpu_scheduler`
   - `drm_sched_backend_ops::free_job` frees the job by calling
     `drm_sched_job_cleanup`
+
+## GPU Hang
+
+- `drm_sched_run_job_work` calls `drm_sched_backend_ops::run_job` to queue the
+  job to hw
+  - before queuing, `drm_sched_start_timeout` starts `sched->work_tdr` with a
+    timeout
+- after job completion, `drm_sched_job_done` schedules
+  `drm_sched_free_job_work`
+  - `drm_sched_get_finished_job` cancels `sched->work_tdr`
+- if the job does not complete in time, `drm_sched_job_timedout` is called
+  - it calls `drm_sched_backend_ops::timedout_job` to trigger gpu recovery
+- if the driver detects hangs before the timeout, it can call
+  `drm_sched_fault` to schedule `drm_sched_job_timedout` immediately
