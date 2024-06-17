@@ -339,3 +339,57 @@ GBM
     - surface asks for, when locking for cpu access,
       - `GRALLOC_USAGE_SW_READ_OFTEN`
       - `GRALLOC_USAGE_SW_WRITE_OFTEN`
+- `Allocator` implements `BnAllocator`
+  - `Allocator::init` calls `cros_gralloc_driver::get_instance`
+    - it scans drm render nodes, calls `drv_create`, and returns the first
+      `driver`
+  - `Allocator::isSupported` calls `cros_gralloc_driver::is_supported`
+    - `drv_resolve_format_and_use_flags` returns the format and use flags
+    - `drv_get_combination` checks if the combo is supported
+    - `drv_get_max_texture_2d_size` checks against the max img size
+  - `Allocator::allocate2` calls `cros_gralloc_driver::allocate`
+    - `drv_bo_create` allocates the `bo`
+    - `cros_gralloc_handle` wraps the exported `bo`
+      - `drv_bo_get_num_planes`
+      - `drv_bo_get_plane_fd`
+      - `drv_bo_get_plane_stride`
+      - `drv_bo_get_plane_offset`
+      - `drv_bo_get_plane_size`
+      - `drv_bo_get_width`
+      - `drv_bo_get_height`
+      - `drv_bo_get_format`
+      - `drv_bo_get_tiling`
+      - `drv_bo_get_format_modifier`
+      - `drv_bo_get_use_flags`
+      - `drv_bytes_per_pixel_from_format`
+      - `drv_bo_get_total_size`
+      - note that `enable_metadata_fd` is always true
+        - dynamically-sized metadata (e.g., name) and mutable metadata (e.g.,
+          dataspace) are stored in shmem rather than embedded into the handle
+        - it prefers dma-heap due to selinux policy
+    - `cros_gralloc_buffer::create` wraps `cros_gralloc_handle`
+      - this is mainly to initialize the metadata
+- `CrosGrallocMapperV5` implements `IMapperV5Impl`
+  - `CrosGrallocMapperV5::importBuffer` calls `cros_gralloc_driver::retain`
+    - `drv_bo_import` imports the handle
+    - `buffers_` and `handles_` track the buffer/handle
+  - `CrosGrallocMapperV5::lock` calls `cros_gralloc_driver::lock`
+    - it waits on the in-fence
+    - it looks up the buffer and calls `cros_gralloc_buffer::lock`
+    - `drv_bo_map`
+      - recursive mapping calls `drv_bo_invalidate` instead
+    - `drv_bo_get_plane_offset`
+  - `CrosGrallocMapperV5::unlock` calls `cros_gralloc_driver::unlock`
+    - `drv_bo_flush_or_unmap`
+  - `CrosGrallocMapperV5::flushLockedBuffer` calls
+    `cros_gralloc_driver::flush`
+    - `drv_bo_flush`
+  - `CrosGrallocMapperV5::rereadLockedBuffer`
+    calls`cros_gralloc_driver::invalidate`
+    - `drv_bo_invalidate`
+  - `CrosGrallocMapperV5::getMetadata` only supports the std metadata
+  - `CrosGrallocMapperV5::setMetadata` only supports the std metadata
+  - `CrosGrallocMapperV5::dumpBuffer` dumps one buffer
+  - `CrosGrallocMapperV5::dumpAllBuffers` dumps all buffers
+  - `CrosGrallocMapperV5::getReservedRegion` returns the client reserved
+    region

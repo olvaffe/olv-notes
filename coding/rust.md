@@ -39,10 +39,45 @@ Rust
     `git clone --bare https://github.com/rust-lang/crates.io-index.git`
   - `cache` contains downloaded `.crate` files (can be renamed to `.tar.gz`)
   - `src` contains un-tared crates
+- `cargo new <dir>` creates a new project
+  - `src/main.rs` is the source code
+  - `Cargo.toml` is the manifest
 - `cargo build`
   - downloads dependencies to `$CARGO_HOME/registry/src`
   - builds dependencies in `target/debug/deps`
-
+- `Cargo.toml`
+  - `[package]` defines a package
+  - targets
+    - `[lib]` customizes the library target
+    - `[[bin]]` customizes a binary target
+    - `[[example]]` customizes an example target
+    - `[[test]]` customizes a test target
+    - `[[bench]]` customizes a bench target
+  - dependencies
+    - `[dependencies]` specifies library dependencies
+      - `time = "0.1.12"` means
+        - `time` crate on `crates.io`
+          - `https://crates.io/crates/time`
+        - version range `[0.1.12, 0.2.0)`
+      - it is the same as `time = { version = "0.1.12", registry = "crates-io" }`
+        - `version` specifies the version
+        - `registry` specifies the registry
+        - `path` specifies a local path (rather than a registry)
+        - `git` (and `branch`, `tag`, `rev`) specifies a git repo (rather than
+          a registry)
+    - `[dev-dependencies]` specifies deps for examples, tests, and benchmarks
+    - `[build-dependencies]` specifies deps for build scripts
+    - `[target]` specifies platform-specific deps
+  - `[badges]` specifies status dadges to display on a registry
+  - `[features]` specifies conditional compilation features
+  - `[lints]` configure linters for this package
+  - `[patch]` override dependencies
+    - `[patch.crates-io] foo = { path = 'local_path' }` to use local version
+      of `foo` crate
+  - `[profile]` compiler settings and optimizations
+  - `[workspace]` defines a workspace that consists of multiple packages
+    - `resolver = "2"` specifies the v2 dep resolver
+    - `members = ["path1", "path2"]` specifies the member packages
 
 ## Ownership
 
