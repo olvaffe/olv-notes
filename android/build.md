@@ -48,29 +48,67 @@ Android Build System
 - `m` invokes `build/soong/soong_ui.bash --build-mode --all-modules` which
   invokes `runMake`
 
+## Soong
+
+- soong `preProductConfigSetup` calls `FindSources` to generate various
+  lists under `out/.module_paths/`
+  - `Android.mk.list` for all first `Android.mk`
+  - `CleanSpec.mk.list` for all first `CleanSpec.mk`
+  - `AndroidProducts.mk.list` for all `AndroidProducts.mk` under `device/`,
+    `vendor/`, or `product/`
+  - `OWNERS.list` for all `OWNERS`
+  - `METADATA.list` for all `METADATA`
+  - `TEST_MAPPING.list` for all `TEST_MAPPING`
+  - `Android.bp.list` for all `Android.bp`
+  - `configuration.list` for all `*.mk` not matched above
+- `./build/soong/soong_ui.bash --dumpvar-mode COMMON_LUNCH_CHOICES`
+  - it is dispatched to `dumpVar`
+  - `dumpVar` calls `DumpMakeVars`
+  - `DumpMakeVars` calls `dumpMakeVars` to invoke
+    `ckati -f build/make/core/config.mk dump-many-vars`
+    - `ckati` is a `make` clone capable of converting makefiles to ninja files
+- `./build/soong/soong_ui.bash --build-mode --all-modules --dir=$TOP`
+  - it is dispatched to `runMake`
+  - `runMake` calls `Build`
+  - `runMakeProductConfig` calls `dumpMakeVars`
+  - `runSoong` converts Android.bp to ninja
+  - `runKatiBuild` converts Android.mk to ninja
+    - `ckati -f build/make/core/main.mk`
+  - `runKatiPackage` converts Android.mk to ninja
+    - `ckati -f build/make/packaging/main.mk`
+  - `runNinjaForBuild` runs ninja
+
+## Make
+
+- soong `--dumpvar-mode` uses `build/make/core/config.mk`
+  - `include $(BUILD_SYSTEM)/envsetup.mk`
+    - `include $(BUILD_SYSTEM)/product_config.mk`
+      - `android_products_makefiles` is set to the contents of
+        `out/.module_paths/AndroidProducts.mk.list` plus
+        `$(SRC_TARGET_DIR)/product/AndroidProducts.mk`
+        - `$(SRC_TARGET_DIR)` expands to `build/make/target`
+      - `_read-ap-file` is called to read all `AndroidProducts.mk`
+      - `$(call import-products, $(current_product_makefile))` imports the
+        current product's makefile (set by `PRODUCT_MAKEFILES` in
+        `AndroidProducts.mk`)
+      - `TARGET_DEVICE := $(PRODUCT_DEVICE)`
+    - `include $(BUILD_SYSTEM)/board_config.mk`
+      - `board_config_mk` is set to `*/$(TARGET_DEVICE)/BoardConfig.mk` and is
+        included
+  - `include $(BUILD_SYSTEM)/dumpvar.mk`
+    - `dumpvar.mk` defines `dump-many-vars` target to dump make variables
+- soong `--build-mode` uses `build/make/core/main.mk` (and more)
+  - `DEFAULT_GOAL := droid`
+
 ## Device Makefiles
 
 - <https://source.android.com/docs/setup/create/new-device>
-- `device/foo/AndroidProducts.mk` defines the product(s)
+- `device/company/board/AndroidProducts.mk` defines the products
   - `PRODUCT_MAKEFILES` specifies the product makefile(s), such as
     `$(LOCAL_DIR)/foo.mk`
   - `COMMON_LUNCH_CHOICES` specifies the lunch choices, such as
     `foo-userdebug`
-  - soong `preProductConfigSetup` calls `FindSources` to generate various
-    lists under `out/.module_paths/`
-    - `Android.mk.list` for all first `Android.mk`
-    - `CleanSpec.mk.list` for all first `CleanSpec.mk`
-    - `AndroidProducts.mk.list` for all `AndroidProducts.mk` under `device/`,
-      `vendor/`, or `product/`
-    - `OWNERS.list` for all `OWNERS`
-    - `METADATA.list` for all `METADATA`
-    - `TEST_MAPPING.list` for all `TEST_MAPPING`
-    - `Android.bp.list` for all `Android.bp`
-    - `configuration.list` for all `*.mk` not matched above
-  - soong `DumpMakeVars` invokes
-    `make -f build/make/core/config.mk dump-many-vars`
-    - I guess this dumps any make variable, such as `COMMON_LUNCH_CHOICES`
-- `device/foo/foo.mk` defines the product config
+- `device/company/board/foo.mk` defines the product config
   - it uses `(call inherit-product, ...)` to inherit other products
   - it often inherits generic products under `build/make/target/product`
     - `core_64_bit.mk` enables 64-bit support
@@ -78,9 +116,10 @@ Android Build System
     - `generic_no_telephony.mk` enables generic tablet support, without
       telephony
     - `core_minimal.mk` enables minimal product
-  - modern products usually set
+  - varous `PRODUCT_*` variables are set
     - `PRODUCT_USE_DYNAMIC_PARTITIONS := true`
 - `device/foo/BoardConfig.mk` defines the board config
+  - varous `BOARD_*` variables are set
 
 ## boot.img (of x86): 
 
