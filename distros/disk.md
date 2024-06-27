@@ -268,6 +268,12 @@ Distro Disk
   - `mkfs.btrfs /dev/foo/bar`
   - for arch, make sure lvm2 hook is enabled in initramfs
 
+## LVM
+
+- `lvm pvscan` lists physical volumes
+- `lvm vgscan` lists volume groups
+- `lvm lvscan` lists logical volumes
+
 ## btrfs
 
 - butter fs (or better fs)
