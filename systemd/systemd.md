@@ -13,6 +13,9 @@ systemd
   - it depends on `multi-user.target` and a few other services
   - `display-manager.service` is one of the services, which is usually a
     symlink to `gdm.service`
+    - `gdm.service` has `Alias=display-manager.service` to create the symlink
+    - some distros remove the line and manage the symlink in their package
+      managers instead
 - `systemctl list-dependencies multi-user.target`
   - it depends on several targets and many services
   - targets are `basic.target`, `getty.target`, `machines.target`, and

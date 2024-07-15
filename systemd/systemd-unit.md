@@ -3,6 +3,60 @@ Systemd Unit Configuration
 
 ## Units
 
+- a unit file encodes information about a service, socket, device, mount,
+  automount, swap, target, path, timer, etc.
+- common options
+  - `man systemd.unit` documents the `[Unit]` and `[Install]` sections common
+    to all unit files
+  - `man systemd.exec` documents exec options common to several sections
+  - `man systemd.kill` documents killing options common to several sections
+  - `man systemd.resource-control` documents resource control options common
+    to several sections
+  - `man systemd.directives` lists which options are documented in which man
+    pages
+- `man systemd.automount` documents the `[Automount]` section
+- `man systemd.device` documents the `[Device]` section
+  - there is no device-specific options
+- `man systemd.mount` documents the `[Mount]` section
+- `man systemd.path` documents the `[Path]` section
+- `man systemd.scope` documents the `[Scope]` section
+- `man systemd.service` documents the `[Service]` section
+- `man systemd.socket` documents the `[Socket]` section
+- `man systemd.slice` documents the `[Slice]` section
+  - there is no slice-specific options
+- `man systemd.swap` documents the `[Swap]` section
+- `man systemd.target` documents the `[Target]` section
+  - there is no target-specific options
+- `man systemd.timer` documents the `[Timer]` section
+
+## `[Install]` Section
+
+- `[Install]` is not used by `systemd`, but by `systemctl` for enable/disable
+- `Alias=` lists additional symlinks to create/remove
+- `WantedBy=`, `RequiredBy=`, and `UpheldBy=` list additoinal symlinks to be
+  created/removed under `.wants/`, `.requires/`, and `.upholds/`
+- `Also=` lists additional units to install/uninstall
+- `DefaultInstance=` lists the default instance to be created/removed for a
+  template unit file
+- e.g., `systemctl enable systemd-networkd` installs
+  - symlink
+    `/etc/systemd/system/multi-user.target.wants/systemd-networkd.service` to
+    `/usr/lib/systemd/system/systemd-networkd.service` because of `WantedBy=`
+  - symlink `/etc/systemd/system/dbus-org.freedesktop.network1.service` to
+    `/usr/lib/systemd/system/systemd-networkd.service` because of `Alias=`
+  - symlink `/etc/systemd/system/sockets.target.wants/systemd-networkd.socket`
+    to `/usr/lib/systemd/system/systemd-networkd.socket` because of `Also=`
+  - symlink
+    `/etc/systemd/system/network-online.target.wants/systemd-networkd-wait-online.service`
+    to `/usr/lib/systemd/system/systemd-networkd-wait-online.service` because
+    of `Also=`
+  - symlink
+    `/etc/systemd/system/sysinit.target.wants/systemd-network-generator.service`
+    to `/usr/lib/systemd/system/systemd-network-generator.service` because of
+    `Also=`
+
+## Units
+
 - service units control daemons or command to be invoked
   - such as udevd or `udevadm trigger` (oneshot)
   - if `foo.service.wants/` exists, units in the directory are added as
