@@ -149,6 +149,8 @@ systemd-logind
   - `SW_DOCK`: machine docked/undocked
 - when lid closed, `button_lid_switch_handle_action` is called
   - enumerate DRM connectors in sysfs to see if any external display connected
+    - it does not work with atomic kms because of
+      <https://github.com/systemd/systemd/issues/12001>
   - enumerate `/sys/class/power_supply` to see if AC is online
   - depending on whether there are external display or whether AC is online,
     different actions can be taken
