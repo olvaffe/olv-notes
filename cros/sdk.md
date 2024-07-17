@@ -567,3 +567,9 @@ Chrome OS SDK
   - the former is correct and it adds `-L$sysroot/usr/lib64`
   - the latter is incorrect and it adds
     `-L$sdk/usr/x86_64-cros-linux-gnu/usr/lib64`
+- cros toolchain can generate executables that run on regular linux distros
+  - one might see `DT_RELR without GLIBC_ABI_DT_RELR dependency` on newer
+    glibc
+  - this is because the linker uses the older `--pack-dyn-relocs=relr` rather
+    than the newer `-z pack-relative-relocs`
+  - add `-Wl,-z,pack-relative-relocs` to link flags resolve the issue
