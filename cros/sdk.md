@@ -78,7 +78,7 @@ Chrome OS SDK
     - if googler, use <https://chrome-internal.googlesource.com/chromeos/manifest-internal>
     - also install `google-cloud-sdk`, `gcloud auth login`, and leave the
       project id at 0
-    - because cros uses bundled `gsutil`, copy the credential 
+    - because cros uses bundled `gsutil`, copy the credential
       `cp ~/.config/gcloud/legacy_credentials/*/.boto ~/.boto`
   - `repo sync -j4`
 - Source Tree Layout
@@ -522,3 +522,48 @@ Chrome OS SDK
   - on prototypes, might require `dut-control power_state:rec` to enter the
     recovery mode
 - to reset EC, press `Refresh` and then `Power`
+
+## Independent Toolchains
+
+- the toolchain tarball can be downloaded from, e.g.,
+  <gs://chromiumos-sdk/2024/07/x86_64-cros-linux-gnu-2024.07.17.68785.tar.xz>
+- when compiling, `$sdk/bin/x86_64-cros-linux-gnu-clang -v -c test.c` shows
+  - `-isysroot $sdk/usr/x86_64-cros-linux-gnu`
+  - `-internal-isystem $sdk/usr/lib64/clang/18/include`
+    - headers provided by clang, such as
+      - low-level stdc headers such as `stddef.h`
+      - intrinsics such as `x86intrin.h`
+  - `-internal-isystem $sysroot/usr/local/include`
+  - `-internal-isystem $sdk/usr/bin/../lib/gcc/x86_64-cros-linux-gnu/10.2.0/../../../../x86_64-cros-linux-gnu/include`
+  - `-internal-externc-isystem $sysroot/include`
+  - `-internal-externc-isystem $sysroot/usr/include`
+    - headers provided by glibc
+- when linking, `$sdk/bin/x86_64-cros-linux-gnu-clang -v -o test test.o` shows
+  - `--sysroot=$sdk/usr/x86_64-cros-linux-gnu`
+  - `-dynamic-linker /lib64/ld-linux-x86-64.so.2`
+  - `$sysroot/usr/lib/../lib64/*crt*.o`
+    - provided by glibc
+  - `$sdk/usr/lib64/clang/18/lib/linux/*clang_rt*.{a,o}`
+    - provided by clang
+  - `-L$sysroot/usr/lib64`
+    - provided by glibc, libc++, etc.
+  - `-L$sdk/usr/bin/../lib/gcc/x86_64-cros-linux-gnu/10.2.0`
+    - provided by gcc
+  - `-L$sdk/usr/bin/../lib/gcc/x86_64-cros-linux-gnu/10.2.0/../../../../x86_64-cros-linux-gnu/lib/../lib64`
+  - `-L$sysroot/lib/../lib64`
+  - `-L$sysroot/usr/lib/../lib64`
+  - `-L$sdk/usr/bin/../lib/gcc/x86_64-cros-linux-gnu/10.2.0/../../../../x86_64-cros-linux-gnu/lib`
+  - `-L$sysroot/lib`
+  - `-L$sysroot/usr/lib`
+  - `-lc`
+    - this will find the ld script under `$sysroot/usr/lib64/libc.so`
+    - the ld script points to `/lib64/libc.so.6` which is also treated as
+      relative to `$sysroot`
+- when an explicit sysroot is specified, such as
+  `--sysroot=$HOME/chromiumos/out/build/$BOARD`,
+  - when compiling, it affects header search dirs and is fine
+  - when linking, it affects library search dirs and is fine too
+- note that `--sysroot=<path>` is different than `--sysroot <path>`
+  - the former is correct and it adds `-L$sysroot/usr/lib64`
+  - the latter is incorrect and it adds
+    `-L$sdk/usr/x86_64-cros-linux-gnu/usr/lib64`

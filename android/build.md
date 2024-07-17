@@ -108,6 +108,8 @@ Android Build System
     `$(LOCAL_DIR)/foo.mk`
   - `COMMON_LUNCH_CHOICES` specifies the lunch choices, such as
     `foo-userdebug`
+- `device/foo/BoardConfig.mk` defines the board config
+  - ideally, only `BOARD_*` and `TARGET_*` variables are set
 - `device/company/board/foo.mk` defines the product config
   - it uses `(call inherit-product, ...)` to inherit other products
   - it often inherits generic products under `build/make/target/product`
@@ -118,8 +120,6 @@ Android Build System
     - `core_minimal.mk` enables minimal product
   - varous `PRODUCT_*` variables are set
     - `PRODUCT_USE_DYNAMIC_PARTITIONS := true`
-- `device/foo/BoardConfig.mk` defines the board config
-  - varous `BOARD_*` variables are set
 
 ## Installed Targets
 

@@ -51,7 +51,7 @@ Cross Toolchain
           `/usr/aarch64-linux-gnu/lib/libc.so.6` instead
 - clang
   - clang can cross-compile to many targets by default
-  - need `-target aarch64-linux-gnu --sysroot /usr/aarch64-linux-gnu`
+  - need `-target aarch64-linux-gnu --sysroot=/usr/aarch64-linux-gnu`
 
 ## crostool-ng
 
