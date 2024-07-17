@@ -1703,3 +1703,12 @@ Chromium Browser
 - `services/on_device_model`
 - `ChromeML::Get` loads the specified library or
   `optimization_guide_internal`, and finds the `GetChromeMLAPI` symbol
+
+## Android
+
+- features
+  - `gpu/config/gpu_finch_features.cc`
+    - `kVulkan` is `FEATURE_ENABLED_BY_DEFAULT`
+  - `ui/gl/gl_switches.cc`
+    - `kDefaultANGLEVulkan` is `FEATURE_DISABLED_BY_DEFAULT`
+    - `kVulkanFromANGLE` is `FEATURE_DISABLED_BY_DEFAULT`
