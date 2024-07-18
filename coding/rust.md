@@ -212,6 +212,9 @@ Rust
 
 - 9.1. Unrecoverable Errors with panic!
 - 9.2. Recoverable Errors with Result
+  - `?` operator on `Result`
+    - if `Ok(T)`, unwraps and returns `T`
+    - if `Err(E)`, early returns `Err(E)`
 - 9.3. To panic! or Not to panic!
 
 ## The Book - Chapter 10. Generic Types, Traits, and Lifetimes
@@ -255,11 +258,37 @@ Rust
 
 ## The Book - Chapter 15. Smart Pointers
 
-- 15.1. Using Box<T> to Point to Data on the Heap
-- 15.2. Treating Smart Pointers Like Regular References with the Deref Trait
-- 15.3. Running Code on Cleanup with the Drop Trait
-- 15.4. Rc<T>, the Reference Counted Smart Pointer
-- 15.5. RefCell<T> and the Interior Mutability Pattern
+- 15.1. Using `Box<T>` to Point to Data on the Heap
+  - `let a = 5` and `let b = Box::new(5)`, one is on stack and the other is on
+    heap
+  - `Box<T>` is commonly used when
+    - `T` is a recursive type, because rustc needs to know the type size at
+      compile time
+    - `T` is huge and we want to make sure it is never copied
+    - `T` is a trait object
+  - `Box<T>` implements `Deref` and `Drop` traits
+- 15.2. Treating Smart Pointers Like Regular References with the `Deref` Trait
+  - with `let x = 5;` and `let y = &x;`, `y` is a reference to `x` and must be
+    dereferenced to get the value, such as in `*y == x`
+  - if we have `let y = Box::new(x);` instead, we can still do `*y == x`
+    because `Box` implements `Deref` trait
+    - it implements the `deref` method which takes `&Box<T>` and returns `&T`.
+    - that allows the compler to replace `*y` by `*(y.deref())`
+  - deref coercion
+    - it is for convenience
+    - when a function takes `&str`, we can pass `&Box<String>` to it thanks to
+      deref coercion
+    - `&Box<String>` becomes `&String` which becomes `&str` through a series
+      of `deref()`
+  - there is also `DerefMut` trait for `&mut`
+- 15.3. Running Code on Cleanup with the `Drop` Trait
+  - `Box` implements the `Drop` trait
+    - when it goes out of scope, `drop` method is called automatically to free
+      the storage
+  - to drop early, `std::mem::drop` can be used
+    - the prelude has `use std::mem::drop;` so it is just `drop`
+- 15.4. `Rc<T>`, the Reference Counted Smart Pointer
+- 15.5. `RefCell<T>` and the Interior Mutability Pattern
 - 15.6. Reference Cycles Can Leak Memory
 
 ## The Book - Chapter 16. Fearless Concurrency
@@ -273,6 +302,13 @@ Rust
 
 - 17.1. Characteristics of Object-Oriented Languages
 - 17.2. Using Trait Objects That Allow for Values of Different Types
+  - given `trait Foo {}` and `impl Foo for Bar`
+    - `Bar` implements the `Foo` trait
+    - when a method is called, it can be resolved statically and no vtable is
+      needed
+  - on the other hand, `Box<dyn Foo>` is a trait object
+    - `dyn` makes sure there is a vtable
+    - when a method is called, it is resolved dynamitcally via the vtable
 - 17.3. Implementing an Object-Oriented Design Pattern
 
 ## The Book - Chapter 18. Patterns and Matching
@@ -300,6 +336,20 @@ Rust
 - 21.1. A - Keywords
 - 21.2. B - Operators and Symbols
 - 21.3. C - Derivable Traits
+  - `#[derive]` attr on a struct or an enum generates a default implementation
+    for the specified trait
+  - `#[derive(Debug)]` enables string formatting with `{:?}`
+  - `#[derive(PartialEq)]` and `#[derive(Eq)]` enables `==` and `!=`
+    - `Eq` trait cannot be implemented on floats, because `NaN != NaN`
+  - `#[derive(PartialOrd)]` and `#[derive(Ord)]` enables `<`, `>`, `<=`, and
+    `>=`
+    - `Eq` trait cannot be implemented on floats, because `NaN` has no
+      ordering
+  - `#[derive(Clone)]` and `#[derive(Copy)]`
+    - `Copy` trait is fast because it copies bits on stack
+    - `Clone` trait can be slow becaise it might copies bits on heap
+  - `#[derive(Hash)]` eanbles hashing
+  - `#[derive(Default)]` enables default value
 - 21.4. D - Useful Development Tools
 - 21.5. E - Editions
 - 21.6. F - Translations of the Book
