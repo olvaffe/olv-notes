@@ -45,6 +45,15 @@ Rust
 - `cargo build`
   - downloads dependencies to `$CARGO_HOME/registry/src`
   - builds dependencies in `target/debug/deps`
+  - `cargo build --examples` builds binary crates under `src/examples`
+- `cargo test`
+  - it builds and runs tests
+  - unit tests go to `src/`
+  - integration tests go to `tests/`
+- `cargo bench`
+  - it builds and runs benches
+  - unit benches go to `src/`
+  - integration benches go to `benches/`
 - `Cargo.toml`
   - `[package]` defines a package
   - targets
@@ -78,6 +87,28 @@ Rust
   - `[workspace]` defines a workspace that consists of multiple packages
     - `resolver = "2"` specifies the v2 dep resolver
     - `members = ["path1", "path2"]` specifies the member packages
+
+## Popular Crates
+
+- <https://crates.io/crates/syn>
+- <https://crates.io/crates/proc-macro2>
+- <https://crates.io/crates/quote>
+- <https://crates.io/crates/libc>
+- <https://crates.io/crates/bitflags>
+- <https://crates.io/crates/cfg-if>
+- <https://crates.io/crates/serde>
+- <https://crates.io/crates/log>
+- <https://crates.io/crates/regex>
+- <https://crates.io/crates/once_cell>
+- <https://crates.io/crates/smallvec>
+- <https://crates.io/crates/clap>
+- <https://crates.io/crates/itertools>
+- <https://crates.io/crates/scopeguard>
+- <https://crates.io/crates/either>
+- <https://crates.io/crates/bytes>
+- <https://crates.io/crates/thiserror>
+- <https://crates.io/crates/memoffset>
+- <https://crates.io/crates/anyhow>
 
 ## The Book - Chapter 1. Getting Started
 
@@ -117,16 +148,59 @@ Rust
 
 ## The Book - Chapter 7. Managing Growing Projects with Packages, Crates, and Modules
 
+- rust module system
+  - package: a cargo feature to build, test, and share crates
+  - crates: a tree of modules that produce a library or executable
+  - modules and uses: code organization and scoping
+  - paths: a way of naming items such as structs, functions, and modules
 - 7.1. Packages and Crates
+  - a package is a bundle of crates
+  - `Cargo.toml` describes how to build the crates
+  - there is at most one library crate
+    - by convention, the crate root is `src/lib.rs`
+  - there can many binary crates
+    - by convention, the crate root is `src/main.rs`
+    - each file under `src/bin/` is a separate binary crate
 - 7.2. Defining Modules to Control Scope and Privacy
+  - modules are used to organize and scope code
+  - code within a module is private by default
+  - single-file module tree
+    - `src/lib.rs` or `src/main.rs` is itself a module named `crate`
+    - `mod foo { mod bar {...} ... }` in the file defines
+      - module `crate::foo`
+      - module `crate::foo::bar`
+  - multi-file module tree
+    - cargo only builds `src/lib.rs` or `src/main.rs`
+    - `pub mod foo;` in the file tells rustc to build `src/foo.rs`
+    - `pub mod bar;` in `src/foo.rs` tells rustc to build `src/foo/bar.rs`
 - 7.3. Paths for Referring to an Item in the Module Tree
+  - `pub` marks a `mod`/`fn`/`struct`/`enum` public
+  - `crate::` refers to the root module
+  - `super::` refers to the parent module
 - 7.4. Bringing Paths Into Scope with the use Keyword
+  - `use` brings a name into scope
+    - `use ... as ...` to pick an alternative name
+  - idiomatically,
+    - if `crate::foo::bar` is a fn,
+      - `use crate::foo;` and refer to it as `foo::bar`
+    - if `crate::foo::Baz` is a struct,
+      - `use crate::foo::Baz;` and refer to it as `Baz`
+  - `pub use ...` makes a name public
+  - external packages
+    - if `Cargo.toml` lists external package `foo` as a dependency,
+      - `foo` refers to the root module
+  - `use std::io::{self, Write};` expands to
+    - `use std::io;`
+    - `use std::io::Write;`
+  - `use foo::*` brings all public items under `foo` into scope
 - 7.5. Separating Modules into Different Files
   - we can build a module tree in a single file
   - we can also build a module tree using multiple files and directories
   - cargo knows `src/main.rs` or `src/lib.rs` is the crate root
     - `mod foo` in the crate root tells cargo to build `src/foo.rs`
+      - or the legacy `src/foo/mod.rs`
     - `mod bar` in `src/foo.rs` tells cargo to build `src/foo/bar.rs`
+      - or the legacy `src/foo/bar/mod.rs`
 
 ## The Book - Chapter 8. Common Collections
 
@@ -151,6 +225,7 @@ Rust
 ## The Book - Chapter 11. Writing Automated Tests
 
 - 11.1. How to Write Tests
+  - `cargo test` buids a test runner to run functions with `#[test]` attr
 - 11.2. Controlling How Tests Are Run
 - 11.3. Test Organization
 
