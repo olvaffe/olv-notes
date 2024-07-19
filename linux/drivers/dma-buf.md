@@ -234,6 +234,52 @@ dma-buf
     might move anytime
     - the importer will be notified by `dma_buf_attach_ops::move_notify`
 
+## dma-buf heap
+
+- system heap
+  - `system_heap_create` calls `dma_heap_add` to create `system` heap
+  - `system_heap_allocate` allocates a dma-buf
+    - `alloc_largest_available` calls `alloc_pages` to alloc pages
+    - `sg_alloc_table` and `sg_set_page` init `buffer->sg_table` from the
+      pages
+    - `dma_buf_export` exports the dma-buf with `system_heap_buf_ops`
+    - I suppose it is not possible to swap out the pages
+  - `system_heap_attach` duplicates `buffer->sg_table` and tracks the
+    attachment in `buffer->attachments`
+  - `system_heap_detach` undoes attach
+  - `system_heap_map_dma_buf` calls `dma_map_sgtable` to map the duplicates sg
+    table (to device addr space) and returns the table
+  - `system_heap_unmap_dma_buf` calls `dma_unmap_sgtable`
+  - `system_heap_dma_buf_begin_cpu_access` calls `dma_sync_sgtable_for_cpu`
+    on all duplicated sg tables
+    - in case the buffer is vmapped in kernel, `invalidate_kernel_vmap_range`
+      is also called to invalidate the cpu cache
+  - `system_heap_dma_buf_end_cpu_access` calls `dma_sync_sgtable_for_device`
+    on all duplicated sg tables
+    - in case the buffer is vmapped in kernel, `flush_kernel_vmap_range`
+      is also called to flush the cpu cache
+  - `system_heap_mmap` calls `remap_pfn_range` to map the pages in the
+    original `buffer->sg_table` (to userspace vma)
+  - `system_heap_vmap` vmaps the pages (to kernel space)
+    - `system_heap_do_vmap` calls `vmap` to map all pages in
+      `buffer->sg_table` and updates `buffer->vaddr`
+  - `system_heap_vunmap` undoes vmap
+  - `system_heap_dma_buf_release` frees the buffer
+- `dma_heap_init` inits the dma-heap core
+  - `alloc_chrdev_region` reserves a `dev_t` major
+  - `class_create` creates `dma_heap` class
+- `dma_heap_add` creates a dma-heap
+  - it reserves a `dev_t` minor from `dma_heap_minors`
+  - `cdev_init` and `cdev_add` add a char dev, `heap->heap_cdev`
+  - `device_create` creates a `device` tracked in `heap_list`
+- `dma_heap_fops` is the fops on the heap char dev
+  - `dma_heap_open` looks up the minor in `dma_heap_minors`
+  - `dma_heap_ioctl` supports only `DMA_HEAP_IOCTL_ALLOC`
+  - `dma_heap_ioctl_allocate` allocates a dma-buf and returns the fd
+    - `len` is the alloc size
+    - `fd_flags` can only have `O_CLOEXEC` and `O_ACCMODE` (r/w)
+    - `heap_flags` must be 0
+
 ## udmabuf
 
 - create a dma-buf that wraps ranges of memfds from userspace
