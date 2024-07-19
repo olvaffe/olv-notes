@@ -223,9 +223,10 @@ Rust
   - turbofish syntax
     - when we have `struct Foo<T>`, we use `Foo<i32>` to specify a concrete
       type
-    - when we have `fn Foo<T>`, we use `Foo::<i32>` instead to specify a
+    - when we have `fn foo<T>`, we use `foo::<i32>` instead to specify a
       concrete type
       - `::<>` is nicknamed turbofish
+    - when `struct Foo<T>` has method `foo`, we use `Foo::<i32>::foo`
 - 10.2. Traits: Defining Shared Behavior
   - `trait Foo { fn bar(&self)... }` defines trait `Foo`
   - `impl Foo for Baz` implements trait `Foo` for type `Baz`
