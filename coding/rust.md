@@ -220,6 +220,12 @@ Rust
 ## The Book - Chapter 10. Generic Types, Traits, and Lifetimes
 
 - 10.1. Generic Data Types
+  - turbofish syntax
+    - when we have `struct Foo<T>`, we use `Foo<i32>` to specify a concrete
+      type
+    - when we have `fn Foo<T>`, we use `Foo::<i32>` instead to specify a
+      concrete type
+      - `::<>` is nicknamed turbofish
 - 10.2. Traits: Defining Shared Behavior
   - `trait Foo { fn bar(&self)... }` defines trait `Foo`
   - `impl Foo for Baz` implements trait `Foo` for type `Baz`
