@@ -309,6 +309,9 @@ Rust
   - on the other hand, `Box<dyn Foo>` is a trait object
     - `dyn` makes sure there is a vtable
     - when a method is called, it is resolved dynamitcally via the vtable
+    - note that `Box<dyn Foo>` is a fat pointer
+      - `std::mem::size_of::<Box<dyn Foo>>()` returns 16
+      - there is 1 pointer to the concrete type and 1 pointer to the vtable
 - 17.3. Implementing an Object-Oriented Design Pattern
 
 ## The Book - Chapter 18. Patterns and Matching
