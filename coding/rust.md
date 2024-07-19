@@ -143,6 +143,8 @@ Rust
 ## The Book - Chapter 6. Enums and Pattern Matching
 
 - 6.1. Defining an Enum
+  - `Option` enum
+    - enum vals are `None` and `Some(T)`
 - 6.2. The match Control Flow Construct
 - 6.3. Concise Control Flow with if let
 
@@ -173,6 +175,8 @@ Rust
     - cargo only builds `src/lib.rs` or `src/main.rs`
     - `pub mod foo;` in the file tells rustc to build `src/foo.rs`
     - `pub mod bar;` in `src/foo.rs` tells rustc to build `src/foo/bar.rs`
+  - there are also `pub(crate)`, `pub(super)`, etc., to export an item to the
+    current crate or parent crate
 - 7.3. Paths for Referring to an Item in the Module Tree
   - `pub` marks a `mod`/`fn`/`struct`/`enum` public
   - `crate::` refers to the root module
@@ -210,12 +214,34 @@ Rust
 
 ## The Book - Chapter 9. Error Handling
 
-- 9.1. Unrecoverable Errors with panic!
-- 9.2. Recoverable Errors with Result
-  - `?` operator on `Result`
-    - if `Ok(T)`, unwraps and returns `T`
-    - if `Err(E)`, early returns `Err(E)`
-- 9.3. To panic! or Not to panic!
+- 9.1. Unrecoverable Errors with `panic!`
+- 9.2. Recoverable Errors with `Result`
+  - `Result` enum
+    - enum vals are `Ok(T)` and `Err(E)`
+  - panic on errors
+    - `unwrap` and `expect`
+  - early return on errors
+    - `?` operator
+      - if `Ok(T)`, unwraps and returns `T`
+      - if `Err(E)`, early returns `Err(E)`
+        - it actually early returns `Err(From::from(e))`, to cast the error
+          type when necessary
+      - it works with `Option` as well
+  - `std::error::Error` trait
+    - while there is no restriction on `Err(E)`, it is generally a good idea
+      for `E` to implement the `Error` trait
+    - the `Error` trait requires `Debug` and `Display` traits
+      - `pub trait Error: Debug + Display`
+      - that is, a type implementing `Error` must also implement `Debug` and
+        `Display`
+  - `std::io::Error` implements `std::error::Error` trait
+    - `io::Error::new` creates an error from `ErrorKind` and a payload
+      - `std::io::ErrorKind` is a plan enum
+      - the payload can be many things, such as a string or another error
+    - `io::Error::from_raw_os_error` creates an error from
+      `std::io::RawOsError`, which is the os errno
+  - `std::io::Result` is an alias of `std::result::Result<T, std::io::Error>`
+- 9.3. To `panic!` or Not to `panic!`
 
 ## The Book - Chapter 10. Generic Types, Traits, and Lifetimes
 
@@ -230,6 +256,15 @@ Rust
 - 10.2. Traits: Defining Shared Behavior
   - `trait Foo { fn bar(&self)... }` defines trait `Foo`
   - `impl Foo for Baz` implements trait `Foo` for type `Baz`
+  - trait bound
+    - `fn some_func(foo: &impl Foo)` takes any type that implements
+      `Foo` trait
+    - it is a syntax sugar for `fn some_func<T: Foo>(foo: &T)`
+      - or the newer `fn some_func<T>(foo: &T) where T: Foo`
+    - multiple trait bounds are possible with `+`
+      - `fn some_func(foo: &(impl Foo + Bar))`
+      - `fn some_func<T: Foo + Bar>(foo: &T)`
+  - `trait Foo: Bar` means a type must implement `Bar` first to implement `Foo`
 - 10.3. Validating References with Lifetimes
 
 ## The Book - Chapter 11. Writing Automated Tests
