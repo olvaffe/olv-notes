@@ -138,7 +138,14 @@ Rust
   - `struct Foo {...}` defines a struct
 - 5.2. An Example Program Using Structs
 - 5.3. Method Syntax
-  - `impl Foo {...}` defines methods for `Foo`
+  - `impl Foo {...}` defines associated funcs for `Foo`
+  - an associated func is a method only when its first param is some variant
+    of `self`
+    - `&self` is replaced by `self: &Self`
+    - `Self` is replaced by `Foo`, because we are in `impl Foo` block
+  - e.g., in `let mut v = Vec::new(); v.push(1);`,
+    - `new` is not a method
+    - `push` is a method
 
 ## The Book - Chapter 6. Enums and Pattern Matching
 
@@ -256,6 +263,14 @@ Rust
 - 10.2. Traits: Defining Shared Behavior
   - `trait Foo { fn bar(&self)... }` defines trait `Foo`
   - `impl Foo for Baz` implements trait `Foo` for type `Baz`
+    - trait `Foo` can also have non-methods such as `fn blah()`
+      - that is, no `self`
+      - `Baz::blah` invokes the func
+      - `Foo::blah` also invokes the func if the type can be inferred
+      - e.g.,
+        - `let a : i32 = Default::default();`
+        - `let b = i32::default();`
+        - `let c = <i32 as Default>::default();`
   - trait bound
     - `fn some_func(foo: &impl Foo)` takes any type that implements
       `Foo` trait
