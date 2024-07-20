@@ -264,6 +264,10 @@ Rust
     - multiple trait bounds are possible with `+`
       - `fn some_func(foo: &(impl Foo + Bar))`
       - `fn some_func<T: Foo + Bar>(foo: &T)`
+    - `Sized` trait is special
+      - `T` is assumed to have `Sized` bound
+      - `T: !Sized` means no `Sized` bound
+      - `T: ?Sized` means either `Sized` or not
   - `trait Foo: Bar` means a type must implement `Bar` first to implement `Foo`
 - 10.3. Validating References with Lifetimes
 
@@ -272,7 +276,13 @@ Rust
 - 11.1. How to Write Tests
   - `cargo test` buids a test runner to run functions with `#[test]` attr
 - 11.2. Controlling How Tests Are Run
+  - `cargo test --help` for help
+  - `cargo test -- --help` for test harness help
+    - `--nocapture` or `--show-output` to show output
 - 11.3. Test Organization
+  - unit tests are added to modules directly
+    - in `mod tests` submodules decorated with `#[cfg(test)]`
+  - integration tests are added to `tests/`
 
 ## The Book - Chapter 12. An I/O Project: Building a Command Line Program
 
@@ -513,3 +523,152 @@ Rust
   - when a `Rc<T>` is shared by two threads, the refcount can be messed up
     refcount can be messed up
 - `Arc<T>` implements both
+
+## The Rust Standard Library
+
+- <https://doc.rust-lang.org/std/>
+  - there is also <https://doc.rust-lang.org/core/>
+    - core provides stuff that has no external dependency (such as libc,
+      system libs, etc)
+    - it is usable in `no_std` cfg
+    - I guess `std` re-exports `core`
+- macros
+  - `assert`, `assert_eq`, and `assert_ne` assert
+  - `cfg` evaluates cfg flags at compile time
+  - `file`, `line`, and `column` expand to loc in the source file
+  - `compile_error` generates a compile error
+  - `concat` concatenates literals into `&'static str`
+  - `dbg` prints and returns the value of an expression for quick debug
+  - `debug_assert`, `debug_assert_eq`, and `debug_assert_ne` are asserts that
+    are disabled in optimized builds by default
+  - `env` and `option_env` return an envvar at compile time
+  - `format` returns a `String`
+  - `panic`, `todo`, `unimplemented`, `unreachable` all panic
+  - `print` and `println` print to stdout
+  - `eprint` and `eprintln` print to stderr
+  - `write` and `writeln` print to a buffer
+  - `stringify` returns `&'static str`
+  - `thread_local` makes static decls thread-local
+  - `vec` returns a `Vec`
+- modules
+  - `alloc` provides unsafe memory allocation
+  - `any` is akin to C++ RTTI
+  - `arch` provides arch-dependent cpu intrinsics
+  - `array` provides utils to work with arrays
+  - `ascii` provides utils for ascii (rather than utf8) strings
+  - `backtrace` captures a stack backstrace
+  - `borrow` provides traits such as `Borrow` or `ToOwned`
+  - `boxed` provides `Box<T>`
+  - `char`, `f32`, and `f64` should be considered internal
+  - `cell` provides `Cell<T>` and variants
+  - `clone` provides the `Clone` trait
+  - `cmp` provides traits such as `Eq` or `Ord`, as well as utils
+  - `collections` provides collection types
+    - sequences: `Vec`, `VecDeque`, `LinkedList`
+    - maps: `HashMap`, `BTreeMap`
+    - sets: `HashSet`, `BTreeSet`
+    - misc: `BinaryHeap`
+  - `convert` provides traits such as `AsMut`, `AsRef`, `From`, `Into`, etc.
+  - `default` provides the `Default` trait
+  - `env` works with process env, such as envvars, args, etc.
+  - `error` provides the `Error` trait
+  - `ffi` provides ffi bindings
+    - c types: `c_void`, `c_char`, `c_int`, etc.
+    - c strings: `CStr`, `CString`
+      - notablely, they are null-terminated
+    - os strings: `OsStr`, `OsString`
+      - on win, they are utf16-encoded
+  - `fmt` provides string formatting traits and utils
+    - `{}` formats with `Display` trait
+    - `{:?}` formats with `Debug` trait
+    - `{:x?}` formats with `Debug` trait, lower-case hex
+    - `{:X?}` formats with `Debug` trait, upper-case hex
+    - `{:o}` formats with `Octal` trait
+    - `{:x}` formats with `LowerHex` trait
+    - `{:X}` formats with `UpperHex` trait
+    - `{:p}` formats with `Pointer` trait
+    - `{:b}` formats with `Binary` trait
+    - `{:e}` formats with `LowerExp` trait
+    - `{:E}` formats with `UpperExp` trait
+  - `fs` provides cross-os filesystem support
+  - `future` is for `async` and `await`
+  - `hash` provides traits such as `Hash`, `Hasher`, etc.
+  - `hint` provides compiler hints
+  - `io` provides cross-os io support
+    - traits such as `Read`, `Write`, and `Seek`
+      - also `BufRead` (read to an internal buffer first) and `IsTerminal`
+    - funcs such as `stdin`, `stdout`, `stderr`
+    - `Error` enum
+  - `iter` provides traits and utils for iterations
+    - traits such as `Iterator`, `DoubleEndedIterator`, and `ExactSizeIterator`
+      - also `IntoIterator`, `FromIterator`
+  - `marker` provides traits and types for basic props of types
+    - traits such as `Copy`, `Send`, `Sized`, `Sync`,
+    - `PhantomData`
+  - `mem` provides utils about memory
+    - `offset_of` macro
+    - funcs such as `align_of`, `size_of`, `drop`, `swap`, `take`, `replace`
+  - `net` provides cross-os tcp/udp support
+  - `num` provides utils for numerical computation
+  - `ops` provides operator overloading
+    - traits such as `Add`, `Mul`, `Drop`, `Deref`, etc.
+      - also `Fn`, `FnMut`, and `FnOnce` for callbacks
+        - there are 3 kinds of func-like types
+          - func items (that is, regular funcs)
+          - closures
+          - func pointers
+        - they implement one or more of the traits
+  - `option` provides `Option<T>`
+  - `os` provides OS-specific utils
+    - `linux` submodule, which is kinda empty
+    - `unix` submodule, which extends `ffi`, `fs`, `io`, `net`, `process`,
+      `thread`, etc.
+    - `fd` submodule
+      - types such as `RawFd`, `BorrowedFd`, `OwnedFd`
+      - traits such as `AsFd`, `AsRawFd`, `FromRawFd`, `IntoRawFd`
+    - `raw` submodule, which has been replaced by `core::ffi`
+  - `panic` provides panic support
+  - `path` provides cross-os path support
+    - types such as `PathBuf` and `Path`
+  - `pin` pins data to fixed addr
+  - `prelude` uses a subset of std automatically
+    - rust 2018
+      - `std::borrow::ToOwned`
+      - `std::boxed::Box`
+      - `std::clone::Clone`
+      - `std::cmp::{PartialEq, PartialOrd, Eq, Ord}`
+      - `std::convert::{AsRef, AsMut, Into, From}`
+      - `std::default::Default`
+      - `std::iter::{Iterator, Extend, IntoIterator, DoubleEndedIterator, ExactSizeIterator}`
+      - `std::marker::{Copy, Send, Sized, Sync, Unpin}`
+      - `std::mem::drop`
+      - `std::ops::{Drop, Fn, FnMut, FnOnce}`
+      - `std::option::Option::{self, Some, None}`
+      - `std::result::Result::{self, Ok, Err}`
+      - `std::string::{String, ToString}`
+      - `std::vec::Vec`
+    - rust 2021
+      - `std::convert::{TryFrom, TryInto}`
+      - `std::iter::FromIterator`
+    - other modules might have `prelude` submodules that can be used manually 
+      - `std::io::prelude`
+      - `std::os::unix::prelude`
+  - `primitive` re-exports primitive types which can be useful for
+    macro-generated code
+  - `process` provides cross-os process support
+    - structs such as `Command` and `Child`
+    - funcs such as `abort` and `exit`
+  - `ptr` provides mostly unsafe utils for raw pointers
+  - `rc` provides `Rc<T>` and `Weak<T>`
+  - `result` provides `Result<T>`
+  - `slice` provides utils to slice
+  - `str` provides utils to `str`
+  - `string` provides `String`
+  - `sync` provides structs such as `Arc`, `Mutex`, etc.
+  - `task` provides structs and traits for async tasks
+  - `thread` provides cross-os native thread support
+    - types such as `Builder`
+    - funcs such as `current`, `park`, `sleep`, `spawn`, `yield_now`
+  - `time` provides structs such as `Duration`, `Instant` (`CLOCK_MONOTONIC`),
+    `SystemTime` (`CLOCK_REALTIME`)
+  - `vec` provides `Vec<T>`
