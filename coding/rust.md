@@ -122,6 +122,83 @@ Rust
 
 - 3.1. Variables and Mutability
 - 3.2. Data Types
+  - built-in types
+    - primitive types
+      - boolean: `bool`
+      - numeric: `{u,i}{8,16,32,64,128}` and `f{32,64}`
+      - textual: `char` and `str`
+      - never: `!`
+        - can only be used as the return type (of a noreturn func)
+    - sequence types
+      - tuple: `(T...)`
+        - `()` is allowed and is a zero-sized type (ZST)
+          - it is called unit
+      - array: `[T; N]`
+      - slice: `[T]`
+        - dynamically-sized type (DST)
+          - not `Sized` and cannot be instantiated
+          - this is because the slice len is unknown
+        - instantiated as pointer types such as `&[T]`
+          - pointer types to DST are `Sized`, but is twice the size of pointer
+            types to `Sized`
+          - also known as fat pointers
+          - the first pointer points to the underlying data
+          - the second pointer stores the slice len in-place
+        - `str` is `[u8]` whose data are guaranteed to be valid utf8
+    - user-defined types
+      - struct: `struct Name ...`
+        - `struct Name;` or `struct Name{};` are allowed and are ZST
+        - `struct Name(T...)` is allowed and is called a tuple struct
+      - enum: `enum Name ...`
+        - each enum item is like a struct, including empty struct
+      - union: `union Name ...`
+        - always unsafe to read
+    - function types
+      - functions: `fn name ...`
+        - always ZST
+        - always implements
+          - `Fn` (implies `FnMut` and `FnOnce`)
+          - `Copy` (implies `Clone`)
+          - `Send` and `Sync`
+      - closures: `|...| ...`
+        - a closure is approximately a struct
+          - the captured variables become struct fields
+          - it implements at least `FnOnce`, where the implementation is the
+            closure body
+          - it may implement `FnMut` or `Fn`, depending on the closure body
+    - pointer types
+      - references: `&T` and `&mut T`
+      - raw pointers: `*const T` and `*mut T`
+        - always unsafe to dereference
+      - function pointers: `fn ...`
+        - say we have two functions, `fn test1(){}` and `fn test2(){}`
+        - the two functions are different types
+          - `let mut a = test1; a = test2;` fails
+          - `let mut a = &test1; a = &test2;` fails
+        - the two functions can be coerced to the same function pointer type
+          - `let mut a: fn(); a = test1; a = test2; a = ||{}` works
+            - because functions and non-capturing closures can be coerced to
+              function pointers
+          - `let mut a: fn(); a = &test1;` fails
+            - because a ref to a function is not the same nor cocerced to a
+              function pointer
+        - always implements `Fn` (implies `FnMut` and `FnOnce`)
+    - trait types
+      - trait objects: `dyn Trait...`
+        - dynamically-sized type (DST)
+          - not `Sized` and cannot be instantiated
+          - this is because the concrete type is unknown
+        - instantiated as pointer types such as `&dyn Trait`
+          - pointer types to DST are `Sized`, but is twice the size of pointer
+            types to `Sized`
+          - also known as fat pointers
+          - the first pointer points to an instance of the concrete type
+          - the second pointer points to a vtable
+        - note that a trait itself, `trait Trait ...`, is not a type
+      - impl trait: `impl Trait`
+        - `fn foo(arg: impl Trait)` is approximately
+          `fn foo<T: Trait>(arg: T)`, but different
+        - can only be used as the param or return type of a func
 - 3.3. Functions
 - 3.4. Comments
 - 3.5. Control Flow
@@ -241,6 +318,19 @@ Rust
       - `pub trait Error: Debug + Display`
       - that is, a type implementing `Error` must also implement `Debug` and
         `Display`
+    - the `Error` trait has these methods
+      - `description` is deprecated because the `Display` trait req serves the
+        same purpose
+      - `cause` is deprecated by `source`
+      - `source` returns `Option<&dyn Error>`, which is an optional low-level
+        error wrapped in this high-level error (that is, the root source of
+        this error)
+      - `provide` returns associated payload (often backtrace) with this error
+      - iow, when a user chooses to deal with the generic `Error` trait rather
+        than each concrete error type, the trait provides
+        - `Display` trait to return a string that describes this error
+        - `source` method to return the root cause, if any
+        - `provide` method to return additional info, if any
   - `std::io::Error` implements `std::error::Error` trait
     - `io::Error::new` creates an error from `ErrorKind` and a payload
       - `std::io::ErrorKind` is a plan enum
@@ -248,6 +338,25 @@ Rust
     - `io::Error::from_raw_os_error` creates an error from
       `std::io::RawOsError`, which is the os errno
   - `std::io::Result` is an alias of `std::result::Result<T, std::io::Error>`
+  - best practices
+    - our code generates `N` kinds of errors
+    - our dependencies generate `M` error types
+    - if we want to faithfully return the errors to the user, define a custom
+      error type
+      - an enum with `N+M` vals, with the `M` vals wrapping the `M` error
+        types
+      - impl `std::error::Error` to allow the user to handle the custom error
+        generically
+      - impl `From<T>` to allow the user (and ourselves) to propagate from
+        `Err(T)` to our custom error type using `?`
+      - this is a common case for libraries and `thiserror` crate is designed
+        for the case
+    - if we don't expect users to care and we just want to log the errors
+      somewhere, define a trait object for `std::error::Error`
+      - the trait object gives us a string representation of the error (and
+        a bit more)
+      - this is a common case for executables and `anyhow` create is designed
+        for the case
 - 9.3. To `panic!` or Not to `panic!`
 
 ## The Book - Chapter 10. Generic Types, Traits, and Lifetimes
@@ -284,6 +393,15 @@ Rust
       - `T: !Sized` means no `Sized` bound
       - `T: ?Sized` means either `Sized` or not
   - `trait Foo: Bar` means a type must implement `Bar` first to implement `Foo`
+  - trait coherence
+    - the goal is to make sure the compiler can always unambiguously resolve a
+      trait func call to an impl
+    - the overlay rule
+      - if a type implements two traits, there must be no overlap between the
+        two traits
+    - the orphan rule
+      - if a type implements a trait, at least one of them must be defined by
+        the current crate
 - 10.3. Validating References with Lifetimes
 
 ## The Book - Chapter 11. Writing Automated Tests
@@ -665,7 +783,7 @@ Rust
     - rust 2021
       - `std::convert::{TryFrom, TryInto}`
       - `std::iter::FromIterator`
-    - other modules might have `prelude` submodules that can be used manually 
+    - other modules might have `prelude` submodules that can be used manually
       - `std::io::prelude`
       - `std::os::unix::prelude`
   - `primitive` re-exports primitive types which can be useful for
