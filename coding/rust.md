@@ -294,6 +294,17 @@ Rust
 
 - 8.1. Storing Lists of Values with Vectors
 - 8.2. Storing UTF-8 Encoded Text with Strings
+  - ways to convert `&str` to `String`
+    - `"test".to_string()`, because `str` implements the
+      `std::string::ToString` trait
+      - the trait is automatically implemented for any type that implements
+        the `Display` trait
+    - `"test".to_owned()`, because `str` implements the `std::borrow::ToOwned`
+      trait
+      - `str` implemenets `ToOwned` with
+        `String::from_utf8_unchecked(self.as_bytes().to_owned())`
+    - `String::from("test")` because `String` implements `From<&str>`
+      - it implements `From<&str>` with `s.to_owned()`
 - 8.3. Storing Keys with Associated Values in Hash Maps
 
 ## The Book - Chapter 9. Error Handling
