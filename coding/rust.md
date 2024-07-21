@@ -713,6 +713,9 @@ Rust
     - sets: `HashSet`, `BTreeSet`
     - misc: `BinaryHeap`
   - `convert` provides traits such as `AsMut`, `AsRef`, `From`, `Into`, etc.
+    - between `AsRef` and `From`
+      - `AsRef` is essentially nop, e.g., `str` implements `AsRef<OsStr>`
+      - `From` can have a cost, e.g., `String` implements `From<&str>`
   - `default` provides the `Default` trait
   - `env` works with process env, such as envvars, args, etc.
   - `error` provides the `Error` trait
