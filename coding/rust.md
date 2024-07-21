@@ -719,9 +719,19 @@ Rust
   - `ffi` provides ffi bindings
     - c types: `c_void`, `c_char`, `c_int`, etc.
     - c strings: `CStr`, `CString`
-      - notablely, they are null-terminated
+      - `str` and `String` always store in valid utf8 with explicit size
+        - there can be `\0` anywhere in the string
+        - there is usually no `\0` in the end
+      - `CStr` and `CString` store any non-`\0` value and are `\0`-terminated
+      - conversions are lossy in both directions
     - os strings: `OsStr`, `OsString`
-      - on win, they are utf16-encoded
+      - `OsStr` and `OsString` store relaxed utf8 which can be invalid utf8
+        - this is because a string valid to the os might not be valid utf8
+        - the choice has two purposes
+          - a rust string can be casted to an os string
+          - an os string must be able to represent any string valid to the os
+      - on win, the os expects utf-16 so it takes another conversion from
+        `OsStr` to what win expects
   - `fmt` provides string formatting traits and utils
     - `{}` formats with `Display` trait
     - `{:?}` formats with `Debug` trait
