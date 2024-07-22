@@ -775,20 +775,24 @@ Rust
   - `error` provides the `Error` trait
   - `ffi` provides ffi bindings
     - c types: `c_void`, `c_char`, `c_int`, etc.
-    - c strings: `CStr`, `CString`
-      - `str` and `String` always store in valid utf8 with explicit size
-        - there can be `\0` anywhere in the string
-        - there is usually no `\0` in the end
-      - `CStr` and `CString` store any non-`\0` value and are `\0`-terminated
-      - conversions are lossy in both directions
     - os strings: `OsStr`, `OsString`
-      - `OsStr` and `OsString` store relaxed utf8 which can be invalid utf8
-        - this is because a string valid to the os might not be valid utf8
-        - the choice has two purposes
-          - a rust string can be casted to an os string
-          - an os string must be able to represent any string valid to the os
-      - on win, the os expects utf-16 so it takes another conversion from
-        `OsStr` to what win expects
+      - rust strings, `str` and `String`, always store valid utf8 with
+        explicit size
+        - it does not rely on `\0` to terminate
+        - `\0` is a valid utf8 char and can appear anywhere
+        - there is no `\0` in the end
+      - os strings, `OsStr` and `OsString`, always store valid wtf8 with
+        explicit size
+        - wtf8 is a superset of utf8, and as a result,
+          - rust strings are os strings, and casting has no cost
+          - os strings are not necessarily rust strings
+            - casting requires no allocation but requires validation
+        - this is done because the os can accept strings that are not valid utf8
+        - on win, the os expects utf16 so it takes another conversion from os
+          strings to to what win expects
+    - c strings: `CStr`, `CString`
+      - `CStr` and `CString` store any non-`\0` value and are `\0`-terminated
+      - conversions between rust strings can fail in both directions
   - `fmt` provides string formatting traits and utils
     - `{}` formats with `Display` trait
     - `{:?}` formats with `Debug` trait
