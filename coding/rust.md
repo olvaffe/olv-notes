@@ -520,6 +520,17 @@ Rust
     - `&Box<String>` becomes `&String` which becomes `&str` through a series
       of `deref()`
   - there is also `DerefMut` trait for `&mut`
+  - `Deref` and `AsRef`
+    - when `T` wraps `U`, implementing `Deref` for `T` enables type coercion
+      (implicit type conversion) to `U`
+      - this is very convenient, and the key consideration is if the implicit
+        conversion can be an unexpected surprise or not
+      - this is done for `Box<T>` to `T`, `String` to `str`, etc.
+    - when `T` casts to `U` at little or no cost, implementing `AsRef<U>` for
+      `T` enables generic functions
+      - e.g., if I have a function that takes a path, the param can be generic
+        with trait bound `AsRef<Path>` to accept a wide range of types, such
+        as `str`, `String`, `OsStr`, `OsString`, `Path`, `PathBuf`, etc.
 - 15.3. Running Code on Cleanup with the `Drop` Trait
   - `Box` implements the `Drop` trait
     - when it goes out of scope, `drop` method is called automatically to free
