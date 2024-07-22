@@ -6,6 +6,19 @@ libdrm
 - enumeration functions
   - `drmGetDevices2` and `drmGetDevices` enumerate available drm devices
     - they scan `/dev/dri`, stat for `dev_t`, and parse `/sys` for device info
+    - a `drmDevice` corresponds to a kernel `drm_device`, but it takes great
+      efforts to build the relation
+      - the enumeration scans `/dev/dri`
+      - the names of dirents decide the node types
+        - `card*` is primary
+        - `renderD*` is render
+      - the major/minor is used to look up the unique hw id in sysfs, which is
+        subsystem-dependent
+      - `drmFoldDuplicatedDevices` merges nodes with the same hw id to the
+        same `drmDevice`
+    - when a client has a path, major/minor, or a fd for a node, it can find
+      the `drmDevice` and pick an alternative node for the same device if it
+      chooses to
   - `drmFreeDevices` and `drmFreeDevice` free `drmDevicePtr`
 - `dev_t` (dev major/minor) functions
   - `drmGetDeviceFromDevId` returns `drmDevicePtr` from `dev_t`
