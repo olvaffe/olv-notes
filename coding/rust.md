@@ -154,7 +154,7 @@ Rust
       - union: `union Name ...`
         - always unsafe to read
     - function types
-      - functions: `fn name ...`
+      - function items (regular functions): `fn name ...`
         - always ZST
         - always implements
           - `Fn` (implies `FnMut` and `FnOnce`)
@@ -199,6 +199,49 @@ Rust
         - `fn foo(arg: impl Trait)` is approximately
           `fn foo<T: Trait>(arg: T)`, but different
         - can only be used as the param or return type of a func
+  - type coercions
+    - implicit type conversions
+    - allowed type coercions
+      - `T` to `U`, if `T` is a subtype of `U`
+        - this usually means `T` and `U` are the same type with different
+          lifetimes
+        - e.g., `&'static str` is a subtype of `&str`
+      - `T1` to `T3`, if `T1` coerces to `T2` and `T2` coerces to `T3`
+      - `&mut T` to `&T`
+      - `*mut T` to `*const T`
+      - `&T` to `*const T`
+      - `&mut T` to `*mut T`
+      - (`&T` or `&mut T`) to `&U`, if `impl Deref for T { type Target = U; }`
+        - this usually means `T` wraps `U` and can be used as `U`
+        - e.g., `Box<T>` derefs to `&T`, `String` derefs to `str`
+      - `&mut T` to `&mut U`, if `impl Deref for T { type Target = U; }`
+      - `TyCtor(T)` to `TyCtor(U)`, if `T` unsized-coerces to `U`
+        - `TyCtor(T)` is one of
+          - `&T`, `&mut T`
+          - `*const T`, `*mut T`
+          - `Box<T>`
+        - unsized coercions convert sized types to unsized types, such as
+          - `[T; n]` to `[T]`
+          - `T` to `dyn U`, if `T` implements `U + Sized` and `U` is
+            object safe (i.e., can be represented by a vtable)
+      - function item types (regular functions) to `fn` pointers
+      - non-capturing closures to `fn` pointers
+      - `!` to `T`
+    - there is also the type cast operator, `as`
+      - `as` supports all allowed coercions, plus more
+      - numeric to numeric
+        - e.g., `i32` to `f32`, `i64` to `i32`, etc.
+      - enum to integer (only when the enum is plain)
+      - `bool` or `char` to integer
+      - `u8` to `char`
+      - `*T` to `*U` (reinterpret cast)
+      - `*T` to integer (can truncate)
+      - integer to `*T`
+      - `&T` to `*T` (but no const cast)
+      - `&[T; n]` to `*T` (array to pointer)
+      - function item to `*T` (because the type does not matter) or integer
+      - function pointer to `*T` (because the type does not matter) or integer
+      - non-capturing closures to function pointers
 - 3.3. Functions
 - 3.4. Comments
 - 3.5. Control Flow
