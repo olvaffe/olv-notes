@@ -1,6 +1,64 @@
 Rust
 ====
 
+## Resources
+
+- <https://github.com/rust-lang>
+  - <https://github.com/rust-lang/rust> has rustc, std, and docs
+    - <https://github.com/rust-lang/backtrace-rs> is `std::backtrace`
+    - <https://github.com/rust-lang/stdarch> is `std::arch`
+    - <https://github.com/rust-lang/book>
+    - <https://github.com/rust-lang/edition-guide>
+    - <https://github.com/rust-embedded/book>
+    - <https://github.com/rust-lang/nomicon> is advanced/unsafe rust
+    - <https://github.com/rust-lang/reference>
+    - <https://github.com/rust-lang/rust-by-example>
+    - <https://github.com/rust-lang/rust/tree/master/src/doc/style-guide>
+    - <https://github.com/rust-lang/rust/tree/master/src/doc/unstable-book>
+  - binaries
+    - <https://github.com/rust-lang/cargo>
+    - <https://github.com/rust-lang/rust-bindgen>
+    - <https://github.com/rust-lang/rust-clippy>
+    - <https://github.com/rust-lang/rustfmt>
+    - <https://github.com/rust-lang/rustup>
+  - libraries
+    - <https://github.com/rust-lang/cfg-if>
+    - <https://github.com/rust-lang/flate2-rs>
+    - <https://github.com/rust-lang/futures-rs>
+    - <https://github.com/rust-lang/getopts>
+    - <https://github.com/rust-lang/glob>
+    - <https://github.com/rust-lang/libc>
+    - <https://github.com/rust-lang/log>
+    - <https://github.com/rust-lang/regex>
+    - <https://github.com/rust-lang/socket2>
+  - docs
+    - <https://github.com/rust-lang/api-guidelines>
+    - <https://github.com/rust-lang/async-book>
+    - <https://github.com/rust-lang/rfcs>
+- <https://github.com/rust-unofficial>
+  - <https://github.com/rust-unofficial/awesome-rust>
+  - <https://github.com/rust-unofficial/patterns>
+- popular crates
+  - <https://crates.io/crates/anyhow>
+  - <https://crates.io/crates/bitflags>
+  - <https://crates.io/crates/bytes>
+  - <https://crates.io/crates/cfg-if>
+  - <https://crates.io/crates/clap>
+  - <https://crates.io/crates/either>
+  - <https://crates.io/crates/itertools>
+  - <https://crates.io/crates/libc>
+  - <https://crates.io/crates/log>
+  - <https://crates.io/crates/memoffset>
+  - <https://crates.io/crates/once_cell>
+  - <https://crates.io/crates/proc-macro2>
+  - <https://crates.io/crates/quote>
+  - <https://crates.io/crates/regex>
+  - <https://crates.io/crates/scopeguard>
+  - <https://crates.io/crates/serde>
+  - <https://crates.io/crates/smallvec>
+  - <https://crates.io/crates/syn>
+  - <https://crates.io/crates/thiserror>
+
 ## Installation
 
 - `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
@@ -87,28 +145,6 @@ Rust
   - `[workspace]` defines a workspace that consists of multiple packages
     - `resolver = "2"` specifies the v2 dep resolver
     - `members = ["path1", "path2"]` specifies the member packages
-
-## Popular Crates
-
-- <https://crates.io/crates/syn>
-- <https://crates.io/crates/proc-macro2>
-- <https://crates.io/crates/quote>
-- <https://crates.io/crates/libc>
-- <https://crates.io/crates/bitflags>
-- <https://crates.io/crates/cfg-if>
-- <https://crates.io/crates/serde>
-- <https://crates.io/crates/log>
-- <https://crates.io/crates/regex>
-- <https://crates.io/crates/once_cell>
-- <https://crates.io/crates/smallvec>
-- <https://crates.io/crates/clap>
-- <https://crates.io/crates/itertools>
-- <https://crates.io/crates/scopeguard>
-- <https://crates.io/crates/either>
-- <https://crates.io/crates/bytes>
-- <https://crates.io/crates/thiserror>
-- <https://crates.io/crates/memoffset>
-- <https://crates.io/crates/anyhow>
 
 ## The Book - Chapter 1. Getting Started
 
@@ -443,7 +479,9 @@ Rust
       - `fn some_func(foo: &(impl Foo + Bar))`
       - `fn some_func<T: Foo + Bar>(foo: &T)`
     - `Sized` trait is special
-      - `T` is assumed to have `Sized` bound
+      - if a type has a fixed-size at compile-time (not DST), the compiler
+        implements `Sized` for the type automatically
+      - `T` is assumed to have `Sized` bound (except for `Self` in traits)
       - `T: !Sized` means no `Sized` bound
       - `T: ?Sized` means either `Sized` or not
   - `trait Foo: Bar` means a type must implement `Bar` first to implement `Foo`
@@ -607,6 +645,170 @@ Rust
 - 21.5. E - Editions
 - 21.6. F - Translations of the Book
 - 21.7. G - How Rust is Made and “Nightly Rust”
+
+## API Guidelines
+
+- <https://rust-lang.github.io/api-guidelines/>
+- Sec 1. Naming
+  - when camel casing, `Uuid`, `Usize`, `Stdin`, etc.
+  - ad-hoc conversoins
+    - `as_*` is free and is between refs
+      - it conceptually returns a view of the underlying type
+      - all string types have `as_*`
+    - `to_*` has a cost and can fail
+      - it conceptually converts from one type to another
+      - `str`, `OsStr`, and `cstr` have `to_*`
+      - `String`, `OsString`, and `CString` do not
+    - `into_*` consumes self
+      - it conceptually reuses the underlying storage
+      - `String`, `OsString`, and `CString` have `into_*`
+      - `str`, `OsStr`, and `cstr` do not (unless they are in `Box`)
+      - if the type is a wrapper to another, `into_inner` returns the other
+        type
+  - getters do not have `get_` prefix
+    - unless the type has only a single getter, then it is called `get`
+  - a collection type should have `iter`, `iter_mut`, and `into_iter`
+  - feature names are concise, `foo` instead of `with_foo`
+- Sec 2. Interoperability
+  - implements all common traits that make sense
+    - `Default`
+      - if `Default` makes sense, `new` with no arg makes sense too
+    - `Copy`, `Clone`
+    - `Debug`, `Display`
+    - `Eq`, `PartialEq`, `Ord`, `PartialOrd`
+    - `Hash`
+    - because of the orphan rule, a client cannot implement common traits for
+      types defined by a crate
+  - implements all conversion traits that make sense
+    - `From`, `TryFrom`
+      - never implements `Into` or `TryInto`, as they are implemented via
+        `From` or `TryFrom`
+      - `?` operator inserts `from` so this is especially useful for error
+        types
+    - `AsRef`, `AsMut`
+      - e.g., a function that accepts a path should be
+        `fn foo(path: impl AsRef<Path>)` to accept as many types as possible
+  - implements `FromIterator` and `Extend` for collections
+    - to enable `Iterator::collect`, `Iterator::partition`, etc.
+  - implements `Serialize` and `Deserialize` from `serde` for types that hold
+    pure data
+  - implements `Send` and `Sync` whenever possible
+  - implements `Error` for error types
+    - also `Send` and `Sync`
+    - also `Debug` and `Display`
+  - implements `std::fmt::*` such as `std::fmt::LowerHex` for bitflag types
+  - takes `T: Read` or `T: Write` params by values
+    - it will work with `T` or `&mut T`, as std implements the trait for `&mut
+      T`
+- Sec 3. Macros
+- Sec 4. Documentation
+- Sec 5. Predictability
+  - no non-static inherent methods on smart pointers
+    - `impl Foo { fn bar(p: Self) {} }` instead of
+      `impl Foo { fn bar(self) {} }`
+    - it enforces the use of `Foo::bar(p)` rather than `p.bar()`
+    - it seems
+      - `impl Foo { ... }` are inherent methods
+        - if a method takes `self` as the first arg, it is non-static
+      - `impl Bar for Foo { ... }` are trait methods
+  - define conversion methods on the more specific type if there is one
+    - e.g., we can convert between `str` and `[u8]` and `str` is more specific
+      - conversion methods are defined for `str`, such as `str::as_bytes` or
+        `std::str::from_utf8`
+    - when defining methods, prefer `to_*`/`as_*`/`into_*` over `from_*`
+      because `val.to_foo()` is more ergonomic than `Foo::from(val)`
+  - when a function acts on a type, make it a method
+  - prefer return vals over out params
+    - prefer `fn foo() -> Out` over `fn foo(&mut Out)`
+    - this does not apply when `foo` modifies the data than creating the data
+  - no surprise with `std::op` traits
+    - they are for operator overloading and should not have any surprise
+    - implements `std::ops::Deref` only for smart pointers
+      - because it participates in implicit type coercion and method
+        resolution
+      - that's how `&String` is coerced to `&str`, or how `val.foo()` works
+        for both `&T` and `Box<T>`, transparently
+  - no surprise with `std::op` traits
+  - ctors
+    - `new` takes no or obvious params
+      - it usually does not fail, but it can
+      - `String::new` and `OsString::new` take no param
+      - `CString::new` and `OsStr::new` take a generic param
+        - `CString::new` can fail
+      - `str` and `CStr` have no `new`
+    - `with_<variant>` (and `new_with_<variant>`) are variants of `new`
+      - `String::with_capacity` and `OsString::with_capacity`
+      - consider the builder pattern instead
+    - `from_<another>` converts from another type
+      - it usually takes ownership, but it may not
+      - it is more flexible than the `From` trait
+        - it can fail and it can take multiple params
+      - `String`, `OsString`, `CString`, `OsStr`, and `CStr` have `from_*`
+      - `str` does not
+    - impl `Default` trait if makes sense
+      - all string types implement the `Default` trait
+      - it is often expected for both `new` and `Default` to exist and to
+        behave the same
+    - impl `From` trait if makes sense
+      - it usually takes ownership, but it may not (e.g., `T` is a ref)
+      - `String`, `OsString`, and `CString` implements `From`
+      - `str`, `OsStr`, and `CStr` do not
+- Sec 6. Flexibility
+  - if intermediate results of a function are interesting, return them as well
+    - e.g., `Vec::binary_search` does not return just a bool or the idx
+  - function param ownership
+    - if a func requires ownership of a param, use `Foo`
+      - do not clone in the func but let the caller decides
+    - if a func does not require ownerhsip, use `&Foo` or `&mut Foo`
+  - use generics to minimize assumptions on func params
+    - e.g., `fn foo(path: impl AsRef<Path>)` rather than `fn foo(path: &Path)`
+  - decide if a trait is to be used as a trait bound or a trait object or both
+    - a trait is used as a trait bound in generics such as `T: Trait`
+      - it means `T` is any type that implements `Trait`
+    - a trait is used as a trait object types such as `dyn Trait`
+      - `dyn Trait` is itself a type
+      - it is a DST and cannot be instantiated
+      - use `Box<dyn Trait>` instead
+    - generics vs trait object
+      - static dispatch vs dynamic dispatch
+        - generics wins
+      - regular pointer vs fat pointer
+        - generics wins
+      - homogeneous type vs heterogeneous types
+        - generics is not an option...
+    - trait object limits
+      - trait objects are implemented via vtables
+      - the compiler needs to generate vtables and all methods in the vtable
+        must be fully known at compile-time
+      - the traits cannot have generics at all
+        - the trait itself can be generic, `trait Foo<T>`
+        - but it cannot have generic methods, `trait Foo { fn bar<T>(t: T); }`
+        - this is also allowed,
+          - `trait Foo { type Bar; }` and `dyn Foo<Bar = Xxx>`
+      - the traits also cannot have `Self` other than as the first param
+        - because `Self` is like generics and its concrete type is unknown at
+          compile-time
+        - the first param is special because it is always a pointer to the
+          object in the vtable
+        - this can be worked around by excluding such methods from the vtable
+          with `Self: Sized` bound
+    - trait object examples
+      - `std::io::Read` and `std::io::Write` are often used as trait objects
+      - `std::iter::Iterator` can be used as trait objects
+      - note how they all exclude some methods from vtables with `Self: Sized`
+- Sec 7. Type safety
+- Sec 8. Dependability
+- Sec 9. Debuggability
+- Sec 10. Future proofing
+- Sec 11. Necessities
+- semver compat
+  - <https://doc.rust-lang.org/cargo/reference/semver.html>
+- api evolution
+  - <https://rust-lang.github.io/rfcs/1105-api-evolution.html>
+
+## Rustonomicon
+
+- <https://doc.rust-lang.org/stable/nomicon/>
 
 ## Ownership
 
