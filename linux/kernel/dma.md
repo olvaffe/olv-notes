@@ -91,6 +91,23 @@ Kernel and DMA
   - irq, and the transfer is done.  the driver unmaps the page.
     - `pci_dma_sync_single_for_cpu` and `pci_dma_sync_single_for_device` can be
       used to check if the buffer is complete beforing unmapping.
+- for a single dma tranaction, we can
+  - `dma_map_page(dir)`
+  - start hw transction
+  - wait hw transction
+  - `dma_unmap_page(dir)`
+  - `dir` must be the same for map and unmap
+- for multiple dma tranactions, we can
+  - `dma_map_page(dir)`
+  - loop
+    - `dma_sync_single_for_device(dir)`
+      - can be skipped when `dir` is `DMA_FROM_DEVICE`, because there is no
+        cpu write
+    - start hw transction
+    - wait hw transction
+    - `dma_sync_single_for_cpu(dir)`
+  - `dma_unmap_page(dir)`
+  - `dir` must be the same for all calls
 
 ## Scatter-Gather
 
