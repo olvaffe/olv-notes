@@ -797,9 +797,50 @@ Rust
       - `std::iter::Iterator` can be used as trait objects
       - note how they all exclude some methods from vtables with `Self: Sized`
 - Sec 7. Type safety
+  - newtype pattern
+    - e.g., `struct Modifier(u64)` and uses `Modifier` for type safetyp
+  - use enum or others in place of `bool` in func params
+    - e.g., `sync(Start)` is better than `sync(true)`
+  - use `bitflags` instead of `enum` for bitflags
+  - builder pattern
+    - non-consuming builders, such as `std::process::Command`
+      - the config methods are `fn foo(&mut self...) -> &mut Self`
+      - the terminal methods are `fn build(&self)`
+    - consuming builders
+      - the config methods are `fn foo(mut self...) -> Self`
+      - the terminal methods are `fn build(self)`
 - Sec 8. Dependability
+  - validate func args
+    - static enforcement, such as the newtype pattern
+    - dynamic enforcement, with runtime overhead
+      - two common ways to avoid the overhead are
+        - use `debug_assert!` to enable it for debug builds
+        - add `foo_unchecked` variant or `raw` submodule
+  - drop never fails
+    - if cleanup can fail or can block, define a method for explicit cleanup
+    - if the explicit cleanup is not called, drop should eat and log the
+      failure
 - Sec 9. Debuggability
+  - `Debug` should be implemented for all public types
+  - `Debug` should output something even the val is empty, such as `""` for
+    empty str
 - Sec 10. Future proofing
+  - sealed traits to prevent clients from implementing the traits
+  - keep struct fields private unless must
+    - making a field public is a strong commitment
+    - structs with private fields cannot be constructed with literals
+  - return `impl Trait` if that's sufficient
+    - e.g., return `impl Iterator<Item = u32>` allows clients to use the
+      return value as an iterator while allowing us to change the concrete
+      type at anytime
+    - this can also be achieved with newtype pattern
+  - do not duplicate derives and trait bounds for plain structs
+    - `#[derive(Debug)] struct Foo<T>` is fine
+      - adding another derive does not break clients
+      - if `T` does not implement `Debug`, neither will Foo
+    - `#[derive(Debug)] struct Foo<T: Debug>` is unnecessary and bad
+      - adding another derive _and_ bound can break clients, because of the new
+        bound requirement
 - Sec 11. Necessities
 - semver compat
   - <https://doc.rust-lang.org/cargo/reference/semver.html>
