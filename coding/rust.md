@@ -561,6 +561,28 @@ Rust
 
 ## The Reference - Chapter 4. Crates and source files
 
+- each compilation processes a single crate in the source form and produces
+  the crate in the binary form (executable or library)
+- a crate is a unit of compilation and linking
+  - it contains a tree of modules
+  - the root module is anonymous
+- the compiler is always invoked with a single source file
+  - the source file is the root module of a crate
+  - it can reference external source files
+  - each file is a module
+    - but not every module has its own file
+- each source file contains zero or more items
+  - it may optionally begin with attrs
+- a crate that contains a `main` function can be compiled to an executable
+  - the root module must define `main`, or have `use foo::bar as main`
+  - the main function must
+    - have no args
+    - have no trait/lifetime bounds
+    - have no where clauses
+    - have return type that implements `std::process::Termination`
+      - such as `()`, `!`, `Infallible`, `ExitCode`
+      - also `Result<T, E> where T: Termination, E: Debug`
+
 ## The Reference - Chapter 5. Conditional compilation
 
 - source code can be conditionally compiled using
@@ -874,6 +896,33 @@ Rust
 - 13.2. Variables
 
 ## The Reference - Chapter 14. Linkage
+
+- each compilation processes a crate in the source form and produces the
+  crate in binary form(s)
+- `--crate-type=<type>` or `#![crate_type = "<type>"]` specifies the binary
+  form(s)
+  - `bin` produces an executable
+    - there must be a `main` function
+  - `lib` produces a library
+    - it aliases one of other types below, determined by the compiler
+  - `dylib`/`rlib` produces a dynamic/static rust library
+    - it contains metadata and can be used as a dep by other crates
+  - `cdylib`/`staticlib` produces a dynamic/static system library
+    - it is for ffi
+  - `proc-macro`
+- dependencies
+  - for `staticlib`, deps must be `rlib`
+  - for `rlib`, deps can be `rlib` or `dylib`
+    - `rlib` references its deps and does not own copies of its deps
+  - for `bin`, `rlib` is attempted first before `dylib`
+  - for `dylib`, deps can be `rlib` or `dylib`
+    - `rlib` owns copies of its deps
+- statically-linked executables
+  - both static linking and dynamic linking of C runtime may be supported
+    - it depends on the targets
+    - `x86_64-unknown-linux-gnu` defaults to dynamic linking
+    - `x86_64-unknown-linux-musl` defaults to static linking
+  - `-C target-feature=[+-]crt-static` to enables/disables static linking
 
 ## The Reference - Chapter 15. Inline assembly
 
