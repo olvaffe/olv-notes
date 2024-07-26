@@ -83,11 +83,30 @@ Rust
 
 ## Cross-Compiler
 
-- `rustup target add aarch64-unknown-linux-gnu`
-- `cargo build --target aarch64-unknown-linux-gnu`
-- edit `~/.cargo/config` to add
+- <https://rust-lang.github.io/rustup/cross-compilation.html>
+- `rustup target list` for supported targets
+- `rustup target add <triple>` to add the toolchain
+- `cargo build --target <triple>` to build
+- a linker must be specified separately
+  - edit `~/.cargo/config.toml` to add
+
+    [target.<triple>]
+    linker = "..."
+  - or, set the `CARGO_TARGET_<triple>_LINKER` envvar
+- aarch64
+  - `rustup target add aarch64-unknown-linux-gnu`
+  - `cargo build --target aarch64-unknown-linux-gnu`
+  - install the linker separately and edit `~/.cargo/config.toml`
+
     [target.aarch64-unknown-linux-gnu]
     linker = "aarch64-linux-gnu-gcc"
+- android
+  - `rustup target add aarch64-linux-android`
+  - `cargo build --target aarch64-linux-android`
+  - install the ndk and edit `~/.cargo/config.toml`
+
+    [target.aarch64-unknown-linux-gnu]
+    linker = "<ndk>/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android34-clang"
 
 ## cargo
 
