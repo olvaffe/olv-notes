@@ -199,30 +199,152 @@ The Rust Reference
 ## Chapter 8. Statements and expressions
 
 - 8.1. Statements
+  - decl stmts
+    - it introduces one or more names to the enclosing block
+    - item decls
+      - same as item decls at module level
+      - can be used to declare new uses, structs, fns, etc.
+    - let stmts: `let pat;` or `let pat = expr;`
+      - in full form, `let pat: type = expr else block;`
+  - expr stmts: `expr;` or `block;`
+    - it evaluates an expr and ignores the result
+      - it wants the side-effect of the evalution
+    - `block;` is a stmt
+      - `block` is an expr and must evaluate to `()`
+      - in the context where a stmt is allowed, the semicolon can be omitted
+        - it becomes `block` but is a stmt rather than an expr
+      - for comparison, `let v = block;` does not permit stmt
+        - `block` is an expr and can evaluate to any value
 - 8.2. Expressions
-  - Type cast expressions
-    - `as` supports all allowed coercions, plus more
-    - numeric to numeric
-      - e.g., `i32` to `f32`, `i64` to `i32`, etc.
-    - enum to integer (only when the enum is plain)
-    - `bool` or `char` to integer
-    - `u8` to `char`
-    - `*T` to `*U` (reinterpret cast)
-    - `*T` to integer (can truncate)
-    - integer to `*T`
-    - `&T` to `*T` (but no const cast)
-    - `&[T; n]` to `*T` (array to pointer)
-    - function item to `*T` (because the type does not matter) or integer
-    - function pointer to `*T` (because the type does not matter) or integer
-    - non-capturing closures to function pointers
-  - loop expressions
-    - a for-loopable variable must implement IntoIter trait
-      - the trait allows a variable to be turned into a iterator and transfers the
-        ownership to the iterator
-    - a for-loop is a syntax sugar that turns the looped variable into an iterator
-      - `for v in var` becomes roughly
-        - `let mut iter = var.into_iter();`
-        - `while let v = Some(var.next())`
+  - Literal expressions
+    - `true`, `false`, char/byte/string literals, numeric literals, etc.
+    - `b'x'` is `u8`
+    - `b"x"` is `[u8; N]`
+    - `c"x"` is `CStr`
+    - `123u64` is `u64`
+  - Path expressions
+  - Block expressions
+    - `{ stmts; optinal expr }` is a block
+    - `const { ... }` evaluates at compile-time
+    - `unsafe { ... }` is an unsafe block
+  - Operator expressions
+    - unary
+      - borrow ops: `&expr`, `&mut expr`
+      - raw addr-of ops: `ptr::addr_of!(expr)`
+      - deref op: `*expr`
+        - if `x` is a reference, `*x` becomes `*std::ops::Deref::deref(&x)`
+        - if `x` is a raw pointer, `*x` is unsafe
+      - question mark op: `expr?`
+        - if `x` is a `Result<T, E>`, it either unwraps or return
+          `Err(From::from(e))`
+        - if `x` is a `Option<T>`, it either unwraps or return `None`
+      - negation ops: `-expr`, `!expr`
+    - binary
+      - arith ops
+        - `expr1 + expr2`
+        - `expr1 - expr2`
+        - `expr1 * expr2`
+        - `expr1 / expr2`
+        - `expr1 % expr2`
+        - `expr1 & expr2`
+        - `expr1 | expr2`
+        - `expr1 ^ expr2`
+        - `expr1 << expr2`
+        - `expr1 >> expr2`
+      - comparison ops
+        - `expr1 == expr2`
+        - `expr1 != expr2`
+        - `expr1 > expr2`
+        - `expr1 < expr2`
+        - `expr1 >= expr2`
+        - `expr1 <= expr2`
+      - lazy bool ops
+        - `expr1 && expr2`
+        - `expr1 || expr2`
+      - Type cast expressions
+        - `as` supports all allowed coercions, plus more
+        - numeric to numeric
+          - e.g., `i32` to `f32`, `i64` to `i32`, etc.
+        - enum to integer (only when the enum is plain)
+        - `bool` or `char` to integer
+        - `u8` to `char`
+        - `*T` to `*U` (reinterpret cast)
+        - `*T` to integer (can truncate)
+        - integer to `*T`
+        - `&T` to `*T` (but no const cast)
+        - `&[T; n]` to `*T` (array to pointer)
+        - function item to `*T` (because the type does not matter) or integer
+        - function pointer to `*T` (because the type does not matter) or integer
+        - non-capturing closures to function pointers
+      - assignment expressions
+        - `expr1 = expr2`
+      - compound assignment expressions
+        - `expr1 += expr2`
+        - `expr1 -= expr2`
+        - `expr1 *= expr2`
+        - `expr1 /= expr2`
+        - `expr1 %= expr2`
+        - `expr1 &= expr2`
+        - `expr1 |= expr2`
+        - `expr1 ^= expr2`
+        - `expr1 <<= expr2`
+        - `expr1 >>= expr2`
+  - Grouped expressions
+    - `(expr)`
+  - Array and index expressions
+    - array exprs: `[expr1, ...]` or `[expr; N]`
+    - array/slice indexing exprs: `expr1[expr2]`
+  - Tuple and index expressions
+    - tuple exprs: `(expr1, ...)`
+    - tuple indexing exprs: `expr1.index`
+  - Struct expressions
+    - field struct expr: `Name{fields}`
+    - tuple struct expr: `Name(types)`
+    - unit struct expr: `Name`
+  - Call expressions
+    - `expr(params)`
+  - Method call expressions
+    - `expr.method(params)`
+  - Field access expressions
+    - `expr.field`
+  - Closure expressions
+    - `|params| expr`
+    - `|params| -> type { expr }`
+    - prefixing `move` to capture by moves rather than borrows
+  - Loop expressions
+    - infinite loops: `loop block`
+    - predicate loops: `while expr block`
+    - predicate pattern loops: `while let pattern = expr block`
+      - same as `loop { match expr { pattern => block, _ => break, } }`
+    - iterator loops: `for pattern in expr block`
+      - roughly
+        - `let mut iter = std::iter::IntoIterator::into_iter(expr);`
+        - `while let Some(val) = std::iter::Iterator::next(&mut iter) {`
+        - `  let pattern = val;`
+        - `  block;`
+        - `}`
+      - note that `IntoIterator::into_iter` takes ownership
+    - loop labels: `'label:`
+    - break exprs: `break 'label expr`
+    - continue exprs: `continue 'label`
+  - Range expressions
+    - `start..end` has type `std::ops::Range`
+    - `start..` has type `std::ops::RangeFrom`
+    - `..end` has type `std::ops::RangeTo`
+    - `..` has type `std::ops::RangeFull`
+    - `start..=end` has type `std::ops::RangeInclusive`
+    - `..=end` has type `std::ops::RangeToInclusive`
+  - If and if let expressions
+    - `if expr block else block`
+    - `if let pattern = expr block else block`
+  - Match expressions
+    - `match expr { arm1 => expr1, arm2 => block2 }`
+  - Return expressions
+    - `return expr`
+  - Await expressions
+    - `expr.await`
+  - Underscore expressions
+    - `_`
 
 ## Chapter 9. Patterns
 
