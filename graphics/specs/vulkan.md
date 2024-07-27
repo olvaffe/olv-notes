@@ -874,6 +874,19 @@ Vulkan
       lossless/lossy/none compression for a surface format
     - `vkCreateSwapchainKHR` can include `VkImageCompressionControlEXT` to
       control compression for the swapchain images
+  - `VkSubresourceLayout`
+    - pitch vs stride
+      - in dictionary,
+        - pitch is the distance between any of various things
+        - stride is a long step
+      - outside of graphics,
+        - pitch is used in displays, such as dot pitch
+        - stride is used in arrays, for distance between two elements
+          - due to struct padding, stride can be larger than element size
+        - because of multi-dimensional arrays, stride can be multi-dimensional
+      - in graphics,
+        - pitch and stride are interchangeable
+        - but stride seems preferred, even though vk uses pitch here
 - 12.4. Image Layouts
   - `VkImageTiling` and `VkImageLayout`
     - for each plane, HW needs to store the format data and often also format
