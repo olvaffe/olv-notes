@@ -215,8 +215,27 @@ The Rust Reference
     - function item to `*T` (because the type does not matter) or integer
     - function pointer to `*T` (because the type does not matter) or integer
     - non-capturing closures to function pointers
+  - loop expressions
+    - a for-loopable variable must implement IntoIter trait
+      - the trait allows a variable to be turned into a iterator and transfers the
+        ownership to the iterator
+    - a for-loop is a syntax sugar that turns the looped variable into an iterator
+      - `for v in var` becomes roughly
+        - `let mut iter = var.into_iter();`
+        - `while let v = Some(var.next())`
 
 ## Chapter 9. Patterns
+
+- when a pattern has a match, a variable binding can be optionally created
+  - `Some(val)` creates a variable binding which becomes the owner of the
+    value (unless the type has Copy trait)
+  - `Some(_)` does not
+  - `Some(mut val)` creates a mutable variable binding
+  - `Some(ref val)` creates a reference
+  - `Some(ref mut val)` creates a mutable reference
+  - `Some(&val)` can match `Option<&T>` and val becomes the owner of `T`
+    - T should be a reference itself because we cannot move a borrowed
+      ownership
 
 ## Chapter 10. Type system
 

@@ -131,44 +131,11 @@ Rust
   - it builds and runs benches
   - unit benches go to `src/`
   - integration benches go to `benches/`
-- `Cargo.toml`
-  - `[package]` defines a package
-  - targets
-    - `[lib]` customizes the library target
-    - `[[bin]]` customizes a binary target
-    - `[[example]]` customizes an example target
-    - `[[test]]` customizes a test target
-    - `[[bench]]` customizes a bench target
-  - dependencies
-    - `[dependencies]` specifies library dependencies
-      - `time = "0.1.12"` means
-        - `time` crate on `crates.io`
-          - `https://crates.io/crates/time`
-        - version range `[0.1.12, 0.2.0)`
-      - it is the same as `time = { version = "0.1.12", registry = "crates-io" }`
-        - `version` specifies the version
-        - `registry` specifies the registry
-        - `path` specifies a local path (rather than a registry)
-        - `git` (and `branch`, `tag`, `rev`) specifies a git repo (rather than
-          a registry)
-    - `[dev-dependencies]` specifies deps for examples, tests, and benchmarks
-    - `[build-dependencies]` specifies deps for build scripts
-    - `[target]` specifies platform-specific deps
-  - `[badges]` specifies status dadges to display on a registry
-  - `[features]` specifies conditional compilation features
-  - `[lints]` configure linters for this package
-  - `[patch]` override dependencies
-    - `[patch.crates-io] foo = { path = 'local_path' }` to use local version
-      of `foo` crate
-  - `[profile]` compiler settings and optimizations
-  - `[workspace]` defines a workspace that consists of multiple packages
-    - `resolver = "2"` specifies the v2 dep resolver
-    - `members = ["path1", "path2"]` specifies the member packages
 
 ## API Guidelines
 
 - <https://rust-lang.github.io/api-guidelines/>
-- Sec 1. Naming
+- Chapter 1. Naming
   - when camel casing, `Uuid`, `Usize`, `Stdin`, etc.
   - ad-hoc conversoins
     - `as_*` is free and is between refs
@@ -188,7 +155,7 @@ Rust
     - unless the type has only a single getter, then it is called `get`
   - a collection type should have `iter`, `iter_mut`, and `into_iter`
   - feature names are concise, `foo` instead of `with_foo`
-- Sec 2. Interoperability
+- Chapter 2. Interoperability
   - implements all common traits that make sense
     - `Default`
       - if `Default` makes sense, `new` with no arg makes sense too
@@ -219,9 +186,9 @@ Rust
   - takes `T: Read` or `T: Write` params by values
     - it will work with `T` or `&mut T`, as std implements the trait for `&mut
       T`
-- Sec 3. Macros
-- Sec 4. Documentation
-- Sec 5. Predictability
+- Chapter 3. Macros
+- Chapter 4. Documentation
+- Chapter 5. Predictability
   - no non-static inherent methods on smart pointers
     - `impl Foo { fn bar(p: Self) {} }` instead of
       `impl Foo { fn bar(self) {} }`
@@ -272,7 +239,7 @@ Rust
       - it usually takes ownership, but it may not (e.g., `T` is a ref)
       - `String`, `OsString`, and `CString` implements `From`
       - `str`, `OsStr`, and `CStr` do not
-- Sec 6. Flexibility
+- Chapter 6. Flexibility
   - if intermediate results of a function are interesting, return them as well
     - e.g., `Vec::binary_search` does not return just a bool or the idx
   - function param ownership
@@ -315,7 +282,7 @@ Rust
       - `std::io::Read` and `std::io::Write` are often used as trait objects
       - `std::iter::Iterator` can be used as trait objects
       - note how they all exclude some methods from vtables with `Self: Sized`
-- Sec 7. Type safety
+- Chapter 7. Type safety
   - newtype pattern
     - e.g., `struct Modifier(u64)` and uses `Modifier` for type safetyp
   - use enum or others in place of `bool` in func params
@@ -328,7 +295,7 @@ Rust
     - consuming builders
       - the config methods are `fn foo(mut self...) -> Self`
       - the terminal methods are `fn build(self)`
-- Sec 8. Dependability
+- Chapter 8. Dependability
   - validate func args
     - static enforcement, such as the newtype pattern
     - dynamic enforcement, with runtime overhead
@@ -339,11 +306,11 @@ Rust
     - if cleanup can fail or can block, define a method for explicit cleanup
     - if the explicit cleanup is not called, drop should eat and log the
       failure
-- Sec 9. Debuggability
+- Chapter 9. Debuggability
   - `Debug` should be implemented for all public types
   - `Debug` should output something even the val is empty, such as `""` for
     empty str
-- Sec 10. Future proofing
+- Chapter 10. Future proofing
   - sealed traits to prevent clients from implementing the traits
   - keep struct fields private unless must
     - making a field public is a strong commitment
@@ -360,129 +327,21 @@ Rust
     - `#[derive(Debug)] struct Foo<T: Debug>` is unnecessary and bad
       - adding another derive _and_ bound can break clients, because of the new
         bound requirement
-- Sec 11. Necessities
-- semver compat
-  - <https://doc.rust-lang.org/cargo/reference/semver.html>
+- Chapter 11. Necessities
 - api evolution
   - <https://rust-lang.github.io/rfcs/1105-api-evolution.html>
+
+## Rust By Example
+
+- <https://doc.rust-lang.org/stable/rust-by-example/>
+
+## Rust Design Patterns
+
+- <https://rust-unofficial.github.io/patterns/>
 
 ## Rustonomicon
 
 - <https://doc.rust-lang.org/stable/nomicon/>
-
-## Ownership
-
-- each value in Rust has a variable that is the owner of the value
-- there can only be one owner for a value at any time
-- when the owner goes out of scope, the value is dropped
-- ownership can be transferred from one variable to another
-  - `let a = String::from("hello"); let b = a;`
-  - b becomes the owner of the String
-- when a variable is mutable, it can own different values at different times
-  - `let mut a = 3; a = 4`
-- simple types, where ownership transfer may be more expensive than copying,
-  usually implement Copy trait
-  - `let a = 3; let b = a;`
-  - both a and b own different values
-  - no ownership transfer
-- ownerhsip eliminates one major issue: the value of a variable can be
-  modified behind the back of the variable
-  - no more dangling pointer like in C/C++
-
-## Borrowing
-
-- References for a variable can be created.  They "borrow" the onwership from
-  the variable.
-  - there are also "unsafe" pointers for a variable
-- a variable's ownership of a value can be immutably borrowed
-  - `let a = 3; let b = &a; let c = &a;`
-  - there can be multiple immutable borrowers
-  - until b and c go out of scope, a's ownership is immutably borrowed.  a can
-    still be used, but its ownership of the value cannot be transferred
-- a variable's ownership of a value can also be mutably borrowed
-  - `let mut a = 3; let b = &mut a;`
-  - there can only be one mutable borrower
-  - until b goes out of scope, a's ownership is mutably borrowed.  a cannot be
-    used.
-- a variable cannot be borrowed mutably and immutably at the same time
-- Internally, a reference is a pointer to the original value.  The borrowing
-  rules make sure there is no surprise
-
-## Arrays and Slices
-
-- arrays have type `[T; N]`; different Ns mean different types
-- slices have type `[T]`
-  - slices have unknown size.  Similar to `str` or `Path`, there can only be
-    references to slices
-  - a slice borrows from an aray (or some collections)
-- vectors implements trait `Deref<Target = [T]>`, meaning they can be treated
-  like slices
-  - looping vectors in for-loops moves because of `into_iter`
-  - looping slices in for-loops copies because references implement Copy trait
-- Internally, a slice is two pointers, delimiting a region in the original
-  value.  The borrowing rules maek sure there is no surprise.
-  - this is why slices are for types that are contiguous in memory
-
-## Pattern Matching
-
-- when a pattern has a match, a variable binding can be optionally created
-  - `Some(val)` creates a variable binding which becomes the owner of the
-    value (unless the type has Copy trait)
-  - `Some(_)` does not
-  - `Some(mut val)` creates a mutable variable binding
-  - `Some(ref val)` creates a reference
-  - `Some(ref mut val)` creates a mutable reference
-  - `Some(&val)` can match `Option<&T>` and val becomes the owner of `T`
-    - T should be a reference itself because we cannot move a borrowed
-      ownership
-
-## Iterators
-
-- a for-loopable variable must implement IntoIter trait
-  - the trait allows a variable to be turned into a iterator and transfers the
-    ownership to the iterator
-- a for-loop is a syntax sugar that turns the looped variable into an iterator
-  - `for v in var` becomes roughly
-    - `let mut iter = var.into_iter();`
-    - `while let v = Some(var.next())`
-
-## Interior Mutability
-
-- interior mutability is similar to a mutable data member in a C++ class
-- `UnsafeCell<T>` is T, but provides a get() method to return `*mut T`
-  - it is unsafe (because a pointer to T does not borrow the ownership)
-  - there is no additional cost
-- `Cell<T>` is T with the interior mutability
-  - `let a = Cell::new(3); a.set(4); let b = a.get();`
-  - it is implemented on top of `UnsafeCell<T>`
-  - it is safe because get() returns a copy of T
-  - there is no additional cost
-- `RefCell<T>` is T with the interior mutability
-  - `let a = RefCell::new(3); *a.borrow_mut() = 4; let b = a.borrow();`
-  - there is a cost to track the borrow counts dynamically
-
-## Smart Pointers
-
-- `Box<T>` is T put on the heap
-  - T's size can be unknown (e.g., recursive types)
-    - `struct List<T> { node: T, next: Box<List<T>> }`
-  - like `std::unique_ptr<T>`
-- `Rc<T>` is T put on the heap together with a refcount
-  - like `std::shared_ptr<T>`
-- `Arc<T>` is T put on the heap together with an atomic refcount
-
-## Threads
-
-- most types implements Send trait
-  - it means the ownership of a value of the type can be transferred to
-    another thread
-- most types implements Sync trait
-  - it means a value of the type can be referenced by multiple threads
-  - T is Sync iff &T is Send
-- `Rc<T>` implements neither
-  - when a `Rc<T>` is shared by two threads, the refcount can be messed up
-    refcount can be messed up
-- `Arc<T>` implements both
 
 ## The Rust Standard Library
 
