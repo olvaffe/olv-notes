@@ -226,16 +226,80 @@ The Rust Reference
 
 ## Chapter 9. Patterns
 
-- when a pattern has a match, a variable binding can be optionally created
-  - `Some(val)` creates a variable binding which becomes the owner of the
-    value (unless the type has Copy trait)
-  - `Some(_)` does not
-  - `Some(mut val)` creates a mutable variable binding
-  - `Some(ref val)` creates a reference
-  - `Some(ref mut val)` creates a mutable reference
-  - `Some(&val)` can match `Option<&T>` and val becomes the owner of `T`
-    - T should be a reference itself because we cannot move a borrowed
-      ownership
+- patterns are used to match values inside structures and, optionally,
+  bind variables to those values
+- patterns are used in
+  - `let`
+  - func and closure params
+  - `match`
+  - `if let`
+  - `while let`
+  - `for`
+- patterns can destructure structs, enums, and tuples
+  - `_` is a placehold and matches a single field
+  - `..` is a wildcard and matches remaining fields
+- patterns can be refutable (can fail) or irrefutable (never fails)
+  - `Some(x)` in `if let Some(x)...` is refutable while `(x, y)` in
+    `let (x, y)...` is irrefutable
+- literal patterns
+  - `true`, `false`, char/byte/string literals, numeric literals, etc.
+- identifier patterns
+  - identifier, optionally prefixed by `ref` and `mut`
+    - `mut x` in `let mut x = 10;`
+    - `x` in `fn foo(x: i32)`
+- binding modes
+  - in `let x = String::from("test");`, the identifier `x` binds to the string
+    - the binding is a copy, if the val impls `Copy`
+    - otherwise, the binding is a move
+      - this is the case with the string here
+    - we can also force the binding to be a reference by prefixing the
+      identifier with `ref`
+  - when the compiler matches a pattern, it starts from outside the pattern
+    and works inward
+    - the default binding mode is copy/move at the beginning and may change in
+      the process
+    - e.g., when it matches `Some(x)` against `Some(3)`,
+      - `Some` matches `Some` and the default binding mode is not changed
+      - `x` matches 3 and binds by copy
+    - but when it matches `Some(x)` against `&Some(3)`,
+      - `&Some` is automatically dereferenced to `Some`, and the default
+        binding mode is changed to reference
+      - `Some` matches `Some`
+      - `x` matches 3 and binds by reference
+- wildcard pattern
+  - `_` matches any value
+  - when used inside another pattern, it matches a single data field while
+    `..` matches the remaining fields
+- range patterns
+  - `..=10` matches values in `(.., 10]`
+  - `5..=10` matches values in `[5, 10]`
+  - `10..` matches values in `[10, ..)`
+  - the type of the pattern is determined by its bounds
+- reference patterns
+  - `&pattern` matches a reference and dereferences it
+  - e.g.,
+    - `let a = 3; assert_eq!(a, 3);`
+    - `let b = &3; assert_eq!(*b, 3);`
+    - `let ref c = 3; assert_eq!(*c, 3);`
+    - `let ref d = &3; assert_eq!(**d, 3);`
+    - `let &e = &3; assert_eq!(e, 3);`
+      - this works because `3` impls `Copy`
+    - `let &f = &Box::new(3);` does not compile
+      - `let x = Box::new(3); let y = &x; let f = *y;`
+- struct patterns
+  - `Type{...}` matches struct, enum, and union values
+- tuple struct patterns
+  - `Type(...)` matches tuple struct and enum values
+- tuple patterns
+  - `(...)` matches tuple values
+- grouped patterns
+  - `(pattern)` to explicitly control precedence of compound patterns
+- slice patterns
+  - `[...]` matches arrays and slices
+- path patterns
+- constant patterns
+- or-patterns
+  - `pat1 | pat2` matches either patterns
 
 ## Chapter 10. Type system
 
@@ -261,7 +325,26 @@ The Rust Reference
             types to `Sized`
           - also known as fat pointers
           - the first pointer points to the underlying data
-          - the second pointer stores the slice len in-place
+          - the second pointer points to the end of the data
+        - iow,
+          - these types are different and are `Sized`
+            - `[T; 5]`
+            - `[T; 10]`
+            - `Vec<T>`
+          - they have something in common, and that something is `[T]` which
+            is not `Sized`
+          - we can instead get `&[T]` from them and operate on `&[T]`
+        - ways to get a slice from a vec
+          - `v.as_slice()`
+          - `&v[..]`
+          - because vec implements `Deref<Target = [T]>`
+            - `&*v`
+            - `&Vec<T>` also implicitly coerces to `&[T]`
+          - because vec implements `AsRef<[T]>`,
+            - `v.as_ref()`
+            - this is rarely used
+              - when a function takes `impl AsRef<[T]>` instead of `&[T]`, it
+                can also support `str`, `String`, etc.
         - `str` is `[u8]` whose data are guaranteed to be valid utf8
     - user-defined types
       - struct: `struct Name ...`
