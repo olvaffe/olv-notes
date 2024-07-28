@@ -324,6 +324,23 @@ The Rust Programming Language
   - all string literals have `'static` lifetime
     - they are stored in the binary directly
     - do numeric literals also have `'static` lifetime?
+- I still don't get it.  Let's restart.
+  - functions
+    - `fn foo<'a>(v: &'a i32) -> &'a i32` means ret is valid when `v` is valid
+    - `fn foo<'a>(v1: &'a i32, v2: &'a i32) -> &'a i32` means ret is valid
+      when both `v1` and `v2` are valid
+    - iow,
+      - `foo` produces ret and `'a` is its lifetime
+      - `'a` is taken to be the intersection (as opposed to exact match) of
+        all inputs annotated with `'a`
+  - structs
+    - `struct Foo<'a>{v: &'a i32}` means the struct is valid when `v` is valid
+    - `struct Foo<'a>{v1: &'a i32, v2: &'a i32}` means the struct is valid
+      when `v1` and `v2` are valid
+    - iow,
+      - `Foo{...}` produces a val and `'a` is its lifetime
+      - `'a` is taken to be the intersection (as opposed to exact match) of
+        all fields annotated with `'a`
 
 ## Chapter 11. Writing Automated Tests
 
