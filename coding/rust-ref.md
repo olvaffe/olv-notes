@@ -527,6 +527,24 @@ The Rust Reference
 - 10.4. Interior mutability
 - 10.5. Subtyping and Variance
 - 10.6. Trait and lifetime bounds
+  - trait and lifetime bounds are provided in a `where` clause
+  - there are syntax sugars
+    - `fn foo<T: Copy>` is `fn foo<T> where T: Copy`
+      - it means `T` must implement `Copy`
+    - `trait Foo: Copy` is `trait Foo where Self: Copy`
+      - it means, to implement `Foo`, the type must implement `Copy` too
+    - `trait Foo { type Bar: Copy; ... }` is
+      `trait Foo where Self::Bar: Copy { type Bar; ... }`
+      - it means `Bar` must implement `Copy`
+  - `Sized` trait
+    - `Sized` trait bound is implicit for generics and associated types
+    - add `?Sized` as a trait bound to remove it
+    - add `!Sized` to negate it
+  - lifetime bounds
+    - `fn foo<'a, 'b> where 'a: 'b` means `'a` outlives `'b`
+    - `fn foo<'a, T> where T: 'a` means all lifetime parameters of `T` outlive
+      `'a`
+      - `T: 'static` means `T` is not borrowed
 - 10.7. Type coercions
   - implicit type conversions
   - allowed type coercions

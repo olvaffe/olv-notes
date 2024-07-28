@@ -275,6 +275,55 @@ The Rust Programming Language
       - if a type implements a trait, at least one of them must be defined by
         the current crate
 - 10.3. Validating References with Lifetimes
+  - every reference has a lifetime
+    - it is the scope for which a reference is valid
+    - the compiler can infer the lifetime usually
+    - when it can't, the lifetime needs to be annotated
+  - lifetime annotation syntax
+    - on references: `&'a i32`, `&'a mut i32`
+    - on functions: `fn foo<'a>`
+    - on structs: `struct Foo<'a>`
+    - on impls: `impl<'a>`
+  - when a function returns a reference, the reference has a lifetime
+    - the compiler knows that it either refers to a global variable or to a
+      function parameter that also is a reference
+      - it can't refer to owned parameters or local variables, because those
+        die when the function returns
+    - if there is only one parameter that is a reference, the compiler infers
+      the lifetime of the return value to be the lifetime of the parameter
+      - this is always safe, although when the return value refers to a global
+        variable, the actual lifetime can be longer (`'static`)
+    - if there are multiple parameters that are references, the compiler can't
+      infer the lifetime and requires explicit annotations
+    - if there is no parameter that are references, the comper does not infer
+      the lifetime and requires explicit annotations
+      - but why?
+    - `fn foo<'a>(x: &'a i32, y: &i32) -> &'a i32` means the returned
+      reference is valid when `x` is
+    - `fn foo<'a>(x: &'a i32, y: &'a i32) -> &'a i32` means the returned
+      reference is valid when both `x` and `y` are
+  - when a struct has fields that are references, the struct has a lifetime
+    - the compiler does not try to infer the lifetime of the struct and
+      requires explicit annotation
+    - `struct Foo<'a>(&'a i32)` means the struct is valid when the field is
+    - `struct Foo<'a>(&'a i32, &'a i32)` means the struct is valid when both
+      fields are
+    - `struct Foo<'a, 'b>(&'a i32, &'b i32)` means...?
+  - lifetime elision
+    - the compiler assigns lifetimes following 3 rules
+      - it assigns lifetimes to all input references
+      - if there is only one input reference, its lifetime is assigned to all
+        output references
+      - if there are multiple input references, and one of them is `&self` or
+        `&mut self`, its lifetime is assigned to all output references
+        - this sounds incorrect but is true
+        - the compiler generates an error when the method does not return self
+          or a field of self
+    - unless all output references have assigned lifetimes, the compiler
+      generates an error and requires explicit annotations
+  - all string literals have `'static` lifetime
+    - they are stored in the binary directly
+    - do numeric literals also have `'static` lifetime?
 
 ## Chapter 11. Writing Automated Tests
 
