@@ -597,6 +597,12 @@ The Rust Reference
     - `!` to `T`
   - there is also the type cast operator, `as`
 - 10.8. Destructors
+  - temporary lifetime extension
+    - a temp is usually dropped at the end of the stmt, `foo(&vec!(1));`
+    - but when a temp is referenced, its lifetime is extended
+      - `let a = &vec!(1);` is the same as
+        `let _tmp = vec!(1); let a = &_tmp;`
+
 - 10.9. Lifetime elision
 
 ## Chapter 11. Special types and traits

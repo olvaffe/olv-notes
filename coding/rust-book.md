@@ -325,22 +325,137 @@ The Rust Programming Language
     - they are stored in the binary directly
     - do numeric literals also have `'static` lifetime?
 - I still don't get it.  Let's restart.
-  - functions
-    - `fn foo<'a>(v: &'a i32) -> &'a i32` means ret is valid when `v` is valid
-    - `fn foo<'a>(v1: &'a i32, v2: &'a i32) -> &'a i32` means ret is valid
-      when both `v1` and `v2` are valid
-    - iow,
-      - `foo` produces ret and `'a` is its lifetime
-      - `'a` is taken to be the intersection (as opposed to exact match) of
-        all inputs annotated with `'a`
-  - structs
-    - `struct Foo<'a>{v: &'a i32}` means the struct is valid when `v` is valid
-    - `struct Foo<'a>{v1: &'a i32, v2: &'a i32}` means the struct is valid
-      when `v1` and `v2` are valid
-    - iow,
-      - `Foo{...}` produces a val and `'a` is its lifetime
-      - `'a` is taken to be the intersection (as opposed to exact match) of
-        all fields annotated with `'a`
+  - value, type, and ownership
+    - a value is stored in memory
+      - it can be stored in stack, heap, or `'static`
+      - to access a value, we must know its addr and size
+    - a value must have a type
+      - the type decides the interpretation
+      - unless the type is DST, it also decides the size
+    - a value must have an owner
+      - when it loses the owner, it is dropped
+      - the ownership can be moved to a different owner
+    - a value can have borrowers
+      - there are several rules, originated from the idea that each borrower
+        acts as if it owns the value despite it does not
+      - when there is any borrower, the owner cannot mutate the value
+        - because each borrower thinks it is the owner, it does not expect
+          the real owner to mutate the value behind its back
+      - there can be multiple immutable borrowers
+        - each immutable borrower as well as the owner sees the immutable
+          value
+      - there can be at most one mutable borrower
+        - the mutable borrower gains full access to the value
+        - the owner loses access to the value
+  - pattern and variable
+    - a pattern can match a value, optionally binds the value to a variable
+      - in `let a = 3`, `a` is a pattern, `3` is a value, and `a` binds to `3`
+      - in `let mut a = 3; a = a + 1;`
+        - `a` matches and binds to `3`
+        - `a + 1` evaluates to a temp
+        - `a` matches and binds to the temp
+    - the variable becomes the owner of the value, or a copy of the value when
+      its type supports `Copy` trait
+      - in `let a = 3; let b = &a; let c = b;`
+        - `a` is the owner of `3`
+        - `&a` evalutes to a temp
+        - `b` binds to a copy of the temp, because `&T` implements the `Copy`
+          trait
+        - `c` binds to a copy of `b`
+    - when the variable goes out of scope, the value loses its owner and is
+      dropped
+  - lifetime
+    - remember this is done by the borrow checker during static analysis
+      - any use of an invalid variable causes a compile-time error
+    - a value has a lifetime
+      - starts when the value is allocated/initialized
+      - ends when the value is dropped
+    - when a variable is the owner of a value, the variable is valid until the
+      value gets moved out
+      - the value gets a new owner and the current variable becomes invalid
+    - when a variable is a borrower of a value, the variable is valid until
+      the the borrowed value is dropped
+      - if the borrowed value has type `T` and lifetime `'a`, the variable
+        binds to a value of type `&'a T`
+        - the variable, or the value it binds to, is called a reference
+      - the borrow has a lifetime too
+        - starts when the reference is allocated/initialized
+        - ends after the reference is last used
+      - if the lifetime of the borrow is not a subset of `'a`, the borrow
+        checker generates a compile-time error
+      - e.g., `let a; {a = &vec!(1)}; a;` generates an error that goes away
+        after removing the last statement (to shorten the lifetime of the
+        borrow) or removing the curly braces (to lengthen the lifetime of the
+        value)
+- experiments with function lifetime annotations
+  - `fn foo<'a>()`
+    - `let x: &'static i32 = &3;` passes
+      - it claims the referenced value outlives `'static`, which is correct
+        because `3` has the lifetime of `'static`
+    - `let x: &'a i32 = &3;` passes
+      - it claims the referenced value outlives `'a`, which is correct because
+        `3` has the lifetime of `'static`
+    - `let x = 3; let y: &'static i32 = &x;` fails
+      - it claims the referenced value outlives `'static`, which is incorrect
+        because `x` has the lifetime of the body
+    - `let x = 3; let y: &'a i32 = &x;` fails
+      - it looks like `x` does not outlive `'a`, suggesting that `'a` strictly
+        outlives the body
+  - `fn foo<'a>() -> &'a i32`
+    - `&3` passes, because `3` is `'static` and outlives `'a`
+    - `const C: i32 = 3; &C` passes, because `C` is `'static` too
+    - `let x = 3; &x` fails, suggesting `'a` strictly outlives the body
+  - `fn foo<'a>(v: &'a i32)`
+    - `let x: &'a i32 = v;` passes, because `*v` is `'a`
+    - `let x: &'a i32 = &3;` passes, because `3` is `'static` and outlives
+      `'a`
+      - this is known as subtyping: when `'b` outlives `'a`, `&'b T` is a
+        subtype of `&'a T` and we can treat `&'b T` as `&'a T`
+    - `let x = 3; let mut y = &x; y = &3; y = v;` passes
+      - when annotated with `'_` or not annotated, `&'b i32` is a subtype for
+        any `'b` and `y` can bind to any of them
+    - `let x = 3; let y: &'a i32 = &x;` fails, suggesting that `'a` strictly
+      outlives the body
+      - this makes sense because when a caller calls this function, the input
+        decides `'a` and the input outlives the body
+    - `let x: &'static i32 = v` fails, suggesting that `'a` does not always
+      outlive `'static`
+      - we can add a lifetime bound `'a: 'static` to make it pass, but it
+        also restricts what the function takes
+      - this is similar to generics and trait bounds
+  - `fn foo<'a>(v: &'a i32) -> &'a i32`
+    - `v` passes, because `*v` is `'a`
+    - `&3` passes, because `3` is `'static` and outlives `'a`
+      - this is different from generics
+      - in `fn foo<T>(v: T) -> T`, the input and ret must have the same type
+      - in this example, thanks to subtyping, ret only needs to outlive the
+        input
+    - what happens internally is probably
+      - the compiler sees a call to the function
+      - the input references a value of concrete lifetime `'x`
+      - the output type has an annotated lifetime `'y`
+        - it is normally not annotated which implies `'_`
+      - the compiler replaces `'a` by `'x`
+      - the compiler generates an error if `'x` does not outlive `'y`
+        - thanks to subtyping, `'x` and `'y` does not need to match
+  - `fn foo<'a>(v1: &'a i32, v2: &'a i32) -> &'a i32`
+    - what happens internally is probably
+      - the compiler sees a call to the function
+      - the inputs reference a value of concrete lifetime `'x` and another
+        value of concrete lifetime `'y`
+      - the output type has an annotated lifetime `'z`
+        - it is normally not annotated which implies `'_`
+      - the compiler replaces `'a` by `intersection('x, 'y)`
+      - the compiler generates an error if `intersection('x, 'y)` does not
+        outlive `'z`
+        - thanks to subtyping, `'x`, `'y`, and `'z` does not need to match
+- how I got confused
+  - `&'a T`
+    - I thought `'a` was the lifetime of the borrow
+    - but it is actually the lifetime of the referenced value
+  - `fn foo<'a, T>(v1: &'a T, v2: &'a T) -> &'a T`
+    - I could not understand why `T` is an exact match but `'a` is not
+    - but it is actually just subtyping
 
 ## Chapter 11. Writing Automated Tests
 
