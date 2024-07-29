@@ -216,6 +216,28 @@ The Rust Reference
       - for comparison, `let v = block;` does not permit stmt
         - `block` is an expr and can evaluate to any value
 - 8.2. Expressions
+  - exprs are divided into 2 major and 1 minor categories
+    - place exprs: `var`, `*var`, `var[3]`, `var.field`, etc.
+      - they represent memory locations
+      - aka lvalues
+    - value exprs: the rest
+      - aka rvalues
+    - assignee exprs: lhs of an assignment expr; the allowed exprs are
+      - place exprs
+      - tuples, slices, tuple structs, or structs of place exprs
+      - `_` and `()`
+  - exprs are evaluated in 2 contexts
+    - place context: `&var`, `*var`, `var.field`, `var[3]`, rhs of `let`,
+      etc.
+    - value context: the rest
+  - when a place expr is evaluated in the value context, it denotes the value
+    held in that memory location
+    - the value is copied if its type implements `Copy`
+    - the value is moved if the place expr is
+      - a variable that is not currently borrowed
+      - temporary variable
+      - more
+    - otherwise, it is an error
   - Literal expressions
     - `true`, `false`, char/byte/string literals, numeric literals, etc.
     - `b'x'` is `u8`
