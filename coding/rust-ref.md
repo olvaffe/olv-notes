@@ -613,7 +613,23 @@ The Rust Reference
 ## Chapter 13. Memory model
 
 - 13.1. Memory allocation and lifetime
+  - an item of a program is a value calculated at compile-time, stored in the
+    binary, and mapped in the process
+    - it is neither dynamically allocated nor freed
+    - e.g., modules, functions, static/const variables, etc.
+  - the heap is a region for box allocations
+    - a box value allocates from the heap
+      - e.g., `let a = Box::new(3)`
+      - the box value is an addr stored in the stack
+      - the allocation is an `i32` in the heap
+    - the box value and its heap allocation have the same lifetime
 - 13.2. Variables
+  - a variable is a component of a stack frame
+    - a named function parameter
+    - a named local variable
+    - an anonymous temporary
+  - on frame entry, an allocation is made from the stack
+    - local variables are stored in that allocation, and are uninitialized
 
 ## Chapter 14. Linkage
 
