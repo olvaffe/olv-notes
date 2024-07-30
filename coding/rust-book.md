@@ -456,6 +456,15 @@ The Rust Programming Language
   - `fn foo<'a, T>(v1: &'a T, v2: &'a T) -> &'a T`
     - I could not understand why `T` is an exact match but `'a` is not
     - but it is actually just subtyping
+- `PhantomData`
+  - this generates an error
+    - `struct Foo<'a>(PhantomData<&'a()>);`
+    - `fn foo<T>(_val: &T) -> Foo { Foo(PhantomData) }`
+    - `fn main() { let r = { let v = 1; foo(&v) }; }`
+  - `foo` has the signature `fn foo<'a, T>(_val: &'a T) -> Foo<'a>`
+  - `v` has the lifetime of the inner block in `main`
+  - `foo(&v)` has the same lifetime as `v` and cannot be assigned to `r` in
+    the outer block
 
 ## Chapter 11. Writing Automated Tests
 
