@@ -216,6 +216,29 @@ The Rust Reference
       - for comparison, `let v = block;` does not permit stmt
         - `block` is an expr and can evaluate to any value
 - 8.2. Expressions
+  - precedence
+    - paths
+    - method calls
+    - fields
+    - function calls, array indexing
+    - `?`
+    - unary ops: `-`, `*`, `!`, `&`, and `&mut`
+    - `as`
+    - arith ops
+      - `*`, `/`, `%`
+      - `+` and `-`
+    - logical ops
+      - `<<` and `>>`
+      - `&`
+      - `^` 
+      - `|` 
+    - cmp ops: `==`, `!=`, `<`, `>`, `<=`, and `>=`
+    - lazy boolean ops
+      - `&&`
+      - `||`
+    - range ops: `..` and `..=`
+    - assignments: `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `&=`, `|=`, `^=`, `<<=`, and `>>=`
+    - `return`, `break`, closures
   - exprs are divided into 2 major and 1 minor categories
     - place exprs: `var`, `*var`, `var[3]`, `var.field`, etc.
       - they represent memory locations
