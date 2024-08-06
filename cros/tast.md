@@ -465,3 +465,37 @@ CrOS Tast
     - <https://developer.mozilla.org/en-US/docs/Web/API/VideoDecoder>
   - `demuxer.start` demuxes the bistream and the data is fed to the decoder
   - `decoder.decode` decodes the data
+
+## `tast.webrtc.CaptureFromElement.*`
+
+- there are two subtests
+  - `canvas` uses `UseGlClearColor` as source and `chromeVideo` as fixture
+  - `canvas_from_video` uses `UseVideo` as source and
+    `chromeVideoWithFakeWebcam` as fixture
+- `chromeVideoWithFakeWebcam` fixture
+  - it starts chrome with special args
+  - `chromeFakeWebcamArgs` uses
+    - `--use-fake-device-for-media-stream`,
+    - `--use-fake-ui-for-media-stream`
+  - `chromeWebRTCEncodedFrameArgs` uses
+    - `--enable-blink-features=RTCEncodedFrameSetMetadata,RTCEncodedVideoFrameAdditionalMetadata`
+    - `--enable-features=AllowRTCEncodedVideoFrameSetMetadataAllFields`
+- `RunCaptureStream`
+  - starts an http server
+  - navigates to
+    `cros/local/bundles/cros/webrtc/data/capturefromelement.html`
+  - calls js `captureFromCanvasWithVideoAndInspect`
+  - early returns, because no perf measurement
+- `capturefromelement.html`
+  - there is a canvas element and a video element
+  - `renderGetUserMediaWithPerspective`
+    - `MediaDevices.getUserMedia` captures at 1270x720
+    - a new video element is created to play the webcam
+    - `three.js` is used to sample from the new video element and render to
+      the canvas element
+  - `captureFromCanvasAndInspect`
+    - `canvas.captureStream` captures frames from canvas element
+    - the original video element uses to the canvas element as the source
+    - an `OffscreenCanvas` is created
+    - `asyncIsBlackFrame` draws the original video element into the offscreen
+      canvas and throws if the frames are black
