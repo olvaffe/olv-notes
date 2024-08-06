@@ -499,3 +499,9 @@ CrOS Tast
     - an `OffscreenCanvas` is created
     - `asyncIsBlackFrame` draws the original video element into the offscreen
       canvas and throws if the frames are black
+- to run manually, copy `cros/local/bundles/cros/webrtc/data` to dut, and
+  - edit `/etc/chrome_dev.conf` to add the necessary chrome args
+  - start `python -m http.server 8000` to serve the data
+  - navigate to `localhost:8000/capturefromelement.html`
+  - enter `captureFromCanvasWithVideoAndInspect(true)` in chrome console
+    - `window.onload = (event) => { captureFromCanvasWithVideoAndInspect(true); };` to automate
