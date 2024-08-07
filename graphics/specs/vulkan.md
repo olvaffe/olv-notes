@@ -324,42 +324,45 @@ Vulkan
 - there are five explicit synchronization mechanisms
   - fences, semaphores, events, pipeline barriers, and render passes
   - `VkSemaphore` is for cross-queue synchronization with submit granularity
-  - `VkFence` is for vk/cpu synchronization with submit granularity
+  - `VkFence` is for device/host synchronization with submit granularity
     - wait is on the CPU side
-  - `VkEvent` is for vk/cpu synchronization with command granularity
+  - `VkEvent` is for device/host synchronization with command granularity
     - wait is on the GPU side
 - 7.1. Execution and Memory Dependencies
   - an operation is an arbitrary amount of work to be executed on
     - the host,
     - a device, or
     - an external entity such as presentation engine
-  - a synchronization command introduces, between two sets of operations,
-    - an execution dependency
-      - the first synchronization scope defines the first set of operations
-      - the second synchronization scope defines the second set of
-        operations
-    - a memory dependency
-      - the first access scope defines the first set of memory accesses
-      - the second access scope defines the second set of memory accesses
-      - this is needed to deal with memory caches and domains
-  - an execution dependency guarantees the first set of operations
-    happens-before the second set of operations
+  - a sync command introduces both execution and memory dependencies between
+    two sets of operations, defined by the command's two sync scopes
+    - a sync scope of a sync command defines which ops are considered for
+      execution dependency
+    - e.g., when the first sync scope is `VK_PIPELINE_STAGE_2_TRANSFER_BIT`
+      and the second sync scope is `VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT`,
+      the sync cmd introduces execution dependences between transfer ops
+      before the sync cmd and fs ops after the sync cmd
+  - an execution dependency between two sets of ops guarantees that the first
+    set happens-before the second set
     - i.e., the first set complete before the second set is initiated
-    - not enough for RAW hazard, when the first set writes and the second
-      set reads
-    - nor enough for WAW hazard
+  - an execution dependency chain between two sets of ops also guarantees that
+    the first set happens-before the second set
+    - two consecutive sync cmds form a chain if the intersection of "the
+      second scope of the first cmd" and "the first scope of the second cmd"
+  - execution dependences alone are not enough to avoid memory hazards
+    - because of caches
   - types of memory access operations include
     - an availability operation makes writes available to a memory domain
-      (e.g., vkFlushMappedMemoryRanges makes host writes available in host
+      (e.g., `vkFlushMappedMemoryRanges` makes host writes available in host
       domain)
     - a memory domain operation makes writes available in one domain
       available in another (e.g., `VK_ACCESS_HOST_WRITE_BIT` in source
       access mask makes host writes available in device domain)
-    - a visibility operation makes writes available become visible to the
-      specified memory accesses (e.g., writes available in device domain are
-      made visibile to accesses defined by the destination access mask)
+    - a visibility operation makes writes available to a domain become visible
+      to specified memory accesses (e.g., `VK_ACCESS_SHADER_READ_BIT` in dst
+      access mask makes writes available in device domain become visible for
+      shader reads)
   - a memory dependency is an execution dependency that includes availibitiy
-    and visibility operations such that
+    and visibility operations, such that
     - the first set of operations (defined by the first sync scope)
       happens-before the availibility operation
     - the availibility operation happens before the visibility operation
@@ -371,6 +374,92 @@ Vulkan
         the sync scopes often limit the access scopes
     - the visibility operation happens-before the second set of operations
       (defined by the second sync scope)
+  - a memory dependency has two access scopes
+    - an access scope defines which accesses are considered for the mem dep
+    - remember a mem dep is an exec dep with available/visibility ops
+    - the first access scope defines which writes from the first set of ops
+      are made available
+    - the second access scope defines which accesses from the second set of
+      ops the available writes are made visible to
+  - an memory dependency may include an image layout transition
+    - it happens-after availability ops and happens-before visibility ops
+    - it always applies to a subresource range
+      - different ranges can be in different layouts
+    - both old and new layouts must be specified
+      - it preverses contents, unless `VK_IMAGE_LAYOUT_UNDEFINED` is used for
+        the old layout
+    - image layout transitions are implicitly ordered
+  - pipeline stages
+    - an action cmd, such as a draw, consists of multiple ops performed in
+      sequence by pipeline stages
+    - two action cmds may overlap or be out-of-order
+      - if they both include ops for the same stage, the ops are implicitly
+        ordered
+      - but if, for example, the first includes vs+fs ops and the second
+        includes only vs op, they might overlap (fs op from the first and vs
+        op from the second can overlap) or be out-of-order (vs op from the
+        second completes before fs op from the first)
+  - `VkPipelineStageFlags2` can fine-control sync scopes to stages
+    - `VK_PIPELINE_STAGE_2_NONE` means no stage
+    - `VK_PIPELINE_STAGE_ALL_COMMANDS_BIT` specifies all ops supported by
+      the queue
+      - `VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT` specifies all gfx ops
+        - `VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT`
+        - `VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT`
+          - `VK_PIPELINE_STAGE_2_INDEX_INPUT_BIT`
+          - `VK_PIPELINE_STAGE_2_VERTEX_ATTRIBUTE_INPUT_BIT`
+        - `VK_PIPELINE_STAGE_2_PRE_RASTERIZATION_SHADERS_BIT`
+          - `VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT`
+          - `VK_PIPELINE_STAGE_2_TESSELLATION_CONTROL_SHADER_BIT`
+          - `VK_PIPELINE_STAGE_2_TESSELLATION_EVALUATION_SHADER_BIT`
+          - `VK_PIPELINE_STAGE_2_GEOMETRY_SHADER_BIT`
+          - `VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT`
+        - `VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT`
+        - `VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT`
+        - `VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT`
+      - `VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT` specifies cs
+      - `VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT` specifies all transfer ops
+        - `VK_PIPELINE_STAGE_2_COPY_BIT`
+        - `VK_PIPELINE_STAGE_2_BLIT_BIT`
+        - `VK_PIPELINE_STAGE_2_RESOLVE_BIT`
+        - `VK_PIPELINE_STAGE_2_CLEAR_BIT`
+    - `VK_PIPELINE_STAGE_2_HOST_BIT` specifies the pseudo "host" stage
+    - deprecated
+      - `VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT`
+        - it means `VK_PIPELINE_STAGE_2_NONE` in the first scope
+        - it means `VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT` in the second scope
+      - `VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT`
+        - it means `VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT` in the first scope
+        - it means `VK_PIPELINE_STAGE_2_NONE` in the second scope
+  - `VkAccessFlags2` can fine-control access scopes to stages
+    - `VK_ACCESS_2_NONE`
+    - `VK_ACCESS_2_MEMORY_READ_BIT`
+      - `VK_ACCESS_2_INDIRECT_COMMAND_READ_BIT`
+      - `VK_ACCESS_2_INDEX_READ_BIT`
+      - `VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT`
+      - `VK_ACCESS_2_UNIFORM_READ_BIT`
+      - `VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT`
+      - `VK_ACCESS_2_SHADER_READ_BIT`
+        - `VK_ACCESS_2_SHADER_SAMPLED_READ_BIT`
+        - `VK_ACCESS_2_SHADER_STORAGE_READ_BIT`
+      - `VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT`
+      - `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT`
+      - `VK_ACCESS_2_TRANSFER_READ_BIT`
+      - `VK_ACCESS_2_HOST_READ_BIT`
+    - `VK_ACCESS_2_MEMORY_WRITE_BIT`
+      - `VK_ACCESS_2_SHADER_WRITE_BIT`
+        - `VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT`
+      - `VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT`
+      - `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT`
+      - `VK_ACCESS_2_TRANSFER_WRITE_BIT`
+      - `VK_ACCESS_2_HOST_WRITE_BIT`
+  - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
+    - host writes becomes available in host domain automatically
+    - writes available in host domain becomes visible automatically
+    - otherwise,
+      - `vkFlushMappedMemoryRanges` makes host writes available in host domain
+      - `vkInvalidateMappedMemoryRanges` makes writes available in host domain
+        become visible
 - 7.2. Implicit Synchronization Guarantees
   - Within a single queue, vkQueueSubmit are executed in call order
   - Within a VkQueueSubmit, VkSubmitInfo are executed in array order
