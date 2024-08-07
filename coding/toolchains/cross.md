@@ -52,6 +52,10 @@ Cross Toolchains
   - mini sysroot is under `./`
 - rust
   - configure to use the linker from the llvm toolchains
+    - `CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=<sdk>/bin/x86_64-cros-linux-gnu-clang`
+    - `CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="-C link-arg=-Wl,-z,pack-relative-relocs"`
+      - use the standard relative reloc such that the binaries work under cros
+        and regular linux
 - sysroot
   - build from scratch
   - or, point to `$CHROMIUMOS/out/build/$BOARD/`
