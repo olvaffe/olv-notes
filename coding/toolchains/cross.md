@@ -1,5 +1,29 @@
-Cross Toolchain
-===============
+Cross Toolchains
+================
+
+## Debian
+
+- gcc toolchains
+  - `sudo apt install {gcc,g++}-aarch64-linux-gnu`
+    - this installs the cross toolchains to `/usr` like normal packages
+    - they depend on cross C/C++ runtimes which get installed to
+      `/usr/aarch64-linux-gnu` to form a mini sysroot
+    - they are configured to search in the mini sysroot (for C/C++ runtimes)
+  - `aarch64-linux-gnu-gcc --sysroot=<path> ...`
+    - `--sysroot=<path>` is the correct syntax and `--sysroot <path>` is wrong
+- llvm toolchains
+  - `sudo apt install clang`
+    - clang supports multiple targets and does not need separate packages
+    - but cross C/C++ runtimes are provided by separate packages
+  - `clang -target aarch64-linux-gnu --sysroot=<path> ...`
+- sysroot
+  - `sudo apt install debootstrap qemu-user-static`
+  - `sudo debootstrap --arch arm64 testing my-sysroot`
+  - `sudo chroot my-sysroot`
+  - note that if the sysroot uses a newer glibc than the host cross toolchains
+    does, libraries in the sysroot may reference symbols that the host cross
+    glibc does not provide
+    - make sure this does not happen!
 
 ## Arch Linux Cross Toolchains
 
