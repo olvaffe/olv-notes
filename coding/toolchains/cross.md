@@ -16,6 +16,14 @@ Cross Toolchains
     - clang supports multiple targets and does not need separate packages
     - but cross C/C++ runtimes are provided by separate packages
   - `clang -target aarch64-linux-gnu --sysroot=<path> ...`
+- rust
+  - `rustup target add aarch64-unknown-linux-gnu`
+    - rustc is LLVM-based and supports multiple targets
+    - this installs cross rust runtimes
+    - but linkers still need to configured separately in `~/.cargo/config.toml`
+      - `[target.aarch64-unknown-linux-gnu]`
+      - `linker = "aarch64-linux-gnu-gcc"`
+  - `cargo build --target aarch64-unknown-linux-gnu`
 - sysroot
   - `sudo apt install debootstrap qemu-user-static`
   - `sudo debootstrap --arch arm64 testing my-sysroot`
@@ -24,6 +32,29 @@ Cross Toolchains
     does, libraries in the sysroot may reference symbols that the host cross
     glibc does not provide
     - make sure this does not happen!
+
+## Android NDK
+
+- llvm toolchains
+  - download NDK and they are under `$NDK/toolchains/llvm/prebuilt/linux-x86_64`
+  - executables are under `bin/`
+  - mini sysroots are under `sysroot/`
+- rust
+  - configure to use the linker from the llvm toolchains
+- sysroot
+  - build from scratch
+
+## Chrome OS SDK
+
+- llvm toolchains
+  - <https://storage.googleapis.com/chromiumos-sdk/2024/08/x86_64-cros-linux-gnu-2024.08.07.69651.tar.xz>
+  - executables are under `bin/`
+  - mini sysroot is under `./`
+- rust
+  - configure to use the linker from the llvm toolchains
+- sysroot
+  - build from scratch
+  - or, point to `$CHROMIUMOS/out/build/$BOARD/`
 
 ## Arch Linux Cross Toolchains
 
