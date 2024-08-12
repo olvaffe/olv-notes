@@ -1712,3 +1712,19 @@ Chromium Browser
   - `ui/gl/gl_switches.cc`
     - `kDefaultANGLEVulkan` is `FEATURE_DISABLED_BY_DEFAULT`
     - `kVulkanFromANGLE` is `FEATURE_DISABLED_BY_DEFAULT`
+
+## Protected Contents
+
+- during gpu initialization, `ChromeContentGpuClient::GpuServiceInitialized`
+  registers `arc::ProtectedBufferManager::GetProtectedNativePixmapFor`
+- when `gpu::OzoneImageBackingFactory::CreateSharedImage` imports a
+  `gfx::GpuMemoryBufferHandle`, it calls
+  `ui::GbmSurfaceFactory::CreateNativePixmapFromHandle` which calls
+  `arc::ProtectedBufferManager::GetProtectedNativePixmapFor`
+- `arc::ProtectedBufferManager::GetProtectedNativePixmapFor`
+  - `ImportDummyFd` calls
+    `GbmSurfaceFactory::CreateNativePixmapForProtectedBufferHandle` with dummy
+    params
+    - `size` is `kDummyBufferSize` (16x16)
+    - `format` is `gfx::BufferFormat::RGBA_8888`
+    - `handle` has a dummy place with offset/stride/size 0
