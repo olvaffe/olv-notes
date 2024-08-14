@@ -94,6 +94,27 @@ Android CTS
 - `CtsGpuToolsHostTestCases`
 - `CtsOpenGLTestCases`
 - `CtsVideoTestCases`
+-  this seems like a good starting point
+  - `CtsCameraTestCases`
+  - `CtsDeqpTestCases`
+  - `CtsGpuMetricsHostTestCases`
+  - `CtsGpuProfilingDataTestCases`
+  - `CtsGpuToolsHostTestCases`
+  - `CtsGraphicsTestCases`
+  - `CtsHardwareTestCases`
+  - `CtsMediaCodecTestCases`
+  - `CtsMediaDecoderTestCases`
+  - `CtsMediaEncoderTestCases`
+  - `CtsMediaV2TestCases`
+  - `CtsNativeHardwareTestCases`
+  - `CtsOpenGlPerf2TestCases`
+  - `CtsOpenGlPerfTestCases`
+  - `CtsOpenGLTestCases`
+  - `CtsSkQPTestCases`
+  - `CtsUiAutomationTestCases`
+  - `CtsUiRenderingTestCases`
+  - `CtsUiRenderingTestCases27`
+  - `CtsVideoTestCases`
 
 ## Vulkan Requirements
 
