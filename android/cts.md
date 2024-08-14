@@ -94,13 +94,13 @@ Android CTS
 - `CtsGpuToolsHostTestCases`
 - `CtsOpenGLTestCases`
 - `CtsVideoTestCases`
--  this seems like a good starting point
+-  this seems like a good starting point for skyrim
   - `CtsCameraTestCases`
   - `CtsDeqpTestCases`
   - `CtsGpuMetricsHostTestCases`
   - `CtsGpuProfilingDataTestCases`
   - `CtsGpuToolsHostTestCases`
-  - `CtsGraphicsTestCases`
+  - `CtsGraphicsTestCases`, 6.5m
   - `CtsHardwareTestCases`
   - `CtsMediaCodecTestCases`
   - `CtsMediaDecoderTestCases`
@@ -114,7 +114,7 @@ Android CTS
   - `CtsUiAutomationTestCases`
   - `CtsUiRenderingTestCases`
   - `CtsUiRenderingTestCases27`
-  - `CtsVideoTestCases`
+  - `CtsVideoTestCases`, 26m
 
 ## Vulkan Requirements
 
