@@ -567,10 +567,24 @@ Chromium Browser
   - `GpuPreferences` is parsed from `--gpu-preferences` passed in by the
     browser process
 - `GpuInit::InitializeAndStartSandbox` initializes the gpu
-  - if `--gpu-sandbox-start-early`, sandbox is started before gpu
-    initializaton
-    - `EnsureSandboxInitialized` calls `StartSandboxLinux` to start the
-      sandbox
+  - `EnsureSandboxInitialized` calls `StartSandboxLinux` to start the
+    sandbox
+    - if `--gpu-sandbox-start-early`, sandbox is started before gpu
+      initializaton
+      - seccomp rules apply to the calling thread and its children
+        - there is `SECCOMP_FILTER_FLAG_TSYNC` though
+      - mesa creates threads during initialization
+      - to make sure mesa threads are sandboxed, we need to start sandbox
+        early
+    - `SandboxLinux::Options` is initialized based on `gpu::GPUInfo` and
+      `gpu::GpuPreferences`
+    - `InitializeSandbox` calls `StartSeccompBPF` to start the sandbox
+    - `GpuPreSandboxHook` is the pre-sandbox hook to configure the sandbox
+      - `CommandSetForGPU` configures the allowed syscalls
+      - `FilePermissionsForGpu` configures the allowed files
+      - `LoadLibrariesForGpu` preloads libraries
+        - I guess the seccomp rules prevent some driver library ctors from
+          working and they are preloaded to mitigate
   - `OzonePlatform::InitializeForGPU` initializes ozone
     - `EnsureInstance` creates `OzonePlatform`
       - `PlatformObject<T>::Create` calls `GetOzonePlatformId` to determine
