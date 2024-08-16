@@ -95,26 +95,39 @@ Android CTS
 - `CtsOpenGLTestCases`
 - `CtsVideoTestCases`
 -  this seems like a good starting point for skyrim
-  - `CtsCameraTestCases`
+  - `cheets_CTS_T.internal.x86.CtsCameraTestCases.camerabox.front`
+    - `CtsCameraTestCases`, 18.5m
   - `CtsDeqpTestCases`
-  - `CtsGpuMetricsHostTestCases`
-  - `CtsGpuProfilingDataTestCases`
-  - `CtsGpuToolsHostTestCases`
-  - `CtsGraphicsTestCases`, 6.5m
-  - `CtsHardwareTestCases`
-  - `CtsMediaCodecTestCases`
-  - `CtsMediaDecoderTestCases`
-  - `CtsMediaEncoderTestCases`
-  - `CtsMediaV2TestCases`
-  - `CtsNativeHardwareTestCases`
-  - `CtsOpenGlPerf2TestCases`
-  - `CtsOpenGlPerfTestCases`
-  - `CtsOpenGLTestCases`
-  - `CtsSkQPTestCases`
-  - `CtsUiAutomationTestCases`
-  - `CtsUiRenderingTestCases`
-  - `CtsUiRenderingTestCases27`
-  - `CtsVideoTestCases`, 26m
+  - `cheets_CTS_T.internal.x86.CtsGpu`
+    - `CtsGpuMetricsHostTestCases`, 1s
+    - `CtsGpuProfilingDataTestCases`, 3s
+    - `CtsGpuToolsHostTestCases`, 3m
+  - `cheets_CTS_T.internal.x86.CtsGraphics`
+    - `CtsGraphicsTestCases`, 6.5m
+  - `cheets_CTS_T.internal.x86.CtsHardware`
+    - `CtsHardwareTestCases`, 2m
+  - `cheets_CTS_T.internal.x86.CtsMediaCodecTestCases`
+    - `CtsMediaCodecTestCases`, 11m
+  - `cheets_CTS_T.internal.x86.CtsMediaDecoderTestCases`
+    - `CtsMediaDecoderTestCases`, 48m
+  - `cheets_CTS_T.internal.x86.CtsMediaEncoderTestCases`
+    - `CtsMediaEncoderTestCases`, 25m
+  - `cheets_CTS_T.internal.x86.CtsMediaV2TestCases`
+    - `CtsMediaV2TestCases`, 10m
+  - `cheets_CTS_T.internal.x86.CtsNative`
+    - `CtsNativeHardwareTestCases`, 0.5m
+  - `cheets_CTS_T.internal.x86.CtsOpenG`
+    - `CtsOpenGlPerfTestCases`, 5s
+    - `CtsOpenGlPerf2TestCases`, 1.5m
+    - `CtsOpenGLTestCases`, 2m
+  - `cheets_CTS_T.internal.x86.CtsSkQP`
+    - `CtsSkQPTestCases`, 0s
+  - `cheets_CTS_T.internal.x86.CtsUi`
+    - `CtsUiAutomationTestCases`, 10s
+    - `CtsUiRenderingTestCases`, 1m
+    - `CtsUiRenderingTestCases27`, 2s
+  - `cheets_CTS_T.internal.x86.CtsVideo`
+    - `CtsVideoTestCases`, 26m
 
 ## Vulkan Requirements
 
