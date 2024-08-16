@@ -37,6 +37,40 @@ CrOS Autotest
   - it runs `tast` autotest with the specified args
     - this in turn runs tast tests that match the specified args
 
+## `test_that DUT suite:bvt-tast-cq`
+
+- the test suite is defined in `test_suites/control.bvt-tast-cq`
+- these server-side tests have `suite:bvt-tast-cq` in their `ATTRIBUTES`
+  - `server/site_tests/tast/control.critical-android-shard-*`
+    - `group:mainline`, `name:crostini.*`
+    - `!informational`, `!group:crostini_slow`
+  - `server/site_tests/tast/control.critical-crostini-shard-*`
+    - `group:mainline`, `dep:android*`
+    - `!informational`, `!name:crostini.*`
+  - `server/site_tests/tast/control.critical-chrome-shard-*`
+    - `group:mainline`, `dep:chrome`
+    - `!informational`, `!name:crostini.*`, `!dep:android*`
+  - `server/site_tests/tast/control.critical-system-shard-*`
+    - `group:mainline`,
+    - `!informational`, `!name:crostini.*`, `!dep:android*`, `!dep:chrome`
+  - roughly speaking, there is a total of 15 server-side tests and they runs
+    most `group:mainline` that are not `!informational`
+- `test_that` artifacts
+  - `debug/test_that.*` are `test_that` logs at different levels
+  - `test_report.log` provides a high-level report of the server-side tests
+  - `result-*` are logs for all 15 server-side tests
+- server-side test artifacts
+  - `debug/autoserv.*` are `autoserv` logs at different levels
+  - `status.log` provides a high-level report of the client-side tests
+  - `sysinfo` provides DUT system logs
+  - `tast` provides tast logs
+- tast test artifacts
+  - `debug/tast.*` are `tast` logs at different levels
+  - `sysinfo` provides DUT system logs
+  - `tast` provides tast logs
+  - `results` provides test results
+    - `tests` are logs for each tast tests
+
 ## Graphics Tests
 
 - `AUTHOR = "chromeos-gfx"`
