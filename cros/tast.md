@@ -440,6 +440,34 @@ CrOS Tast
       `measurementIterations` (5) times
     - it measures the decode time to calculate the fps
 
+## `tast.video.PlaybackPerf.*`
+
+- `playback.Config`
+  - `FileName` is `perf/h264/1080p_60fps_600frames.h264.mp4`, etc.
+  - `DecoderType` is 0 (HW) or 1 (SW)
+  - `BrowserType` is `browser.TypeAsh`
+  - `Grid` is number of videos to play
+  - `PerfMeasurement` enables perf metrics in the background
+  - `PerfSetting` configures perf metrics
+  - `SuspendResume` suspends/resumes during playback
+  - `SuspendSetting` configures suspend/resume
+  - `Duration` is playback duration
+- fixtures
+  - hw variants use `chromeVideo` fixture
+  - sw variants use `chromeVideoWithSWDecoding` fixture
+- `PlaybackPerf` calls `playback.RunTest`
+  - it starts a http server to serve `video.html`
+  - it calls js `playOnLoop` to play the file specified by `FileName`
+- manual run
+  - copy entire `cros/local/bundles/cros/video/data` to dut
+  - download the video file on dut
+    - e.g., `perf/h264/1080p_60fps_600frames.h264.mp4.external` has the url
+    - replace `gs://` by `https://commondatastorage.googleapis.com` for wget
+  - run `python -m http.server --directory data` on dut
+  - in chrome console, enter `playOnLoop("filename")` to play
+    - alternatively, add `window.onload = (event) => { captureFromCanvasWithVideoAndInspect(true); };` to the html
+    - alternatively, open the video file directly in chrome
+
 ## `tast.video.WebCodecsDecode.*`
 
 - all tests call `webcodecs.RunDecodeTest` with different args
