@@ -55,6 +55,10 @@ CrOS Autotest
     - `!informational`, `!name:crostini.*`, `!dep:android*`, `!dep:chrome`
   - roughly speaking, there is a total of 15 server-side tests and they runs
     most `group:mainline` that are not `!informational`
+- tast tests
+  - `Attr` or `ExtraAttr` may have `group:mainline`, `informational`, etc.
+  - `SoftwareDeps` or `ExtraSoftwareDeps` may have `android_vm`, `chrome`,
+    etc.
 - `test_that` artifacts
   - `debug/test_that.*` are `test_that` logs at different levels
   - `test_report.log` provides a high-level report of the server-side tests
