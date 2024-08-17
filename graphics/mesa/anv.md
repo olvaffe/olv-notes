@@ -592,3 +592,47 @@ Mesa ANV
   - `eb_submit` calls `eb_move_to_gpu`, where `i915_vma_move_to_active` calls
     `dma_resv_add_excl_fence` or `dma_resv_add_shared_fence` depending on
     whether `EXEC_OBJECT_WRITE` is set
+- iris
+  - bos are tracked for submits
+  - if a bo is written to, `EXEC_OBJECT_WRITE` is set
+  - if a bo is not external (exported or imported), `EXEC_OBJECT_ASYNC` is set
+- vaapi
+  - it supports encode, decode, and post-processing
+  - `vaEndPicture` submits the gpu job
+  - only implicit fencing
+    - i guess it can track `EXEC_OBJECT_WRITE` easily
+      - for encode, input image is read, output data is write
+      - for decode, input data is read, output image is write
+      - for pp, input image is read, output image is write
+    - i guess it never sets `EXEC_OBJECT_ASYNC`
+- between iris and vaapi,
+  - when iris is the producer and vaapi is the consumer
+    - iris sets `EXEC_OBJECT_WRITE`
+    - vaapi sets nothing
+    - vaapi job implicitly waits on the iris job
+  - when vaapi is the producer and iris is the consumer,
+    - vaapi sets `EXEC_OBJECT_WRITE`
+    - iris sets nothing (because the bo is external)
+    - iris job implicitly waits on the vaapi job
+- anv proper
+  - for regular `VkDeviceMemory`, `ANV_BO_ALLOC_IMPLICIT_SYNC` and
+    `ANV_BO_ALLOC_IMPLICIT_WRITE` are never set by default
+  - when `anv_external_memory_implicit_sync=true`,
+    - `ANV_BO_ALLOC_IMPLICIT_SYNC` is set for external memory with dedicated
+      image
+    - `ANV_BO_ALLOC_IMPLICIT_WRITE` is the image is addtionally a color
+      attachment
+- between iris/vaapi and anv,
+  - when iris/vaapi is the producer and anv is the consumer
+    - iris/vaapi sets `EXEC_OBJECT_WRITE`
+    - anv sets `EXEC_OBJECT_ASYNC` by default
+    - bad!
+  - when anv is the producer and iris/vaapi is the consumer
+    - anv sets `EXEC_OBJECT_ASYNC` by default
+    - iris/vaapi sets nothing
+    - bad!
+  - `anv_external_memory_implicit_sync=true` remedies both cases
+    - actually, gl has `GL_EXT_semaphore` for explicit fencing
+    - but vaapi only supports implicit fencing
+- vk wsi
+  - tbd
