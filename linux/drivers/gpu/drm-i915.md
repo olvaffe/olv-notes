@@ -156,6 +156,59 @@ DRM i915
   `drm_crtc_helper_set_mode` and `drm_helper_disable_unused_functions` is
   called.
 
+## `i915_gem_execbuffer2_ioctl`
+
+- `drm_i915_gem_execbuffer2`
+  - `buffers_ptr` and `buffer_count` are an array of `drm_i915_gem_exec_object2`
+  - `batch_start_offset` and `batch_len` are the starting offset and size of
+    the commands (see `I915_EXEC_BATCH_FIRST`)
+  - `DR1` and `DR4` are unused
+  - `num_cliprects` and `cliprects_ptr` depend on the flags
+  - modern `flags`
+    - bit 0..5 selects the queue
+      - `I915_EXEC_DEFAULT`, `I915_EXEC_RENDER`, etc.
+    - `I915_EXEC_NO_RELOC` is always set (bos are soft-pinned)
+    - `I915_EXEC_HANDLE_LUT` is always set (?)
+    - bit 13..14 selects the bsd (video) ring
+    - `I915_EXEC_BATCH_FIRST` means the commands is in the first bo rather
+      than the last
+    - `I915_EXEC_FENCE_ARRAY` means `num_cliprects` and `cliprects_ptr` are an
+      array of `i915_gem_exec_fence` (binary syncobjs)
+    - `I915_EXEC_USE_EXTENSIONS` means `cliprects_ptr` is a list of
+      `i915_user_extension`
+      - the only extension is `drm_i915_gem_execbuffer_ext_timeline_fences`
+        for timeline syncobjs
+  - unused `flags`
+    - bit 6..7 selects the const addressing mode
+      - always `I915_EXEC_CONSTANTS_REL_GENERAL`
+    - `I915_EXEC_GEN7_SOL_RESET` is unused (a gen7-specific wa?)
+    - `I915_EXEC_SECURE` is unused (allows dangerous cmds)
+    - `I915_EXEC_IS_PINNED` is unused
+    - `I915_EXEC_RESOURCE_STREAMER` is unused
+    - `I915_EXEC_FENCE_IN`, `I915_EXEC_FENCE_SUBMIT`, and
+      `I915_EXEC_FENCE_OUT` mean `rsvd2` holds the in/out sync fds
+      - they have been obsoleted by syncobjs
+  - `rsvd1` is the context id
+  - `rsvd2` is the in/out sync fds
+- `drm_i915_gem_exec_object2`
+  - `handle` is the gem handle
+  - `relocs_ptr`, `relocation_count`, and `alignment` are unused (because of
+    soft-pin)
+  - `offset`
+  - modern `flags`
+    - `EXEC_OBJECT_WRITE` means the object is written to and needs an
+      exclusive implicit fence
+    - `EXEC_OBJECT_SUPPORTS_48B_ADDRESS` means the object uses the full 48-bit
+      addr (as opposed to be at the first 32-bit addr)
+    - `EXEC_OBJECT_PINNED` is always set (soft-pin?)
+    - `EXEC_OBJECT_ASYNC` disables implicit fencing
+    - `EXEC_OBJECT_CAPTURE` means the contents are saved on hangs (for when
+      there is no privacy concern)
+  - unused `flags`
+    - `EXEC_OBJECT_NEEDS_FENCE` is unused (this is the de-tiling "fence")
+    - `EXEC_OBJECT_NEEDS_GTT` is unused
+    - `EXEC_OBJECT_PAD_TO_SIZE` is unused
+
 ## PREAD/PWRITE
 
 - pread/pwrite are reading/write from _CPU_ perspective, according to
