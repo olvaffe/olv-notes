@@ -208,6 +208,26 @@ DRM i915
     - `EXEC_OBJECT_NEEDS_FENCE` is unused (this is the de-tiling "fence")
     - `EXEC_OBJECT_NEEDS_GTT` is unused
     - `EXEC_OBJECT_PAD_TO_SIZE` is unused
+- fences
+  - `I915_EXEC_FENCE_ARRAY` provides an array of binary syncobjs
+    - `add_fence_array` adds them to `eb->fences`
+  - `drm_i915_gem_execbuffer_ext_timeline_fences` provides an array of
+    timeline syncobjs
+    - `parse_timeline_fences` parses them to `eb->fences`
+  - legacy `I915_EXEC_FENCE_IN` or `I915_EXEC_FENCE_SUBMIT` provides a sync fd
+  - legacy `I915_EXEC_FENCE_OUT` returns a sync fd
+  - `eb_requests_create` creates `eb->requests`
+    - each request has a new `rq->fence`
+  - `eb_fences_add` adds all fences to the first request
+    - `I915_EXEC_FENCE_IN` is awaited by `i915_request_await_dma_fence`
+    - `I915_EXEC_FENCE_SUBMIT` is awaited by `i915_request_await_execution`
+    - binary and timeline syncobjs are awaited by `await_fence_array`, which
+      calls `i915_request_await_dma_fence`
+  - `i915_request_await_dma_fence`
+    - if the fence is on the same timeline as the requst, it can be skipped
+    - if the fence is from a different driver, `i915_request_await_external`
+    - if the fence is from i915, it is associated with another request and
+      `i915_request_await_request` awaits for it
 - implicit fencing
   - unless `EXEC_OBJECT_ASYNC` is set to disable implicit fencing,
     `eb_move_to_gpu` calls `i915_request_await_object` to async-wait the
