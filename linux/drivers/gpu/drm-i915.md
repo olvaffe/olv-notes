@@ -208,6 +208,17 @@ DRM i915
     - `EXEC_OBJECT_NEEDS_FENCE` is unused (this is the de-tiling "fence")
     - `EXEC_OBJECT_NEEDS_GTT` is unused
     - `EXEC_OBJECT_PAD_TO_SIZE` is unused
+- implicit fencing
+  - unless `EXEC_OBJECT_ASYNC` is set to disable implicit fencing,
+    `eb_move_to_gpu` calls `i915_request_await_object` to async-wait the
+    implicit fences associated with the objects
+  - each request is associated with a new fence (to be signaled on request
+    retire), and `_i915_vma_move_to_active` adds the new fence to the objects
+    as the implicit fence
+  - IOW, implicit fences are always set up by the producer, and they are
+    waited by the consumers unless `EXEC_OBJECT_ASYNC` is set
+    - they are always set up for kernel memory management (e.g., which objects
+      can be swapped out on memory pressure)
 
 ## PREAD/PWRITE
 
