@@ -1332,3 +1332,54 @@ DRM amdgpu
     - `amdgpu_dpm_switch_power_profile` calls `pp_funcs->switch_power_profile`
     - `smu_switch_power_profile` calls
       `smu->ppt_funcs->set_power_profile_mode`
+
+## `amdgpu_sync`
+
+- `amdgpu_cs_ioctl` usage
+  - `amdgpu_cs_parser_init` calls `amdgpu_sync_create` to initialize `p->sync`
+    - an `amdgpu_sync` is used in several other places, to manage fences
+  - `amdgpu_cs_p2_dependencies` calls `amdgpu_sync_fence` to add dep fences
+  - `amdgpu_cs_p2_syncobj_in` and `amdgpu_cs_p2_syncobj_timeline_wait` calls
+    call `amdgpu_sync_fence` to add syncobj fences
+  - `amdgpu_cs_vm_handling` calls `amdgpu_sync_fence` to add pt update fence
+  - `amdgpu_cs_sync_rings` calls `amdgpu_sync_resv` to add bo resvs
+    - it also calls `amdgpu_sync_push_to_job` to add managed fences to as job
+      dependencies
+    - finally, it moves fences from `p->sync` to
+      `p->gang_leader->explicit_sync`
+  - `amdgpu_cs_parser_fini` calls `amdgpu_sync_free` to clean up `p->sync`
+- `amdgpu_sync_create` initializes an `amdgpu_sync`
+  - `sync->fences` is a hash table from fence contexts to `amdgpu_sync_entry`
+- `amdgpu_sync_fence` adds a fence to `sync->fences`
+  - `amdgpu_sync_add_later` checks if a prior fence of the same fence context
+    exists and keeps the later one
+- `amdgpu_sync_resv` adds a bo resv to `sync`
+  - it loops through all fences (`DMA_RESV_USAGE_BOOKKEEP`) associated with
+    the resv
+  - if a fence passes `amdgpu_sync_test_fence`, it is added using the regular
+    `amdgpu_sync_fence`
+- `amdgpu_sync_test_fence` is the interesting part
+  - `amdgpu_sync_resv` calls `amdgpu_sync_test_fence` to test if an implict
+    fence should be added to `amdgpu_sync`
+    - in cs submit, we call `amdgpu_sync_resv` with `fpriv->vm` as the owner
+  - if an implicit fence is a `drm_sched_fence`, it has a meaningful owner
+    - in cs submit, we call `amdgpu_job_alloc` with `fpriv->vm` as the owner
+  - if an implicit fence has a meaningful owner, we test it against `mode`
+    - `AMDGPU_SYNC_ALWAYS` returns true
+    - `AMDGPU_SYNC_EXPLICIT` returns false
+    - `AMDGPU_SYNC_NE_OWNER` returns true if the fence has a different owner
+    - `AMDGPU_SYNC_EQ_OWNER` returns true if the fence has the samae owner
+    - in cs submit, `mode` is either
+      - `AMDGPU_SYNC_NE_OWNER`, the default, or
+      - `AMDGPU_SYNC_EXPLICIT` if the bo was created with
+        `AMDGPU_GEM_CREATE_EXPLICIT_SYNC`
+- IOW, when a cs submit calls `amdgpu_sync_resv`,
+  - if an implicit fence is from another driver, it is honored
+  - if an implicit fence is from another amdgpu cs submit,
+    - if the bo was created with `AMDGPU_GEM_CREATE_EXPLICIT_SYNC`, `mode` is
+      `AMDGPU_SYNC_EXPLICIT` and the implicit fence is ignored
+    - otherwise, `mode` is `AMDGPU_SYNC_NE_OWNER` and the implicit fence is
+      ignored unless it is from a different VM
+  - due to how `amdgpu_device_initialize` in userspace works, all
+    `libdrm_amdgpu` users in the same process share the same VM and there is
+    no implicit fencing between two `libdrm_amdgpu` users in the same process
