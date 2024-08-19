@@ -99,3 +99,23 @@ Codecs
   - `DdiMedia_CreateBuffer`
   - `DdiDecode_CreateBuffer`, `DdiEncode_CreateBuffer`, or
     `DdiVp_CreateBuffer`
+
+## Fencing
+
+- there is no api for in-fence or out-fence, thus no explicit fencing
+- `vaSyncSurface` was there since beginning
+  - it synchronizes for cpu access in 1.0
+  - it synchronizes for cross-context access in 2.0, i guess
+    - the comment says cross-context access must be synchronized, but there is
+      no metion of `vaSyncSurface`
+  - it synchronizes for external access in 2.1
+- `vaAcquireBufferHandle` and `vaReleaseBufferHandle` were introduced in 1.4.0
+  in 2013
+  - they synchronize for external api
+- `vaExportSurfaceHandle` was introduced in 2.1.0 in 2018
+  - it exports the handle with no synchronization
+  - to avoid RAW, WAR, and WAW hazards, `vaSyncSurface` is necessary before
+    external access
+- there is no mention of implict fencing
+  - chromium expects implicit fencing?
+  - it looks like ffmpeg, mpv, etc. does not expect implicit fencing

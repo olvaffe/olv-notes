@@ -95,6 +95,13 @@ libplacebo
   - `render_loop` is the main loop
     - `pl_swapchain_start_frame` acquires the swapchain frame
     - `pl_queue_update` queries the queue and returns a `pl_frame_mix`
+      - `map_entry` calls `map_frame` to map `pl_source_frame` to `pl_frame`
+      - the source frame is an `AVFrame`
+      - `pl_map_avframe_ex` does the work; when hwdec,
+        - `av_hwframe_map` maps `AV_PIX_FMT_VAAPI` to `AV_PIX_FMT_DRM_PRIME`
+          - this calls `vaapi_map_from` which calls `vaExportSurfaceHandle`
+          - because `AV_HWFRAME_MAP_READ` is set, this implies `vaSyncSurface`
+        - `pl_map_avframe_drm` maps `AV_PIX_FMT_DRM_PRIME` to `pl_tex`
     - `render_frame` renders a frame
       - `pl_render_image_mix` renders the `pl_frame_mix`
     - `pl_swapchain_submit_frame` submits the frame
