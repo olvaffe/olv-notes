@@ -1445,3 +1445,64 @@ DRM amdgpu
       - but note that vram is carveout on apu and can be very small
       - it is not possible to fit too many bos in vram on apu, and we want
         `AMDGPU_GEM_CREATE_CPU_GTT_USWC` such that the bos can be in gtt
+
+## Modifiers
+
+- mesa `ac_get_supported_modifiers` returns all supported modifiers in
+  preference order
+- gfx9
+  - `AMD_FMT_MOD_SET(TILE_VERSION, AMD_FMT_MOD_TILE_VER_GFX9)`
+  - dcc
+    - `common_dcc`
+      - `AMD_FMT_MOD_SET(DCC, 1)`
+      - `AMD_FMT_MOD_SET(DCC_INDEPENDENT_64B, 1)`
+      - `AMD_FMT_MOD_SET(DCC_MAX_COMPRESSED_BLOCK, AMD_FMT_MOD_DCC_BLOCK_64B)`
+      - `AMD_FMT_MOD_SET(DCC_CONSTANT_ENCODE, info->has_dcc_constant_encode)`
+      - `AMD_FMT_MOD_SET(PIPE_XOR_BITS, pipe_xor_bits)`
+      - `AMD_FMT_MOD_SET(BANK_XOR_BITS, bank_xor_bits)`
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_D_X)`
+      - `AMD_FMT_MOD_SET(DCC_PIPE_ALIGN, 1)`
+      - with `PIPE` and `RB` are from `gb_addr_config`
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_S_X)`
+      - `AMD_FMT_MOD_SET(DCC_PIPE_ALIGN, 1)`
+      - with `PIPE` and `RB` are from `gb_addr_config`
+      - if 32-bit
+        - if 1 RB, another variant
+        - yet another variant with `DCC_RETILE`
+  - no dcc
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_D_X)`
+      - with `PIPE_XOR_BITS` and `BANK_XOR_BITS` from `gb_addr_config`
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_S_X)`
+      - with `PIPE_XOR_BITS` and `BANK_XOR_BITS` from `gb_addr_config`
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_D)`
+    - `AMD_FMT_MOD_SET(TILE, AMD_FMT_MOD_TILE_GFX9_64K_S)`
+- let's try to decipher gfx9 modifiers
+  - there are two basic macro tiles
+    - `AMD_FMT_MOD_TILE_GFX9_64K_S`, each macro tile is 64KB with a
+      standard tiling
+    - `AMD_FMT_MOD_TILE_GFX9_64K_D`, each macro tile is 64KB with a
+      displayable tiling
+  - the two macro tiles have variants that respect XOR bits
+    - `AMD_FMT_MOD_TILE_GFX9_64K_S_X` and `AMD_FMT_MOD_TILE_GFX9_64K_D_X`
+    - it is called "tile swizzle" in mesa
+    - when doing MRTs, mesa sets tile swizzles to different values in the
+      surface descriptors for the RTs
+    - when the shader accesses the MRTs, tile swizzles are used to perform
+      XORs on the addrs, such that the access hits different pipes/banks and
+      maximize utilization
+  - DCC is a separate surface
+    - the main surface must be in `_X` varants of macro tiles
+    - `DCC_INDEPENDENT_64B`, `DCC_INDEPENDENT_128B`, and
+      `DCC_MAX_COMPRESSED_BLOCK` seem to affect how DCC compresses
+      - in mesa `gfx9_compute_surface`, it picks a combo that is optimal for
+        L2 cache
+      - if the image needs to be displayable, the settings must meet display
+        hw limitations as well
+    - `DCC_CONSTANT_ENCODE` means the fast clear color may be stored in the
+      DCC
+      - on older hw, the fast clear color is ignored and a fast clear
+        elimination (FCE) pass must be performed
+    - `DCC_PIPE_ALIGN`
+    - `DCC_RETILE`
+    - `PIPE`
+    - `RB`
