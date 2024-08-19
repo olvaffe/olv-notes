@@ -179,3 +179,62 @@ Platform2 ARC
   - `rm -f repack.img`
   - `sudo mksquashfs chroot/vendor repack.img -comp lz4 -Xhc -b 256K -context-file android_file_contexts_vm -mount-point /vendor`
   - `scp repack.img dut:/opt/google/vms/android/vendor.raw.img`
+
+## libvda
+
+- crosvm uses libvda to emulate a virtio-video device
+  - `register_video_device` registers the device
+  - backend can be configured by `--video-decoder` and `--video-encoder`
+  - most boards use the legacy `libvda` while some use the newer `libvda-vd`
+    - `USE=crosvm-virtio-video-vd`
+- libvda talks to chrome using
+  - the legacy `GpuArcVideoDecodeAccelerator` mojom interface, or
+  - the newer `GpuArcVideoDecoder` mojom interface
+- `LibvdaGpuTest.DecodeFileGpu` test
+  - `initialize` initializes
+    - `arc::VafConnection::Get` gets a `VideoAcceleratorFactory` connection
+    - `arc::GpuVdaImpl::Create` returns (older) `GpuVdaImpl`
+  - `init_decode_session` initializes a decode session using the specified
+    codec profile
+  - `get_vda_capabilities` returns the supported input/output formats
+  - `arc::test::DecodeEventThread` starts a decode thread
+    - it creates a gbm device
+    - it polls `event_pipe_fd` of the session
+    - on `PROVIDE_PICTURE_BUFFERS` event,
+      - clears previously allocates gbm bos
+      - `vda_set_output_buffer_count` sets the output buffer count
+      - `gbm_bo_create` allocates the minimum required number of bos
+      - `vda_use_output_buffer` passes the bos to vda
+    - on `PICTURE_READY` event,
+      - `vda_reuse_output_buffer` reuses one of the gbm bos
+  - `base::WritableSharedMemoryRegion` allocates a shmem for the encoded data
+  - `vda_decode` passes the shmem to vda for decoding
+- chrome implementations
+  - `OOPArcVideoAcceleratorFactory` implements `VideoAcceleratorFactory` mojom
+  - `GpuArcVideoDecodeAccelerator` implements `GpuArcVideoDecodeAccelerator`
+    mojom
+    - this uses `media::VdVideoDecodeAccelerator::Create`, VD-backed VDA
+    - `GpuArcVideoDecoder::Decode` is called when libvda provides more
+      encoded data
+      - the encoded data is stored in an shmem
+      - the shmem is wrapped in a `base::UnsafeSharedMemoryRegion` then in a
+        `media::BitstreamBuffer`
+      - `vda->Decode` is called
+    - `GpuArcVideoDecodeAccelerator::ProvidePictureBuffersWithVisibleRect` is
+      called when media needs buffers
+      - it calls `client_->ProvidePictureBuffers`
+      - libvda translates that to `PROVIDE_PICTURE_BUFFERS`
+    - `GpuArcVideoDecodeAccelerator::ImportBufferForPicture` is called when
+      libvda provides dma-bufs in response to `ProvidePictureBuffers`
+      - the dma-buf is wrapped in a `gfx::GpuMemoryBufferHandle`
+      - `vda_->ImportBufferForPicture` is called
+    - `GpuArcVideoDecodeAccelerator::PictureReady` is
+      called when a frame has been decoded
+      - it calls `client_->PictureReady`
+      - libvda translates that to `PICTURE_READY`
+    - `GpuArcVideoDecodeAccelerator::ReusePictureBuffer` is called when libvda
+      has consumed the decoded frame
+      - i guess it passes gbm bo ownership back to vda
+      - `vda_->ReusePictureBuffer` is called
+  - `GpuArcVideoDecoder` implements `GpuArcVideoDecoder` mojom
+    - this uses `media::VideoDecoderPipeline::Create`, VD
