@@ -1492,17 +1492,60 @@ DRM amdgpu
       maximize utilization
   - DCC is a separate surface
     - the main surface must be in `_X` varants of macro tiles
+    - `DCC_CONSTANT_ENCODE` means the fast clear color may be stored in the
+      DCC
+      - on older hw, the fast clear color is ignored and a fast clear
+        elimination (FCE) pass must be performed
     - `DCC_INDEPENDENT_64B`, `DCC_INDEPENDENT_128B`, and
       `DCC_MAX_COMPRESSED_BLOCK` seem to affect how DCC compresses
       - in mesa `gfx9_compute_surface`, it picks a combo that is optimal for
         L2 cache
       - if the image needs to be displayable, the settings must meet display
         hw limitations as well
-    - `DCC_CONSTANT_ENCODE` means the fast clear color may be stored in the
-      DCC
-      - on older hw, the fast clear color is ignored and a fast clear
-        elimination (FCE) pass must be performed
-    - `DCC_PIPE_ALIGN`
-    - `DCC_RETILE`
-    - `PIPE`
-    - `RB`
+    - `DCC_PIPE_ALIGN` seems to affect alignment
+      - the CB block requires `RB_ALIGNED=1`, unless there is only 1 RB
+      - the CB block prefers `PIPE_ALIGNED=1`, otherwise it needs to flush L2
+        after rending
+        - `PIPE_ALIGNED` actually means `L2CACHE_ALIGNED`
+      - the diplsya hw requires `RB_ALIGNED=0` and `PIPE_ALIGNED=0`
+      - if there is only 1 RB, it makes sense to `RB_ALIGNED=0` and
+        `PIPE_ALIGNED=0`
+      - otherwise, uses `RB_ALIGNED=1` and `PIPE_ALIGNED=1`, and retile
+    - `DCC_RETILE` means the CB and the display use different DCC surfaces
+      - this is required when the CB and the display have different reqs
+      - mesa `radv_retile_dcc` retiles the DCC for display
+    - `PIPE` and `RB` depend on `gb_addr_config` and affect DCC
+
+## BO metadata
+
+- before modifiers, `DRM_IOCTL_AMDGPU_GEM_METADATA` and
+  `amdgpu_gem_metadata_ioctl` are used for bo metadata
+- there is a 64-bit `tiling_info` used by both kernel and user spaces
+  - `amdgpu_bo_set_tiling_flags` saves the 64-bit tiling info to
+    `bo->tiling_flags`
+  - `AMDGPU_TILING_*` defines the bits
+    - gfx8 has
+      - `ARRAY_MODE`
+      - `PIPE_CONFIG`
+      - `TILE_SPLIT`
+      - `MICRO_TILE_MODE`
+      - `BANK_WIDTH`
+      - `BANK_HEIGHT`
+      - `MACRO_TILE_ASPECT`
+      - `NUM_BANKS`
+    - gfx9+ has
+      - `SWIZZLE_MODE`
+      - `DCC_OFFSET_256B` is the offset of the dcc metadata in 256-bytes
+      - `DCC_PITCH_MAX` is the pitch of the dcc metadata
+      - `DCC_INDEPENDENT_64B`
+      - `DCC_INDEPENDENT_128B`
+      - `SCANOUT`
+  - gfx9+ has modifiers and no longer uses the tiling info internally
+    - when the userspace uses tiling info, `convert_tiling_flags_to_modifier`
+      converts the tiling info to a modifier and the rest of the driver deals
+      with modifiers
+  - `amdgpu_dm_plane_fill_gfx8_tiling_info_from_flags` parses the tiling info
+    to `dc_tiling_info` on gfx8
+- there is a 256-byte blob used by userspace
+  - the kernel only needs the 64-bit tiling info, for display
+  - this 256-byte blob is completely opaque to the kernel

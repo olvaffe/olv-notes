@@ -771,12 +771,19 @@ Mesa RADV
       opaque metadata
 - if a memory is dedicated,
   - `radv_GetMemoryFdKHR` calls `buffer_set_metadata`
-    - `radv_amdgpu_winsys_bo_set_metadata` computes `tiling_info`
-      - unlike radeonsi, it does not use `ac_surface_compute_bo_metadata`
+    - `radv_init_metadata` initializes the metadata
+      - the function itself computes the 64-bit tiling info, that both kernel
+        and userspace understand
+        - unlike radeonsi, it does not use `ac_surface_compute_bo_metadata`
+      - `radv_query_opaque_metadata` computes the 256-byte opaque info,
+        that only userspace understands
+    - `radv_amdgpu_winsys_bo_set_metadata` saves the metadata in the bo
   - `radv_AllocateMemory` with `VkImportMemoryFdInfoKHR` calls
     `buffer_get_metadata` if not `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
     - `radv_amdgpu_winsys_bo_get_metadata` decodes `tiling_info`
       - unlike radeonsi, it does not use `ac_surface_apply_bo_metadata`
+    - `radv_image_create_layout` resets the layout and calls
+      `ac_surface_apply_umd_metadata` to apply the opaque metadata
 
 ## Command Processor
 
