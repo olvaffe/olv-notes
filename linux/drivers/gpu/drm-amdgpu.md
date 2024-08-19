@@ -1383,3 +1383,65 @@ DRM amdgpu
   - due to how `amdgpu_device_initialize` in userspace works, all
     `libdrm_amdgpu` users in the same process share the same VM and there is
     no implicit fencing between two `libdrm_amdgpu` users in the same process
+
+## GEM BOs
+
+- libdrm `amdgpu_bo_alloc` or ioctl `DRM_IOCTL_AMDGPU_GEM_CREATE` creates a
+  gem bo
+- `struct drm_amdgpu_gem_create`
+  - `bo_size`
+  - `alignment`
+  - `domains` is the initial/preferred domains
+    - `AMDGPU_GEM_DOMAIN_CPU` is system memory that is not gpu-accessible
+    - `AMDGPU_GEM_DOMAIN_GTT` is system memory that is gpu-accessible
+    - `AMDGPU_GEM_DOMAIN_VRAM` is video memory (or carved-out on apu)
+    - `AMDGPU_GEM_DOMAIN_GDS` is on-chip global data storage
+    - `AMDGPU_GEM_DOMAIN_GWS` is global wave sync
+    - `AMDGPU_GEM_DOMAIN_OA` is ordered append
+  - `domain_flags`
+    - `AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED` is for vram, indicating cpu-accessible
+    - `AMDGPU_GEM_CREATE_NO_CPU_ACCESS` is for vram, indicating no cpu access
+    - `AMDGPU_GEM_CREATE_CPU_GTT_USWC` is for gtt, indicating WC
+      - it is ignored when `amdgpu_bo_support_uswc` returns false
+      - it affects `amdgpu_ttm_tt_create`, to choose between
+        `ttm_write_combined` and `ttm_cached`
+    - `AMDGPU_GEM_CREATE_VRAM_CLEARED` is for vram
+    - `AMDGPU_GEM_CREATE_VM_ALWAYS_VALID`
+    - `AMDGPU_GEM_CREATE_EXPLICIT_SYNC` indicates explicit sync
+      - it is being deprecated by
+        <https://lists.freedesktop.org/archives/amd-gfx/2024-August/112292.html>
+    - `AMDGPU_GEM_CREATE_ENCRYPTED` indicates protected contents
+    - `AMDGPU_GEM_CREATE_DISCARDABLE` indicates the contents can be discarded
+      on memory pressure
+- `amdgpu_gem_create_ioctl` calls `amdgpu_bo_create` to allocate
+  - both `bo->preferred_domains` and `bo->allowed_domains` are set to the
+    domains specified by the ioctl
+  - `amdgpu_bo_placement_from_domain` sets bo placements based on domains
+    - `AMDGPU_GEM_DOMAIN_VRAM` means `TTM_PL_VRAM`
+      - `AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED` requires an offset before
+        `visible_vram_size`
+    - `AMDGPU_GEM_DOMAIN_GTT` means `TTM_PL_TT`
+    - `AMDGPU_GEM_DOMAIN_CPU` means `TTM_PL_SYSTEM`
+  - `ttm_bo_init_reserved` initializes the tbo struct
+  - if `AMDGPU_GEM_CREATE_VRAM_CLEARED` and `TTM_PL_VRAM`,
+    `amdgpu_fill_buffer` clears the buffer to 0
+- scanout
+  - `amdgpu_mode_dumb_create` creates a dumb bo
+    - `amdgpu_display_supported_domains` returns the allowed domains
+      - the hw can only scan out from vram, or gtt that is USWC
+      - this returns `AMDGPU_GEM_DOMAIN_VRAM` and condtionally
+        `AMDGPU_GEM_DOMAIN_GTT`
+    - `amdgpu_bo_get_preferred_domain` returns the preferred domains based on
+      allowed domains
+      - it simply returns the allowed domains after stoney
+  - `amdgpu_dma_buf_begin_cpu_access` moves the bo to gtt if needed and
+    possible
+    - if read access, attemps to move to gtt
+    - possible if gtt is an allowed domain, USWC is set, etc.
+  - `amdgpu_dm_plane_helper_prepare_fb` calls `amdgpu_bo_pin` to pin the bo
+    - if overlay, it pins to `amdgpu_display_supported_domains`
+    - if cursor, it pins to `AMDGPU_GEM_DOMAIN_VRAM`
+    - it is fine if the domain is not in the intial/preferred domains
+      - but note that vram is carveout on apu and can be very small
+      - it is not possible to fit too many bos in vram on apu, and we want
+        `AMDGPU_GEM_CREATE_CPU_GTT_USWC` such that the bos can be in gtt
