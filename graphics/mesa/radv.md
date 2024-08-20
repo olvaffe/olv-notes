@@ -784,6 +784,28 @@ Mesa RADV
       - unlike radeonsi, it does not use `ac_surface_apply_bo_metadata`
     - `radv_image_create_layout` resets the layout and calls
       `ac_surface_apply_umd_metadata` to apply the opaque metadata
+- comparing legacy metadta and modifiers
+  - `AMDGPU_TILING_SWIZZLE_MODE` becomes `AMD_FMT_MOD_TILE`
+  - `AMDGPU_TILING_DCC_OFFSET_256B` becomes `AMD_FMT_MOD_DCC` and a memory
+    plane
+  - `AMDGPU_TILING_DCC_PITCH_MAX` becomes a memory plane
+  - `AMDGPU_TILING_DCC_INDEPENDENT_64B` becomes
+    `AMD_FMT_MOD_DCC_INDEPENDENT_64B`
+  - `AMDGPU_TILING_DCC_INDEPENDENT_128B` becomes
+    `AMD_FMT_MOD_DCC_INDEPENDENT_128B`
+  - `AMDGPU_TILING_SCANOUT` has no replacement
+    - a wsi image is allocated with the scanout bit
+    - an external image won't have the scanout bit
+      - it is the allocator's responsibility to pick a modifier that supports
+        scanout
+  - `ac_surface_apply_umd_metadata` handles opaque metadata
+    - `G_008F1C_LAST_LEVEL` has no replacement
+    - `G_008F1C_TYPE` has no replacement
+      - `radv_check_modifier_support` limits to non-MSAA
+    - `G_008F28_COMPRESSION_EN` becomes `AMD_FMT_MOD_DCC`
+    - `G_008F24_META_DATA_ADDRESS` becomes a memory plane
+    - `G_008F24_META_PIPE_ALIGNED` becomes `AMD_FMT_MOD_DCC_PIPE_ALIGN`
+    - `G_008F24_META_RB_ALIGNED` becomes `AMD_FMT_MOD_DCC_PIPE_ALIGN`
 
 ## Command Processor
 
