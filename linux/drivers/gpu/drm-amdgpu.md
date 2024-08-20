@@ -1515,6 +1515,11 @@ DRM amdgpu
       - this is required when the CB and the display have different reqs
       - mesa `radv_retile_dcc` retiles the DCC for display
     - `PIPE` and `RB` depend on `gb_addr_config` and affect DCC
+- gfx8
+  - there is no modifier support yet
+  - `gfx_v8_0_constants_init` writes golden value to `mmGB_ADDR_CONFIG`
+  - `gfx_v8_0_tiling_mode_table_init` writes `mmGB_TILE_MODE*` and
+    `mmGB_MACROTILE_MODE*`
 
 ## BO metadata
 
