@@ -279,6 +279,15 @@ GBM
     - `DRM_FORMAT_YVU420`
     - the difference is `DRM_FORMAT_YVU420_ANDROID` has android-specific plane
       layout requirements
+- GEM handle refcount
+  - each bo has a gem handle, `bo->handle.u32`
+  - when a bo is allocated, exported as a dma-buf, and imported as another bo,
+    - we will have two bos sharing the same gem handle
+    - we must not close the gem handle until both bos are destroyed
+  - `drv->buffer_table` maps gem handles to refcounts
+  - `drv_bo_destroy` calls `bo_destroy` only when the refcount reaches 0
+    - it calls `bo_release` right away, to free `bo->priv` which is not shared
+      with other bos
 - `cros_gralloc_convert_usage`
   - simple cases
     - `GRALLOC_USAGE_SW_READ_OFTEN` to `BO_USE_SW_READ_OFTEN`
