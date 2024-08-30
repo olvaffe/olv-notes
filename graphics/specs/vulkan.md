@@ -530,6 +530,29 @@ Vulkan
       vkCmdPipelineBarrier or make it impractical, we can instead
       vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
     - the barrier is splitted into the signal half and wait half
+- 7.7. Memory Barriers
+  - a barrier can perform a subset of these operations in order
+    - availibility, controlled by `src{Stage,Access}Mask`
+    - ownership release, controlled by `{src,dst}QueueFamilyIndex`
+    - layout transition, controlled by `{old,new}Layout`
+    - ownership acquire, controlled by `{src,dst}QueueFamilyIndex`
+    - visibility, controlled by `dst{Stage,Access}Mask`
+  - queue family ownership transfer
+    - barriers must be executed on both src and dst queues
+    - the barrier on the src queue performs a subset of the first half of the
+      operations
+      - availibility
+      - ownership release
+      - layout transition
+    - the barrier on the dst queue performs a subset of the second half of the
+      operations
+      - layout transition
+      - ownership acquire
+      - visibility
+    - implementation decides which queue executes the layout transition, so
+      that it does not incorrectly transition twice
+    - a semaphore and `VK_PIPELINE_STAGE_ALL_COMMANDS_BIT` should be used for
+      dependency between the two barriers on different queues
 
 ## Chapter 8. Render Pass
 
