@@ -258,3 +258,162 @@ ARM Mali
   - 4x texture unit
   - a load-store cache
     - replaces the load-store unit
+
+## kbase
+
+- <https://developer.arm.com/downloads/-/mali-drivers/5th-gen-gpu-architecture-kernel>
+  - there are separated downloads for
+    - Bifrost 3rd Gen GPU Architecture Kernel
+    - Valhall 4th Gen GPU Architecture Kernel
+    - 5th Gen GPU Architecture Kernel
+  - but they are all the same code
+- `Kconfig`
+  - `MALI_MIDGARD=y`
+  - `MALI_PLATFORM_NAME="devicetree"`
+  - `MALI_REAL_HW=y`
+  - `MALI_CSF_SUPPORT=y`
+  - `MALI_DEVFREQ=y`
+  - `LARGE_PAGE_SUPPORT=y`
+  - `PAGE_MIGRATION_SUPPORT=y`
+- `Kbuild`
+  - `Makefile` is preferred, but if `Kbuild` exists, it is used
+  - the top-level `Kbuild` includes the subdir `Kbuild`s
+  - `CONFIG_MALI_CSF_SUPPORT` causes different files to be compiled
+
+## kbase init
+
+- `kbase_driver_init` registers `kbase_platform_driver`
+  - driver name is `mali`
+  - id table has `arm,mali-valhall`, `arm,mali-bifrost`, etc.
+- `kbase_device_init` initializes the device
+  - `kbase_get_irqs`
+    - `platform_get_irq_byname` gets 3 IRQs: `JOB`, `MMU`, and `GPU`
+  - `registers_map`
+    - `platform_get_resource` gets `IORESOURCE_MEM`
+    - `kbase_common_reg_map` requests and ioremaps the region
+  - `power_control_init` gets the regulators and clks
+  - `kbase_device_io_history_init` inits `kbdev->io_history`
+  - `kbase_device_early_init`
+    - `kbasep_platform_device_init` depends on `MALI_PLATFORM_NAME`
+    - `kbase_pm_runtime_init` depends on `MALI_PLATFORM_NAME`
+    - `kbase_gpuprops_parse_gpu_id` reads and parses `GPU_ID` reg
+    - `kbase_regmap_init` inits `kbdev->regmap`
+    - `kbase_hw_set_features_mask` inits `kbdev->hw_features_mask` based on
+      `GPU_ID`
+    - `kbase_gpuprops_init` reads various regs to init `kbdev->gpu_props`
+      - `SHADER_PRESENT`, `TILER_PRESENT`, `L2_PRESENT`, etc.
+    - `kbase_hw_set_issues_mask` inits hw workarounds
+    - `kbase_install_interrupts` registers irq handlers
+      - `kbase_job_irq_handler`
+      - `kbase_mmu_irq_handler`
+      - `kbase_gpu_irq_handler`
+  - `kbase_backend_time_init` inits `kbdev->backend_time`
+  - `kbase_device_misc_init` inits various stuff
+  - `kbase_device_pcm_dev_init`
+  - `kbase_ctx_sched_init`
+  - `kbase_mem_init`
+  - `kbase_csf_protected_memory_init`
+  - `kbase_device_coherency_init` inits `kbdev->system_coherency`
+    - usually to `COHERENCY_NONE`
+  - `kbase_protected_mode_init`
+  - `kbase_device_list_init`
+  - `kbase_device_timeline_init` inits `kbdev->timeline`
+  - `kbase_clk_rate_trace_manager_init`
+  - `kbase_device_hwcnt_watchdog_if_init`
+  - `kbase_device_hwcnt_backend_csf_if_init`
+  - `kbase_device_hwcnt_backend_csf_init`
+  - `kbase_device_hwcnt_context_init`
+  - `kbase_csf_early_init` inits `kbdev->csf`
+  - `kbase_backend_late_init`
+  - `kbase_csf_late_init`
+  - `kbase_debug_csf_fault_init`
+  - `kbase_device_debugfs_init`
+  - `kbase_csf_fence_timer_debugfs_init`
+  - `kbase_sysfs_init` inits `kbdev->mdev` and sysfs
+  - `kbase_device_misc_register` registers `kbdev->mdev`
+  - `kbase_gpuprops_populate_user_buffer` inits gpu props to be queried by
+    userspace
+  - `kbase_device_late_init`
+- when `/dev/mali0` is opened, `kbase_open` is called
+  - `kbase_device_firmware_init_once` loads `mali_csffw.bin`
+  - `kbase_file_new` creates a `kbase_file`
+
+## kbase ioctls
+
+- ioctls are handled by `kbase_ioctl`
+- `KBASE_IOCTL_VERSION_CHECK` is handled by `kbase_api_handshake`
+  - it negotiates uapi version
+- `KBASE_IOCTL_SET_FLAGS` is handled by `kbase_api_set_flags`
+  - `kbase_file_create_kctx` creates the ctx
+- `KBASE_IOCTL_KINSTR_PRFCNT_ENUM_INFO` is handled by `kbase_api_kinstr_prfcnt_enum_info`
+- `KBASE_IOCTL_KINSTR_PRFCNT_SETUP` is handled by `kbase_api_kinstr_prfcnt_setup`
+- `KBASE_IOCTL_GET_GPUPROPS` is handled by `kbase_api_get_gpuprops`
+  - queries all gpu props
+- `KBASE_IOCTL_MEM_ALLOC` is handled by `kbase_api_mem_alloc`
+  - it calls `kbase_api_mem_alloc_ex`
+  - it returns `gpu_va` to the userspace, which is also used as the handle to
+    the bo
+  - `kbase_region_tracker_find_region_base_address` maps `gpu_va` to
+    `kbase_va_region`
+- `KBASE_IOCTL_MEM_QUERY` is handled by `kbase_api_mem_query`
+- `KBASE_IOCTL_MEM_FREE` is handled by `kbase_api_mem_free`
+- `KBASE_IOCTL_DISJOINT_QUERY` is handled by `kbase_api_disjoint_query`
+- `KBASE_IOCTL_GET_DDK_VERSION` is handled by `kbase_api_get_ddk_version`
+  - it returns the DDK version string, such as `K:r51p0-00eac0(GPL)`
+- `KBASE_IOCTL_MEM_JIT_INIT` is handled by `kbase_api_mem_jit_init`
+- `KBASE_IOCTL_MEM_EXEC_INIT` is handled by `kbase_api_mem_exec_init`
+- `KBASE_IOCTL_MEM_SYNC` is handled by `kbase_api_mem_sync`
+- `KBASE_IOCTL_MEM_FIND_CPU_OFFSET` is handled by `kbase_api_mem_find_cpu_offset`
+- `KBASE_IOCTL_MEM_FIND_GPU_START_AND_OFFSET` is handled by `kbase_api_mem_find_gpu_start_and_offset`
+- `KBASE_IOCTL_GET_CONTEXT_ID` is handled by `kbase_api_get_context_id`
+- `KBASE_IOCTL_TLSTREAM_ACQUIRE` is handled by `kbase_api_tlstream_acquire`
+- `KBASE_IOCTL_TLSTREAM_FLUSH` is handled by `kbase_api_tlstream_flush`
+- `KBASE_IOCTL_MEM_COMMIT` is handled by `kbase_api_mem_commit`
+- `KBASE_IOCTL_MEM_ALIAS` is handled by `kbase_api_mem_alias`
+- `KBASE_IOCTL_MEM_IMPORT` is handled by `kbase_api_mem_import`
+- `KBASE_IOCTL_MEM_FLAGS_CHANGE` is handled by `kbase_api_mem_flags_change`
+- `KBASE_IOCTL_MEM_PROFILE_ADD` is handled by `kbase_api_mem_profile_add`
+- `KBASE_IOCTL_STICKY_RESOURCE_MAP` is handled by `kbase_api_sticky_resource_map`
+- `KBASE_IOCTL_STICKY_RESOURCE_UNMAP` is handled by `kbase_api_sticky_resource_unmap`
+- `KBASE_IOCTL_GET_CPU_GPU_TIMEINFO` is handled by `kbase_api_get_cpu_gpu_timeinfo`
+  - returns `CYCLE_COUNT`, `TIMESTAMP`, and `ktime_get_raw_ts64`
+- `KBASE_IOCTL_CONTEXT_PRIORITY_CHECK` is handled by `kbasep_ioctl_context_priority_check`
+  - it updates ctx priority
+- `KBASE_IOCTL_SET_LIMITED_CORE_COUNT` is handled by `kbase_ioctl_set_limited_core_count`
+  - it updates `kctx->limited_core_mask`
+- `MALI_USE_CSF`
+  - `KBASE_IOCTL_MEM_ALLOC_EX` is handled by `kbase_api_mem_alloc_ex`
+  - `KBASE_IOCTL_CS_EVENT_SIGNAL` is handled by `kbasep_cs_event_signal`
+  - `KBASE_IOCTL_CS_QUEUE_REGISTER` is handled by `kbasep_cs_queue_register`
+    - registers a mem as a queue and creates `kbase_queue` for it
+  - `KBASE_IOCTL_CS_QUEUE_REGISTER_EX` is handled by `kbasep_cs_queue_register_ex`
+  - `KBASE_IOCTL_CS_QUEUE_TERMINATE` is handled by `kbasep_cs_queue_terminate`
+  - `KBASE_IOCTL_CS_QUEUE_BIND` is handled by `kbasep_cs_queue_bind`
+    - adds a queue to a queue group
+  - `KBASE_IOCTL_CS_QUEUE_KICK` is handled by `kbasep_cs_queue_kick`
+  - `KBASE_IOCTL_CS_QUEUE_GROUP_CREATE` is handled by `kbasep_cs_queue_group_create`
+    - creates a `kbase_queue_group`
+  - `KBASE_IOCTL_CS_QUEUE_GROUP_TERMINATE` is handled by `kbasep_cs_queue_group_terminate`
+  - `KBASE_IOCTL_KCPU_QUEUE_CREATE` is handled by `kbasep_kcpu_queue_new`
+    - creates a `kbase_kcpu_command_queue`
+  - `KBASE_IOCTL_KCPU_QUEUE_DELETE` is handled by `kbasep_kcpu_queue_delete`
+  - `KBASE_IOCTL_KCPU_QUEUE_ENQUEUE` is handled by `kbasep_kcpu_queue_enqueue`
+  - `KBASE_IOCTL_QUEUE_GROUP_CLEAR_FAULTS` is handled by `kbasep_queue_group_clear_faults`
+  - `KBASE_IOCTL_CS_TILER_HEAP_INIT` is handled by `kbasep_cs_tiler_heap_init`
+  - `KBASE_IOCTL_CS_TILER_HEAP_TERM` is handled by `kbasep_cs_tiler_heap_term`
+  - `KBASE_IOCTL_CS_GET_GLB_IFACE` is handled by `kbase_ioctl_cs_get_glb_iface`
+  - `KBASE_IOCTL_CS_CPU_QUEUE_DUMP` is handled by `kbasep_ioctl_cs_cpu_queue_dump`
+  - `KBASE_IOCTL_READ_USER_PAGE` is handled by `kbase_ioctl_read_user_page`
+- `!MALI_USE_CSF`
+  - `KBASE_IOCTL_JOB_SUBMIT` is handled by `kbase_api_job_submit`
+  - `KBASE_IOCTL_POST_TERM` is handled by `kbase_api_post_term`
+  - `KBASE_IOCTL_SOFT_EVENT_UPDATE` is handled by `kbase_api_soft_event_update`
+  - `KBASE_IOCTL_KINSTR_JM_FD` is handled by `kbase_api_kinstr_jm_fd`
+- `CONFIG_SYNC_FILE`
+  - `KBASE_IOCTL_STREAM_CREATE` is handled by `kbase_api_stream_create`
+    - returns an fd
+  - `KBASE_IOCTL_FENCE_VALIDATE` is handled by `kbase_api_fence_validate`
+- `CONFIG_MALI_CINSTR_GWT`
+  - `KBASE_IOCTL_CINSTR_GWT_START` is handled by `kbase_gpu_gwt_start`
+  - `KBASE_IOCTL_CINSTR_GWT_STOP` is handled by `kbase_gpu_gwt_stop`
+  - `KBASE_IOCTL_CINSTR_GWT_DUMP` is handled by `kbase_gpu_gwt_dump`
