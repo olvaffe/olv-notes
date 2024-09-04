@@ -279,6 +279,11 @@ ARM Mali
   - `Makefile` is preferred, but if `Kbuild` exists, it is used
   - the top-level `Kbuild` includes the subdir `Kbuild`s
   - `CONFIG_MALI_CSF_SUPPORT` causes different files to be compiled
+- comparing to
+  <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-6.6/drivers/gpu/arm/>
+  - the subdir is `drivers/gpu/midgard` rather than `drivers/gpu/mali`
+  - the main config is `CONFIG_MALI_MIDGARD` rather than `CONFIG_MALI`
+  - no mtk-specific or cros-specific code
 
 ## kbase init
 
