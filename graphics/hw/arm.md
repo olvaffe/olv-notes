@@ -54,7 +54,7 @@ ARM Mali
   - Mali-{G68,G78}
 - 2021: Valhall 3nd gen
   - Larger shader cores (2x compared to Valhall 2nd Gen)
-  - New GPU frontend, Command Stream Frontend (CSF) replaces the Job Manager
+  - New GPU frontend, Command Stream Frontend (CSF) replaces the Job Manager (JM)
   - Mali-{G310,G510,G610,G710}
 - 2022: Valhall 4nd gen
   - Ray Tracing support (hardware-based)
@@ -69,18 +69,21 @@ ARM Mali
 ## Identification
 
 - `GPU_ID` register
-  - higher 16 bits: id
-  - lower 16 bits: revision
-    - bit 0..3: status
-    - bit 4..7: minor
-    - bit 8..11: major
+  - bit 0..3: status
+  - bit 4..11: minor
+  - bit 12..15: major
+  - bit 16..31: id
+    - bit 16..19: product
+    - bit 20..23: arch revision
+    - bit 24..27: arch minor
+    - bit 28..31: arch major
 - `pan_arch()`
   - midgard: v4 and v5
     - the 16-bit id is less than `0x1000`
     - a table is used to look up the arch versions
   - bifrost: v6 and v7
     - `id >> 12` is the arch versions
-  - valhall: v9
+  - valhall: v9 and v10
 
 ## Utgard
 
