@@ -52,19 +52,21 @@ ARM Mali
   - New FMA units and increase Tiler throughput
   - Arm Frame Buffer Compression (AFBC) 1.3
   - Mali-{G68,G78}
-- 2021: Valhall 3nd gen
+- 2021: Valhall 3rd gen
   - Larger shader cores (2x compared to Valhall 2nd Gen)
   - New GPU frontend, Command Stream Frontend (CSF) replaces the Job Manager (JM)
   - Mali-{G310,G510,G610,G710}
-- 2022: Valhall 4nd gen
+- 2022: Valhall 4th gen
   - Ray Tracing support (hardware-based)
   - Variable Rate Shading
   - New Execution Engine, with doubled the FMA block, Matrix Multiply instruction support, and PPA improvements
   - Arm Fixed Rate Compression (AFRC)
   - Mali-{G615,G715}, Immortalis-G715
-- 2023: 5nd gen
+- 2023: 5th gen
   - Deferred vertex shading (DVS) pipeline
   - Mali-{G620,G720}, Immortalis-G720
+- 2024: 5th gen
+  - Mali-{G625,G725}, Immortalis-G925
 
 ## Identification
 
@@ -86,8 +88,11 @@ ARM Mali
   - valhall: v9 and v10
 - kbase uses arch major and product for identification
   - `GPU_ID2_PRODUCT_TMIX` is `GPU_ID2_MODEL_MAKE(6, 0)`
+    - mimir?
   - `GPU_ID2_PRODUCT_THEX` is `GPU_ID2_MODEL_MAKE(6, 1)`
+    - heimdall?
   - `GPU_ID2_PRODUCT_TSIX` is `GPU_ID2_MODEL_MAKE(7, 0)`
+    - sigurd?
   - `GPU_ID2_PRODUCT_TDVX` is `GPU_ID2_MODEL_MAKE(7, 3)`
   - `GPU_ID2_PRODUCT_TNOX` is `GPU_ID2_MODEL_MAKE(7, 1)`
   - `GPU_ID2_PRODUCT_TGOX` is `GPU_ID2_MODEL_MAKE(7, 2)`
@@ -98,12 +103,15 @@ ARM Mali
   - `GPU_ID2_PRODUCT_LBEX` is `GPU_ID2_MODEL_MAKE(9, 4)`
   - `GPU_ID2_PRODUCT_TBAX` is `GPU_ID2_MODEL_MAKE(9, 5)`
   - `GPU_ID2_PRODUCT_TODX` is `GPU_ID2_MODEL_MAKE(10, 2)`
+    - valhall 3rd gen, odin?
   - `GPU_ID2_PRODUCT_TGRX` is `GPU_ID2_MODEL_MAKE(10, 3)`
   - `GPU_ID2_PRODUCT_TVAX` is `GPU_ID2_MODEL_MAKE(10, 4)`
   - `GPU_ID2_PRODUCT_LODX` is `GPU_ID2_MODEL_MAKE(10, 7)`
   - `GPU_ID2_PRODUCT_TTUX` is `GPU_ID2_MODEL_MAKE(11, 2)`
+    - valhall 4th gen, turse?
   - `GPU_ID2_PRODUCT_LTUX` is `GPU_ID2_MODEL_MAKE(11, 3)`
   - `GPU_ID2_PRODUCT_TTIX` is `GPU_ID2_MODEL_MAKE(12, 0)`
+    - 5th gen, titan?
   - `GPU_ID2_PRODUCT_LTIX` is `GPU_ID2_MODEL_MAKE(12, 1)`
 
 ## Utgard
