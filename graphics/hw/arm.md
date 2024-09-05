@@ -317,6 +317,10 @@ ARM Mali
   - `kbase_device_pcm_dev_init`
   - `kbase_ctx_sched_init`
   - `kbase_mem_init`
+    - `kbdev->mgm_dev` is set to `kbase_native_mgm_dev`
+    - if there is a `arm,physical-memory-group-manager` node and if
+      `memory_group_manager_driver` is enabled, `kbdev->mgm_dev` is set to the
+      driver instead
   - `kbase_csf_protected_memory_init`
   - `kbase_device_coherency_init` inits `kbdev->system_coherency`
     - usually to `COHERENCY_NONE`
@@ -330,6 +334,11 @@ ARM Mali
   - `kbase_device_hwcnt_context_init`
   - `kbase_csf_early_init` inits `kbdev->csf`
   - `kbase_backend_late_init`
+    - `kbase_backend_devfreq_init` inits devfreq when `CONFIG_MALI_DEVFREQ` is
+      enabled
+      - `CONFIG_MALI_DEVFREQ` replaces `CONFIG_MALI_MIDGARD_DVFS`
+      - `kbase_devfreq_init` calls `kbase_ipa_init`
+        - IPA stands for Intelligent Power Allocation
   - `kbase_csf_late_init`
   - `kbase_debug_csf_fault_init`
   - `kbase_device_debugfs_init`
