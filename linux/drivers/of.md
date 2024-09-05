@@ -164,6 +164,7 @@ Device Tree
     - grandchildren of the root node that are on certain buses
   - `of_platform_device_create` creates the platform device
     - `of_address_to_resource` parses `reg`
+- `of_device_is_available` checks if `status` is okay
 - `of_device_is_compatible` checks if a device is compatible with a string
   - it gets the `compatible` prop and performs strcmp
 - `of_address_to_resource` parses `reg` and more to io resources
@@ -175,6 +176,9 @@ Device Tree
 - `of_clk_get_hw` parses `clock-names` and `clocks`
   - drivers typically call `devm_clk_get` which calls `clk_get`
   - the clk driver should have called `of_clk_add_provider` to add a provider
+- `of_clk_set_defaults` parsed `assigned-clocks` and `assigned-clock-rates`
+  - it is called from `platform_probe` as a clock consumer
+    - `clk_set_rate` is called on the assigned clocks
 - `of_get_regulator` parses `%s-supply`
   - drivers typically call `devm_regulator_get` which calls `regulator_get`
   - the regulator driver should have called `devm_regulator_register` to
