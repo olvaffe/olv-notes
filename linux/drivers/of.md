@@ -1,23 +1,9 @@
 Device Tree
 ===========
 
-## Basics
-
-- <https://www.devicetree.org/>
-- schema
-  - <https://github.com/devicetree-org/dt-schema>
-- graph
-  - the parent-child relations are not enough
-  - phandles
-  - ports and endpoints
-- `of_platform_default_populate_init` adds `platform_device`s for OF
-  `device_node`s
-  - `/firmware`
-  - `simple-bus`
-  - `simple-mfd`
-
 ## Devicetree Specification
 
+- <https://www.devicetree.org/specifications>
 - Chapter 1 Introduction
   - 1.1 Purpose and Scope
   - 1.2 Relationship to IEEE™ 1275 and ePAPR
@@ -149,10 +135,62 @@ Device Tree
     - `/ { ... };` for root node
     - c and c++ style comments are supported
 
-## Base
+## Devicetree Schema
 
+- <https://github.com/devicetree-org/dt-schema>
+- <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/graph.yaml>
+  - the parent-child relations are not enough
+  - phandles
+  - ports and endpoints
+- <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/clock/clock.yaml>
+  - `#clock-cells` is typically 0, and specifier is omitted from `clocks`
+  - `clock-names` is clock names
+  - `clocks` is `(phandle, specifier)` pairs
+
+## Kernel
+
+- during init, `unflatten_device_tree` is called to unflatten fdt passed in by
+  the firmware
+  - `__unflatten_device_tree` is called and `of_root` is set
+    - `unflatten_dt_alloc` returns a `device_node`
+    - `of_node_init` calls `fwnode_init`
+  - `of_alias_scan` sets `of_chosen` and `of_aliases`
+- `of_platform_default_populate_init` adds `platform_device`s for dt nodes
+  - it creates platform devices for
+    - certain `/reserved-memory` nodes
+    - `/firmware` node
+    - child of `/chosen` that is compatible with `simple-framebuffer`
+    - direct children of the root node
+    - grandchildren of the root node that are on certain buses
+  - `of_platform_device_create` creates the platform device
+    - `of_address_to_resource` parses `reg`
 - `of_device_is_compatible` checks if a device is compatible with a string
   - it gets the `compatible` prop and performs strcmp
+- `of_address_to_resource` parses `reg` and more to io resources
+- `of_irq_get_byname` parses `interrupt-names` and `interrupts`
+  - drivers typically call `platform_get_irq_byname` instead
+    - `fwnode_irq_get_byname` calls `of_fwnode_property_read_string_array` to
+      parse `interrupt-names` and calls `of_fwnode_irq_get` to parse
+      `interrupts`
+- `of_clk_get_hw` parses `clock-names` and `clocks`
+  - drivers typically call `devm_clk_get` which calls `clk_get`
+  - the clk driver should have called `of_clk_add_provider` to add a provider
+- `of_get_regulator` parses `%s-supply`
+  - drivers typically call `devm_regulator_get` which calls `regulator_get`
+  - the regulator driver should have called `devm_regulator_register` to
+    register the regulator
+- `devm_pm_opp_of_add_table` parses `operating-points-v2` and opp table
+  - `_of_add_opp_table_v2` parses the table
+  - `_opp_add_static_v2` parses an entry
+- `dev_pm_domain_attach_by_name` parses `power-domain-names` and
+  `power-domains`
+  - `genpd_get_from_provider` returns the power domain
+  - the power controller driver should have called
+    `of_genpd_add_provider_onecell` to register the power domain
+- `dev_pm_opp_calc_power` parses `dynamic-power-coefficient`
+  - the prop is the device capacitance and is used to estimate the power
+    consumption at a given frequency and voltage (from opp)
+- `of_dma_is_coherent` parses `dma-coherent`
 
 ## Example
 
@@ -165,46 +203,38 @@ Device Tree
   - `interrupt-names` must be `job`, `mmu`, and `gpu`
   - `clocks` has 1 to 3 items
   - `clock-names` has 1 to 3 items, and must be `core`, `coregroup`, and `stacks`
-  - `mali-supply` defaults to true
+  - `mali-supply` is a valid property
     - is this what `true` means?
   - `operating-points-v2` defaults to true
+    - it is a phandle to `opp-table`
   - `opp-table` is an object
+    - this is when `opp-table` is embedded
   - `power-domains` has 1 to 5 items
   - `power-domain-names` has 1 to 5 items
-  - `sram-supply` defaults to true
+  - `sram-supply` is a valid property
   - `#cooling-cells` must be 2
   - `dynamic-power-coefficient` is a u32
-  - `dma-coherent` defaults to true
+  - `dma-coherent` is a valid property
   - required props
     - `compatible`, `reg`, `interrupts`, `interrupt-names`, `clocks`,
       `mali-supply`
-- `rockchip/rk3588-base.dtsi`
-
-    gpu: gpu@fb000000 {
-            compatible = "rockchip,rk3588-mali", "arm,mali-valhall-csf";
-            reg = <0x0 0xfb000000 0x0 0x200000>;
-            #cooling-cells = <2>;
-            assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;
-            assigned-clock-rates = <200000000>;
-            clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>,
-                     <&cru CLK_GPU_STACKS>;
-            clock-names = "core", "coregroup", "stacks";
-            dynamic-power-coefficient = <2982>;
-            interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH 0>,
-                         <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH 0>,
-                         <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH 0>;
-            interrupt-names = "job", "mmu", "gpu";
-            power-domains = <&power RK3588_PD_GPU>;
-            status = "disabled";
-    };
-- `rockchip/rk3588-opp.dtsi`
-
-    &gpu {
-            operating-points-v2 = <&gpu_opp_table>;
-    };
-- `rockchip/rk3588-rock-5b.dts`
-
-    &gpu {
-            mali-supply = <&vdd_gpu_s0>;
-            status = "okay";
-    };
+- `rockchip/rk3588-base.dtsi` defines `gpu: gpu@fb000000`
+  - `compatible = "rockchip,rk3588-mali", "arm,mali-valhall-csf";`
+  - `reg = <0x0 0xfb000000 0x0 0x200000>;`
+    - the root node sets `#address-cells` and `#size-cells` to `<2>`
+    - `offset 0xfb000000 size 0x200000`
+  - `#cooling-cells = <2>;`
+  - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
+  - `assigned-clock-rates = <200000000>;`
+  - `clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>, <&cru CLK_GPU_STACKS>;`
+  - `clock-names = "core", "coregroup", "stacks";`
+  - `dynamic-power-coefficient = <2982>;`
+  - `interrupts = <GIC_SPI 92 IRQ_TYPE_LEVEL_HIGH 0>, <GIC_SPI 93 IRQ_TYPE_LEVEL_HIGH 0>, <GIC_SPI 94 IRQ_TYPE_LEVEL_HIGH 0>;`
+  - `interrupt-names = "job", "mmu", "gpu";`
+  - `power-domains = <&power RK3588_PD_GPU>;`
+  - `status = "disabled";`
+- `rockchip/rk3588-opp.dtsi` modifies `&gpu`
+  - `operating-points-v2 = <&gpu_opp_table>;`
+- `rockchip/rk3588-rock-5b.dts` modifies `&gpu`
+  - `mali-supply = <&vdd_gpu_s0>;`
+  - `status = "okay";`
