@@ -457,7 +457,7 @@ ARM Mali
     - updated to r32p0 in 2022.03
       - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/8db20e11c665a979cbb6e280e334b68f97b706ba>
       - `platform/mt8192` was updated and renamed to `platform/mediatek`
-    - updated `drivers/gpu/arm/valhall/platform/mediatek` in in 2022.07
+    - updated `drivers/gpu/arm/valhall/platform/mediatek` in 2022.07
       - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/a639bca8650970eb6f81e886d0e4379b6e23dcda>
     - renamed to `drivers/gpu/arm/mali` in 2022.08
       - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2542013a4879415917bc6db20170147df8f4ccba>
@@ -507,3 +507,54 @@ ARM Mali
       - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/78229ec3056a11125c6c5de2abcd4b9b7dae3b07>
     - updated to r44p1 in 2024.03
       - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/f41ef27e3eaaaedd2d3b64e8fc053ec951640587>
+- `CONFIG_MALI_PLATFORM_NAME` decides the platform used by kbase
+  - it includes `platform/$(MALI_PLATFORM_DIR)/Kbuild` to build all
+    platform-specific code
+- the platform api is vaguely defined
+  - if legacy `!CONFIG_OF`,
+    - `kbase_platform_register` is called before `platform_driver_register`
+    - `kbase_platform_unregister` is called after `platform_driver_unregister`
+  - if legacy `CONFIG_MALI_DVFS`, `kbase_pm_get_dvfs_action` calls
+    `kbase_platform_dvfs_event`
+  - `get_clk_rate_trace_callbacks` defaults to `CLK_RATE_TRACE_OPS`
+  - `kbasep_platform_device_*` defaults to `PLATFORM_FUNCS`
+  - if `!MALI_USE_CSF`, `kbasep_platform_{context,event}_*` also defaults to
+    `PLATFORM_FUNCS`
+  - `kbase_pm_runtime_init` and `kbase_pm_register_access_enable` default to
+    `POWER_MANAGEMENT_CALLBACKS`
+- cros patches the platform api
+  - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2f938fe02a0ee350010831313b58c32bd9027cb7>
+  - the platform driver `of_match_table ` is set to platform-defined
+    `kbase_dt_ids`
+  - there is `kbdev->funcs` initialized from platform-defined match data, or
+    `POWER_MANAGEMENT_CALLBACKS` and `PLATFORM_FUNCS`
+- mediatek platform
+  - `kbase_platform_register` and `kbase_platform_unregister` are nop
+  - there is no `kbase_platform_dvfs_event`
+  - `CLK_RATE_TRACE_OPS` uses the generic one provided by arm
+  - `PLATFORM_FUNCS` and `POWER_MANAGEMENT_CALLBACKS` are NULL
+    - it uses OF match data instead
+- `mt8195_platform_funcs` is the real `PLATFORM_FUNCS` for MT8195
+  - `platform_init_func` is set to `platform_init`
+  - `kbdev->platform_context` points to `mt8195_platform_context`
+  - `kbase_pm_domain_init` inits `kbdev->pm_domain_devs` and
+    `kbdev->num_pm_domains`
+    - this is cros-specific and should be moved to `mt8195_platform_context`
+      instead...
+  - `mtk_mfgsys_init` calls `devm_clk_bulk_get` to get clks, calls
+    `regulator_set_voltage` to set voltages, and `mtk_map_mfg_base` to iomap
+    `mediatek,mt8195-mfgcfg`
+  - `mtk_set_frequency` updates the gpu freq
+  - `kbdev->devfreq_ops` are updated for devfreq
+    - this is cros-specific again
+- `mtk_pm_callbacks` is the real `POWER_MANAGEMENT_CALLBACKS` for all socs
+  - `kbase_pm_callback_power_on`
+    - `regulator_enable` enables all regulators
+    - `pm_runtime_get_sync` enables all pm domains
+    - `clk_bulk_prepare_enable` enables all clks
+    - `mtk_enable_timestamp_register` enables timestamp
+  - `kbase_pm_callback_power_off`
+    - `mtk_check_bus_idle` waits for idle
+    - `clk_bulk_disable_unprepare` disables all clks
+    - `pm_runtime_put_autosuspend` suspends all pm domains
+    - `regulator_disable` disables all regulators
