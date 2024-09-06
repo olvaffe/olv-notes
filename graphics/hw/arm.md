@@ -431,3 +431,79 @@ ARM Mali
   - `KBASE_IOCTL_CINSTR_GWT_START` is handled by `kbase_gpu_gwt_start`
   - `KBASE_IOCTL_CINSTR_GWT_STOP` is handled by `kbase_gpu_gwt_stop`
   - `KBASE_IOCTL_CINSTR_GWT_DUMP` is handled by `kbase_gpu_gwt_dump`
+
+## kbase mediatek platform
+
+- history
+  - most mediatek platform updates happened on 5.15 around 2022.02 to 2022.05
+    - `git log --oneline -- drivers/gpu/arm/bifrost`
+    - `BUG=b:227544156`
+  - 4.19
+    - added r13p0 to `drivers/gpu/arm/midgard` in 2018.10
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/b303c6455c178a647340cd5e75fddbdf57cc697a>
+    - added `drivers/gpu/arm/midgard/platform/mediatek` in 2018.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/d12dc1a835648e06925c9d8f4b4e14017104fe76>
+    - added r25p0 to `drivers/gpu/arm/bifrost` in 2020.09
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/faaf0e9b9da24817033645ab22203a8aaa19a678>
+    - added `drivers/gpu/arm/bifrost/platform/mediatek` in 2020.09
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/240087743de495f3d99428c9be08a9697089d6d7>
+    - switched from midgard to bifrost in 2020.09
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/a3671ea484f1df3d7f128a50b6bc5020c19f3a2d>
+  - 5.4
+    - added r24p0 to `drivers/gpu/arm/valhall` in 2020.04
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2017d46f1e629c7c90f3e12f89694e050d9d65fb>
+    - added `drivers/gpu/arm/valhall/platform/mt8192` in 2020.09
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/7e8c2ce155f42d1c78dd377f2cc397824965c3a4>
+    - updated to r32p0 in 2022.03
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/8db20e11c665a979cbb6e280e334b68f97b706ba>
+      - `platform/mt8192` was updated and renamed to `platform/mediatek`
+    - updated `drivers/gpu/arm/valhall/platform/mediatek` in in 2022.07
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/a639bca8650970eb6f81e886d0e4379b6e23dcda>
+    - renamed to `drivers/gpu/arm/mali` in 2022.08
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2542013a4879415917bc6db20170147df8f4ccba>
+  - 5.10
+    - added r24p0 to `drivers/gpu/arm/valhall` in 2020.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/f38632197c49e6558fbbd293bcaa11c1cd91c2ca>
+    - added `drivers/gpu/arm/valhall/platform/mt8192` in 2020.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/7439a8d1dd860f7778f77a1c17ecd5e9b98fdcc0>
+    - added `drivers/gpu/arm/valhall/platform/mt8183` in 2021.01
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/aa4bd4d99fc3300c4c232f71ac2763381abd87bd>
+    - merged mt8192/mt8183 to `drivers/gpu/arm/valhall/platform/mediatek` in 2021.05
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/9b36220bb88b97188438aad78b742d0633052ecd>
+    - added mt8195 support to `drivers/gpu/arm/valhall/platform/mediatek` in 2021.05
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/d17d194977fd0c139ff9e2cb03a46486ef69963f>
+    - added `drivers/gpu/arm/midgard` from 4.19 in 2021.08
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/091c39ecb4a279d5ecdcfc2442d2a9306fcb0344>
+      - unused
+    - reset to r32p0 in 2022.01
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/79b0a1f26446bb3026f29a6cc0cf40d82112ca85>
+    - restored `drivers/gpu/arm/valhall/platform/mediatek` in 2022.01
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/39ff6704c1a9a4da12db11ac202fce301250da7e>
+    - renamed to `drivers/gpu/arm/mali` in 2022.08
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/62c8f0ef54f519e80ccb82f9698073947c04db55>
+  - 5.15
+    - added and removed `drivers/gpu/arm/midgard` in 2021.11 and 2021.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c1123f9e61e790c85e2e2c53803dc6c21963e1ac>
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/1a7dc1501059f47ca0a69bdc10c49b66abb73edd>
+    - added and removed `drivers/gpu/arm/valhall` in 2021.11 and 2021.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/505973e2cbd7c0534bebe61b5472009a8632af92>
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/70a11702ae2c93c57aec31cd3f26ac7856d290b6>
+    - added r32p0 to `drivers/gpu/arm/bifrost` in 2021.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/97b1271a1316e9353e0192e8883921e859e08446>
+    - added `drivers/gpu/arm/bifrost/platform/mediatek` in 2022.02
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/65b6c72cacf6a558097b70256f3914cf14f04d6b>
+    - various updates to `drivers/gpu/arm/bifrost/platform/mediatek` from 2022.02 to 2022.05
+    - renamed to `drivers/gpu/arm/mali` in 2022.08
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/0b8e9d9dd88a3b246025c2174151169f4c00b4b6>
+  - 6.1
+    - added r40p0 to `drivers/gpu/arm/mali` and added
+      `drivers/gpu/arm/mali/platform/mediatek` in 2023.02
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/4e899792da6ad557ece992a9fa910378fab1332a>
+    - updated to r44p1 in 2023.12
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/f1dc725659b6f4a19a18130d8f8c6de9448bca89>
+  - 6.6
+    - added r40p0 to `drivers/gpu/arm/mali` and added
+      `drivers/gpu/arm/mali/platform/mediatek` in 2023.11
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/78229ec3056a11125c6c5de2abcd4b9b7dae3b07>
+    - updated to r44p1 in 2024.03
+      - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/f41ef27e3eaaaedd2d3b64e8fc053ec951640587>
