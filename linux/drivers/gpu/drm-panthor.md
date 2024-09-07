@@ -217,3 +217,41 @@ DRM panthor
       `job->s_fence->finished`
     - this indirection is necessary because we don't have the hw fence for
       out-syncobjs by the time the submit ioctl returns
+
+## PM domains, Clocks, Regulators, and devfreq
+
+- given `gpu: gpu@fb000000`
+  - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
+  - `assigned-clock-rates = <200000000>;`
+  - `power-domains = <&power RK3588_PD_GPU>;`
+  - `clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>, <&cru CLK_GPU_STACKS>;`
+  - `clock-names = "core", "coregroup", "stacks";` - `clocks = <&cru CLK_GPU>;`
+  - `operating-points-v2 = <&gpu_opp_table>;`
+  - `mali-supply = <&vdd_gpu_s0>;`
+- `platform_probe`
+  - `of_clk_set_defaults` parses `assigned-clocks` and `assigned-clock-rates`,
+    and sets the assigned clock to the specified rate
+  - `dev_pm_domain_attach` parses `power-domains`, adds the device to the
+    genpd, and turns the power on
+- `panthor_clk_init`
+  - `devm_clk_get`/`devm_clk_get_optional` parse `clocks` and `clock-names`,
+    and get the clocks
+- `panthor_devfreq_init`
+  - `devm_pm_opp_set_regulators` shallow-parses `operating-points-v2`,
+    allocates an opp table, and gets the regulators
+    - `opp_table->config_regulators = _opp_config_regulator_single`
+  - `devm_pm_opp_of_add_table` deep-parses `operating-points-v2` and populates
+    the opp table
+    - this also calls `_update_opp_table_clk` to get clks
+  - `devfreq_recommended_opp` returns the best opp for the target freq
+  - `dev_pm_opp_set_opp`
+    - `_opp_config_regulator_single` sets the regulator to the opp voltage and
+      enables the regulator
+    - `_opp_config_clk_single` sets the clk to the opp rate
+- `panthor_devfreq_target` is called by devfreq occasionally
+  - `dev_pm_opp_set_rate` sets the target rate
+    - when the target freq supported by the clk falls between two opps, this
+      function sets the voltage according to the higher opp and sets the
+      specified target rate
+    - iow, opps specify the voltages required for different freqs, while the
+      supported freqs are determined by the clk
