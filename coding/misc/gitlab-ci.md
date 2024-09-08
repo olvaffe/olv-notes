@@ -5,8 +5,16 @@ GitLab CI
 
 - Global Keywords
   - `default` Custom default values for job keywords.
+    - each default keyword is copied to every job that does not already have
+      it defined
+      - each job can customize what to copy with `inherit`
   - `include` Import configuration from other YAML files.
   - `stages` The names and order of the pipeline stages.
+    - ordered list of stages, defaulting to `.pre`, `build`, `test`, `deploy`,
+      and `.post`
+    - jobs in the same stage run in parallel
+    - jobs in the next stage run after jobs from the previous stage complete
+      successfully
   - `variables` Define CI/CD variables for all job in the pipeline.
   - `workflow` Control what types of pipeline run.
 - Header Keywords
@@ -15,11 +23,15 @@ GitLab CI
   - `after_script` Override a set of commands that are executed after job.
   - `allow_failure` Allow job to fail. A failed job does not cause the pipeline to fail.
   - `artifacts` List of files and directories to attach to a job on success.
+    - artifacts are available for downloads in the ui
+    - artifacts are automatically copied to jobs in later stages,
+      - each job can customize what to copy with `dependencies`
   - `before_script` Override a set of commands that are executed before job.
   - `cache` List of files that should be cached between subsequent runs.
   - `coverage` Code coverage settings for a given job.
   - `dast_configuration` Use configuration from DAST profiles on a job level.
   - `dependencies` Restrict which artifacts are passed to a specific job by providing a list of jobs to fetch artifacts from.
+    - default to all jobs in earlier stages
   - `environment` Name of an environment to which the job deploys.
   - `extends` Configuration entries that this job inherits from.
   - `identity` Authenticate with third party services using identity federation.
@@ -38,8 +50,13 @@ GitLab CI
   - `secrets` The CI/CD secrets the job needs.
   - `services` Use Docker services images.
   - `stage` Defines a job stage.
+    - default to `test`
   - `tags` List of tags that are used to select a runner.
   - `timeout` Define a custom job-level timeout that takes precedence over the project-wide setting.
   - `trigger` Defines a downstream pipeline trigger.
   - `variables` Define job variables on a job level.
   - `when` When to run job.
+- deprecated
+  - `image`, `services`, `cache`, `before_script`, and `after_scrip` as global
+    keywords are deprecated
+  - `only` and `except` are deprecated
