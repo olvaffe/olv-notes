@@ -3,6 +3,7 @@ GitLab CI
 
 ## CI/CD YAML syntax reference
 
+- <https://docs.gitlab.com/ee/ci/yaml/>
 - Global Keywords
   - `default` Custom default values for job keywords.
     - each default keyword is copied to every job that does not already have
@@ -60,3 +61,34 @@ GitLab CI
   - `image`, `services`, `cache`, `before_script`, and `after_scrip` as global
     keywords are deprecated
   - `only` and `except` are deprecated
+
+## CI/CD pipelines
+
+- <https://docs.gitlab.com/ee/ci/pipelines/>
+- pipelines comprise jobs and stages
+  - jobs are executed by runners
+  - jobs in the same stages are executed in parallel
+  - if all jobs in a stage succeed, the pipeline moves on to the next stage
+- types of pipelines
+  - branch pipelines
+    - they run when new commits are pushed to branches
+    - they run by default, no configuration is needed
+  - merge request pipelines
+    - they run when a MR is created or the source branch of a MR is changed
+    - they run on the source branch only, ignoring the target branch
+    - they do not run by default and need to be configured
+      - `rules:if: $CI_PIPELINE_SOURCE == 'merge_request_event'`
+  - merge result pipelines
+    - they are like merge request pipelines, except they run on the merged
+      result of the source branch and the target branch
+    - they do not run by default and need to be configured
+      - `rules:if` like for merge request pipelines
+      - additionally, `Settings > Merge requests > Enable merged results pipelines`
+  - merge trains
+    - they are like merge result pipelines, except when there are already MRs
+      pending merging and under testing by their respective merge result
+      pipelines, the new merge result pipeline run on the merged result of the
+      source branch, the target branch, and all pending MRs
+    - they do not run by default and need to be configured
+      - see merge result pipelines
+      - additionally, `Settings > Merge requests > Enable merged trains`
