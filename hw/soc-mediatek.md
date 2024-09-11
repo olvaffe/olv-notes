@@ -106,3 +106,155 @@ MediaTek SoCs
   - 2024, 838 / MT8188G
     - Cortex-{A78,A55}, Mali-G57 MC3
     - cros: geralt
+
+## MT8195 SoC
+
+- `mediatek/mt8195.dtsi`
+- Power
+  - Power Controller
+    - `mediatek,mt8195-power-controller`
+    - why is it a child node of `mediatek,mt8195-scpsys`?
+  - PMIC Wrapper
+    - `mediatek,mt8195-pwrap`
+    - it actually connects to a PMIC over SPI
+      - e.g., `mediatek,mt6359`, which is an MFD with
+        - `mediatek,mt6359-auxadc`
+        - `mediatek,mt6358-rtc`
+        - `mediatek,mt6359-keys`
+        - `mt6359-regulator`
+  - SPMI controller
+    - `mediatek,mt8195-spmi`
+    - it connects to regulators
+      - e.g., `mediatek,mt6315-regulator`
+  - Smart Voltage Scaling (SVS)
+    - `mediatek,mt8195-svs`
+- Clock
+  - clock system
+    - CLKSQ generates 26MHz
+    - PLLs multiples the freq
+      - controlled by `mediatek,mt8195-apmixedsys`
+    - CKGEN consists of dividers and gates
+      - `mediatek,mt8195-topckgen`
+  - timers
+    - `mediatek,mt8195-timer`
+    - Application Processor X General Purpose Timer (APXGPT)
+  - watchdog
+    - `mediatek,mt8195-wdt`
+    - Top Reset Generation Unit (TOPRGU)
+- AP
+  - mcu system (MCUSYS)
+    - cpu cores
+      - `arm,cortex-a78` x4
+      - `arm,cortex-a55` x4
+    - DynamIQ Shared UNIT (DSU)
+    - interrupt controller, e.g., CoreLink GIC-{600,700}
+      - `arm,gic-v3`
+    - dvfs
+      - `mediatek,cpufreq-hw`
+    - interconnect, e.g., CoreLink CCI-500
+  - gpu system (GPUSYS)
+    - `mediatek,mt8195-mali`
+  - apu system (APUSYS)
+    - MVPU (MediaTek Vision Processing Unit)
+    - MDLA (MediaTek Deep Learning Accelerator)
+- Memory
+  - nor controller
+    - `mediatek,mt8195-nor`
+  - dram controller (DRAMC)
+  - external memory interface (EMI)
+    - `mediatek,mt8183-emi`
+    - EMI takes requests from MCU, GPU, APU, MMSYS, etc.
+    - it schedules and dispatches requests to DRAMC
+  - mmc & sd controller (MSDC)
+    - `mediatek,mt8195-mmc`
+- Thermal
+  - AUXADC
+    - `mediatek,mt8195-auxadc`
+    - it is connected to the thermal controller to read temperatures
+  - low-voltage thermal sensor (LVTS)
+    - `mediatek,mt8195-lvts-ap`
+    - `mediatek,mt8195-lvts-mcu`
+- Multimedia
+  - multimedia pipeline (MMSYS)
+  - display pipeline (VDOSYS)
+    - `mediatek,mt8195-vdosys0`
+    - `mediatek,mt8195-vdosys1`
+    - `mediatek,mt8195-disp-ovl`
+    - `mediatek,mt8195-disp-rdma`
+    - `mediatek,mt8195-disp-color`
+    - `mediatek,mt8195-disp-ccorr`
+    - `mediatek,mt8195-disp-aal`
+    - `mediatek,mt8195-disp-gamma`
+    - `mediatek,mt8195-disp-dither`
+    - `mediatek,mt8195-disp-dsi`
+    - `mediatek,mt8195-disp-dsc`
+    - `mediatek,mt8195-disp-merge`
+    - `mediatek,mt8195-disp-ethdr`
+    - `mediatek,mt8195-dp-intf`
+  - video processing pipeline (VPPSYS)
+    - `mediatek,mt8195-vppsys0`
+    - `mediatek,mt8195-vppsys1`
+  - Multimedia Data Path (MDP)
+    - `mediatek,mt8195-mdp3-rdma` (read dma)
+    - `mediatek,mt8195-mdp3-fg` (film grain)
+    - `mediatek,mt8195-mdp3-stitch`
+    - `mediatek,mt8195-mdp3-hdr`
+    - `mediatek,mt8195-mdp3-aal` (Adaptive Ambient Light)
+    - `mediatek,mt8195-mdp3-rsz` (resizer)
+    - `mediatek,mt8195-mdp3-tdshp` (two-dimensional sharpness)
+    - `mediatek,mt8195-mdp3-color`
+    - `mediatek,mt8195-mdp3-ovl` (overlay)
+    - `mediatek,mt8195-mdp3-padding`
+    - `mediatek,mt8195-mdp3-tcc` (tone curve conversion)
+    - `mediatek,mt8195-mdp3-wrot`
+  - video codec (VDEC & VENC)
+    - `mediatek,mt8195-vcodec-dec`
+    - `mediatek,mt8195-vcodec-enc`
+  - jpeg codec
+    - `mediatek,mt8195-jpgdec`
+    - `mediatek,mt8195-jpgenc`
+- Audio
+  - Audio
+    - `mediatek,mt8195-audio`
+  - DSP
+    - `mediatek,mt8195-dsp`
+    - for audio signal processing
+- Connectivity
+  - UART
+    - `mediatek,mt8195-uart`
+  - SPI
+    - `mediatek,mt8195-spi`
+    - they connect to, for example,
+      - `google,cros-ec-spi`
+      - spi nor
+      - fingerprint reader
+  - PWM
+    - `mediatek,mt8195-disp-pwm`
+      - for display backlight
+  - Ethernet
+    - `mediatek,mt8195-gmac`
+  - USB
+    - `mediatek,mt8195-mtu3`
+    - `mediatek,mt8195-xhci`
+  - PCIe
+    - `mediatek,mt8195-pcie`
+  - I2C/I3C
+    - `mediatek,mt8195-i2c`
+    - they connect to, for example,
+      - `elan,ekth3000`
+      - `google,cr50`
+      - `hid-over-i2c`
+      - `mediatek,mt6360`
+      - audio codec
+  - GPIO
+    - `mediatek,mt8195-pinctrl`
+- Misc
+  - system companion processor (SCP)
+    - `mediatek,mt8195-scp`
+    - always-on, designed for sensor hub, wake-on-voice, etc.
+  - global command engine (GCE)
+    - `mediatek,mt8195-gce`
+    - it offloads register writes, used by the display driver, etc.
+    - aka, CMDQ mailbox
+  - eFuse
+    - `mediatek,mt8195-efuse`
