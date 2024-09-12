@@ -1035,6 +1035,7 @@ ARM64
     - `kvm_share_hyp` shares the `kvm` struct with EL2 address space
       - nop if already in EL2
     - `kvm_init_stage2_mmu` inits `kvm->arch.mmu`
+      - `kvm_pgtable_stage2_init`
   - `kvm_arch_hardware_enable`
     - if split virt,
       - `hyp_install_host_vector` installs `__kvm_hyp_init` vector for EL2
@@ -1051,6 +1052,9 @@ ARM64
 - `KVM_SET_USER_MEMORY_REGION2` ioctl
   - `kvm_arch_prepare_memory_region`
   - `kvm_arch_commit_memory_region`
+  - when guest accesses an addr whose stage-2 mapping hasn't been setup,
+    `kvm_handle_guest_abort` is called
+    - `kvm_pgtable_stage2_map` sets up stage-2 mapping
 - `KVM_RUN` ioctl
   - `kvm_arch_vcpu_ioctl_run` 
     - `kvm_arm_vcpu_enter_exit` calls `__kvm_vcpu_run`
