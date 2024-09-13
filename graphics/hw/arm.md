@@ -87,32 +87,60 @@ ARM Mali
     - `id >> 12` is the arch versions
   - valhall: v9 and v10
 - kbase uses arch major and product for identification
-  - `GPU_ID2_PRODUCT_TMIX` is `GPU_ID2_MODEL_MAKE(6, 0)`
+  - `GPU_ID_PRODUCT_TMIX` is `GPU_ID_MODEL_MAKE(6, 0)`
+    - Mali-G71, bifrost
     - mimir?
-  - `GPU_ID2_PRODUCT_THEX` is `GPU_ID2_MODEL_MAKE(6, 1)`
+  - `GPU_ID_PRODUCT_THEX` is `GPU_ID_MODEL_MAKE(6, 1)`
+    - Mali-G72, bifrost 2nd
     - heimdall?
-  - `GPU_ID2_PRODUCT_TSIX` is `GPU_ID2_MODEL_MAKE(7, 0)`
+  - `GPU_ID_PRODUCT_TSIX` is `GPU_ID_MODEL_MAKE(7, 0)`
+    - Mali-G51, bifrost
     - sigurd?
-  - `GPU_ID2_PRODUCT_TDVX` is `GPU_ID2_MODEL_MAKE(7, 3)`
-  - `GPU_ID2_PRODUCT_TNOX` is `GPU_ID2_MODEL_MAKE(7, 1)`
-  - `GPU_ID2_PRODUCT_TGOX` is `GPU_ID2_MODEL_MAKE(7, 2)`
-  - `GPU_ID2_PRODUCT_TTRX` is `GPU_ID2_MODEL_MAKE(9, 0)`
-  - `GPU_ID2_PRODUCT_TNAX` is `GPU_ID2_MODEL_MAKE(9, 1)`
-  - `GPU_ID2_PRODUCT_TBEX` is `GPU_ID2_MODEL_MAKE(9, 2)`
-  - `GPU_ID2_PRODUCT_TNAX_MT81XX` is `GPU_ID2_MODEL_MAKE(9, 3)`
-  - `GPU_ID2_PRODUCT_LBEX` is `GPU_ID2_MODEL_MAKE(9, 4)`
-  - `GPU_ID2_PRODUCT_TBAX` is `GPU_ID2_MODEL_MAKE(9, 5)`
-  - `GPU_ID2_PRODUCT_TODX` is `GPU_ID2_MODEL_MAKE(10, 2)`
-    - valhall 3rd gen, odin?
-  - `GPU_ID2_PRODUCT_TGRX` is `GPU_ID2_MODEL_MAKE(10, 3)`
-  - `GPU_ID2_PRODUCT_TVAX` is `GPU_ID2_MODEL_MAKE(10, 4)`
-  - `GPU_ID2_PRODUCT_LODX` is `GPU_ID2_MODEL_MAKE(10, 7)`
-  - `GPU_ID2_PRODUCT_TTUX` is `GPU_ID2_MODEL_MAKE(11, 2)`
-    - valhall 4th gen, turse?
-  - `GPU_ID2_PRODUCT_LTUX` is `GPU_ID2_MODEL_MAKE(11, 3)`
-  - `GPU_ID2_PRODUCT_TTIX` is `GPU_ID2_MODEL_MAKE(12, 0)`
-    - 5th gen, titan?
-  - `GPU_ID2_PRODUCT_LTIX` is `GPU_ID2_MODEL_MAKE(12, 1)`
+  - `GPU_ID_PRODUCT_TDVX` is `GPU_ID_MODEL_MAKE(7, 3)`
+    - Mali-G31, bifrost
+  - `GPU_ID_PRODUCT_TNOX` is `GPU_ID_MODEL_MAKE(7, 1)`
+    - Mali-G76, bifrost 3rd
+  - `GPU_ID_PRODUCT_TGOX` is `GPU_ID_MODEL_MAKE(7, 2)`
+    - Mali-G52, bifrost 2nd
+  - `GPU_ID_PRODUCT_TTRX` is `GPU_ID_MODEL_MAKE(9, 0)`
+    - Mali-G77, valhall
+  - `GPU_ID_PRODUCT_TNAX` is `GPU_ID_MODEL_MAKE(9, 1)`
+    - Mali-G57, valhall
+  - `GPU_ID_PRODUCT_TBEX` is `GPU_ID_MODEL_MAKE(9, 2)`
+    - Mali-G78, valhall 2nd
+  - `GPU_ID_PRODUCT_LBEX` is `GPU_ID_MODEL_MAKE(9, 4)`
+    - Mali-G68, valhall 2nd
+  - `GPU_ID_PRODUCT_TBAX` is `GPU_ID_MODEL_MAKE(9, 5)`
+    - Mali-G78AE
+  - `GPU_ID_PRODUCT_TODX` is `GPU_ID_MODEL_MAKE(10, 2)`
+    - Mali-G710, valhall 3rd gen
+    - odin?
+  - `GPU_ID_PRODUCT_TGRX` is `GPU_ID_MODEL_MAKE(10, 3)`
+    - Mali-G510, valhall 3rd gen
+  - `GPU_ID_PRODUCT_TVAX` is `GPU_ID_MODEL_MAKE(10, 4)`
+    - Mali-G310, valhall 3rd gen
+  - `GPU_ID_PRODUCT_LODX` is `GPU_ID_MODEL_MAKE(10, 7)`
+    - Mali-G610, valhall 3rd gen
+  - `GPU_ID_PRODUCT_TTUX` is `GPU_ID_MODEL_MAKE(11, 2)`
+    - Mali-G715, valhall 4th gen
+      - Immortalis if high core count and raytracing
+      - G615 if low core count
+    - turse?
+  - `GPU_ID_PRODUCT_LTUX` is `GPU_ID_MODEL_MAKE(11, 3)`
+    - Mali-G615, valhall 4th gen
+  - `GPU_ID_PRODUCT_TTIX` is `GPU_ID_MODEL_MAKE(12, 0)`
+    - Mali-G720, 5th gen
+      - Immortalis if high core count and raytracing
+      - G620 if low core count
+    - titan?
+  - `GPU_ID_PRODUCT_LTIX` is `GPU_ID_MODEL_MAKE(12, 1)`
+    - Mali-G620, 5th gen
+  - `GPU_ID_PRODUCT_TKRX` is `GPU_ID_MODEL_MAKE(13, 0)`
+    - Mali-G725
+      - Immortalis-G925 if high core count and raytracing
+      - G625 if low core count
+  - `GPU_ID_PRODUCT_LKRX` is `GPU_ID_MODEL_MAKE(13, 1)`
+    - Mali-G625
 
 ## Utgard
 
