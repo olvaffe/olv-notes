@@ -39,6 +39,21 @@ Platform2 Camera
   - source `PLATFORM_SUBDIR="ml_core"`
   - binaries are `/usr/lib64/libcros_ml_core.so`
   - prebuilt binaries are `/build/share/ml_core/libcros_ml_core_internal.so`
+- `cros-camera-gpu-test`
+  - source `PLATFORM_SUBDIR="camera/gpu/tests"`
+  - binaries are `/usr/bin/image_processor_test`
+- `cros-camera-gl-loader`
+  - source `PLATFORM_SUBDIR="camera/gpu/gl_loader"`
+  - binaries are
+    - `/usr/lib64/libcamera_egl_loader.so`
+    - `/usr/lib64/libcamera_gles_loader.so`
+    - symlinks under `/usr/lib64/camera_gl_loader`
+  - when `USE=camera_angle_backend`
+    - other daemons add `/usr/lib64/camera_gl_loader` to their rpath to use
+      the loader
+    - the loader dlopens `/usr/lib64/angle/libEGL.so`, which is provided by
+      `chromeos-chrome`
+      - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/bf1faee2c81e1d8c9f6a83e8760b728108960289>
 
 ## mojo
 
