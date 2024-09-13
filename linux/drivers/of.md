@@ -41,6 +41,7 @@ Device Tree
     - `#address-cells: <u32>` and `#size-cells: <u32>`
       - if the node has children with `reg`, they indicate the number of cells
         for children `reg`
+      - for 64-bit address space, both are 2
     - `reg: <prop-encoded-array>`
       - `(addr, size)` pairs, usually for mmio regions
     - `virtual-reg: <u32>`
@@ -135,19 +136,7 @@ Device Tree
     - `/ { ... };` for root node
     - c and c++ style comments are supported
 
-## Devicetree Schema
-
-- <https://github.com/devicetree-org/dt-schema>
-- <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/graph.yaml>
-  - the parent-child relations are not enough
-  - phandles
-  - ports and endpoints
-- <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/clock/clock.yaml>
-  - `#clock-cells` is typically 0, and specifier is omitted from `clocks`
-  - `clock-names` is clock names
-  - `clocks` is `(phandle, specifier)` pairs
-
-## Kernel
+## Initialization
 
 - during init, `unflatten_device_tree` is called to unflatten fdt passed in by
   the firmware
@@ -164,37 +153,77 @@ Device Tree
     - grandchildren of the root node that are on certain buses
   - `of_platform_device_create` creates the platform device
     - `of_address_to_resource` parses `reg`
+
+## Standard Properties
+
 - `of_device_is_available` checks if `status` is okay
 - `of_device_is_compatible` checks if a device is compatible with a string
   - it gets the `compatible` prop and performs strcmp
 - `of_address_to_resource` parses `reg` and more to io resources
+  - `of_get_address` returns `reg` value
+    - most nodes are assumed to be on `default` bus
+    - their parent nodes should have `#address-cells` and `#size-cells`
+    - `size` is parsed from the size cells of `reg`
+    - `flags` is assumed to be `IORESOURCE_MEM`
+  - `of_translate_address` translates node addr to physical addr
+    - it recursively translates the node addr to an addr relative to the
+      parent node until it reaches the root node
+    - `ranges` prop specifies the translation
+- `of_dma_is_coherent` parses `dma-coherent`
+
+## Interrupts
+
 - `of_irq_get_byname` parses `interrupt-names` and `interrupts`
   - drivers typically call `platform_get_irq_byname` instead
     - `fwnode_irq_get_byname` calls `of_fwnode_property_read_string_array` to
       parse `interrupt-names` and calls `of_fwnode_irq_get` to parse
       `interrupts`
-- `of_clk_get_hw` parses `clock-names` and `clocks`
-  - drivers typically call `devm_clk_get` which calls `clk_get`
-  - the clk driver should have called `of_clk_add_provider` to add a provider
-- `of_clk_set_defaults` parsed `assigned-clocks` and `assigned-clock-rates`
-  - it is called from `platform_probe` as a clock consumer
-    - `clk_set_rate` is called on the assigned clocks
-- `of_get_regulator` parses `%s-supply`
-  - drivers typically call `devm_regulator_get` which calls `regulator_get`
-  - the regulator driver should have called `devm_regulator_register` to
-    register the regulator
-- `devm_pm_opp_of_add_table` parses `operating-points-v2` and opp table
-  - `_of_add_opp_table_v2` parses the table
-  - `_opp_add_static_v2` parses an entry
-- `dev_pm_domain_attach_by_name` parses `power-domain-names` and
-  `power-domains`
-  - `genpd_get_from_provider` returns the power domain
-  - the power controller driver should have called
-    `of_genpd_add_provider_onecell` to register the power domain
-- `dev_pm_opp_calc_power` parses `dynamic-power-coefficient`
-  - the prop is the device capacitance and is used to estimate the power
-    consumption at a given frequency and voltage (from opp)
-- `of_dma_is_coherent` parses `dma-coherent`
+
+## Device Bindings
+
+- schemas
+  - <https://github.com/devicetree-org/dt-schema>
+  - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings>
+- graph
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/graph.yaml>
+    - the parent-child relations are not enough
+    - phandles
+    - ports and endpoints
+- pmdomain
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/power-domain/power-domain-consumer.yaml>
+  - `dev_pm_domain_attach_by_name` parses `power-domain-names` and
+    `power-domains`
+    - `genpd_get_from_provider` returns the power domain
+    - the power controller driver should have called
+      `of_genpd_add_provider_onecell` to register the power domain
+- clk
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/clock/clock.yaml>
+    - `#clock-cells` is typically 0, and specifier is omitted from `clocks`
+    - `clock-names` is clock names
+    - `clocks` is `(phandle, specifier)` pairs
+  - `of_clk_get_hw` parses `clock-names` and `clocks`
+    - drivers typically call `devm_clk_get` which calls `clk_get`
+    - the clk driver should have called `of_clk_add_provider` to add a provider
+  - `of_clk_set_defaults` parsed `assigned-clocks` and `assigned-clock-rates`
+    - it is called from `platform_probe` as a clock consumer
+      - `clk_set_rate` is called on the assigned clocks
+- regulator
+  <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/regulator/regulator.yaml>
+  - `of_get_regulator` parses `%s-supply`
+    - drivers typically call `devm_regulator_get` which calls `regulator_get`
+    - the regulator driver should have called `devm_regulator_register` to
+      register the regulator
+- opp
+  - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/opp/opp-v2-base.yaml>
+  - `devm_pm_opp_of_add_table` parses `operating-points-v2` and opp table
+    - `_of_add_opp_table_v2` parses the table
+    - `_opp_add_static_v2` parses an entry
+  - `dev_pm_opp_calc_power` parses `dynamic-power-coefficient`
+    - the prop is the device capacitance and is used to estimate the power
+      consumption at a given frequency and voltage (from opp)
+- pci
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pci/pci-bus-common.yaml>
+    - `device_type` is `pci`
 
 ## Example
 
