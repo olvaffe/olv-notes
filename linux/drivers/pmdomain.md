@@ -31,3 +31,39 @@ Kernel PM Domain
   - `__genpd_dev_pm_attach` parses `power-domains` and calls
     `genpd_get_from_provider` to find the provider
   - `genpd_add_device` adds the device to the genpd
+
+## Example
+
+- `mediatek/mt8195.dtsi`
+  - `scpsys: syscon@10006000`
+    - `compatible = "mediatek,mt8195-scpsys", "syscon", "simple-mfd";`
+    - `spm: power-controller`
+      - `compatible = "mediatek,mt8195-power-controller";`
+      - `mfg0: power-domain@MT8195_POWER_DOMAIN_MFG0`
+        - `mfg1: power-domain@MT8195_POWER_DOMAIN_MFG1`
+          - `clocks = <&apmixedsys CLK_APMIXED_MFGPLL>, <&topckgen CLK_TOP_MFG_CORE_TMP>;`
+          - `clock-names = "mfg", "alt";`
+          - `mediatek,infracfg = <&infracfg_ao>;`
+          - `power-domain@MT8195_POWER_DOMAIN_MFG2`
+- there is no driver bound to `scpsys`
+  - there is a `syscon` mfd platform driver, but it is rarely used
+  - its helpers such as `syscon_node_to_regmap` are used instead
+- `CONFIG_MTK_SCPSYS_PM_DOMAINS` binds to `spm`
+  - `mt8195_scpsys_data` is the pm domain definitions for mt8195
+  - `syscon_node_to_regmap` is called on `scpsys` to get the regmap
+  - `for_each_available_child_of_node` loops through all immediate child nodes
+    - `scpsys_add_one_domain` allocs and inits a `scpsys_domain`, which
+      contains a `genpd`
+    - `scpsys_add_subdomain` loops through all grandchild nodes recursively
+      - it calls `scpsys_add_one_domain` on each grandchild node
+      - it also calls `pm_genpd_add_subdomain` to build a genpd tree
+  - `of_genpd_add_provider_onecell` registers the provider
+- when a consumer calls `dev_pm_domain_attach_by_name`
+  - `genpd_power_on` is called on all parent pm domains and the specified pm
+    domain
+  - `scpsys_power_on`
+    - `scpsys_regulator_enable` enables regulator, if any
+    - `clk_bulk_prepare_enable` preps and enables clks, if any
+    - writes regs using regmap
+    - `scpsys_sram_enable`
+    - `scpsys_bus_protect_disable`
