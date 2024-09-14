@@ -19,7 +19,7 @@ systemd-journald
     - `journalctl --header` to see the mysteric numbers
   - if journald detects file corruption, it appends `~` to the filename
 - when `ForwardToSyslog=yes`, journald also forwards journals to
-  `/run/systemd/journal/socket/syslog` socket
+  `/run/systemd/journal/syslog` socket
   - rsyslog uses the socket rather than `/dev/log` when it exists
 
 ## `journalctl`
@@ -39,3 +39,37 @@ systemd-journald
   - 6 or `info`
   - 7 or `debug`
 - `-g` greps
+
+## Traditional Logging
+
+- log producers
+  - some use syslog and write to `/dev/log`
+  - some write to `/var/log/*` directly
+  - some writes to stdio
+    - one can use `logger` to pipe the logs to syslog
+- systemd-journald
+  - it collects logs from various sources and saves them to `/var/log/journal`
+    - including creating `/dev/log` socket to receive syslog
+- rsyslog
+  - it creates `/dev/log` socket to receive syslog
+    - when coexisting with systemd-journald, it can be a downstream
+      - systemd-journald creates `/dev/log`, and forwards logs to
+        `/run/systemd/journal/syslog`
+      - rsyslog recives syslog from `/run/systemd/journal/syslog`
+  - `/etc/rsyslog.conf` is the config file
+    - `kern.* /var/log/messages` logs kernel messages to `/var/log/messages`
+    - `*.info /var/log/messages` logs INFO or higher to `/var/log/messages`
+    - `authpriv.* /var/log/secure` logs auth messages to `/var/log/secure`
+    - `cron.* /var/log/cron` logs cron messages to `/var/log/cron`
+- logrotate
+  - it is typically invoked by cron daily to rotate log files
+  - `/etc/logrotate.conf` is the config file
+    - e.g., rotate `/var/log/messages`
+      - `weekly`
+      - `rotate 5` keeps 5 rotations
+      - `postrotate /usr/bin/killall -HUP syslogd endscript`
+        - after rotation, sends `HUP` to syslogd so that log files are
+          reopened
+        - that is, rsyslog continues to write to `/var/log/messages.1` after
+          rotation and the signal tells rsyslog to close and open
+          `/var/log/message`
