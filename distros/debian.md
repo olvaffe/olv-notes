@@ -270,3 +270,17 @@ Debian
 - build with equivs
   - `echo "Version: <ver>" >> debian/control`
   - `equivs-build debian/control`
+
+## Logs
+
+- `update-alternatives` logs to `/var/log/alternatives.log`
+- `apt` logs to `/var/log/apt`
+  - `term.log` is stdout
+  - `history.log` is the package install/remove/upgrade history
+- `dpkg` logs to `/var/log/dpkg.log`
+  - it is low-level than apt
+  - a package change done by `dpkg` will not show up in apt logs
+- `unattended-upgrades` logs to `/var/log/unattended-upgrades`
+  - `unattended-upgrades.log` contains the invocation log (no update, update
+    package X)
+  - `unattended-upgrades-dpkg.log` contains dpkg stdout
