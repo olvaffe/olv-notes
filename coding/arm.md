@@ -1,6 +1,15 @@
 ARM Assembly
 ============
 
+## Resources
+
+- guides
+  - <https://developer.arm.com/documentation/102374/latest/>
+- references
+  - <https://developer.arm.com/documentation/ddi0487/latest>
+  - <https://developer.arm.com/documentation/ddi0601/latest>
+  - <https://developer.arm.com/documentation/ddi0602/latest>
+
 ## Registers
 
 - 31 64-bit general-purpose registers
