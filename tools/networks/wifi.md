@@ -360,6 +360,8 @@ WiFi
   - `status` shows current status
   - `signal_poll` shows current signal params
   - `scan` requests a BSS scan
+    - `CTRL-EVENT-SCAN-STARTED`
+    - `CTRL-EVENT-SCAN-RESULTS`
   - `scan_results` shows the latest scan results
   - `list_networks` lists configured networks
   - `add_network` adds a new network
@@ -367,6 +369,13 @@ WiFi
   - `set_network <id> <key> <val>` sets a network var
     - `set_network` lists available network vars, such as `ssid` and `psk`
   - `select_network` selects a network and disables others
+  - `disconnect` disconnects
+    - `CTRL-EVENT-DISCONNECTED`
+  - `reconnect` connects to the best network, if disconnected
+    - `CTRL-EVENT-SCAN-STARTED`
+    - `CTRL-EVENT-SCAN-RESULTS`
+    - `CTRL-EVENT-CONNECTED`
+  - `reassociate` is `disconnect` and `reconnect`
 
 ## My APs
 
