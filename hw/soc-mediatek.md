@@ -21,6 +21,10 @@ MediaTek SoCs
       - 12nm, Cortex-{A76,A55}, Mali-G57 MC2
     - 2022, G99 / MT6789
       - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
+    - 2024, G91 / MT6769G
+      - 12nm, Cortex-{A75,A55}, Mali-G52 MC2
+    - 2024, G100 / MT6789
+      - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
   - Helio G8x
     - 2020, G80 / G85 / MT6769
       - 12nm, Cortex-{A75,A55}, Mali-G52 MC2
@@ -65,17 +69,25 @@ MediaTek SoCs
     - 2023, 6080 (810 renamed)
     - 2023, 6100+
       - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
+    - 2024, 6300 / MT6835T
+      - 6nm, Cortex-{A76,A55}, Mali-G57 MC2
   - Dimensity 7000
     - 2023, 7020 (930 renamed)
     - 2023, 7030 (1050 renamed)
     - 2023, 7050 (1080 renamed)
     - 2023, 7200
       - 4nm, Cortex-{A715,A510}, Mali-G610 MC4
+    - 2024, 7300 / MT6878
+      - 4nm, Cortex-{A78,A55}, Mali-G615 MC2
+    - 2023, 7350
+      - 4nm, Cortex-{A715,A510}, Mali-G610 MC4
   - Dimensity 8000
     - 2022, 8200 / MT6896
       - 4nm, Cortex-{A78,A55}, Mali-G610 MC6
     - 2023, 8020 (1100 renamed)
     - 2023, 8050 (1300 renamed)
+    - 2024, 8250
+      - 4nm, Cortex-{A78,A55}, Mali-G610 MC6
   - Dimensity 9000
     - 2021, 9000 / MT6983
       - 4nm, Cortex-{X2,A710,A510}, Mali-G710 MC10
@@ -85,6 +97,8 @@ MediaTek SoCs
       - 4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
     - 2023, 9200+ / MT6985
       - 4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
+    - 2023, 9300 / MT6989 / MT8796
+      - 4nm, Cortex-{X4,A720}, Immortalis-G720 MC12
 - Kompanio (for Chromebooks)
   - MT8173
     - Cortex-{A72,A53}, PowerVR GX6250

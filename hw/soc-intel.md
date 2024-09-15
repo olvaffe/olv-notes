@@ -77,14 +77,17 @@ Intel CPUs
     - cros: skolas
   - Atom: Alder Lake N, 6-15W, Gracemont, Gfx12 GPU
     - cros: nissa
-- 23Q4~: Core 14xxx
+- 23Q4~: Core 14xxx and Core Ultra 1xx
   - Raptor Lake-R, Raptor Cove, Gracemont, Gfx12 GPU
-- 23Q4~: Core Ultra 1xx
-  - Meteor Lake, Redwood Cove, Crestmont, Gfx12.5 GPU
+    - Core 14xxx, desktop
+  - mobile: Meteor Lake, Redwood Cove, Crestmont, Gfx12.5 GPU
+    - Core Ultra 1xx, mobile
     - cros: rex
-- 24Q4~: Core Ultra 2xx?
+- 24Q4~: Core Ultra 2xx
   - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
+    - mobile
   - Arrow Lake
+    - desktop
 - 25Q4~: Core Ultra 3xx?
   - Panther Lake
   - Nova Lake
