@@ -68,7 +68,35 @@ Chrome OS Firmware
   - `futility update -i image-<board>.bin` to flash
   - or, `flashrom -p host -w <image>`
   - might need to disable write-protection, `flashrom --wp-disable`
-
+- flash on host over servo
+  - gsc
+    - `gsctool -d 18d1:504a -f` to get running version
+    - `gsctool -b <img>` to get image version
+    - `gsctool -d 18d1:504a <img>` to flash
+  - ec
+    - `flash_ec --board rauru --image <ec-img> --zephyr` to flash
+  - ap
+    - `futility update --servo -m factory -i <ap-img>` to flash
+      - this shows the image version and the running version
+      - ap ro includes a section called gbb
+        - `futility gbb --get --flags <ap-img>` to show the flags
+        - 0x1: reduces dev screen delay from 30s to 2s
+        - 0x8: forces dev switch on
+        - 0x10: always allow usb boot
+        - 0x20: disable fw rollback
+        - 0x200: disable ec sw sync
+          - modern ap img includes ec img, and will update ec rw on next boot
+          - the mechanism is called ec sw sync
+          - this flag is useful when ec sw sync fails persistently
+            - persistently getting updating critical firmware and entering
+              recovery mode
+- flash on dut
+  - gsc
+    - `gsctool -a -f` to get running version
+    - `gsctool -b <img>` to get image version
+    - `gsctool -a <img>` to flash
+  - ec and ap
+    - `chromeos-firmwareupdate -m factory`
 
 ## GSC (Google Security Chip)
 
