@@ -255,23 +255,3 @@ DRM panthor
       specified target rate
     - iow, opps specify the voltages required for different freqs, while the
       supported freqs are determined by the clk
-- panfrost supports multiple power domains, clocks, and regulators
-  - `panfrost_pm_domain_init`
-    - it bails if there is no or a single power domain, because
-      `platform_probe` already takes care
-    - `dev_pm_domain_attach_by_name`
-    - `device_link_add`
-  - `panfrost_devfreq_init`
-    - it bails (disables devfreq) if there is more than one regulator
-    - otherwise, the regulator (and the clk) is managed by opp
-  - `panfrost_regulator_init`
-    - it is called only when devfreq is disabled
-    - `devm_regulator_bulk_get`
-    - `regulator_bulk_enable`
-  - `panfrost_device_resume` is called by PM?
-  - iow,
-    - panfrost supports 0, 1, or more power domains
-    - panfrost supports 1, or 2 clks (more clks are ignored)
-    - panfrost supports 1, or more regulators
-      - it enables devfreq only when there is 1 regulator
-      - newer kernel always uses 1 regulator, by using a regulator coupler

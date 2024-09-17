@@ -460,6 +460,44 @@ ARM Mali
   - `KBASE_IOCTL_CINSTR_GWT_STOP` is handled by `kbase_gpu_gwt_stop`
   - `KBASE_IOCTL_CINSTR_GWT_DUMP` is handled by `kbase_gpu_gwt_dump`
 
+## kbase runtime pm
+
+- `kbase_pm_ops` is the `dev_pm_ops`
+- `kbase_pm_callback_conf` defines platform-specific callbacks
+- `kbase_device_suspend` is called on system suspend
+  - `kbase_pm_suspend`
+    - `kbase_csf_scheduler_pm_suspend` suspends CSF
+    - `kbase_hwaccess_pm_suspend`
+      - `kbase_pm_do_poweroff_sync`
+        - `kbase_pm_update_state`
+        - `callback_power_runtime_gpu_idle`
+        - `kbase_pm_clock_off`
+          - `callback_power_off`
+      - `callback_power_suspend`
+  - `kbase_devfreq_enqueue_work` calls `devfreq_suspend_device`
+- `kbase_device_resume` is called on system resume
+  - `kbase_pm_resume`
+    - `kbase_hwaccess_pm_resume`
+      - `kbase_pm_do_poweron`
+        - `kbase_pm_clock_on`
+          - `callback_power_resume` or `callback_power_on`
+          - `kbase_pm_update_state`
+          - `callback_power_runtime_gpu_active`
+    - `kbase_csf_scheduler_pm_resume`
+  - `kbase_devfreq_enqueue_work` calls `devfreq_resume_device`
+- `kbase_device_runtime_idle` is called to see if a device can be runtime
+  suspended
+  - `callback_power_runtime_idle` if provided
+  - otherwise, `pm_runtime_mark_last_busy` and returns 0
+- `kbase_device_runtime_suspend` is called for runtime suspend
+  - `kbase_pm_handle_runtime_suspend`
+    - `kbase_pm_clock_off`
+  - `kbase_devfreq_enqueue_work` calls `devfreq_suspend_device`
+  - `callback_power_runtime_off`
+- `kbase_device_runtime_resume` is called for runtime resume
+  - `callback_power_runtime_on`
+  - `kbase_devfreq_enqueue_work` calls `devfreq_resume_device`
+
 ## kbase mediatek platform
 
 - history
