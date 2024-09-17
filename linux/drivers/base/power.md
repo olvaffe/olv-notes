@@ -1,6 +1,90 @@
 Power Management
 ================
 
+## Configs
+
+- `CONFIG_SUSPEND` enables system suspend/resume
+- `CONFIG_PM_AUTOSLEEP` enables auto system suspend when there is no wakeup
+  source
+- `CONFIG_PM` enables device power management
+- `CONFIG_PM_SLEEP` is always when `CONFIG_SUSPEND` is set
+
+## `struct dev_pm_ops`
+
+- there are 23 ops
+- init/cleanup
+  - `prepare`
+  - `complete`
+- `SYSTEM_SLEEP_PM_OPS`, `LATE_SYSTEM_SLEEP_PM_OPS`, and
+  `NOIRQ_SYSTEM_SLEEP_PM_OPS`
+  - these depend on `CONFIG_PM_SLEEP`
+  - there are 6 ops, with early/late and noirq variants
+  - `suspend`
+  - `resume`
+  - `free`
+  - `thaw`
+  - `poweroff`
+  - `restore`
+- `RUNTIME_PM_OPS`
+  - these depend on `CONFIG_PM`
+  - `runtime_suspend`
+  - `runtime_resume`
+  - `runtime_idle`
+- suspend / resume
+  - `prepare`
+  - `suspend`
+  - `suspend_late`
+  - `suspend_noirq`
+  - `resume_noirq`
+  - `resume_early`
+  - `resume`
+  - `complete`
+- hibernation
+  - `prepare`
+  - `freeze`
+  - `freeze_late`
+  - `freeze_noirq`
+  - at this point, everything is stable and a system image can be created
+  - `thaw_noirq`
+  - `thaw_early`
+  - `thaw`
+  - `complete`
+  - at this point, the system image can be saved
+  - `prepare`
+  - `poweroff`
+  - `poweroff_late`
+  - `poweroff_noirq`
+  - at this point, the system can be powered off/on
+  - `prepare`
+  - `freeze`
+  - `freeze_late`
+  - `freeze_noirq`
+  - `restore_noirq`
+  - `restore_early`
+  - `restore`
+  - `complete`
+- `DEFINE_RUNTIME_DEV_PM_OPS` inits all ops from runtime suspend/resume/idle
+  - `SYSTEM_SLEEP_PM_OPS` uses `pm_runtime_force_suspend` and
+    `pm_runtime_force_resume` for everything
+  - no `LATE_SYSTEM_SLEEP_PM_OPS`
+  - no `NOIRQ_SYSTEM_SLEEP_PM_OPS`
+  - `RUNTIME_PM_OPS` is explicitly specified
+
+## Suspend and Resume
+
+- `pm_suspend` suspends the system
+  - it resumes the system before returning
+- `suspend_devices_and_enter`
+  - `dpm_suspend_start` suspends the devices
+  - `suspend_enter`
+    - `dpm_suspend_late`
+    - `dpm_suspend_noirq`
+    - `syscore_suspend` suspends the system
+    - `syscore_resume` resumes the system
+    - `dpm_resume_noirq`
+    - `dpm_resume_early`
+  - `dpm_resume_end` resumes the devices
+
 ## Runtime PM
 
 - `struct dev_pm_ops`

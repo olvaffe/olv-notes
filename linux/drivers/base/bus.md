@@ -17,6 +17,7 @@ Kernel Driver Bus
     - `priv->subsys` is the kset of the bus (`/sys/bus/<foo>`)
     - `priv->devices_kset` is the kset of devices (`/sys/bus/<foo>/devices`)
     - `priv->drivers_kset` is the kset of drivers (`/sys/bus/<foo>/drivers`)
+    - `priv->drivers_autoprobe` is true by default
   - these attributes are added to the bus using `bus_create_file`
     - `bus_attr_uevent` for `uevent`
     - `bus_attr_drivers_probe` for `drivers_probe`
@@ -52,3 +53,46 @@ Kernel Driver Bus
     - `bus->drv_groups`
     - `driver_attr_bind`
     - `driver_attr_unbind`
+
+## `bus_type` ops
+
+- `match`, called from `driver_match_device`
+  - this is used to check if a dev/drv pair matches during probe
+- `uevent`, called from `dev_uevent`
+  - this adds bus-specific uevents
+- `probe`, called from `call_driver_probe`
+  - bus probe takes precedence over `drv->probe` during probe
+    - the idea it to perform bus-specific setup before calling `drv->probe`
+- `sync_state`, called from `dev_sync_state`
+  - this seems to be used by device links
+- `remove`, called from `device_remove`
+  - this is called when a device is removed
+- `shutdown`, called from `device_shutdown`
+  - this is called when the system is about to reboot
+- `online`, called from `device_online`
+  - this brings an offline device back online
+- `offline`, called from `device_offline`
+  - this is called in preparation for hot removal
+- `suspend`, called from `device_suspend`
+  - this is called when the system is about to suspend
+  - this is legacy and `pm` takes precedence
+- `resume`, called from `device_resume`
+  - this is called when the system is just resumed
+  - this is legacy and `pm` takes precedence
+- `num_vf`, called from `dev_num_vf`
+  - this is only used by rtnetlink
+- `dma_configure`, called from `really_probe`
+  - this is called during probe
+- `dma_cleanup`, called from `__device_release_driver`
+  - this is called during unbind
+- `pm` is bus-specific `dev_pm_ops`
+  - it takes precedence over driver's
+
+## Autoprobe
+
+- because `priv->drivers_autoprobe` is true by default,
+  - when `device_add` adds a device, it calls `bus_probe_device` which calls
+    `device_initial_probe`
+  - when `driver_register` registers a driver, it calls `bus_add_driver` which
+    calls `driver_attach`
+  - in both cases, `driver_probe_device` is called on each dev/drv pair
