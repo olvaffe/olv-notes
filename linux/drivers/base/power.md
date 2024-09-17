@@ -11,6 +11,7 @@ Power Management
 
 ## `struct dev_pm_ops`
 
+- <https://docs.kernel.org/driver-api/pm/types.html>
 - there are 23 ops
 - init/cleanup
   - `prepare`
@@ -93,7 +94,7 @@ Power Management
     - to suspend/resume a device on system suspend/resume
   - `RUNTIME_PM_OPS` sets callbacks for runtime suspend/resume
     - to suspend/resume a device on depending on whether the device is in use
-- <https://www.kernel.org/doc/Documentation/power/runtime_pm.txt>
+- <https://docs.kernel.org/power/runtime_pm.html>
   - `pm_runtime_resume` and `pm_request_resume` resumes a device
     - `pm_runtime_resume` resumes the device before returning
     - `pm_request_resume` just queues a resume request
@@ -115,3 +116,14 @@ Power Management
     - on retire, if the submit queue becomes empty,
       `pm_runtime_put_autosuspend`
       - also calls `pm_runtime_mark_last_busy`
+- driver writer
+  - runtime pm assumes the device is suspended by default
+    - use `pm_runtime_set_active` if the assumption is incorrect
+  - during probe,
+    - `devm_pm_runtime_enable` enables runtime pm
+    - `pm_runtime_use_autosuspend` enables autosuspend
+      - `pm_runtime_set_autosuspend_delay` sets a delay
+  - using the device,
+    - `pm_runtime_resume_and_get` resumes the dev
+    - `pm_runtime_mark_last_busy` updates the access time for autosuspend
+    - `pm_runtime_put_autosuspend` suspends the dev
