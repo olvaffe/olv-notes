@@ -3,6 +3,7 @@ Kernel Regulator
 
 ## Regulators
 
+- <https://docs.kernel.org/power/regulator/overview.html>
 - there are system-wide fixed-voltage regulators
   - these are typically driven by `regulator-fixed`
 - there are also adjustable regulators for devfreq
