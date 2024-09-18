@@ -460,10 +460,18 @@ ARM Mali
   - `KBASE_IOCTL_CINSTR_GWT_STOP` is handled by `kbase_gpu_gwt_stop`
   - `KBASE_IOCTL_CINSTR_GWT_DUMP` is handled by `kbase_gpu_gwt_dump`
 
-## kbase runtime pm
+## kbase pm
 
 - `kbase_pm_ops` is the `dev_pm_ops`
 - `kbase_pm_callback_conf` defines platform-specific callbacks
+- `kbase_backend_late_init` is called on init
+  - `kbase_hwaccess_pm_powerup`
+    - `kbase_pm_init_hw`
+      - `callback_power_on`
+    - `callback_power_runtime_gpu_active`
+    - `kbase_pm_do_poweron`
+      - `kbase_pm_clock_on`
+        - `callback_power_on`
 - `kbase_device_suspend` is called on system suspend
   - `kbase_pm_suspend`
     - `kbase_csf_scheduler_pm_suspend` suspends CSF
