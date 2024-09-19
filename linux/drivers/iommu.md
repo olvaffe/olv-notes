@@ -106,3 +106,48 @@ Kernel IOMMU
   - `enable_iommus_vapic`
   - `enable_iommus_v2`
   - `amd_iommu_enable_interrupts`
+
+## GPU IOMMUs
+
+- some gpus have their own iommu controllers
+- msm
+  - a2xx uses `MSM_MMU_GPUMMU`
+    - it appears to be an ad-hoc simple iommu
+    - it does not use the iommu subsystem
+  - a3xx to a5xx use `MSM_MMU_IOMMU`
+    - it is arm smmu-v2
+    - `iommu_paging_domain_alloc`
+    - `iommu_attach_device`
+    - `iommu_set_fault_handler`
+  - a6xx+ use both `MSM_MMU_IOMMU` and `MSM_MMU_IOMMU_PAGETABLE`
+    - `adreno_iommu_create_address_space` creates the global address using
+      `MSM_MMU_IOMMU`
+    - `msm_gpu_create_private_address_space` creates a private address space
+      for each gpu context using `MSM_MMU_IOMMU_PAGETABLE`
+      - `alloc_io_pgtable_ops(ARM_64_LPAE_S1)` to manage its own page tables
+      - `a6xx_set_pagetable` switches the address spaces
+- panfrost
+  - `panfrost_mmu_ctx_create` creates an mmu context for each gpu context
+    - `mmu->mm` is a `drm_mm` and manages a `[32MB, 4GB]` space
+    - `mmu->pgtbl_cfg` is a `io_pgtable_cfg`
+    - `mmu->pgtbl_ops` is a `ARM_MALI_LPAE` pgtable
+      - the iommu is similar to a standard arm smmu
+  - `panfrost_mmu_enable` enables the address space
+    - there can be multiple enabled ASs and each gpu job can select an AS
+  - `panfrost_mmu_map` maps a bo into the AS
+    - `drm_mm_insert_node_generic` has been called to find an unused range
+    - `mmu->pgtbl_ops->map_pages` sets up the page tables
+- panthor
+  - a vm has 3 ranges
+    - user va range at the bottom, managed entirely by the userspace
+    - kernel va range at the top, managed entirely by the kernel space
+    - kernel auto va range, a subset of kernel va range managed by `drm_mm`
+  - allocations and mappings are separated
+    - mapping goes through `drm_gpuvm`, which tracks ranges, bos, and fences
+    - `drm_gpuvm` calls down into the driver to do the real map/unmap
+  - `panthor_vm_create` creates a vm
+    - `alloc_io_pgtable_ops(ARM_64_LPAE_S1)`
+  - `panthor_vm_active` enables a vm
+    - a job refers to the vm using AS id returned by `panthor_vm_as`
+  - `panthor_vm_map_pages` maps a sgt into the vm
+    - `vm->pgtbl_ops->map_pages` sets up the page tables
