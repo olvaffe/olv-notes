@@ -16,7 +16,75 @@ Kernel IOMMU
   - `IOMMU_DEFAULT_PASSTHROUGH`
     - `iommu.passthrough=1`
     - set `iommu_def_domain_type` to `IOMMU_DOMAIN_IDENTITY`
-- `iommu_subsys_init`
+
+## Controllers
+
+- <https://www.kernel.org/doc/Documentation/devicetree/bindings/iommu/iommu.txt>
+  - a hw uses "bus address space" for memory access, which is also known as
+    the "dma address space".  Without iommu, "bus address space" is mapped to
+    "physical address space" trivially, often with an offset.  With iommu, it
+    maps "bus address space" to "physical address space" using page tables
+  - consumers of the iommu controller are called masters
+- `iommu_device_register` is called from the probe function of the controller
+  driver
+  - this adds the iommu to `iommu_device_list`
+  - this also calls `bus_iommu_probe` on all known busses, to probe consumer
+    devices
+
+## Consumers
+
+- before a consumer device is probed by its driver, `iommu_probe_device`
+  should have been called
+  - `iommu_subsys_init` registers `iommu_bus_notifier` to call
+    `iommu_probe_device` on all devices
+  - when a controller driver calls `iommu_device_register`, `bus_iommu_probe`
+    probes all devices on all busses
+  - when dd calls `driver_probe_device` on a device/driver pair, it calls
+    `bus->dma_configure` first
+    - on platform bus, `platform_dma_configure` calls `of_dma_configure` which
+      calls `of_iommu_configure`
+    - on pci bus, `pci_dma_configure` behaves similarly
+    - `of_iommu_configure`
+      - looks for `iommus` or `iommu-map` OF props in the consumer device
+      - calls `iommu_fwspec_init` on the consumer device
+      - calls `iommu_ops_from_fwnode` to get ops from the controller
+      - calls `ops->of_xlate` on the consumer device
+      - calls `iommu_probe_device`
+  - `iommu_probe_device` uses these iommu ops
+    - `ops->probe_device`
+    - `ops->device_group`
+    - `ops->is_attach_deferred`
+    - `ops->probe_finalize`
+- `iommu_domain_alloc` allocates a `iommu_domain`
+  - this loops through all devices on the bus and expects all devices share
+    the same iommu controller
+    - this has been deprecated
+  - `ops->domain_alloc`
+- `iommu_set_fault_handler` sets the fault handler
+  - it is invoked when iommu detects page faults
+- `iommu_attach_device` attaches the iommu domain to the consumer device
+  - this calls down to `__iommu_attach_device` which calls
+    `domain->ops->attach_dev`
+  - `attach_dev` often calls `alloc_io_pgtable_ops` to creates a
+    `io_pgtable_ops` to manage a page table tree
+- `iommu_map` maps a physical addr into the iommu addr space
+  - this calls down to `domain->ops->map_pages`
+  - when the consumer accesses `iova`, `iova` gets translated to `paddr`
+  - the consumer driver is responsible for tracking and finding an unsued
+    iova range for mapping
+  - `prot`
+    - `IOMMU_READ` enables read access
+    - `IOMMU_WRITE` enables write access
+    - `IOMMU_CACHE` enables DMA coherency, between the device and the CPU,
+      usually by enabling snooping
+    - `IOMMU_NOEXEC` disables execution
+    - `IOMMU_MMIO` enables mmio access
+  - `gfp`
+    - when mapping, the controller needs to set up page tables
+    - page tables are backed by pages allocated with `gfp`
+- `iommu_map_sg` maps a scatterlist into the iommu addr space
+  - when the consumer accesses the contiguous iova range, it gets mapped to
+    a scatterlist
 
 ## AMD
 
@@ -38,29 +106,3 @@ Kernel IOMMU
   - `enable_iommus_vapic`
   - `enable_iommus_v2`
   - `amd_iommu_enable_interrupts`
-
-## How to Use
-
-- a driver wants to allocates pages dynamically for DMA by the device
-  - e.g., GPU and GEM BOs
-- it defines an iova address space, a range of addresses
-  - whenever it allocates a DMA-able system memory, it carves out a range from
-    the iova space
-- it calls `iommu_domain_alloc` with the bus type of the device, and sets the
-  iova space to the domain
-  - also calls `iommu_set_fault_handler` to set a fault handler to dump
-    invalid accesses
-- it calls `iommu_attach_device` to attach the device to the IOMMU.  This
-  usually sets up a context for the device in the IOMMU and creates a
-  `io_pgtable_ops` for manipulating the page table
-- given a system memory, it gets the `sg_table` for the system memory.  It
-  calls `iommu_map_sg` so that IOMMU can set up iova-to-physical mappings for
-  the device
-  - each mapping can be a combination of `IOMMU_READ`, `IOMMU_WRITE`,
-    `IOMMU_CACHE`, `IOMMU_NOEXEC`, and `IOMMU_MMIO`
-  - `IOMMU_CACHE` enables DMA coherency, between the device and the CPU,
-    usually by enabling snooping
-  - The device uses "bus address space" for memory access, which is also known
-    as the "dma address space".  Without IOMMU, "buss address space" is mapped
-    to "physical address space" trivially, ofthen with an offset.  With IOMMU,
-    it maps "bus address space" to "physical address space" using page tables
