@@ -506,6 +506,46 @@ ARM Mali
   - `callback_power_runtime_on`
   - `kbase_devfreq_enqueue_work` calls `devfreq_resume_device`
 
+## kbase v10 and v13
+
+- search for `GPU_ID.*MAKE` for v10 and v13 differences
+  - `kbase_regmap_v10_10_init`
+    - `CORE_FEATURES`, named `GPU_CORE_FEATURES` in panthor
+  - `kbase_regmap_v11_init`
+    - `GPU_FEATURES`, 0x60
+    - `PRFCNT_FEATURES`, 0x68
+    - `DOORBELL_FEATURES`, 0xc0
+    - `ASN_HASH_[0-2]`, 0x2c0...
+    - `SYSC_PBHA_OVERRIDE[0-3]`, 0x320...
+    - `SYSC_ALLOC[0-7]`, 0x340...
+    - `LATEST_FLUSH`, named `CSF_GPU_LATEST_FLUSH_ID` in panthor
+  - `kbase_regmap_v12_init`
+    - `GPU_COMMAND_ARG[01]`, 0xd0...
+      - affects `kbase_gpu_cache_flush_pa_range_and_busy_wait`
+    - `SHADER_PWRFEATURES`, 0x188
+      - affects `kbasep_enable_rtu`
+    - `AMBA_FEATURES` replaces `COHERENCY_FEATURES`, named
+      `GPU_COHERENCY_FEATURES` in panthor
+    - `AMBA_ENABLE` replaces `COHERENCY_ENABLE`, named `GPU_COHERENCY_PROTOCOL`
+      in panthor
+    - `MCU_FEATURES`, 0x708
+  - `kbase_hw_get_issues_for_new_id` reports different issues
+    - `KBASE_HW_ISSUE_TURSEHW_2716` and `KBASE_HW_ISSUE_TITANHW_2922`
+  - `kbase_hw_set_features_mask` reports different features
+    - `KBASE_HW_FEATURE_L2_SLICE_HASH`
+    - `KBASE_HW_FEATURE_GPU_SLEEP,`
+    - `KBASE_HW_FEATURE_CORE_FEATURES`
+    - `KBASE_HW_FEATURE_PBHA_HWU`
+    - `KBASE_HW_FEATURE_LARGE_PAGE_ALLOC`
+  - `kbase_cache_set_coherency_mode` sets `AMBA_ENABLE` instead of
+    `COHERENCY_ENABLE`, which are the same reg anyway
+  - `kbase_amba_set_shareable_cache_support` sets `AMBA_ENABLE` when there is
+    system coherency
+  - `kbasep_pbha_supported` returns true
+  - `kbase_get_lock_region_min_size_log2` returns different sizes
+  - `mmu_has_flush_skip_pgd_levels` returns true
+- search for `arch_major` for v10 and v13 differences
+
 ## kbase mediatek platform
 
 - history
