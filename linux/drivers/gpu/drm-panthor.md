@@ -255,3 +255,44 @@ DRM panthor
       specified target rate
     - iow, opps specify the voltages required for different freqs, while the
       supported freqs are determined by the clk
+
+## CSF Firmware
+
+- `panthor_fw_init` is the entrypoint
+- `platform_get_irq_byname` gets the irq for `job`
+- `panthor_gpu_l2_power_on` powers on L2
+- `panthor_vm_create` creates `fw->vm`
+  - `kernel_va_start` and `kernel_va_size`
+    - a vm is usually splitted into userspace region and kernel space region
+    - since this vm is not visible to userspace, we don't really care about
+      userspace region
+    - in this case, it takes up the first 4GB
+  - `auto_kernel_va_start` and `auto_kernel_va_size`
+    - a bo whose va is `PANTHOR_VM_KERNEL_AUTO_VA` gets assigned an va from
+      the "auto" region
+    - in this case, the auto region is `[64MB, 128MB]`
+- `panthor_fw_load` loads the fw
+  - a fw has multiple entries
+  - `panthor_fw_load_entry` loads an entry
+    - `ehdr` is the entry header
+    - `CSF_FW_BINARY_ENTRY_TYPE(ehdr)` returns the entry type
+      - only `CSF_FW_BINARY_ENTRY_TYPE_IFACE` is supported
+    - `CSF_FW_BINARY_ENTRY_SIZE(ehdr)` returns the entry size
+    - `CSF_FW_BINARY_ENTRY_OPTIONAL` returns if the entry is optional
+      - if an entry is not supported and is not optional, the loading fails
+  - `panthor_fw_load_section_entry` loads a `CSF_FW_BINARY_ENTRY_TYPE_IFACE`
+    - `panthor_fw_binary_section_entry_hdr` describes the entry
+      - `flags`
+        - `RD`, `WR`, and `EX` are access flags of the bo
+        - `CACHE_MODE` is the cache mode of the bo
+        - `PROT` means protected bo, which is ignored
+        - `SHARED` means the bo is vmapped for cpu access
+        - `ZERO` means the bo should be zeroed
+      - `va.start` and `va.end` are the bo should bind to in the vm
+        - the entry binds to `CSF_MCU_SHARED_REGION_START` is special and is
+          saved to `fw->shared_section`
+      - `data.start` and `data.end` are entry data to be copied into bo
+      - it is followed by the entry name, which is usually empty
+- `panthor_fw_start` boots the fw
+- `panthor_fw_init_ifaces`
+- `panthor_fw_init_global_iface`
