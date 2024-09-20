@@ -384,6 +384,7 @@ DRM panthor
       - `data.start` and `data.end` are entry data to be copied into bo
       - it is followed by the entry name, which is usually empty
 - `panthor_fw_start` boots the fw
+  - the fw is considered booted after a `JOB_INT_GLOBAL_IF` irq is received
 - `panthor_fw_init_ifaces`
 - `panthor_fw_init_global_iface`
 
