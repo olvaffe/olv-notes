@@ -505,6 +505,86 @@ ARM Mali
 - `kbase_device_runtime_resume` is called for runtime resume
   - `callback_power_runtime_on`
   - `kbase_devfreq_enqueue_work` calls `devfreq_resume_device`
+- `mali_kbase_pm.h`
+  - `kbase_pm_context_active` increments `kbdev->pm.active_count`
+    - this powers up gpu blocks on first use
+  - `kbase_pm_context_idle` decrements `kbdev->pm.active_count`
+    - this powers down gpu blocks on last use
+  - `kbase_pm_suspend` calls `kbase_pm_driver_suspend`
+    - this is called in response to system suspend
+  - `kbase_pm_resume` calls `kbase_pm_driver_resume`
+    - this is called in response to system resume
+- `mali_kbase_hwaccess_pm.h`
+  - `kbase_hwaccess_pm_init`
+    - `kbase_pm_ca_init` core availability
+    - `kbase_pm_policy_init` defaults to `kbase_pm_coarse_demand_policy_ops`,
+      which uses `kbase_pm_is_active` to check `kbdev->pm.active_count`
+    - `kbase_pm_state_machine_init` inits the pm state machine for power
+      transitions
+    - `kbdev->pm.backend.gpu_sleep_allowed`
+      - v11+ supports `KBASE_HW_FEATURE_GPU_SLEEP` and enables
+        `KBASE_GPU_SUPPORTS_GPU_SLEEP`
+        - but early v11 has `KBASE_HW_ISSUE_TURSEHW_1997`
+        - on gpu idle,
+          - before v11, it powers down mcu and l2
+          - after v11, it pauses mcu and powers down l2?
+      - v12+ (and late v11) supports `KBASE_GPU_SUPPORTS_FW_SLEEP_ON_IDLE`
+        - on gpu idle, mcu pauses itself automatically?
+  - `kbase_hwaccess_pm_term` cleans up
+  - `kbase_hwaccess_pm_powerup` powers up gpu, inits, and powers it down
+  - `kbase_hwaccess_pm_halt`
+  - `kbase_hwaccess_pm_suspend` is caleld from `kbase_pm_suspend`
+  - `kbase_hwaccess_pm_resume` is caleld from `kbase_pm_resume`
+  - `kbase_hwaccess_pm_gpu_active` performs all actions to get gpu active
+    - it is called on first `kbase_pm_context_active`
+    - `kbase_pm_do_poweron`
+  - `kbase_hwaccess_pm_gpu_idle` performs all actions to get gpu idle
+    - it is called on last `kbase_pm_context_idle`
+    - `kbase_pm_do_poweroff`
+- `backend/gpu/mali_kbase_pm_internal.h`
+  - `kbase_pm_get_present_cores` returns `{L2,SHADER,TILER,STACK}_PRESENT`
+  - `kbase_pm_get_active_cores` returns `{L2,SHADER,TILER,STACK}_PWRACTIVE`
+  - `kbase_pm_get_trans_cores` returns `{L2,SHADER,TILER,STACK}_PWRTRANS`
+  - `kbase_pm_get_ready_cores` returns `{L2,SHADER,TILER,STACK}_READY`
+- `kbase_pm_l2_update_state` handles L2 power state changes
+  - when `kbase_pm_is_l2_desired` is true, it transitions from `KBASE_L2_OFF`
+    to `KBASE_L2_ON`
+    - if `KBASE_L2_OFF`, writes `L2_CONFIG` and `L2_PWRON`
+    - if `KBASE_L2_PEND_ON`, checks `L2_PWRTRANS` and `L2_READY`
+    - if `KBASE_L2_ON_HWCNT_ENABLE`, nothing
+    - if `KBASE_L2_ON`, done
+  - when `kbase_pm_is_l2_desired` is false, it transitions from `KBASE_L2_ON`
+    to `KBASE_L2_OFF`
+    - if `KBASE_L2_ON`, nothing
+    - if `KBASE_L2_ON_HWCNT_DISABLE`, nothing
+    - if `KBASE_L2_POWER_DOWN`, writes `L2_PWROFF`
+    - if `KBASE_L2_PEND_OFF`, checks `L2_PWRTRANS` and `L2_READY`
+    - if `KBASE_L2_OFF`, nothing
+- `kbase_pm_mcu_update_state` handles MCU/CSF power state changes
+  - it is nop until `kbase_device_firmware_init_once` transitions from
+    `KBASE_MCU_OFF` to `KBASE_MCU_ON`
+  - when `kbase_pm_is_mcu_desired` returns true, it transitions from
+    `KBASE_MCU_OFF` to `KBASE_MCU_ON`
+    - if `KBASE_MCU_OFF`, `kbase_csf_firmware_trigger_reload` reboots the fw
+    - if `KBASE_MCU_PEND_ON_RELOAD`, it checks for boot complete and
+      `kbase_csf_firmware_global_reinit`
+    - if `KBASE_MCU_ON_GLB_REINIT_PEND`, it checks for glb init complete and 
+    - if `KBASE_MCU_ON_HWCNT_ENABLE`, nothing
+    - if `KBASE_MCU_ON`, done
+  - when `kbase_pm_is_mcu_desired` returns false, it transitions from
+    `KBASE_MCU_ON` to `KBASE_MCU_OFF`
+    - if `KBASE_MCU_ON`, nothing
+    - if `KBASE_MCU_ON_HWCNT_DISABLE`, nothing
+    - on v10 and early v11,
+      - if `KBASE_MCU_ON_HALT`, triggers mcu halt
+      - if `KBASE_MCU_ON_PEND_HALT`, checks halt complete
+      - if `KBASE_MCU_POWER_DOWN`, triggers mcu shutdown
+      - if `KBASE_MCU_PEND_OFF`, waits mcu shutdown
+      - if `KBASE_MCU_OFF`, done
+    - on later v11+,
+      - if `KBASE_MCU_ON_SLEEP_INITIATE`, triggers mcu sleep
+      - if `KBASE_MCU_ON_PEND_SLEEP`, checks mcu sleep complete
+      - if `KBASE_MCU_IN_SLEEP`, done
 
 ## kbase csf
 
