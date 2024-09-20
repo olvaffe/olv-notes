@@ -386,7 +386,45 @@ DRM panthor
 - `panthor_fw_start` boots the fw
   - the fw is considered booted after a `JOB_INT_GLOBAL_IF` irq is received
 - `panthor_fw_init_ifaces`
+  - each interface consists of control, input, and output regions
+    - control is for iface props and is read-only 
+    - input is written by host and is read-write
+    - output is written by mcu and is read-only
+  - there are 3 types of interfaces
+    - `panthor_fw_global_iface`
+      - there is only one
+      - `glb_iface->control` points to `CSF_MCU_SHARED_REGION_START`
+      - `glb_iface->{input,output}` are given by
+        `glb_iface->control->{input,output}_va`
+    - `panthor_fw_csg_iface`
+      - there are multiple command stream gropus (e.g., 8) given by
+        `glb_iface->control->group_num`
+      - `csg_iface->control` are gvien by
+        `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
+      - `csg_iface->{input,output}` are given by
+        `csg_iface->control->{input,output}_va`
+    - `panthor_fw_cs_iface`
+      - there are multiple command streams per group (e.g., 8) given by
+        `csg_iface->control->stream_num`
+      - `cs_iface->control` are gvien by
+        `CSF_STREAM_CONTROL_OFFSET + csg_iface->control->stream_stride * idx`
+        relative to the csg control
+        `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
+      - `cs_iface->{input,output}` are given by
+        `cs_iface->control->{input,output}_va`
+      - there are ~128 regs
 - `panthor_fw_init_global_iface`
+  - it communicates with mcu over the global iface
+    - host writes to input region
+    - host writes to `CSF_DOORBELL(CSF_GLB_DOORBELL_ID)` to notify mcu
+  - req/ack
+    - input has `reg` and output has `ack`
+    - when the host rings the door bell, mcu executes `ret ^ ack` and sets
+      `ack` to `ret`
+- `panthor_fw_ping_work` is called every `PING_INTERVAL_MS` (12s) to ping mcu
+  - `panthor_fw_toggle_reqs` toggles `GLB_PING`
+  - `panthor_fw_wait_acks` waits until the given bits are the same between
+    `req` and `ack`
 
 ## Exceptions
 
