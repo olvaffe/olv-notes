@@ -506,6 +506,20 @@ ARM Mali
   - `callback_power_runtime_on`
   - `kbase_devfreq_enqueue_work` calls `devfreq_resume_device`
 
+## kbase csf
+
+- `kbase_device_firmware_init_once` boots MCU on first use
+  - `kbase_pm_context_active` requests power on
+  - `kbase_csf_firmware_deferred_init` boots mcu
+    - `kbase_csf_firmware_load_init` does the booting
+      - `kbase_pm_wait_for_l2_powered` waits for l2 powered on
+      - write `MCU_CNTRL_AUTO` to `MCU_CONTROL`
+      - wait for `JOB_IRQ_GLOBAL_IF` interrupt
+    - `kbdev->pm.backend.mcu_state = KBASE_MCU_ON;`
+    - `kbdev->csf.firmware_inited = true;`
+  - `kbase_pm_context_idle` requests power off
+
+
 ## kbase v10 and v13
 
 - search for `GPU_ID.*MAKE` for v10 and v13 differences
