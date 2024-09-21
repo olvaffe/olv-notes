@@ -47,3 +47,56 @@ Mesa PanVK
 - `PANDECODE_DUMP_FILE` defaults to `pandecode.dump`
 - `BIFROST_MESA_DEBUG` is for the bifrost compiler
 - `MIDGARD_MESA_DEBUG` is for the midgard compiler
+
+## `pan_kmod_ops`
+
+- `panthor_kmod_dev_create`
+  - each `panvk_physical_device` and each `panvk_device` own a `pan_kmod_dev`
+  - `DRM_IOCTL_PANTHOR_DEV_QUERY`
+- `panthor_kmod_dev_destroy`
+- `panthor_dev_query_props`
+- `panthor_kmod_dev_query_user_va_range`
+  - `panvk_device` uses this to decide the user va region
+- `panthor_kmod_bo_alloc`
+  - each `panvk_queue` has a bo as the ring buffer
+  - `panvk_priv_bo_create` calls this for panvk-internal bos
+  - each `panvk_device_memory` has a bo, either allocated or imported
+  - `DRM_IOCTL_PANTHOR_BO_CREATE`
+- `panthor_kmod_bo_free`
+- `panthor_kmod_bo_import`
+- `panthor_kmod_bo_export`
+- `panthor_kmod_bo_get_mmap_offset`
+  - `DRM_IOCTL_PANTHOR_BO_MMAP_OFFSET`
+- `panthor_kmod_bo_wait`
+  - panvk does not need this
+- `panthor_kmod_vm_create`
+  - each `panvk_device` has a vm
+  - `DRM_IOCTL_PANTHOR_VM_CREATE`
+- `panthor_kmod_vm_destroy`
+  - `DRM_IOCTL_PANTHOR_VM_DESTROY`
+- `panthor_kmod_vm_bind`
+  - all bos must be bound to a device vm before they can be accessed by hw
+  - `DRM_IOCTL_PANTHOR_VM_BIND`
+- `panthor_kmod_vm_query_state`
+  - panvk does not use this yet; query for faulty vm
+  - `DRM_IOCTL_PANTHOR_VM_GET_STATE`
+- `panthor_kmod_query_timestamp`
+  - `DRM_IOCTL_PANTHOR_DEV_QUERY`
+- some ioctls are not abstracted
+- `panvk_per_arch(queue_init)`
+  - `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
+  - `DRM_IOCTL_PANTHOR_GROUP_CREATE`
+    - `drm_panthor_group_create`
+      - it can control which cores a draw or a dispatch runs on
+      - `priority` decides the priority
+      - `queues` uses 3 queues
+        - `PANVK_SUBQUEUE_VERTEX_TILER`
+        - `PANVK_SUBQUEUE_FRAGMENT`
+        - `PANVK_SUBQUEUE_COMPUTE`
+- `panvk_per_arch(queue_finish)`
+  - `DRM_IOCTL_PANTHOR_GROUP_DESTROY`
+  - `DRM_IOCTL_PANTHOR_TILER_HEAP_DESTROY`
+- `panvk_queue_submit`
+  - `DRM_IOCTL_PANTHOR_GROUP_SUBMIT`
+- query device lost
+  - `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`
