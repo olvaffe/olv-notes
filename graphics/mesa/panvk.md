@@ -100,3 +100,19 @@ Mesa PanVK
   - `DRM_IOCTL_PANTHOR_GROUP_SUBMIT`
 - query device lost
   - `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`
+
+## Command Stream
+
+- `cs_scratch_reg32` returns a `cs_index`
+  - it checks that the reg is in `PANVK_CS_REG_SCRATCH_{START,END}`
+  - `cs_reg_tuple` builds the `cs_index` struct
+  - there is a total of `b->conf.nr_registers - b->conf.nr_kernel_registers`
+    registers
+- `cs_move32_to`
+  - `cs_alloc_ins` returns a ptr to an instr
+    - the ptr points to an offset in `b->cur_chunk.buffer.cpu` which is u64
+  - `pan_pack` expands to
+    - `struct MALI_CS_MOVE32 I = { MALI_CS_MOVE32_header }`
+    - custom code to modify `I`
+    - `MALI_CS_MOVE32_pack(ptr, &I)`
+  - `cs_dst32` converts a `cs_index` into a u8, the raw reg number
