@@ -87,31 +87,40 @@ ARM Mali
     - `id >> 12` is the arch versions
   - valhall: v9 and v10
 - kbase uses arch major and product for identification
+  - also <https://gitlab.freedesktop.org/panfrost/valhall-docs/-/blob/main/Appendix.md>
   - `GPU_ID_PRODUCT_TMIX` is `GPU_ID_MODEL_MAKE(6, 0)`
     - Mali-G71, bifrost
-    - mimir?
+    - mimir
   - `GPU_ID_PRODUCT_THEX` is `GPU_ID_MODEL_MAKE(6, 1)`
     - Mali-G72, bifrost 2nd
-    - heimdall?
+    - heidmall
   - `GPU_ID_PRODUCT_TSIX` is `GPU_ID_MODEL_MAKE(7, 0)`
     - Mali-G51, bifrost
-    - sigurd?
+    - sigurd
   - `GPU_ID_PRODUCT_TDVX` is `GPU_ID_MODEL_MAKE(7, 3)`
     - Mali-G31, bifrost
+    - dvalin
   - `GPU_ID_PRODUCT_TNOX` is `GPU_ID_MODEL_MAKE(7, 1)`
     - Mali-G76, bifrost 3rd
+    - norr
   - `GPU_ID_PRODUCT_TGOX` is `GPU_ID_MODEL_MAKE(7, 2)`
     - Mali-G52, bifrost 2nd
+    - gondul
   - `GPU_ID_PRODUCT_TTRX` is `GPU_ID_MODEL_MAKE(9, 0)`
     - Mali-G77, valhall
+    - trym
   - `GPU_ID_PRODUCT_TNAX` is `GPU_ID_MODEL_MAKE(9, 1)`
     - Mali-G57, valhall
+    - natt-a
   - `GPU_ID_PRODUCT_TBEX` is `GPU_ID_MODEL_MAKE(9, 2)`
     - Mali-G78, valhall 2nd
+    - borr
   - `GPU_ID_PRODUCT_LBEX` is `GPU_ID_MODEL_MAKE(9, 4)`
     - Mali-G68, valhall 2nd
+    - ottr
   - `GPU_ID_PRODUCT_TBAX` is `GPU_ID_MODEL_MAKE(9, 5)`
     - Mali-G78AE
+    - borr-ae
   - `GPU_ID_PRODUCT_TODX` is `GPU_ID_MODEL_MAKE(10, 2)`
     - Mali-G710, valhall 3rd gen
     - odin?

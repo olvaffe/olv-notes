@@ -103,6 +103,71 @@ Mesa PanVK
 
 ## Command Stream
 
+- `genxml/v10.xml`
+  - CS aka CEU (Command Execution Unit)
+  - 7 cs enums
+    - `CS Condition`
+    - `CS State`
+    - `CS Heap Operation`
+    - `CS Flush Mode`
+    - `CS Sync scope`
+    - `CS Exception type`
+    - `CS Opcode`
+  - 40 cs structs
+    - all structs have size 2 (dwords)
+    - `CS Base` is not a real opcode
+      - it is only used by the decoder
+      - bit 0..55: op payload
+      - bit 56..63: op code
+    - `CS NOP` is nop
+      - the payload is ignored
+    - `CS MOVE` does `dst_reg = imm48`
+    - `CS MOVE32` does `dst_reg = imm32`
+    - `CS WAIT` waits the specified slots (scoreboards?)
+      - `PANVK_SB_LS`, load/store
+      - `PANVK_SB_IMM_FLUSH`,
+      - `PANVK_SB_DEFERRED_SYNC`
+      - `PANVK_SB_DEFERRED_FLUSH`
+      - `PANVK_SB_ITER_START`
+      - `PANVK_SB_ITER_COUNT`
+    - `CS RUN_COMPUTE` runs a compute job
+    - `CS RUN_TILING` runs a tiling job, unused?
+    - `CS RUN_IDVS` runs an idvs (index-driven vs) job
+      - traditional vs: vertex shading -> primitive assembly -> culling
+        - wasted computation if a primitive is culled
+      - idvs since bifrost: primitive assembly -> position shading -> culling -> varying shading
+    - `CS RUN_FRAGMENT` runs an fs job
+    - `CS RUN_FULLSCREEN` runs a fullscreen job
+    - `CS FINISH_TILING`
+    - `CS FINISH_FRAGMENT`
+    - `CS ADD_IMMEDIATE32` does `dst_reg = src_reg + imm32`
+    - `CS ADD_IMMEDIATE64` does `dst_reg64 = src_reg64 + imm32`
+    - `CS UMIN32` does `dst_reg = min(src_reg1, src_reg2)`
+    - `CS LOAD_MULTIPLE`
+    - `CS STORE_MULTIPLE`
+    - `CS BRANCH`
+    - `CS SET_SB_ENTRY`
+    - `CS PROGRESS_WAIT`
+    - `CS SET_EXCEPTION_HANDLER`
+    - `CS CALL`
+    - `CS JUMP`
+    - `CS REQ_RESOURCE`
+    - `CS FLUSH_CACHE2`
+    - `CS SYNC_ADD32`
+    - `CS SYNC_SET32`
+    - `CS SYNC_WAIT32`
+    - `CS STORE_STATE`
+    - `CS PROT_REGION`
+    - `CS PROGRESS_STORE`
+    - `CS PROGRESS_LOAD`
+    - `CS RUN_COMPUTE_INDIRECT`
+    - `CS ERROR_BARRIER`
+    - `CS HEAP_SET`
+    - `CS HEAP_OPERATION`
+    - `CS TRACE_POINT`
+    - `CS SYNC_ADD64`
+    - `CS SYNC_SET64`
+    - `CS SYNC_WAIT64`
 - `cs_scratch_reg32` returns a `cs_index`
   - it checks that the reg is in `PANVK_CS_REG_SCRATCH_{START,END}`
   - `cs_reg_tuple` builds the `cs_index` struct
