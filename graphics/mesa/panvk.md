@@ -126,6 +126,18 @@ Mesa PanVK
       - `subq->context` is a bo for `panvk_cs_subqueue_context`
         - `syncobjs` points to `queue->syncobjs`
       - first submit to init the subqueue
+- `panvk_queue_submit`
+  - if there are semaphore waits
+    - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_WAIT` for each
+      wait 
+    - sets up an empty `drm_panthor_queue_submit` for each used subqueue to
+      wait on the `drm_panthor_sync_op` array above
+  - for each cmdbufs
+    - sets up a `drm_panthor_queue_submit` for each used subqueue
+  - if there are semaphore signals
+    - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_SIGNAL`
+    - sets up an empty `drm_panthor_queue_submit` for each used subqueue
+    - tbd
 
 ## Command Stream
 
