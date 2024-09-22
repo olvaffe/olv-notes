@@ -105,6 +105,7 @@ Mesa PanVK
 
 - `panvk_per_arch(queue_init)`
   - `drmSyncobjCreate` creates a syncobj
+    - `queue->syncobj_handle` is used for semaphore signals
   - `init_tiler`
     - `tiler_heap->context` is from `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
     - `tiler_heap->desc` is a hw descriptor, `MALI_TILER_HEAP`
@@ -135,9 +136,12 @@ Mesa PanVK
   - for each cmdbufs
     - sets up a `drm_panthor_queue_submit` for each used subqueue
   - if there are semaphore signals
-    - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_SIGNAL`
-    - sets up an empty `drm_panthor_queue_submit` for each used subqueue
-    - tbd
+    - for each used subqueue, sets up a `drm_panthor_sync_op` with
+      `DRM_PANTHOR_SYNC_OP_SIGNAL` and sets up an empty
+      `drm_panthor_queue_submit`
+    - they all signal `queue->syncobj_handle`
+    - the fence is then copied to user semaphores using `drmSyncobjTransfer`
+    - `queue->syncobj_handle` is reset
 
 ## Command Stream
 
