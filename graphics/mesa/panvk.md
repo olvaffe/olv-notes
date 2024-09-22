@@ -101,6 +101,32 @@ Mesa PanVK
 - query device lost
   - `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`
 
+## Queue
+
+- `panvk_per_arch(queue_init)`
+  - `drmSyncobjCreate` creates a syncobj
+  - `init_tiler`
+    - `tiler_heap->context` is from `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
+    - `tiler_heap->desc` is a hw descriptor, `MALI_TILER_HEAP`
+  - `create_group`
+    - `queue->group_handle` is from `DRM_IOCTL_PANTHOR_GROUP_CREATE`
+    - there are 3 sub-queues
+      - `PANVK_SUBQUEUE_VERTEX_TILER`
+      - `PANVK_SUBQUEUE_FRAGMENT`
+      - `PANVK_SUBQUEUE_COMPUTE`
+  - `init_queue`
+    - `queue->syncobjs` is an array of per-subqueue `panvk_cs_sync64`
+      - this is to track the per-subqueue seqno
+    - `init_render_desc_ringbuf` inits `queue->render_desc_ringbuf`
+      - `ringbuf->bo` is `RENDER_DESC_RINGBUF_SIZE` (512KB)
+      - `ringbuf->bo` is vm-bound twice consecutively
+        - this simplifies wrap-around handling
+      - `ringbuf->syncobj` is a `panvk_cs_sync32`
+    - `init_subqueue` inits each of `queue->subqueues`
+      - `subq->context` is a bo for `panvk_cs_subqueue_context`
+        - `syncobjs` points to `queue->syncobjs`
+      - first submit to init the subqueue
+
 ## Command Stream
 
 - `genxml/v10.xml`
