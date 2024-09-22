@@ -114,6 +114,9 @@ Mesa PanVK
     - `CS Exception type`
     - `CS Opcode`
   - 40 cs structs
+    - `pandecode_cs` is a good place to know how they work
+      - `interpret_ceu_instr`
+      - `disassemble_ceu_instr`
     - all structs have size 2 (dwords)
     - `CS Base` is not a real opcode
       - it is only used by the decoder
@@ -124,6 +127,8 @@ Mesa PanVK
     - `CS MOVE` does `dst_reg = imm48`
     - `CS MOVE32` does `dst_reg = imm32`
     - `CS WAIT` waits the specified slots (scoreboards?)
+      - the fw supports `scoreboard_slot_count` slots
+      - userspace can decide which is for what
       - `PANVK_SB_LS`, load/store
       - `PANVK_SB_IMM_FLUSH`,
       - `PANVK_SB_DEFERRED_SYNC`
@@ -214,3 +219,26 @@ Mesa PanVK
     frag regs (40..46)
   - `cs_update_vt_ctx(b) { foo }` validates that foo only writes to
     vertex tiler / idvs regs (0..60)
+
+## Command Stream Decoder
+
+- usage
+  - `pandecode_create_context` and `pandecode_destroy_context` are called
+    per-VkDevice
+  - `pandecode_inject_mmap` and `pandecode_inject_free` are called per-BO
+    - `ctx->mmap_tree` manages the BOs
+  - these are called per-queue-submit
+    - `pandecode_dump_file_open` opens the file
+      - optional because `pandecode_cs` and `pandecode_dump_mappings` (but not
+        `pandecode_log`) open on-demand
+    - `pandecode_log` printfs to the file
+    - `pandecode_cs` decodes a command stream
+    - `pandecode_dump_mappings` dumps the contents of BOs
+    - `pandecode_next_frame` closes the file
+- `pandecode_cs` calls `GENX(pandecode_cs)`
+  - `regs` is an array of 256 u32, initialized to 0, on stack
+  - `pandecode_find_mapped_gpu_mem_containing` finds the BO containing the cs
+    - it also `mprotect` the BO and adds it to `ctx->ro_mappings`
+    - at the end of decode, `pandecode_map_read_write` undoes the `mprotect`
+  - `disassemble_ceu_instr` prints the u64 instr
+  - `interpret_ceu_instr` simulates the u64 instr

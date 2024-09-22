@@ -271,6 +271,8 @@ DRM panthor
   - `job->call_info` is the addr of the cmdstream to execute
   - a short `call_instrs` is appended to `queue->ringbuf`
     - note how it updates the seqno at `sync_addr`
+    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
+      - they are for 64-bit `addr_reg` and `val_reg`
   - `group->csg_id` indicates whether the group is active or not
     - if the group is active, the kernel rings a doorbell
     - otherwise, `group_schedule_locked` schedules the group
