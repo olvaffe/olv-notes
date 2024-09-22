@@ -131,6 +131,15 @@ Mesa PanVK
       - `PANVK_SB_ITER_START`
       - `PANVK_SB_ITER_COUNT`
     - `CS RUN_COMPUTE` runs a compute job
+      - it expects reg0..reg39 to be set up, such as
+        - reg0 points to res table
+        - reg8 points to push consts
+        - reg16 points to shader
+        - reg24 points to local storage
+        - reg32 is global attr offset
+        - reg33 is wg size
+        - reg34..36 are wg offsets
+        - reg37..39 are wg counts
     - `CS RUN_TILING` runs a tiling job, unused?
     - `CS RUN_IDVS` runs an idvs (index-driven vs) job
       - traditional vs: vertex shading -> primitive assembly -> culling
@@ -143,28 +152,37 @@ Mesa PanVK
     - `CS ADD_IMMEDIATE32` does `dst_reg = src_reg + imm32`
     - `CS ADD_IMMEDIATE64` does `dst_reg64 = src_reg64 + imm32`
     - `CS UMIN32` does `dst_reg = min(src_reg1, src_reg2)`
-    - `CS LOAD_MULTIPLE`
-    - `CS STORE_MULTIPLE`
-    - `CS BRANCH`
+    - `CS LOAD_MULTIPLE` does `dst_reg = load(src_reg + imm16)`
+    - `CS STORE_MULTIPLE` does `store(src_reg1 + imm16, src_reg2)`
+    - `CS BRANCH` jumps a signed imm16 offset if the reg meets the condition
     - `CS SET_SB_ENTRY`
-    - `CS PROGRESS_WAIT`
-    - `CS SET_EXCEPTION_HANDLER`
-    - `CS CALL`
-    - `CS JUMP`
-    - `CS REQ_RESOURCE`
-    - `CS FLUSH_CACHE2`
-    - `CS SYNC_ADD32`
-    - `CS SYNC_SET32`
-    - `CS SYNC_WAIT32`
-    - `CS STORE_STATE`
-    - `CS PROT_REGION`
-    - `CS PROGRESS_STORE`
-    - `CS PROGRESS_LOAD`
-    - `CS RUN_COMPUTE_INDIRECT`
-    - `CS ERROR_BARRIER`
-    - `CS HEAP_SET`
+    - `CS PROGRESS_WAIT` is unused
+    - `CS SET_EXCEPTION_HANDLER` is unused
+    - `CS CALL` calls `(reg1, reg2)`
+      - `reg1` is the addr
+      - `reg2` is the length
+    - `CS JUMP` jumps to `(reg1, reg2)`
+      - why does it need the length?
+    - `CS REQ_RESOURCE` is needed before/after running a job
+      - it requests and releases the needed res?
+    - `CS FLUSH_CACHE2` flushes L2 and LSC caches
+      - this is used for barriers
+    - `CS SYNC_ADD32`  does `store(addr, load(addr) + src_reg)` after sync
+    - `CS SYNC_SET32` does `store(addr, src_reg)` after sync
+    - `CS SYNC_WAIT32` busy-waits until an `load(addr)` meets the condition
+    - `CS STORE_STATE` does `store(src_reg + imm16, state)`, where `state` is
+      - `MALI_CS_STATE_TIMESTAMP`
+      - `MALI_CS_STATE_CYCLE_COUNT`
+      - `MALI_CS_STATE_DISJOINT_COUNT`
+      - `MALI_CS_STATE_ERROR_STATUS`
+    - `CS PROT_REGION` is unused
+    - `CS PROGRESS_STORE` is unused
+    - `CS PROGRESS_LOAD` is unused
+    - `CS RUN_COMPUTE_INDIRECT` runs a compute job
+    - `CS ERROR_BARRIER` is unused
+    - `CS HEAP_SET` sets the heap va
     - `CS HEAP_OPERATION`
-    - `CS TRACE_POINT`
+    - `CS TRACE_POINT` is unused
     - `CS SYNC_ADD64`
     - `CS SYNC_SET64`
     - `CS SYNC_WAIT64`
@@ -181,3 +199,18 @@ Mesa PanVK
     - custom code to modify `I`
     - `MALI_CS_MOVE32_pack(ptr, &I)`
   - `cs_dst32` converts a `cs_index` into a u8, the raw reg number
+- panvk-specific helpers
+  - `panvk_cs_reg_whitelist` is a macro to define a `reg_perm_cb_t`
+    - it validates that the regs being written are on the whitelist
+  - `cs_update_progress_seqno(b) { foo }` validates that foo only writes to
+    seqno regs (84..89)
+    - 2 regs per subqueue
+    - `PANVK_SUBQUEUE_VERTEX_TILER` uses 84 and 85
+    - `PANVK_SUBQUEUE_FRAGMENT` uses 86 and 87
+    - `PANVK_SUBQUEUE_COMPUTE` uses 88 and 89
+  - `cs_update_compute_ctx(b) { foo }` validates that foo only writes to
+    compute regs (0..39)
+  - `cs_update_frag_ctx(b) { foo }` validates that foo only writes to
+    frag regs (40..46)
+  - `cs_update_vt_ctx(b) { foo }` validates that foo only writes to
+    vertex tiler / idvs regs (0..60)
