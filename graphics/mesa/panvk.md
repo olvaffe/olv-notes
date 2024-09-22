@@ -242,3 +242,15 @@ Mesa PanVK
     - at the end of decode, `pandecode_map_read_write` undoes the `mprotect`
   - `disassemble_ceu_instr` prints the u64 instr
   - `interpret_ceu_instr` simulates the u64 instr
+
+## Command Buffer
+
+- a `panvk_cmd_buffer` has
+  - a `panvk_cmd_graphics_state`
+  - a `panvk_cmd_compute_state`
+  - a `panvk_push_constant_state`
+    - this is user push consts
+    - sysvals are also pushed on top of user push consts
+  - a per-subqueue `panvk_cs_state`
+  - a `panvk_tls_state`
+    - tls is for shader reg spills, etc.
