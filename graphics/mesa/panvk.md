@@ -233,6 +233,43 @@ Mesa PanVK
     - `CS SYNC_ADD64`
     - `CS SYNC_SET64`
     - `CS SYNC_WAIT64`
+- `cs_builder`
+  - `cs_builder_conf`
+    - `nr_registers` is the number of regs and is arch-dependent
+    - `nr_kernel_registers` is the number of regs at the top that the kmd uses
+      - `cs_builder` itself also uses the top 3 regs for chunk linking
+    - `alloc_buffer` allocates a new bo for instrs
+    - `ls_tracker` validates loads/stores and is for debugging
+    - `reg_perm` validates reg accesses and is for debugging
+  - a `cs_chunk` is a BO
+    - multiple chunks are linked together by `JUMP` instr
+    - `root_chunk` is the first BO
+    - `cur_chunk` is the current BO
+  - `blocks` is for control flow
+    - `stack` is the current cfg node, if non-null
+    - `instrs` is a temporary storage for instrs belonging to a control flow
+      - this is done to avoid chunk linking in the middle of a control flow
+    - `pending_if`
+  - `length_patch` is for chunk linking
+    - `JUMP` requires a va and a length, but the length of the next chunk is
+      unkonwn yet
+    - `length_patch` points to the length field, which will be patched in when
+      the size of the next chunk is known
+  - `discard_instr_slot` is used only when bo allocation fails
+- `cs_alloc_ins_block` returns a pointer to a u64 for the next instr(s)
+  - if `b->blocks.stack` is non-NULL, we are in a control flow and instrs are
+    stashed to `b->blocks.instrs` temporarily
+    - `cs_flush_block_instrs` will copy them to the current chunk
+  - if `b->cur_chunk` is full,
+    - allocates a new bo
+    - sets up a jump to the new bo from the current bo
+      - `cs_overflow_address_reg` and `cs_overflow_length_reg` use the top 3
+        regs
+    - `cs_wrap_chunk` ends the current chunk
+    - `b->length_patch` is set up (which will be patched to the len of the new
+      chunk)
+    - `b->cur_chunk` is updated
+  - increments `b->cur_chunk` and returns a ptr in `b->cur_chunk`
 - `cs_scratch_reg32` returns a `cs_index`
   - it checks that the reg is in `PANVK_CS_REG_SCRATCH_{START,END}`
   - `cs_reg_tuple` builds the `cs_index` struct
@@ -246,6 +283,38 @@ Mesa PanVK
     - custom code to modify `I`
     - `MALI_CS_MOVE32_pack(ptr, &I)`
   - `cs_dst32` converts a `cs_index` into a u8, the raw reg number
+- `cs_branch` skips offset if `cond(val)` is true
+- control flow
+  - `cs_block_start` and `cs_block_end` start/end a cfg node
+    - they update `b->blocks.stack`
+  - `cs_while(MALI_CS_CONDITION_ALWAYS)`
+    - `cs_while_start`
+      - `cs_block_start` adds a block
+      - `cs_set_label(b, &loop->start)` updates `loop->start` to target start
+        of block
+    - `cs_while_end`
+      - `cs_branch_label(b, &loop->start, ...)` emits `BRANCH` instr to jump
+        back to the start of block if `cond(val)` is true
+      - `cs_set_label(b, &loop->end)` updates `loop->end` to target end of
+        block
+        - if `cs_break` was used, it also patches all `BREAK` instrs
+      - `cs_block_end` ends the block
+        - `cs_flush_block_instrs` copies stashed cfg node instrs into the
+          current chunk
+    - if there is `cs_continue`, `cs_loop_conditional_continue` calls
+      `cs_branch_label(b, &loop->start, ...)` to `BRANCH` backward to the start
+    - if there is `cs_break`, `cs_loop_conditional_break` calls
+      `cs_branch_label(b, &loop->end, ...)` to `BRANCH` forward to the end
+      - because the location of the end is unknown, we save the location of
+        the `BRANCH` in `last_forward_ref` for later patching
+      - if there are multiple breaks, we use the `offset` field of `BRANCH`
+        instrs to form a list
+  - `cs_if_end` is a bit special and does not call `cs_block_end`
+    - it updates `b->blocks.pending_if` and sets `b->blocks.stack` to
+      `b->blocks.pending_if`
+    - later, `cs_flush_pending_if` updates `b->blocks.stack` again
+    - this is done such that `cs_if` can be followed by `cs_else` or other
+      instrs
 - panvk-specific helpers
   - `panvk_cs_reg_whitelist` is a macro to define a `reg_perm_cb_t`
     - it validates that the regs being written are on the whitelist
