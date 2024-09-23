@@ -161,6 +161,9 @@ Kernel Config
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
+- select `Security options` if pacman
+  - select `Enable different security models`
+  - select `Landlock support`
 - select `Cryptographic API` if iwd
   - select `Block ciphers`
     - select `AES (Advanced Encryption Standard)`

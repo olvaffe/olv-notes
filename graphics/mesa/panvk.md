@@ -522,3 +522,12 @@ Mesa PanVK
     - `LOAD scratch0, [subctx->iter_sb]`
     - `WAIT scratch0`
     - `SET_SB_ENTRY scratch0, LS`
+
+## Command Buffer Example
+
+- assume this call sequence to clear a color image
+  - `vkCmdPipelineBarrier` to transition an image from undef to xfer dst
+  - `vkCmdClearColorImage` to clear the image
+  - `vkCmdPipelineBarrier` to transition the image to general
+- first `panvk_per_arch(CmdPipelineBarrier2)`
+  - `panvk_per_arch(get_cs_deps)`
