@@ -1,0 +1,63 @@
+Kernel vsprintf
+===============
+
+## Formatting
+
+- `format_decode`, after seeing `%`,
+  - flags
+    - `-` sets `LEFT`
+    - `+` sets `PLUS`
+    - ` ` sets `SPACE`
+    - `#` sets `SPECIAL`
+    - `0` sets `ZEROPAD`
+    - `d` and `i` sets `SIGN`
+      - `u` does not set `SIGN`
+  - qualifiers
+    - `h`, `l`, `z`, `t` sets `qualifier`
+    - `ll` and `hh` sets `qualifier`
+  - base
+    - `o` and `x` sets `base`
+  - type
+    - `c` is `FORMAT_TYPE_CHAR`
+    - `s` is `FORMAT_TYPE_STR`
+    - `p` is `FORMAT_TYPE_PTR`
+    - `%` is `FORMAT_TYPE_PERCENT_CHAR`
+    - otherwise, qualifier and `SIGN` decide the type
+      - `ll` is `FORMAT_TYPE_LONG_LONG`
+      - `l` is `FORMAT_TYPE_ULONG` or `FORMAT_TYPE_LONG`
+      - `z` is `FORMAT_TYPE_SIZE_T`
+      - `t` is `FORMAT_TYPE_PTRDIFF`
+      - `hh` is `FORMAT_TYPE_UBYTE` or `FORMAT_TYPE_BYTE`
+      - `h` is `FORMAT_TYPE_USHORT` or `FORMAT_TYPE_SHORT`
+      - otherwise, `FORMAT_TYPE_UINT` or `FORMAT_TYPE_INT`
+- `FORMAT_TYPE_CHAR` is printed directly
+- `FORMAT_TYPE_STR` is handled by `string`
+- `FORMAT_TYPE_PTR` is handled by `pointer`
+  - `pS` and `ps` prints the symbol containing the addr
+  - `pB` prints the symbol of the caller, used for backtrace
+  - `pR` and `pr` prints a `resource`
+  - `ph` prints raw data as a hex string
+  - `pb` and `pbl` print bitmask
+  - `pM` and `pm` print mac/fddi addr
+  - `pI` and `pi` print ip addr
+  - `pE` prints raw data as an escaped string
+  - `pU` prints uuid
+  - `pV` prints `va_format`
+  - `pK` prints kernel pointer that should be hidden
+  - `pN` prints `netdev_features_t`
+  - `p4` prints fourcc
+  - `pa` prints `phys_addr_t`
+  - `pd` and `pD` print `dentry`
+  - `pt` prints time/data
+  - `pC` prints `clk`
+  - `pg` prints `block_device`
+  - `pG` prints bitflags
+  - `pO` prints DT node
+  - `pf` prints fwnode
+  - `pA` prints rust `core::fmt::Arguments`
+  - `px` prints unmodified pointer
+  - `pe` prints a `IS_ERR` ptr as `-ENOSPC`, etc.
+  - `pu`, `pk` and `pks` print user/kernel string
+  - otherwise, a hashed value is printed
+- `FORMAT_TYPE_PERCENT_CHAR` is printed directly
+- otherwise, it is handled by `number`
