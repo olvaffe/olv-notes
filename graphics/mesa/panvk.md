@@ -108,7 +108,9 @@ Mesa PanVK
     - `queue->syncobj_handle` is used for semaphore signals
   - `init_tiler`
     - `tiler_heap->context` is from `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
-    - `tiler_heap->desc` is a hw descriptor, `MALI_TILER_HEAP`
+    - `tiler_heap->desc` is a bo of size 4KB plus 64KB
+      - the first 4KB is for `MALI_TILER_HEAP` descriptor
+      - the rest 64KB is for geometry buffer
   - `create_group`
     - `queue->group_handle` is from `DRM_IOCTL_PANTHOR_GROUP_CREATE`
     - there are 3 sub-queues
@@ -119,14 +121,30 @@ Mesa PanVK
     - `queue->syncobjs` is an array of per-subqueue `panvk_cs_sync64`
       - this is to track the per-subqueue seqno
     - `init_render_desc_ringbuf` inits `queue->render_desc_ringbuf`
+      - this is used only for `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
       - `ringbuf->bo` is `RENDER_DESC_RINGBUF_SIZE` (512KB)
       - `ringbuf->bo` is vm-bound twice consecutively
         - this simplifies wrap-around handling
       - `ringbuf->syncobj` is a `panvk_cs_sync32`
     - `init_subqueue` inits each of `queue->subqueues`
       - `subq->context` is a bo for `panvk_cs_subqueue_context`
-        - `syncobjs` points to `queue->syncobjs`
+        - it is only accessed by hw after initialization
+        - `syncobjs` points to `queue->syncobjs` and `syncobjs[subq]` is
+          initialized to 1
+        - `iter_sb` is initialized to 0
+        - `render` is not used by `PANVK_SUBQUEUE_COMPUTE`
+          - `tiler_heap` points to `queue->tiler_heap.desc`
+          - `geom_buf` points to `queue->tiler_heap.desc + 4KB`
+          - `desc_ringbuf` points to `queue->render_desc_ringbuf`
       - first submit to init the subqueue
+        - this abuses the geom buf as cs root chunk
+        - `MOV64 cs_subqueue_ctx_reg(), subq->context` inits the subq ctx reg
+        - `SET_SB_ENTRY` such that ep tasks (frag & comp) use `SB_ITER(0)`
+          (slot 3) and other tasks (tiler) uses `SB_ID(LS)` (slot 0)
+          - this matches `iter_sb` in subq ctx
+        - if not `PANVK_SUBQUEUE_COMPUTE`, inits the tiler heap as well
+          - `MOV64 scratch0, queue->tiler_heap.context.dev_addr`
+          - `HEAP_SET scratch0`
 - `panvk_queue_submit`
   - if there are semaphore waits
     - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_WAIT` for each
@@ -202,7 +220,8 @@ Mesa PanVK
     - `CS LOAD_MULTIPLE` does `dst_reg = load(src_reg + imm16)`
     - `CS STORE_MULTIPLE` does `store(src_reg1 + imm16, src_reg2)`
     - `CS BRANCH` jumps a signed imm16 offset if the reg meets the condition
-    - `CS SET_SB_ENTRY`
+    - `CS SET_SB_ENTRY` selects the scoreboard slots for endpoint tasks (frag
+      & comp) and other tasks (tiler)
     - `CS PROGRESS_WAIT` is unused
     - `CS SET_EXCEPTION_HANDLER` is unused
     - `CS CALL` calls `(reg1, reg2)`
@@ -394,3 +413,75 @@ Mesa PanVK
   - a per-subqueue `panvk_cs_state`
   - a `panvk_tls_state`
     - tls is for shader reg spills, etc.
+- subqueue progress
+  - `init_subqueue` inits `syncobjs[subqueue].seqno` to 1
+  - when an action op (dispatch, draw, etc.) is emitted to a cmdbuf
+    - there is a `cs_sync64_add` to increments the seqno after the action op
+      completes
+    - `cmdbuf->state.cs[subqueue].relative_sync_point` is also incremented
+  - after a cmdbuf is recorded, `finish_cs` increments
+    `cs_progress_seqno_reg()` by `relative_sync_point` for each subqueue
+  - when `panvk_per_arch(CmdPipelineBarrier2)` emits a barrier,
+    - there is a `cs_sync64_wait` to wait until
+      `syncobjs[subqueue].seqno > cs_progress_seqno_reg() + relative_sync_point`
+  - remember that cmdbuf recording and submission are separated
+    - `syncobjs[subqueue].seqno` is the number of completed ops on the subqueue
+      since initialization
+    - `cs_progress_seqno_reg()` is the number of completed ops on the subqueue
+      when the cmdbuf starts executing
+    - `relative_sync_point` is the number of ops recorded in the cmdbuf so far
+- compute pipeline
+  - `panvk_per_arch(BeginCommandBuffer)`
+  - `panvk_per_arch(CmdDispatchBase)`
+    - `GENX(pan_emit_tls)`
+    - emits to `PANVK_SUBQUEUE_COMPUTE`
+    - `panvk_per_arch(cs_pick_iter_sb)`
+    - `cs_run_compute`
+    - update seqno
+  - `panvk_per_arch(EndCommandBuffer)`
+    - `emit_tls` emits to `cmdbuf->state.tls.desc.cpu`
+    - `finish_cs` on all subqueues
+      - it accumulates `relative_sync_point` to `cs_progress_seqno_reg()`
+- graphics pipeline
+  - `panvk_per_arch(BeginCommandBuffer)`
+  - `panvk_per_arch(CmdBeginRendering)`
+  - `panvk_cmd_draw`
+    - `update_tls`
+    - `get_tiler_desc` inits `cmdbuf->state.gfx.render.tiler`
+    - `get_fb_descs` inits `cmdbuf->state.gfx.render.fbds`
+    - emits to `PANVK_SUBQUEUE_VERTEX_TILER`
+  - `panvk_per_arch(CmdEndRendering)`
+    - if there is no draw, `get_tiler_desc` and `get_fb_descs` haven't been
+      called yet
+      - if there is clear, `get_fb_descs` is called now
+    - `flush_tiling`
+      - `cs_finish_tiling` flushes tiling ops
+      - `LOAD scrach01, [subq->ctx + syncobjs]` to load syncobj
+      - `LOAD scrach2, [subq->ctx + iter_sb]`
+      - `cs_heap_operation`
+      - `cs_sync64_add` to increment syncobj
+      - `STORE scratch2 [subq->ctx + syncobjs]` to store syncobj
+    - `issue_fragment_jobs`
+      - `wait_finish_tiling`
+        - `cs_sync64_wait` until `[scratch01]` is greater than
+          `progress_reg + relative_sync_point`
+    - `resolve_attachments`
+  - `panvk_per_arch(EndCommandBuffer)`
+- `panvk_per_arch(CmdPipelineBarrier2)`
+  - `panvk_per_arch(cmd_flush_draws)`
+    - `flush_tiling`
+    - `issue_fragment_jobs`
+    - `force_fb_preload`
+  - sync wait
+- scoreboard slots
+  - slot 0 is for `PANVK_SB_LS` and `PANVK_SB_IMM_FLUSH`
+  - slot 1 is for `PANVK_SB_DEFERRED_SYNC`
+  - slot 2 is for `PANVK_SB_DEFERRED_FLUSH`
+  - slot 3..7 are for iterators
+    - each subqueue initializes `iter_sb` to 0
+    - `panvk_per_arch(cs_pick_iter_sb)` picks `iter_sb`
+    - `cs_match(b, iter_sb, cmp_scratch)` increments `iter_sb`
+  - `panvk_per_arch(cs_pick_iter_sb)`
+    - `LOAD scratch0, [subctx->iter_sb]`
+    - `WAIT scratch0`
+    - `SET_SB_ENTRY scratch0, LS`
