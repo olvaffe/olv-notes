@@ -423,10 +423,122 @@ DRM panthor
     - input has `reg` and output has `ack`
     - when the host rings the door bell, mcu executes `ret ^ ack` and sets
       `ack` to `ret`
-- `panthor_fw_ping_work` is called every `PING_INTERVAL_MS` (12s) to ping mcu
-  - `panthor_fw_toggle_reqs` toggles `GLB_PING`
-  - `panthor_fw_wait_acks` waits until the given bits are the same between
-    `req` and `ack`
+- `panthor_fw_global_iface`
+  - `panthor_fw_global_control_iface`
+    - `input_va` is the offset of `panthor_fw_global_input_iface`
+    - `output_va` is the offset of `panthor_fw_global_output_iface`
+    - `group_num` is the number of csgs
+    - `group_stride` is the csg stride
+      - `panthor_fw_csg_control_iface` for group N is at
+        `CSF_GROUP_CONTROL_OFFSET + group_stride * N`
+    - `version`, `features`, `instr_features`, etc. are unused
+  - `panthor_fw_global_input_iface`
+    - `req` is used together with `ack` to send reqs
+    - `ack_irq_mask` enables the specified interrupts
+    - `doorbell_req` is used together with `doorbell_ack` to ring CSG
+      doorbells
+    - `progress_timer` fires `CSG_PROGRESS_TIMER_EVENT` after mcu has been
+      stuck for the specified period
+    - `poweroff_timer` powers off shader cores automatically after idle for
+      the specified period
+    - `core_en_mask` are shader cores to enable
+    - `idle_timer` fires `GLB_IDLE` and `CSG_IDLE` after mcu has been idle for
+      the specified period
+  - `panthor_fw_global_output_iface`
+    - `ack` is used together with `req`
+    - `doorbell_ack` is used together with `doorbell_req`
+    - `halt_status` will become `PANTHOR_FW_HALT_OK` some time after
+      `GLB_HALT` req
+    - `perfcnt_*` are unused
+  - `panthor_fw_pre_reset` requests `GLB_HALT` to halt the mcu before reset
+  - `panthor_fw_glb_wait_acks` waits until `req & req_mask == ack & req_mask`
+  - `panthor_fw_ping_work` is called every `PING_INTERVAL_MS` (12s) to ping mcu
+    - `panthor_fw_toggle_reqs` toggles `GLB_PING`
+- `panthor_fw_csg_iface`
+  - `panthor_fw_csg_control_iface`
+    - `features` is unused
+    - `input_va` is the offset of `panthor_fw_csg_input_iface`
+    - `output_va` is the offset of `panthor_fw_csg_output_iface`
+    - `suspend_size` is the size of group state when suspended
+    - `protm_suspend_size` is for protected mode
+    - `stream_num` is the number of streams (queues)
+    - `stream_stride` is the cs stride
+      - `panthor_fw_cs_control_iface` for stream N is at
+        `CSF_STREAM_CONTROL_OFFSET + stream_stride * N` relative to
+        `panthor_fw_csg_control_iface`
+  - `panthor_fw_csg_input_iface`
+    - `req` is used together with `ack` to send reqs
+      - reqs are batched by `csgs_upd_ctx_queue_reqs` and applied by
+        `csgs_upd_ctx_apply_locked`
+      - `CSG_ENDPOINT_CONFIG` requests fw to apply `endpoint_req`, etc.
+      - `CSG_STATUS_UPDATE` requests fw to update `status_state`
+      - `CSG_STATE_MASK` requests fw to change the state of the group
+        - TERMINATE, START, SUSPEND, or RESUME
+    - `ack_irq_mask` enables the specified interrupts
+    - `doorbell_req` is used together with `doorbell_ack` to ring CS doorbells
+    - `cs_irq_ack` is used together with `cs_irq_req` to ack irqs for streams
+    - `allow_compute` is the shader cores that can be used for compute
+    - `allow_fragment` is the shader cores that can be used for fragment
+    - `allow_other` is the tiler cores that can be used for tiling
+    - `endpoint_req` specifies max shader/tiler cores and priority
+    - `suspend_buf` is the va of the suspend buf
+    - `protm_suspend_buf` is the va of the suspend buf in protected mode
+    - `config` is the vm id
+  - `panthor_fw_csg_output_iface`
+    - `ack` is used together with `req`
+    - `doorbell_ack` is used together with `doorbell_req`
+    - `cs_irq_req` is used together with `cs_irq_ack`
+    - `status_state` returns the status if fw gets a `CSG_STATUS_UPDATE` req
+      - it checks `CSG_STATUS_STATE_IS_IDLE`, which is used by `group_is_idle`
+- `panthor_fw_cs_iface`
+  - `panthor_fw_cs_control_iface`
+    - `features`
+      - `CS_FEATURES_WORK_REGS` returns reg count
+      - `CS_FEATURES_SCOREBOARDS` returns sb count
+    - `input_va` is the offset of `panthor_fw_cs_input_iface`
+    - `output_va` is the offset of `panthor_fw_cs_output_iface`
+  - `panthor_fw_cs_input_iface`
+    - `req` is used together with `ack` to send reqs
+    - `config` specifies `CS_CONFIG_PRIORITY` and `CS_CONFIG_DOORBELL`
+    - `ack_irq_mask` enables the specified irqs
+    - `ringbuf_base` specifies the va of the ring
+    - `ringbuf_size` specifies the size of the ring
+    - `heap_start` specifies the va of the tiler heap
+      - `group_process_tiler_oom` handles tiler heap oom and grow
+    - `heap_end` specifies the end of the tiler heap
+    - `ringbuf_input` is the va of `queue->iface.input`
+      - `insert` is the ring tail and is updated after new cmds are written
+      - `extract` is the ring head and is copied from
+        `queue->iface.output->extract` to ack the fw progress
+    - `ringbuf_output` is the va of `queue->iface.output`
+      - `extract` is the ring head and is updated after cmds are executed
+        - this is useful in deciding which job causes a hang
+  - `panthor_fw_cs_output_iface`
+    - `ack` is used together with `req`
+    - `status_*` are used by `cs_slot_sync_queue_state_locked`
+      - `cs_slot_sync_queue_state_locked` is called when there are queue state
+        changes
+      - `status_blocked_reason` is the reason
+        - `CS_STATUS_BLOCKED_REASON_UNBLOCKED` means the queue is not blocked
+          - if it is not running, mark the queue idle
+        - `CS_STATUS_BLOCKED_REASON_SB_WAIT` is caused by `CS WAIT` instr
+        - `CS_STATUS_BLOCKED_REASON_PROGRESS_WAIT` is caused by
+          `CS PROGRESS_WAIT` instr
+        - `CS_STATUS_BLOCKED_REASON_SYNC_WAIT` is caused by `CS SYNC_WAIT32`
+          or `CS SYNC_WAIT64` instr
+          - mark the queue blocked
+        - `CS_STATUS_BLOCKED_REASON_DEFERRED` is caused by async (those with
+          `Wait mask`) instrs
+        - `CS_STATUS_BLOCKED_REASON_RES` is caused by `CS REQ_RESOURCE` instr?
+        - `CS_STATUS_BLOCKED_REASON_FLUSH` is caused by `CS FLUSH_CACHE2` instr?
+      - `status_scoreboards`
+      - `status_wait*` provides the info about syncwait
+        - this allows `panthor_queue_eval_syncwait` to decide if the queue has
+          been unblocked
+    - `fault`, `fatal`, `fault_info`, `fatal_info`
+      - these are faults and fatal faults
+    - `heap_vt_start`, `heap_vt_end`, `heap_frag_end`, `heap_address`
+      - `group_process_tiler_oom` uses these to grow tiler heap
 
 ## Exceptions
 
