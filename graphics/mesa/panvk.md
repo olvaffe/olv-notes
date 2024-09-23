@@ -130,7 +130,7 @@ Mesa PanVK
 - `panvk_queue_submit`
   - if there are semaphore waits
     - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_WAIT` for each
-      wait 
+      wait
     - sets up an empty `drm_panthor_queue_submit` for each used subqueue to
       wait on the `drm_panthor_sync_op` array above
   - for each cmdbufs
@@ -309,12 +309,41 @@ Mesa PanVK
         the `BRANCH` in `last_forward_ref` for later patching
       - if there are multiple breaks, we use the `offset` field of `BRANCH`
         instrs to form a list
-  - `cs_if_end` is a bit special and does not call `cs_block_end`
-    - it updates `b->blocks.pending_if` and sets `b->blocks.stack` to
-      `b->blocks.pending_if`
-    - later, `cs_flush_pending_if` updates `b->blocks.stack` again
-    - this is done such that `cs_if` can be followed by `cs_else` or other
-      instrs
+  - `cs_match`
+    - `cs_match_start`
+      - `cs_block_start`
+    - `cs_case(N)`
+      - if there is a prior `cs_case(M)`
+        - it calls `cs_branch_label(b, &match->break_label, ...)` to jump to
+          the end for the prior case
+          - that is, if the prior case is a match, it jumps to the end
+        - it calls `cs_set_label(b, &match->next_case_label)` to point
+          `next_case_label` to the start for the current case
+          - that is, if the prior case is not a match, it jumps to this case
+        - it reinitializes `next_case_label`
+      - it calls `cs_branch_label(b, &match->next_case_label, ...)` with the
+        condition `(val - N) != 0`
+        - that is, it jumps to the next case if `val` is not N
+    - `cs_default`
+      - it calls `cs_branch_label(b, &match->break_label, ...)` to jump to the
+        end for the prior case
+        - that is, if the prior case is a match, it jumps to the end
+      - it calls `cs_set_label(b, &match->next_case_label)`
+        - that is, if the prior case is not a match, it jumps to the this
+          defualt case
+      - it reinitializes `next_case_label`
+    - `cs_match_end`
+      - `cs_set_label` is called on both `next_case_label` and `break_label`
+      - `cs_block_end`
+  - `cs_if`
+    - `cs_if_start`
+      - `cs_block_start` adds a block
+      - `cs_branch_label` branches forward to the end if `!cond(val)`
+    - `cs_if_end`
+      - rather than calling `cs_block_end`, it saves the block to
+        `b->blocks.pending_if`
+      - later, `cs_flush_pending_if` will update `b->blocks.stack`
+      - this is done such that `cs_else` has a chance to patch `cs_if`?
 - panvk-specific helpers
   - `panvk_cs_reg_whitelist` is a macro to define a `reg_perm_cb_t`
     - it validates that the regs being written are on the whitelist
