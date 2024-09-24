@@ -572,3 +572,7 @@ Mesa PanVK
     - no `deps->dst[i].wait_subqueue_mask`
   - only `cs_wait_slots` and `cs_flush_caches` on the relevant subqueues
   - no `cs_sync64_wait` (for cross-subqueue sync) necessary
+- `panvk_per_arch(EndCommandBuffer)` emits instrs to all subqueues
+  - `finish_cs`
+    - if there is any op in a subqueue, `cs_progress_seqno_reg` is updated
+    - all scoreboard slots are waited and all caches are flushed
