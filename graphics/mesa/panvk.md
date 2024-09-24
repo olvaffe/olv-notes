@@ -679,3 +679,24 @@ Mesa PanVK
   - `finish_cs`
     - if there is any op in a subqueue, `cs_progress_seqno_reg` is updated
     - all scoreboard slots are waited and all caches are flushed
+- how about `panvk_per_arch(CmdDispatchBase)`?
+  - allocs `MALI_LOCAL_STORAGE`
+  - `GENX(pan_emit_tls)` inits `MALI_LOCAL_STORAGE`
+  - `panvk_per_arch(cmd_prepare_push_descs)`
+  - `prepare_driver_set`
+  - `prepare_push_uniforms`
+  - `panvk_per_arch(cmd_prepare_shader_res_table)`
+  - `cs_update_compute_ctx`
+    - writes res table va to `d0`
+    - writes push const (fau) va to `d8`
+    - writes shader va to `d16`
+    - writes tsd va to `d24`
+    - writes 0 to `r32`
+    - writes wg info to `r33` to `r39`
+      - wg size, offsets, counts
+  - `panvk_per_arch(cs_pick_iter_sb)`
+  - `cs_req_res(CS_COMPUTE_RES)`
+  - `cs_run_compute`
+  - `cs_req_res(0)`
+  - `cs_sync64_add` to increment seqno
+  - increment `subq->iter_sb`
