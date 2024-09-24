@@ -47,6 +47,12 @@ Mesa PanVK
 - `PANDECODE_DUMP_FILE` defaults to `pandecode.dump`
 - `BIFROST_MESA_DEBUG` is for the bifrost compiler
 - `MIDGARD_MESA_DEBUG` is for the midgard compiler
+- drm-shim
+  - `VK_DRIVER_FILES=panfrost_icd.x86_64.json`
+  - `LD_PRELOAD=libpanfrost_noop_drm_shim.so`
+  - `PAN_I_WANT_A_BROKEN_VULKAN_DRIVER=1`
+  - `PAN_GPU_ID=0xABCD`
+  - no panthor
 
 ## `pan_kmod_ops`
 
@@ -562,6 +568,69 @@ Mesa PanVK
         - `panvk_per_arch(CmdDraw)`
     - `panvk_per_arch(CmdEndRendering)`
   - `panvk_per_arch(cmd_meta_gfx_end)`
+- looking at `panvk_per_arch(CmdDraw)` alone,
+  - `update_tls`
+    - allocs `MALI_LOCAL_STORAGE` and writes va to `d24`
+  - `get_tiler_desc`
+    - allocs `MALI_TILER_CONTEXT`, inits it, and writes va to `d40`
+    - loads `tiler_heap` and `geom_buf` from subq ctx to scratches and stores
+      them to `MALI_TILER_CONTEXT`
+    - zeros bottom half of `MALI_TILER_CONTEXT`
+    - `panvk_per_arch(cs_pick_iter_sb)` to pick the iter sb
+    - `cs_heap_operation(MALI_CS_HEAP_OPERATION_VERTEX_TILER_STARTED)`
+  - `get_fb_descs` allocs fb descs
+    - `MALI_FRAMEBUFFER`
+    - `MALI_ZS_CRC_EXTENSION`
+    - one or more `MALI_RENDER_TARGET`
+  - `panvk_per_arch(cmd_prepare_push_descs)`
+  - `prepare_sysvals`
+  - `prepare_push_uniforms`
+    - `panvk_per_arch(cmd_prepare_push_uniforms)` allocs and inits push consts
+      - first half is user push consts
+      - second half is sysvals
+    - push const va is written to `d8` and `d12`
+      - push const is called FAU, fast access uniform
+  - `prepare_vs`
+    - `prepare_vs_driver_set` allocs and inits vs driver set
+      - `MALI_ATTRIBUTE` for vs attrs
+      - dummy `MALI_SAMPLER`
+      - `panvk_per_arch(cmd_fill_dyn_bufs)` for `MALI_BUFFER`
+      - more `MALI_BUFFER` for vbs
+    - `panvk_per_arch(cmd_prepare_shader_res_table)`
+      - `MALI_RESOURCE` array for the driver set and the user desc sets
+    - writes res table va to `d0`
+    - writes pos shader va to `d16`
+    - no varying shader and no write to `d18`
+  - `prepare_fs`
+    - `prepare_fs_driver_set` allocs and inits vs driver set
+      - dummy `MALI_SAMPLER`
+      - `panvk_per_arch(cmd_fill_dyn_bufs)` for `MALI_BUFFER`
+    - `panvk_per_arch(cmd_prepare_shader_res_table)`
+      - `MALI_RESOURCE` array for the driver set and the user desc sets
+    - writes res table va to `d4`
+    - writes frag shader va to `d20`
+  - writes draw info to `r32` to `r39`
+    - vertex base, vertex count, instance count, index offset, etc.
+  - no ib and no write to `d54`
+  - writes to `r56` and `r48`
+  - `prepare_blend`
+    - allocs and inits `MALI_BLEND`
+    - `panvk_per_arch(blend_emit_descs)`
+    - writes blend va to `d50`
+  - `prepare_ds`
+    - allocs and inits `MALI_DEPTH_STENCIL`
+    - writes ds va to `d52`
+  - `prepare_dcd`
+    - writes `MALI_DCD_FLAGS_0` to `r57`
+      - kill pixel, front face ccw, cull front/back, msaa, etc.
+    - writes `MALI_DCD_FLAGS_1` to `r58`
+      - sample mask, color write mask, etc.
+  - `prepare_vp`
+    - writes `MALI_SCISSOR` to `d42`
+    - writes viewport min/max depth to `r44` and `r45`
+  - `cs_req_res(CS_IDVS_RES)`
+  - `cs_run_idvs`
+  - `cs_req_res(0)`
 - second `panvk_per_arch(CmdPipelineBarrier2)` emits instrs to all subqueues
   - `collect_cs_deps`
     - because `VK_PIPELINE_STAGE_TRANSFER_BIT` is possible on
