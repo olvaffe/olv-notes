@@ -479,7 +479,7 @@ Mesa PanVK
   - `r44` is `Low depth clamp`
   - `r45` is `High depth clamp`
   - `d46` is `Occlusion`
-  - `d48` is `Vertex position array`
+  - `d48` is `Varying allocation`
   - `d50` is `Blend`
     - `GENX(pandecode_blend_descs)` decodes blend
   - `d52` is `Depth/stencil`
@@ -487,7 +487,6 @@ Mesa PanVK
   - `d56` is `Primitive flags`
   - `r57` is `DCD Flags 0`
   - `r58` is `DCD Flags 1`
-  - `r59` is `Vertex bounds`
   - `r60` is `Primitive size`
 - `pandecode_run_fragment` decodes `RUN_FRAGMENT`
   - `d40` is FBD (framebuffer descriptor?)
@@ -880,20 +879,35 @@ Mesa PanVK
   - `r37`: `Instance offset`
   - `r38`: `Tiler DCD flags2`
   - `r39`: `Index array size`
-  - `d40`: tiler context
-  - `d42`: `Scissor`
+  - `d40`: `MALI_TILER_CONTEXT`
+  - `d42`: `MALI_SCISSOR`
   - `r44`: `Low depth clamp`
   - `r45`: `High depth clamp`
   - `d46`: `Occlusion`
-  - `d48`: `Vertex position array`
+  - `d48`: `Varying allocation`
   - `d50`: `Blend`
   - `d52`: `Depth/stencil`
   - `d54`: `Indices`
-  - `d56`: `Primitive flags`
-  - `r57`: `DCD Flags 0`
-  - `r58`: `DCD Flags 1`
-  - `r59`: `Vertex bounds`
-  - `r60`: `Primitive size`
+  - `d56`: `MALI_PRIMITIVE_FLAGS`
+  - `r57`: `MALI_DCD_FLAGS_0`
+  - `r58`: `MALI_DCD_FLAGS_1`
+  - `r60`: `MALI_PRIMITIVE_SIZE`
+- `MALI_TILER_CONTEXT`
+  - `polygon_list`
+  - `hierarchy_mask`
+  - `sample_pattern`
+  - `sample_test_disable`
+  - `first_provoking_vertex`
+  - `fb_width`
+  - `fb_height`
+  - `layer_count`
+  - `layer_offset`
+  - `heap`
+  - `geometry_buffer_size`
+  - `geometry_buffer`
+  - `completed_top`
+  - `completed_bottom`
+  - `private_state`
 
 ## `RUN_FRAGMENT`
 
