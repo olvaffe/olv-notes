@@ -101,6 +101,38 @@ Mesa PanVK
 - query device lost
   - `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`
 
+## BO and Address Space
+
+- `pan_kmod_bo_alloc` makes the `DRM_IOCTL_PANTHOR_BO_CREATE` ioctl
+  - there are only 3 callers
+  - `init_queue` allocs a ringbuf for
+    `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
+  - `panvk_AllocateMemory` allocs a bo for user device memory
+  - `panvk_priv_bo_create` allocs a bo for driver use, which in turn have
+    these callers
+    - `panvk_pool_alloc_backing` allocs a bo for a mempool
+    - `panvk_per_arch(CreateDescriptorPool)` allocs a bo for descs
+    - `panvk_per_arch(create_device)` allocs a bo for sample pos
+- `pan_kmod_vm_bind` makes the `DRM_IOCTL_PANTHOR_VM_BIND`
+  - this has the same callers as `pan_kmod_bo_alloc` does at the moment, plus
+    unmaps on destroy
+  - because `PAN_KMOD_VM_FLAG_AUTO_VA` is not set when creating
+    `dev->kmod.vm`, all vmas are allocated from
+    `util_vma_heap_alloc(&dev->as.heap)`
+- `panvk_per_arch(create_device)` inits the vm
+  - `user_va_start` is 32MB
+  - `user_va_end` is 4GB
+  - `device->as.heap` manages `[user_va_start, user_va_end)`
+  - `device->kmod.vm` is created with the same range
+    - `vm_flags` does not include `PAN_KMOD_VM_FLAG_AUTO_VA`
+      - if it did, kmod would init a `util_vma_heap` the same way
+    - hw reports `mmu_features`
+      - typically, there are 40 pa bits and 48 va bits
+      - the 48 va space is shared by usersapce (bottom) and kernel space (top)
+      - kernel wants at least 256MB
+      - because panvk asks for 4GB, the first 4GB is reserved for userspace
+        and the kernel uses the rest
+
 ## Queue
 
 - `panvk_per_arch(queue_init)`
