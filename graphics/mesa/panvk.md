@@ -853,6 +853,17 @@ Mesa PanVK
     - it calls `GENX(pan_emit_tls)` to init `cmdbuf->state.tls.desc`
       - this is only used by gfx pipelines
 
+## `RUN_FRAGMENT`
+
+- `MALI_CS_RUN_FRAGMENT`
+  - `enable_tem`
+  - `tile_order`
+  - `progress_increment`
+  - `opcode` is `MALI_CS_OPCODE_RUN_FRAGMENT`
+- registers
+  - `d40`: `MALI_FRAMEBUFFER_POINTER`
+  - `d42`: `MALI_SCISSOR`
+
 ## `RUN_COMPUTE`
 
 - `MALI_CS_RUN_COMPUTE`
