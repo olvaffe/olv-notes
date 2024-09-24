@@ -771,22 +771,57 @@ Mesa PanVK
 
 ## SRT, FAU, SPD, and TSD
 
-- all `RUN_*` instrs use 4 common states
+- all `RUN_*` instrs use 4 common shader states
   - SRT, specified in `d0`, `d2`, `d4`, `d6`
   - FAU, specified in `d8`, `d10`, `d12`, `d14`
   - SPD, specified in `d16`, `d18`, `d20`, `d22`
   - TSD, specified in `d24`, `d26`, `d28`, `d30`
+- an SRT, shader resource table, is an array of `MALI_RESOURCE`
+  - each `MALI_RESOURCE` corresponds to a descriptor set
+    - it has an `address` field that points to an array of 32-byte descriptors
+  - `panvk_cmd_draw`
+    - `prepare_vs`
+      - `prepare_vs_driver_set` allocs and inits a per-draw descriptor set
+        - the set has `MAX_VS_ATTRIBS + 1 + vs->desc_info.dyn_bufs.count + vb_count`
+          descriptors
+        - `emit_vs_attrib` inits `MALI_ATTRIBUTE` descriptors
+        - a dummy `MALI_SAMPLER` descriptor
+        - `panvk_per_arch(cmd_fill_dyn_bufs)` inits `MALI_BUFFER` descriptors
+          for dynamic ubos/ssbos
+          - it extracts the buffer descriptors from the bound descriptor sets
+            and patches in the dynamic offsets
+      - `panvk_per_arch(cmd_prepare_shader_res_table)`
+        - it allocs an array of `MALI_RESOURCE`s, one for each descriptor set
+          (including the per-draw one)
+        - the first res points to the per-draw descriptor set
+        - the rest points to the user descriptor sets
+      - the va of the resource array (and the array size) is written to `d0`
+    - `prepare_fs`
+      - `prepare_fs_driver_set` allocs and inits a per-draw descriptor set
+        - the set has `1 + fs->desc_info.dyn_bufs.count` descriptors
+        - a dummy `MALI_SAMPLER` descriptor
+        - `panvk_per_arch(cmd_fill_dyn_bufs)` inits `MALI_BUFFER` descriptors
+          for dynamic ubos/ssbos
+      - `panvk_per_arch(cmd_prepare_shader_res_table)`
+      - the va of the resource array (and the array size) is written to `d4`
+  - `panvk_per_arch(CmdDispatchBase)`
+    - `prepare_driver_set` allocs and inits a per-dispatch descriptor set
+      - the first descriptor is a dummy `MALI_SAMPLER`
+      - `panvk_per_arch(cmd_fill_dyn_bufs)` fills in the rest for dynamic
+        ubos/ssbos
+    - `panvk_per_arch(cmd_prepare_shader_res_table)`
+    - the va of the resource array (and the array size) is written to `d0`
 - a FAU is a Fast Access Uniform
   - each `panvk_cmd_draw` calls `prepare_push_uniforms` to prep push consts
     - `panvk_per_arch(cmd_prepare_push_uniforms)` always allocs 512 bytes
       - the first 256 bytes are for user push consts
       - the second 256 bytes are for sysvals
-    - the va is written to `d8` (for vs) and `d12` (for fs)
+    - the va (and the size) is written to `d8` (for vs) and `d12` (for fs)
   - each `panvk_per_arch(CmdDispatchBase)` calls a different
     `prepare_push_uniforms` to prep push consts
     - `panvk_per_arch(cmd_prepare_push_uniforms)` always allocs 512 bytes
-    - the va is written to `d8`
-- a SPD is a `MALI_SHADER_PROGRAM`
+    - the va (and the size) is written to `d8`
+- an SPD is a `MALI_SHADER_PROGRAM`
   - `panvk_shader_upload`
     - it uploads the binary to the exec mempool
     - it allocs `MALI_SHADER_PROGRAM`
