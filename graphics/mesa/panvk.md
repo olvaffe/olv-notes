@@ -853,6 +853,48 @@ Mesa PanVK
     - it calls `GENX(pan_emit_tls)` to init `cmdbuf->state.tls.desc`
       - this is only used by gfx pipelines
 
+## `RUN_IDVS`
+
+- `MALI_CS_RUN_IDVS`
+  - `flags_override`
+  - `progress_increment`
+  - `malloc_enable`
+  - `draw_id_register_enable`
+  - `varying_srt_select` selects `d2` instead of `d0`
+  - `varying_fau_select` selects `d10` instead of `d8`
+  - `varying_tsd_select` selects `d26` instead of `d24`
+  - `fragment_srt_select` selects `d4` instead of `d0`
+  - `fragment_tsd_select` selects `d28` instead of `d24`
+  - `draw_id`
+  - `opcode` is `MALI_CS_OPCODE_RUN_IDVS`
+- registers
+  - `d0`, `d2`, `d4`, `d6`: SRT
+  - `d8`, `d10`, `d12`, `d14`: FAU
+  - `d16`, `d18`, `d20`, `d22`: SPD
+  - `d24`, `d26`, `d28`, `d30`: TSD
+  - `r32`: `Global attribute offset`
+  - `r33`: `Index count`
+  - `r34`: `Instance count`
+  - `r35`: `Index offset`
+  - `r36`: `Vertex offset`
+  - `r37`: `Instance offset`
+  - `r38`: `Tiler DCD flags2`
+  - `r39`: `Index array size`
+  - `d40`: tiler context
+  - `d42`: `Scissor`
+  - `r44`: `Low depth clamp`
+  - `r45`: `High depth clamp`
+  - `d46`: `Occlusion`
+  - `d48`: `Vertex position array`
+  - `d50`: `Blend`
+  - `d52`: `Depth/stencil`
+  - `d54`: `Indices`
+  - `d56`: `Primitive flags`
+  - `r57`: `DCD Flags 0`
+  - `r58`: `DCD Flags 1`
+  - `r59`: `Vertex bounds`
+  - `r60`: `Primitive size`
+
 ## `RUN_FRAGMENT`
 
 - `MALI_CS_RUN_FRAGMENT`
