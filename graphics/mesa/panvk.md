@@ -768,3 +768,30 @@ Mesa PanVK
   - `cs_req_res(0)`
   - `cs_sync64_add` to increment seqno
   - increment `subq->iter_sb`
+
+## SRT, FAU, SPD, and TSD
+
+- all `RUN_*` instrs use 4 common states: SRT, FAU, SPD, and TSD
+- a TSD is a `MALI_LOCAL_STORAGE`
+  - TLS is thread local storage
+    - it is used for register spills, and its size is calculated as
+      `max(shader_spill_sizes) * thread_per_core * core_count`
+  - WLS is workgroup local storage?
+    - it is used for glsl `shared`, cl `__local`, spirv `Workgroup` storage
+  - each `panvk_cmd_draw` calls `update_tls`
+    - it allocs `cmdbuf->state.tls.desc` and writes `d24` on demand
+      - both `RUN_IDVS` and `RUN_FRAGMENT` use `d24` for vs and fs
+    - it updates `cmdbuf->state.tls.info.tls.size`
+  - each `panvk_per_arch(CmdDispatchBase)` updates TSD
+    - it allocs `cmdbuf->state.tls.desc`
+    - it updates `cmdbuf->state.tls.info.tls.size`
+    - unlike draws, each dispatch has its own `MALI_LOCAL_STORAGE`
+      - this is because each dispatch might need its own WLS
+      - but it still shares the per-cmdbuf TLS storage, which is not allocated
+        yet and requires additional setup
+  - `panvk_per_arch(EndCommandBuffer)` calls `emit_tls`
+    - it allocs the per-cmdbuf tls storage of size
+      `cmdbuf->state.tls.info.tls.size`
+      - this is shared by gfx and comp pipelines
+    - it calls `GENX(pan_emit_tls)` to init `cmdbuf->state.tls.desc`
+      - this is only used by gfx pipelines
