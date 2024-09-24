@@ -769,7 +769,7 @@ Mesa PanVK
   - `cs_sync64_add` to increment seqno
   - increment `subq->iter_sb`
 
-## SRT, FAU, SPD, and TSD
+## Common Shader States
 
 - all `RUN_*` instrs use 4 common shader states
   - SRT, specified in `d0`, `d2`, `d4`, `d6`
@@ -852,3 +852,28 @@ Mesa PanVK
       - this is shared by gfx and comp pipelines
     - it calls `GENX(pan_emit_tls)` to init `cmdbuf->state.tls.desc`
       - this is only used by gfx pipelines
+
+## `RUN_COMPUTE`
+
+- `MALI_CS_RUN_COMPUTE`
+  - `task_increment`
+  - `task_axis`
+  - `progress_increment`
+  - `srt_select` selects one of the four SRT regs
+  - `spd_select` selects one of the four SPD regs
+  - `tsd_select` selects one of the four TSD regs
+  - `fau_select` selects one of the four FAU regs
+  - `opcode` is `MALI_CS_OPCODE_RUN_COMPUTE`
+- registers
+  - `d0`, `d2`, `d4`, `d6`: SRT
+  - `d8`, `d10`, `d12`, `d14`: FAU
+  - `d16`, `d18`, `d20`, `d22`: SPD
+  - `d24`, `d26`, `d28`, `d30`: TSD
+  - `r32`: `Global attribute offset`
+  - `r33`: `MALI_COMPUTE_SIZE_WORKGROUP`
+  - `r34`: `Job offset X`
+  - `r35`: `Job offset Y`
+  - `r36`: `Job offset Z`
+  - `r37`: `Job size X`
+  - `r38`: `Job size Y`
+  - `r39`: `Job size Z`
