@@ -772,6 +772,14 @@ Mesa PanVK
 ## SRT, FAU, SPD, and TSD
 
 - all `RUN_*` instrs use 4 common states: SRT, FAU, SPD, and TSD
+- a SPD is a `MALI_SHADER_PROGRAM`
+  - `panvk_shader_upload`
+    - it uploads the binary to the exec mempool
+    - it allocs `MALI_SHADER_PROGRAM`
+      - one for fs/cs; multiple for vs
+  - each `panvk_cmd_draw` calls `prepare_vs` and `prepare_fs`
+    - they write `d16`, `d18`, and `d20` to point to the spds
+  - each `panvk_per_arch(CmdDispatchBase)` writes `d16` to point to the spd
 - a TSD is a `MALI_LOCAL_STORAGE`
   - TLS is thread local storage
     - it is used for register spills, and its size is calculated as
