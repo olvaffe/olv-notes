@@ -509,7 +509,13 @@ Mesa PanVK
     - `flush_tiling`
     - `issue_fragment_jobs`
     - `force_fb_preload`
-  - sync wait
+  - it looks at `wait_sb_mask` for each subqueue
+    - `cs_wait_slots` to wait for scoreboard slots
+    - if cache flush, `cs_flush_caches` and `cs_wait_slot`
+    - if another subqueue waits on this subqueue, `cs_sync64_add`
+  - it looks at `wait_subqueue_mask` for each subqueue, and if subqueue j is
+    on `wait_subqueue_mask` of subqueue i,
+    - `cs_sync64_wait` such that subqueue i waits for subqueue j
 - scoreboard slots
   - slot 0 is for `PANVK_SB_LS` and `PANVK_SB_IMM_FLUSH`
   - slot 1 is for `PANVK_SB_DEFERRED_SYNC`
@@ -526,8 +532,43 @@ Mesa PanVK
 ## Command Buffer Example
 
 - assume this call sequence to clear a color image
+  - `vkBeginCommandBuffer` to begin cmd
   - `vkCmdPipelineBarrier` to transition an image from undef to xfer dst
+    - src: `VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT`, no access
+    - dst: `VK_PIPELINE_STAGE_TRANSFER_BIT`, `VK_ACCESS_TRANSFER_WRITE_BIT`
   - `vkCmdClearColorImage` to clear the image
   - `vkCmdPipelineBarrier` to transition the image to general
-- first `panvk_per_arch(CmdPipelineBarrier2)`
-  - `panvk_per_arch(get_cs_deps)`
+    - src: `VK_PIPELINE_STAGE_TRANSFER_BIT`, `VK_ACCESS_TRANSFER_WRITE_BIT`
+    - dst: `VK_PIPELINE_STAGE_HOST_BIT`, `VK_ACCESS_HOST_READ_BIT`
+  - `vkEndCommandBuffer` to end cmd
+- first `panvk_per_arch(CmdPipelineBarrier2)` emits no instrs to any of the
+  subqueue
+- `panvk_per_arch(CmdClearColorImage)` emits instrs to
+  `PANVK_SUBQUEUE_VERTEX_TILER`
+  - `panvk_per_arch(cmd_meta_gfx_start)`
+  - `vk_meta_clear_color_image`
+    - `vk_meta_create_image_view`
+    - `panvk_per_arch(CmdBeginRendering)`
+    - `vk_meta_clear_attachments`
+      - `vk_meta_create_pipeline_layout`
+      - `vk_meta_create_graphics_pipeline`
+      - `vk_common_CmdBindPipeline` binds the clear pipeline
+      - `panvk_per_arch(CmdPushConstants2KHR)` pushes the clear value
+      - `vk_meta_draw_rects`
+        - `vk_common_CmdSetViewport`
+        - `vk_common_CmdSetScissor`
+        - `vk_meta_create_buffer`
+        - `panvk_meta_cmd_bind_map_buffer`
+        - `panvk_per_arch(CmdDraw)`
+    - `panvk_per_arch(CmdEndRendering)`
+  - `panvk_per_arch(cmd_meta_gfx_end)`
+- second `panvk_per_arch(CmdPipelineBarrier2)` emits instrs to all subqueues
+  - `collect_cs_deps`
+    - because `VK_PIPELINE_STAGE_TRANSFER_BIT` is possible on
+      `PANVK_SUBQUEUE_FRAGMENT` and `PANVK_SUBQUEUE_COMPUTE`
+      - `deps->src[i].wait_sb_mask` has all iterator slots on both of them
+      - `deps->src[i].cache_flush` has `MALI_CS_FLUSH_MODE_CLEAN` and
+        `MALI_CS_FLUSH_MODE_CLEAN` on both of them
+    - no `deps->dst[i].wait_subqueue_mask`
+  - only `cs_wait_slots` and `cs_flush_caches` on the relevant subqueues
+  - no `cs_sync64_wait` (for cross-subqueue sync) necessary
