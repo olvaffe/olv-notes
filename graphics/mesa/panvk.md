@@ -771,7 +771,21 @@ Mesa PanVK
 
 ## SRT, FAU, SPD, and TSD
 
-- all `RUN_*` instrs use 4 common states: SRT, FAU, SPD, and TSD
+- all `RUN_*` instrs use 4 common states
+  - SRT, specified in `d0`, `d2`, `d4`, `d6`
+  - FAU, specified in `d8`, `d10`, `d12`, `d14`
+  - SPD, specified in `d16`, `d18`, `d20`, `d22`
+  - TSD, specified in `d24`, `d26`, `d28`, `d30`
+- a FAU is a Fast Access Uniform
+  - each `panvk_cmd_draw` calls `prepare_push_uniforms` to prep push consts
+    - `panvk_per_arch(cmd_prepare_push_uniforms)` always allocs 512 bytes
+      - the first 256 bytes are for user push consts
+      - the second 256 bytes are for sysvals
+    - the va is written to `d8` (for vs) and `d12` (for fs)
+  - each `panvk_per_arch(CmdDispatchBase)` calls a different
+    `prepare_push_uniforms` to prep push consts
+    - `panvk_per_arch(cmd_prepare_push_uniforms)` always allocs 512 bytes
+    - the va is written to `d8`
 - a SPD is a `MALI_SHADER_PROGRAM`
   - `panvk_shader_upload`
     - it uploads the binary to the exec mempool
