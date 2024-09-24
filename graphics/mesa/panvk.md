@@ -631,6 +631,40 @@ Mesa PanVK
   - `cs_req_res(CS_IDVS_RES)`
   - `cs_run_idvs`
   - `cs_req_res(0)`
+- looking at `panvk_per_arch(CmdEndRendering)` alone,
+  - `flush_tiling` emits to `PANVK_SUBQUEUE_VERTEX_TILER`
+    - `cs_req_res(CS_TILER_RES)`
+    - `cs_finish_tiling`
+    - `cs_req_res(0)`
+    - `cs_heap_operation(MALI_CS_HEAP_OPERATION_VERTEX_TILER_COMPLETED)`
+    - `cs_sync64_add` to increment seqno
+    - increment `subq->iter_sb`
+  - `issue_fragment_jobs` emits to `PANVK_SUBQUEUE_FRAGMENT`
+    - `wait_finish_tiling`
+      - `cs_sync64_wait` for `cs_sync64_add` in `flush_tiling`
+        - that is, wait for `flush_tiling`
+    - `panvk_per_arch(cs_pick_iter_sb)` to pick the iter sb
+    - writes fb size to `r42` to `r43`
+    - `prepare_fb_desc`
+      - `GENX(pan_preload_fb)`
+      - `GENX(pan_emit_fbd)`
+        - `MALI_FRAMEBUFFER`
+        - `MALI_ZS_CRC_EXTENSION`
+        - `MALI_ZS_CRC_EXTENSION`
+    - writes fbd va to `d48`
+    - writes tiler ctx va to `d50`
+    - writes layer count to `r47`
+    - for each layer
+      - patches tiler ctx va into fbd
+      - writes fbd va and fbd flags to `d40`
+      - `cs_req_res(CS_FRAG_RES)`
+      - `cs_run_fragment`
+      - `cs_req_res(0)`
+      - increments fbd va
+      - decrements layout count
+    - `cs_finish_fragment`
+    - `cs_sync64_add` to increment seqno
+  - `resolve_attachments`
 - second `panvk_per_arch(CmdPipelineBarrier2)` emits instrs to all subqueues
   - `collect_cs_deps`
     - because `VK_PIPELINE_STAGE_TRANSFER_BIT` is possible on
