@@ -444,6 +444,74 @@ Mesa PanVK
     - at the end of decode, `pandecode_map_read_write` undoes the `mprotect`
   - `disassemble_ceu_instr` prints the u64 instr
   - `interpret_ceu_instr` simulates the u64 instr
+- `pandecode_run_idvs` decodes `RUN_IDVS`
+  - `d0`, `d2`, and `d4` are SRT
+    - vs may be separated into position shader and varying shader
+    - position shader always uses `d0`
+    - varying shader uses `d0` or `d2`, depending on a bit of the instr
+    - fragment shader uses `d0` or `d4`, depending on a bit of the instr
+    - `GENX(pandecode_resource_tables)` decodes SRT
+  - `d8`, `d10`, and `d12` are FAU
+    - position shader always uses `d8`
+    - varying shader uses `d8` or `d10`, depending on a bit of the instr
+    - fragment shader always uses `d12`
+    - `GENX(pandecode_fau)` decodes FAU
+  - `d16`, `d18`, and `d20` are SPD (shader program descriptor?)
+    - position shader always uses `d16`
+    - varying shader always uses `d18`, if separated from position shader
+    - fragment shader always uses `d20`
+    - `GENX(pandecode_shader)` decodes SPD
+  - `d24`, `d26`, and `d28` are TSD
+    - position shader always uses `d24`
+    - varying shader uses `d24` or `d26`, depending on a bit of the instr
+    - fragment shader uses `d24` or `d28`, depending on a bit of the instr
+  - `r32` is `Global attribute offset`
+  - `r33` is `Index count`
+  - `r34` is `Instance count`
+  - `r35` is `Index offset`
+  - `r36` is `Vertex offset`
+  - `r37` is `Instance offset`
+  - `r38` is `Tiler DCD flags2`
+  - `r39` is `Index array size`
+  - `d40` is tiler context
+    - `GENX(pandecode_tiler)` decodes tiler context
+  - `d42` is `Scissor`
+  - `r44` is `Low depth clamp`
+  - `r45` is `High depth clamp`
+  - `d46` is `Occlusion`
+  - `d48` is `Vertex position array`
+  - `d50` is `Blend`
+    - `GENX(pandecode_blend_descs)` decodes blend
+  - `d52` is `Depth/stencil`
+  - `d54` is `Indices`
+  - `d56` is `Primitive flags`
+  - `r57` is `DCD Flags 0`
+  - `r58` is `DCD Flags 1`
+  - `r59` is `Vertex bounds`
+  - `r60` is `Primitive size`
+- `pandecode_run_fragment` decodes `RUN_FRAGMENT`
+  - `d40` is FBD (framebuffer descriptor?)
+    - `GENX(pandecode_fbd)` decodes FBD
+  - `d42` is `Scissor`
+- `pandecode_run_compute` decodes `RUN_COMPUTE`
+  - `d0`, `d2`, `d4`, `d6` are SRT (resource table)
+    - the instr selects one of them
+    - `GENX(pandecode_resource_tables)` decodes SRC
+  - `d8`, `d10`, `d12`, `d14` are FAU (fast access uniform, aka push consts)
+    - the instr selects one of them
+    - `GENX(pandecode_fau)` decodes FAU
+  - `d16`, `d18`, `d20`, `d22` are SPD (shader)
+    - the instr selects one of them
+    - `GENX(pandecode_shader)` decodes SPD
+  - `d24`, `d26`, `d28`, `d30` are TSD (local storage)
+  - `r32` is `Global attribute offset`
+  - `r33` is `Workgroup size`
+  - `r34` is `Job offset X`
+  - `r35` is `Job offset Y`
+  - `r36` is `Job offset Z`
+  - `r37` is `Job size X`
+  - `r38` is `Job size Y`
+  - `r39` is `Job size Z`
 
 ## Command Buffer
 
