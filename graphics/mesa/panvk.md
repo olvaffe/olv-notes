@@ -144,6 +144,78 @@ Mesa PanVK
       - `drm_mm` with `DRM_MM_INSERT_BEST` allocs from the bottom
       - bos thus start from `0x800000000000` and grows up
 
+## Buffer
+
+- `panvk_GetBufferMemoryRequirements2`
+  - alignment is 64
+  - size is aligned to 64
+- `panvk_BindBufferMemory2`
+  - `dev_addr` is the base addr of the bo plus the bind offset
+  - `bo` is the bo
+  - `host_ptr` is the bo mapping, if the buffer is an index buffer
+    - this is for before v10
+- `panvk_per_arch(CreateBufferView)`
+  - if the buffer is used as a tbo or ibo, it is treated as a 1d image
+    - `mem` and `descs.tex` are for the 1d image descriptor
+- `panvk_per_arch(UpdateDescriptorSets)`
+  - `write_buffer_view_desc` is for tbo/ibo
+    - it copies `view->descs.tex` to the descriptor
+  - `write_buffer_desc` is for regular buffers
+    - it inits `MALI_BUFFER` on the descriptor
+  - `write_dynamic_buffer_desc` is for dynamic buffers
+    - it remebers the buffer at `set->dyn_bufs`
+    - on each draw/dispatch, a "driver descriptor set" will be allocated and
+      it will contain the descriptors of dynamic buffers
+
+## Image
+
+- `panvk_CreateImage`
+  - `image->pimage.layout` is partially initialized from `VkImageCreateInfo`
+    - format, dim
+    - width, height, depth
+    - mip levels (called slices), array size
+    - sample count
+  - `panvk_image_pre_mod_select_meta_adjustments` adjusts image usage/flags
+  - `panvk_image_select_mod` selects the modifier
+  - `pan_image_layout_init` fully initializes the layout
+    - it can derive the physical layout from the logical layout
+    - it also supports explicit layout
+    - `layout->data_size` is the total size of the image
+    - `layout->array_stride` is the stride between two array layers
+      - each array layer is a full mipmap
+    - `slice->size` is the total size of a slice (miplevel)
+    - `slice->surface_stride` is the stride between two surfaces
+      - a slice has `depth * layout->nr_samples` surfaces
+- `panvk_BindImageMemory2`
+  - `bo` points to the memory bo
+  - `image->pimage.data` is the bo addr and the bind offset
+- `panvk_per_arch(CreateImageView)`
+  - if the image is sampled/storage/input, it requires a descriptor
+    - a `MALI_TEXTURE`, whose `surfaces` field points to an array of
+      `MALI_PLANE`
+    - `mem` is the gpu bo for `MALI_PLANE` array
+    - `descs.tex` is `MALI_TEXTURE` to be copied into descriptor set
+  - `GENX(panfrost_estimate_texture_payload_size)` estimates the size of the
+    `MALI_PLANE` array
+    - `sizeof(MALI_PLANE) * planes * levels * layers * samples`
+  - `GENX(panfrost_new_texture)` inits the descriptor
+    - `panfrost_emit_texture_payload` inits `MALI_PLANE` array
+      - for each layer
+      - for each sample
+      - for each level
+      - for each plane
+      - init `MALI_PLANE`
+    - `MALI_TEXTURE` is initialized as well
+- `panvk_per_arch(UpdateDescriptorSets)`
+  - `write_image_view_desc` copies `view->descs.tex` to the descriptor
+
+## Sampler
+
+- `panvk_per_arch(CreateSampler)`
+  - it inits a `MALI_SAMPLER`
+- `panvk_per_arch(UpdateDescriptorSets)`
+  - `write_sampler_desc` copies `sampler->desc` to the descriptor
+
 ## Queue
 
 - `panvk_per_arch(queue_init)`

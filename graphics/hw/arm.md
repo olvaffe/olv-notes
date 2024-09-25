@@ -38,6 +38,7 @@ ARM Mali
   - Mali-{G31,G51,G71}
 - 2017: Bifrost 2nd gen
   - Mali-{G52,G72}
+  - e.g., corsola
 - 2018: Bifrost 3nd gen
   - 8 execution lanes per engine (up from 4). Doubled pixel and texel
     throughput.
@@ -47,26 +48,32 @@ ARM Mali
   - Simplified scalar ISA
   - New dynamic scheduling
   - Mali-{G57,G77}
+  - e.g., cherry
 - 2020: Valhall 2nd gen
   - Asynchronous clock domains
   - New FMA units and increase Tiler throughput
   - Arm Frame Buffer Compression (AFBC) 1.3
   - Mali-{G68,G78}
+  - e.g., pixel 6
 - 2021: Valhall 3rd gen
   - Larger shader cores (2x compared to Valhall 2nd Gen)
   - New GPU frontend, Command Stream Frontend (CSF) replaces the Job Manager (JM)
   - Mali-{G310,G510,G610,G710}
+  - e.g., pixel 7, dimensity 9000
 - 2022: Valhall 4th gen
   - Ray Tracing support (hardware-based)
   - Variable Rate Shading
   - New Execution Engine, with doubled the FMA block, Matrix Multiply instruction support, and PPA improvements
   - Arm Fixed Rate Compression (AFRC)
   - Mali-{G615,G715}, Immortalis-G715
+  - e.g., pixel 8, pixel 9, dimensity 9200
 - 2023: 5th gen
   - Deferred vertex shading (DVS) pipeline
   - Mali-{G620,G720}, Immortalis-G720
+  - e.g., dimensity 9300
 - 2024: 5th gen
   - Mali-{G625,G725}, Immortalis-G925
+  - e.g., dimensity 9400?
 
 ## Identification
 
