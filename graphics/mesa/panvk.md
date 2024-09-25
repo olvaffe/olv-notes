@@ -948,3 +948,54 @@ Mesa PanVK
   - `r37`: `Job size X`
   - `r38`: `Job size Y`
   - `r39`: `Job size Z`
+
+## Tile Size, Load, Store, Blend
+
+- `panvk_per_arch(CmdBeginRendering)`
+  - `panvk_cmd_begin_rendering_init_state` handles load/store ops
+    - `VK_ATTACHMENT_LOAD_OP_LOAD` becomes `preload`
+    - `VK_ATTACHMENT_LOAD_OP_CLEAR` becomes `clear`
+    - it ignores store ops and assumes `VK_ATTACHMENT_STORE_OP_STORE`
+- `panvk_per_arch(CmdEndRendering)`
+  - `issue_fragment_jobs` calls `prepare_fb_desc`
+    - `GENX(pan_preload_fb)`
+      - it allocs and inits pre-frame dcds, which are an array of 3
+        `MALI_DRAW`
+      - each `MALI_DRAW` runs a dcd pipeline, which is like a fs
+      - `fb->bifrost.pre_post.modes[0]` is for rt preload and is
+        `MALI_PRE_POST_FRAME_SHADER_MODE_ALWAYS`
+      - `fb->bifrost.pre_post.modes[1]` is for zs preload and is
+        `MALI_PRE_POST_FRAME_SHADER_MODE_EARLY_ZS_ALWAYS`
+    - `GENX(pan_emit_fbd)`
+      - it picks the tile size
+        - 16x16 or smaller
+      - `MALI_FRAMEBUFFER`
+        - `cfg.pre_frame_0` is for rt preload
+        - `cfg.pre_frame_1` is for zs preload
+        - `cfg.post_frame` is disabled
+        - `cfg.frame_shader_dcds` is the dcd shaders
+      - `MALI_ZS_CRC_EXTENSION`
+        - `ext->{zs,s}_writeback_base` is the writeback (store) offset
+        - `ext->{zs,s}_writeback_row_stride` is the row stride
+        - `ext->{zs,s}_writeback_surface_stride` is the surf stride
+        - `ext->{zs,s}_write_format` is the format
+        - `ext->{zs,s}_block_format` is the tiling
+      - `MALI_RENDER_TARGET`
+        - `cfg->rgb.base` is the writeback (store) offset
+        - `cfg->rgb.row_stride` is the row stride
+        - `cfg->rgb.surface_stride` is the surf stride
+        - `cfg->writeback_format` is the format
+        - `cfg->writeback_block_format` is the tiling
+- `panvk_cmd_draw` calls `prepare_blend`
+  - it allocs an array of `MALI_BLEND`
+  - `panvk_per_arch(blend_emit_descs)` inits the array
+    - `blend_needs_shader` determines if an rt needs a blend shader
+      - a blend shader is needed when there is no fixed-func support, such as
+        logicop, not-blendable formats, etc.
+    - `GENX(pan_blend_create_shader)` creates the nir shader
+    - `cfg.internal.mode` is the blend mode
+      - `MALI_BLEND_MODE_OFF`, no rt or no color mask
+      - `MALI_BLEND_MODE_OPAQUE`, opaque color (no blending)
+      - `MALI_BLEND_MODE_FIXED_FUNCTION`, fixed-func blending
+      - `MALI_BLEND_MODE_SHADER`, blend shader
+  - the array va and size are written to `d50`
