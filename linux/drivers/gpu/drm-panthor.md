@@ -540,6 +540,36 @@ DRM panthor
     - `heap_vt_start`, `heap_vt_end`, `heap_frag_end`, `heap_address`
       - `group_process_tiler_oom` uses these to grow tiler heap
 
+## Tiler Heap
+
+- `panthor_vm_get_heap_pool` creates the per-vm heap pool on-demand
+  - `pool->gpu_contexts` is the bo for heap contexts
+    - each context is `HEAP_CONTEXT_SIZE` (32) bytes, aligned to cacheline
+    - there can be `MAX_HEAPS_PER_POOL` (128) contexts
+      - this does not appear to be a hw limit, but arbitrarily chosen
+- `panthor_heap_create` creates a heap
+  - each heap has an id, which is an index into `pool->gpu_contexts`
+  - `chunks` is a list of `panthor_heap_chunk`
+    - each chunk is a BO
+    - each BO has a 64-byte header, with the first 2 dwords being the va of
+      the next chunk
+      - the hw knows this is a list of BOs as well
+- when the hw tiler runs out of heap memory, it generates `CS_TILER_OOM` irq
+  - `cs_slot_process_irq_locked` schedules `group_tiler_oom_work`
+  - `group_process_tiler_oom` grows the heap
+  - `cs_iface->output` has info about the tile heap
+    - `heap_address` is the addr of the heap context
+    - `heap_vt_start`, `heap_vt_end`, and `heap_frag_end` are job seqnos
+      - each job goes through vt start, vt end, and frag end
+  - `panthor_heap_grow` allocs a new heap chunk
+    - it may fail, which is a way to tell the fw to wait
+    - it allocs a chunk and returns the va of the new chunk
+      - it does not update the header of the previous chunk to link with the
+        new chunk
+      - i guess the fw is in charge of linking now
+  - `cs_iface->input` is used to notify the new heap chunk
+    - `heap_start` and `heap_end` are set the the same addr?
+
 ## Exceptions
 
 - exceptions can be reported via

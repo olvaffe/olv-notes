@@ -1053,6 +1053,54 @@ Mesa PanVK
   - `r38`: `Job size Y`
   - `r39`: `Job size Z`
 
+## Tiler Heap
+
+- binning
+  - umd compiles vs into two shaders
+    - a pos shader, which is vs stripped down to output only `gl_Position`
+    - a varying shader, which is vs stripped down to output all attrs but
+      `gl_Position`
+  - hw runs the pos shader, assembles/culls the primitives, and the tiler
+    records which triangles touches which 16x16 tiles
+    - in practice, it is more complex because of hierarchical tiling
+      - depending on the primitive size, the hw may bin it to 16x16, 32x32,
+        64x64, and all the way to 4096x4096 tiles
+    - the recorded result is called a polygon list
+      - polygon list memory on midgard
+        - a 64-byte prologue, if hierarchical
+          - umd controls whether hierarchical tiling is enabled
+        - each tile needs a 8-byte header and a 512-byte body
+          - umd knows the number of tiles at each hierarchical level
+      - on valhall, panvk allocates a 64KB geometry buffer
+        - is this the new name for polygon list?
+  - hw runs the varying shader and caches the results in the tiler heap
+    - it is growable and managed by kmd
+    - when the hw runs out of heap, it generates an irq and the kmd grows the
+      heap
+- `init_tiler`
+  - `queue->tiler_heap.desc` ia a `4KB + 64KB` bo
+    - the first 4KB is `MALI_TILER_HEAP` descriptor
+    - the rest 64KB is for geometry buffer (polygon list?)
+  - `queue->tiler_heap.context` is a kernel-managed growable tiler heap
+    - `tiler_heap_ctx_gpu_va` is the va of a 32-byte heap context
+    - `first_heap_chunk_gpu_va` is the va of the first heap chunk
+      - the heap is a list of BOs linked together, making it growable
+      - the first u64 of each BO is the va of the next BO in the list
+    - the fw generates an irq when it runs out of the tiler heap
+      - this gives the kmd a chance to allocate more chunks
+    - `chunk_size`, `initial_chunk_count`, and `max_chunks` configure the heap
+      chunks
+      - kmd will stop allocating new chunks when it reaches `max_chunks`,
+        causing the fw to stall
+    - `target_in_flight` is the max number of in-flight draws
+      - each draw goes through tiling and fragment shading
+      - this tells the kmd to stop allocating new chunks when too many draws
+        have started but have not completed
+- `MALI_TILER_HEAP`
+- `MALI_TILER_CONTEXT`
+- `MALI_CS_HEAP_SET`
+- `MALI_CS_HEAP_OPERATION`
+
 ## Tile Size, Load, Store, Blend
 
 - `panvk_per_arch(CmdBeginRendering)`
