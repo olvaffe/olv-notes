@@ -75,6 +75,18 @@ ARM Mali
   - Mali-{G625,G725}, Immortalis-G925
   - e.g., dimensity 9400?
 
+## Resources
+
+- <https://developer.arm.com/documentation/102849/latest/>
+- <https://developer.arm.com/documentation/101574/latest/>
+- Performance Counters
+  - <https://developer.arm.com/documentation/102812/latest/>
+  - <https://developer.arm.com/documentation/107775/latest/>
+  - <https://developer.arm.com/documentation/108081/latest>
+  - <https://developer.arm.com/documentation/109780/latest>
+  - <https://developer.arm.com/documentation/109793/latest/>
+- <https://community.arm.com/arm-community-blogs/tags/GPU>
+
 ## Identification
 
 - `GPU_ID` register
