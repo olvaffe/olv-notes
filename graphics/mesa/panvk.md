@@ -1053,7 +1053,7 @@ Mesa PanVK
   - `r38`: `Job size Y`
   - `r39`: `Job size Z`
 
-## Tiler Heap
+## Tiler
 
 - binning
   - umd compiles vs into two shaders
@@ -1096,10 +1096,41 @@ Mesa PanVK
       - each draw goes through tiling and fragment shading
       - this tells the kmd to stop allocating new chunks when too many draws
         have started but have not completed
-- `MALI_TILER_HEAP`
-- `MALI_TILER_CONTEXT`
-- `MALI_CS_HEAP_SET`
-- `MALI_CS_HEAP_OPERATION`
+- `init_subqueue`
+  - the vas of `MALI_TILER_HEAP` and the 64KB geometry buffer are saved to
+    `subq->context`
+    - `MALI_TILER_HEAP` describes the tiler heap managed by kmd
+  - `cs_heap_set` sets the heap ctx va
+    - this is the 32-byte heap ctx allocated by kmd
+  - `PANVK_SUBQUEUE_VERTEX_TILER` and `PANVK_SUBQUEUE_FRAGMENT` share the same
+    `MALI_TILER_HEAP`, geometry buffer, and the heap ctx
+- `panvk_cmd_draw`
+  - `get_tiler_desc` inits the tiler context once per-pass
+    - it allocs and inits a `MALI_TILER_CONTEXT`
+      - `heap`, `geometry_buffer_size`, and `geometry_buffer` are loaded from
+        `subq->context`, but why?
+    - it writes the tiler ctx va to `d40`
+    - `cs_heap_operation(MALI_CS_HEAP_OPERATION_VERTEX_TILER_STARTED)`
+  - `cs_run_idvs` runs the job per-draw
+- `panvk_per_arch(CmdEndRendering)`
+  - `flush_tiling`
+    - `cs_finish_tiling` waits for `cs_run_idvs`
+    - `cs_heap_operation(MALI_CS_HEAP_OPERATION_VERTEX_TILER_COMPLETED)`
+  - `wait_finish_tiling` waits for `PANVK_SUBQUEUE_VERTEX_TILER`
+    - all prior cmds are emitted into `PANVK_SUBQUEUE_VERTEX_TILER`
+    - this wait and all following cmds will be emitted into
+      `PANVK_SUBQUEUE_FRAGMENT`
+  - `issue_fragment_jobs`
+    - assuming we only render to a single layer
+    - it stores the va of `MALI_TILER_CONTEXT` to
+      `MALI_FRAMEBUFFER_PARAMETERS` at offset 56, which is the `tiler` field
+    - it writes the va of `MALI_FRAMEBUFFER_PARAMETERS` to `d40`
+    - `cs_run_fragment` runs the fs
+    - it loads from `MALI_TILER_CONTEXT` at offset 40, which are the
+      `completed_top` and `completed_bottom` fields
+      - these mark the range of heap chunks used by this render pass?
+    - `cs_finish_fragment` waits for `cs_run_fragment`
+      - it takes `completed_top` and `completed_bottom`, but for what?
 
 ## Tile Size, Load, Store, Blend
 
