@@ -277,6 +277,11 @@ Mesa PanVK
     - `queue->syncobj_handle` is reset
 - flush id
   - `CSF_GPU_LATEST_FLUSH_ID` reg
+    - if unmapped, kernel `panthor_mmio_vm_fault` maps the reg or a dummy page
+      which contains flush id 1
+    - on device suspend/resume, the mapping is unmapped
+    - the idea is to return the real flush id when the device is powered, and
+      to return 1 when the device is not powered
   - `panvk_per_arch(EndCommandBuffer)`
     - `panvk_per_arch(CmdPipelineBarrier2)` calls `cs_flush_caches` with flush
       id 0, to flush unconditionally
