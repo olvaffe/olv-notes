@@ -275,6 +275,21 @@ Mesa PanVK
     - they all signal `queue->syncobj_handle`
     - the fence is then copied to user semaphores using `drmSyncobjTransfer`
     - `queue->syncobj_handle` is reset
+- flush id
+  - `CSF_GPU_LATEST_FLUSH_ID` reg
+  - `panvk_per_arch(EndCommandBuffer)`
+    - `panvk_per_arch(CmdPipelineBarrier2)` calls `cs_flush_caches` with flush
+      id 0, to flush unconditionally
+    - `finish_cs` calls `cs_flush_caches` with flush id 0, to flush
+      unconditionally
+    - `cmdbuf->flush_id` is read from `CSF_GPU_LATEST_FLUSH_ID` reg
+  - `panvk_queue_submit` submits each job with `cmdbuf->flush_id`
+    - kmd flushes caches with the specified flush id before calling into the
+      job
+  - from `drm_panthor_queue_submit` doc,
+    - kmd emits a flush to avoid reading staled data
+    - the flush can be eliminated if the flush id is properly setup
+  - still no idea what it does
 
 ## Command Stream
 
