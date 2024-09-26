@@ -584,6 +584,38 @@ Mesa PanVK
   - `r38` is `Job size Y`
   - `r39` is `Job size Z`
 
+## panloader
+
+- no support for csf
+- build
+  - clone <https://gitlab.freedesktop.org/panfrost/panloader.git> to
+    `$mesa/src/panfrost/lib/panloader`
+  - `meson setup out`
+    - it expects panfrost has been built under `$mesa/build`
+- `__attribute__((constructor))`
+  - `panloader_constructor` inits a recursive mutex
+  - `constructor_util` calls `pandecode_create_context` to init
+    `pandecode_ctx`
+- macros
+  - `PROLOG` looks up and saves the original symbol address
+  - `LOCK` and `UNLOCK` locks/unlocks the recursive mutex
+- `open` and `open64`
+  - if the path is `/dev/mali0`, save the fd to `mali_fd`
+- `close`
+  - reset `mali_fd` if it is closed
+- `ioctl`
+  - `dvalin` is defined
+  - `MALI_IOCTL_GET_GPUPROPS` is parsed to set `product_id` and `bifrost`
+  - `MALI_IOCTL_MEM_ALLOC` is `panwrap_track_allocation`ed
+    - the alloc is tracked in `allocations` and is `pandecode_inject_mmap`ed
+  - `MALI_IOCTL_JOB_SUBMIT` is `pandecode_jc`ed
+- `mmap` and `mmap64`
+  - if the mmap is against `mali_fd`, `offset` is gpu va
+    - iirc, gpu va also uniquely identifies a bo and is used as the handle
+  - `MEM_MAP_TRACKING_HANDLE` is a special offset
+  - otherwise, `panwrap_track_mmap` calls `pandecode_inject_mmap` to track the
+    mapping
+
 ## Command Buffer
 
 - a `panvk_cmd_buffer` has
