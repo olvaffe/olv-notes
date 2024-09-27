@@ -1013,8 +1013,8 @@ Mesa PanVK
   - `r39`: `Index array size`
   - `d40`: `MALI_TILER_CONTEXT`
   - `d42`: `MALI_SCISSOR`, from viewport and scissor
-  - `r44`: `Low depth clamp`, fromp viewport
-  - `r45`: `High depth clamp`, fromp viewport
+  - `r44`: `Low depth clamp`, from viewport
+  - `r45`: `High depth clamp`, from viewport
   - `d46`: `Occlusion`, va of occlusion query bo
   - `r48`: `Varying allocation` is attr count times `sizeof(vec4)`
   - `d50`: `MALI_BLEND` array
@@ -1060,7 +1060,7 @@ Mesa PanVK
   - `opcode` is `MALI_CS_OPCODE_RUN_FRAGMENT`
 - registers
   - `d40`: `MALI_FRAMEBUFFER_POINTER`
-  - `d42`: `MALI_SCISSOR`
+  - `d42`: `MALI_SCISSOR`, from render area
 - `MALI_FRAMEBUFFER_PARAMETERS`
   - `tiler` points to per-pass `MALI_TILER_CONTEXT`
   - `frame_shader_dcds` points to `MALI_DRAW` array
