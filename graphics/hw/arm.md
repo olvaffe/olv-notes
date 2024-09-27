@@ -627,6 +627,40 @@ ARM Mali
     - `kbdev->csf.firmware_inited = true;`
   - `kbase_pm_context_idle` requests power off
 
+## kbase bo
+
+- interesting `base_mem_alloc_flags`
+  - `BASE_MEM_PROT_CPU_RD`
+  - `BASE_MEM_PROT_CPU_WR`
+  - `BASE_MEM_PROT_GPU_RD`
+  - `BASE_MEM_PROT_GPU_WR`
+  - `BASE_MEM_PROT_GPU_EX`, executable, for shader binary
+  - `BASE_MEM_SAME_VA`, same cpu/gpu va
+  - `BASE_MEM_FIXED`, umd-specified fixed va
+  - `BASE_MEM_FIXABLE`
+- `kbase_mem_alloc`
+  - `zone`
+    - `SAME_VA_ZONE`, if `BASE_MEM_SAME_VA`
+    - `EXEC_FIXED_VA_ZONE`, if fixed and executabe
+    - `FIXED_VA_ZONE`, if fixed
+    - `EXEC_VA_ZONE`, if executable
+    - `CUSTOM_VA_ZONE`, otherwise
+- `kbase_region_tracker_init` initializes the zones
+  - 0x00000000'00001000..0x00007fff'ffffffff, `SAME_VA_ZONE`
+    - `kbase_reg_zone_same_va_init` uses pfn 1 to
+      `KBASE_REG_ZONE_EXEC_VA_BASE_64` (47 bits)
+  - 0x00008000'00000000..0x00008000'ffffffff, `EXEC_VA_ZONE`
+    - `kbase_reg_zone_exec_va_init` uses `KBASE_REG_ZONE_EXEC_VA_SIZE` (4GB)
+      following `SAME_VA_ZONE`
+  - 0x00008001'00000000..0x00008001'ffffffff, `EXEC_FIXED_VA_ZONE`
+    - `kbase_reg_zone_exec_fixed_va_init` uses
+      `KBASE_REG_ZONE_EXEC_FIXED_VA_SIZE` (4GB) following `EXEC_VA_ZONE`
+  - 0x00008002'00000000..0x0000ffff'ffffffff, `FIXED_VA_ZONE`
+    - `kbase_reg_zone_fixed_va_init` uses `KBASE_REG_ZONE_FIXED_VA_END_64`
+      (48 bits) following `EXEC_FIXED_VA_ZONE`
+  - 0x00000001'00000000..0x000007ff'ffffffff, `CUSTOM_VA_ZONE` (32-bit umd only)
+    - `kbase_reg_zone_custom_va_init` uses `KBASE_REG_ZONE_CUSTOM_VA_BASE`
+      (4GB) to `KBASE_REG_ZONE_CUSTOM_VA_SIZE` (43 bits)
 
 ## kbase v10 and v13
 
