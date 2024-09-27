@@ -226,6 +226,7 @@ Mesa PanVK
     - `tiler_heap->desc` is a bo of size 4KB plus 64KB
       - the first 4KB is for `MALI_TILER_HEAP` descriptor
       - the rest 64KB is for geometry buffer
+        - used by `MALI_PRIMITIVE_FLAGS` fifo
   - `create_group`
     - `queue->group_handle` is from `DRM_IOCTL_PANTHOR_GROUP_CREATE`
     - there are 3 sub-queues
@@ -944,6 +945,7 @@ Mesa PanVK
     `prepare_push_uniforms` to prep push consts
     - `panvk_per_arch(cmd_prepare_push_uniforms)` always allocs 512 bytes
     - the va (and the size) is written to `d8`
+  - v5 appears to use RMU, register-mapped uniform, instead
 - an SPD is a `MALI_SHADER_PROGRAM`
   - `panvk_shader_upload`
     - it uploads the binary to the exec mempool
@@ -979,81 +981,111 @@ Mesa PanVK
 ## `RUN_IDVS`
 
 - `MALI_CS_RUN_IDVS`
-  - `flags_override`
-  - `progress_increment`
-  - `malloc_enable`
-  - `draw_id_register_enable`
+  - `flags_override` is ORed with `d56` to form the effective
+    `MALI_PRIMITIVE_FLAGS`
+  - `progress_increment` is always false
+  - `malloc_enable` is always true
+    - when idvs is used, the compiler sets `ctx->malloc_idvs` and uses a
+      different instr to load varyings, which necessitates this bit
+  - `draw_id_register_enable` and `draw_id`
+    - when vs uses `gl_DrawID` from `VK_EXT_multi_draw`, the draw id needs to
+      be preloaded for vs
+    - they preload the specified value to vs r62
   - `varying_srt_select` selects `d2` instead of `d0`
   - `varying_fau_select` selects `d10` instead of `d8`
   - `varying_tsd_select` selects `d26` instead of `d24`
   - `fragment_srt_select` selects `d4` instead of `d0`
   - `fragment_tsd_select` selects `d28` instead of `d24`
-  - `draw_id`
   - `opcode` is `MALI_CS_OPCODE_RUN_IDVS`
 - registers
   - `d0`, `d2`, `d4`, `d6`: SRT
   - `d8`, `d10`, `d12`, `d14`: FAU
   - `d16`, `d18`, `d20`, `d22`: SPD
   - `d24`, `d26`, `d28`, `d30`: TSD
-  - `r32`: `Global attribute offset`
+  - `r32`: `Global attribute offset`, used for vertex base
+    - this seems deprecated and gallium uses `r36` instead
   - `r33`: `Index count`
   - `r34`: `Instance count`
   - `r35`: `Index offset`
   - `r36`: `Vertex offset`
   - `r37`: `Instance offset`
-  - `r38`: `Tiler DCD flags2`
+  - `r38`: `MALI_DCD_FLAGS_2`
   - `r39`: `Index array size`
   - `d40`: `MALI_TILER_CONTEXT`
-  - `d42`: `MALI_SCISSOR`
-  - `r44`: `Low depth clamp`
-  - `r45`: `High depth clamp`
-  - `d46`: `Occlusion`
-  - `d48`: `Varying allocation`
-  - `d50`: `Blend`
-  - `d52`: `Depth/stencil`
-  - `d54`: `Indices`
-  - `d56`: `MALI_PRIMITIVE_FLAGS`
+  - `d42`: `MALI_SCISSOR`, from viewport and scissor
+  - `r44`: `Low depth clamp`, fromp viewport
+  - `r45`: `High depth clamp`, fromp viewport
+  - `d46`: `Occlusion`, va of occlusion query bo
+  - `d48`: `Varying allocation` is attr count times `sizeof(vec4)`
+  - `d50`: `MALI_BLEND` array
+  - `d52`: `MALI_DEPTH_STENCIL`
+  - `d54`: `Indices`, va of index buffer
+  - `d56`: `MALI_PRIMITIVE_FLAGS`, ORed with `flags_override`
   - `r57`: `MALI_DCD_FLAGS_0`
   - `r58`: `MALI_DCD_FLAGS_1`
-  - `r60`: `MALI_PRIMITIVE_SIZE`
+  - `r60`: `MALI_PRIMITIVE_SIZE`, for point size / line width
+    - on v7, it is either a float (for const) or a va (for `gl_PointSize`)
+    - since v9, `gl_PointSize` does not need a bo
+      - it seems to use `MALI_PRIMITIVE_FLAGS` fifo
 - `MALI_TILER_CONTEXT`
-  - `polygon_list`
-  - `hierarchy_mask`
-  - `sample_pattern`
-  - `sample_test_disable`
+  - `polygon_list` is updated by the tiler (and used by `RUN_FRAGMENT`
+    implicitly?)
+  - `hierarchy_mask` is the allowed tile sizes
+  - `sample_pattern` is sample count
+  - `sample_test_disable` is always false
   - `first_provoking_vertex`
   - `fb_width`
   - `fb_height`
   - `layer_count`
   - `layer_offset`
-  - `heap`
-  - `geometry_buffer_size`
-  - `geometry_buffer`
-  - `completed_top`
-  - `completed_bottom`
-  - `private_state`
+  - `heap` is `MALI_TILER_HEAP`
+  - `geometry_buffer_size` and `geometry_buffer` are the FIFO used by
+    `MALI_PRIMITIVE_FLAGS`
+  - `completed_top` and `completed_bottom` are updated by the tiler and used
+    by `FINISH_FRAGMENT`
+  - more
+- `MALI_DEPTH_STENCIL`
+- one or more `MALI_BLEND`
 
 ## `RUN_FRAGMENT`
 
 - `MALI_CS_RUN_FRAGMENT`
-  - `enable_tem`
-  - `tile_order`
-  - `progress_increment`
+  - `enable_tem` is always false
+    - tile enable map, was used on v5 to control which tiles are preloaded?
+    - since v6, frame shaders specified by DCDs (`MALI_DRAW`) are used
+  - `tile_order` is always `MALI_TILE_RENDER_ORDER_Z_ORDER`
+    - tile walk order, where Z is snake-like?
+    - other options are row by row and col by col
+  - `progress_increment` is always false
   - `opcode` is `MALI_CS_OPCODE_RUN_FRAGMENT`
 - registers
   - `d40`: `MALI_FRAMEBUFFER_POINTER`
   - `d42`: `MALI_SCISSOR`
 - `MALI_FRAMEBUFFER_PARAMETERS`
+  - `tiler` points to per-pass `MALI_TILER_CONTEXT`
+  - `frame_shader_dcds` points to `MALI_DRAW` array
+  - `internal_layer_index` selects different polygon list
+  - `frame_argument` is arbitrary u64 val preloaded to fs r62 and r63
+  - many more
 - `MALI_FRAMEBUFFER_PADDING`
-- `MALI_ZS_CRC_EXTENSION`
-- `MALI_RENDER_TARGET`
+- `MALI_ZS_CRC_EXTENSION` is emitted when there are zs or crc rt
+  - crc rt is always disabled on panvk
+    - `PAN_MESA_DEBUG=crc` enables it for transaction elimination
+- one or more `MALI_RENDER_TARGET`
+  - `internal_buffer_offset` is the offset of the rt in the tile memory
+  - many more
 
 ## `RUN_COMPUTE`
 
 - `MALI_CS_RUN_COMPUTE`
-  - `task_increment`
-  - `task_axis`
-  - `progress_increment`
+  - `task_increment` and `task_axis`
+    - these specify how many workgroups to disatch at a time
+    - e.g., if wg size is 4, wg count is 2 on the x axis, and hw has 32
+      threads
+      - `task_axis` can be set to `MALI_TASK_AXIS_Y`
+      - `task_increment` can be set to 4
+      - hw will dispatch 4 rows of wg at a time, which utilizes all 32 threads
+  - `progress_increment` is always false
   - `srt_select` selects one of the four SRT regs
   - `spd_select` selects one of the four SPD regs
   - `tsd_select` selects one of the four TSD regs
@@ -1064,7 +1096,7 @@ Mesa PanVK
   - `d8`, `d10`, `d12`, `d14`: FAU
   - `d16`, `d18`, `d20`, `d22`: SPD
   - `d24`, `d26`, `d28`, `d30`: TSD
-  - `r32`: `Global attribute offset`
+  - `r32`: `Global attribute offset`, always 0
   - `r33`: `MALI_COMPUTE_SIZE_WORKGROUP`
   - `r34`: `Job offset X`
   - `r35`: `Job offset Y`
@@ -1091,8 +1123,7 @@ Mesa PanVK
           - umd controls whether hierarchical tiling is enabled
         - each tile needs a 8-byte header and a 512-byte body
           - umd knows the number of tiles at each hierarchical level
-      - on valhall, panvk allocates a 64KB geometry buffer
-        - is this the new name for polygon list?
+      - on valhall, it uses the tiler heap?
   - hw runs the varying shader and caches the results in the tiler heap
     - it is growable and managed by kmd
     - when the hw runs out of heap, it generates an irq and the kmd grows the
