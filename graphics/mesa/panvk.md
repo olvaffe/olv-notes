@@ -577,7 +577,7 @@ Mesa PanVK
     - `GENX(pandecode_blend_descs)` decodes blend
   - `d52` is `Depth/stencil`
   - `d54` is `Indices`
-  - `d56` is `Primitive flags`
+  - `r56` is `Primitive flags`
   - `r57` is `DCD Flags 0`
   - `r58` is `DCD Flags 1`
   - `r60` is `Primitive size`
@@ -981,7 +981,7 @@ Mesa PanVK
 ## `RUN_IDVS`
 
 - `MALI_CS_RUN_IDVS`
-  - `flags_override` is ORed with `d56` to form the effective
+  - `flags_override` is ORed with `r56` to form the effective
     `MALI_PRIMITIVE_FLAGS`
   - `progress_increment` is always false
   - `malloc_enable` is always true
@@ -1020,7 +1020,7 @@ Mesa PanVK
   - `d50`: `MALI_BLEND` array
   - `d52`: `MALI_DEPTH_STENCIL`
   - `d54`: `Indices`, va of index buffer
-  - `d56`: `MALI_PRIMITIVE_FLAGS`, ORed with `flags_override`
+  - `r56`: `MALI_PRIMITIVE_FLAGS`, ORed with `flags_override`
   - `r57`: `MALI_DCD_FLAGS_0`
   - `r58`: `MALI_DCD_FLAGS_1`
   - `r60`: `MALI_PRIMITIVE_SIZE`, for point size / line width
