@@ -572,7 +572,7 @@ Mesa PanVK
   - `r44` is `Low depth clamp`
   - `r45` is `High depth clamp`
   - `d46` is `Occlusion`
-  - `d48` is `Varying allocation`
+  - `r48` is `Varying allocation`
   - `d50` is `Blend`
     - `GENX(pandecode_blend_descs)` decodes blend
   - `d52` is `Depth/stencil`
@@ -1016,7 +1016,7 @@ Mesa PanVK
   - `r44`: `Low depth clamp`, fromp viewport
   - `r45`: `High depth clamp`, fromp viewport
   - `d46`: `Occlusion`, va of occlusion query bo
-  - `d48`: `Varying allocation` is attr count times `sizeof(vec4)`
+  - `r48`: `Varying allocation` is attr count times `sizeof(vec4)`
   - `d50`: `MALI_BLEND` array
   - `d52`: `MALI_DEPTH_STENCIL`
   - `d54`: `Indices`, va of index buffer
