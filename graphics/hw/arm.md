@@ -662,6 +662,28 @@ ARM Mali
     - `kbase_reg_zone_custom_va_init` uses `KBASE_REG_ZONE_CUSTOM_VA_BASE`
       (4GB) to `KBASE_REG_ZONE_CUSTOM_VA_SIZE` (43 bits)
 
+## kbase userspace submission
+
+- `kbasep_cs_queue_group_create` creates a `kbase_queue_group`
+- `kbasep_cs_queue_register` registers a `kbase_queue`
+  - the queue uses a userspace-provided bo as the ring buffer
+- `kbasep_cs_queue_bind` binds the queue
+  - it returns a cookie to be used with mmap
+- `kbase_mmap` maps the queue into userspace
+  - `vm_pgoff` is `BASEP_MEM_CSF_USER_IO_PAGES_HANDLE` plus a cookie
+  - `kbase_csf_cpu_mmap_user_io_pages` looks up the queue from the cookie
+- `kbase_csf_user_io_pages_vm_fault` faults the pages in
+  - it faults in the doorbell, input, and output pages
+- when the userspace submits,
+  - it builds a cmdbuf
+  - it writes a `CALL` into the ring buffer to call the cmdbuf
+  - it writes to the input page to increment the ring buffer tail
+  - it rings the doorbell
+- when there are more queue groups than the csf can handle, kmd needs to
+  rotate the queue groups
+  - `kbasep_cs_queue_kick` can tell kmd a queue group has new cmds when the
+    queue group is not active due to the rotation
+
 ## kbase v10 and v13
 
 - search for `GPU_ID.*MAKE` for v10 and v13 differences
