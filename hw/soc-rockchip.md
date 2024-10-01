@@ -175,3 +175,53 @@ Rockchip SoCs
     - it dds `idbloader-r5c.img` to sector 0x40 and dds `u-boot-r5c.itb` to
       0x4000
       - sector size is 512 bytes
+
+## Orange Pi 5
+
+- <https://github.com/orangepi-xunlong/orangepi-build>
+  - it appears to be based on armbian
+  - `scripts/main.sh`
+    - `BOARD` is `orangepi5`
+    - sources `external/config/boards/orangepi5.conf`
+      - `BOARDFAMILY` is `rockchip-rk3588`
+      - `BOOT_SCENARIO` is `spl-blobs`
+      - `BOOT_SUPPORT_SPI` is `yes`
+    - sources `scripts/configuration.sh`
+      - sources `external/config/sources/families/rockchip-rk3588.conf`
+        - sources `external/config/sources/families/include/rockchip64_common.inc`
+          - `DDR_BLOB` is `rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin`
+            - from <https://github.com/armbian/rkbin>
+          - `BL31_BLOB` is `rk35/rk3588_bl31_v1.45_20240422.elf`
+            - from <https://github.com/orangepi-xunlong/rk-rootfs-build/tree/rkbin/rk35>
+            - it is prebuilt of <https://github.com/ARM-software/arm-trusted-firmware>
+        - `KERNELSOURCE` is <https://github.com/orangepi-xunlong/linux-orangepi.git>
+        - `KERNELBRANCH` is `orange-pi-6.1-rk35xx`
+        - `LINUXCONFIG` is `linux-rockchip-rk3588-current`
+        - `BOOTSOURCE` is <https://github.com/orangepi-xunlong/u-boot-orangepi.git>
+        - `BOOTBRANCH` is `v2017.09-rk3588`
+        - `BOOTCONFIG` is `orangepi_5_defconfig`
+        - `IMAGE_PARTITION_TABLE` is `gpt`
+        - `OFFSET` is `30`
+        - `BOOTFS_TYPE` is `fat`
+        - `ROOTFS_TYPE` is `ext4`
+    - `compile_uboot` builds uboot
+    - `compile_kernel` builds kernel
+- manual
+  - <https://github.com/rockchip-linux/rkbin>
+  - <https://github.com/ARM-software/arm-trusted-firmware.git>
+    - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3588 bl31`
+    - `build/rk3588/release/bl31/bl31.elf` is the image
+  - <https://github.com/u-boot/u-boot.git>
+    - `make orangepi-5-rk3588s_defconfig`
+    - `ROCKCHIP_TPL=rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin
+       BL31=arm-trusted-firmware/build/rk3588/release/bl31/bl31.elf
+       CROSS_COMPILE=aarch64-linux-gnu- make`
+    - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
+      - `arch/arm/dts/rockchip-u-boot.dtsi`
+      - `mkimage` packs `rockchip-tpl` (the ddr blob from rkbin) and
+        `u-boot-spl` (`spl/u-boot-spl.bin`) into `idbloader.img`
+      - `u-boot.itb` is u-boot proper
+  - flash to sdcard
+    - `dd if=u-boot-rockchip.bin of=/dev/sda seek=64`
+  - flash to spi flash
+    - `dd if=u-boot-rockchip.bin of=/dev/mtdblock0`
