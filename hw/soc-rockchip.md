@@ -225,3 +225,57 @@ Rockchip SoCs
     - `dd if=u-boot-rockchip.bin of=/dev/sda seek=64`
   - flash to spi flash
     - `dd if=u-boot-rockchip.bin of=/dev/mtdblock0`
+- frankstein image
+  - image layout
+    - LBA 0..33: GPT
+    - LBA 64..16383: `idbloader.img`
+    - LBA 16384..32767: `u-boot.itb`
+    - LBA 32768..: free
+  - `fallocate -l 256M a.img`
+  - `echo -e 'label:gpt\nfirst-lba:34\nstart=64,size=16320\nstart=16384,size=16384\nstart=32768' | sfdisk a.img`
+  - `dd if=src.img of=a.img bs=512 skip=64 seek=64 count=16320 conv=notrunc`
+  - `dd if=src.img of=a.img bs=512 skip=16384 seek=16384 count=16384 conv=notrunc`
+  - `losetup -fP && mkfs.vfat /dev/loop0p3 && losetup -D`
+- serial
+  - `minicom -D /dev/ttyUSB0 -b 1500000`
+- u-boot log from stock image
+  - `rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin` packed in `idbloader.img`
+    - from `DDR V1.13 25cee80c4f cym 23/08/11-09:31:58`
+    - to `change to F0: 2112MHz`
+  - `u-boot-spl.bin` packed in `idbloader.img`
+    - from `U-Boot SPL board init..`
+    - `Jumping to U-Boot(0x00200000) via ARM Trusted Firmware(0x00040000)...`
+    - to `Total: 776.820 ms`
+  - `bl31.elf` packed in `u-boot.itb`
+    - from `INFO:    Preloader serial: 2`
+    - to `INFO:    SPSR = 0x3c9`
+  - u-boot packed in `u-boot.itb`
+    - from `U-Boot 2017.09-orangepi (Feb 02 2024 - 21:14:54 +0800)`
+    - `Hit key to stop autoboot('CTRL+C'):  0`
+    - autoboot executes `bootcmd`, which in short,
+      - `part list mmc 0 -bootable` to find bootable partitions (e.g., `3`)
+      - `fstype mmc 0:3 bootfstype` to find fs type (e.g., `fat`)
+      - if the fs has `extlinux/extlinux.conf`,
+        - `sysboot mmc 0:3 any 0x00500000 extlinux/extlinux.conf`
+      - if the fs has `boot.scr`,
+        - `load mmc 0:3 0x00500000 boot.scr; source 0x00500000`
+    - `boot.scr`
+      - it is created from `mkimage -C none -A arm -T script -d boot.cmd boot.scr`
+      - import `orangepiEnv.txt` for customization
+      - set up kernel cmdline
+      - load `uInitrd` for the initramfs
+      - load `Image` for the kernel image
+      - load `dtb/rockchip/rk3588s-orangepi-5.dtb` for the dtb
+      - `booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}`
+- maskrom
+  - press the maskrom key and power on the board
+    - the bootrom boots into the maskrom instead of the normal flow
+  - <https://github.com/rockchip-linux/rkdeveloptool.git>
+    - `autoreconf -i && ./configure && make` to build `rkdeveloptool`
+  - <https://github.com/rockchip-linux/rkbin>
+    - `./tools/boot_merger RKBOOT/RK3588MINIALL.ini` to generate
+      `rk3588_spl_loader_v1.16.113.bin`
+  - `./rkdeveloptool db rk3588_spl_loader_v1.16.113.bin` tells the bootrom to
+    boot the specified miniloader
+  - `./rkdeveloptool ef` tells the miniloader to erase the spi flash
+    - the normal flow will find the stage1 from emmc rather than from spi
