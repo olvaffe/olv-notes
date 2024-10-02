@@ -513,6 +513,9 @@ Kernel Config
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
       - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if intel
     - select `MSM DRM` if qcom
+    - select `DRM Support for Rockchip` if rk
+      - deselect `Rockchip VOP driver`
+      - select `Rockchip VOP2 driver`
     - select `Virtio GPU driver` if guest
     - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
       - it requires `CMA` and `DMA_CMA` to work
