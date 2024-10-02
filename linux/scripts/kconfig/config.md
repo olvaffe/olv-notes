@@ -235,6 +235,7 @@ Kernel Config
     - select `Broadcom BCM2835 family`
   - select `MediaTek SoC Family` if mtk
   - select `Qualcomm Platforms` if qcom
+  - select `Rockchip Platforms` if rk
 - select `Kernel Features`
   - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)`
@@ -292,8 +293,9 @@ Kernel Config
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
-      - select `DesignWare-based PCIe controllers` if newer qcom
-        - select `Qualcomm PCIe controller (host mode)`
+      - select `DesignWare-based PCIe controllers`
+        - select `Qualcomm PCIe controller (host mode)` if newer qcom
+        - select `Rockchip DesignWare PCIe controller (host mode)` if rk
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
       - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
@@ -411,6 +413,7 @@ Kernel Config
           - select `AMD PSP I2C semaphore support` if amd
         - select `MediaTek I2C adapter` if mtk
         - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if qcom, depending on `QCOM_GENI_SE`
+        - select `Rockchip RK3xxx I2C adapter` if rk
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
     - select `BCM2835 SPI controller` if rpi
@@ -420,6 +423,8 @@ Kernel Config
     - select `PXA2xx SSP SPI master` if intel
     - select `QTI QSPI controller` if qcom
     - select `Qualcomm GENI based SPI controller` if qcom
+    - select `Rockchip SPI controller driver` if rk
+    - select `Rockchip Serial Flash Controller (SFC)` if rk
   - select `SPMI support` if arm
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
   - select `Pin controllers`
@@ -438,7 +443,7 @@ Kernel Config
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
   - select `Power supply class support`
-    - select `SBS Compliant gas gauge`
+    - select `SBS Compliant gas gauge` if needed
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
     - select `ChromeOS EC based peripheral charger` if cros, depending on `CROS_EC`
   - select `Hardware Monitoring support`
@@ -476,13 +481,16 @@ Kernel Config
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if mtk
     - select `Qualcomm SPMI PMICs` if qcom
+    - select `Rockchip RK806 Power Management Chip` if rk
   - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
+    - select `Fairchild FAN53555 Regulator` if rk
     - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
+    - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
   - select `Multimedia support` if desired
     - select `Media device types`
       - select `Cameras/video grabbers support`
@@ -518,6 +526,7 @@ Kernel Config
       - select `DRM HDMI Support for Mediatek SoCs`
     - select `Simple framebuffer driver` if desired
     - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
+    - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
@@ -589,12 +598,13 @@ Kernel Config
       - select `AMD Sensor Fusion Hub`
   - select `USB support`
     - select `Support for Host-side USB`
-    - select `xHCI HCD (USB 3.0) support`
+    - select `xHCI HCD (USB 3.0) support` if needed
       - select `xHCI support for MediaTek SoCs` if mtk
     - select `EHCI HCD (USB 2.0) support` if needed
+      - select `Generic EHCI driver for a platform device` if rk
     - select `USB Printer support` if needed
     - select `USB Mass Storage support`
-    - select `DesignWare USB3 DRD Core Support` if qcom
+    - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `Onboard USB hub support` if qcom
     - select `USB Type-C Support`
       - select `USB Type-C Connector System Software Interface driver`
@@ -607,6 +617,7 @@ Kernel Config
       - select `SDHCI support on PCI bus` if x86
       - select `SDHCI support for ACPI enumerated SDHCI controllers` if x86
       - select `SDHCI platform and OF driver helper` if arm
+        - select `SDHCI OF support for the Synopsys DWC MSHC` if rk
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
     - select `Qualcomm SDHCI Controller Support` if qcom
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
@@ -677,7 +688,9 @@ Kernel Config
     - select `AMD IOMMU support` if amd
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
+    - select `Rockchip IOMMU Support` if rk
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk
     - select `MediaTek IOMMU Support` if mtk
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
@@ -718,18 +731,20 @@ Kernel Config
   - select `PM Domains` if arm
     - select `Qualcomm PM Domains` if qcom
       - select `Qualcomm RPMh Power domain driver`
+    - select `Rockchip generic power domain` if rk
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
     - select `DEVFREQ-Event device Support`
-  - select `External Connector Class (extcon) support` if cors and mtk
-    - select `ChromeOS Embedded Controller EXTCON support`
+  - select `External Connector Class (extcon) support`
+    - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support`
     - select `Accelerometers`
       - select `HID Accelerometers 3D` if desired (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
       - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if qcom
+      - select `Rockchip SARADC driver` if rk, depending on `RESET_CONTROLLER`
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
       - select `ChromeOS EC Sensor for lid angle`
@@ -743,6 +758,7 @@ Kernel Config
     - select `BCM2835 PWM support` if rpi
     - select `ChromeOS EC PWM driver` if cros
     - select `MediaTek display PWM driver` if mtk
+    - select `Rockchip PWM support` if rk
   - select `IRQ chip support` if qcom
     - select `QCOM PDC`
   - select `Reset Controller Support` if arm
@@ -759,6 +775,12 @@ Kernel Config
       - select `Qualcomm QMP PHY Driver`
       - select `Qualcomm QUSB2 PHY Driver`
       - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
+    - if rk
+      - select `Rockchip INNO USB2PHY Driver`, depending on `EXTCON`
+      - select `Rockchip NANENG COMBO PHY Driver`
+      - select `Rockchip Samsung HDMI/eDP Combo PHY driver`
+      - select `Rockchip Snps PCIe3 PHY Driver`
+      - select `Rockchip USBDP COMBO PHY Driver`
   - select `Generic powercap sysfs driver` if x86
     - select `Intel RAPL Support via MSR Interface`, depending on `IOSF_MBI`
   - select `Reliability, Availability and Serviceability (RAS) features`
@@ -766,6 +788,7 @@ Kernel Config
   - select `NVMEM Support` if arm
     - select `Mediatek SoCs EFUSE support` if mtk
     - select `QCOM QFPROM Support` if qcom
+    - select `Rockchip OTP controller support` if rk
   - select `Trusted Execution Environment support`
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
