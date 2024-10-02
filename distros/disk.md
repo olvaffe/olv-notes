@@ -118,7 +118,8 @@ Distro Disk
     partitions starting before sector 2048
     - that is, it sets "First usable LBA for partitions" field in the gpt
       header to 2048
-    - use `parted <image> mklabel gpt`, which sets the field to 34
+    - use `echo -e "label:gpt\nfirst-lba: 34" | sfdisk <image>`, or
+      `parted <image> mklabel gpt`, to set the field to 34
   - reserved: sector 64 to 16383
     - for rockchip preloader
   - reserved: sector 16384 to 32767
