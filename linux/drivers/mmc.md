@@ -1,6 +1,61 @@
 Kernel MMC/SD/SDIO
 ==================
 
+## History
+
+- sd specs
+  - 1997, MultiMediaCards (MMCs)
+  - 1999, SD 1.01
+    - max size 2GB (standard capacity, SDSC)
+    - max speed 12.5MB/s (default speed)
+  - SD 1.10
+    - max speed 25MB/s (high speed)
+  - 2006, SD 2.0
+    - max size 32GB (high capacity, SDHC)
+  - 2009, SD 3.01
+    - max size 2TB (extended capacity, SDXC)
+    - max speed 50MB/s at 100MHz and 104MB/s at 208MHz (UHS-I)
+      - doubled when DDR
+  - SD 4.0
+    - max speed 156MB/s or 312MB/s (UHS-II)
+  - 2017, SD 6.0
+    - max speed 312MB/s or 624MB/s (UHS-III)
+  - 2018, SD 7.0
+    - max size 128TB (ultra capacity, SDUC)
+    - max speed 985MB/s (SD Express)
+  - 2020, SD 8.0
+    - max speed 1969MB/s or 3938MB/s
+- consumer-facing speed classes
+  - C2, min write speed 2MB/s
+  - C4, min write speed 4MB/s
+  - C6, min write speed 6MB/s
+  - C10, min write speed 10MB/s
+  - U1, min write speed 10MB/s
+  - U3, min write speed 30MB/s
+- inside an sd card, there are
+  - an sd controller,
+  - one or more nand chips
+- eMMC
+  - a MMC card in a BGA IC package, including
+    - a mmc controller and a nand chip
+  - UFS slows replaces eMMC since 2016
+  - 2011, eMMC 4.5
+    - read 140MB/s write 50MB/s
+  - 2013, eMMC 5.0
+    - read 250MB/s write 90MB/s
+  - 2015, eMMC 5.1
+    - read 250MB/s write 125MB/s
+  - 2019, eMMC 5.1A
+- UFS, Universal Flash Storage
+  - there are both UFS memory card and eUFS
+  - 2011, UFS 1.0, 300MB/s
+  - 2012, UFS 1.1, 300MB/s
+  - 2013, UFS 2.0, 600MB/s
+  - 2016, UFS 2.1, 600MB/s
+  - 2018, UFS 3.0, 1450MB/s
+  - 2020, UFS 3.1, 1450MB/s
+  - 2022, UFS 4.0, 2900MB/s
+
 ## SDIO spec
 
 - Formats
