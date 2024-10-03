@@ -119,6 +119,11 @@ Das U-Boot
         - this calls `bootmeth_boot`
 - `bootflow_scan_first`
   - `bootmeth_setup_iter_order` collects all `UCLASS_BOOTMETH`
+    - `bootmeth_efi_mgr`
+    - `bootmeth_efi` looks for `/EFI/BOOT/bootaa64.efi`
+    - `bootmeth_extlinux` looks for `extlinux/extlinux.conf`
+    - `bootmeth_script` looks for `boot.scr.uimg` or `boot.scr`
+    - `bootmeth_pxe`
   - `bootdev_setup_iter` finds the first bootdev
     - it seems to support `UCLASS_BOOTSTD`, bootdev hunter, and
       `UCLASS_BOOTDEV`

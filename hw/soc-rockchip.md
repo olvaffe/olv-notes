@@ -233,9 +233,11 @@ Rockchip SoCs
     - LBA 32768..: free
   - `fallocate -l 256M a.img`
   - `echo -e 'label:gpt\nfirst-lba:34\nstart=64,size=16320\nstart=16384,size=16384\nstart=32768' | sfdisk a.img`
+    - the third partition should be ESP for uboot to consider it bootable
   - `dd if=src.img of=a.img bs=512 skip=64 seek=64 count=16320 conv=notrunc`
   - `dd if=src.img of=a.img bs=512 skip=16384 seek=16384 count=16384 conv=notrunc`
   - `losetup -fP && mkfs.vfat /dev/loop0p3 && losetup -D`
+    - populate `/extlinux/extlinux.conf`, kernel, rootfs, etc.
 - serial
   - `minicom -D /dev/ttyUSB0 -b 1500000`
 - u-boot log from latest rkbin/u-boot/atf
@@ -250,8 +252,9 @@ Rockchip SoCs
     - to `NOTICE:  BL31: Built : 16:46:29, Oct  1 2024`
   - u-boot packed in `u-boot.itb`
     - from `U-Boot 2024.10-rc6 (Oct 01 2024 - 17:05:11 -0700)`
+    - to `Starting kernel ...`
     - `Hit any key to stop autoboot:  0`
-    - autoboot executes `bootcmd`, which is `bootflow scan -lb`
+      - autoboot executes `bootcmd`, which is `bootflow scan -lb`
 - u-boot `printenv`
   - `include/env_default.h`
     - `baudrate=1500000`, from `CONFIG_BAUDRATE`
@@ -279,6 +282,10 @@ Rockchip SoCs
     - `script_offset_f=0xffe000`
     - `script_size_f=0x2000`
     - `scriptaddr=0x00c00000`
+- kernel log
+  - `Booting Linux on physical CPU 0x0000000000 [0x412fd050]`
+  - `Linux version 6.1.43-rockchip-rk3588 ...`
+  - `Kernel command line: console=ttyS1,1500000 console=tty0 debug root=/dev/mmcblk1p3 rootwait...`
 - maskrom
   - press the maskrom key and power on the board
     - the bootrom boots into the maskrom instead of the normal flow

@@ -304,6 +304,8 @@ Kernel Config
         - select `Build named firmware blobs into the kernel binary` if built-in i915/amdgpu/microcode/etc
         - select `Enable compressed firmware support`
   - select `Firmware Drivers`
+    - select `ARM System Control and Management Interface Protocol` if rk
+      - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
@@ -353,6 +355,8 @@ Kernel Config
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
+      - select `STMicroelectronics devices` if rk
+        - select `STMicroelectronics Multi-Gigabit Ethernet driver`
     - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
@@ -387,9 +391,9 @@ Kernel Config
       - deselect `Legacy (BSD) PTY support`
       - deselect `Allow legacy TIOCSTI usage`
       - select `Serial drivers`
-        - select `8250/16550 and compatible serial support` if x86/mtk
+        - select `8250/16550 and compatible serial support` if x86/mtk/rk
           - select `Console on 8250/16550 and compatible serial port`
-        - select `Support for Synopsys DesignWare 8250 quirks` if x86
+        - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
@@ -442,6 +446,12 @@ Kernel Config
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
+    - if rk
+      - select `Pinctrl and GPIO driver for RK805 PMIC`
+      - select `Rockchip gpio and pinctrl driver`
+  - select `GPIO Support` if rk
+    - select `Memory mapped GPIO drivers`
+      - select `Rockchip GPIO support`
   - select `Power supply class support`
     - select `SBS Compliant gas gauge` if needed
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
@@ -469,6 +479,7 @@ Kernel Config
     - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
       - select `Qualcomm SPMI PMIC Temperature Alarm`
+    - select `Rockchip thermal driver` if rk, depending on `RESET_CONTROLLER`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `QCOM watchdog` if qcom
@@ -560,6 +571,9 @@ Kernel Config
         - select `ASoC support for QCOM platforms` if qcom
           - select `SoC Machine driver for SC7180 boards`
           - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
+        - select `ASoC support for Rockchip` if rk
+          - select `Rockchip I2S Device Driver`
+          - select `Rockchip I2S/TDM Device Driver`
         - select `Sound Open Firmware Support` if intel or cros
           - select `SOF PCI enumeration support` if x86
           - select `SOF OF enumeration support` if arm
@@ -605,6 +619,8 @@ Kernel Config
       - select `xHCI support for MediaTek SoCs` if mtk
     - select `EHCI HCD (USB 2.0) support` if needed
       - select `Generic EHCI driver for a platform device` if rk
+    - select `OHCI HCD (USB 1.1) support` if needed
+      - select `Generic OHCI driver for a platform device` if rk
     - select `USB Printer support` if needed
     - select `USB Mass Storage support`
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
@@ -622,6 +638,8 @@ Kernel Config
       - select `SDHCI platform and OF driver helper` if arm
         - select `SDHCI OF support for the Synopsys DWC MSHC` if rk
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
+    - select `Synopsys DesignWare Memory Card Interface` if rk
+      - select `Rockchip specific extensions for Synopsys DW Memory Card Interface`
     - select `Qualcomm SDHCI Controller Support` if qcom
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
@@ -635,9 +653,11 @@ Kernel Config
     - select `QCOM EDAC Controller` if qcom, depending on `QCOM_LLCC`
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
+    - select `Haoyu Microelectronics HYM8563` if rk
     - select `MediaTek PMIC based RTC`, if mtk
   - select `DMA Engine support`
     - select `BCM2835 DMA engine support` if rpi
+    - select `DMA API Driver for PL330` if rk
     - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
   - select `DMABUF options` if desired
