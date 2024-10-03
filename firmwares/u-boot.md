@@ -155,6 +155,71 @@ Das U-Boot
   - `efi_mgr_boot` calls `efi_bootmgr_run`
   - `extlinux_pxe_boot` also calls `pxe_process`
 
+## `extlinux.conf`
+
+- `extlinux_boot` calls `pxe_process` to parse the `extlinux.conf` and boot
+- top-level keywords are
+  - `menu title` is parsed to `cfg->title`
+  - `menu background` is parsed to `cfg->bmp`
+  - `timeout` is parsed to `cfg->timeout`
+  - `default` and `ontimeout` are parsed to `cfg->default_label`
+  - `prompt` is parsed to `cfg->prompt`
+  - `include` includes another file
+  - `label` creates a new lable and is pased to `label->name`
+- label-level keywords are
+  - `menu default` is parsed to `cfg->default_label`
+  - `menu label` is parsed to `label->menu`
+    - this is the pretty name
+  - `kernel` and `linux` are parsed
+    - the full string is parsed to `label->kernel_label`
+    - if the full string contains `#`
+      - `label->kernel` is those before `#`
+      - `label->config` is `#` and those after `#`
+    - otherwise,
+      - `label->kernel` is the same as `label->kernel_label`
+      - `label->config` is null
+  - `append` is parsed to `label->append`
+  - `initrd` is parsed to `label->initrd`
+  - `fdt` and `devicetree` are parsed to `label->fdt`
+  - `fdtdir` and `devicetreedir` are parsed to `label->fdtdir`
+  - `fdtoverlays` and `devicetree-overlay` are parsed to `label->fdtoverlays`
+  - `localboot` is parsed to `label->localboot_val` and sets
+    `label->localboot`
+  - `ipappend` is parsed to `label->ipappend`
+  - `kaslrseed` sets `label->kaslrseed`
+- `handle_pxe_menu`
+  - `cfg->bmp` specifies a bmp file to draw as a background
+  - `pxe_menu_to_menu`
+    - `cfg->title` specifies the menu title
+    - `cfg->timeout` specifies how many seconds to wait for user input
+    - `cfg->prompt` specifies whether to show the menu
+      - if true, it always shows the menu even when timeout is 0
+      - if false, it shows the menu only when there is user input
+    - `cfg->default_label` specifies the default label to boot
+  - `menu_get_choice` returns the chosen label interactively
+  - `label_boot` boots the chosen label
+    - if `label->localboot`, `label_localboot` boots using `$localcmd`
+    - file loading
+      - `label->kernel` is loaded to `$kernel_addr_r`
+      - `label->initrd` is loaded to `$ramdisk_addr_r`
+    - kernel cmdline
+      - `label->append` is set to `$bootargs`
+      - `label->ipappend` appends netboot args to it
+    - fdt
+      - if `label->fdt`, it is the file to load
+      - if `label->fdtdir`,
+        - if `$fdtfile`, it is the file to load relative to fdtdir
+        - otherwise, `$fdtdir/$soc-$board.dtb` is the file to load
+      - the fdt file is loaded to `$fdt_addr_r`
+      - if `label->kaslrseed`, it patches `kaslr-seed` node
+      - if `label->fdtoverlays`, it loads overlays to `$fdtoverlay_addr_r` and
+        patches them in one by one
+    - it boots with one of `bootm`, `booti`, `bootz`, or `zboot`
+      - `bootm` boots an FIT or legacy image
+      - `booti` boots kernel `Image`
+      - `bootz` boots kernel `zImage`
+      - `zboot` boots kernel `bzImage`
+
 ## Usage
 
 - Environment Variable Commands
