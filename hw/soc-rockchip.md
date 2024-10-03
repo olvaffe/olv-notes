@@ -238,35 +238,47 @@ Rockchip SoCs
   - `losetup -fP && mkfs.vfat /dev/loop0p3 && losetup -D`
 - serial
   - `minicom -D /dev/ttyUSB0 -b 1500000`
-- u-boot log from stock image
+- u-boot log from latest rkbin/u-boot/atf
   - `rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin` packed in `idbloader.img`
-    - from `DDR V1.13 25cee80c4f cym 23/08/11-09:31:58`
+    - from `DDR 9fffbe1e78 cym 24/02/04-10:09:20,fwver: v1.16`
     - to `change to F0: 2112MHz`
   - `u-boot-spl.bin` packed in `idbloader.img`
-    - from `U-Boot SPL board init..`
-    - `Jumping to U-Boot(0x00200000) via ARM Trusted Firmware(0x00040000)...`
-    - to `Total: 776.820 ms`
+    - from `U-Boot SPL 2024.10-rc6 (Oct 01 2024 - 17:05:11 -0700)`
+    - to `## Checking hash(es) for Image atf-2 ... sha256+ OK`
   - `bl31.elf` packed in `u-boot.itb`
-    - from `INFO:    Preloader serial: 2`
-    - to `INFO:    SPSR = 0x3c9`
+    - from `NOTICE:  BL31: v2.11.0(release):v2.11.0-702-gbccc22756`
+    - to `NOTICE:  BL31: Built : 16:46:29, Oct  1 2024`
   - u-boot packed in `u-boot.itb`
-    - from `U-Boot 2017.09-orangepi (Feb 02 2024 - 21:14:54 +0800)`
-    - `Hit key to stop autoboot('CTRL+C'):  0`
-    - autoboot executes `bootcmd`, which in short,
-      - `part list mmc 0 -bootable` to find bootable partitions (e.g., `3`)
-      - `fstype mmc 0:3 bootfstype` to find fs type (e.g., `fat`)
-      - if the fs has `extlinux/extlinux.conf`,
-        - `sysboot mmc 0:3 any 0x00500000 extlinux/extlinux.conf`
-      - if the fs has `boot.scr`,
-        - `load mmc 0:3 0x00500000 boot.scr; source 0x00500000`
-    - `boot.scr`
-      - it is created from `mkimage -C none -A arm -T script -d boot.cmd boot.scr`
-      - import `orangepiEnv.txt` for customization
-      - set up kernel cmdline
-      - load `uInitrd` for the initramfs
-      - load `Image` for the kernel image
-      - load `dtb/rockchip/rk3588s-orangepi-5.dtb` for the dtb
-      - `booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}`
+    - from `U-Boot 2024.10-rc6 (Oct 01 2024 - 17:05:11 -0700)`
+    - `Hit any key to stop autoboot:  0`
+    - autoboot executes `bootcmd`, which is `bootflow scan -lb`
+- u-boot `printenv`
+  - `include/env_default.h`
+    - `baudrate=1500000`, from `CONFIG_BAUDRATE`
+    - `bootcmd=bootflow scan -lb`, from `CONFIG_BOOTCOMMAND`
+    - `bootdelay=2`, from `CONFIG_BOOTDELAY`
+    - `loadaddr=0xc00800`, from `CONFIG_SYS_LOAD_ADDR`
+  - `include/configs/rk3588_common.h`
+    - `boot_targets=mmc1 mmc0 nvme scsi usb pxe dhcp spi`, from `BOOT_TARGETS`
+    - `fdt_addr_r=0x12000000`
+    - `fdtfile=rockchip/rk3588s-orangepi-5.dtb`, from
+      `CONFIG_DEFAULT_FDT_FILE`
+    - `fdtoverlay_addr_r=0x12100000`
+    - `kernel_addr_r=0x02000000`
+    - `kernel_comp_addr_r=0x0a000000`
+    - `kernel_comp_size=0x8000000`
+    - `partitions=...`, from `PARTS_DEFAULT`
+      - `uuid_disk=${uuid_gpt_disk};`
+      - `name=loader1,start=32K,size=4000K,uuid=${uuid_gpt_loader1};`
+      - `name=loader2,start=8MB,size=4MB,uuid=${uuid_gpt_loader2};`
+      - `name=trust,size=4M,uuid=${uuid_gpt_atf};`
+      - `name=boot,size=112M,bootable,uuid=${uuid_gpt_boot};`
+      - `name=rootfs,size=-,uuid=B921B045-1DF0-41C3-AF44-4C6F280D3FAE;`
+    - `pxefile_addr_r=0x00e00000`
+    - `ramdisk_addr_r=0x12180000`
+    - `script_offset_f=0xffe000`
+    - `script_size_f=0x2000`
+    - `scriptaddr=0x00c00000`
 - maskrom
   - press the maskrom key and power on the board
     - the bootrom boots into the maskrom instead of the normal flow

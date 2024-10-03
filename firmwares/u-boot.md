@@ -38,9 +38,13 @@ Das U-Boot
   - `booti` boots a kernel image
   - `bootm` boots an app image
   - `bootp` boots from pxe
-  - `bootflow scan` boots boot flows
+  - `bootflow scan -bl` boots boot flows
+    - this only considers 
+    - `-l` lists boot flows as they are discovered
+    - `-b` boots boot flows as they are discovered
 - `coninfo` prints console info
 - `env` handles env
+- `gpt` handles gpt
 - load variants
   - `ext2load` loads a file from ext2
   - `ext4load` loads a file from ext4
@@ -48,8 +52,12 @@ Das U-Boot
   - `load` loads a file from any fs?
 - `ls` lists a fs
 - `mmc` handles mmc
+  - `mmc part` lists partitions
 - `net list` lists net devices
 - `part` handles partitions
+  - `part list mmc 0` lists partitions
+    - looking at `get_bootable`, only ESP or a partition with
+      `Legacy BIOS bootable` bit set is considered bootable
 - `pci` lists pci devices
 - `run` runs cmds in an env var
 - `usb` handles usb
