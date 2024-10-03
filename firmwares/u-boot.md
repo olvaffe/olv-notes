@@ -28,6 +28,77 @@ Das U-Boot
       - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
         for `CONFIG_ARCH_ROCKCHIP`
 
+## Modern Config
+
+- `make foo_defconfig` uses `configs/foo_defconfig`
+  - it typically sets
+    - `CONFIG_$ARCH=y`, such as `ARM`
+    - `CONFIG_ARCH_$VENDOR=y`, such as `ROCKCHIP`
+    - `CONFIG_$VENDOR_$SOC=y`, such as `ROCKCHIP_RK3588`
+    - `CONFIG_TARGET_$BOARD=y`, such as `EVB_RK3588`
+    - `CONFIG_DEFAULT_DEVICE_TREE`
+    - `CONFIG_DEFAULT_FDT_FILE`
+    - `CONFIG_SYS_LOAD_ADDR`
+  - they affect these configs
+    - `arch/$ARCH/Kconfig`
+      - `CONFIG_SYS_ARCH`
+      - `CONFIG_SYS_CPU`
+    - `arch/$ARCH/mach-$VENDOR/Kconfig`
+    - `arch/$ARCH/mach-$VENDOR/$SOC/Kconfig`
+      - `CONFIG_SYS_SOC`
+    - `board/$VENDOR/$BOARD/Kconfig`
+      - `CONFIG_SYS_VENDOR`
+      - `CONFIG_SYS_BOARD`
+      - `CONFIG_SYS_CONFIG_NAME`
+- `CONFIG_BOOTSTD_DEFAULTS` or `CONFIG_BOOTSTD_FULL` should be enabled
+  - some modern defconfigs enable them
+  - `CONFIG_BOOTSTD_FULL` implies `CONFIG_BOOTSTD_DEFAULTS`
+  - `CONFIG_BOOTSTD_DEFAULTS` implies `CONFIG_BOOT_DEFAULTS` and
+    `CONFIG_BOOTMETH_DISTRO`
+  - `CONFIG_BOOT_DEFAULTS` is a meta config to enable
+    - `CONFIG_ENV_VARS_UBOOT_CONFIG` to include `CONFIG_SYS_*` in default env
+    - `CONFIG_EFI_PARTITION` for gpt support
+    - `CONFIG_CMD_{EXT2,EXT4,FAT,PART}` for partition and fs support
+    - `CONFIG_BOOTCOMMAND` for autoboot with `bootflow scan -lb`
+    - `CONFIG_CMD_BOOTI` for `booti` to boot kernel `Image`
+    - more
+  - `CONFIG_BOOTMETH_DISTRO` is a meta config to enable
+    - `CONFIG_BOOTMETH_SCRIPT` for `boot.scr.uimg` (or `boot.scr`) support
+    - `CONFIG_BOOTMETH_EXTLINUX` for `extlinux/extlinux.conf` support
+    - `CONFIG_BOOTMETH_EXTLINUX_PXE` for pxe
+    - `CONFIG_BOOTMETH_EFILOADER` for `/EFI/BOOT/bootaa64.efi` support
+
+## Default Environment
+
+- `include/env_default.h`
+  - `bootcmd` is `CONFIG_BOOTCOMMAND`, for autoboot
+  - `bootdelay` is `CONFIG_BOOTDELAY`, for autoboot
+  - `baudrate` is `CONFIG_BAUDRATE`
+  - `loadaddr` is `CONFIG_SYS_LOAD_ADDR`
+  - `arch` is `CONFIG_SYS_ARCH`
+  - `cpu` is `CONFIG_SYS_CPU`
+  - `soc` is `CONFIG_SYS_SOC`
+  - `vendor` is `CONFIG_SYS_VENDOR`
+  - `board` and `board_name` are `CONFIG_SYS_BOARD`
+  - `CFG_EXTRA_ENV_SETTINGS` is extra env defined by board
+- `scripts/Makefile.autoconf` generates `include/config.h` to include
+  `include/configs/$CONFIG_SYS_CONFIG_NAME.h`
+  - they typically define variables for memory layout
+    - `kernel_addr_r` for kernel
+    - `kernel_comp_addr_r` and `kernel_comp_size` for decompression
+    - `fdt_addr_r` for fdt
+    - `fdtoverlay_addr_r` for fdtoverlay
+    - `ramdisk_addr_r` for initrd
+    - `scriptaddr` for boot script
+    - `script_offset_f` and `script_size_f` for boot script in spi flash
+    - `pxefile_addr_r` for pxe
+  - they may also define
+  - `boot_targets` for bootdev order
+  - `fdtfile` is `CONFIG_DEFAULT_FDT_FILE`, for when `extlinux.conf` specifies
+    `fdtdir`
+  - `partitions` describes default gpt partition table, for
+    `gpt write mmc 0 $partitions`
+
 ## CLI
 
 - `bdinfo` prints board info
@@ -191,7 +262,7 @@ Das U-Boot
   - `cfg->bmp` specifies a bmp file to draw as a background
   - `pxe_menu_to_menu`
     - `cfg->title` specifies the menu title
-    - `cfg->timeout` specifies how many seconds to wait for user input
+    - `cfg->timeout` specifies how many deciseconds to wait for user input
     - `cfg->prompt` specifies whether to show the menu
       - if true, it always shows the menu even when timeout is 0
       - if false, it shows the menu only when there is user input
