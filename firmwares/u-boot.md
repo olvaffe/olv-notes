@@ -268,6 +268,160 @@ Das U-Boot
     - probably just a loglevel issue?
   - login takes ~20 seconds for some unknown reason
 
+## `mkimage`
+
+- defaults
+  - `params.os` defaults to `IH_OS_LINUX`
+  - `params.arch` defaults to `IH_ARCH_PPC`
+  - `params.type` defaults to `IH_TYPE_KERNEL`
+  - `params.comp` defaults to `IH_COMP_GZIP`
+  - `params.dtc` defaults to `-I dts -O dtb -p 500`
+- generic options
+  - `-l` updates `params.lflags`
+  - `-q` updates `params.quiet`
+  - `-s` updates `params.skipcpy`
+  - `-v` updates `params.vflag`
+  - `-V` prints version
+- image options (mostly for legacy image)
+  - `-a` updates `params.addr`
+  - `-A` updates `params.arch` and `params.Aflag`
+    - `arm` is `IH_ARCH_ARM`
+    - `arm64` is `IH_ARCH_ARM64`
+    - `x86` is `IH_ARCH_I386`
+    - `x86_64` is `IH_ARCH_X86_64`
+  - `-C` updates `params.comp`
+    - `gzip` is `IH_COMP_GZIP`
+    - `zstd` is `IH_COMP_ZSTD`
+    - `lz4` is `IH_COMP_LZ4`
+  - `-d` updates `params.datafile` and `params.dflag`
+  - `-e` updates `params.ep` and `params.eflag`
+  - `-n` updates `params.imagename`
+  - `-O` updates `params.os`
+    - `linux` is `IH_OS_LINUX`
+    - `u-boot` is `IH_OS_U_BOOT`
+    - `efi` is `IH_OS_EFI`
+    - `elf` is `IH_OS_ELF`
+  - `-R` updates `params.imagename2`
+  - `-T` updates `params.type` (if no `-F`) or `params.fit_image_type`
+    - `kernel` is `IH_TYPE_KERNEL`
+    - `ramdisk` is `IH_TYPE_RAMDISK`
+    - `multi` is `IH_TYPE_MULTI`
+    - `firmware` is `IH_TYPE_FIRMWARE`
+    - `script` is `IH_TYPE_SCRIPT`
+    - `filesystem` is `IH_TYPE_FILESYSTEM`
+    - `flat_dt` is `IH_TYPE_FLATDT`
+    - `rkimage` is `IH_TYPE_RKIMAGE`
+    - `rksd` is `IH_TYPE_RKSD`
+    - `rkspi` is `IH_TYPE_RKSPI`
+  - `-x` updates `params.xflag`
+- fit image options
+  - `-b` updates `params.content_*`
+    - it adds a `content_info` of type `IH_TYPE_FLATDT` to the list
+  - `-B` updates `params.bl_len`
+  - `-D` updates `params.dtc`
+  - `-E` updates `params.external_data`
+  - `-f` updates `params.datafile` and implies `-F`
+    - unless it is `auto` or `auto-conf`, which updates `params.auto_fit`
+  - `-F` updates `params.type` to `IH_TYPE_FLATDT` and `params.fflag`
+  - `-i` updates `params.fit_ramdisk`
+  - `-p` updates `params.external_offset`
+  - `-t` updates `params.reset_timestamp`
+- signing options
+  - `-c` updates `params.comment`
+  - `-g` updates `params.keyname`
+  - `-G` updates `params.keyfile`
+  - `-k` updates `params.keydir`
+  - `-K` updates `params.keydest`
+  - `-N` updates `params.engine_id`
+  - `-o` updates `params.algo_name`
+  - `-r` updates `params.require_keys`
+- `U_BOOT_IMAGE_TYPE` registers an image type
+  - `defimage` handles legacy types (all types before `IH_TYPE_FLATDT`)
+    - there is a 64-byte header, `legacy_img_hdr`
+      - `ih_size` is the payload size
+      - `ih_load` is the pyaload load addr from `params.addr`
+      - `ih_ep` is the payload entrypoint addr from `params.ep`
+      - `ih_os` is from `params.os`
+      - `ih_arch` is from `params.arch`
+      - `ih_type` is from `params.type`
+      - `ih_comp` is from `params.comp`
+      - `ih_name` is the descriptive name from `params.imagename`
+      - also magic, header and data checksums, date, etc.
+    - when the type is `IH_TYPE_MULTI`, there is an array of dwords
+      - it encodes the file sizes followed by 0 to terminate the array
+      - `params.datafile` is a colon-separated list of files
+    - payload data
+  - `fitimage` handles `IH_TYPE_FLATDT`
+  - `rkimage` handles `IH_TYPE_RKIMAGE`
+  - `rksd` handles `IH_TYPE_RKSD`
+  - `rkspi` handles `IH_TYPE_RKSPI`
+
+## FIT Image
+
+- <https://fitspec.osfw.foundation/>
+- 2. Flattened Image Tree (FIT) Format
+  - in the device tree world, `.dts` is compiled to `.dtb` which can be
+    parsed into `fdt`
+  - in the fit world, `.its` is compiled to `.itb` which can be parsed
+    into `fit`
+    - the newer name for `.itb` is `.fit`
+  - the root node
+    - properties: `description`, `timestamp`, and `#address-cells`
+    - child nodes: `images` and `configurations`
+  - the `images` node is a container to `image-N` nodes
+  - the `configurations` node
+    - properties
+      - `default` is the default choise
+    - child nodes: `config-N` and `signature-N`
+  - the `image-N` node
+    - properties
+      - `description` is the descriptive name
+      - `type` is the same as `-T`
+      - `compression` is the same as `-C`
+      - `data` is the same as `-d`
+        - the payload is embedded in-place in the fit image, which can
+          slow down fit image parsing
+        - it is possible to append the payload after the fit image, known
+          as external data
+          - `data-size` is the size of the payload
+          - `data-offset` is the offset of the payload
+          - `data-position` is the loaded addr of the payload
+      - `os` is the same as `-O`
+      - `arch` is the same as `-A`
+      - `entry` is the same as `-e`
+      - `load` is the same as `-a`
+      - `compatible` is only used when loading requires special treatment
+      - `phase` is `spl` or `u-boot`
+    - child nodes: `hash-N` and `signature-N`
+  - the `config-N` node
+    - properties
+      - `description` is the descriptive name
+      - `kernel` selects a `image-N` of type `kernel`
+      - `firmware` selects a `image-N` of type `firmware`
+      - `fdt` selects a `image-N` of type `flat_dt`
+      - `fpga` selects a `image-N` of type `fpga`
+      - `script` selects a `image-N` of type `script`
+      - `loadables` are additional `image-N`s to load
+      - `compatible` is the root compatible string of `fdt`
+        - e.g., `rk3588s-orangepi-5.dts` has `xunlong,orangepi-5`
+    - child nodes: `signature-N`
+- 3. Flattened Image Tree (FIT) Usage
+  - Load a FIT into memory
+    - this loads the FIT image
+    - in the case external data is used, the data loaded is small-ish
+  - Select a configuration to boot
+    - it is common for an FIT image to have one kernel and mulitple dtbs, and
+      this step can pick the dtb to use
+  - Load the images from the selected configuration
+    - this can load the kernel image, the dtb, the initrd, etc. as specified
+      by the configuration
+  - Fix up the devicetree
+    - this step can patch the `/chosen` node
+      - the `bootargs` prop is the kernel cmdline
+      - the `initrd-start` and `initrd-end` props are addr of initrd
+    - there is also the concept of overlays to enable/disable hw blocks
+  - Jump to the OS
+
 ## Old
 
 - env

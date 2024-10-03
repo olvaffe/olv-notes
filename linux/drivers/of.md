@@ -93,6 +93,8 @@ Device Tree
   - 4.4 Power ISA Open PIC Interrupt Controllers
   - 4.5 simple-bus Compatible Value
 - Chapter 5 Flattened Devicetree (DTB) Format
+  - the filename should end with `.dtb`
+    - i guess dtb is the exchange format and is parsed into fdt in-memory
   - 5.1 Versioning
   - 5.2 Header
     - `struct fdt_header`
@@ -102,12 +104,20 @@ Device Tree
     - a list of `fdt_reserve_entry` to delimit reserved regions
   - 5.4 Structure Block
     - represents the dt as a linear tree
+    - `FDT_BEGIN_NODE` marks the begin of a node, followed by the node name
+      - can be nested to form a tree
+    - `FDT_PROP` marks a node prop, followed by the prop name and value
+    - `FDT_END_NODE` marks the end of a node
+    - `FDT_NOP` should be ignored and is used to patch things out
+    - `FDT_END` marks the end of structure block
   - 5.5 Strings Block
     - contains all used property names
   - 5.6 Alignment
 - Chapter 6 Devicetree Source (DTS) Format (version 1)
+  - the filename should end with `.dts`
   - 6.1 Compiler directives
     - `/include/ "foo.dtsi"` includes another file
+      - the filename should end with `.dtsi`
   - 6.2 Labels
     - labels are used in place of explicit phandle values or absolute node
       paths
