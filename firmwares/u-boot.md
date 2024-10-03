@@ -56,6 +56,7 @@ Das U-Boot
   - `CONFIG_BOOTSTD_DEFAULTS` implies `CONFIG_BOOT_DEFAULTS` and
     `CONFIG_BOOTMETH_DISTRO`
   - `CONFIG_BOOT_DEFAULTS` is a meta config to enable
+    - `CONFIG_SUPPORT_RAW_INITRD` to load raw initrd
     - `CONFIG_ENV_VARS_UBOOT_CONFIG` to include `CONFIG_SYS_*` in default env
     - `CONFIG_EFI_PARTITION` for gpt support
     - `CONFIG_CMD_{EXT2,EXT4,FAT,PART}` for partition and fs support
@@ -287,9 +288,15 @@ Das U-Boot
         patches them in one by one
     - it boots with one of `bootm`, `booti`, `bootz`, or `zboot`
       - `bootm` boots an FIT or legacy image
-      - `booti` boots kernel `Image`
-      - `bootz` boots kernel `zImage`
-      - `zboot` boots kernel `bzImage`
+        - this is used when `label->kernel` is created by `mkimage`
+      - `booti` boots raw kernel `Image`
+        - `bootm_find_images` calls `boot_get_ramdisk` to parse initrd and
+          calls `boot_get_fdt` to parse fdt
+          - `CONFIG_SUPPORT_RAW_INITRD` is typically enabled and initrd can be
+            raw
+          - fdt has the same binary format as fit and is parsed as fit
+      - `bootz` boots raw kernel `zImage`
+      - `zboot` boots raw kernel `bzImage`
 
 ## Usage
 
