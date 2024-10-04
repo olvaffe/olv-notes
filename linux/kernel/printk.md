@@ -29,24 +29,39 @@ printk
 
 ## Console
 
-- sinks for timely printk outputs
-- `register_console` is used to register a console
+- consoles are sinks for timely printk outputs
+  - `printk` prints to all consoles
   - most serial port drivers can register a console
     - e.g., `CONFIG_SERIAL_8250_CONSOLE`
   - pstore registers a console when `CONFIG_PSTORE_CONSOLE`
   - kgdb registers a console
   - VT registers a console when `CONFIG_VT_CONSOLE`
-- those specified in `console=` cmdline are enabled
-  - `console_setup` parses each `console=` and saves them to `console_cmdline`
-    array in order
-  - each console is parsed into `name`, `index`, and `options`
-  - `preferred_console` is set to the last console
-- `try_enable_preferred_console` enables consoles
-  - if no `console=`, `try_enable_default_console`
-  - `printk` prints to all consoles
-  - `preferred_console` points to the last console 
-    - it will have `CON_CONSDEV` bit, meaning `/dev/console` refers to this
-      console
+- `console_setup` parses `console=`
+  - there can be up to 8 `console=` and they are parsed to `console_cmdline`
+  - `console=` and `console=null` are both treated as `console=ttynull`
+  - `console=ttyS0,115200` is parsed to
+    - `ttyname` is `ttyS`
+    - `idx` is `0`
+    - `options` is `115200`
+  - `__add_preferred_console` adds the parsed console string to
+    `console_cmdline`
+    - `preferred_console` is always updated, meaning the last `console=` is
+      the preferred console
+- `register_console` registers a console
+  - if `console_setup` is never called (thus no `preferred_console`) and there
+    is no other tty console, `try_enable_default_console` enables this new
+    console
+    - `CON_CONSDEV` is set if this is a tty console (that is,
+      `console->device` is non-null)
+  - otherwise, `try_enable_preferred_console` enables this new console if it
+    is on `console_cmdline`
+    - `CON_CONSDEV` is set if this is the preferred console
+  - the new console is then added to `console_list`
+    - if this is the only console, `CON_CONSDEV` is set
+    - if this console has `CON_CONSDEV`, it becomes the new head
+      - and `CON_CONSDEV` is cleared from the old head
+    - iow, only the head can have `CON_CONSDEV` and the preferred console is
+      at the head
 
 ## netconsole
 
