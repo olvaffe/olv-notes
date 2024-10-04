@@ -289,7 +289,9 @@ Das U-Boot
     - it boots with one of `bootm`, `booti`, `bootz`, or `zboot`
       - `bootm` boots an FIT or legacy image
         - this is used when `label->kernel` is created by `mkimage`
-      - `booti` boots raw kernel `Image`
+      - `booti` boots raw kernel `Image` or `Image.gz`
+        - `booti_start` calls `image_decomp_type` and `image_decomp` to
+          decompress the kernel if it is compressed
         - `bootm_find_images` calls `boot_get_ramdisk` to parse initrd and
           calls `boot_get_fdt` to parse fdt
           - `CONFIG_SUPPORT_RAW_INITRD` is typically enabled and initrd can be

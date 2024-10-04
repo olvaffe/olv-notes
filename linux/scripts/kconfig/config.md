@@ -660,6 +660,7 @@ Kernel Config
     - select `PWM driven LED Support` if arm, depending on `PWM`
     - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support`
+      - select `LED Heartbeat Trigger`
   - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
     - select `Intel client SoC Integrated MC` if intel
