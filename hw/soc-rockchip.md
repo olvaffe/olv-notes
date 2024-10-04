@@ -298,3 +298,21 @@ Rockchip SoCs
     boot the specified miniloader
   - `./rkdeveloptool ef` tells the miniloader to erase the spi flash
     - the normal flow will find the stage1 from emmc rather than from spi
+- uart in downstream kernel
+  - `rk3588s.dtsi` defines `uart[0-9]`
+    - they differ in `reg`, `interrupts`, `clocks`, `dmas`, and `pinctrl-0`
+  - `rk3588s-orangepi-5.dtsi`
+    - it enables `uart9` and changes `pinctrl-0` from `<&uart9m1_xfer>` to
+      `<&uart9m2_xfer &uart9m2_ctsn>`
+  - `rk3588s-orangepi-5.dts`
+    - it keeps `uart{0,1,3,4}` disabled and changes `pinctrl-0` from
+      - `<&uart0m1_xfer>` to `<&uart0m2_xfer>`
+      - `<&uart1m1_xfer>` to `<&uart1m1_xfer>`
+      - `<&uart3m1_xfer>` to `<&uart3m0_xfer>`
+      - `<&uart4m1_xfer>` to `<&uart4m0_xfer>`
+  - `rk3588-linux.dtsi`
+    - it adds an `fiq-debugger` node with `<&uart2m0_xfer>`
+  - `overlay/rk3588-uart2-m0.dts`
+    - it disables `fiq-debugger` and enables `uart2` with `<&uart2m0_xfer>`
+    - `/dev/ttyFIQ0` becomes `/dev/ttyS2` after applying
+      `fdtoverlays /dtb/rockchip/overlay/rk3588-uart2-m0.dtbo`
