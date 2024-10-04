@@ -315,6 +315,7 @@ Kernel Config
       - select `Firmware Memory Console`
       - select `Vital Product Data`
   - select `Memory Technology Device (MTD) support`
+    - select `Caching block device access to MTD devices`
     - select `SPI NOR device support`, depending on `SPI`
   - select `Block devices`
     - select `Compressed RAM block device support`, depending on `CRYPTO_LZO`
@@ -323,6 +324,7 @@ Kernel Config
   - select `NVME Support` if needed
     - select `NVM Express block device`
   - select `Misc devices`
+    - select `Generic on-chip SRAM driver` if rk
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if x86, depending on `I2C`
     - if intel,
@@ -357,6 +359,8 @@ Kernel Config
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
       - select `STMicroelectronics devices` if rk
         - select `STMicroelectronics Multi-Gigabit Ethernet driver`
+    - select `PHY Device support and infrastructure` if rk
+      - select `Motorcomm PHYs`
     - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
@@ -378,6 +382,7 @@ Kernel Config
     - select `Generic input layer (needed for keyboard, mouse, ...)`
       - select `Event interface`
       - select `Keyboards`
+        - select `ADC Ladder Buttons` if rk
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -487,6 +492,7 @@ Kernel Config
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
     - select `Mediatek SoCs watchdog support` if mtk
+    - select `Synopsys DesignWare watchdog` if rk
   - select `Multifunction device drivers`
     - select `ChromeOS Embedded Controller multifunction device` if cros, depending on `CROS_EC`
     - select `Intel Low Power Subsystem support in PCI mode` if intel
@@ -527,6 +533,7 @@ Kernel Config
     - select `DRM Support for Rockchip` if rk
       - deselect `Rockchip VOP driver`
       - select `Rockchip VOP2 driver`
+      - select `Rockchip specific extensions for Synopsys DW HDMI`
     - select `Virtio GPU driver` if guest
     - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
       - it requires `CMA` and `DMA_CMA` to work
@@ -645,6 +652,7 @@ Kernel Config
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `LED Support`
     - select `LED Class Support`
+    - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if arm, depending on `PWM`
     - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
   - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
@@ -695,6 +703,7 @@ Kernel Config
     - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
+    - select `Clock driver controlled via SCMI interface` if rk
     - select `Support for Qualcomm's clock controllers` if qcom
       - select `RPMh Clock Driver`
       - select `SC7180 *`
@@ -759,6 +768,7 @@ Kernel Config
     - select `Simple Ondemand`
     - select `Performance`
     - select `DEVFREQ-Event device Support`
+      - select `ROCKCHIP DFI DEVFREQ event Driver` if rk
   - select `External Connector Class (extcon) support`
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support`
