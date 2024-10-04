@@ -390,6 +390,7 @@ Kernel Config
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
       - select `Miscellaneous devices`
         - select `PC Speaker support` if desired
+        - select `Rockchip RK805 PMIC power key support` if rk
         - select `Windows-compatible SoC Button Array` if desired, depending on `KEYBOARD_GPIO`
   - select `Character devices`
     - select `Enable TTY`
@@ -465,6 +466,7 @@ Kernel Config
     - select `AMD Family 10h+ temperature sensor` if amd
     - select `Dell laptop SMM BIOS hwmon driver` if dell
     - select `Intel Core/Core2/Atom temperature sensor` if intel
+    - select `PWM fan` if rk
     - select `Raspberry Pi voltage monitor` if rpi
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
@@ -633,6 +635,8 @@ Kernel Config
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `Onboard USB hub support` if qcom
     - select `USB Type-C Support`
+      - select `USB Type-C Port Controller Manager` if rk
+        - select `Fairchild FUSB302 Type-C chip driver`
       - select `USB Type-C Connector System Software Interface driver`
         - select `UCSI ACPI Interface Driver` if x86
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
