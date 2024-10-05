@@ -378,3 +378,27 @@ Rockchip SoCs
     - it only lists 29 domains
     - i guess the rest is controlled by other means or left at default
     - panthor uses `RK3588_PD_GPU`
+- TS-ADC, Temperature Sensor ADC
+  - the datasheet says
+    - Support to 7 channel TS-ADC
+  - `tsadc: tsadc@fec00000`
+  - `thermal_zones: thermal-zones`
+    - `package_thermal: package-thermal` uses channel 0
+    - `bigcore0_thermal: bigcore0-thermal` uses channel 1
+    - `bigcore2_thermal: bigcore2-thermal` uses channel 2
+    - `little_core_thermal: littlecore-thermal` uses channel 3
+    - `center_thermal: center-thermal` uses channel 4 (near `PD_CENTER`)
+    - `gpu_thermal: gpu-thermal` uses channel 4
+    - `npu_thermal: npu-thermal` uses channel 6
+  - `rk3588_tsadc_data` lists 7 channels
+  - `of_thermal_zone_find` finds in the `thermal-zones` node
+- SARADC, Successive approximation ADC
+  - the datasheet says
+    - 6 single-ended input channels
+  - `saradc: adc@fec10000`
+  - `rk3588s-orangepi-5.dts` adds an `adc-keys` node
+    - it looks like the recovery button is connected to channel 1 and is
+      driven by `CONFIG_KEYBOARD_ADC`
+    - the schematics says channel 0 for maskrom, channel 1 for recovery, and
+      the rest 4 are not used
+  - `rk3588_saradc_data` lists 8 channels?
