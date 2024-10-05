@@ -26,3 +26,19 @@ Linux pinctrl
   - `pinctrl_pin_desc *pins` is an array of pin descs
 - `devm_pinctrl_register` registers a `pinctrl_dev` from `pinctrl_desc`
 
+## RK3588S
+
+- looking at the datasheet,
+  - the soc has more than 1000 pins
+  - some pins have fixed functions
+    - e.g., pin A1 is `VSS_1`
+  - some pins are muxed and can be configured for different functions
+    - e.g., pin AA41 can be `EMMC_D2`, `FSPI_D2_M0`, or `GPIO2_D2_u`
+  - among the muxed pins, some can be configured as gpio
+- according to `rk3588_pin_ctrl`,
+  - there are 5 gpio banks
+  - each gpio bank has 32 pins
+- `rockchip_pinctrl_parse_groups` parses `rockchip,pins`
+  - the 4 numbers are bank, pin, mux (func), and config
+  - `<2 RK_PD2 1 ...>` configures pin AA41 for `EMMC_D2`
+  - `<2 RK_PD2 2 ...>` configures pin AA41 for `FSPI_D2_M0`
