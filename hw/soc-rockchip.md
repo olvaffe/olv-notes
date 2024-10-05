@@ -391,6 +391,30 @@ Rockchip SoCs
   - `rk_timer_init` probes the timer
     - `rk_clkevt_init` registers a `clock_event_device`
     - `rk_clksrc_init` registers a `clocksource`
+- PWM
+  - the datasheet says
+    - Support 16 on-chip PWMs(PWM0~PWM15) with interrupt-based operation
+  - `pwm0: pwm@fd8b0000` to `pwm15: pwm@febf0030`
+  - `rockchip_pwm_probe` probes the devices
+    - `pwmchip_add` registers the 16 pwms
+- Watchdog
+  - `wdt: watchdog@feaf0000`
+  - `dw_wdt_drv_probe` probes the device
+- Interrupt Controller
+  - `gic: interrupt-controller@fe600000`
+    - `its0: msi-controller@fe640000`
+    - `its1: msi-controller@fe660000`
+  - `gic_of_init` inits the controller
+    - `its_init` inits the child nodes
+- DMAC
+  - the datasheet says
+    - Totally three embedded DMA controllers for peripheral system
+  - `dmac0: dma-controller@fea10000`
+  - `dmac1: dma-controller@fea30000`
+  - `dmac2: dma-controller@fed10000`
+  - `of_platform_bus_create` adds the devices
+    - they are marked `arm,primecell` and are added by `of_amba_device_create`
+  - `pl330_probe` probes the controllers
 - I2S
   - the datasheet says
     - I2S0/I2S1 with 8 channels
@@ -410,6 +434,9 @@ Rockchip SoCs
   - `i2s9_8ch: i2s@fddfc000`
   - `rockchip_i2s_probe` probes 2-channel i2s devices
   - `rockchip_i2s_tdm_probe` probes 8-channel i2s devices
+- SDIO
+  - `sdio: mmc@fe2d0000`
+  - `dw_mci_rockchip_probe` probes the controller
 - GMAC
   - mac implements layer 2 and phy implements layer 1, interconnected by mii
     - gmac is an impl of mac
@@ -418,6 +445,30 @@ Rockchip SoCs
   - `gmac1: ethernet@fe1c0000` has a child `mdio1: mdio`
   - `rk3588s-orangepi-5.dts` adds a child node to `mdio1`, which is a phy and
     is compatible with `ethernet-phy-ieee802.3-c22`
+- USB 3.1 Gen1
+  - there are controllers and there are phys
+    - phy can support dr (dual-role), which allows it to act as a device or a
+      host
+    - in usb 2.0, it is called otg
+  - `usb_host0_xhci: usb@fc000000`
+    - phys are `u2phy0: usb2phy@0` and `usbdp_phy0: phy@fed80000`
+    - i guess usb2.0 dev uses `u2phy0`, usb 3.0 dev and DP alt mode use
+      `usbdp_phy0`
+  - `usb_host2_xhci: usb@fcd00000`
+    - phy is `combphy2_psu: phy@fee20000`
+    - this is a combo phy that supports usb 3.0, pcie, and sata
+  - `dwc3_probe` probes the controllers
+  - `rockchip_usb2phy_probe` probes `u2phy0`
+  - `rk_udphy_probe` probes `usbdp_phy0`
+  - `rockchip_combphy_probe` probes `combphy2_psu`
+- USB 2.0 Host
+  - `usb_host0_ehci: usb@fc800000` and `usb_host0_ohci: usb@fc840000`
+    - they share `u2phy2: usb2phy@8000`
+  - `usb_host1_ehci: usb@fc880000` and `usb_host1_ohci: usb@fc8c0000`
+    - they share `u2phy3: usb2phy@c000`
+  - `ohci_platform_probe` probes the ohci controllers
+  - `ehci_platform_probe` probes the ehci controllers
+  - `rockchip_usb2phy_probe` probes the phys
 - GPIO
   - `pinctrl: pinctrl`
     - `gpio0: gpio@fd8a0000`
