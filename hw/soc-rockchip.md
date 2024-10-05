@@ -324,7 +324,28 @@ Rockchip SoCs
     - gmac is an impl of mac
     - mdio is an impl of mii
   - rk3588s has `gmac1` while rk3588 has both `gmac0` and `gmac1`
-  - `rk3588-base.dtsi` has `gmac1: ethernet@fe1c0000` with a child
-    `mdio1: mdio`
-  - `rk3588s-orangepi-5.dts` adds a child node, which is a phy, compatible
-    with `ethernet-phy-ieee802.3-c22`
+  - `gmac1: ethernet@fe1c0000` has a child `mdio1: mdio`
+  - `rk3588s-orangepi-5.dts` adds a child node to `mdio1`, which is a phy and
+    is compatible with `ethernet-phy-ieee802.3-c22`
+- CRU, clock and reset unit
+  - the datasheet says
+    - Support total 18 PLLs to generate all clocks
+    - One oscillator with 24MHz clock input
+    - Support clock gating control for individual components
+    - Support global soft-reset control for whole chip, also individual
+      soft-reset for each component
+  - `cru: clock-controller@fd7c0000`
+  - `rk3588_clk_init` inits the clock controller
+    - there are 3 `rockchip_cpuclk_reg_data` (3 cpu clusters?)
+      - `rk3588_cpub0clk_data` for 2 big cores
+      - `rk3588_cpub1clk_data` for the other 2 big cores
+      - `rk3588_cpulclk_data` for the 4 little cores
+    - `rk3588_clk_branches` is a big table
+      - fixed, top, bigcore0, bigcore1, dsu, audio, bus, center isp1, npu,
+      - nvm, php, rga, vdec, sdio, usb, vdpu, venc, vi, vo0, vo1, pmu, more?
+      - gpu has
+        - `CLK_GPU_SRC`, downstream of `gpll_cpll_aupll_npll_spll_p`
+        - `CLK_GPU_PVTM` and `CLK_CORE_GPU_PVTM`, downstrem of `CLK_GPU_SRC`
+        - `CLK_GPU`, `CLK_GPU_COREGROUP`, and `CLK_GPU_STACKS`
+          - downstream of `CLK_GPU_SRC`
+          - panthor enables all 3 clocks
