@@ -56,6 +56,9 @@ USB
   - BC 1.2: 5V * 1.5A = 7.5W
   - USB-C: 5V * 1.5A = 7.5W
            5V * 3A = 15W
+- USB Type-A
+  - USB 1.0 and 2.0 has 4 pins: VBUS, D-, D+, and GND
+  - USB 3.0 has 9 pins: 4 pins plus RX-, RX+, TX-, TX+, GND
 - USB Type-C
   - revisions
     - 1.0, 2014

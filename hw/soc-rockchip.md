@@ -425,13 +425,11 @@ Rockchip SoCs
     - PDM0/PDM1
     - Digital Audio Codec
     - VAD (Voice Activity Detection)
-  - `i2s0_8ch: i2s@fe470000`
-  - `i2s1_8ch: i2s@fe480000`
-  - `i2s2_2ch: i2s@fe490000`
-  - `i2s3_2ch: i2s@fe4a0000`
-  - `i2s4_8ch: i2s@fddc0000`
-  - `i2s5_8ch: i2s@fddf0000`
-  - `i2s9_8ch: i2s@fddfc000`
+  - `i2s0_8ch: i2s@fe470000` and `i2s1_8ch: i2s@fe480000`
+  - `i2s2_2ch: i2s@fe490000` and `i2s3_2ch: i2s@fe4a0000`
+  - `i2s4_8ch: i2s@fddc0000`, `i2s5_8ch: i2s@fddf0000`, and `i2s9_8ch:
+    i2s@fddfc000`
+    - what are these?
   - `rockchip_i2s_probe` probes 2-channel i2s devices
   - `rockchip_i2s_tdm_probe` probes 8-channel i2s devices
 - SDIO
@@ -452,8 +450,6 @@ Rockchip SoCs
     - in usb 2.0, it is called otg
   - `usb_host0_xhci: usb@fc000000`
     - phys are `u2phy0: usb2phy@0` and `usbdp_phy0: phy@fed80000`
-    - i guess usb2.0 dev uses `u2phy0`, usb 3.0 dev and DP alt mode use
-      `usbdp_phy0`
   - `usb_host2_xhci: usb@fcd00000`
     - phy is `combphy2_psu: phy@fee20000`
     - this is a combo phy that supports usb 3.0, pcie, and sata
@@ -461,6 +457,16 @@ Rockchip SoCs
   - `rockchip_usb2phy_probe` probes `u2phy0`
   - `rk_udphy_probe` probes `usbdp_phy0`
   - `rockchip_combphy_probe` probes `combphy2_psu`
+  - on opi 5,
+    - there is a DC-only type-c connector
+    - there is a USB 3.1 type-c connector
+      - it connects to `usbdp_phy0` phy
+      - it also connects to `usbc0: usb-typec@22` for role switch, etc.
+    - there is a USB 3.0 type-a connector
+      - it connects to both `combphy2_psu` and `u2phy3` phys
+        - which one is used depends whether the device is 2.0 or 3.0
+    - there are two USB 2.0 type-a connectors, connecting to `u2phy0` and
+      `u2phy2` respectively
 - USB 2.0 Host
   - `usb_host0_ehci: usb@fc800000` and `usb_host0_ohci: usb@fc840000`
     - they share `u2phy2: usb2phy@8000`
@@ -469,6 +475,49 @@ Rockchip SoCs
   - `ohci_platform_probe` probes the ohci controllers
   - `ehci_platform_probe` probes the ehci controllers
   - `rockchip_usb2phy_probe` probes the phys
+- Combo PIPE PHY Interface
+  - `combphy0_ps: phy@fee00000`
+    - used by one of `pcie2x1l2` and `sata0`
+  - `combphy2_psu: phy@fee20000`
+    - used by one of `usb_host2_xhci`, `pcie2x1l1` and `sata2`
+  - `rk3588s-orangepi-5.dts`
+    - `pcie2x1l2` is enabled instead of `sata0`
+      - it connects to m2 socket, allowing pcie devices (nvme, wifi/bt, etc)
+      - one can use an overlay to disable `pcie2x1l2` and enable `sata0`, to
+        connect a m2 sata to the m2 socket
+    - `usb_host2_xhci` is enabled instead of `pcie2x1l1` or `sata2`
+      - it connects to usb 3.0 type-a
+  - `rockchip_combphy_probe` probes the two phys
+  - `rockchip_pcie_probe` probes the two pcie 2.1 controllers
+  - `ahci_dwc_probe` probes the two sata 3.1 controllers
+- SPI
+  - the datasheet says
+    - Support 5 SPI Controllers(SPI0-SPI4)
+  - `spi0: spi@feb00000` to `spi4: spi@fecb0000`
+  - `rk3588s-orangepi-5.dts` enables `spi2` and adds `pmic@0` child node
+  - `rockchip_spi_probe` probes the spi controllers
+    - `spi_register_controller` registers an `spi_controller`
+    - `of_register_spi_devices` registers all child nodes as `spi_device`s
+  - `rockchip_spi_probe` probes the spi controllers
+  - `rk8xx_spi_probe` probes the pmic
+- I2C Master controller
+  - the datasheet says
+    - Support 9 I2C Master(I2C0-I2C8)
+  - `i2c0: i2c@fd880000` to `i2c8: i2c@feca0000`
+  - `rk3588s-orangepi-5.dts` enables `i2c0`, `i2c2`, and `i2c6`
+    - `i2c0` gets `vdd_cpu_big0_s0: regulator@42` and `vdd_cpu_big1_s0: regulator@43`
+    - `i2c2` gets `vdd_npu_s0: regulator@42`
+    - `i2c6` gets `usbc0: usb-typec@22` and `hym8563: rtc@51`
+  - `rk3x_i2c_probe` probes the i2c controllers
+  - `fan53555_regulator_probe` probes the regulators
+  - `fusb302_probe` probes the typec port controller
+  - `hym8563_probe` probes the rtc
+- UART interface
+  - the datasheet says
+    - Support 10 UART interfaces(UART0-UART9)
+  - `uart0: serial@fd890000` to `uart9: serial@febc0000`
+  - `rk3588s-orangepi-5.dts` enables `uart2`
+  - `dw8250_probe` probes the uart controllers
 - GPIO
   - `pinctrl: pinctrl`
     - `gpio0: gpio@fd8a0000`
