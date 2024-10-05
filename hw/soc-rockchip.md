@@ -331,9 +331,6 @@ Rockchip SoCs
   - the datasheet says
     - Support total 18 PLLs to generate all clocks
     - One oscillator with 24MHz clock input
-    - Support clock gating control for individual components
-    - Support global soft-reset control for whole chip, also individual
-      soft-reset for each component
   - `cru: clock-controller@fd7c0000`
   - `rk3588_clk_init` inits the clock controller
     - there are 3 `rockchip_cpuclk_reg_data` (3 cpu clusters?)
@@ -349,3 +346,26 @@ Rockchip SoCs
         - `CLK_GPU`, `CLK_GPU_COREGROUP`, and `CLK_GPU_STACKS`
           - downstream of `CLK_GPU_SRC`
           - panthor enables all 3 clocks
+- PMU, power management unit
+  - the datasheet says
+    - Support 10 separate voltage domains
+    - Support 45 separate power domains
+  - `pmu: power-management@fd8d8000`
+    - `power: power-controller`
+      - the 45 pm domins form a tree
+  - `include/dt-bindings/power/rk3588-power.h` lists 44 pm domins
+    - `VD_LITDSU` has `RK3588_PD_CPU_{0,1,2,3}`
+    - `VD_BIGCORE0` has `RK3588_PD_CPU_{4,5}`
+    - `VD_BIGCORE1` has `RK3588_PD_CPU_{6,7}`
+    - `VD_NPU` has `RK3588_PD_{NPU,NPUTOP,NPU1,NPU2}`
+    - `VD_GPU` has `RK3588_PD_GPU`
+    - `VD_VCODEC` has `RK3588_PD_{VCODEC,RKVDEC0,RKVDEC1,VENC0,VENC1}`
+    - `VD_DD01` has `RK3588_PD_DDR01`
+    - `VD_DD23` has `RK3588_PD_DDR23`
+    - `VD_LOGIC` has `RK3588_PD_{CENTER,VDPU,RGA30,AV1,VOP,VO0,VO1,VI,ISP1}`
+      - and `RK3588_PD_{FEC,RGA31,USB,PHP,GMAC,PCIE,NVM,NVM0,SDIO,AUDIO}`
+      - and `RK3588_PD_{SECURE,SDMMC,CRYPTO,BUS}`
+    - `VD_PMU` has `RK3588_PD_PMU1`
+  - `rockchip_pm_domain_probe` inits with `rk3588_pm_domains`
+    - it only lists 29 domains
+    - i guess the rest is controlled by other means or left at default
