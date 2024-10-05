@@ -317,16 +317,21 @@ Rockchip SoCs
     - `/dev/ttyFIQ0` becomes `/dev/ttyS2` after applying
       `fdtoverlays /dtb/rockchip/overlay/rk3588-uart2-m0.dtbo`
 
-## RK3588S Devicetree
+## RK3588S Datasheet and Devicetree
 
-- GMAC
-  - mac implements layer 2 and phy implements layer 1, interconnected by mii
-    - gmac is an impl of mac
-    - mdio is an impl of mii
-  - rk3588s has `gmac1` while rk3588 has both `gmac0` and `gmac1`
-  - `gmac1: ethernet@fe1c0000` has a child `mdio1: mdio`
-  - `rk3588s-orangepi-5.dts` adds a child node to `mdio1`, which is a phy and
-    is compatible with `ethernet-phy-ieee802.3-c22`
+- eMMC
+  - `sdhci: mmc@fe2e0000`
+  - `dwcmshc_probe` probes the controller
+- SD/MMC
+  - `sdmmc: mmc@fe2c0000`
+  - `dw_mci_rockchip_probe` probes the controller
+- Flexible Serial Flash Interface(FSPI)
+  - `sfc: spi@fe2b0000`
+  - `rk3588s-orangepi-5.dts` adds a child node compatible with `jedec,spi-nor`
+  - `rockchip_sfc_probe` probes the controller
+    - `spi_register_controller` registers an `spi_controller`
+    - `of_register_spi_devices` registers all child nodes as `spi_device`s
+  - `spi_nor_probe` probes the child node
 - CRU, clock and reset unit
   - the datasheet says
     - Support total 18 PLLs to generate all clocks
@@ -378,6 +383,52 @@ Rockchip SoCs
     - it only lists 29 domains
     - i guess the rest is controlled by other means or left at default
     - panthor uses `RK3588_PD_GPU`
+- Timer
+  - the datasheet says
+    - Support 18 non-secure timers with 64bits counter and interrupt-based
+      operation
+  - `timer0: timer@feae000`
+  - `rk_timer_init` probes the timer
+    - `rk_clkevt_init` registers a `clock_event_device`
+    - `rk_clksrc_init` registers a `clocksource`
+- I2S
+  - the datasheet says
+    - I2S0/I2S1 with 8 channels
+      - supports I2S, PCM, TDM
+    - I2S2/I2S3 with 2 channels
+      - supports I2S, PCM
+    - SPDIF0/SPDIF1
+    - PDM0/PDM1
+    - Digital Audio Codec
+    - VAD (Voice Activity Detection)
+  - `i2s0_8ch: i2s@fe470000`
+  - `i2s1_8ch: i2s@fe480000`
+  - `i2s2_2ch: i2s@fe490000`
+  - `i2s3_2ch: i2s@fe4a0000`
+  - `i2s4_8ch: i2s@fddc0000`
+  - `i2s5_8ch: i2s@fddf0000`
+  - `i2s9_8ch: i2s@fddfc000`
+  - `rockchip_i2s_probe` probes 2-channel i2s devices
+  - `rockchip_i2s_tdm_probe` probes 8-channel i2s devices
+- GMAC
+  - mac implements layer 2 and phy implements layer 1, interconnected by mii
+    - gmac is an impl of mac
+    - mdio is an impl of mii
+  - rk3588s has `gmac1` while rk3588 has both `gmac0` and `gmac1`
+  - `gmac1: ethernet@fe1c0000` has a child `mdio1: mdio`
+  - `rk3588s-orangepi-5.dts` adds a child node to `mdio1`, which is a phy and
+    is compatible with `ethernet-phy-ieee802.3-c22`
+- GPIO
+  - `pinctrl: pinctrl`
+    - `gpio0: gpio@fd8a0000`
+    - `gpio1: gpio@fec20000`
+    - `gpio2: gpio@fec30000`
+    - `gpio3: gpio@fec40000`
+    - `gpio4: gpio@fec50000`
+    - 5 banks, 32 pins each bank
+  - `rockchip_pinctrl_probe` probes the pin controller
+    - `rk3588_pin_ctrl` lists 5 banks
+  - `rockchip_gpio_probe` probes the gpio banks
 - TS-ADC, Temperature Sensor ADC
   - the datasheet says
     - Support to 7 channel TS-ADC
@@ -395,10 +446,29 @@ Rockchip SoCs
 - SARADC, Successive approximation ADC
   - the datasheet says
     - 6 single-ended input channels
+      - RK3588 has 8 channels
   - `saradc: adc@fec10000`
   - `rk3588s-orangepi-5.dts` adds an `adc-keys` node
     - it looks like the recovery button is connected to channel 1 and is
       driven by `CONFIG_KEYBOARD_ADC`
-    - the schematics says channel 0 for maskrom, channel 1 for recovery, and
-      the rest 4 are not used
-  - `rk3588_saradc_data` lists 8 channels?
+    - the schematics says
+      - channel 0 for maskrom
+      - channel 1 for recovery
+      - channel 3 for headphone
+  - `rk3588_saradc_data` lists 8 channels
+- OTP
+  - the datasheet says
+    - Support 32Kbit space and higher 4k address space is non-secure part.
+  - `otp: efuse@fecc0000`
+    - `cpu_code: cpu-code@2`
+    - `otp_id: id@7`
+    - `cpub0_leakage: cpu-leakage@17`
+    - `cpub1_leakage: cpu-leakage@18`
+    - `cpul_leakage: cpu-leakage@19`
+    - `log_leakage: log-leakage@1a`
+    - `gpu_leakage: gpu-leakage@1b`
+    - `otp_cpu_version: cpu-version@1c`
+    - `npu_leakage: npu-leakage@28`
+    - `codec_leakage: codec-leakage@29`
+  - `rk3588_data` says the size is 0x400 and `RK3588_NO_SECURE_OFFSET` is
+    0x300 (in dwords?)
