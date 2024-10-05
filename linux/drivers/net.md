@@ -1,6 +1,36 @@
 Linux net drivers
 =================
 
+## soc ethernet driver
+
+- terms
+  - phy implements layer 1
+  - mac implements layer 2
+    - gmac is an impl of mac
+  - they are interconnected by mii
+    - mdio is an impl of mii
+- e.g., `rk3588-base.dtsi` has
+  - `gmac1: ethernet@fe1c0000`
+    - `compatible = "rockchip,rk3588-gmac", "snps,dwmac-4.20a";`
+    - `mdio1: mdio`
+      - `compatible = "snps,dwmac-mdio";`
+  - board dts, such as `rk3588s-orangepi-5.dts`, adds a child node compatible
+    with `ethernet-phy-ieee802.3-c22`
+- `rk_gmac_probe` probes gmacs
+  - `stmmac_probe_config_dt` calls `stmmac_mdio_setup` which calls
+    `stmmac_of_get_mdio` to find the mdio node
+  - `stmmac_dvr_probe` calls `stmmac_mdio_register` which calls
+    `of_mdiobus_register` to register the mdio node
+  - `__of_mdiobus_register` calls `__of_mdiobus_parse_phys` which calls
+    `of_mdiobus_register_phy` to register the `ethernet-phy-ieee802.3-c22`
+    phy child node
+  - `fwnode_mdiobus_phy_device_register` calls `phy_device_register` to
+    register a `phy_device`
+    - `phy_id` is queried via `get_phy_c22_id`
+- `module_phy_driver(motorcomm_phy_drvs)` registers several `phy_driver`s
+  - when a `phy_device` has id `PHY_ID_YT8531`, `yt8531_probe` probes the phy
+    device
+
 ## veth
 
 - `ip link add ve-host type veth peer name ve-guest`

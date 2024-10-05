@@ -316,3 +316,15 @@ Rockchip SoCs
     - it disables `fiq-debugger` and enables `uart2` with `<&uart2m0_xfer>`
     - `/dev/ttyFIQ0` becomes `/dev/ttyS2` after applying
       `fdtoverlays /dtb/rockchip/overlay/rk3588-uart2-m0.dtbo`
+
+## RK3588S Devicetree
+
+- GMAC
+  - mac implements layer 2 and phy implements layer 1, interconnected by mii
+    - gmac is an impl of mac
+    - mdio is an impl of mii
+  - rk3588s has `gmac1` while rk3588 has both `gmac0` and `gmac1`
+  - `rk3588-base.dtsi` has `gmac1: ethernet@fe1c0000` with a child
+    `mdio1: mdio`
+  - `rk3588s-orangepi-5.dts` adds a child node, which is a phy, compatible
+    with `ethernet-phy-ieee802.3-c22`
