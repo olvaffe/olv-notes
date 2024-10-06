@@ -415,6 +415,31 @@ Rockchip SoCs
   - `of_platform_bus_create` adds the devices
     - they are marked `arm,primecell` and are added by `of_amba_device_create`
   - `pl330_probe` probes the controllers
+- HDMI/eDP TX interface
+  - the datasheet says
+    - Support two HDMI/eDP TX combo interface
+  - `hdptxphy_hdmi0: phy@fed60000`
+  - armbian `rk3588-base.dtsi`
+    - it adds a new node `hdmi0` for the hdmi controller
+      - the controller is based on DesignWare HDMI 2.1 Quad-Pixel
+        - compatible with `rockchip,rk3588-dw-hdmi-qp`
+        - a new driver in drm rockchip to match the string and to support
+          rockchip-specific extensions
+        - a new driver in drm bridge for the unextended ip
+          - it does not bind to any node but is used as a helper
+      - the phy is `hdptxphy_hdmi0`
+      - there is an output port, `hdmi0_out`
+  - armbian `rk3588s-orangepi-5.dts`
+    - `hdmi0` and `hdptxphy_hdmi0` are enabled
+      - one is the controller and one is the phy
+    - it adds a new node `hdmi0-con` for the hdmi connector
+      - compatible with `hdmi-connector`
+      - it connects to `hdmi0_out` port of the hdmi controller
+  - armbian `dw_hdmi_qp_rockchip_probe` probes the controller
+  - `rk_hdptx_phy_probe` probes the phy
+    - `devm_phy_create` creates a phy
+    - `devm_of_phy_provider_register` registers a of phy provider
+  - `display_connector_probe` probes the connector
 - I2S
   - the datasheet says
     - I2S0/I2S1 with 8 channels
