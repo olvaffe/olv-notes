@@ -415,6 +415,13 @@ Rockchip SoCs
   - `of_platform_bus_create` adds the devices
     - they are marked `arm,primecell` and are added by `of_amba_device_create`
   - `pl330_probe` probes the controllers
+- 2D Graphics Engine
+  - `display_subsystem: display-subsystem`
+  - `vop: vop@fdd90000`
+  - `vop_mmu: iommu@fdd97e00`
+  - `rockchip_drm_platform_probe` probes the pseudo display subsystem
+  - `vop2_probe` probes the vop
+  - `rk_iommu_probe` probes the iommu
 - HDMI/eDP TX interface
   - the datasheet says
     - Support two HDMI/eDP TX combo interface
