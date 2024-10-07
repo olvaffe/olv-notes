@@ -64,6 +64,24 @@ PCI
     - 6-pin: 75W
     - 8-pin: 150W
 
+## M.2
+
+- it is a spec for expansion cards and connectors
+  - formerly known as NGFF, Next Generation Form Factor
+  - replaces mSATA and mPCIe
+- supported protocols
+  - pcie x4
+  - sata 3.0
+  - usb 3.0
+- the connector has 75 positions, up to 67 pins
+  - key A: pcie x1, usb 2.0, etc.
+  - key B: pcie x2, usb 3.0, sata, etc.
+  - key E: pcie x1, usb 2.0, etc.
+  - key M: pcie x4, sata, etc.
+  - a socket supports only a certain key type
+  - a module can support multiple key types
+    - a key B+M module fits both B-key and M-key sockets
+
 ## PCI Architecture
 
 - there is a host bus

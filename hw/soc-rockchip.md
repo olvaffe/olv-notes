@@ -604,3 +604,101 @@ Rockchip SoCs
     - `codec_leakage: codec-leakage@29`
   - `rk3588_data` says the size is 0x400 and `RK3588_NO_SECURE_OFFSET` is
     0x300 (in dwords?)
+
+## Orange Pi 5 Schematics
+
+- SoC
+  - P1, `RK3588S_Power/GND`
+    - `CPU_BIG0`
+    - `CPU_BIG1`
+    - `CPU_LIT`
+    - `GPU`
+    - `NPU`
+    - `LOGIC`
+    - `VDENC`
+  - P2, `RK3588S_OSC/PLL/PMUIO`
+    - `OSC`
+    - `PLL`
+    - `PMUIO1`
+    - `PMUIO2`
+  - P3, `RK3588S DDR Controler`
+  - P4, `RK3588S Flash/SD Controller`
+    - `EMMCIO`
+    - `VCCIO2`
+  - P5, `RK3588S_USB20/USB30/DP PHY`
+    - `USB 3.0 OTG of TYPEC0 /DP1.4 ALT`
+    - `USB2.0 OTG of TYPEC0`
+    - `USB2.0 HOST0`
+    - `USB2.0 HOST1`
+  - P6, `RK3588S_SARADC/1.8V GPIO`
+    - `SARADC`
+    - `OTP`
+    - `TSADC`
+    - `VCCIO1`
+  - P7, `RK3588S_MIPI Interface`
+    - `MIPI D/C-PHY DSI_TX Port0`
+    - `MIPI D/C-PHY CSI_RX Port0`
+    - `MIPI D/C-PHY DSI_TX Port1`
+    - `MIPI D/C-PHY CSI_RX Port1`
+    - `MIPI DPHY CSI_RX Port0`
+  - P8, `RK3588S_HDMI/eDP Interface`
+    - `HDMI TX/eDP1.3 MUX Port0`
+  - P9, `RK3588S PCIE2/SATA3/USB3 PHY`
+    - `PCIE20/SATA30 Mux0`
+    - `PCIE20/SATA30/USB30 HOST Mux2`
+  - P10, `RK3588S GPIO`
+    - `VCCIO4`
+    - `VCCIO5`
+    - `VCCIO6`
+- Peripherals
+  - P11, `Power_Type-C`
+    - `USB Type-C Port`
+    - `USB Type-C CC CTRL`
+    - `TPYE-C POWER IN`
+    - `RTC IC`
+  - P12, `Power_PMIC`
+    - `BUCK1` to `BUCK10`
+    - `PLDO`
+    - `NLDO`
+    - `VCCIO`
+    - `VCCA`
+  - P13, `Power_Ext Discrete`
+    - `VDD_CPU_BIG0`
+    - `VDD_CPU_BIG1`
+    - `VDD_NPU`
+  - P14, `USB20/USB30 HOST Port`
+    - `USB2.0 Type-A Port`
+    - `USB3.0 HOST`
+  - P15, `DDR Memory`
+    - `LPDDR4`
+  - P16, `Flash-TF Card`
+    - `MicroSD Card`
+  - P17, `VI-Camera MIPI CSI0-RX / Debug`
+    - `Cam1`
+  - P18, `VI-Camera_MIPI-DPHY-RX`
+    - `Cam2`
+    - `Cam3`
+  - P19, `VO-HDMI2.1 TX`
+    - `HDMI2.1 TX0`
+  - P20, `VO-MIPI DPHY0/1-TX`
+    - `MIPI DPHY0 TX`
+    - `MIPI DPHY1 TX`
+  - P21, `1000M PHY ETH`
+    - `YT8531C`
+  - P22, `M.2_PCIe_SATA`
+    - `PCIE M.2 NGFF M-KEY SOCKET`
+  - P23, `Audio Codec(ES8388)`
+    - `CODEC ES8388`
+    - `EARPHONE`
+    - `Analog MIC`
+  - P24, `EXT I/O`
+    - `DIP26`
+  - P25, `KEY`
+    - `MASKROM KEY`
+    - `POWER_Key`
+    - `RECOVERY`
+    - `UART Debug`
+    - `LED RUN`
+    - `LED PWR`
+  - P26, `KEY`
+    - `SPI FLASH`
