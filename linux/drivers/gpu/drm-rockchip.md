@@ -12,7 +12,7 @@ Linux DRM Rockchip
   - `hdmi0-con`, the hdmi connector (downstream only)
     - it has one port, `hdmi0_con_in`
 - the dt graph on opi5
-  - `vp0` connects to `hdmi0_in`
+  - `vp0` connects to `hdmi0_in` with reg `ROCKCHIP_VOP2_EP_HDMI0`
   - `hdmi0_out` connects to `hdmi0_con_in`
 - `CONFIG_DRM_DISPLAY_CONNECTOR`
   - when the dt has this node for the hdmi connector
@@ -46,6 +46,8 @@ Linux DRM Rockchip
 
 - when the dt has this node for the vop
   - `compatible = "rockchip,rk3588-vop";`
+  - `iommus = <&vop_mmu>;`
+  - there are 4 ports (crtcs), `vp0` to `vp3`
 - `vop2_bind` binds the node when the main driver calls `component_bind_all`
   - `rk3588_vop`
     - there are 4 `vop2_video_port_data`
@@ -54,12 +56,23 @@ Linux DRM Rockchip
       - 4 esmarts
   - `vop2_win_init` inits `vop2->win` array
   - `vop2_create_crtcs` inits `vop2->vps` array
-  - `rockchip_drm_dma_init_device`
+    - assuming only `vp0` is connected, then
+    - `vp0` is the only crtc
+    - `vop2_plane_init` inits planes
+      - first cluster is tied to `vp0`, as its primary plane and with `vp0` as
+        the only possible crtc
+      - the remaining clusters and all esmarts are overlay planes, and they
+        can be used with all crtcs
+    - `drm_crtc_init_with_planes` inits `vp0` as the crtc
+  - `rockchip_drm_dma_init_device` makes the vop device the iommu dev
 
 ## `CONFIG_ROCKCHIP_DW_HDMI_QP` (downstream only)
 
 - when the dt has this node for the hdmi controller
   - `compatible = "rockchip,rk3588-dw-hdmi-qp";`
+  - there are two ports
+    - `hdmi0_in` connects to vop
+    - `hdmi0_out` connects to hdmi-connector
 - `dw_hdmi_qp_rockchip_bind` binds the node when the main driver calls
   `component_bind_all`
   - `rk3588_hdmi_phy_ops` is the phy ops
