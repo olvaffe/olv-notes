@@ -42,3 +42,19 @@ Linux pinctrl
   - the 4 numbers are bank, pin, mux (func), and config
   - `<2 RK_PD2 1 ...>` configures pin AA41 for `EMMC_D2`
   - `<2 RK_PD2 2 ...>` configures pin AA41 for `FSPI_D2_M0`
+
+## Consumers
+
+- a consumer dt node typically has
+  - `pinctrl-0 = <&uart2m1_xfer>;`
+  - `pinctrl-names = "default";`
+- when the consumer driver calls `devm_pinctrl_get_select_default`, it
+  selects the pin configuration specified by `uart2m1_xfer`
+  - `devm_pinctrl_get` calls `create_pinctrl` to create a `pinctrl` for the
+    `pinctrl_device`
+    - `pinctrl_dt_to_map` parses `pinctrl-%d` and `pinctrl-names`
+      - `dt_to_map_one_config` parses `<&uart2m1_xfer>` to `pinctrl_map`
+    - `add_setting` creates a `pinctrl_state` and a `pinctrl_setting` for the
+      `pinctrl_map`
+  - `pinctrl_lookup_state` returns the `pinctrl_state`
+  - `pinctrl_select_state` configures the pins
