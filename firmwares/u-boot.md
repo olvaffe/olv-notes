@@ -15,18 +15,35 @@ Das U-Boot
   - `make nanopi-r5c-rk3568_defconfig`
   - `make menuconfig`
   - `make CROSS_COMPILE=aarch64-linux-gnu-`
+
+## RK3588
+
 - <https://docs.u-boot.org/en/latest/board/rockchip/rockchip.html>
   - build or get tf-a firmware
     - <https://github.com/ARM-software/arm-trusted-firmware.git>
+      - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3588 bl31`
+      - `build/rk3588/release/bl31/bl31.elf` is the image
     - <https://github.com/rockchip-linux/rkbin>
   - get tpl firmware
     - also at <https://github.com/rockchip-linux/rkbin>
-  - `make CROSS_COMPILE=aarch64-linux-gnu- BL31=$rkbin/bin/rk35/rk3568_bl31_v1.43.elf ROCKCHIP_TPL=$rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.18.bin`
-    - `idbloader.img` is to be flashed to sector 0x40
-      - this is mandated by the bootrom
-    - `u-boot.itb` is to be flashed to sector 0x4000
-      - because `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000`
-        for `CONFIG_ARCH_ROCKCHIP`
+  - build uboot
+    - `make orangepi-5-rk3588s_defconfig`
+    - `ROCKCHIP_TPL=rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin
+       BL31=arm-trusted-firmware/build/rk3588/release/bl31/bl31.elf
+       CROSS_COMPILE=aarch64-linux-gnu- make`
+    - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
+      - `arch/arm/dts/rockchip-u-boot.dtsi`
+      - `mkimage` packs `rockchip-tpl` (the ddr blob from rkbin) and
+        `u-boot-spl` (`spl/u-boot-spl.bin`) into `idbloader.img`
+         - this is to be flashed to sector 0x40, mandated by the bootrom
+      - `u-boot.itb` is u-boot proper
+        - this is to be flashed to sector 0x4000, because
+          `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000` for
+          `CONFIG_ARCH_ROCKCHIP`
+  - flash to sdcard
+    - `dd if=u-boot-rockchip.bin of=/dev/sda seek=64`
+  - flash to spi flash
+    - `dd if=u-boot-rockchip.bin of=/dev/mtdblock0`
 
 ## Modern Config
 
