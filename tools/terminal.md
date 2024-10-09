@@ -1,6 +1,58 @@
 Terminal
 ========
 
+## DEC Terminals and Emulators
+
+- VT100 series, 1978
+  - one of the first terminals to support ANSI escape code
+  - xterm is closest to VT102 until 1996
+  - `infocmp vt100 vt102`
+    - delete character
+    - delete line
+    - insert line
+    - exit insert mode
+    - enter insert mode
+- VT200 series, 1983
+  - xterm is closest to VT220 until 2012
+  - `infocmp vt102 vt220`
+    - make cursor invisible
+    - make cursor appear normal
+    - visible bell
+    - next-page key
+    - previous-page key
+    - insert-character key
+    - delete-character key
+- VT300 series, 1987
+  - `infocmp vt220 vt320`
+    - home key
+  - VT340 is the first one with colors
+- VT420, 1990
+  - xterm is closest to VT420 since 2012
+- `TERM`
+  - kernel sets `TERM` to `linux` for pid 1
+  - systemd sets `TERM` to
+    - `linux` on `/dev/ttyX`
+    - `vt220` otherwise, like on serial consoles
+  - terminal emulators sets `TERM` to their owns
+  - ssh forwards `TERM`
+- size
+  - `TIOCSWINSZ` and `TIOCGWINSZ` sets/gets the window size
+    - `SIGWINCH` notifies size change
+  - apps get window size and monitor size change
+  - kernel vt inits `tty->winsize` in `con_install`
+    - kernel serial has no default size
+  - terminal emulators set terminal size
+  - ssh forward terminal size
+  - systemd performs a tty reset when `TTYReset=yes`
+    - this is the case for `getty@.service` and `serial-getty@.service`
+    - `terminal_get_size_by_dsr` sends ansi escope codes to query the terminal
+      size
+      - query current cursor pos
+      - set cursor pos to high val
+      - query cursor pos, which is capped to terminal size
+      - restore cursor pos
+    - `terminal_set_size_fd` sets the terminal size
+
 ## ncurses
 
 - all TUI (text user interface) apps need terminal control
