@@ -1,6 +1,69 @@
 wlroots
 =======
 
+## Initialization
+
+- a compositor typically calls these functions during init
+  - `wl_display_create` creates a `wl_display`
+  - `wl_display_get_event_loop` returns the `wl_event_loop` from the display
+  - `wlr_backend_autocreate` creates a `wlr_backend` and a `wlr_session` from
+    the event loop
+  - `wlr_renderer_autocreate` creates a `wlr_renderer` fom the backend
+  - `wlr_allocator_autocreate` creates a `wlr_allocator` from the backend and
+    the renderer
+  - enables various wayland protocol and extensions
+- `wlr_backend_autocreate`
+  - there are multiple backends
+    - `wayland` for sway-on-wayland
+    - `x11` for sway-on-x11
+    - `headless` for headless sway (useful for vnc-only)
+    - `drm` and `libinput` for bare metal sway
+  - `WLR_BACKENDS` can specify the comma-separated list of backends
+  - otherwise,
+    - if `WAYLAND_DISPLAY` or `WAYLAND_SOCKET` is set, use `wayland` backend
+    - if `DISPLAY` is set, use `x11` backend
+    - otherwise, use `drm` and `libinput` backend
+      - they require a seat session from `libseat`
+        - `libseat` in turns supports multiple backends
+          - `seatd` talks to `seatd`
+          - `logind` talks to `systemd-logind`
+          - `builtin` talks to embedded `seatd`
+          - `noop` is nop
+        - `LIBSEAT_BACKEND` can specify the backend explicitly, otherwise it
+          tries all backends in order
+      - unless `WLR_LIBINPUT_NO_DEVICES` is set, `libinput` backend must exist
+        and must enuemrate input devices
+      - `drm` backend must enumerate drm primary nodes and it manages all of
+        them by default
+        - `WLR_DRM_DEVICES` can override
+- `wlr_renderer_autocreate`
+  - there are multiple renderers
+    - `gles2` for egl/gles2
+    - `vulkan` for vulkan
+    - `pixman` for sw
+  - `WLR_RENDERER` can specify the renderer explicitly
+  - otherwise,
+    - it tries `gles2`
+      - it queries the primary drm fd from the backend, unless
+        `WLR_RENDER_DRM_DEVICE` specifies a node explicitly
+      - it inits EGL using
+        - `EGL_PLATFORM_DEVICE_EXT` with the drm fd if supported, or
+        - `EGL_PLATFORM_GBM_KHR` with the drm fd
+    - it falls back to `pixman` if the backend drm is display-only
+    - `vulkan` is still experimental and must be specified explicitly
+      - it queries the drm fd from the backend similar to in `gles2`
+      - it requires `VK_EXT_physical_device_drm` and uses the physical device
+        matching the drm fd 
+- `wlr_allocator_autocreate`
+  - there are multiple allocators
+    - gbm, using `gbm_bo_create`
+    - shm, using `shm_open`
+    - dumb, using `drmModeCreateDumbBuffer`
+  - it queries the drm fd from the backend or the renderer
+  - it picks the first allocator whose buffers can be presented by the backend
+    - e.g., `drm` backend requires `WLR_BUFFER_CAP_DMABUF`
+    - note that dumb allocator requires a primary drm fd
+
 ## sway
 
 - require `WAYLAND_DISPLAY=wayland-1`
@@ -230,6 +293,7 @@ wlroots
 
 - <https://git.sr.ht/~kennylevinsen/seatd>
   - the codebase is smaller
+  - `/run/seatd.sock` expects the user to be in `seat` group
 - initialization
   - `server_init` calls `seat_create` with `seat0` and `vt_bound` set
   - `open_socket` listens on `/run/seatd.sock`
