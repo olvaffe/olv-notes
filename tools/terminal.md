@@ -53,6 +53,26 @@ Terminal
       - query cursor pos, which is capped to terminal size
       - restore cursor pos
     - `terminal_set_size_fd` sets the terminal size
+- serial console
+  - remote programs communicate over the physical serial port on the remote
+    machine
+    - `TERM` and `stty size` often have incorrect values on the remote machine
+    - `stty cols <val1> rows <val2>` to correct
+  - we also need a terminal emulator that communicates over a local physical
+    serial port rather than over pty on the local machine
+    - picocom
+      - `picocom -b <baud> <dev>` to connect
+      - `C-a C-x` to disconnect
+      - it forwards traffic between the serial port and the host terminal
+    - cu
+      - `cu -s <baud> -l <dev> -f` to connect
+      - `~.` to disconnect
+      - it forwards traffic between the serial port and the host terminal
+    - minicom
+      - `minicom -b <baud> -D <dev>` to connect
+      - `C-a x` to disconnect
+      - it emulates a vt102 terminal on top of the host terminal
+        - `-c on` to enable color support
 
 ## ncurses
 
