@@ -43,6 +43,7 @@ Terminal
     - kernel serial has no default size
   - terminal emulators set terminal size
   - ssh forward terminal size
+  - agetty sets terminal size to 80x24 if it is currently 0x0
   - systemd performs a tty reset when `TTYReset=yes`
     - this is the case for `getty@.service` and `serial-getty@.service`
     - `terminal_get_size_by_dsr` sends ansi escope codes to query the terminal

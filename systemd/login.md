@@ -6,12 +6,30 @@ login and PAM
 - agetty is started by logind
 - agetty initializes tty and prompts for user name
   - runs as root
-  - opens `/dev/ttyN`
-  - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
-    controlling terminal
-  - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
-  - calls `tcsetpgrp` to make itself foreground
-  - prompts `<hostname> login: ` and reads login name
+  - `open_tty`
+    - opens `/dev/ttyN`
+    - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
+      controlling terminal
+    - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
+    - calls `tcsetpgrp` to make itself foreground
+    - dups `STDIN_FILENO` twice, for stdout and stderr
+    - if vt, sets `F_VCONSOLE` flag
+    - sets `TERM` to
+      - explicitly specified val, or
+      - if `F_VCONSOLE`, `linux`, or
+      - otherwise, `vt102`
+  - `termio_init`
+    - if `F_VCONSOLE`,
+      - calls `setlocale` to set `LC_CTYPE` to `POSIX`
+      - clears the terminal
+    - else,
+      - `cfsetispeed`
+      - `cfsetospeed`
+      - `TIOCSWINSZ` to set the window size
+        - default to 80x24
+  - `get_logname`
+    - `do_prompt` prompts `<hostname> login: `
+    - reads login name
   - `execv`s `login -- <username>`
 
 ## login
