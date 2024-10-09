@@ -29,3 +29,36 @@ Kernel Video
 - legacy fbdev drivers
   - `CONFIG_FB` is for legacy fbdev drivers
   - it implies `CONFIG_FB_DEVICE` which enables the legacy `/dev/fb*`
+
+## fbdev
+
+- legacy configs
+  - `CONFIG_FB` enables legacy fbdev drivers
+  - `CONFIG_FB_DEVICE` exports fbdev to `/dev/fb*`
+- modern configs
+  - `CONFIG_FB_CORE`
+  - `CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY`
+- `fb_console_setup` parses `fbcon=`
+- fbdev driver allocs and inits `fb_info`
+  - `framebuffer_alloc` allocs an `fb_info`
+  - `fb_alloc_cmap` allocs `info->cmap`
+    - this is the color palette, usually 256 colors per channel
+  - `info->skip_vt_switch` is typically true
+- `register_framebuffer` registers an `fb_info`
+  - `fb_device_create` creates a userspace device, if the legacy
+    `CONFIG_FB_DEVICE` is enabled
+  - `fb_info->pixmap` is initialized
+  - `pm_vt_switch_required` enables/disables vt switch on suspend/resume
+  - `fb_var_to_videomode` inits `fb_videomode` from `info->var`
+  - `fb_add_videomode` adds the mode to `info->modelist`
+  - `fbcon_fb_registered` registers the fbdev for vt console, if
+    `CONFIG_FRAMEBUFFER_CONSOLE` is enabled
+    - `fbcon_select_primary` checks if the fbdev is primary
+      - it is determined by `video_is_primary_device` on x86
+      - if primary, it updates `primary_device` and updates `con2fb_map_boot`
+        to use this fbdev for all vts
+      - otherwise, there is no primary device and `con2fb_map_boot` is all
+        zeros, meaning the first fbdev is used for all vts
+    - `do_fbcon_takeover` calls `do_take_over_console` from vt to enable the
+      vt console
+      - `fb_con` is the vt console ops
