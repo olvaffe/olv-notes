@@ -1,6 +1,44 @@
 VFS
 ===
 
+## Filesystems
+
+- bootloader
+  - `CONFIG_FAT_FS` for uefi esp
+- root
+  - `CONFIG_EXT4_FS` the most common
+  - `CONFIG_BTRFS_FS` more feature-rich
+  - `CONFIG_BCACHEFS_FS` new and unstable
+  - `CONFIG_XFS_FS` default on RHEL
+  - `CONFIG_F2FS_FS` designed for ssd, emmc, and sd
+  - `CONFIG_ZFS` out-of-tree
+- read-only and overlay
+  - `CONFIG_SQUASHFS` the most common
+  - `CONFIG_EROFS_FS` faster, default on android
+  - `CONFIG_CRAMFS` obsoleted, precursor to squashfs
+  - `CONFIG_ROMFS_FS` too limited
+  - `CONFIG_ISO9660_FS` cd
+  - `CONFIG_OVERLAY_FS` write overlay
+- mtd
+  - `CONFIG_JFFS2_FS` the most common
+  - `CONFIG_UBIFS_FS` newer and better
+- network
+  - `CONFIG_NFS_FS` the most common
+  - `CONFIG_SMBFS` cross-platform file sharing
+  - `CONFIG_9P_FS` vm file sharing
+- windows
+  - `CONFIG_EXFAT_FS` modern and cross-platform
+  - `CONFIG_NTFS3_FS` read-write
+  - `CONFIG_NTFS_FS` older, read-only, partial write
+- osx
+  - `CONFIG_APFS` out-of-tree
+  - `CONFIG_HFSPLUS_FS` predate osx
+- bsd
+  - `CONFIG_UFS_FS` the most common
+- encryption
+  - `CONFIG_ECRYPT_FS` stacked, don't use
+    - use fscrypt-enabled fs or dm-crypt instead
+
 ## Concepts
 
 - a filesystem consists of tons of objects (files, directories, fifos, etc.)

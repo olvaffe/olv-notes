@@ -282,3 +282,63 @@ Base Utils
   - `pam_end` to end pam
   - `execvp` to invoke the shell
   - `execle(shell)`
+
+## blkid
+
+- blkid is not user-facing
+  - use lsblk instead
+- blkid prints metadata of block devices
+  - it loads `/run/blkid/blkid.tab` for cached metadata
+  - if root, it probes as well
+  - `LIBBLKID_DEBUG=all` to see the log
+- internally,
+  - `--probe` or `--info` forces probing and ignores the cahce
+    - `libblkid` can probe
+      - `BLKID_CHAIN_SUBLKS`, fs superblock
+      - `BLKID_CHAIN_TOPLGY`, dev topology (e.g., sector size)
+      - `BLKID_CHAIN_PARTS`, partition table
+  - `--label` or `--uuid` uses the "evaluate" api
+    - `blkid_evaluate_tag` opens `/dev/disk/by-label/<label>` or
+      `/dev/disk/by-uuid/<uuid>`, and prints the canonical path
+  - if no device given, `blkid_probe_all` scans
+    - `/proc/lvm/VGs`
+    - `/dev/*ubi*`
+    - `/sys/block`
+
+## lsblk
+
+- lsblk prints metadata of block devices
+  - it scans `/sys/block` for block devices
+  - it finds their dependencies (partitions, dm, etc.)
+- `--list-columns` lists all available columns
+  - by default, it prints
+    - `NAME`, device name
+    - `MAJ:MIN`, major:minor device number
+    - `RM`, removable device
+    - `SIZE`, size of the device
+    - `RO`, read-only device
+    - `TYPE`, device type
+    - `MOUNTPOINT`, where the device is mounted
+  - `--fs` prints fs-related columns
+  - `--topology` prints topology-related columns
+  - `--output-all` prints all columns
+
+## findmnt
+
+- findmnt pretty-prints one of the mount tab files
+  - `--kernel` uses `/proc/self/mountinfo` and is the default
+  - `--mtab` uses `/etc/mtab`, which is a symlink to `/proc/self/mounts`
+    - this is the older format
+  - `--fstab` uses `/etc/fstab`
+  - `--task <pid>` uses `/proc/<pid>/mountinfo` for mount namespace
+- `--list-columns` lists all available columns
+  - by default, it prints
+    - `TARGET`, mountpoint
+    - `SOURCE`, source device
+    - `FSTYPE`, filesystem type
+    - `OPTIONS`, all mount options
+  - `--output-all` prints all columns
+- filtering
+  - `--pseudo` or `--real` prints only pseudo or real filesystems
+  - `--shadow` pritns only over-mounted filesystems
+  - `--types` prints only specified fliesystem types
