@@ -177,49 +177,51 @@ Debian
 
 ## Toolchain Packages
 
-- `gcc-11` provides the C compiler
-  - mainly `/usr/bin/x86_64-linux-gnu-gcc-{,ar-,nm-,ranlib-}11`
-    - as well as symlinks, `/usr/bin/gcc-{,ar-,nm-,ranlib-}11`
-  - it depends on several other packages
-  - `cpp-11` provides the C preprocessor
-    - `/usr/bin/x86_64-linux-gnu-cpp-11`
-  - `binutils` provides the binary utils
-    - mainly symlinks such as `/usr/bin/{ld,ld.bfd,ld.gold,nm,readelf,...}`
-    - its dependency `binutils-x86-64-linux-gnu` provides the real binaries
-      - mainly `/usr/bin/x86_64-linux-gnu-*`
-  - `libgcc-11-dev` provides the runtime and intrinsics headers
-    - `/usr/lib/gcc/x86_64-linux-gnu/11/{crtbegin.o,libgcc.a,libasan.*,libatomic.*}`
-    - `/usr/lib/gcc/x86_64-linux-gnu/11/include/{x86intrin.h,...}`
-  - `libc6` provides the C runtime
-    - `/lib/x86_64-linux-gnu/{ld,libc,libm,libpthread,...}-2.33.so`
-  - it also recommends `libc6-dev`
-- `g++-11` provides the C++ compiler
-  - mainly `/usr/bin/x86_64-linux-gnu-g++-11`
-  - it depends on several other packages
-  - `libstdc++6` provides C++ runtime
-    - `/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.29`
-  - `libstdc++-11-dev`
-- aarch64 cross-compiler
-  - `gcc-11-aarch64-linux-gnu` provides the C compiler
-    - mainly `/usr/bin/aarch64-linux-gnu-gcc-{,ar-,nm-,ranlib-}11`
-    - `cpp-11-aarch64-linux-gnu` provides the C preprocessor
-    - `binutils-aarch64-linux-gnu` provides the binary utils
-      - mainly `/usr/bin/aarch64-linux-gnu-*`
-    - `libgcc-11-dev-arm64-cross` provides the runtime
-      - mainly `/usr/lib/gcc-cross/aarch64-linux-gnu/11/*`
-    - `libc6-arm64-cross` provides C runtime
-      - mainly `/usr/aarch64-linux-gnu/lib/*`
-  - `g++-11-aarch64-linux-gnu` provides the C compiler
-    - mainly `/usr/bin/aarch64-linux-gnu-g++-11`
-    - `libstdc++-11-dev-arm64-cross`
-      - `/usr/aarch64-linux-gnu/*`
-- i686 cross-compiler
-  - `gcc-11-i686-linux-gnu` provides the C compiler
-    - it works the same way as the aarch64 cross compiler
-  - `gcc-11-multilib-i686-linux-gnu` depends on the C compiler and other
-    libraries... for convenience?
-  - this conflicts with `gcc-multilib`... which is another way to
-    cross-compile for i686?
+- `binutils` and dependencies
+  - `binutils` provides `/usr/bin/{ld,ld.bfd,ld.gold,nm,readelf,...}`
+    symblinks
+  - `binutils-x86-64-linux-gnu` provides
+    `/usr/bin/x86_64-linux-gnu-{ld.bfd,ld.gold,nm,readelf,...}` binaries
+- `cpp-14` and dependencies
+  - `cpp-14` provides `/usr/bin/cpp-14` symlink
+  - `cpp-14-x86-64-linux-gnu` provides `/usr/bin/x86_64-linux-gnu-cpp-14` binary
+- `gcc-14` and dependencies
+  - `gcc-14` provides `/usr/bin/gcc-14` symlink
+  - `gcc-14-x86-64-linux-gnu` provides `/usr/bin/x86_64-linux-gnu-gcc-14`
+    binary
+    - `binutils-x86-64-linux-gnu`
+    - `cpp-14-x86-64-linux-gnu`
+    - `libgcc-14-dev` provides gcc runtime, `/usr/lib/gcc/x86_64-linux-gnu/14`
+    - `libc6` provides c runtime,
+      `/usr/lib/x86_64-linux-gnu/{ld-linux-x86-64,libc,libm,...}.so.*`
+    - `libstdc++6` provides c++ runtime, `/usr/lib/x86_64-linux-gnu/libstdc++.so.6`
+- `g++-14` and dependencies
+  - `g++-14` provides `/usr/bin/g++-14` symlink
+  - `g++-14-x86-64-linux-gnu` provides `/usr/bin/x86_64-linux-gnu-g++-14`
+    binary
+    - `gcc-14-x86-64-linux-gnu`
+    - `libstdc++-13-dev` provides c++ runtime
+- `gcc` provides `/usr/bin/gcc` symlink
+- `g++` provides `/usr/bin/g++` symlink
+- aarch64 cross-compiler is similar
+  - `binutils-aarch64-linux-gnu`
+  - `cpp-14-aarch64-linux-gnu`
+  - `gcc-14-aarch64-linux-gnu`
+  - `g++-14-aarch64-linux-gnu`
+  - except
+    - `x86_64-linux-gnu` becomes `aarch64-linux-gnu`
+    - `/usr/lib/gcc` becomes `/usr/lib/gcc-cross`
+    - `/usr/libexec/gcc` becomes `/usr/libexec/gcc-cross`
+    - there is a mini sysroot at `/usr/aarch64-linux-gnu`
+- i686 cross-compiler similar
+  - `binutils-i686-linux-gnu`
+  - `cpp-14-i686-linux-gnu`
+  - `gcc-14-i686-linux-gnu`
+  - `g++-14-i686-linux-gnu`
+  - there are also multilib (cross-compile for 32-bit on 64-bit)
+    - `gcc-13-multilib-i686-linux-gnu` reuses the i686 cross-compiler
+    - `gcc-13-multilib` is the older way and conflicts with all other
+      cross-compilers
 
 ## Minimum Package
 
