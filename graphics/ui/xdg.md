@@ -4,12 +4,14 @@ XDG Specs
 ## XDG Base Directory Specification
 
 - <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+  - freedesktop.org was formerly known as X Desktop Group, XDG
 - user-specific
   - `$XDG_CONFIG_HOME`, default to `$HOME/.config`
   - `$XDG_DATA_HOME`, default to `$HOME/.local/share`
   - `$XDG_STATE_HOME`, default to `$HOME/.local/state`
   - `$XDG_CACHE_HOME`, default to `$HOME/.cache`
   - `$XDG_RUNTIME_DIR`, no default
+    - if exists, the directory must be owned by user and has access mode 0700
 - system-wide
   - `$XDG_DATA_DIRS`, default to `/usr/local/share/:/usr/share/`
   - `$XDG_CONFIG_DIRS`, default to `/etc/xdg`
