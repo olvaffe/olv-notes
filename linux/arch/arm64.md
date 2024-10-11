@@ -194,6 +194,44 @@ ARM64
     Matrix Extension)
   - and various exceptions causing the userspace to be killed by `SIGILL`
 
+## CPU Info
+
+- `cpuinfo_store_boot_cpu` and `cpuinfo_store_cpu`
+  - they read various msr regs
+- when a cpu onlines, `cpuid_cpu_online` is called
+  - midr and revid are available at
+    `/sys/devices/system/cpu*/regs/identification`
+- `/proc/cpuinfo` uses `cpuinfo_op` to show midr
+  - bit 0..3: Revision
+  - bit 4..15: PartNum
+    - 0xd04 is A53
+    - 0xd05 is A55
+    - 0xd08 is A72
+    - 0xd09 is A73
+    - 0xd0a is A75
+    - 0xd0b is A76
+    - 0xd0d is A77
+    - 0xd41 is A78
+    - 0xd44 is X1
+    - 0xd46 is A510
+    - 0xd47 is A710
+    - 0xd48 is X2
+    - 0xd4d is A715
+    - 0xd4e is X3
+    - 0xd80 is A520
+    - 0xd81 is A720
+    - 0xd82 is X4
+    - 0xd85 is X925
+    - 0xd87 is A725
+    - `lscpu` can parse this and more
+  - bit 16..19: Architecture
+    - 0xf means to look elsewhere
+  - bit 20..23: Variant
+  - bit 24..31: Implementer
+    - 0x41 is arm
+    - 0x4e is nvidia
+    - 0x51 is qualcomm
+
 ## Generic Timer
 
 - <https://developer.arm.com/documentation/102379/0101/>

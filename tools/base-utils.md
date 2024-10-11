@@ -342,3 +342,18 @@ Base Utils
   - `--pseudo` or `--real` prints only pseudo or real filesystems
   - `--shadow` pritns only over-mounted filesystems
   - `--types` prints only specified fliesystem types
+
+## lscpu
+
+- `lscpu_context_init_paths`
+  - `cxt->rootfs` is `/`
+  - `cxt->syscpu` is `/sys/devices/system/cpu`
+  - `cxt->procfs` is `/proc`
+- `lscpu_read_cpulists` reads which cpus are available, online, etc.
+- `lscpu_read_cpuinfo` parses `/proc/cpuinfo`
+- `lscpu_read_architecture` queries arch from `uname`
+- `lscpu_read_archext`
+- `lscpu_read_vulnerabilities` parses
+  `/sys/devices/system/cpu/vulnerabilities`
+- `lscpu_decode_arm` parses arm ids
+  - `arm_ids_decode` parses midr implementer and partnum
