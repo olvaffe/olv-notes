@@ -84,10 +84,10 @@ Intel CPUs
     - Core Ultra 1xx, mobile
     - cros: rex
 - 24Q4~: Core Ultra 2xx
+  - Arrow Lake, Lion Cove, Skymont, Gfx12.5 GPU
+    - desktop
   - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
     - mobile
-  - Arrow Lake
-    - desktop
 - 25Q4~: Core Ultra 3xx?
   - Panther Lake
   - Nova Lake

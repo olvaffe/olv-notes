@@ -87,6 +87,11 @@ Qualcomm SoC
     - SM4450
     - 4nm
     - Adreno 613
+  - 4s Gen 2
+    - 2024
+    - SM4635
+    - 4nm
+    - Adreno 611
 - Snapdragon 6 series
   - mid-range
   - 600
@@ -134,6 +139,21 @@ Qualcomm SoC
     - SM6450
     - 4nm
     - Adreno 710
+  - 6s Gen 1
+    - 2024
+    - SM6115-AC
+    - 11nm
+    - Adreno 610
+  - 6 Gen 3
+    - 2024
+    - SM6475-AB
+    - 4nm
+    - Adreno 710
+  - 6s Gen 3
+    - 2024
+    - SM6375-AC
+    - 6nm
+    - Adreno 619
 - Snapdragon 7 series
   - upper mid-range
   - 710, 712
@@ -171,6 +191,11 @@ Qualcomm SoC
     - SM{7550,7675}-AB
     - 4nm
     - Adreno {720,732}
+  - 7s Gen3
+    - 2024
+    - SM7635
+    - 4nm
+    - Adreno 810
 - Snapdragon 8 series
   - high-end
   - 800, 801, 805
@@ -225,7 +250,7 @@ Qualcomm SoC
     - Adreno 740
   - 8/8s Gen3
     - 2024
-    - SM{8650,8635}-AB
+    - SM{8650,8635}
     - 4nm
     - Adreno {750,735}
 
@@ -276,11 +301,11 @@ Qualcomm SoC
 - Snapdragon X Series
   - X Elite/Plus
     - 2024
-    - SC?
+    - X1E-{78,80,84}, X1P-{42,46,64,66}
     - 4nm
-    - Adreno?
+    - Adreno X1
 
-## History: Compute Platforms
+## History: Gaming Platforms
 
 - Snapdragon G series
   - G3x Gen 1
@@ -291,7 +316,7 @@ Qualcomm SoC
   - G3x Gen 2
     - 2023
     - ?
-    - ?nm
+    - 4nm
     - Adreno A32 (based on Adreno 740)
 
 ## Qualcomm Modem/WiFi/BT?
