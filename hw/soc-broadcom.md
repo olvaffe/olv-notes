@@ -19,6 +19,16 @@ Broadcom SoC
   - Video Core VII, 800MHz
   - Cortex-A76 x4 @2.4GHz (ARMv8.2-A)
 
+## Power Consumption
+
+- RPi 4 peaks at ~8W and idles at ~2.4W
+- RPi 5 peaks at ~12W and idles at ~2W
+  - requires active cooling to avoid throttling
+  - when using a 15W power adapter, it caps the downstream usb port to 600mA
+    (3W)
+  - when using a 25W power adapter, it caps the downstream usb port to 1.6A
+    (8W)
+
 ## Raspberry Pi 4 Boot Flow
 
 - <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-and-raspberry-pi-5-boot-flow>
