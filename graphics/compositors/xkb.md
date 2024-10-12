@@ -84,6 +84,53 @@ XKB
   - `Mod1` is `Alt`
   - `Mod2` is `Num_Lock`
   - `Mod4` is `Super`
+- mapping RMLVO to KcCGST
+  - assuming RMLVO is `(evdev, pc105, us, NULL, NULL)`
+  - `/usr/share/X11/xkb/rules/evdev` defines the `evdev` rules
+    - `! model = keycodes` defines model to keycodes mappings
+      - `* = evdev` maps `pc105` to `evdev`
+    - `! layout = keycodes` define layout to keycodes mappings
+      - `* = +aliases(qwerty)` maps `us` to `+aliases(qwerty)`
+    - `! model = geometry` defines model to geometry mappings
+      - `$pcmodels = pc(%m)` maps `pc105` to `pc(pc105)`
+      - `$pcmodels` includes `pc105`
+      - `%m` expands to the model
+    - `! model layout = symbols` defines model+layout to symbols mappings
+      - `* * = pc+%l%(v)` maps `(pc105, us)` to `pc+us`
+      - `%l` expands to layout
+      - `%(v)` expands to variant enclosed by parentheses, if specified
+    - `! model = symbols` defines model to symbols mappings
+      - `* = +inet(evdev)` maps `pc105` to `+inet(evdev)`
+    - `! model layout = compat` defines model+layout to compat mappings
+      - `* * = complete` maps `(pc105, us)` to `complete`
+    - `! model = types` defines model to types mappings
+      - `* = complete` maps `pc105` to `complete`
+  - KcCGST is `(evdev+aliases(qwerty), complete, pc(pc105), pc+us+inet(evdev), complete)`
+    - `/usr/share/X11/xkb/keycodes/evdev`
+      - `default xkb_keycodes "evdev"`
+    - `/usr/share/X11/xkb/keycodes/aliases`
+      - `default xkb_keycodes "qwerty"`
+    - `/usr/share/X11/xkb/compat/complete`
+      - `default xkb_compatibility "complete"`
+    - `/usr/share/X11/xkb/geometry/pc`
+      - `xkb_geometry "pc105"`
+    - `/usr/share/X11/xkb/symbols/pc`
+      - `xkb_symbols "pc105"`
+    - `/usr/share/X11/xkb/symbols/us`
+      - `xkb_symbols "basic"`
+    - `/usr/share/X11/xkb/symbols/inet`
+      - `xkb_symbols "evdev"`
+    - `/usr/share/X11/xkb/types/complete`
+      - `default xkb_types "complete"`
+  - when I click `x` on my keyboard
+    - evdev reports 45 (`KEY_X`)
+    - the compositor forwards 45 to the client
+    - the client calls `xkb_state_key_get_syms` to translate 45 to `XKB_KEY_x`
+      (0x78, same as ascii)
+    - xkb?????
+      - `keycodes/evdev` maps `AB02` to 53 (what xfree86 uses for `x`)
+      - `geometry/pc` maps `x` to `AB02`
+      - `symbols/us` maps `AB02` to `x` or `X`
 
 ## Physical Keyboard Layout
 
