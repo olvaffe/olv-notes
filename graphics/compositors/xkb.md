@@ -108,16 +108,30 @@ XKB
   - KcCGST is `(evdev+aliases(qwerty), complete, pc(pc105), pc+us+inet(evdev), complete)`
     - `/usr/share/X11/xkb/keycodes/evdev`
       - `default xkb_keycodes "evdev"`
+      - all evdev keycodes are offset by 8
+        - X11 protocol requires keycodes to be between `[8, 255]`
+        - when an xorg input driver calls `xf86PostKeyboardEvent` to post a
+          keycode, it offsets the linux evdev keycode by 8 to meet the
+          requirement
+        - xkeyboard-config dataset is offset by 8 as a result
+        - note that evdev keycodes beyond 247 are ignored on X11
+      - for example,
+        - evdev `KEY_X` is 45 and `<AB02> = 53` maps `45+8=53` to `AB02`
+        - `AB02` is the canonical name of keycode 53, as returned by
+          `xkb_keymap_key_get_name`
     - `/usr/share/X11/xkb/keycodes/aliases`
       - `default xkb_keycodes "qwerty"`
     - `/usr/share/X11/xkb/compat/complete`
       - `default xkb_compatibility "complete"`
     - `/usr/share/X11/xkb/geometry/pc`
       - `xkb_geometry "pc105"`
+      - this describes the physical layout of a pc105 keyboard, which can be
+        used to, for example, draw a virtual keyboard
     - `/usr/share/X11/xkb/symbols/pc`
       - `xkb_symbols "pc105"`
     - `/usr/share/X11/xkb/symbols/us`
       - `xkb_symbols "basic"`
+      - `key <AB02> {[x, X]};` maps `AB02` to `[x, X]`
     - `/usr/share/X11/xkb/symbols/inet`
       - `xkb_symbols "evdev"`
     - `/usr/share/X11/xkb/types/complete`
@@ -125,12 +139,8 @@ XKB
   - when I click `x` on my keyboard
     - evdev reports 45 (`KEY_X`)
     - the compositor forwards 45 to the client
-    - the client calls `xkb_state_key_get_syms` to translate 45 to `XKB_KEY_x`
-      (0x78, same as ascii)
-    - xkb?????
-      - `keycodes/evdev` maps `AB02` to 53 (what xfree86 uses for `x`)
-      - `geometry/pc` maps `x` to `AB02`
-      - `symbols/us` maps `AB02` to `x` or `X`
+    - the client adds 8 to 45 and gets 53
+    - the client calls `xkb_state_key_get_syms` to translate 53 to `XKB_KEY_x`
 
 ## Physical Keyboard Layout
 
