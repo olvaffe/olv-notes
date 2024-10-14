@@ -209,6 +209,65 @@ Mesa PanVK
 - `panvk_per_arch(UpdateDescriptorSets)`
   - `write_image_view_desc` copies `view->descs.tex` to the descriptor
 
+## Modifier
+
+- mali supports these modifiers
+  - `DRM_FORMAT_MOD_LINEAR`
+  - `DRM_FORMAT_MOD_ARM_16X16_BLOCK_U_INTERLEAVED`
+  - `DRM_FORMAT_MOD_ARM_AFBC(mode)`
+    - bit 0..3: block size
+      - 16x16, 32x8, 64x4
+      - there is also `32x8_64x4` when lumi and chroma planes have different
+        block sizes
+    - bit 4: YTR, uses lossless color transform
+      - this is only supported by rgb and should be set for rgb for better
+        compression
+    - bit 5: SPLIT, splits the payload of each block
+    - bit 6: SPARSE
+    - bit 7: CBR, copy-block restrict
+    - bit 8: TILED, groups blocks into 8x8 or 4x4 tiles
+      - this requires v7+
+    - bit 9: SC, uses solid color blocks
+      - this requires v7+
+    - bit 10: DB, indicates front-buffer rendering safe
+    - bit 11: BCH, uses buffer content hint
+    - bit 12: USM, uses uncompressed storage mode
+  - `DRM_FORMAT_MOD_ARM_AFRC(mode)`
+    - bit 0..3: coding unit for plane 0
+      - compress every N bytes to a fixed compressed size
+    - bit 4..7: coding unit for plane 1 and 2 
+    - bit 8: SCANOUT, uses scanline layout rather than rotated layout
+- each rt has a `MALI_RENDER_TARGET`
+  - `pan_emit_rt` emits the descriptor
+  - if afbc,
+    - dw 1: block format, etc.
+    - dw 2: comp mode, ytr, wide block, etc.
+    - dw 8..9: va of afbc header
+    - dw 10: row stride
+    - dw 11: offset of afbc body relative to header
+- zs has `MALI_ZS_CRC_EXTENSION`
+  - `pan_emit_zs_crc_ext` emits the descriptor
+  - if afbc,
+    - dw 0: block format, etc.
+    - dw 8..9: va of afbc header
+    - dw 10: row stride
+    - dw 11: offset of afbc body relative to header
+- some images/buffers have `MALI_PLANE`s
+  - `panfrost_emit_plane` emits the descriptor
+  - if afbc,
+    - dw 0: plane type, super block size, ytr, split, alpha hint, tiled, comp
+      mode, header size
+    - dw 2..3: va of afbc header
+    - dw 4: row stride
+- `pan_best_modifiers` is an ordered list of best modifiers
+  - afbc, 16x16, tiled, sc, sparse, ytr
+  - afbc, 16x16, tiled, sc, sparse
+  - afbc, 16x16, sparse, ytr
+  - afbc, 16x16, sparse
+  - `DRM_FORMAT_MOD_ARM_16X16_BLOCK_U_INTERLEAVED`
+  - `DRM_FORMAT_MOD_LINEAR`
+  - afrc
+
 ## Sampler
 
 - `panvk_per_arch(CreateSampler)`
