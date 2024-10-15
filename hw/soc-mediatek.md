@@ -75,6 +75,7 @@ MediaTek SoCs
     - cros: kukui, jacuzzi
   - 2022, Kompanio 520 / MT8186,  12nm, Cortex-{A76,A55}, Mali-G52 MC2
     - cros: corsola
+    - `mt8186-corsola-steelix-sku131073.dts`
   - 2022, Kompanio 528 / MT8186T, 12nm, Cortex-{A76,A55}, Mali-G52 MC2
   - 2022, Kompanio 800T / MT????,  6nm, Cortex-{A76,A55}, Mali-G57 MC2
   - 2021, Kompanio 820 / MT8192,   7nm, Cortex-{A76,A55}, Mali-G57 MC5

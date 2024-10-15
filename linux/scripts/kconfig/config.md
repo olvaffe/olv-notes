@@ -284,6 +284,7 @@ Kernel Config
       - select `HCI UART driver` if qcom/rpi
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
+      - select `MediaTek HCI SDIO driver` if old mtk
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
@@ -383,6 +384,7 @@ Kernel Config
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
+        - select `GPIO Buttons` if old mtk
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -507,6 +509,7 @@ Kernel Config
     - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
     - select `MediaTek MT6315 PMIC` if mtk
+    - select `MediaTek MT6358 PMIC` if mtk
     - select `MediaTek MT6359 PMIC` if mtk
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
@@ -544,7 +547,9 @@ Kernel Config
       - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
     - select `Display Interface Bridges` if arm
       - select `Display connector support`
+      - select `ITE IT6505 DisplayPort bridge` if desired
       - select `TI SN65DSI86 DSI to eDP bridge` if desired
+      - select `Analogix Anx7625 MIPI to DP interface support` if desired
     - select `DRM Support for Mediatek SoCs` if mtk
       - select `DRM DPTX Support for MediaTek SoCs`
       - select `DRM HDMI Support for Mediatek SoCs`
@@ -576,6 +581,8 @@ Kernel Config
           - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
           - select `SOF with nau8825 codec in I2S Mode` if needed
           - select `SoundWire generic machine driver` if needed
+        - select `ASoC support for Mediatek MT8186 chip` if old mtk
+          - select `ASoC Audio driver for MT8186 with MT6366 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `ASoC support for Mediatek MT8195 chip` if mtk
           - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `ASoC support for QCOM platforms` if qcom
@@ -598,6 +605,7 @@ Kernel Config
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
           - select `SOF support for MTK audio DSPs` if mtk
+            - select `SOF support for MT8186 audio DSP` if old mtk
             - select `SOF support for MT8195 audio DSP`
         - select `CODEC drivers` if qcom
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
@@ -775,6 +783,7 @@ Kernel Config
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
+    - select `MEDIATEK CCI DEVFREQ Driver` if old mtk
     - select `DEVFREQ-Event device Support`
       - select `ROCKCHIP DFI DEVFREQ event Driver` if rk
   - select `External Connector Class (extcon) support`
