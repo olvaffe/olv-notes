@@ -546,6 +546,7 @@ Kernel Config
       - select `Display connector support`
       - select `TI SN65DSI86 DSI to eDP bridge` if desired
     - select `DRM Support for Mediatek SoCs` if mtk
+      - select `DRM DPTX Support for MediaTek SoCs`
       - select `DRM HDMI Support for Mediatek SoCs`
     - select `Simple framebuffer driver` if desired
     - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
