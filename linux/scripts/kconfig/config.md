@@ -633,6 +633,7 @@ Kernel Config
       - select `Generic OHCI driver for a platform device` if rk
     - select `USB Printer support` if needed
     - select `USB Mass Storage support`
+    - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `Onboard USB hub support` if qcom
     - select `USB Type-C Support`
