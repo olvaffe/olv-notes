@@ -140,21 +140,91 @@ Mesa Vulkan Runtime
       dozen, `VK_DEVICE_TIMELINE_MODE_NATIVE`
     - else `VK_DEVICE_TIMELINE_MODE_ASSISTED`
   - `vk_device::submit_mode` is based on `vk_device::timeline_mode`
-    - the effective submit mode of a queue will be determined in
-      `vk_queue_init`
-- `get_fence_sync_type` determines the sync type for a `VkFence`
-  - it returns the first sync type with
-  - `VK_SYNC_FEATURE_BINARY`,
-  - `VK_SYNC_FEATURE_CPU_WAIT`
-  - `VK_SYNC_FEATURE_CPU_RESET`
-- `get_semaphore_sync_type` determines the sync type for a `VkSemaphore`
-  - for binary semaphores, it returns the first sync type with
-    - `VK_SYNC_FEATURE_BINARY`
-    - `VK_SYNC_FEATURE_GPU_WAIT`
-  - for timeline semaphores, it returns the first sync type with
-    - `VK_SYNC_FEATURE_TIMELINE`
-    - `VK_SYNC_FEATURE_GPU_WAIT`
-    - `VK_SYNC_FEATURE_CPU_WAIT`
+    - if `VK_DEVICE_TIMELINE_MODE_NONE` or `VK_DEVICE_TIMELINE_MODE_NATIVE`,
+      `VK_QUEUE_SUBMIT_MODE_IMMEDIATE`
+    - if `VK_DEVICE_TIMELINE_MODE_EMULATED`, `VK_QUEUE_SUBMIT_MODE_DEFERRED`
+      - this is the case when syncobj is binary-only and timeline is emulated
+    - if `VK_DEVICE_TIMELINE_MODE_ASSISTED`,
+      `VK_QUEUE_SUBMIT_MODE_THREADED_ON_DEMAND`
+      - this is the case when syncobj supports timeline natively
+      - what this means is that `vk_queue_init` will use
+        `VK_QUEUE_SUBMIT_MODE_IMMEDIATE` initially, and switches to
+        `VK_QUEUE_SUBMIT_MODE_THREADED` when it detects wait-for-pending
+- `vk_fence`
+  - `vk_common_CreateFence`
+    - `get_fence_sync_type` determines the sync type for a `VkFence`
+      - it returns the first sync type with
+      - `VK_SYNC_FEATURE_BINARY`,
+      - `VK_SYNC_FEATURE_CPU_WAIT`
+      - `VK_SYNC_FEATURE_CPU_RESET`
+    - `vk_sync_init` inits the sync
+  - `vk_common_DestroyFence` calls `vk_sync_finish`
+  - `vk_common_ResetFences` calls `vk_sync_reset`
+  - `vk_common_GetFenceStatus` calls `vk_sync_wait`
+  - `vk_common_WaitForFences` calls `vk_sync_wait_many`
+  - `vk_common_QueueSubmit2`
+    - `vk_queue_submit_add_sync_signal` adds the sync to the submit
+    - `queue->driver_submit` submits
+      - the sync is expected to signal in finite time
+- `vk_semaphore`
+  - `vk_common_CreateSemaphore`
+    - `get_semaphore_sync_type` determines the sync type for a `VkSemaphore`
+      - for binary semaphores, it returns the first sync type with
+        - `VK_SYNC_FEATURE_BINARY`
+        - `VK_SYNC_FEATURE_GPU_WAIT`
+      - for timeline semaphores, it returns the first sync type with
+        - `VK_SYNC_FEATURE_TIMELINE`
+        - `VK_SYNC_FEATURE_GPU_WAIT`
+        - `VK_SYNC_FEATURE_CPU_WAIT`
+    - `vk_sync_init` inits the sync
+  - `vk_common_DestroySemaphore` calls `vk_sync_finish`
+  - `vk_common_GetSemaphoreCounterValue` calls `vk_sync_get_value`
+  - `vk_common_WaitSemaphores` calls `vk_sync_wait_many`
+  - `vk_common_SignalSemaphore` calls `vk_sync_signal`
+  - `vk_common_QueueSubmit2`
+    - `vk_queue_submit_add_semaphore_wait` adds the syncs to wait
+    - `vk_queue_submit_add_semaphore_signal` adds the syncs to signal
+    - `queue->driver_submit` submits
+- `vk_sync_timeline` provides emulated timeline smeaphores
+  - when the driver uses `vk_sync_timeline`,
+    - `timeline_mode` is `VK_DEVICE_TIMELINE_MODE_EMULATED`
+    - `submit_mode` is `VK_QUEUE_SUBMIT_MODE_DEFERRED`
+  - on queue submit, the submit is deferred to `vk_queue_flush`
+    - `vk_queue_submit_create` calls `vk_sync_timeline_alloc_point` create
+      emulated timeline points in place of the timeline semaphore signals
+    - `vk_queue_flush` calls `vk_sync_wait(VK_SYNC_WAIT_PENDING)` to emulate
+      wait-for-pending
+    - `vk_queue_submit_final`
+      - `vk_sync_timeline_get_point` gets the emulated points in place of the
+        timeline semaphore waits
+      - `queue->driver_submit` submits
+      - `vk_sync_timeline_point_install` adds the emulated points to the
+        timeline semaphore
+  - `vk_sync_timeline` is internally a list of `(point, binary sync)` pairs
+    - the driver waits and signals the binary syncs and does not see the
+      emulated timeline sync
+    - when a binary sync is signaled, the associated point becomes the current
+      value of the emulated timeline sync
+  - `vk_sync_timeline_alloc_point` allocs a `(point, binary sync)` pair for
+    signaling
+  - `vk_sync_timeline_point_install` marks a pair pending after queue submit
+  - `vk_sync_timeline_point_complete` is hooked in a few places to check the
+    binary sync status
+  - the binary sync must support `VK_SYNC_FEATURE_GPU_MULTI_WAIT`
+    - when two queue submits wait on the same point, the driver submits two
+      jobs waiting on the same binary sync
+    - when two queue submits signals the same point, the driver submits two
+      jobs signaling on the same binary sync
+    - they might not be valid for all binary sync impls because vk spec says
+      - `VUID-vkQueueSubmit2-semaphore-03868` The semaphore member of any
+        binary semaphore element of the `pSignalSemaphoreInfos` member of any
+        element of `pSubmits` must be unsignaled when the semaphore signal
+        operation it defines is executed on the device
+      - `VUID-vkQueueSubmit2-semaphore-03873` When a semaphore wait operation
+        for a binary semaphore is executed, as defined by the semaphore member
+        of any element of the `pWaitSemaphoreInfos` member of any element of
+        `pSubmits`, there must be no other queues waiting on the same
+        semaphore
 
 ## `vk_common_QueueSubmit2`
 
