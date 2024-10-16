@@ -8,6 +8,17 @@ dEQP
   - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
     - `DEQP_TARGET` is mostly for GL/GLES
   - `ninja`
+- mustpass
+  - `external/vulkancts/scripts/build_mustpass.py`
+    - the `default` configuration
+      - includes `main.txt`
+      - excludes `test-issues.txt`, `excluded-tests.txt`, `android-tests.txt`
+      - splits tests into groups
+      - generates `vk-default.txt`
+        - the naming is `<module-shortname>-<configuration>.txt`, where `vk`
+          is the shortname for `dEQP-VK` module
+  - `scripts/build_android_mustpass.py`
+  - `external/openglcts/scripts/build_mustpass.py`
 - Package
   - `cd out`
   - `mkdir deqp-dist`
