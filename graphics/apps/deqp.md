@@ -17,8 +17,31 @@ dEQP
       - generates `vk-default.txt`
         - the naming is `<module-shortname>-<configuration>.txt`, where `vk`
           is the shortname for `dEQP-VK` module
-  - `scripts/build_android_mustpass.py`
   - `external/openglcts/scripts/build_mustpass.py`
+    - GL
+      - `GL_CTS_KHR_MP_PROJECT`
+        - `KHR-GL{30,31,32,33,40,41,42,43,44,45,46}`
+        - `GTF-GL{30,31,32,33,40,41,42,43,44,45,46}`
+          - for tests written in GTF (GL test framework) rather than dEQP
+            framework
+      - `GL_CTS_NOCTX_PROJECT`
+        - `KHR-NOCTX-GL{30,40,43,45}`
+      - `GL_CTS_KHR_SINGLE_PROJECT`
+        - `KHR-Single-GL{43,44,45,46}`
+      - `GL_CTS_GLES_PROJECT`
+        - `dEQP-GL45-ES{3,31}`
+    - EGL/GLES
+      - `CTS_KHR_MP_ES_PROJECT`
+        - `KHR-GLES{2,3,31,32,EXT}`
+      - `CTS_KHR_MP_NOCTX_ES_PROJECT`
+        - `KHR-NOCTX-ES{2,32}`
+      - `CTS_KHR_MP_SINGLE_ES_PROJECT`
+        - `KHR-Single-GLES32`
+      - `CTS_AOSP_MP_ES_PROJECT`
+        - `dEQP-GLES{2,3,31}`
+      - `CTS_AOSP_MP_EGL_PROJECT`
+        - `dEQP-EGL`
+  - `scripts/build_android_mustpass.py`
 - Package
   - `cd out`
   - `mkdir deqp-dist`
