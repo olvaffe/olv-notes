@@ -15,7 +15,8 @@ dEQP
   - `for i in vulkan/deqp-vk vulkan/vulkan; do ln -sf ../external/vulkancts/modules/$i; done`
   - `for i in egl/deqp-egl gles2/deqp-gles2 gles2/gles2 gles3/deqp-gles3 gles3/gles3 gles31/deqp-gles31 gles31/gles31; do ln -sf ../modules/$i; done`
   - `for i in glcts gl_cts; do ln -sf ../external/openglcts/modules/$i; done`
-  - `for i in vk-master.txt vk-master egl-master.txt gles2-master.txt gles3-master.txt gles31-master.txt; do ln -sf ../../android/cts/main/$i; done`
+  - `for i in vk-default.txt vk-default ; do ln -sf ../../external/vulkancts/mustpass/main/$i; done`
+    - the other mustpasses are already under `gl_cts/data/mustpass`
   - `strip deqp-* glcts`
   - `cd ..`
   - `tar zchf deqp-dist.tar.gz deqp-dist`
@@ -28,17 +29,17 @@ dEQP
   - it runs `deqp-{vk,egl,gles2,gles3,gles31}` with
     `--deqp-runmode=xml-caselist` to generate the caselists
   - at `vulkan-cts-1.3.9.2`,
-    - `deqp-egl` has 4111 `dEQP-EGL.*` tests
-    - `deqp-gles2` has 19825 `dEQP-GLES2.*` tests
-    - `deqp-gles3` has 48298 `dEQP-GLES3.*` tests
-    - `deqp-gles31` has 37942 `dEQP-GLES31.*` tests
-    - `deqp-vk` has 2728883 `dEQP-VK.*` tests
-    - `deqp-vksc` has 886129 `dEQP-VKSC.*` tests
+    - `deqp-egl` has 4111 `dEQP-EGL.*` tests from `modules/egl`
+    - `deqp-gles2` has 19825 `dEQP-GLES2.*` tests from `modules/gles2`
+    - `deqp-gles3` has 48298 `dEQP-GLES3.*` tests from `modules/gles3`
+    - `deqp-gles31` has 37942 `dEQP-GLES31.*` tests from `modules/gles31`
+    - `deqp-vk` has 2728883 `dEQP-VK.*` tests from `modules/vulkan`
+    - `deqp-vksc` has 886129 `dEQP-VKSC.*` tests from `modules/vulkan`
     - `glcts` has 237213 tests
-      - 4111  `dEQP-EGL.*`
-      - 19825 `dEQP-GLES2.*`
-      - 48298 `dEQP-GLES3.*`
-      - 37942 `dEQP-GLES31.*`
+      - 4111  `dEQP-EGL.*` from `modules/egl`
+      - 19825 `dEQP-GLES2.*` from `modules/gles2`
+      - 48298 `dEQP-GLES3.*` from `modules/gles3`
+      - 37942 `dEQP-GLES31.*` from `modules/gles31`
       - 15    `CTS-Configs.*`
       - 871   `KHR-GL30.*`
       - 880   `KHR-GL31.*`
