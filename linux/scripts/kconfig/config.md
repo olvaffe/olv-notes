@@ -73,8 +73,9 @@ Kernel Config
 ## Config: Common
 
 - select `General setup`
-  - select `System V IPC`
-  - select `POSIX Message Queues`, depending on `NET`
+  - select `System V IPC` if needed
+  - select `POSIX Message Queues` if needed, depending on `NET`
+  - select `Auditing support` if needed
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
@@ -142,28 +143,32 @@ Kernel Config
   - select `F2FS filesystem support` if desired
   - deselect `Dnotify support`
   - select `Filesystem wide access notification`
+  - select `Quota support` if desired
+  - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
   - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
   - select `Overlay filesystem support` if desired
   - select `DOS/FAT/NT Filesystems`
-    - select `VFAT (Windows-95) fs support` if uefi
-    - select `Enable FAT UTF-8 option by default` if uefi
+    - select `VFAT (Windows-95) fs support` if esp
+    - select `Enable FAT UTF-8 option by default` if esp
     - select `exFAT filesystem support` if desired
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
     - select `EFI Variable filesystem` if uefi, depending on `EFI`
   - select `Miscellaneous filesystems`
+    - select `SquashFS 4.0 - Squashed file system support` if desired
     - select `Persistent store support`
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
+    - select `EROFS filesystem support` if desired
   - select `Native language support` if uefi
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
-- select `Security options` if pacman
-  - select `Enable different security models`
-  - select `Landlock support`
+- select `Security options`
+  - select `Enable different security models` if desired
+  - select `Landlock support` if pacman, depending on `SECURITY`
 - select `Cryptographic API` if iwd
   - select `Block ciphers`
     - select `AES (Advanced Encryption Standard)`
@@ -240,10 +245,6 @@ Kernel Config
   - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)`
   - select `Kernel support for 32-bit EL0`
-    - select `Emulate deprecated/obsolete ARMv8 instructions`
-      - select all
-  - select `ARMv8.2 architectural features`
-    - select `Enable support for persistent memory`
   - select `Support for NMI-like interrupts`
 - select `Boot options`
   - select `Default kernel command string` if desired
@@ -392,6 +393,7 @@ Kernel Config
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
       - select `Miscellaneous devices`
         - select `PC Speaker support` if desired
+        - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
         - select `Windows-compatible SoC Button Array` if desired, depending on `KEYBOARD_GPIO`
   - select `Character devices`
@@ -614,6 +616,8 @@ Kernel Config
   - select `HID bus support`
     - select `HID bus core support`
       - select `Battery level reporting for HID devices`
+      - select `/dev/hidraw raw HID device support` if desired
+      - select `User-space I/O driver support for HID subsystem` if desired
       - select `Special HID drivers`
         - deselect all but the desired drivers, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
