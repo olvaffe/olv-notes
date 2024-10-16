@@ -242,3 +242,27 @@ MediaTek SoCs
     - aka, CMDQ mailbox
   - eFuse
     - `mediatek,mt8195-efuse`
+- `mt8195-cherry-dojo-r1.dts` sound
+  - `mt8195.dtsi` has
+    - `afe: mt8195-afe-pcm@10890000` is the i2s controller
+    - `adsp: dsp@10803000` is the audio dsp
+    - `sound: mt8195-sound` is for the asoc machine driver
+  - `mt8195-cherry.dtsi` and `mt8195-cherry-dojo-r1.dts` have
+    - `sound`
+      - `compatible = "mediatek,mt8195_mt6359_max98390_rt5682";`
+      - `hs-playback-dai-link` connects to `audio_codec` for headset
+        - over i2s `ETDM1_OUT_BE`
+      - `hs-capture-dai-link` connects to `audio_codec` for mic
+        - over i2s `ETDM2_IN_BE`
+      - `spk-playback-dai-link` connects to `spk_r_amp` and `spk_l_amp` for
+        speaker
+        - over i2s `ETDM2_OUT_BE`
+      - `displayport-dai-link` connects to `dp_tx` of the display
+        - over i2s `DPTX_BE`
+    - `i2c2`
+      - `audio_codec: codec@1a`
+        - `compatible = "realtek,rt5682s";`
+      - `spk_r_amp: amplifier@38`
+        - `compatible = "maxim,max98390";`
+      - `spk_l_amp: amplifier@39`
+        - `compatible = "maxim,max98390";`
