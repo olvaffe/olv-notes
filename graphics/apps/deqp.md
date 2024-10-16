@@ -8,40 +8,6 @@ dEQP
   - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
     - `DEQP_TARGET` is mostly for GL/GLES
   - `ninja`
-- mustpass
-  - `external/vulkancts/scripts/build_mustpass.py`
-    - the `default` configuration
-      - includes `main.txt`
-      - excludes `test-issues.txt`, `excluded-tests.txt`, `android-tests.txt`
-      - splits tests into groups
-      - generates `vk-default.txt`
-        - the naming is `<module-shortname>-<configuration>.txt`, where `vk`
-          is the shortname for `dEQP-VK` module
-  - `external/openglcts/scripts/build_mustpass.py`
-    - GL
-      - `GL_CTS_KHR_MP_PROJECT`
-        - `KHR-GL{30,31,32,33,40,41,42,43,44,45,46}`
-        - `GTF-GL{30,31,32,33,40,41,42,43,44,45,46}`
-          - for tests written in GTF (GL test framework) rather than dEQP
-            framework
-      - `GL_CTS_NOCTX_PROJECT`
-        - `KHR-NOCTX-GL{30,40,43,45}`
-      - `GL_CTS_KHR_SINGLE_PROJECT`
-        - `KHR-Single-GL{43,44,45,46}`
-      - `GL_CTS_GLES_PROJECT`
-        - `dEQP-GL45-ES{3,31}`
-    - EGL/GLES
-      - `CTS_KHR_MP_ES_PROJECT`
-        - `KHR-GLES{2,3,31,32,EXT}`
-      - `CTS_KHR_MP_NOCTX_ES_PROJECT`
-        - `KHR-NOCTX-ES{2,32}`
-      - `CTS_KHR_MP_SINGLE_ES_PROJECT`
-        - `KHR-Single-GLES32`
-      - `CTS_AOSP_MP_ES_PROJECT`
-        - `dEQP-GLES{2,3,31}`
-      - `CTS_AOSP_MP_EGL_PROJECT`
-        - `dEQP-EGL`
-  - `scripts/build_android_mustpass.py`
 - Package
   - `cd out`
   - `mkdir deqp-dist`
@@ -53,6 +19,86 @@ dEQP
   - `strip deqp-* glcts`
   - `cd ..`
   - `tar zchf deqp-dist.tar.gz deqp-dist`
+
+## Mustpass
+
+- `python scripts/build_caselists.py out`
+  - it builds `/tmp/deqp-caselists` with `-DCMAKE_BUILD_TYPE=Debug` and
+    `-DDEQP_TARGET=null`
+  - it runs `deqp-{vk,egl,gles2,gles3,gles31}` with
+    `--deqp-runmode=xml-caselist` to generate the caselists
+  - at `vulkan-cts-1.3.9.2`,
+    - `deqp-egl` has 4111 `dEQP-EGL.*` tests
+    - `deqp-gles2` has 19825 `dEQP-GLES2.*` tests
+    - `deqp-gles3` has 48298 `dEQP-GLES3.*` tests
+    - `deqp-gles31` has 37942 `dEQP-GLES31.*` tests
+    - `deqp-vk` has 2728883 `dEQP-VK.*` tests
+    - `deqp-vksc` has 886129 `dEQP-VKSC.*` tests
+    - `glcts` has 237213 tests
+      - 4111  `dEQP-EGL.*`
+      - 19825 `dEQP-GLES2.*`
+      - 48298 `dEQP-GLES3.*`
+      - 37942 `dEQP-GLES31.*`
+      - 15    `CTS-Configs.*`
+      - 871   `KHR-GL30.*`
+      - 880   `KHR-GL31.*`
+      - 1171  `KHR-GL32.*`
+      - 5176  `KHR-GL33.*`
+      - 6085  `KHR-GL40.*`
+      - 6106  `KHR-GL41.*`
+      - 24    `KHR-GL42.*`
+      - 14    `KHR-GL42-COMPAT.*`
+      - 6217  `KHR-GL42.*`
+      - 8761  `KHR-GL43.*`
+      - 9437  `KHR-GL44.*`
+      - 10068 `KHR-GL45.*`
+      - 10068 `KHR-GL46.*`
+      - 36    `KHR-NoContext.*`
+      - 79    `KHR-Single-GL43.*`
+      - 145   `KHR-Single-GL44.*`
+      - 6198  `KHR-Single-GL45.*`
+      - 6198  `KHR-Single-GL46.*`
+      - 1325  `dEQP-GL45-ES3.*`
+      - 31309 `dEQP-GL45-ES31.*`
+      - 473   `KHR-GLES2.*`
+      - 4105  `KHR-GLES3.*`
+      - 3499  `KHR-GLES31.*`
+      - 1324  `KHR-GLES32.*`
+      - 1400  `KHR-GLESEXT.*`
+      - 6053  `KHR-Single-GLES32.*`
+- `external/vulkancts/scripts/build_mustpass.py`
+  - the `default` configuration
+    - includes `main.txt`
+    - excludes `test-issues.txt`, `excluded-tests.txt`, `android-tests.txt`
+    - splits tests into groups
+    - generates `vk-default.txt`
+      - the naming is `<module-shortname>-<configuration>.txt`, where `vk`
+        is the shortname for `dEQP-VK` module
+- `external/openglcts/scripts/build_mustpass.py`
+  - GL
+    - `GL_CTS_KHR_MP_PROJECT`
+      - `KHR-GL{30,31,32,33,40,41,42,43,44,45,46}`
+      - `GTF-GL{30,31,32,33,40,41,42,43,44,45,46}`
+        - for tests written in GTF (GL test framework) rather than dEQP
+          framework
+    - `GL_CTS_NOCTX_PROJECT`
+      - `KHR-NOCTX-GL{30,40,43,45}`
+    - `GL_CTS_KHR_SINGLE_PROJECT`
+      - `KHR-Single-GL{43,44,45,46}`
+    - `GL_CTS_GLES_PROJECT`
+      - `dEQP-GL45-ES{3,31}`
+  - EGL/GLES
+    - `CTS_KHR_MP_ES_PROJECT`
+      - `KHR-GLES{2,3,31,32,EXT}`
+    - `CTS_KHR_MP_NOCTX_ES_PROJECT`
+      - `KHR-NOCTX-ES{2,32}`
+    - `CTS_KHR_MP_SINGLE_ES_PROJECT`
+      - `KHR-Single-GLES32`
+    - `CTS_AOSP_MP_ES_PROJECT`
+      - `dEQP-GLES{2,3,31}`
+    - `CTS_AOSP_MP_EGL_PROJECT`
+      - `dEQP-EGL`
+- `scripts/build_android_mustpass.py`
 
 ## Run
 
