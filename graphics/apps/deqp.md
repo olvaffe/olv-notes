@@ -1389,6 +1389,14 @@ dEQP
   - it then validates that ESOs are at most 50% slower than pipeline regarding
     cpu overhead
 
+## Test Case: `dEQP-VK.synchronization.timeline_semaphore.wait.poll_signal_from_device`
+
+- `PollTestInstance`
+- it creates 1 `VkFence` and 100 timeline `VkSemaphore`
+- `deviceSignal` is called 100 times to signal the semaphores to different
+  values
+  - the fence is used to wait for the last submit
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
