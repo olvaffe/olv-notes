@@ -248,6 +248,86 @@ DRM panthor
   - `panthor_vm_bind_job_create`
   - `panthor_vm_bind_job_prepare_resvs`
 
+## `panthor_ioctl_group_submit`
+
+- for a gfx pipeline with waits and signals, panvk typically submits 6 jobs
+  - there are 2 empty submits for semaphore waits
+    - only `syncs` is set, which is an `drm_panthor_sync_op` array for wait
+      semaphores
+      - `flags` is `DRM_PANTHOR_SYNC_OP_WAIT` plus
+        - `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ` or
+          `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_SYNCOBJ`
+      - `handle` is the semaphore
+      - `timeline_value` is the timeline value or 0
+    - there are 2 submits against tiler and fs subqueues respectively
+  - there are 2 cmd submits
+    - `stream_size` is the cmd size
+    - `stream_addr` is the cmd v
+    - `latest_flush` is the flush id
+    - there are 2 submits against tiler and fs subqueues respectively
+  - there are 2 empty submits for semaphore and fence signals
+    - only `syncs` is set, which is a single `drm_panthor_sync_op`
+      - panvk always signals the same per-queue syncobj
+      - `flags` is `DRM_PANTHOR_SYNC_OP_SIGNAL` plus
+        `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ`
+      - `handle` is the per-queue syncobj
+      - `timeline_value` depends on the subqueues
+    - there are 2 submits against tiler and fs subqueues respectively
+      - `timeline_value` is 1 and 2 respectively
+  - panvk post-processes semaphore and fence signals
+    - `drm_syncobj_transfer_ioctl` copies the dma-fence from the per-queue
+      syncobj to each semaphores and fence signaled
+    - `drm_syncobj_reset_ioctl` resets the per-queue syncobj
+- `panthor_submit_ctx_init` inits `panthor_submit_ctx`
+  - `ctx->jobs` is an array of `panthor_job_ctx`
+  - `ctx->exec` is a `drm_exec`
+- `panthor_job_create` creates a `panthor_job` for each job
+  - it is a sublass of `drm_sched_job`
+  - `drm_sched_job_init` inits the `drm_sched_job`
+  - `job->done_fence` is allocated only if the job is non-empty
+- `panthor_submit_ctx_add_job` adds the job to `ctx->jobs` together with its
+  syncops
+- `panthor_submit_ctx_collect_jobs_signal_ops` loops through `ctx->jobs` to
+  collect signal ops
+  - `panthor_check_sync_op` makes sure a binary syncobj always has 0 as the
+    timeline value
+  - `panthor_submit_ctx_get_sync_signal` makes sure each `(syncobj, point)`
+    pair has a `panthor_sync_signal`
+  - `panthor_submit_ctx_add_sync_signal` allocs a `panthor_sync_signal` for
+    each `(syncobj, point)` pair and adds it to `ctx->signals`
+    - if timeline, `sig_sync->chain` points to a new `dma_fence_chain`
+    - if `(syncobj, point)` already has a dma-fence, `sig_sync->fence` points
+      to the fence
+- `panthor_vm_prepare_mapped_bos_resvs`
+  - `drm_gpuvm_prepare_vm` preps the vm
+  - `drm_gpuvm_prepare_objects` preps the bos
+- `panthor_submit_ctx_add_deps_and_arm_jobs` loops through `ctx->jobs`
+  - `panthor_submit_ctx_add_sync_deps_to_job` finds the dma-fence for each
+    waited `(syncobj, point)` and calls `drm_sched_job_add_dependency` to add
+    the fence as a dependency
+  - `drm_sched_job_arm` arms a `drm_sched_job`
+    - specifically, it inits `job->s_fence`
+  - `panthor_submit_ctx_update_job_sync_signal_fences` updates
+    `sig_sync->fence` to point to `job->s_fence->finished` from the scheduler
+- `panthor_submit_ctx_push_jobs` submits jobs
+  - `drm_sched_entity_push_job` pushes each job to the scheduler
+  - `panthor_submit_ctx_push_fences` updates signaled syncobjs
+    - if timeline, `drm_syncobj_add_point` adds a point
+    - if binary, `drm_syncobj_replace_fence` replaces the fence
+- when all deps are met, `queue_run_job` runs a job
+  - if the job is empty, `job->done_fence` is set to
+    `queue->fence_ctx.last_fence` and the function early returns
+  - otherwise, `job->done_fence` is initialized and
+    `queue->fence_ctx.last_fence` is set to it
+  - depending on if the group is active, it either rings a doorbell or calls
+    `group_schedule_locked` to schedule
+    - `tick_work` will rotate groups if there are more groups than the fw can
+      handle
+- when a job completes, `panthor_job_irq_handler` handles the irq
+  - `CSG_SYNC_UPDATE` indicates job completion
+  - `group_sync_upd_work` checks the seqnos and calls
+    `dma_fence_signal_locked` on `job->done_fence`
+
 ## Scheduler
 
 - FW/HW limits
