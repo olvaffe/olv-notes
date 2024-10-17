@@ -197,6 +197,11 @@
     - otherwise, finds the first unsignaled node and returns its `prev_seqno`
   - if `syncobj->fence` is not a chain (i.e., it is a binary syncobj), returns
     0
+- `drm_syncobj_transfer_ioctl`
+  - it calls `drm_syncobj_find_fence` on the src syncobj to get the fence
+  - it calls `drm_syncobj_add_point` or `drm_syncobj_replace_fence` on the dst
+    syncobj to add the fence
+  - what does `dma_fence_unwrap_merge` do?
 
 ## `syncobj_wait_entry`
 
