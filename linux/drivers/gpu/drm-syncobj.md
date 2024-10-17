@@ -166,6 +166,20 @@
 
 ## ioctls
 
+- when a gpu job signals a syncobj, the drm driver assigns the dma-fence
+  associated with the job to the syncobj
+  - if binary, `drm_syncobj_replace_fence` replaces `syncobj->fence`
+  - if timeline, `drm_syncobj_add_point` also replaces `syncobj->fence`
+    - the caller must have `dma_fence_chain_alloc`ed a `dma_fence_chain`
+    - `dma_fence_chain_init` inits the chain node from `syncobj->fence` and
+      the job's fence
+      - remember that a chain node has 3 fences
+        - `chain->base`, the chain node is itself a fence and the seqno is the
+          timeline value
+        - `chain->prev` points to the previous node
+        - `chain->fence` is the real fence
+      - `chain->base` is signaled when both `chain->fence` and `chain->prev`
+        are signaled
 - `drm_syncobj_signal_ioctl` sets the fence pointer of the syncobj to the
   already-siganled stub fence
 - `drm_syncobj_timeline_signal_ioctl` adds {seqno, already-signaled-stub-fence}
@@ -173,6 +187,16 @@
     - creates a new chain node
     - make `drm_syncobj::fence` the previous node of the new node
     - set `drm_syncobj::fence` to the new node
+- `drm_syncobj_reset_ioctl` resets syncobjs
+  - it calls `drm_syncobj_replace_fence` to set `syncobj->fence` to NULL
+    (unsignaled)
+- `drm_syncobj_query_ioctl` queries syncobjs
+  - if `syncobj->fence` is a chain (i.e., it is a timeline syncobj),
+    - if `DRM_SYNCOBJ_QUERY_FLAGS_LAST_SUBMITTED`, returns the seqno of the
+      head chain node
+    - otherwise, finds the first unsignaled node and returns its `prev_seqno`
+  - if `syncobj->fence` is not a chain (i.e., it is a binary syncobj), returns
+    0
 
 ## `syncobj_wait_entry`
 
@@ -213,6 +237,8 @@
 - `dma_fence_chain_find_seqno` returns the first node past the specified seqno
 - `dma_fence_chain_walk` returns the next node, ignoring and GCing signaled
   nodes
+- `dma_fence_chain_for_each` loops over the head node and all unsignaled nodes
+  - it uses `dma_fence_chain_walk` internally
 
 ## mapping `drm_syncobj` to Vulkan
 
