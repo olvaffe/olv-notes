@@ -162,13 +162,13 @@ Kernel Config
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
     - select `EROFS filesystem support` if desired
-  - select `Native language support` if uefi
+  - select `Native language support` if esp
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
 - select `Security options`
-  - select `Enable different security models` if desired
-  - select `Landlock support` if pacman, depending on `SECURITY`
+  - select `Enable different security models`
+  - select `Landlock support` if pacman
 - select `Cryptographic API` if iwd
   - select `Block ciphers`
     - select `AES (Advanced Encryption Standard)`
@@ -212,7 +212,7 @@ Kernel Config
   - select `Processor family (Core 2/newer Xeon)` if intel and desired
   - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd and desired
   - select `EFI runtime service support` if uefi
-  - select `Timer frequency (1000 HZ)`
+  - select `Timer frequency (1000 HZ)` if desired
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
 - select `Mitigations for CPU vulnerabilities`
@@ -243,9 +243,8 @@ Kernel Config
   - select `Rockchip Platforms` if rk
 - select `Kernel Features`
   - select `Multi-core scheduler support`
-  - select `Timer frequency (1000 HZ)`
+  - select `Timer frequency (1000 HZ)` if desired
   - select `Kernel support for 32-bit EL0`
-  - select `Support for NMI-like interrupts`
 - select `Boot options`
   - select `Default kernel command string` if desired
     - select `Kernel command line type (Always use the default kernel command string)` if desired
@@ -535,7 +534,7 @@ Kernel Config
     - select `AMD GPU` if amd
       - select `Always enable userptr write support`
     - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
-      - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if intel
+      - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
     - select `MSM DRM` if qcom
     - select `DRM Support for Rockchip` if rk
       - deselect `Rockchip VOP driver`
@@ -675,7 +674,7 @@ Kernel Config
     - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support`
       - select `LED Heartbeat Trigger`
-  - select `EDAC (Error Detection And Correction) reporting (NEW)`, depending on `RAS`
+  - select `EDAC (Error Detection And Correction) reporting`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
     - select `Intel client SoC Integrated MC` if intel
     - select `QCOM EDAC Controller` if qcom, depending on `QCOM_LLCC`
@@ -690,6 +689,8 @@ Kernel Config
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
   - select `DMABUF options` if desired
     - select `userspace dmabuf misc driver`
+    - select `DMA-BUF Userland Memory Heaps`
+    - select `DMA-BUF System Heap`
   - select `Virtio drivers` if guest
     - select `PCI driver for virtio devices`
     - select `Virtio input driver`
