@@ -244,6 +244,7 @@ Kernel Config
 - select `Kernel Features`
   - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)` if desired
+  - select `Enable paravirtualization code` if guest
   - select `Kernel support for 32-bit EL0`
 - select `Boot options`
   - select `Default kernel command string` if desired
@@ -530,33 +531,33 @@ Kernel Config
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
-    - select `Enable legacy fbdev support for your modesetting driver` (for vt)
-    - select `AMD GPU` if amd
-      - select `Always enable userptr write support`
-    - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
-      - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
-    - select `MSM DRM` if qcom
-    - select `DRM Support for Rockchip` if rk
-      - deselect `Rockchip VOP driver`
-      - select `Rockchip VOP2 driver`
-      - select `Rockchip specific extensions for Synopsys DW HDMI`
-    - select `Virtio GPU driver` if guest
-    - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
-      - it requires `CMA` and `DMA_CMA` to work
-    - select `Display Panels` if arm
-      - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
-      - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
-    - select `Display Interface Bridges` if arm
-      - select `Display connector support`
-      - select `ITE IT6505 DisplayPort bridge` if desired
-      - select `TI SN65DSI86 DSI to eDP bridge` if desired
-      - select `Analogix Anx7625 MIPI to DP interface support` if desired
-    - select `DRM Support for Mediatek SoCs` if mtk
-      - select `DRM DPTX Support for MediaTek SoCs`
-      - select `DRM HDMI Support for Mediatek SoCs`
-    - select `Simple framebuffer driver` if desired
-    - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
-    - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
+      - select `Enable legacy fbdev support for your modesetting driver` (for vt)
+      - select `AMD GPU` if amd
+        - select `Always enable userptr write support`
+      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
+        - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
+      - select `MSM DRM` if qcom
+      - select `DRM Support for Rockchip` if rk
+        - deselect `Rockchip VOP driver`
+        - select `Rockchip VOP2 driver`
+        - select `Rockchip specific extensions for Synopsys DW HDMI`
+      - select `Virtio GPU driver` if guest
+      - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
+        - it requires `CMA` and `DMA_CMA` to work
+      - select `Display Panels` if arm
+        - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
+        - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
+      - select `Display Interface Bridges` if arm
+        - select `Display connector support`
+        - select `ITE IT6505 DisplayPort bridge` if desired
+        - select `TI SN65DSI86 DSI to eDP bridge` if desired
+        - select `Analogix Anx7625 MIPI to DP interface support` if desired
+      - select `DRM Support for Mediatek SoCs` if mtk
+        - select `DRM DPTX Support for MediaTek SoCs`
+        - select `DRM HDMI Support for Mediatek SoCs`
+      - select `Simple framebuffer driver` if desired
+      - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
+      - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
@@ -672,7 +673,7 @@ Kernel Config
     - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if arm, depending on `PWM`
     - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
-    - select `LED Trigger support`
+    - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
   - select `EDAC (Error Detection And Correction) reporting`, depending on `RAS`
     - deselect `EDAC legacy sysfs`
