@@ -7,20 +7,26 @@ Mesa PanVK Compiler
   - `nir` dumps lowered nir before passing it to the backend compiler
   - `trace` implies `sync` and dumps all submits
 - `BIFROST_MESA_DEBUG` is for the bifrost compiler
-  - `msgs` Print debug messages
-  - `shaders` Dump shaders in NIR and MIR
-  - `shaderdb` Print statistics
-  - `verbose` Disassemble verbosely
-  - `internal` Dump even internal shaders
-  - `nosched` Force trivial bundling
-  - `nopsched` Disable scheduling for pressure
-  - `inorder` Force in-order bundling
-  - `novalidate` Skip IR validation
-  - `noopt` Skip optimization passes
-  - `noidvs` Disable IDVS
-  - `nosb` Disable scoreboarding
-  - `nopreload` Disable message preloading
-  - `spill` Test register spilling
+  - `msgs` is useless
+  - `shaders` prints shaders at different phases, including
+    - final nir
+    - lowered and optimized bir
+    - ra'ed bir
+    - final bir (except `bi_pack_valhall` makes some final touches)
+    - disassembly
+  - `shaderdb` prints shaderdb stats
+  - `verbose` prints isa hex in addition to disassembly
+  - `internal` includes internal shaders (e.g., meta, tile preload, blend) for
+    dumping or shaderdb
+  - `nosched` is not used on v9+
+  - `nopsched` disables instr scheduling
+  - `inorder` is not used on v9+
+  - `novalidate` disables bir validation even on debug build
+  - `noopt` disables bir optimizations
+  - `noidvs` disables idvs for vs
+  - `nosb` disables scoreboarding (and serializes all async instrs)
+  - `nopreload` is not used on v8+
+  - `spill` mimics a small reg file (r0..r7 and r56..r63) to test spilling
 
 ## `vk_device_shader_ops` and `vk_shader_ops`
 
