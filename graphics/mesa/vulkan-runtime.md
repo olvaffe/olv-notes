@@ -1,7 +1,148 @@
 Mesa Vulkan Runtime
 ===================
 
-## Render Pass
+## Vulkan Handles
+
+- dispatchable
+  - `VkInstance` has `vk_instance`
+    - subclassed by `nvk_instance`, etc.
+  - `VkPhysicalDevice` has `vk_physical_device`
+    - subclassed `nvk_physical_device`, etc.
+  - `VkDevice` has `vk_device`
+    - subclassed by `nvk_device`, etc.
+  - `VkQueue` has `vk_queue`
+    - subclassed by `nvk_queue`, etc.
+  - `VkCommandBuffer` has `vk_command_buffer`
+    - subclassed by `nvk_cmd_buffer`, etc.
+- non-dispatchable
+  - `VkBuffer` has `vk_buffer`
+    - subclassed by `nvk_buffer`, etc.
+  - `VkImage` has `vk_image`
+    - subclassed by `nvk_image`, etc.
+  - `VkSemaphore` has `vk_semaphore`
+    - translated to `vk_sync` by runtime
+  - `VkFence` has `vk_fence`
+    - translated to `vk_sync` by runtime
+  - `VkDeviceMemory` has `vk_device_memory`
+    - subclassed by `nvk_device_memory`, etc.
+  - `VkEvent`
+    - driver-specific types such as `nvk_event`, etc.
+  - `VkQueryPool` has `vk_query_pool`
+    - subclassed by `nvk_query_pool`, etc.
+  - `VkBufferView` has `vk_buffer_view`
+    - subclassed by `nvk_buffer_view`, etc.
+  - `VkImageView` has `vk_image_view`
+    - subclassed by `nvk_image_view`, etc.
+  - `VkShaderModule` has `vk_shader_module`
+    - fully implemented by runtime
+  - `VkPipelineCache` has `vk_pipeline_cache`
+    - fully implemented by runtime
+  - `VkPipelineLayout` has `vk_pipeline_layout`
+    - fully implemented by runtime
+  - `VkPipeline` has `vk_pipeline`
+    - fully implemented by runtime
+    - translated to `vk_shader` by runtime or consumed directly by drivers
+  - `VkRenderPass` has `vk_render_pass`
+    - fully implemented by runtime
+  - `VkDescriptorSetLayout` has `vk_descriptor_set_layout`
+    - subclassed by `nvk_descriptor_set_layout`, etc.
+  - `VkSampler` has `vk_sampler`
+    - subclassed by `nvk_sampler`, etc.
+  - `VkDescriptorSet`
+    - driver-specific types such as `nvk_descriptor_set`, etc.
+  - `VkDescriptorPool`
+    - driver-specific types such as `nvk_descriptor_pool`, etc.
+  - `VkFramebuffer` has `vk_framebuffer`
+    - fully implemented by runtime
+  - `VkCommandPool` has `vk_command_pool`
+    - subclassed by `nvk_cmd_pool`, etc.
+  - `VkSamplerYcbcrConversion` has `vk_ycbcr_conversion`
+    - fully implemented by runtime
+  - `VkDescriptorUpdateTemplate` has `vk_descriptor_update_template`
+    - fully implemented by runtime
+  - `VkPrivateDataSlot` has `vk_private_data_slot`
+    - fully implemented by runtime
+- `VK_KHR_surface`
+  - `VkSurfaceKHR`
+    - winsys-specific types such as `wsi_wl_surface`, etc.
+- `VK_KHR_swapchain`
+  - `VkSwapchainKHR` has `wsi_swapchain`
+    - subclassed by `wsi_wl_swapchain`, etc.
+- `VK_KHR_video_queue`
+  - `VkVideoSessionKHR` has `vk_video_session`
+    - subclassed by `radv_video_session`, etc.
+  - `VkVideoSessionParametersKHR` has `vk_video_session_parameters`
+    - subclassed by `radv_video_session_params`, etc.
+- `VK_KHR_deferred_host_operations`
+  - `VkDeferredOperationKHR` has `vk_deferred_operation`
+    - fully implemented by runtime
+    - it is nop
+- `VK_KHR_pipeline_binary`
+  - `VkPipelineBinaryKHR`
+    - driver-specific types such as `radv_pipeline_binary`, etc.
+- `VK_EXT_debug_report` has been deprecated by `VK_EXT_debug_utils`
+  - `VkDebugReportCallbackEXT` has `vk_debug_report_callback`
+    - fully implemented by runtime
+- `VK_EXT_debug_utils`
+  - `VkDebugUtilsMessengerEXT` has `vk_debug_utils_messenger`
+    - fully implemented by runtime
+- `VK_KHR_acceleration_structure`
+  - `VkAccelerationStructureKHR` has `vk_acceleration_structure`
+    - fully implemented by runtime
+- `VK_EXT_shader_object`
+  - `VkShaderEXT` has `vk_shader`
+    - subclassed by `nvk_shader`, etc.
+- `VK_EXT_device_generated_commands`
+  - `VkIndirectExecutionSetEXT`
+    - driver-specific types such as `nvk_indirect_execution_set`, etc.
+  - `VkIndirectCommandsLayoutEXT` has `vk_indirect_command_layout`
+    - some drivers subclass and some define their own types
+
+## Pipeline
+
+- `vk_common_CreateShaderModule` saves the spirv
+- `vk_common_CreateComputePipelines`
+  - allocs a `vk_compute_pipeline`
+  - `vk_pipeline_precompile_shader`
+    - `vk_pipeline_cache_lookup_object` looks up in the cache and early
+      returns if hit
+    - `vk_pipeline_shader_stage_to_nir` translates spirv to nir
+    - `vk_pipeline_precomp_shader_create` wraps nir such that it can be cached
+  - `vk_pipeline_compile_compute_stage`
+    - `vk_pipeline_cache_lookup_object` looks up in the cache and early
+      returns if hit
+    - `ops->compile` compiles nir to binary wrapped in `vk_shader`
+- `vk_common_CmdBindPipeline` calls `ops->cmd_bind`
+  - it defaults to `vk_graphics_pipeline_cmd_bind`
+  - `vk_graphics_pipeline_cmd_bind` gets `vk_shader`s from the `vk_pipeline`
+    and calls `ops->cmd_bind_shaders`
+- `vk_common_CreateGraphicsPipelines`
+  - allocs a `vk_graphics_pipeline`
+  - `vk_graphics_pipeline_state_fill` flattens `VkGraphicsPipelineCreateInfo`
+    to `vk_graphics_pipeline_state`
+  - `vk_pipeline_precompile_shader` translates spirv to nir, with cache
+  - `vk_graphics_pipeline_compile_shaders` compiles nir to binary, with cache
+    - `pipeline->stages` are per-stage nirs and binaries
+- graphics states
+  - `vk_graphics_pipeline_all_state` consists of all graphics states
+    - it is used as storage, on-stack only unless pipeline lib
+  - `vk_graphics_pipeline_state` is `VkGraphicsPipelineCreateInfo`-flattened
+  - `vk_dynamic_graphics_state` consists of all dynamic graphics states
+  - a `vk_graphics_pipeline` has
+    - if library, we need to save `VkGraphicsPipelineCreateInfo` for later,
+      and as such, there are both
+      - `vk_graphics_pipeline_all_state` for storage
+      - `vk_graphics_pipeline_state` for flattened states
+    - if non-library, we flatten and consume `VkGraphicsPipelineCreateInfo`,
+      and as such, there is only
+      - `vk_dynamic_graphics_state`
+  - a `vk_command_buffer` also has a `dynamic_graphics_state`
+    - `vk_common_CmdSet*` updates the dynamic states
+    - `vk_common_CmdBindPipeline` also updates the dynamic states
+      - `vk_dynamic_graphics_state_copy` copies from the pipeline to the
+        cmdbuf
+
+## Render Pass and Framebuffer
 
 - the runtime has a default render pass implementation that is built upon
   dynamic rendering
