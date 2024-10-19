@@ -356,6 +356,43 @@ Mesa PanVK
     - the flush can be eliminated if the flush id is properly setup
   - still no idea what it does
 
+## Event
+
+- a `panvk_event` has
+  - `syncobjs`, a bo for `PANVK_SUBQUEUE_COUNT` `panvk_cs_sync32`
+- `panvk_per_arch(SetEvent)` sets all seqnos to 1
+- `panvk_per_arch(ResetEvent)` sets all seqnos to 0
+- `panvk_per_arch(GetEventStatus)` checks if all seqnos are non-zero
+- `panvk_per_arch(CmdSetEvent2)` emits `SYNC_SET32` to set all seqnos to 1
+- `panvk_per_arch(CmdResetEvent2)` emits `SYNC_SET32` to set all seqnos to 0
+- `panvk_per_arch(CmdWaitEvents2)` emits `SYNC_WAIT32` to watit util seqnos
+  are non-zero
+- `panvk_per_arch(get_cs_deps)`
+
+## Command Pool
+
+- a `panvk_cmd_pool` is a subclass of `vk_command_pool`
+  - `cs_bo_pool`
+  - `desc_bo_pool`
+  - `varying_bo_pool`
+  - `tls_bo_pool`
+  - `push_sets`
+- `panvk_per_arch(cmd_buffer_ops)`
+  - `panvk_create_cmdbuf` creates a cmdbuf
+  - `panvk_reset_cmdbuf` resets a cmdbuf
+  - `panvk_destroy_cmdbuf` destroys a cmdbuf
+- a `panvk_cmd_buffer` is a subclass of `vk_command_pool`
+  - `cs_pool` uses `pool->cs_bo_pool` as storage
+  - `desc_pool` uses `pool->desc_bo_pool` as storage
+  - `tls_pool` uses `pool->tls_bo_pool` as storage
+  - `push_sets`
+  - `state`
+    - `gfx`
+    - `compute`
+    - `push_constants`
+    - `cs`
+    - `tls`
+
 ## Command Stream
 
 - `genxml/v10.xml`

@@ -187,6 +187,38 @@ Mesa Vulkan Runtime
   - calls `CmdPipelineBarrier2` to insert a memory barrier if there is any
     `vk_subpass_dependency` whose dst subpass is `VK_SUBPASS_EXTERNAL`
 
+## Command Buffer
+
+- driver must provide `vk_command_buffer_ops`
+  - `create` creates a cmdbuf
+  - `destroy` destroys a cmdbuf
+  - `reset` is optional and resets a cmdbuf
+- command pool
+  - a `vk_command_pool` additionally tracks
+    - `command_buffers`, a list of all cmdbufs
+    - `free_command_buffers`, a list of all freed cmdbufs kept for reuse
+  - `vk_common_ResetCommandPool` calls `ops->reset` on all cmdbufs on
+    `pool->command_buffers`
+  - `vk_common_AllocateCommandBuffers` reuses cmdbufs on
+    `pool->free_command_buffers` first, and falls back to `ops->create` a new
+    one
+  - `vk_common_FreeCommandBuffers` calls `ops->reset` and adds the cmdbufs to
+    `pool->free_command_buffers`
+  - `vk_common_TrimCommandPool` calls `ops->destroy` on cmdbufs on
+    `pool->free_command_buffers` and clears the ist
+- command buffer
+  - a `vk_command_buffer` additionally has
+    - `dynamic_graphics_state`, to track dynamic states
+    - `state`, invalid/initial/recording/executable/pending
+    - `record_result`, the recording result
+    - `cmd_queue`, for a pure sw secondary cmdbuf
+    - `meta_objects`, to track resources allocated by meta
+    - `labels` and `regon_begin`, for debug labels
+  - `vk_common_ResetCommandBuffer` calls `ops->reset` on the cmdbuf
+  - `vk_common_CmdExecuteCommands` calls `vk_cmd_queue_execute` to replay
+    `secondary->cmd_queue` to the primary cmdbuf
+  - `vk_common_CmdSet*` updates `cmd->dynamic_graphics_state`
+
 ## Graphics Pipeline State
 
 - `vk_graphics_pipeline_state_fill` flattens `VkGraphicsPipelineCreateInfo` to
