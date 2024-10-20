@@ -107,6 +107,12 @@ Mesa PanVK
 - query device lost
   - `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`
 
+## Instance
+
+## Physical Device
+
+## Device
+
 ## BO and Address Space
 
 - `pan_kmod_bo_alloc` makes the `DRM_IOCTL_PANTHOR_BO_CREATE` ioctl
@@ -167,6 +173,8 @@ Mesa PanVK
   - if `pool->props.owns_bos`, bos are tracked and are freed now
     - if there is `pool->bo_pool`, bos are moved to it for reuse instead
   - else, only `pool->transient_bo` is freed
+
+## Memory
 
 ## Buffer
 
