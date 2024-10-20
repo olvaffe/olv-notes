@@ -109,9 +109,134 @@ Mesa PanVK
 
 ## Instance
 
+- `panvk_CreateInstance`
+  - the instance dispatch table combines
+    - `panvk_instance_entrypoints`
+    - `wsi_instance_entrypoints`
+    - `vk_common_instance_entrypoints`
+- `vk_common_EnumeratePhysicalDevices` calls
+  `panvk_physical_device_try_create`
+  - `enumerate_drm_physical_devices_locked` enumerates all drm devices
+  - `VK_ERROR_INCOMPATIBLE_DRIVER` causes a drm device to be skipped and is
+    not considered an error
+
 ## Physical Device
 
+- `panvk_physical_device_init` inits a physical device from a drm device
+  - `enumerate_drm_physical_devices_locked` silently ignores
+    `VK_ERROR_INCOMPATIBLE_DRIVER`
+
 ## Device
+
+- `panvk_CreateDevice` calls `panvk_per_arch(create_device)`
+- `panvk_per_arch(create_device)`
+  - the device dispatch table combines
+    - `vk_cmd_enqueue_unless_primary_device_entrypoints`
+      - this is for emulated secondary cmdbuf
+      - a second dispatch table is intialized without this
+      - when a `vkCmd*` is called on a primary cmdbuf, `vk_cmd_enqueue` uses
+        the second dispatch table to dispatch immediately
+      - when a `vkCmd*` is called on a secondary cmdbuf, `vk_cmd_enqueue`
+        saves the call in a buffer
+        - `vk_common_CmdExecuteCommands` replays the saved calls
+    - `panvk_per_arch(device_entrypoints)`
+    - `panvk_device_entrypoints`
+    - `wsi_device_entrypoints`
+    - `vk_common_device_entrypoints`
+  - the render node fd is dupped to create a second `pan_kmod_dev`
+    - this is wrong...
+  - if decode is needed, `pandecode_create_context` creates a decode ctx
+  - `util_vma_heap_init` inits `device->as.heap`
+  - `pan_kmod_vm_create` creates `device->kmd.vm`
+    - without `PAN_KMOD_VM_FLAG_AUTO_VA` such that the vm is managed by
+      `device->as.heap`
+  - `panvk_device_init_mempools` inits mempools
+    - `dev->mempools.rw` is cached, for most stuff
+    - `dev->mempools.rw_nc` is uncached, for event seqnos
+    - `dev->mempools.exec` is executable, for shader binaries
+  - `panvk_meta_init` inits `device->meta`
+  - `panvk_per_arch(queue_init)` inits `device->queues`
+
+## Queue
+
+- `panvk_per_arch(queue_init)`
+  - `drmSyncobjCreate` creates a syncobj
+    - `queue->syncobj_handle` is used for semaphore signals
+  - `init_tiler`
+    - `tiler_heap->context` is from `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
+    - `tiler_heap->desc` is a bo of size 4KB plus 64KB
+      - the first 4KB is for `MALI_TILER_HEAP` descriptor
+      - the rest 64KB is for geometry buffer
+        - used by `MALI_PRIMITIVE_FLAGS` fifo
+  - `create_group`
+    - `queue->group_handle` is from `DRM_IOCTL_PANTHOR_GROUP_CREATE`
+    - there are 3 sub-queues
+      - `PANVK_SUBQUEUE_VERTEX_TILER`
+      - `PANVK_SUBQUEUE_FRAGMENT`
+      - `PANVK_SUBQUEUE_COMPUTE`
+  - `init_queue`
+    - `queue->syncobjs` is an array of per-subqueue `panvk_cs_sync64`
+      - this is to track the per-subqueue seqno
+    - `init_render_desc_ringbuf` inits `queue->render_desc_ringbuf`
+      - this is used only for `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
+      - `ringbuf->bo` is `RENDER_DESC_RINGBUF_SIZE` (512KB)
+      - `ringbuf->bo` is vm-bound twice consecutively
+        - this simplifies wrap-around handling
+      - `ringbuf->syncobj` is a `panvk_cs_sync32`
+    - `init_subqueue` inits each of `queue->subqueues`
+      - `subq->context` is a bo for `panvk_cs_subqueue_context`
+        - it is only accessed by hw after initialization
+        - `syncobjs` points to `queue->syncobjs` and `syncobjs[subq]` is
+          initialized to 1
+        - `iter_sb` is initialized to 0
+        - `render` is not used by `PANVK_SUBQUEUE_COMPUTE`
+          - `tiler_heap` points to `queue->tiler_heap.desc`
+          - `geom_buf` points to `queue->tiler_heap.desc + 4KB`
+          - `desc_ringbuf` points to `queue->render_desc_ringbuf`
+      - first submit to init the subqueue
+        - this abuses the geom buf as cs root chunk
+        - `MOV64 cs_subqueue_ctx_reg(), subq->context` inits the subq ctx reg
+        - `SET_SB_ENTRY` such that ep tasks (frag & comp) use `SB_ITER(0)`
+          (slot 3) and other tasks (tiler) uses `SB_ID(LS)` (slot 0)
+          - this matches `iter_sb` in subq ctx
+        - if not `PANVK_SUBQUEUE_COMPUTE`, inits the tiler heap as well
+          - `MOV64 scratch0, queue->tiler_heap.context.dev_addr`
+          - `HEAP_SET scratch0`
+- `panvk_queue_submit`
+  - if there are semaphore waits
+    - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_WAIT` for each
+      wait
+    - sets up an empty `drm_panthor_queue_submit` for each used subqueue to
+      wait on the `drm_panthor_sync_op` array above
+  - for each cmdbufs
+    - sets up a `drm_panthor_queue_submit` for each used subqueue
+  - if there are semaphore signals
+    - for each used subqueue, sets up a `drm_panthor_sync_op` with
+      `DRM_PANTHOR_SYNC_OP_SIGNAL` and sets up an empty
+      `drm_panthor_queue_submit`
+    - they all signal `queue->syncobj_handle`
+    - the fence is then copied to user semaphores using `drmSyncobjTransfer`
+    - `queue->syncobj_handle` is reset
+- flush id
+  - `CSF_GPU_LATEST_FLUSH_ID` reg
+    - if unmapped, kernel `panthor_mmio_vm_fault` maps the reg or a dummy page
+      which contains flush id 1
+    - on device suspend/resume, the mapping is unmapped
+    - the idea is to return the real flush id when the device is powered, and
+      to return 1 when the device is not powered
+  - `panvk_per_arch(EndCommandBuffer)`
+    - `panvk_per_arch(CmdPipelineBarrier2)` calls `cs_flush_caches` with flush
+      id 0, to flush unconditionally
+    - `finish_cs` calls `cs_flush_caches` with flush id 0, to flush
+      unconditionally
+    - `cmdbuf->flush_id` is read from `CSF_GPU_LATEST_FLUSH_ID` reg
+  - `panvk_queue_submit` submits each job with `cmdbuf->flush_id`
+    - kmd flushes caches with the specified flush id before calling into the
+      job
+  - from `drm_panthor_queue_submit` doc,
+    - kmd emits a flush to avoid reading staled data
+    - the flush can be eliminated if the flush id is properly setup
+  - still no idea what it does
 
 ## BO and Address Space
 
@@ -175,6 +300,14 @@ Mesa PanVK
   - else, only `pool->transient_bo` is freed
 
 ## Memory
+
+- `panvk_AllocateMemory`
+  - `mem->bo` is allocated by `pan_kmod_bo_alloc`
+    - normally, the bo is exclusive to `device->kmod.vm`
+    - if export, there is no exclusive vm
+    - if import, `pan_kmod_bo_import` is used instead
+  - `util_vma_heap_alloc` allocs the va
+  - `pan_kmod_vm_bind` binds the bo to the va
 
 ## Buffer
 
@@ -347,87 +480,6 @@ Mesa PanVK
     - it writes a `MALI_BUFFER` for each buffer
   - `write_dynamic_buffer_desc` is for dynamic buffers
     - they use "push sets" and only the vas are saved to `set->dyn_bufs`
-
-## Queue
-
-- `panvk_per_arch(queue_init)`
-  - `drmSyncobjCreate` creates a syncobj
-    - `queue->syncobj_handle` is used for semaphore signals
-  - `init_tiler`
-    - `tiler_heap->context` is from `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE`
-    - `tiler_heap->desc` is a bo of size 4KB plus 64KB
-      - the first 4KB is for `MALI_TILER_HEAP` descriptor
-      - the rest 64KB is for geometry buffer
-        - used by `MALI_PRIMITIVE_FLAGS` fifo
-  - `create_group`
-    - `queue->group_handle` is from `DRM_IOCTL_PANTHOR_GROUP_CREATE`
-    - there are 3 sub-queues
-      - `PANVK_SUBQUEUE_VERTEX_TILER`
-      - `PANVK_SUBQUEUE_FRAGMENT`
-      - `PANVK_SUBQUEUE_COMPUTE`
-  - `init_queue`
-    - `queue->syncobjs` is an array of per-subqueue `panvk_cs_sync64`
-      - this is to track the per-subqueue seqno
-    - `init_render_desc_ringbuf` inits `queue->render_desc_ringbuf`
-      - this is used only for `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
-      - `ringbuf->bo` is `RENDER_DESC_RINGBUF_SIZE` (512KB)
-      - `ringbuf->bo` is vm-bound twice consecutively
-        - this simplifies wrap-around handling
-      - `ringbuf->syncobj` is a `panvk_cs_sync32`
-    - `init_subqueue` inits each of `queue->subqueues`
-      - `subq->context` is a bo for `panvk_cs_subqueue_context`
-        - it is only accessed by hw after initialization
-        - `syncobjs` points to `queue->syncobjs` and `syncobjs[subq]` is
-          initialized to 1
-        - `iter_sb` is initialized to 0
-        - `render` is not used by `PANVK_SUBQUEUE_COMPUTE`
-          - `tiler_heap` points to `queue->tiler_heap.desc`
-          - `geom_buf` points to `queue->tiler_heap.desc + 4KB`
-          - `desc_ringbuf` points to `queue->render_desc_ringbuf`
-      - first submit to init the subqueue
-        - this abuses the geom buf as cs root chunk
-        - `MOV64 cs_subqueue_ctx_reg(), subq->context` inits the subq ctx reg
-        - `SET_SB_ENTRY` such that ep tasks (frag & comp) use `SB_ITER(0)`
-          (slot 3) and other tasks (tiler) uses `SB_ID(LS)` (slot 0)
-          - this matches `iter_sb` in subq ctx
-        - if not `PANVK_SUBQUEUE_COMPUTE`, inits the tiler heap as well
-          - `MOV64 scratch0, queue->tiler_heap.context.dev_addr`
-          - `HEAP_SET scratch0`
-- `panvk_queue_submit`
-  - if there are semaphore waits
-    - sets up a `drm_panthor_sync_op` with `DRM_PANTHOR_SYNC_OP_WAIT` for each
-      wait
-    - sets up an empty `drm_panthor_queue_submit` for each used subqueue to
-      wait on the `drm_panthor_sync_op` array above
-  - for each cmdbufs
-    - sets up a `drm_panthor_queue_submit` for each used subqueue
-  - if there are semaphore signals
-    - for each used subqueue, sets up a `drm_panthor_sync_op` with
-      `DRM_PANTHOR_SYNC_OP_SIGNAL` and sets up an empty
-      `drm_panthor_queue_submit`
-    - they all signal `queue->syncobj_handle`
-    - the fence is then copied to user semaphores using `drmSyncobjTransfer`
-    - `queue->syncobj_handle` is reset
-- flush id
-  - `CSF_GPU_LATEST_FLUSH_ID` reg
-    - if unmapped, kernel `panthor_mmio_vm_fault` maps the reg or a dummy page
-      which contains flush id 1
-    - on device suspend/resume, the mapping is unmapped
-    - the idea is to return the real flush id when the device is powered, and
-      to return 1 when the device is not powered
-  - `panvk_per_arch(EndCommandBuffer)`
-    - `panvk_per_arch(CmdPipelineBarrier2)` calls `cs_flush_caches` with flush
-      id 0, to flush unconditionally
-    - `finish_cs` calls `cs_flush_caches` with flush id 0, to flush
-      unconditionally
-    - `cmdbuf->flush_id` is read from `CSF_GPU_LATEST_FLUSH_ID` reg
-  - `panvk_queue_submit` submits each job with `cmdbuf->flush_id`
-    - kmd flushes caches with the specified flush id before calling into the
-      job
-  - from `drm_panthor_queue_submit` doc,
-    - kmd emits a flush to avoid reading staled data
-    - the flush can be eliminated if the flush id is properly setup
-  - still no idea what it does
 
 ## Event
 
