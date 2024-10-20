@@ -144,6 +144,30 @@ Mesa PanVK
       - `drm_mm` with `DRM_MM_INSERT_BEST` allocs from the bottom
       - bos thus start from `0x800000000000` and grows up
 
+## BO Pool
+
+- types
+  - `pan_pool` is the base class of `panvk_pool`, which is not too useful
+  - `panvk_bo_pool` is an optional bo cache
+  - `panvk_pool` is the bo suballocator
+    - if `pool->props.owns_bos`, the pool tracks all bos and is responsible
+      for freeing them
+    - if `pool->bo_pool`, the pool moves bos to the bo pool (for reuse) rather
+      than freeing them
+- `panvk_pool_alloc_backing` makes a bo allocation
+  - if there is `pool->bo_pool`, it tries to take a bo from the cache
+  - otherwise, it allocs a new bo
+  - if `pool->props.owns_bos`, the bo is tracked by the pool
+  - `pool->transient_bo` is set to the new bo
+    - this is the current bo that the pool suballocates from
+- `panvk_pool_alloc_mem` suballocs a bo
+  - if `pool->transient_bo` does not have enough space, it calls
+    `panvk_pool_alloc_backing` to alloc a new one
+- `panvk_pool_reset` and `panvk_pool_cleanup`
+  - if `pool->props.owns_bos`, bos are tracked and are freed now
+    - if there is `pool->bo_pool`, bos are moved to it for reuse instead
+  - else, only `pool->transient_bo` is freed
+
 ## Buffer
 
 - `panvk_GetBufferMemoryRequirements2`
