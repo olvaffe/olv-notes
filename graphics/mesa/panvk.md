@@ -275,6 +275,47 @@ Mesa PanVK
 - `panvk_per_arch(UpdateDescriptorSets)`
   - `write_sampler_desc` copies `sampler->desc` to the descriptor
 
+## Descriptor
+
+- `panvk_per_arch(CreateDescriptorSetLayout)`
+  - `vk_create_sorted_bindings` seems redundant
+  - it parses `pCreateInfo->bindings` to `layout->bindings`
+    - `immutable_samplers` is the hw descs copied from `panvk_sampler`
+    - `desc_idx` is the desc index in the descriptor set
+      - dynamic buffers use a different namespace (because they use "push
+        set")
+      - combined image sampler uses 2 descriptors
+  - `layout->hash` is unused
+    - it should use `layout->vk.blake3` instead?
+- `panvk_per_arch(CreateDescriptorPool)`
+  - `pool->sets` is the desc sets, all pre-allocated
+  - `pool->free_sets` is a bitmask, indicating which sets are free
+  - `pool->desc_bo` is the bo for hw descs
+  - `pool->desc_heap` manages the vma for the bo
+- `panvk_per_arch(AllocateDescriptorSets)`
+  - it takes a free set from `pool->sets`
+  - it reserves a region from `pool->desc_heap`
+  - it refs the layout
+  - it writes descs for immutable samplers, if any
+- `panvk_per_arch(FreeDescriptorSets)`
+  - it marks the set free in `pool->free_sets`
+  - it returns the region to `pool->desc_heap`
+  - it unrefs the layout
+- `panvk_per_arch(ResetDescriptorPool)` frees all desc sets and marks them
+  free
+- `panvk_per_arch(UpdateDescriptorSets)`
+  - `write_sampler_desc`
+    - it writes `sampler->desc` for each sampler
+  - `write_image_view_desc`
+    - it writes `view->descs.tex` for each view
+    - if combined sampler/image, it also writes the sampler desc
+  - `write_buffer_view_desc`
+    - it writes `view->descs.tex` for each view
+  - `write_buffer_desc` is for untyped buffers
+    - it writes a `MALI_BUFFER` for each buffer
+  - `write_dynamic_buffer_desc` is for dynamic buffers
+    - they use "push sets" and only the vas are saved to `set->dyn_bufs`
+
 ## Queue
 
 - `panvk_per_arch(queue_init)`
