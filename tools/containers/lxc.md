@@ -1,29 +1,59 @@
 Linux Containers
 ================
 
-## Basics
+## Overview
 
-- check system support
-  - `lxc-checkconfig`
-- create a container named `test` from the `download` template
-  - `lxc-create -n test -t download`
+- <https://linuxcontainers.org/>
+  - <https://github.com/lxc/distrobuilder>
+  - <https://github.com/lxc/lxc>
+  - <https://github.com/lxc/incus>
+
+## distrobuilder
+
+- <https://github.com/lxc/distrobuilder>
+- <https://github.com/lxc/lxc-ci> has image definition files used by CI
+  - many options are overriden by `-o` at runtime
+- example
+  - `test.yaml`
+    - `image:`
+      - `distribution: test`
+      - `release: 3.20`
+    - `source:`
+      - `downloader: alpinelinux-http`
+      - `url: https://dl-cdn.alpinelinux.org/alpine/`
+    - `packages:`
+      - `manager: apk`
+  - `sudo distrobuilder build-dir test.yaml test`
+    - downloads
+      <https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases/x86_64/alpine-minirootfs-3.20.3-x86_64.tar.gz>
+      to `/tmp/distrobuilder/test-3.20-x86_64/alpine-minirootfs-3.20.3-x86_64.tar.gz`
+    - unpacks the tarball to `test`
+- a real image definition file typically also has
+  - `packages.sets.packages`, to install/remove packages
+  - `files`, to generate files such as `/etc/hostname`, etc.
+  - `actions`, to run scripts at different stages
+
+## LXC
+
+- <https://github.com/lxc/lxc>
+- `lxc-checkconfig` checks if kernel has the required feature
+- `lxc-create -n test -t download` creates a container named `test`
+  - it executes `/usr/share/lxc/templates/lxc-download` to download an image
+    from <https://images.linuxcontainers.org/>
   - the container is under `/var/lib/lxc/test`
-  - it executes `/usr/share/lxc/templates/lxc-download`
-  - images are downloaded from `https://images.linuxcontainers.org/`
-- start the container
-  - `lxc-start -n test`
+- `lxc-ls -f` lists containers
+  - this includes their states such as `STOPPED`, `RUNNING`, etc.
+- `lxc-start -n test` starts the container
   - this starts the container and runs `/sbin/init`
   - all processes in the container are regular processes and show up in the
     host `ps -ef` as well
   - but they are in a different pid ns
-- get the shell
-  - `lxc-attach -n test`
-- stop the container
-  - `lxc-stop -n test`
-- debug
-  - `lxc-start -n test -o log -l DEBUG`
+  - `lxc-start -n test -o log -l DEBUG` to enable debug messages and write to
+    `log`
+- `lxc-attach -n test` gets a shell to the container
+- `lxc-stop -n test` stops the container
 
-## Shells
+## LXC Shells
 
 - lxc-attach
   - `lxc_attach` calls `lxc_cmd_get_init_pid` to get the container's init pid,
@@ -36,7 +66,7 @@ Linux Containers
     receives the master fds using `lxc_recv_ttys_from_child`
   - lxc-console requests one of the master fds
 
-## Networks
+## LXC Networks
 
 - by default, the container uses host net namespace
 - to have its own net namespace,
@@ -72,11 +102,6 @@ Linux Containers
   - allow regular users to create veth pairs
     - create `/etc/lxc/lxc-usernet`
       - `<user> veth lxcbr0 4`
-
-## Other Commands
-
-- list the containers
-  - `lxc-ls --fancy`
 
 ## Unprivileged Containers
 
