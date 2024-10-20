@@ -52,6 +52,15 @@ Chrome OS SDK
   - `crossystem devsw_boot` should return 1
   - if not, re-enter the developer mode
 
+## Reboot Device
+
+- <https://support.google.com/chromebook/answer/3227606>
+  - `Reset your Chromebook hardware`
+- `Refresh+Power` reboots EC
+- verification bypass key sequence?
+  - hold `Power`, double tap `Refresh`, and release `Power`
+  - repeat above again
+
 ## Exit Developer Mode
 
 - enable usb boot

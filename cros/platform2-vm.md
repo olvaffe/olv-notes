@@ -142,3 +142,28 @@ Platform2 vm
 - borealis
   - `dlcservice_util --id=borealis-dlc --install`
   - `vmc start --enable-vulkan --no-start-lxd --enable-big-gl --dlc-id=borealis-dlc --extra-disk=disk.img borealis`
+
+## Arch Linux
+
+- enable crostini in settings
+- `Ctrl-Alt-T` to open crosh
+- `vsh termina` to enter vm
+- `lxc remote add canonical https://images.lxd.canonical.com --protocol=simplestreams`
+  to add an alternative image server
+  - because the `lxc` lost access to <https://images.linuxcontainers.org/>
+- `lxc launch canonical:archlinux arch` to create and launch an instance for
+  archlinux
+- `lxc list` to confirm the instance state
+  - it must be running and have an ipv4 address
+- `lxc exec arch -- bash`
+  - if there is no ipv4 address, `systemctl edit systemd-networkd` to add
+    - `[Service]`
+    - `BindReadOnlyPaths=/sys`
+  - `useradd -m -G wheel olv`
+  - `passwd olv`
+  - `visudo`
+  - `su - olv`
+  - `sudo pacman -S git`
+  - `git clone https://aur.archlinux.org/cros-container-guest-tools-git.git`
+  - `makepkg -s`
+  - `sudo pacman -U cros-container-guest-tools-git-r470.63de46b4-1-any.pkg.tar.zst`

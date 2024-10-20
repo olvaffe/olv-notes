@@ -46,6 +46,9 @@ Linux Containers
       - arch or fedora (this seems too restrictive)
       - unprivilieged containers (the comment is incorrect)
       - `security.nesting=false` (this is incorrect too)
+  - `systemctl edit systemd-networkd` to manually add the workaround
+    - `[Service]`
+    - `BindReadOnlyPaths=/sys`
 
 ## LXC
 
