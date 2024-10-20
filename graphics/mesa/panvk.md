@@ -491,5 +491,4 @@ Mesa PanVK
 - `panvk_per_arch(CmdSetEvent2)` emits `SYNC_SET32` to set all seqnos to 1
 - `panvk_per_arch(CmdResetEvent2)` emits `SYNC_SET32` to set all seqnos to 0
 - `panvk_per_arch(CmdWaitEvents2)` emits `SYNC_WAIT32` to watit util seqnos
-  are non-zero
-- `panvk_per_arch(get_cs_deps)`
+- `panvk_per_arch(get_cs_deps)` gets the deps for synchronization

@@ -752,6 +752,7 @@ Mesa PanVK Command Stream
       - `MALI_BLEND_MODE_FIXED_FUNCTION`, fixed-func blending
       - `MALI_BLEND_MODE_SHADER`, blend shader
   - the array va and size are written to `d50`
+
 ## Common Shader States
 
 - all `RUN_*` instrs use 4 common shader states
@@ -963,3 +964,74 @@ Mesa PanVK Command Stream
   - `r37`: `Job size X`
   - `r38`: `Job size Y`
   - `r39`: `Job size Z`
+
+## Synchronization
+
+- remember that a render pass consists of
+  - `panvk_per_arch(CmdBeginRendering)`
+  - `panvk_per_arch(CmdDraw*)` calls `prepare_draw`
+    - `get_tiler_desc` allocs `MALI_TILER_CONTEXT` descriptors and inits
+      `cmdbuf->state.gfx.render.tiler`
+    - `get_fb_descs` allocs `cmdbuf->state.gfx.render.fbds`
+  - `panvk_per_arch(CmdEndRendering)`
+    - `flush_tiling` emits to the tiler subqueue
+      - `FINISH_TILING` finishes tiling
+    - `issue_fragment_jobs` emits to the fargment subqueue
+      - `SYNC_WAIT64` waits on the tiler subqueue
+      - `RUN_FRAGMENT` runs fragment
+    - `resolve_attachments`
+- remember that a vk exec dep specifies that cmds in the first sync scope
+  msut happen-before cmds in the second sync scope
+  - the two sync scopes are specified by `VkPipelineStageFlags2`
+  - we can easily map vk graphics stages to one of the two graphics subqueues
+    - `PANVK_SUBQUEUE_VERTEX_TILER`
+    - `PANVK_SUBQUEUE_FRAGMENT`
+  - if the two sync scopes map to the same subqueue
+    - we should emit scoreboard wait to the subqueue
+  - if the two sync scopes map to the different subqueues
+    - we should emit scoreboard wait to the first subqueue
+    - we should follow the scoreboard wait up with a seqno update
+    - we should emit seqno wait to the second subqueue, to wait the first
+      subqueue
+- remember that a vk mem dep specifies that writes in the first access scope
+  are made available, and are also made visible to reads in the second access
+  scope
+  - the two access scopes are specified by `VkPipelineStageFlags2` and
+    `VkAccessFlags2`
+  - the hw has 3 caches
+    - an RW L2 shared by all gpu blocks
+    - an RW L1 shared by all gpu blocks
+    - an RO L1 before texture unit, rt, and zs
+  - if the first access scope has any write and if the second access scope
+    reads from RO L1, we should invalidate RO L1
+  - if the first access scope includes cpu writes and if the second access
+    scope reads from any cache, we should invalidate all caches
+  - if the first access scope includes gpu writes and if the second access
+    scope includes cpu reads, we should flush all caches
+- `panvk_per_arch(get_cs_deps)` inits `panvk_cs_deps`
+  - `needs_draw_flush` is set when there is any draw and the src stages need
+    the fs results
+    - this can happen when the barrier is in the middle of a render pass
+    - the caller should call `panvk_per_arch(cmd_flush_draws)` to flush draws
+  - `wait_sb_mask` is per-subqueue and is set when a subqueue should wait on
+    prior cmds to complete
+    - this is solely based on the src stages
+    - the caller should call `cs_wait_slots` to emit the wait
+  - `wait_subqueue_mask` is per-subqueue and is set when a subqueue should
+    wait on other subqueues
+    - we know which subqueues are included in the first sync scope (specified
+      by the src stages)
+    - if a subqueue is in the second sync scope (specified by the dst stages),
+      it should wait on all other subqueues in the first sync scope
+    - the caller should
+      - call `cs_sync64_add` once on all subqueues in the first sync scope
+      - call `cs_sync64_wait` once or more on all subqueues in the second sync
+        scope
+  - `cache_flush` is per-subqueue and is set when the caches should be
+    flushed/invalidated
+    - the caller should call `cs_flush_caches` to flush/invalidate caches
+- `panvk_per_arch(get_cs_deps)` is called from
+  - `panvk_per_arch(CmdPipelineBarrier2)`
+  - `panvk_per_arch(CmdResetEvent2)`
+  - `panvk_per_arch(CmdSetEvent2)`
+  - `panvk_per_arch(CmdWaitEvents2)`
