@@ -79,6 +79,17 @@ VFS
   - it is placed in the process's file descriptor table
   - two fds might point to the same file (e.g., dup)
 
+## Initialization
+
+- `mnt_init` creates `fs_kobj`, `/sys/fs`
+  - `/sys/fs/bpf` is from `bpf_init`
+  - `/sys/fs/cgroup` is from `cgroup_init`
+  - `/sys/fs/ext4` is from `ext4_init_sysfs`
+  - `/sys/fs/fuse` is from `fuse_sysfs_init`
+  - `/sys/fs/pstore` is from `pstore_init_fs`
+  - `/sys/fs/resctrl` is from `rdtgroup_init`
+  - `/sys/fs/virtiofs` is from `virtio_fs_sysfs_init`
+
 ## Registering and Mounting a fs
 
 - A fs is registered with `register_filesystem(struct file_system_type *);`

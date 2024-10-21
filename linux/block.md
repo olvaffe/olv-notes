@@ -1,6 +1,16 @@
 Linux block layer
 =================
 
+## Initialization
+
+- `subsys_initcall(genhd_device_init)`
+- `class_register(&block_class)` registers `/sys/class/block`
+  - `blk_mq_alloc_disk` allocs a `gendisk` of this class
+  - `add_partition` adds a `block_device` of this class
+- `register_blkdev(BLOCK_EXT_MAJOR, "blkext")` reserves major 259
+- `kobject_create_and_add("block", NULL)` creates `/sys/block`
+  - `device_add_disk` will create symlink under this directory
+
 ## Block Layer
 
 - I/O requests (`struct request`) reach the block layer

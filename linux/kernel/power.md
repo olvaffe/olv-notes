@@ -4,6 +4,7 @@ Kernel power
 ## Initialization
 
 - `pm_init` initializes the PM subsystem
+  - `power_kobj` is `/sys/power`
 - `/sys/power`
   - `state_attr` sets/gets the system pm state.
   - `CONFIG_PM_TRACE`

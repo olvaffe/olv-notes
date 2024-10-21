@@ -12,6 +12,11 @@ Kernel Driver Core
     `dev_kobj` (`/sys/dev/block`)
   - `sysfs_dev_char_kobj` is created with `kobject_create_and_add` under
     `dev_kobj` (`/sys/dev/char`)
+- if a device has a major, `device_add` calls
+  - `device_create_sys_dev_entry` to create a symlink under
+    `/sys/dev/{block,char}`
+  - `devtmpfs_create_node` to create a node in devtmpfs
+- `hypervisor_init` creates `hypervisor_kobj`, `/sys/hypervisor`
 
 ## Device Registration
 
@@ -26,28 +31,30 @@ Kernel Driver Core
     - the explicitly specified parent, if the parent has a class
     - a glue dir
 - many of the top-level nodes are PMUs registered by `perf_pmu_register`
-  - `breakpoint` from `init_hw_breakpoint`
-  - `cpu` from `init_hw_perf_events`
-  - `cstate_core` and `cstate_pkg` from `cstate_init`
-  - `i915` from `i915_pmu_register`
-  - `intel_pt` from `pt_init`
-  - `msr` from `msr_init`
-  - `power` from `rapl_pmu_init`
-  - `software` from `perf_event_init`
-  - `tracepoint`, `kprobe`, and `uprobe` from `perf_tp_register`
-  - `uncore_arb`, `uncore_cbox_0`, `uncore_cbox_1`, and `uncore_imc` from
-    `uncore_pmu_register`
-- `isa` is by `isa_bus_init`
-- `LNXSYSTM:00` is by `acpi_device_add` on `ACPI_SYSTEM_HID`
-- `pci0000:00` is by `pci_register_host_bridge`
-- `platform` is by `platform_bus_init`
-- `pnp0` is by `pnp_register_protocol`
-- `wakeup0` is by `pm_autosleep_init`
-- `system` is a kset by `buses_init`
+  - `/sys/devices/breakpoint` from `init_hw_breakpoint`
+  - `/sys/devices/cpu` from `init_hw_perf_events`
+  - `/sys/devices/cstate_core` and `/sys/devices/cstate_pkg` from
+    `cstate_init`
+  - `/sys/devices/i915` from `i915_pmu_register`
+  - `/sys/devices/intel_bts` from `bts_init`
+  - `/sys/devices/intel_pt` from `pt_init`
+  - `/sys/devices/msr` from `msr_init`
+  - `/sys/devices/power` from `rapl_pmu_init`
+  - `/sys/devices/software` from `perf_event_init`
+  - `/sys/devices/tracepoint`, `/sys/devices/kprobe`, and
+    `/sys/devices/uprobe` from `perf_tp_register`
+  - `/sys/devices/uncore_*` from `uncore_pmu_register`
+- `/sys/devices/isa` is by `isa_bus_init`
+- `/sys/devices/LNXSYSTM:00` is by `acpi_device_add` on `ACPI_SYSTEM_HID`
+- `/sys/devices/pci0000:00` is by `pci_register_host_bridge`
+- `/sys/devices/platform` is by `platform_bus_init`
+- `/sys/devices/pnp0` is by `pnp_register_protocol`
+- `/sys/devices/wakeup0` is by `pm_autosleep_init`
+- `/sys/devices/system` is a kset by `buses_init`
   - `cpu` is from `cpu_dev_init`
   - `memory` is from `memory_dev_init`
   - don't use `subsys_system_register` in new code
-- `virtual` is by `virtual_device_parent`
+- `/sys/devices/virtual` is by `virtual_device_parent`
   - `workqueue` is from `wq_sysfs_init`, a virtual subsys
   - `dma_heap` is from `dma_heap_add`, a class device with no parent
 

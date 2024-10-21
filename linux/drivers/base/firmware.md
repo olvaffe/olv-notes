@@ -1,6 +1,14 @@
 Kernel and Firmware
 ===================
 
+## Initialization
+
+- `firmware_init` creates `firmware_kobj`, `/sys/firmware`
+  - `/sys/firmware/acpi` is from `acpi_init`
+  - `/sys/firmware/dmi` is from `dmi_init`
+  - `/sys/firmware/efi` is from `efisubsys_init`
+  - `/sys/firmware/memmap` is from `firmware_memmap_init`
+
 ## `request_firmware`
 
 - `_request_firmware_prepare` calls `firmware_request_builtin_buf` to search
