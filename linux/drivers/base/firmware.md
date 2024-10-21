@@ -6,6 +6,8 @@ Kernel and Firmware
 - `firmware_init` creates `firmware_kobj`, `/sys/firmware`
   - `/sys/firmware/acpi` is from `acpi_init`
   - `/sys/firmware/dmi` is from `dmi_init`
+    - it also creates `/sys/firmware/dmi/tables`
+    - `dmi_sysfs_init` creates `/sys/firmware/dmi/entries`
   - `/sys/firmware/efi` is from `efisubsys_init`
   - `/sys/firmware/memmap` is from `firmware_memmap_init`
 
