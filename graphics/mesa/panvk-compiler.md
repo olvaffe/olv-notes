@@ -75,15 +75,28 @@ Mesa PanVK Compiler
 - `panvk_preprocess_nir`
   - `vk_spirv_to_nir` applies generic lowering already
   - if fs, `nir_lower_io_to_vector`
-  - `nir_lower_io_to_temporaries`
-  - `nir_lower_indirect_derefs`
-  - `nir_opt_copy_prop_vars`
-  - `nir_opt_combine_stores`
+  - `nir_lower_io_to_temporaries` lowers io vars to temps, and initial/final
+    copies from/to the original io vars
+  - `nir_lower_indirect_derefs` lowers indirect dererfs 
+    - when an array is dynamically indexed, it is replaced by a binary search
+      of the real index
+  - `nir_opt_copy_prop_vars` copy propogates for variables
+  - `nir_opt_combine_stores` combines stores to vecs
+    - to update a vec component, nir loads the vec, updates a the comp, and stores back
+    - after copy propation, multiple updates become a single load but multiple
+      updates and multiple stores
+    - this pass replaces the multiple stores by a single store
   - `nir_opt_loop`
   - if fs, `nir_lower_input_attachments`
-  - `nir_lower_tex`
+  - `nir_lower_tex` lowers tex ops
+    - e.g., apply `nir_tex_src_projector` manually
   - `nir_lower_system_values`
+    - e.g., a `nir_intrinsic_load_deref` of `gl_GlobalInvocationID` is lowered
+      to a `nir_load_base_global_invocation_id` a plus
+      `nir_load_global_invocation_id`
   - `nir_lower_compute_system_values`
+    - e.g., lower `nir_intrinsic_load_global_invocation_id` to manual
+      compuatations
   - if fs, `nir_lower_wpos_center`
   - `nir_split_var_copies`
   - `nir_lower_var_copies`

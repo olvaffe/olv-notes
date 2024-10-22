@@ -141,6 +141,24 @@ Mesa Vulkan Runtime
     - `vk_common_CmdBindPipeline` also updates the dynamic states
       - `vk_dynamic_graphics_state_copy` copies from the pipeline to the
         cmdbuf
+- `vk_spirv_to_nir` applies generic lowering
+  - inline all functions
+    - `nir_lower_variable_initializers` to lower constant initializaers
+    - `nir_lower_returns` to lower early returns
+      - this moves all remaining instructions to the else block
+    - `nir_inline_functions` to inline all callees
+      - it has a big comment on what passes are required before and after
+    - `nir_copy_prop` copy propogates
+      - `b = a; c = b` becomes `c = a`
+    - `nir_opt_deref` optimizes away `nir_deref_type_cast`
+    - `nir_remove_non_entrypoints` keeps only the entrypoint
+    - `nir_lower_variable_initializers` again
+  - `nir_split_var_copies` splits struct copies to member-wise copies
+  - `nir_split_per_member_structs` splits structs to its members
+  - `nir_remove_dead_variables` removes defined but unused variables
+  - `nir_lower_clip_cull_distance_arrays`
+  - if vs, `nir_shader_gather_xfb_info`
+  - `nir_propagate_invariant` propagates `var->data.invariant` to `alu->exact`
 
 ## Render Pass and Framebuffer
 
