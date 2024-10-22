@@ -102,10 +102,13 @@ Mesa PanVK Compiler
   - `nir_lower_var_copies`
 - `panvk_compile_shaders`
   - `panvk_lower_nir`
-    - `panvk_per_arch(nir_lower_descriptors)`
+    - `panvk_per_arch(nir_lower_descriptors)` lowers `vulkan_resource_index`
+      and `load_vulkan_descriptor`
     - `nir_split_var_copies`
     - `nir_lower_var_copies`
     - `nir_lower_explicit_io`
+      - e.g., lower a store to a varaible in ssbo storage to a
+        `nir_intrinsic_store_ssbo` with an explicit addr
     - `valhall_lower_get_ssbo_size`
     - `valhall_pack_buf_idx`
     - if cs, `nir_lower_vars_to_explicit_types` and `nir_lower_explicit_io`
@@ -123,6 +126,92 @@ Mesa PanVK Compiler
     - the shader program descriptor (spd) is uploaded to `dev->mempools.rw`
     - if vs, there are actually 3 binaries and 3 spds: `pos_points`,
       `pos_triangles`, and `var`
+
+## Resources
+
+- a ssbo store looks like
+  - `32x3  %1 = @vulkan_resource_index (%0 (0x0)) (desc_set=0, binding=0, desc_type=SSBO)`
+    - `%1` refers to the descriptor at index `%0` of set 0 and binding 0
+  - `32x3  %2 = @load_vulkan_descriptor (%1) (desc_type=SSBO)`
+    - `%2` refers to the ssbo
+  - `32x3  %3 = deref_cast (SSBO *)%2 (ssbo SSBO)  (ptr_stride=0, align_mul=0, align_offset=0)`
+    - `%3` is the ssbo casted a pointer of `struct SSBO`
+  - `32x3  %4 = deref_struct &%3->data (ssbo uint[])  // &((SSBO *)%2)->data`
+    - `%4` refers to the `data` memeber of `struct SSBO`j which is a `uint[]`
+  - `32x3  %5 = deref_array &(*%4)[%6] (ssbo uint)  // &((SSBO *)%2)->data[%6]`
+    - `%5` refers to `data[%6]`
+  - `@store_deref (%5, %7) (wrmask=x, access=none)`
+    - stores `%7` to `%5`
+- `panvk_per_arch(nir_lower_descriptors)`
+  - the goal is to lower `vulkan_resource_index` and `load_vulkan_descriptor`
+  - remember that
+    - a hw descriptor has size `PANVK_DESCRIPTOR_SIZE`
+    - a combined image sampler takes up 2 hw descriptors
+    - the other descriptors take up 1 hw descriptor
+  - since v8+, the addr format is
+    `nir_address_format_vec2_index_32bit_offset`, a vec3
+  - `collect_instr_desc_access` parses nir and calls `record_binding` on all
+    used descriptors
+    - `ctx->desc_info.used_set_mask` is set
+    - the rest is mostly for dynamic buffers on v9+
+  - `create_copy_table`
+    - it is only for dynamic buffers on v9+
+  - `upload_shader_desc_info`
+    - `shader->desc_info.used_set_mask` is copied from `desc_info->used_set_mask`
+    - the rest is mostly for dynamic buffers on v9+
+  - `lower_descriptors_instr` lowers nir
+    - `build_res_index` lowers `nir_intrinsic_vulkan_resource_index` to a vec3
+      - the instr has a static set, a static binding, and a dynamic index
+      - `shader_desc_idx` translates the set/binding to a u32
+        - the higher 8 bits are for set
+         - `panvk_per_arch(cmd_prepare_shader_res_table)` reserves the first set
+           for driver internal set
+         - as such, the set number is offset by one
+        - the lower 24 bits are for hw descriptor idx in the set
+      - the returned vec3 consists of
+        - comp 0 is the u32 for the static set/binding
+        - comp 1 is the dynamic array index
+        - comp 2 is the descriptor array size minus 1
+    - `build_buffer_addr_for_res_index` lowers
+      `nir_intrinsic_load_vulkan_descriptor` to a vec3
+      - the instr takes the res idx from `nir_intrinsic_vulkan_resource_index`
+      - if robustness, it caps the dynamic array index to the descriptor array size
+      - the returned vec3 consists of
+        - comp 0 is propagated
+        - comp 1 is propagated after optional capping
+        - comp 2 is 0
+- `nir_lower_explicit_io` lowers the derefs/laods/stores
+  - `lower_explicit_io_deref` lowers derefs
+    - `nir_deref_type_cast` is nop
+    - `nir_deref_type_struct` adds the member offset to the vec3, if non-zero
+      - comp 2 is the offset
+    - `nir_deref_type_array` adds the element offset to the vec3
+  - `lower_explicit_io_access` lowers deref loads/stores
+    - `build_explicit_io_load` lowers `nir_intrinsic_load_deref`
+    - `build_explicit_io_store` lowers `nir_intrinsic_store_deref`
+      - if ssbo, to `nir_intrinsic_store_ssbo`
+      - src 0 is the store value
+      - src 1 is the first 2 components (set/binding and dynamic array index)
+        of the vec3
+      - src 2 is the last component (offset) of the vec3
+- `valhall_lower_get_ssbo_size` lowers `nir_intrinsic_get_ssbo_size`
+  - src 0 is vec2
+    - comp 0 is set/binding
+    - comp 1 is dynamic array index
+  - for ssbo, `write_buffer_desc` writes `MALI_BUFFER` to the hw descriptor
+    - dw 0 is descriptor type (buffer) and buffer type (simple)
+    - dw 1 is the buffer size
+    - dw 2..3 is the buffer va
+  - the instr is lowered to `nir_load_ubo` to load the buffer size from the
+    descriptor directly
+    - `LD_BUFFER.*` treats `VALHALL_RESOURCE_TABLE_IDX` (62) specially
+- `valhall_pack_buf_idx` fixes load/store addrs
+  - `panvk_per_arch(nir_lower_descriptors)` uses
+    `nir_address_format_vec2_index_32bit_offset`
+  - the backend compiler expects `nir_address_format_32bit_index_offset`
+  - this pass adds the two components of the vec2 to become u32
+- `bi_emit_intrinsic` lowers nir intrinsics to bir
+  - `bi_emit_load_ubo` lowers `nir_intrinsic_load_ubo` to `LD_BUFFER.i32`
 
 ## Bifrost Compiler
 
@@ -196,3 +285,45 @@ Mesa PanVK Compiler
     - `va_merge_flow`
     - `va_mark_last`
     - `bi_pack_valhall`
+
+## ISA Packing
+
+- every instruction has 64 bits
+  - bit 0..39: opcode-dependent
+    - each src reg takes 8 bits, if any
+      - see `va_pack_src`
+    - modifiers are defined by `MODIFIERS` in `valhall.py`
+  - bit 40..47: dst
+    - the higher 2 bits are writemask
+    - see `va_pack_dest`
+  - bit 48..56: primary opcode
+  - bit 57..58: fau page
+  - bit 59..62: flow
+  - bit 63: reserved
+- e.g., `LD_BUFFER.i32`
+  - see `va_pack_load` for definite definitions
+  - bit 00..07: src 0, byte offset
+  - bit 08..15: src 1, mode descriptor
+  - bit 16..23: mbz
+  - bit 24..26: mbz
+  - bit 27..29: secondary opcode
+  - bit 30..32: slot
+  - bit 33..35: `staging_register_count`
+  - bit 36..38: `load_lane_32_bit`
+  - bit 39..39: `unsigned`
+
+## ISA
+
+- `LD_BUFFER.i32`
+  - src 0 is byte offset
+  - src 1 is mode descriptor
+    - the cs sets up SRT which points to an array of `MALI_RESOURCE`
+      - each `MALI_RESOURCE` points to a descriptor set
+      - each descriptor set has an array of 32-byte descriptors
+    - when the highest byte is less than 16(?),
+      - the highest byte is the index of `MALI_RESOURCE` array
+      - the lower bytes are the index of the descriptor array
+      - the instr loads from the buffer referenced by the descriptor
+    - when the highest byte is 62(?),
+      - the lower bytes are the index of `MALI_RESOURCE` array
+      - the instr loads from the descriptor array
