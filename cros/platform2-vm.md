@@ -167,3 +167,28 @@ Platform2 vm
   - `git clone https://aur.archlinux.org/cros-container-guest-tools-git.git`
   - `makepkg -s`
   - `sudo pacman -U cros-container-guest-tools-git-r470.63de46b4-1-any.pkg.tar.zst`
+- `cros-container-guest-tools-git` package
+  - it starts `garcon` on the user session
+- container profile and config
+  - `lxc profile show default`
+    - it bind-mounts `/opt/google/cros-containers` into the container
+  - `lxc config show arch`
+- `vmc container termina arch`
+  - `user_id_hash_to_username` returns the username based on the account email
+  - `container_create` sends `CreateLxdContainerRequest` to `cicerone` to
+    create the container on demand
+    - tremplin inside the termina vm creates the lxd container
+  - `container_setup_user` sends `SetUpLxdContainerUserRequest` to `cicerone`
+    to setup the user account in the container on demand
+    - tremplin inside the termina vm does the real work
+    - it creates the required users and groups
+    - it creates `/var/lib/systemd/linger/<user>` to start the user session on
+      boot
+  - `container_start` sends `StartLxdContainerRequest` to `cicerone` to start
+    the container on demand
+    - tremplin inside the termina vm starts the lxd container
+  - `vsh_exec_container` executes `vsh` to send `LaunchVshdRequest` to
+    `cicerone`
+    - garcon inside the container does the real work and runs
+      `/opt/google/cros-containers/bin/vshd`
+    - vsh is a remote shell and is vsock-based
