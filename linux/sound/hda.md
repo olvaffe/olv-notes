@@ -27,3 +27,7 @@ Linux hda
   - note that even when `azx_driver` is not used, other hda drivers still have
     their ways to discover codecs on the hda bus and these codec drivers are
     reused
+    - `azx_driver` is a driver for the traditional pci device and the pci
+      device is a controller for an hda bus
+    - other devices can have controllers for hda buses as well
+      - they also call `snd_hdac_bus_init*` to init an hda bus

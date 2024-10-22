@@ -563,7 +563,7 @@ Kernel Config
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
   - select `Sound card support` if desired
     - select `Advanced Linux Sound Architecture`
-      - select `Dynamic device file minor numbers`
+      - select `Dynamic device file minor numbers` (for asoc on old kernel)
       - deselect `Support old ALSA API`
       - select `HD-Audio` if x86
         - select `HD Audio PCI`
