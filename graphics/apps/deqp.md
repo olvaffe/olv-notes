@@ -402,6 +402,36 @@ dEQP
   - 6th cmdbuffer
     - draw a quad to verify `m_multisampledCopyImage`
 
+## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.simple_draw.simple_draw_triangle_list`
+
+- test creation
+  - `Draw::createTests`
+  - `Draw::createChildren`
+  - `SimpleDrawTests::init`
+- `SimpleDraw::SimpleDraw`
+  - for `VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST`
+    - each `VertexElementData` has
+      - vec4 for pos
+      - vec4 for color
+      - vertex index
+    - there are 6 vertices forming a rectangle
+      - the color is blue
+  - `DrawTestsBaseClass::initialize` uses a 256x256 image
+    - `vulkan/draw/VertexFetch.vert` uses the input color (blue)
+      - it will be red if there is a driver bug
+    - `vulkan/draw/VertexFetch.frag` is `out_color = in_color`
+- `SimpleDraw::iterate`
+  - `beginCommandBuffer`
+  - `preRenderBarriers`
+  - `beginDynamicRender`
+  - `m_vk.cmdBindVertexBuffers`
+  - `m_vk.cmdBindPipeline`
+  - `draw` draws 2 triangles 
+    - `vertexCount` is 6
+    - `firstVertex` is 2
+  - `endDynamicRender`
+  - `endCommandBuffer`
+
 ## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
 
 - `DepthStencilResolveTest::createRenderPass`
