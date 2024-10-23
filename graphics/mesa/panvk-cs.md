@@ -1035,3 +1035,16 @@ Mesa PanVK Command Stream
   - `panvk_per_arch(CmdResetEvent2)`
   - `panvk_per_arch(CmdSetEvent2)`
   - `panvk_per_arch(CmdWaitEvents2)`
+
+## Draw
+
+- draw params
+  - spirv `VertexIndex` is nir `vertex_id`
+    - if hw only supports `vertex_id_zero_base` and `vertex_id` is lowered
+      to `vertex_id_zero_base + first_vertex`
+  - spirv `InstanceIndex` is nir `instance_id`
+  - spirv `BaseInstance` is nir `base_instance`
+  - spirv `BaseVertex` is nir `first_vertex`
+    - fwiw, `gl_BaseVertex` is nir `base_vertex`, and if hw only supports
+      `first_vertex`, `base_vertex` is lowered to `indexed ? first_vertex : 0`
+  - spirv `DrawIndex` is nir `draw_id`

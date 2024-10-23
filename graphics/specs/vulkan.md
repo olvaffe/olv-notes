@@ -1348,6 +1348,32 @@ Vulkan
   - `SubgroupLocalInvocationId` is the id (`[0, SubgroupSize)`) of the
     invocation in the subgroup
   - `SubgroupSize` is the size (number of invocations) of the subgroup
+  - draw params
+    - `VertexIndex`
+      - if non-indexed, starts from `firstVertex`
+      - if indexed, it is read from the index buffer plus `vertexOffset`
+      - glsl: `gl_VertexID`
+      - nir: `vertex_id`
+    - `InstanceIndex`
+      - starts from `firstInstance`
+      - glsl: `gl_InstanceID`
+      - nir: `instance_id`
+    - `BaseInstance`
+      - always `firstInstance`
+      - glsl: `gl_BaseInstance`
+      - nir: `base_instance`
+    - `BaseVertex`
+      - if non-indxed, always `firstVertex`
+      - if indxed, always `vertexOffset`
+      - glsl:
+        - if non-indxed, no equivalence
+        - if index, `gl_BaseVertex`
+      - nir: `first_vertex`
+    - `DrawIndex`
+      - if non-multi, always 0
+      - if multi, starts from 0
+      - glsl: `gl_DrawID`
+      - nir: `draw_id`
 
 ## Chapter 16. Image Operations
 
@@ -1624,6 +1650,42 @@ Vulkan
 ## Chapter 20. Copy Commands
 
 ## Chapter 21. Drawing Commands
+
+- 21.3. Programmable Primitive Shading
+  - `VkDrawIndirectCommand`
+    - params
+      - `vertexCount`
+      - `instanceCount`
+      - `firstVertex`
+      - `firstInstance`
+    - users
+      - `vkCmdDraw`
+      - `vkCmdDrawIndirect`
+      - `vkCmdDrawIndirectCount`
+  - `VkDrawIndexedIndirectCommand`
+    - params
+      - `indexCount`
+      - `instanceCount`
+      - `firstIndex`
+      - `vertexOffset`
+      - `firstInstance`
+    - users
+      - `vkCmdDrawIndexed`
+      - `vkCmdDrawIndexedIndirect`
+      - `vkCmdDrawIndexedIndirectCount`
+  - `VkMultiDrawInfoEXT`
+    - params
+      - `vertexCount`
+      - `firstVertex`
+    - users
+      - `vkCmdDrawMultiEXT`
+  - `VkMultiDrawIndexedInfoEXT`
+    - params
+      - `firstIndex`
+      - `indexCount`
+      - `vertexOffset`
+    - users
+      - `vkCmdDrawMultiIndexedEXT`
 
 ## Chapter 22. Fixed-Function Vertex Processing
 
