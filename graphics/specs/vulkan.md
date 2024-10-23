@@ -7,10 +7,13 @@ Vulkan
   - HW features are about GL 4.3 or GLES 3.1
   - plus persistent and coherent memory
 - 1.1 was released in 2018
+  - `git diff v1.0.69-core..v1.1.70`
 - 1.2 was released in 2020
   - no new HW reqs
+  - `git diff v1.1.130..v1.2.131`
 - 1.3 was released in 2022
   - no new HW reqs
+  - `git diff v1.2.203..v1.3.204`
 
 ## Chapter 1. Preamble
 
@@ -2000,11 +2003,9 @@ Vulkan
 
 ## Chapter 44. Execution Graphs
 
-## Chapter 45. Low Latency 2
+## Chapter 45. Extending Vulkan
 
-## Chapter 46. Extending Vulkan
-
-- 46.1. Instance and Device Functionality
+- 45.1. Instance and Device Functionality
   - Commands that enumerate instance properties, or that accept a `VkInstance`
     object as a parameter, are considered instance-level functionality.
   - Commands that dispatch from a `VkDevice` object or a child object of a
@@ -2017,17 +2018,17 @@ Vulkan
     respectively.
   - Additionally, commands that enumerate physical device properties are
     considered device-level functionality.
-- 46.2. Core Versions
+- 45.2. Core Versions
   - The Vulkan version number comprises four parts indicating the `variant`,
     `major`, `minor` and `patch` version of the Vulkan API Specification.
   - The version of instance-level functionality can be queried by calling
     `vkEnumerateInstanceVersion`.
   - The version of device-level functionality is returned in
     `VkPhysicalDeviceProperties::apiVersion`
-- 46.3. Layers
+- 45.3. Layers
   - `vkEnumerateInstanceLayerProperties` enumerates instance layers
   - `vkEnumerateDeviceLayerProperties` has been deprecated
-- 46.4. Extensions
+- 45.4. Extensions
   - instance-level extensions
     - when an instance-level extension is not enabled, `vkGetInstanceProcAddr`
       for a command defined by the extension returns NULL
@@ -2040,7 +2041,7 @@ Vulkan
       command defined by the extension returns NULL
     - physical-device-level commands defined by device extensions can be used as
       long as the device extensions are available
-- 46.6. Compatibility Guarantees (Informative)
+- 45.6. Compatibility Guarantees (Informative)
   - extension
     - promotion: incorporated into core and absorbed by another extension
     - deprecation: no longer relevant
@@ -2053,7 +2054,7 @@ Vulkan
       - `debugging`
       - `glemulation`
 
-## Chapter 47. Features
+## Chapter 46. Features
 
 - Shader Data Type Widths
   - `VkPhysicalDeviceFeatures` has
@@ -2077,27 +2078,45 @@ Vulkan
       operations on shared and payload memory
     - `shaderFloat16` specifies support for 16-bit floats
     - `shaderInt8` specifies support for 8-bit ints
+- 46.1. Feature Requirements
+  - looking for `VK_VERSION_1_1[]`
+    - `VkPhysicalDeviceProtectedMemoryFeatures`
+    - `VkPhysicalDeviceShaderDrawParametersFeatures`
+    - `multiview`
+  - looking for `VK_VERSION_1_2[]`
+    - `subgroupBroadcastDynamicId`
+  - looking for `VK_VERSION_1_3[]`
+    - `vulkanMemoryModel` and `vulkanMemoryModelDeviceScope`
 
-## Chapter 48. Limits
+## Chapter 47. Limits
 
-## Chapter 49. Formats
+- 47.1. Limit Requirements
+  - looking for `VK_VERSION_1_1[]`
+    - `VkPhysicalDeviceSubgroupProperties`
+    - `VkPhysicalDeviceProtectedMemoryProperties`
+  - looking for `VK_VERSION_1_2[]`
+    - `framebufferIntegerColorSampleCounts`
+  - looking for `VK_VERSION_1_3[]`
+    - `maxInlineUniformTotalSize`
 
-- 49.1. Format Definition
+## Chapter 48. Formats
+
+- 48.1. Format Definition
   - a list of all formats
-  - 49.1.1. Compatible Formats of Planes of Multi-Planar Formats
+  - 48.1.1. Compatible Formats of Planes of Multi-Planar Formats
     - a `_2PLANE` format has 2 format planes
     - a `_3PLANE` format has 3 format planes
     - `_420` has reduced width/height after the first plane
     - `_422` has reduced with after the first plane
     - Table 58. Plane Format Compatibility Table
-  - 49.1.2. Multi-planar Format Image Aspect
-  - 49.1.3. Packed Formats
+  - 48.1.2. Multi-planar Format Image Aspect
+  - 48.1.3. Packed Formats
     - formats with `_PACKnn` suffix are packed formats, and the naming
       convention is different
     - formats with `_mPACKnn` suffix are non-packed formats, and the naming
       convention does not change
       - except that each of the `m` compoents is considered packed
-  - 49.1.4. Identification of Formats
+  - 48.1.4. Identification of Formats
     - `VK_FORMAT_{component-format|compression-scheme}_{numeric-format}`
     - the names can be followed by suffices
       - `_PACKnn`
@@ -2116,7 +2135,7 @@ Vulkan
         appear at half the horizontal frequency of the G values,
         - e.g., `VK_FORMAT_G8B8G8R8_422_UNORM` is non-planar and the R/B
           values appear at half the horizontal frequency
-  - 49.1.5. Representation and Texel Block Size
+  - 48.1.5. Representation and Texel Block Size
     - Color formats must be represented in memory in exactly the form
       indicated by the format’s name.
     - Each format has a texel block size, the number of bytes used to store
@@ -2135,14 +2154,14 @@ Vulkan
     - Table 62. Bit mappings for packed 8-bit formats
     - Table 63. Bit mappings for packed 16-bit formats
     - Table 64. Bit mappings for packed 32-bit formats
-  - 49.1.6. Depth/Stencil Formats
+  - 48.1.6. Depth/Stencil Formats
     - Depth/stencil formats are considered opaque and need not be stored in
       the exact number of bits per texel or component ordering indicated by
       the format enum.
     - However, implementations must not substitute a different depth or
       stencil precision than is described in the format (e.g. D16 must not be
       implemented as D24 or D32).
-  - 49.1.7. Format Compatibility Classes
+  - 48.1.7. Format Compatibility Classes
     - Compatible Formats
       - Uncompressed color formats are compatible with each other if they
         occupy the same number of bits per texel block as long as neither or
@@ -2155,7 +2174,7 @@ Vulkan
       - Color formats with the same texel block size are considered
         size-compatible as long as neither or both are alpha formats
     - Table 65. Compatible Formats
-- 49.2. Format Properties
+- 48.2. Format Properties
   - `vkGetPhysicalDeviceFormatProperties2` queries format features
     - `VkFormatFeatureFlagBits` lists all possible features
       - some are specific to buffers and some are specific to images
@@ -2166,7 +2185,7 @@ Vulkan
       `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
       - different modifiers have different `drmFormatModifierTilingFeatures`
         and `drmFormatModifierPlaneCount`
-- 49.3. Required Format Support
+- 48.3. Required Format Support
   - unless otherwise noted, the required format features must be supported for
     - every `VkImageType` (including arrayed and cube variants)
     - all `VkImageCreateFlags` values
@@ -2208,9 +2227,9 @@ Vulkan
       - Table 80. Formats requiring sampler Y′CBCR conversion for
         `VK_IMAGE_ASPECT_COLOR_BIT` image views
 
-## Chapter 50. Additional Capabilities
+## Chapter 49. Additional Capabilities
 
-- 50.1. Additional Image Capabilities
+- 49.1. Additional Image Capabilities
   - an implementation can return `VK_ERROR_FORMAT_NOT_SUPPORTED` for any
     combination except for
     - those required by Required Format Support
@@ -2230,13 +2249,13 @@ Vulkan
       - image type is `VK_IMAGE_TYPE_3D`, or
       - the format requires ycbcr conversion
 
-## Chapter 51. Debugging
+## Chapter 50. Debugging
 
-- 51.1. Debug Utilities
+- 50.1. Debug Utilities
   - `VK_EXT_debug_utils`
     - it is promoted from `VK_EXT_debug_marker`
     - it deprecates `VK_EXT_debug_report`
-- 51.5. Active Tooling Information
+- 50.5. Active Tooling Information
   - `VK_EXT_tooling_info`
     - implemented by tools and layers to report themselves
 
@@ -2312,6 +2331,11 @@ Vulkan
   - 23 promoted extensions
     - `VK_KHR_dynamic_rendering`
     - `VK_KHR_synchronization2`
+  - SPIR-V 1.6
+  - `bufferDeviceAddress`
+  - `vulkanMemoryModel`
+  - `vulkanMemoryModelDeviceScope`
+  - `maxInlineUniformTotalSize`
 - Version 1.2
   - 24 promoted extensions
     - `VK_KHR_buffer_device_address` for bindless resources
@@ -2323,11 +2347,17 @@ Vulkan
     - `VK_EXT_descriptor_indexing` for bindless resources
     - `VK_EXT_scalar_block_layout` for HLSL compat
     - `VK_EXT_separate_stencil_usage` for D3D compat
+  - SPIR-V 1.5
+  - `samplerMirrorClampToEdge`
+  - `ShaderNonUniform`
+  - `shaderOutputViewportIndex`
+  - `shaderOutputLayer`
+  - `subgroupBroadcastDynamicId`
+  - `drawIndirectCount`
+  - `descriptorIndexing`
+  - `samplerFilterMinmax`
+  - `framebufferIntegerColorSampleCounts`
 - Version 1.1
-  - some of the new features
-    - protected content
-    - subgroup operations
-    - `vkEnumerateInstanceVersion`
   - 23 promoted extensions
     - `VK_KHR_16bit_storage`
     - `VK_KHR_device_group` for multi-gpu
@@ -2338,17 +2368,28 @@ Vulkan
     - `VK_KHR_relaxed_block_layout` for HLSL compat
     - `VK_KHR_sampler_ycbcr_conversion`
     - `VK_KHR_variable_pointers` for advanced compute
+  - `vkEnumerateInstanceVersion`
+  - `protectedMemory`
+  - group operations and subgroup scope
 
 ## Appendix E: Layers & Extensions (Informative)
 
 ## Appendix F: Vulkan Roadmap Milestones
 
 - Roadmap 2022
-  - requires Vulkan 1.3
-  - requires some optional features, noticeably
+  - Required API Versions: Vulkan 1.3
+  - Required Features
     - `samplerYcbcrConversion`
     - `descriptorIndexing`
-  - requires increased limits
+    - more
+  - Required Limits
+  - Required Extensions: `VK_KHR_global_priority`
+- Roadmap 2024
+  - Required Profiles: Roadmap 2022
+  - Required Features
+  - Required Limits
+  - Required Extensions: 14 extensions
+- `xml/profiles/VP_KHR_roadmap.json`
 
 ## Example
 
