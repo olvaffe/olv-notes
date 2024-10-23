@@ -1048,3 +1048,13 @@ Mesa PanVK Command Stream
     - fwiw, `gl_BaseVertex` is nir `base_vertex`, and if hw only supports
       `first_vertex`, `base_vertex` is lowered to `indexed ? first_vertex : 0`
   - spirv `DrawIndex` is nir `draw_id`
+- `panvk_draw_info`
+  - vk `firstInstance` is `instance.base`
+  - vk `instanceCount` is `instance.count`
+  - non-indexed
+    - vk `firstVertex` is `vertex.base`
+    - vk `vertexCount` is `vertex.count`
+  - indexed
+    - vk `indexCount` is `vertex.count`
+    - vk `firstIndex` is `index.offset`
+    - vk `vertexOffset` is `index.vertex_offset`
