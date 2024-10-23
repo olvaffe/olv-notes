@@ -213,6 +213,19 @@ Mesa PanVK Compiler
 - `bi_emit_intrinsic` lowers nir intrinsics to bir
   - `bi_emit_load_ubo` lowers `nir_intrinsic_load_ubo` to `LD_BUFFER.i32`
 
+## System Values
+
+- `panvk_lower_sysvals` lowers sysvals to push consts
+  - e.g., `nir_intrinsic_load_first_vertex` is lowered to
+    `nir_load_push_constant` with offset 256 plus
+    `offsetof(panvk_graphics_sysvals, vs.first_vertex)`
+- on draw,
+  - `prepare_sysvals` updates sysvals
+  - `prepare_push_uniforms` uploads both push consts and sysvals
+- `bi_emit_load_push_constant` lowers nir to bir
+  - `BI_OPCODE_MOV_I32` or `BI_OPCODE_COLLECT_I32`
+  - each src directly refers to fau
+
 ## Bifrost Compiler
 
 - `bifrost_preprocess_nir`
@@ -285,6 +298,39 @@ Mesa PanVK Compiler
     - `va_merge_flow`
     - `va_mark_last`
     - `bi_pack_valhall`
+
+## BIR
+
+- `bi_index` is a pseudo reg
+  - `BI_INDEX_NULL` is an unused reg
+    - `value` is 0
+  - `BI_INDEX_NORMAL` is an ssa reg
+    - `value` is the ssa id
+  - `BI_INDEX_REGISTER` is a physical reg
+    - `value` is the reg id
+  - `BI_INDEX_CONSTANT` is a 32-bit imm
+    - `value` is the imm
+  - `BI_INDEX_PASS` is a passthrough and is only before v9
+    - `value` is `enum bifrost_packed_src`
+  - `BI_INDEX_FAU` is a fau val
+    - `value` is `enum bir_fau`
+      - `BIR_FAU_ZERO` is unused
+      - `BIR_FAU_LANE_ID` is `VA_FAU_SPECIAL_PAGE_3_LANE_ID`
+      - `BIR_FAU_WARP_ID` is unused
+      - `BIR_FAU_CORE_ID` is unused
+      - `BIR_FAU_FB_EXTENT` is unused
+      - `BIR_FAU_ATEST_PARAM` is `VA_FAU_SPECIAL_PAGE_0_ATEST_DATUM`
+      - `BIR_FAU_SAMPLE_POS_ARRAY` is `VA_FAU_SPECIAL_PAGE_0_SAMPLE`
+      - `BIR_FAU_BLEND_0` is `VA_FAU_SPECIAL_PAGE_0_BLEND_DESCRIPTOR_0`
+      - `BIR_FAU_TYPE_MASK` is unused
+      - `BIR_FAU_TLS_PTR` is `VA_FAU_SPECIAL_PAGE_1_THREAD_LOCAL_POINTER`
+      - `BIR_FAU_WLS_PTR` is `VA_FAU_SPECIAL_PAGE_1_WORKGROUP_LOCAL_POINTER`
+      - `BIR_FAU_PROGRAM_COUNTER` is `VA_FAU_SPECIAL_PAGE_3_PROGRAM_COUNTER`
+      - `BIR_FAU_UNIFORM` means the lower 5 bits are an idx into fau
+      - `BIR_FAU_IMMEDIATE` means the lower 5 bits are an idx into an imm
+        table for common immediate values
+        - see `ISA.xml`
+- `bi_instr` is a pseudo instr
 
 ## ISA Packing
 
