@@ -400,3 +400,9 @@ Mesa PanVK Compiler
     - when the highest byte is 62(?),
       - the lower bytes are the index of `MALI_RESOURCE` array
       - the instr loads from the descriptor array
+- `LOAD.i*` and `STORE.i*`
+  - `va_pack_memory_access` packs `bi_seg` to `va_memory_access`
+    - `BI_SEG_TL` (thread-local) to `VA_MEMORY_ACCESS_FORCE`
+    - `BI_SEG_POS` (pos sh output) to `VA_MEMORY_ACCESS_ISTREAM`
+    - `BI_SEG_VARY` (vary sh output) to `VA_MEMORY_ACCESS_ESTREAM`
+    - the rest are to `VA_MEMORY_ACCESS_NONE` (no hint)
