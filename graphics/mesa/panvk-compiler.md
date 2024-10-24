@@ -299,6 +299,29 @@ Mesa PanVK Compiler
     - `va_mark_last`
     - `bi_pack_valhall`
 
+## Registers
+
+- `MALI_SHADER_PROGRAM` can preload regs
+  - vertex shader
+    - `r59` is idvs output index
+    - `r60` is `vertex_id`
+    - `r61` is `instance_id`
+    - `r62` is `draw_id`
+  - fragment shader
+    - `r58` is `!front_face`
+    - `r59` is `pixel_coord`
+    - `r60` is current sample mask
+    - `r61` is `bary` or `sample_id` plus `sample_mask_in`
+    - `r62` is `layer_id`
+  - compute shader
+    - `r55`..`r56` are `local_invocation_id`
+    - `r57`..`r59` are `workgroup_id`
+    - `r60`..`r62` are `global_invocation_id`
+  - blend shader is special
+    - `r0`..`r3` are `src_color`
+    - `r4`..`r7` are `src_color2`, for dual-source blending
+    - `r48` is the return addr of fs
+
 ## BIR
 
 - `bi_index` is a pseudo reg
