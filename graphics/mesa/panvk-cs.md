@@ -877,6 +877,9 @@ Mesa PanVK Command Stream
   - `r45`: `High depth clamp`, from viewport
   - `d46`: `Occlusion`, va of occlusion query bo
   - `r48`: `Varying allocation` is attr count times `sizeof(vec4)`
+    - this is the size of `BI_SEG_VARY`
+    - vs writes varyings to the segment
+    - fs reads varyings from the segment
   - `d50`: `MALI_BLEND` array
   - `d52`: `MALI_DEPTH_STENCIL`
   - `d54`: `Indices`, va of index buffer

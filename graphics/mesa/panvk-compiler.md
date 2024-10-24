@@ -406,3 +406,117 @@ Mesa PanVK Compiler
     - `BI_SEG_POS` (pos sh output) to `VA_MEMORY_ACCESS_ISTREAM`
     - `BI_SEG_VARY` (vary sh output) to `VA_MEMORY_ACCESS_ESTREAM`
     - the rest are to `VA_MEMORY_ACCESS_NONE` (no hint)
+
+## VS
+
+- `prepare_vs_driver_set` preps the driver-internal descriptor set
+  - `MALI_ATTRIBUTE` descriptors
+    - there are `MAX_VS_ATTRIBS` (16) of them
+    - only used attrs are initialized
+    - `type` is `MALI_DESCRIPTOR_TYPE_ATTRIBUTE`
+    - `attribute_type` is usually `MALI_ATTRIBUTE_TYPE_1D` unless instanced
+    - `offet_enable` is true unless instanced
+    - `format` is from `GENX(panfrost_format_from_pipe_format)`
+    - `table` is always 0
+    - `frequency` is `MALI_ATTRIBUTE_FREQUENCY_VERTEX` unless instanced
+    - `divisor_r`, `divisor_d`, `divisor_e` are for instancing
+    - `offset` is the offset of this attr in the vertex data
+    - `buffer_index` is the index of the buffer descriptor
+    - `stride` is the size of the vertex data
+    - `packet_stride` and `attribute_stride` are probably for the unused
+      `MALI_ATTRIBUTE_TYPE_VERTEX_PACKET`
+  - `MALI_SAMPLER` descriptor
+    - this is dummy
+  - `MALI_BUFFER` descriptors
+    - one for each vb
+    - `address` and `size` are va and size of the vb
+- suppose we have a vs that
+  - `gl_Position = in_attr;`
+  - `out_texcoord = in_attr;`
+- `panvk_lower_nir`
+  - it assigns driver locations for in-vars as offsets to
+    `VERT_ATTRIB_GENERIC0`
+  - `nir_assign_io_var_locations` assigns driver locations for out-vars
+    sequentially
+  - `pan_shader_preprocess` calls `bifrost_preprocess_nir`
+    - `nir_lower_viewport_transform`
+      - `gl_Position` is in clip coordinates
+      - hw expects framebuffer coordinates
+      - this pass applies viewport manually
+        - `nir_load_viewport_offset` and `nir_load_viewport_scale` load the
+          viepwort
+    - `nir_lower_io` lowers vs io
+      - `lower_load` lowers `nir_intrinsic_load_deref` of in-vars to
+        `nir_intrinsic_load_input`
+        - `base` is `var->data.driver_location`
+          - this is `var->data.location - VERT_ATTRIB_GENERIC0`
+        - `component` is based on `var->data.location_frac` which is 0 unless
+          in-vars are packed
+        - `io_semantics.location` is `var->data.location`
+          - this is `VERT_ATTRIB_GENERIC0` or later
+        - `src` is the offset, which is 0 unless in-vars are packed
+      - `lower_store` lowers `nir_intrinsic_store_deref` of out-vars to
+        `nir_intrinsic_store_output`
+        - `base` is `var->data.driver_location`
+          - this is assigned sequentially by `nir_assign_io_var_locations`
+        - `component` is based on `var->data.location_frac`, which is 0 unless
+          out-vars are packed
+        - `io_semantics.location` is `var->data.location`
+          - `VARYING_SLOT_POS` for `gl_Position`
+          - `VARYING_SLOT_VAR0` or later for generic varyings
+        - `src0` is the value
+        - `src1` is the offset, which is 0 unless out-vars are packed
+  - `panvk_lower_sysvals`
+    - various sysvals are lowered to `nir_load_push_constant`
+      - including `nir_load_viewport_offset` and `nir_load_viewport_scale`
+- `bifrost_compile_shader_nir`
+  - `info->vs.idvs` is set to `bi_should_idvs`
+    - it is always true for vs on panvk
+  - `pan_nir_collect_varyings`
+  - `bi_compile_variant` with `BI_IDVS_POSITION`
+    - `ctx->malloc_idvs` is always true on panvk
+    - `bifrost_nir_specialize_idvs` eliminates all outs but
+      - `VARYING_SLOT_POS`
+      - `VARYING_SLOT_PSIZ`
+      - `VARYING_SLOT_LAYER`
+  - `bi_compile_variant` with `BI_IDVS_VARYING`
+    - `ctx->malloc_idvs` is always true on panvk
+    - `bifrost_nir_specialize_idvs` keeps all outs but
+      - `VARYING_SLOT_POS`
+      - `VARYING_SLOT_PSIZ`
+      - `VARYING_SLOT_LAYER`
+- `bi_emit_load_attr` translates `nir_intrinsic_load_input`
+  - `bi_is_imm_desc_handle`
+    - remember that that the first `MAX_VS_ATTRIBS` descriptors of set 0 is
+      `MALI_ATTRIBUTE`
+    - `table_index` is always 0
+    - `res_index` is `base` plus `offset`
+    - returns true
+  - `bi_ld_attr_imm_to` emits `BI_OPCODE_LD_ATTR_IMM`
+    - src0 is vertex id
+    - src1 is instance id
+    - `attribute_index` is the index of the `MALI_ATTRIBUTE` descriptor
+    - this fetches the attr for the vertex/instance and converts the format
+  - `va_res_fold_table_idx` sets table, which is always 0
+- `bi_emit_store_vary` translates `nir_intrinsic_store_output`
+  - we need to query the addr to store the out-var to
+    - the regular path is to do a `BI_OPCODE_LEA_ATTR_IMM`
+      - the hw has generated descriptors for all out-vars
+      - this op takes a descriptor index, vertex id, and instance id
+      - it returns the addr to write the out-var to
+    - the fast path is to do a `BI_OPCODE_LEA_BUF_IMM` on preloaded `r59`
+  - `bi_lea_buf_imm` emits `BI_OPCODE_LEA_BUF_IMM` to get the 64-bit va
+  - `bi_emit_split_i32` emits pseudo `BI_OPCODE_SPLIT_I32`
+    - the lea loads a 64-bit va to an ssa reg
+    - this pseudo instr splits it into two 32-bit ssa regs
+    - i guess this tells ra to use two consecutive phy regs to hold the
+      value
+  - `bi_store` emits `BI_OPCODE_STORE_I*`
+    - for vec4, it uses `BI_OPCODE_STORE_I128`
+    - src0 is the value
+    - src1 and src2 are the va
+    - `seg` is the special `BI_SEG_POS` or `BI_SEG_VARY`
+    - `byte_offset` is 0 or `bi_varying_offset()`
+      - note that panvk does not set `fixed_varying_mask` and
+        `bi_varying_offset` returns `16 * (sem.location - VARYING_SLOT_VAR0)`
+      - the size of `BI_SEG_VARY` is specified by cs `r48`
