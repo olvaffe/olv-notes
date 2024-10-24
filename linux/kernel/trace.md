@@ -17,9 +17,11 @@ Kernel trace
     tracer)
   - `CONFIG_ENABLE_DEFAULT_TRACERS` enables the default tracers
     - this enables sched events and tracepoints
-    - any other tracer enables them too
-    - this exsits such that, if no real tracer is enabled, this can at least
-      enable sched and tracepoints
+    - any real tracer enables them too
+    - the idea is that
+      - if any real tracer is enabled, this is unnecessary and will be hidden
+      - if no real tracer is enabled, this can be used to enable sched events
+        and tracepoints
 - `start_kernel` calls
   - `ftrace_init` patches `mcount` calls to nop
     - `ftrace_update_code` is called on each call and `ftrace_init_nop` does
