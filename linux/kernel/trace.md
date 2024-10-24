@@ -50,17 +50,49 @@ Kernel trace
 
 ## Tracepoints
 
-- to define a tracepoint,
-  - define `CREATE_TRACE_POINTS`
-  - define `TRACE_SYSTEM`
+- to define tracepoints, create a header that
+  - defines `CREATE_TRACE_POINTS`
+  - defines `TRACE_SYSTEM`
   - include `linux/tracepoint.h`  
-  - `DEFINE_EVENT`
-    - this defines a `struct trace_event_call` in `_ftrace_events` section
+  - `DEFINE_EVENT` defines a tracepoint
+    - it expands to `DECLARE_TRACE` which expands to `__DECLARE_TRACE`
+      - this defines `trace_##name` as an inline function
+        - if `CONFIG_TRACEPOINTS` is not defined, the inline function is nop
+      - the inline function checks if the tracepoint is enabled and calls
+        `__traceiter_##name`
   - include `trace/define_trace.h`
-    - this defines a `struct tracepoint` in `__tracepoints` section
+    - this is nop unless `CREATE_TRACE_POINTS` is defined
+    - otherwise, it re-includes everything and re-expands `DEFINE_EVENT`
+    - this time, `DEFINE_EVENT` expands to `DEFINE_TRACE` which expands to
+      `DEFINE_TRACE_FN`
+      - this defines `struct tracepoint __tracepoint_##name` in
+        `__tracepoints` section
+      - it also defines `__traceiter_##name` function called from the inline
+        function
+    - it then includes `trace/trace_events.h` which re-includes everything a
+      few more times
+      - this define `trace_event_raw_event_##call` as a probe function
+      - it also defines `struct trace_event_call event_##call` in
+        `_ftrace_events` section
 - when userspace writes 1 to `/sys/kernel/tracing/events/drm/enable`,
-  - `system_enable_write` calls `ftrace_event_enable_disable` to enable the
+  - `system_enable_write` calls `ftrace_event_enable_disable` to enable each
     tracepoint
+  - `ftrace_event_enable_disable` calls `call->class->reg` which is
+    `trace_event_reg`
+  - `trace_event_reg` calls `tracepoint_probe_register` to register
+    `trace_event_raw_event_##call` as a probe function
+    - each tracepoint has a list of probe functions at `tp->funcs`
+    - other probe frameworks can hook into tracepoints
 - when userspace writes 1 to `/sys/kernel/tracing/tracing_on`,
   - `rb_simple_write` calls `tracer_tracing_on` or `tracer_tracing_off`
   - `ring_buffer_record_on` enables the ring buffer
+- `trace_##name` calls the list of probe functions at `tp->funcs`
+  - `trace_event_raw_event_##call` calls
+    - `trace_event_buffer_reserve`
+    - whatever the traceponit wants to record to the ring buffer
+    - `trace_event_buffer_commit`
+- when userspace reads from `/sys/kernel/tracing/trace`
+  - `tracing_open` handles open
+  - `s_show` handles reads
+  - `print_trace_line` prints a line
+  - `print_trace_fmt`
