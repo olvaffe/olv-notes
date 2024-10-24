@@ -1427,6 +1427,32 @@ dEQP
   values
   - the fence is used to wait for the last submit
 
+## Test Case: `dEQP-VK.texture.mipmap.2d.basic.nearest_nearest_clamp`
+
+- test case
+  - `createTextureMipmappingTests`
+  - `populateTextureMipmappingTests`
+    - `basic` means `COORDTYPE_BASIC`
+    - `nearest_nearest` means `Sampler::NEAREST_MIPMAP_NEAREST`
+    - `clamp` means `Sampler::CLAMP_TO_EDGE`
+    - `format` is `VK_FORMAT_R8G8B8A8_UNORM`
+    - size is 64x64
+  - `Texture2DMipmapTestInstance`
+- `Texture2DMipmapTestInstance::Texture2DMipmapTestInstance`
+  - `m_texture` is a 64x64 image
+  - `m_renderer` is a 256x256 image
+  - there are 7 levels, each level has a solid color
+    - level 0: (0, 255, 255)
+    - level 1: (42, 213, 255)
+    - level 2: (84, 171, 255)
+    - level 3: (126, 129, 255)
+    - level 4: (168, 87, 255)
+    - level 5: (210, 45, 255)
+    - level 6: (252, 3, 255)
+- `Texture2DMipmapTestInstance::iterate`
+  - the rt is divided into 4x4 grid
+  - a quad is rendererd to each region with different texccords
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
