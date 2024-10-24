@@ -520,3 +520,44 @@ Mesa PanVK Compiler
       - note that panvk does not set `fixed_varying_mask` and
         `bi_varying_offset` returns `16 * (sem.location - VARYING_SLOT_VAR0)`
       - the size of `BI_SEG_VARY` is specified by cs `r48`
+
+## FS
+
+- `prepare_fs_driver_set` preps the driver-internal descriptor set
+  - `MALI_SAMPLER` descriptor
+    - this is dummy
+- suppose we have a fs that
+  - `out_color = in_color;`
+- `panvk_lower_nir`
+  - `nir_assign_io_var_locations` assigns driver locations for in-vars and
+    out-vars sequentially
+  - `pan_shader_preprocess` calls `bifrost_preprocess_nir`
+    - `nir_lower_io` lowers fs io
+      - `lower_load` lowers `nir_intrinsic_load_deref` of in-vars to
+        `nir_intrinsic_load_barycentric_pixel` and
+        `nir_intrinsic_load_interpolated_input`
+        - similar to vs
+        - `io_semantics.location` is `var->data.location`
+          - this is `VARYING_SLOT_VAR0` or later
+      - `lower_store` lowers `nir_intrinsic_store_deref` of out-vars to
+        `nir_intrinsic_store_output`
+        - similar to vs
+        - `io_semantics.location` is `var->data.location`
+          - this is `FRAG_RESULT_DATA0`
+  - `panvk_lower_sysvals`
+- `bifrost_compile_shader_nir`
+  - `bi_compile_variant` with `BI_IDVS_NONE`
+    - `ctx->malloc_idvs` is always true on panvk
+- `bi_emit_load_vary` translates `nir_intrinsic_load_barycentric_pixel` and
+  `nir_intrinsic_load_interpolated_input`
+  - `bi_varying_src0_for_barycentric` returns preloaded `r61`
+  - `bi_ld_var_buf_imm_to` emits `BI_OPCODE_LD_VAR_BUF_IMM_F32`
+    - src0 is barycentric params
+    - `register_format` is `BI_REGISTER_FORMAT_F32` for 32-bit components
+    - `sample` is `BI_SAMPLE_CENTER`
+    - `source_format` is `BI_SOURCE_FORMAT_F32`
+    - `update` is `BI_UPDATE_STORE`
+    - `vecsize` depends on component count
+    - `index` is the varying offset in `BI_SEG_VARY`
+- `bi_emit_fragment_out` translates `nir_intrinsic_store_output`
+- DCDs and Blend
