@@ -327,6 +327,10 @@ Mesa PanVK Compiler
       - `BIR_FAU_WLS_PTR` is `VA_FAU_SPECIAL_PAGE_1_WORKGROUP_LOCAL_POINTER`
       - `BIR_FAU_PROGRAM_COUNTER` is `VA_FAU_SPECIAL_PAGE_3_PROGRAM_COUNTER`
       - `BIR_FAU_UNIFORM` means the lower 5 bits are an idx into fau
+        - the fau is 512 bytes in size
+        - it is indexed as dwords and indices are thus 7 bits
+        - the higher 2 bits are fau page and are encoded in bit 57 and 58 of
+          the instr
       - `BIR_FAU_IMMEDIATE` means the lower 5 bits are an idx into an imm
         table for common immediate values
         - see `ISA.xml`
