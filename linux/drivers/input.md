@@ -1,6 +1,70 @@
 Input subsystem
 ===============
 
+## Driver
+
+- an input device driver calls `input_allocate_device` and
+  `input_register_device` to alloc and register the device
+  - it should fill in `input_dev` for name, supported keys, event callback, etc.
+- when the driver has an event to report,
+  - `input_event(dev, EV_MSC, MSC_RAW, code)` reports the raw code
+  - `input_event(dev, EV_MSC, MSC_SCAN, scancode)` reports the scan code
+  - `input_event(dev, EV_KEY, keycode, value)` reports the key code
+    - value is for press or release
+  - `input_event(dev, EV_SYN, SYN_REPORT, 0)` marks the end of the report
+  - helpers
+    - `input_report_key` for `input_event(EV_KEY)`
+    - `input_sync` for `input_event(EV_SYN, SYN_REPORT)`
+- the input core can also send a request to the driver through the `event`
+  callback
+  - `EV_LED` to turn leds on/off
+  - `EV_REP` to set repeat rate
+- `input_event` calls `input_handle_event` in the core
+  - `input_get_disposition` decides the disposition
+  - `INPUT_IGNORE_EVENT` ignores the event
+  - `INPUT_PASS_TO_DEVICE` calls `dev->event` callback
+  - `INPUT_PASS_TO_HANDLERS` buffers the event in `dev->vals`
+  - `INPUT_FLUSH` calls `handle->handler->events` to send `dev->vals` to all
+    handlers
+
+## atkbd and psmouse
+
+- serio
+  - `serio_init` registers `serio_bus`
+  - when a `serio` port and a `serio_driver` match, `serio_connect_driver`
+    connects the port to the driver
+- i8042
+  - `i8042_init` registers both `i8042` platform driver and device
+    - `i8042_platform_init` also registers `i8042 kbd` and `i8042 aux` pnp
+      drivers, but they are usually unused
+    - `i8042_controller_check` performs pio to check the controller
+  - `i8042_register_ports` calls `serio_register_port` to register the kbd
+    and aux ports, if exists
+- atkbd
+  - `atkbd_init` calls `serio_register_driver` to register `atkbd_drv`
+  - `atkbd_connect` connects to a `serio` port and calls
+    `input_allocate_device`/`input_register_device` to alloc/register an
+    `input_dev`
+  - it speaks the ps2 protocol
+    - `ps2_command` to send a cmd to the keyboard
+    - `atkbd_receive_byte` to handle data from the keyboard and to send them
+      to the core with `input_event`
+    - the ps2 helper uses the `i8042` serio port to communicate with the hw
+- psmouse
+  - `psmouse_init` calls `serio_register_driver` to register `psmouse_drv`
+  - the rest is similar to atkbd
+
+## Handler
+
+- a input event handler calls `input_register_handler` to register a handler
+  - `id_table` and the `match` callback describe what devices the handler is
+    interested in
+  - `connect` is called for each matched device
+    - the handler should call `input_register_handle` and `input_open_device`
+      to connect to the device
+  - on input events, `filter`/`event`/`events` handle the events
+- handler could also simulate events through `input_inject_event`.
+
 ## Structs
 
 - `struct input_event`: time/type/code/value
@@ -13,17 +77,6 @@ Input subsystem
 - `struct input_handler`: an interface of input device (evdev interface, blah)
 - `struct input_handle`: a handle connects handler and device.
                        multiple devices might have the same interface.  There is one handler, but multiple handles.
-
-## flow
-
-- device driver calls `input_register_device`
-- handler driver calls `input_register_handler`
-- if a device/handler pair matches, `handler->connect` is called which should
-  allocate and call `input_register_handle`
-- when the handler is to be used (e.g., userspace opens /dev/input/eventX),
-  `input_open_device` is called and device starts sending events.
-- device report event through `input_report_XXX`, which calls `input_event`
-- handler could also simulate events through `input_inject_event`.
 
 ## event types
 
@@ -49,41 +102,9 @@ Input subsystem
 - on the device side, (HW STATE -> series of EVENTS -> SYN)
       on the handler side, (series of EVENTS -> SYN -> compose HW STATE)
 
-## device -> handler
-
-- report events through one of `input_report_{key,rel,abs,blah} `
-- they call into `input_event`, which calls `input_handle_event`
-- `input_handle_event` might ignore the event, route the event to device and/or handler
-
 ## `EVIOCGRAB`
 
 - invokes `evdev_grab`
-
-## atkbd and psmouse
-
-- serio
-  - `serio_init` registers `serio_bus`
-  - when a `serio` port and a `serio_driver` match, `serio_connect_driver`
-    connects the port to the driver
-- i8042
-  - `i8042_init` registers both `i8042` platform driver and device
-    - `i8042_platform_init` also registers `i8042 kbd` and `i8042 aux` pnp
-      drivers, but they are usually unused
-    - `i8042_controller_check` performs pio to check the controller
-  - `i8042_register_ports` calls `serio_register_port` to register the kbd
-    and aux ports, if exists
-- atkbd
-  - `atkbd_init` calls `serio_register_driver` to register `atkbd_drv`
-  - `atkbd_connect` connects to a `serio` port and calls
-    `input_allocate_device`/`input_register_device` to alloc/register an
-    `input_dev`
-  - it speaks the ps2 protocol
-    - `ps2_command` to send a cmd to the keyboard
-    - `atkbd_receive_byte` to handle data from the keyboard
-    - the ps2 helper uses the `i8042` serio port to communicate with the hw
-- psmouse
-  - `psmouse_init` calls `serio_register_driver` to register `psmouse_drv`
-  - the rest is similar to atkbd
 
 ## gamepad
 
