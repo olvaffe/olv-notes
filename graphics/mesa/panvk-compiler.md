@@ -359,31 +359,46 @@ Mesa PanVK Compiler
         - see `ISA.xml`
 - `bi_instr` is a pseudo instr
 
-## ISA Packing
+## ISA Encoding
 
-- every instruction has 64 bits
-  - bit 0..39: opcode-dependent
-    - each src reg takes 8 bits, if any
-      - see `va_pack_src`
-    - modifiers are defined by `MODIFIERS` in `valhall.py`
+- see `va_pack_instr` for definitive definitions
+- an instruction has 64 bits
+  - bit 0..7: src0
+  - bit 8..15: src1
+  - bit 16..23: src2
+  - bit 24..39: modifiers
   - bit 40..47: dst
-    - the higher 2 bits are writemask
-    - see `va_pack_dest`
   - bit 48..56: primary opcode
   - bit 57..58: fau page
+    - an src reg may refer to fau for a preloaded value
+    - different preloaded values may be on different 128-byte fau pages
+      specified by this field
   - bit 59..62: flow
+    - `VA_FLOW_NONE` is the default
+    - `VA_FLOW_WAIT*` waits for different slots
+    - `VA_FLOW_RECONVERGE` is set when exec mask changes
+    - `VA_FLOW_DISCARD` terminates an fs helper invocation
+      - for explicit `dFdx`/`dFdy` or implicit `texture` to work in fs, helper
+        invocations are created
+      - this terminates them when they are no longer needed
+    - `VA_FLOW_END` terminates a thread
   - bit 63: reserved
-- e.g., `LD_BUFFER.i32`
-  - see `va_pack_load` for definite definitions
-  - bit 00..07: src 0, byte offset
-  - bit 08..15: src 1, mode descriptor
-  - bit 16..23: mbz
-  - bit 24..26: mbz
-  - bit 27..29: secondary opcode
+- messages
   - bit 30..32: slot
-  - bit 33..35: `staging_register_count`
-  - bit 36..38: `load_lane_32_bit`
-  - bit 39..39: `unsigned`
+    - a message is async and a slot is specified
+    - the flow field can be used to wait for a slot
+  - bit 33..35: read reg count
+  - bit 36..38: write reg count
+  - bit 39: skip (tex) or unsigned (load)
+  - bit 40..45: base reg id
+  - bit 46: read
+  - bit 47: write
+- non-messages
+  - bit 40..45: dest reg id
+    - this is ignored by those who do not have a dest
+    - `BRANCHZI` repurposes bit 40 for abs/rel addr
+  - bit 46: write lower 16 bits
+  - bit 47: write higher 16 bits
 
 ## ISA
 
