@@ -543,7 +543,7 @@ Mesa PanVK Compiler
         `nir_intrinsic_store_output`
         - similar to vs
         - `io_semantics.location` is `var->data.location`
-          - this is `FRAG_RESULT_DATA0`
+          - this is `FRAG_RESULT_DATA0` or later
   - `panvk_lower_sysvals`
 - `bifrost_compile_shader_nir`
   - `bi_compile_variant` with `BI_IDVS_NONE`
@@ -560,4 +560,86 @@ Mesa PanVK Compiler
     - `vecsize` depends on component count
     - `index` is the varying offset in `BI_SEG_VARY`
 - `bi_emit_fragment_out` translates `nir_intrinsic_store_output`
-- DCDs and Blend
+  - `bi_emit_atest` emits `BI_OPCODE_ATEST`
+    - src0 is preloaded r60, the current sample mask
+    - src1 is the alpha component of the color output
+    - src2 is `BIR_FAU_ATEST_PARAM`
+    - this performs alpha-to-coverage and updates r60
+      - `bi_allocate_registers` allocs r60 for dest
+  - `bi_emit_blend_op` emits `BI_OPCODE_BLEND`
+    - src0 is the color (4 consecutive regs)
+    - src1 is the r60, the current sample mask
+    - src2 and src3 are 64-bit `BIR_FAU_BLEND_0`
+      - this is the `MALI_INTERNAL_BLEND` descriptor
+    - src4 is for dual color
+    - `bi_allocate_registers` allocs r48 for dest, r0..r3 for src0, and r4..r7
+      for src4
+      - blend shader assumes those regs are preloaded
+- `bi_pack_valhall` calls `va_lower_blend`
+  - it finds `BI_OPCODE_BLEND` and appends instrs it
+  - `BI_OPCODE_BLEND` checks the blend descriptor
+    - if fixed-function blending, it sends the color to the blender and
+      terminates fs
+    - if blend shader, it is nop and continues to instrs appended here
+  - `bi_iadd_imm_i32_to` sets r48 to 0
+    - if r48 is non-zero, blend shader will branch back to the addr
+  - `bi_branchzi` branches to the blend shader
+
+## Blend Shader
+
+- when `BI_OPCODE_BLEND` executes in fs, it either sends the color to the
+  fixed-function blender or is nop
+  - fs is supposed to follow the nop with a branch to the blend shader
+- `prepare_blend` calls `panvk_per_arch(blend_emit_descs)` to emit blend
+  descriptors
+  - if the blender cannot support the blend op or the logic op,
+    `blend_needs_shader` returns true and `get_blend_shader` compiles a blend
+    shader
+  - `GENX(pan_blend_create_shader)`
+    - `nir_load_interpolated_input` loads the color inputs
+      - `VARYING_SLOT_COL0` for color
+      - `VARYING_SLOT_VAR0` for dual source color
+    - `nir_store_output` stores the color outputs
+    - `nir_lower_blend` simulates blending in nir
+      - `nir_load_output` fetches the fb outputs
+  - `lower_load_blend_const` lowers
+    `nir_intrinsic_load_blend_const_color_rgba` to `nir_load_push_constant`
+  - `panfrost_compile_inputs`
+    - `is_blend` is true
+    - `blend.bifrost_blend_desc` is an embedded 64-bit `MALI_INTERNAL_BLEND`
+  - `pan_shader_preprocess` is the standard compiler prepass
+    - `bifrost_nir_lower_load_output` lowers `nir_intrinsic_load_output` (fb
+      fetch) to 
+      - `nir_load_rt_conversion_pan`
+      - `nir_load_converted_output_pan`
+  - `GENX(pan_inline_rt_conversion)` lowers
+    `nir_intrinsic_load_rt_conversion_pan` to an imm for dw1 of
+    `MALI_INTERNAL_BLEND`
+- `bi_emit_load_blend_input` translates
+  `nir_intrinsic_load_interpolated_input` to input color
+  - it uses r0..r3 or r4..7 as set up by the fs
+- `bi_emit_ld_tile` translates `nir_intrinsic_load_converted_output_pan` to
+  `BI_OPCODE_LD_TILE`
+  - remember that fb fetch just fetches from tilebuffer
+  - src0 is `bi_pixel_indices`, the pixel to fetch
+  - src1 is `bi_coverage`, the current sample mask
+  - src2 is conversion descriptor
+    - it is an imm from lowering of `nir_intrinsic_load_rt_conversion_pan` in
+      `GENX(pan_inline_rt_conversion)`
+- `bi_emit_fragment_out` translates `nir_intrinsic_store_output`
+  - remember that `is_blend` is set
+  - atest is skipped
+  - `bi_emit_blend_op` emits `BI_OPCODE_BLEND` using
+    `inputs->blend.bifrost_blend_desc` rather than `BIR_FAU_BLEND_0`
+  - `bi_branchzi` either branches back to fs or terminates
+
+## Blit Shader
+
+- `issue_fragment_jobs` calls `panvk_per_arch(cmd_fb_preload)`
+  - `cmd_emit_dcd` calls `get_preload_shader`
+  - `get_preload_nir_shader`
+    - `nir_texop_txf` or `nir_texop_txf_ms` to fetch from image
+    - `nir_store_output` to store to tilebuffer
+  - `panfrost_compile_inputs`
+    - `is_blit` is true
+- it works the same way as a regular fs, except atest can potentially be skipped
