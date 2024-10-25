@@ -195,7 +195,7 @@ Kernel Config
     - select `Magic SysRq key`
     - select `Debug Filesystem`
   - select `Tracers`
-    - select `Kernel Function Tracer`
+    - select `Kernel Function Tracer` if desired
     - select `Trace syscalls`
 
 ## Config: x86

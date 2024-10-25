@@ -74,13 +74,23 @@ Kernel trace
       `DEFINE_TRACE_FN`
       - this defines `struct tracepoint __tracepoint_##name` in
         `__tracepoints` section
+        - each tracepoint has a list of probe functions at `tp->funcs`
+        - other probe frameworks can hook into tracepoints as well
       - it also defines `__traceiter_##name` function called from the inline
         function
+      - the traceiter function calls active probe functions that are currently
+        on the `tp->funcs` list
     - it then includes `trace/trace_events.h` which re-includes everything a
       few more times
       - this define `trace_event_raw_event_##call` as a probe function
       - it also defines `struct trace_event_call event_##call` in
         `_ftrace_events` section
+        - if `CONFIG_EVENT_TRACING` is not defined, these symbols are
+          discarded
+- `trace_##name` is the entrypoint of a tracepoint
+  - it checks if the tracepoint is enabled first
+  - if enabled, it calls `__traceiter_##name` which calls the list of probe
+    functions at `tp->funcs`
 - when userspace writes 1 to `/sys/kernel/tracing/events/drm/enable`,
   - `system_enable_write` calls `ftrace_event_enable_disable` to enable each
     tracepoint
@@ -88,18 +98,47 @@ Kernel trace
     `trace_event_reg`
   - `trace_event_reg` calls `tracepoint_probe_register` to register
     `trace_event_raw_event_##call` as a probe function
-    - each tracepoint has a list of probe functions at `tp->funcs`
-    - other probe frameworks can hook into tracepoints
+    - this adds the probe function to `tp->funcs`
+    - when called,
+      - `trace_event_buffer_reserve`
+      - whatever the traceponit wants to record to the ring buffer
+      - `trace_event_buffer_commit`
 - when userspace writes 1 to `/sys/kernel/tracing/tracing_on`,
   - `rb_simple_write` calls `tracer_tracing_on` or `tracer_tracing_off`
   - `ring_buffer_record_on` enables the ring buffer
-- `trace_##name` calls the list of probe functions at `tp->funcs`
-  - `trace_event_raw_event_##call` calls
-    - `trace_event_buffer_reserve`
-    - whatever the traceponit wants to record to the ring buffer
-    - `trace_event_buffer_commit`
 - when userspace reads from `/sys/kernel/tracing/trace`
   - `tracing_open` handles open
   - `s_show` handles reads
   - `print_trace_line` prints a line
   - `print_trace_fmt`
+- configs
+  - `CONFIG_FTRACE` is the top-level menu
+  - when no tracer is enabled at all, `CONFIG_TRACING` is not set
+    - no `CONFIG_TRACEPOINTS`
+      - `struct tracepoint __tracepoint_##name` is not defined
+      - `trace_##name` is nop
+    - no `CONFIG_EVENT_TRACING`
+      - `_ftrace_events` is discarded by the linker and thus no
+        `struct trace_event_call event_##call`
+      - `trace_events.c` is not compiled
+  - when no real tracer is needed, `CONFIG_ENABLE_DEFAULT_TRACERS` can be used
+    to select `CONFIG_TRACING` to enable tracepoints
+  - when any real tracer is enabled, it selects `CONFIG_GENERIC_TRACER` which
+    selects `CONFIG_TRACING` to enable tracepoints
+
+## Syscalls
+
+- `CONFIG_FTRACE_SYSCALLS` is a tracer for syscalls
+- the linker will include `__syscalls_metadata` section
+- syscall definitions will expand `SYSCALL_METADATA` to
+  - `static struct trace_event_call __used event_enter_##sname` and
+  - `static struct trace_event_call __used event_exit_##sname` in
+    `_ftrace_events` section
+  - `static struct syscall_metadata __used __syscall_meta_##sname` in
+    `__syscalls_metadata` section
+- when a tracepoint is enabled, `syscall_enter_register` or
+  `syscall_exit_register` is called
+- when a tracepoint is reached, `fields_array` of `event_class_syscall_enter`
+  or `event_class_syscall_exit` is recorded
+- when the trace is printed, `print_syscall_enter` or `print_syscall_exit`
+  prints the formatted line
