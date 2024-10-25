@@ -63,7 +63,31 @@ Input subsystem
     - the handler should call `input_register_handle` and `input_open_device`
       to connect to the device
   - on input events, `filter`/`event`/`events` handle the events
+    - if `filter` returns true for an event, the event is removed from all
+      following handlers
 - handler could also simulate events through `input_inject_event`.
+- example handlers
+  - `rfkill_handler_init` toggles RF
+    - it matches devices that have `KEY_WLAN`, `KEY_BLUETOOTH`,
+      `KEY_RFKILL`, `SW_RFKILL_ALL`, etc.
+  - vt `kbd_init` for vt input
+    - it matches `EV_KEY`
+  - `sysrq_register_handler` for sysrq
+    - it matches `KEY_LEFTALT`
+  - ledtrig `input_events_init` toggles leds on inputs
+    - it matches `EV_KEY`, `EV_REL`, `EV_ABS`
+  - `input_leds_init` provides controls for leds on input devices
+    - it matches `EV_LED`
+    - it does not handle events, but calls `led_classdev_register` to register
+      a led device
+    - when the led is toggled via the led device, it calls
+      `input_inject_event(EV_LED)` to send the event to the device driver
+  - `evdev_init` provides `/dev/input/event*`
+    - it matches all input devices
+    - it passes events to userspace clients
+    - ioctl `EVIOCGRAB` calls `evdev_grab` and `input_grab_device`
+      - all future events are passed only to the evdev handler and not to
+        other handlers
 
 ## Structs
 
@@ -101,10 +125,6 @@ Input subsystem
       and a `EV_SYN` follows.
 - on the device side, (HW STATE -> series of EVENTS -> SYN)
       on the handler side, (series of EVENTS -> SYN -> compose HW STATE)
-
-## `EVIOCGRAB`
-
-- invokes `evdev_grab`
 
 ## gamepad
 
