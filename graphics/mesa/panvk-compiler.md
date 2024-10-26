@@ -648,13 +648,56 @@ Mesa PanVK Compiler
     `inputs->blend.bifrost_blend_desc` rather than `BIR_FAU_BLEND_0`
   - `bi_branchzi` either branches back to fs or terminates
 
-## Blit Shader
+## Frame Shader
 
-- `issue_fragment_jobs` calls `panvk_per_arch(cmd_fb_preload)`
-  - `cmd_emit_dcd` calls `get_preload_shader`
-  - `get_preload_nir_shader`
-    - `nir_texop_txf` or `nir_texop_txf_ms` to fetch from image
-    - `nir_store_output` to store to tilebuffer
-  - `panfrost_compile_inputs`
-    - `is_blit` is true
-- it works the same way as a regular fs, except atest can potentially be skipped
+- `RUN_FRAGMENT` uses `MALI_FRAMEBUFFER`
+  - 64-byte `MALI_FRAMEBUFFER_PARAMETERS`
+  - 64-byte `MALI_FRAMEBUFFER_PADDING`
+  - multiple 64-byte `MALI_RENDER_TARGET` for RTs
+- `MALI_FRAMEBUFFER_PARAMETERS` has pre/post frame shaders
+  - `frame_shader_dcds` is an array of 3 `MALI_DRAW` to define 3 frame shaders
+  - `pre_frame_0`, `pre_frame_1`, and `post_frame` control which ones of them
+    are enabled
+    - `MALI_PRE_POST_FRAME_SHADER_MODE_NEVER`
+    - `MALI_PRE_POST_FRAME_SHADER_MODE_ALWAYS`
+    - `MALI_PRE_POST_FRAME_SHADER_MODE_INTERSECT`
+    - `MALI_PRE_POST_FRAME_SHADER_MODE_EARLY_ZS_ALWAYS`
+  - `panvk_per_arch(cmd_fb_preload)` uses `pre_frame_0` for rt preload and
+    `pre_frame_1` for zs preload
+- each `MALI_DRAW` has
+  - `MALI_DCD_FLAGS_0`
+  - `MALI_DCD_FLAGS_1`
+  - `MALI_DCD_FLAGS_2`
+  - va of `MALI_DEPTH_STENCIL`
+  - va of `MALI_BLEND` array
+  - va of `MALI_SHADER_ENVIRONMENT` which has
+    - `shader` points to `MALI_SHADER_PROGRAM`
+    - `resources` points to `MALI_RESOURCE`
+    - `thread_storage` points to `MALI_LOCAL_STORAGE`
+    - `fau` points to fau
+  - IOW, it specifies an entire post-vertex pipeline
+- `issue_fragment_jobs` calls `panvk_per_arch(cmd_fb_preload)` which calls
+  `cmd_emit_dcd` for rt preload and zs preload
+  - `get_preload_shader` compiles the frame shader
+    - `get_preload_nir_shader`
+      - `nir_load_pixel_coord` for coords
+      - `nir_load_layer_id` for layer id if layered
+      - `nir_texop_txf` or `nir_texop_txf_ms` to fetch from image
+      - `nir_store_output` to store to tilebuffer
+    - `panfrost_compile_inputs`
+      - `is_blit` is true
+  - `fill_textures` fills in `MALI_TEXTURE` array, one for each rt
+  - `fill_bds` fills in `MALI_BLEND` array, one for each rt
+  - `MALI_DRAW` is initialized
+- frame shaders work the same way as a regular fs, except atest can
+  potentially be skipped
+
+## Texture
+
+- `bi_emit_tex_valhall` translates a `nir_tex_instr`
+  - `bi_tex_single_to` lowers `nir_texop_tex`, `nir_texop_txl`, and
+    `nir_texop_txb` to `BI_OPCODE_TEX_SINGLE`
+  - `bi_tex_fetch_to` lowers `nir_texop_txf` and `nir_texop_txf_ms` to
+    `BI_OPCODE_TEX_FETCH`
+  - `bi_tex_gather_to` lowers `nir_texop_tg4` to `BI_OPCODE_TEX_GATHER`
+  - `bi_tex_gradient_to` lowers `nir_texop_lod` to `BI_OPCODE_TEX_GRADIENT`

@@ -915,7 +915,8 @@ Mesa PanVK Command Stream
 - `MALI_CS_RUN_FRAGMENT`
   - `enable_tem` is always false
     - tile enable map, was used on v5 to control which tiles are preloaded?
-    - since v6, frame shaders specified by DCDs (`MALI_DRAW`) are used
+    - since v6, frame shaders specified by DCDs (draw call descriptor,
+      `MALI_DRAW`) are used
   - `tile_order` is always `MALI_TILE_RENDER_ORDER_Z_ORDER`
     - tile walk order, where Z is snake-like?
     - other options are row by row and col by col
