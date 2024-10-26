@@ -102,6 +102,19 @@ USB
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
 
+## XHCI PCI
+
+- `xhci_pci_init` registers
+  - a pci driver, `xhci_pci_driver`
+  - a usb host controller driver, `xhci_pci_hc_driver`
+- `xhci_pci_driver` matches against `PCI_CLASS_SERIAL_USB_XHCI`
+  - `usb_hcd_pci_probe` probes the pci device
+    - `usb_create_hcd` creates a `usb_hcd`
+      - HCD stands for host controller driver
+      - it also reserves `hcd_priv_size` for `hcd->hcd_priv`, which is used
+        for `xhci_hcd`
+    - `usb_add_hcd` adds the `usb_hcd` to the core
+
 ## lspci / lsusb
 
 - Lenovo X1 Gen9
