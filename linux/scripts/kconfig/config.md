@@ -99,6 +99,10 @@ Kernel Config
   - select `Initial RAM filesystem and RAM disk (initramfs/initrd) support`
   - select `Kernel Performance Events And Counters`
     - select `Kernel performance events and counters`
+- select `Virtualization` if desired
+  - select `Kernel-based Virtual Machine (KVM) support`
+    - select `KVM for Intel processors support` if intel
+    - select `KVM for AMD processors support` if amd
 - select `General architecture-dependent options`
   - select `Optimize very unlikely/likely branches`
   - select `Provide system calls for 32-bit time_t`
@@ -265,10 +269,6 @@ Kernel Config
 
 ## Config: Device Drivers
 
-- select `Virtualization` if desired
-  - select `Kernel-based Virtual Machine (KVM) support`
-    - select `KVM for Intel processors support` if intel
-    - select `KVM for AMD processors support` if amd
 - select `Networking support`
   - select `Networking options` if qcom
     - select `Qualcomm IPC Router support`
