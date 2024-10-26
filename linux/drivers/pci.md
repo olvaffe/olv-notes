@@ -90,7 +90,7 @@ PCI
   - it bridges the host bus with the PCI bus
 - PCIe
 
-## PCI Setup
+## x86 PCI Setup
 
 - `pci_setup` parses pci= cmdline
   - on x86, `pci_probe` defaults to
@@ -129,6 +129,24 @@ PCI
 - `arch_init_msi_domain` calls `pci_msi_create_irq_domain` with
   `pci_msi_domain_info` to create "PCI-MSI" irq domain
 - `pcibios_*` are defined by arch
+
+## arm64 PCI Setup
+
+- `CONFIG_ACPI` is typically disabled
+  - no `acpi_pci_init` nor `acpi_init`
+- a controller driver is enabled instead
+- on probe, the controller driver
+  - calls `devm_pci_alloc_host_bridge` to allocate a `pci_host_bridge`
+  - inits `host->ops`
+  - calls `pci_host_probe` to probe the pci bus
+- `pci_host_probe`
+  - `pci_scan_root_bus_bridge`
+    - `pci_register_host_bridge` allocs and registers a `pci_bus`
+    - `pci_scan_child_bus` scans the pci bus for pci devices
+      - `pci_scan_slot` scans each slot
+        - `pci_scan_device` allocs and sets up a `pci_dev`
+        - `pci_device_add` adds the device to the bus
+      - `pci_scan_bridge_extend` scans pci devices that are bridges
 
 ## Resources
 
