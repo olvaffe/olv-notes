@@ -73,9 +73,9 @@ Kernel Config
 ## Config: Common
 
 - select `General setup`
-  - select `System V IPC` if needed
-  - select `POSIX Message Queues` if needed, depending on `NET`
-  - select `Auditing support` if needed
+  - select `System V IPC` if desired
+  - select `POSIX Message Queues` if desired, depending on `NET`
+  - select `Auditing support` if desired
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
@@ -85,11 +85,11 @@ Kernel Config
       - select `Permanently enable BPF JIT and remove BPF interpreter`
   - select `Preemption Model (Voluntary Kernel Preemption (Desktop))`
   - select `CPU/Task time and stats accounting`
-    - select `Export task/process statistics through netlink`
+    - select `Export task/process statistics through netlink` (for htop, iotop)
       - select `Enable per-task delay accounting`
       - select `Enable extended accounting over taskstats`
         - select `Enable per-task storage I/O accounting`
-    - select `Pressure stall information tracking`
+    - select `Pressure stall information tracking` (for systemd-oomd)
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
   - select `Control Group support`
@@ -131,10 +131,6 @@ Kernel Config
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
-  - select `Wireless` if needed
-    - select `cfg80211 - wireless configuration API`
-    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
-  - select `RF switch subsystem support`
 - select `File systems`
   - select `The Extended 4 (ext4) filesystem`
     - select `Ext4 POSIX Access Control Lists`
@@ -150,7 +146,7 @@ Kernel Config
   - select `Overlay filesystem support` if desired
   - select `DOS/FAT/NT Filesystems`
     - select `VFAT (Windows-95) fs support` if esp
-    - select `Enable FAT UTF-8 option by default` if esp
+    - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
@@ -162,7 +158,7 @@ Kernel Config
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
     - select `EROFS filesystem support` if desired
-  - select `Native language support` if esp
+  - select `Native language support` if `VFAT_FS`
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
@@ -286,6 +282,10 @@ Kernel Config
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
       - select `MediaTek HCI SDIO driver` if old mtk
+  - select `Wireless` if desired
+    - select `cfg80211 - wireless configuration API`
+    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
+  - select `RF switch subsystem support`
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
