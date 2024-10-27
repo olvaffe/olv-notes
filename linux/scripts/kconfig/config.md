@@ -209,8 +209,8 @@ Kernel Config
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
-  - select `Processor family (Core 2/newer Xeon)` if intel and desired
-  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd and desired
+  - select `Processor family (Core 2/newer Xeon)` if intel
+  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd
   - select `EFI runtime service support` if uefi
   - select `Timer frequency (1000 HZ)` if desired
   - select `Built-in kernel command line` if desired
@@ -303,7 +303,7 @@ Kernel Config
       - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
       - select `Firmware loading facility`
-        - select `Build named firmware blobs into the kernel binary` if built-in i915/amdgpu/microcode/etc
+        - select `Build named firmware blobs into the kernel binary` if desired (for microcode and built-in drivers)
         - select `Enable compressed firmware support`
   - select `Firmware Drivers`
     - select `ARM System Control and Management Interface Protocol` if rk
@@ -337,7 +337,7 @@ Kernel Config
       - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
     - select `Realtek PCI-E card reader` if needed
-  - select `SCSI device support` if sata or usb mass storage
+  - select `SCSI device support` if needed (for sata or usb mass storage)
     - select `SCSI device support`
     - deselect `legacy /proc/scsi/ support`
     - select `SCSI disk support`
@@ -354,7 +354,7 @@ Kernel Config
       - select `Virtual ethernet pair device` if container
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
-      - deselect all but the desired drivers, such as
+      - deselect all but the needed drivers, such as
       - select `Broadcom devices` if rpi
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
@@ -366,8 +366,8 @@ Kernel Config
     - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters`, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
-    - select `Wireless LAN` if needed
-      - deselect all but the desired drivers, such as
+    - select `Wireless LAN` if desired
+      - deselect all but the needed drivers, such as
       - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support`
         - select `Qualcomm ath10k SNOC support`
@@ -392,10 +392,10 @@ Kernel Config
       - select `Touchscreens`
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
       - select `Miscellaneous devices`
-        - select `PC Speaker support` if desired
+        - select `PC Speaker support` if needed
         - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
-        - select `Windows-compatible SoC Button Array` if desired, depending on `KEYBOARD_GPIO`
+        - select `Windows-compatible SoC Button Array` if needed, depending on `KEYBOARD_GPIO`
   - select `Character devices`
     - select `Enable TTY`
       - deselect `Legacy (BSD) PTY support`
@@ -409,8 +409,8 @@ Kernel Config
           - select `QCOM GENI Serial Console support`
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
-      - deselect all but desired drivers
-    - select `/dev/nvram support` if desired
+      - deselect all but the needed drivers
+    - select `/dev/nvram support` if x86
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
@@ -444,11 +444,11 @@ Kernel Config
   - select `Pin controllers`
     - select `AMD GPIO pin control` if amd
     - select `Intel pinctrl drivers` if intel
-      - select desired drivers such as
+      - select needed drivers such as
       - select `Intel Meteor Lake pinctrl and GPIO driver`
       - select `Intel Tiger Lake pinctrl and GPIO driver`
     - select `MediaTek pinctrl drivers` if mtk
-      - select desired drivers
+      - select needed drivers
     - if qcom
       - select `Qualcomm core pin controller driver`
         - select `Qualcomm Technologies Inc SC7180 pin controller driver`
@@ -549,13 +549,13 @@ Kernel Config
         - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Display Interface Bridges` if arm
         - select `Display connector support`
-        - select `ITE IT6505 DisplayPort bridge` if desired
-        - select `TI SN65DSI86 DSI to eDP bridge` if desired
-        - select `Analogix Anx7625 MIPI to DP interface support` if desired
+        - select `ITE IT6505 DisplayPort bridge` if needed
+        - select `TI SN65DSI86 DSI to eDP bridge` if needed
+        - select `Analogix Anx7625 MIPI to DP interface support` if needed
       - select `DRM Support for Mediatek SoCs` if mtk
         - select `DRM DPTX Support for MediaTek SoCs`
         - select `DRM HDMI Support for Mediatek SoCs`
-      - select `Simple framebuffer driver` if desired
+      - select `Simple framebuffer driver` if needed
       - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
     - select `Backlight & LCD device support`
@@ -600,7 +600,7 @@ Kernel Config
             - select `SOF support for RENOIR`
             - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
-            - deselect all but desired drivers such as
+            - deselect all but needed drivers such as
             - select `SOF support for Tigerlake`
             - select `SOF support for Alderlake`
             - select `SOF support for Meteorlake`
@@ -619,7 +619,7 @@ Kernel Config
       - select `/dev/hidraw raw HID device support` if desired
       - select `User-space I/O driver support for HID subsystem` if desired
       - select `Special HID drivers`
-        - deselect all but the desired drivers, such as
+        - deselect all but the needed drivers, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
         - select `Vivaldi Keyboard`
         - select `Logitech devices`
@@ -643,7 +643,6 @@ Kernel Config
       - select `Generic EHCI driver for a platform device` if rk
     - select `OHCI HCD (USB 1.1) support` if needed
       - select `Generic OHCI driver for a platform device` if rk
-    - select `USB Printer support` if needed
     - select `USB Mass Storage support`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
@@ -796,7 +795,7 @@ Kernel Config
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support`
     - select `Accelerometers`
-      - select `HID Accelerometers 3D` if desired (tablets, 2-in-1s)
+      - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
       - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if qcom
