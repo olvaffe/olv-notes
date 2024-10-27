@@ -26,8 +26,9 @@ Kernel DMI
 
 ## Initialization
 
-- `dmi_setup`
+- `dmi_setup` is called from x86 `setup_arch`
   - `dmi_scan_machine` finds and parses the smbios table in efi
     - `dmi_smbios3_present` and `dmi_decode` parse the table
     - `dmi_available` is set
   - `dmi_memdev_walk` parses `DMI_ENTRY_MEM_DEVICE`
+- `dmi_init` creates `/sys/firmware/dmi`
