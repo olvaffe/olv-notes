@@ -192,6 +192,18 @@ Intel CPUs
       (2.5D stacking)
     - in Faveros, tiles are face-to-face (3D stacking)
 
+## DMI
+
+- DMI stands for Direct Media Interface
+  - the link between the CPU and the chipset (PCH) on intel
+  - replaces FSB, front side bus
+  - essentially pcie
+- DMI 1.0, 2004, 1GB/s
+- DMI 2.0, 2011, 2GB/s
+- DMI 3.0, 2015, 4GB/s
+- DMI 4.0, 2021, 4GB/s
+- not to be confused with DMI, Direct Media Interface
+
 ## PCI devices
 
 - CPU die

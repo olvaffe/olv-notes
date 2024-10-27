@@ -1,19 +1,10 @@
 Kernel DMI
 ==========
 
-## DMI
-
-- DMI stands for Direct Media Interface
-  - the link between the CPU and the chipset (PCH) on intel
-  - replaces FSB, front side bus
-  - essentially pcie
-- DMI 1.0, 2004, 1GB/s
-- DMI 2.0, 2011, 2GB/s
-- DMI 3.0, 2015, 4GB/s
-- DMI 4.0, 2021, 4GB/s
-
 ## SMBIOS
 
+- DMI, Desktop Management Interface, exposes system data including SMBIOS
+  - SMBIOS was originally known as DMIBIOS
 - 1.0, by Phoenix
 - 2.0, 1996, by multiple bios vendors
 - 2.3, 1998
