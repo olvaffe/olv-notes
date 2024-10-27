@@ -14,6 +14,19 @@ Kernel DMI
 - 3.5.0, 2021
 - 3.6.0, 2022
 - 3.7.0, 2023
+- table entries
+  - BIOS Information: vendor, version, date, etc.
+  - System Information: manufacturer, product name, serial, sku, etc.
+  - Base Board Information: manufacturer, product name, asset tag, etc.
+  - Chassis Information: manufacturer, type, serial, asset tag, etc.
+  - Processor Information: socket, cpu family/model/stepping, etc.
+  - Cache Information: l1 size, l2 size, l3 size, etc.
+  - Port Connector Information: dp, usb, audio jack, etc.
+  - System Slot Information: pcie
+  - On Board Device Information: igpu
+  - OEM Strings: oem info
+  - Memory Device: mem speed, etc.
+  - Portable Battery: manufacturer, capacity, voltage, etc.
 
 ## Initialization
 
