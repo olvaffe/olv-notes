@@ -310,6 +310,7 @@ Kernel Config
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
+    - select `DMI table support in sysfs` if x86 (for dmidecode)
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
     - select `Google Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
