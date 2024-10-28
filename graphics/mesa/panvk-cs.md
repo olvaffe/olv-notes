@@ -294,6 +294,12 @@ Mesa PanVK Command Stream
       - if there are multiple breaks, we use the `offset` field of `BRANCH`
         instrs to form a list
   - `cs_match`
+    - we want to generate these instrs for each case
+      - `BRANCH.ne rX, #N`, branch to the next case if no match
+      - arbitrary instrs
+      - `BRANCH.always r0, #M`, branch to the end if match
+      - note that `#N` and `#M` are unknown until the entire match ends and
+        require patching
     - `cs_match_start`
       - `cs_block_start`
     - `cs_case(N)`
