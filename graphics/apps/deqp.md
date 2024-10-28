@@ -1389,6 +1389,27 @@ dEQP
     - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
     - `col0.w` is the error code; non-zero means failure
 
+## Test Case: `dEQP-VK.shader_object.misc.state.pipeline.vert_frag.color_write.disabled`
+
+- test case
+  - `createShaderObjectMiscTests`
+  - `ShaderObjectStateCase`
+- `ShaderObjectStateCase::initPrograms`
+  - vs
+    - the 4 vertices form a rectangle
+    - z goes from 0.7 on the left edge and 0.9 on the right edge
+    - if instance 1, z is offset by -0.3
+  - fs outputs 0.75
+- `ShaderObjectStateInstance::iterate`
+  - `image` and `depthImage` are 32x32
+  - two draws
+    - 4 vertices
+    - instance 0 and instance 1
+  - validate
+    - color readback
+    - depth readback
+    - stencil readback
+
 ## Test Case: `dEQP-VK.shader_object.performance.binary_memcpy`
 
 - `ShaderObjectBinaryPerformanceCase` is the test case
@@ -1418,6 +1439,15 @@ dEQP
     the cpu time
   - it then validates that ESOs are at most 50% slower than pipeline regarding
     cpu overhead
+
+## Test Case: `dEQP-VK.ssbo.phys.layout.basic_unsized_array.std140.row_major_mat4`
+
+- test case
+  - `vkt::ssbo::createTests`
+  - `SSBOLayoutTests` with `usePhysStorageBuffer` and without `readonly`
+  - `SSBOLayoutTests::init`
+  - `BlockBasicUnsizedArrayCase`
+- `SSBOLayoutCaseInstance::iterate`
 
 ## Test Case: `dEQP-VK.synchronization.timeline_semaphore.wait.poll_signal_from_device`
 
