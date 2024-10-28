@@ -1389,6 +1389,19 @@ dEQP
     - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
     - `col0.w` is the error code; non-zero means failure
 
+## Test Case: `dEQP-VK.memory.pipeline_barrier.transfer_dst_storage_texel_buffer.1024`
+
+- test case
+  - `createPipelineBarrierTests`
+    - `writeUsage` is `USAGE_TRANSFER_DST`
+    - `readUsage` is `USAGE_STORAGE_TEXEL_BUFFER`
+    - `size` is 1024
+- `MemoryTestInstance::iterate` iterates through
+  - `MemoryTestInstance::createCommandsAndAllocateMemory`
+  - `MemoryTestInstance::prepare`
+  - `MemoryTestInstance::execute`
+  - `MemoryTestInstance::verify`
+
 ## Test Case: `dEQP-VK.shader_object.misc.state.pipeline.vert_frag.color_write.disabled`
 
 - test case
