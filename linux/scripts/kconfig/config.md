@@ -135,6 +135,10 @@ Kernel Config
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
+  - select `Wireless` if desired
+    - select `cfg80211 - wireless configuration API`
+    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
+  - select `RF switch subsystem support`
 - select `File systems`
   - select `The Extended 4 (ext4) filesystem`
     - select `Ext4 POSIX Access Control Lists`
@@ -282,10 +286,6 @@ Kernel Config
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
       - select `MediaTek HCI SDIO driver` if old mtk
-  - select `Wireless` if desired
-    - select `cfg80211 - wireless configuration API`
-    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
-  - select `RF switch subsystem support`
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
