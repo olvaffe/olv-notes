@@ -314,6 +314,28 @@ dEQP
     - this is where `libEGL.so` is loaded
     - and where `eglGetProcAddress` is called the first time
 
+## Test Case: `dEQP-VK.api.copy_and_blit.core.blit_image.all_formats.color.2d.r8g8b8a8_unorm.r32g32b32_sfloat.general_general_nearest`
+
+- test case
+  - `createCopiesAndBlittingTests`
+  - `addCoreCopiesAndBlittingTests`
+  - `addBlittingImageTests`
+  - `addBlittingImageAllFormatsTests`
+  - `addBlittingImageAllFormatsColorTests`
+  - `addBlittingImageAllFormatsColorSrcFormatTests`
+  - `addBlittingImageAllFormatsColorSrcFormatDstFormatTests`
+  - `BlitImageTestCase`
+  - `BlittingImages`
+- `BlittingImages::BlittingImages`
+  - `m_source` is 64x64, `VK_FORMAT_R8G8B8A8_UNORM`
+  - `m_destination` is 64x64, `VK_FORMAT_R32G32B32_SFLOAT`
+- `BlittingImages::iterate`
+  - `m_source` is initialized to a pattern
+  - `m_destination` is initialized to white
+  - `vkCmdBlitImage`
+    - top row: blit whole src to dst with size 16x16, 8x8, 4x4, ...
+    - bottom row: blit 4 16x16 regions of src to dst
+
 ## Test Case: `dEQP-VK.subgroups.ballot_broadcast.framebuffer.*`
 
 - `external/vulkancts/modules/vulkan/subgroups/vktSubgroupsBallotBroadcastTests.cpp`
@@ -1388,6 +1410,37 @@ dEQP
     - `col0.y = 0;`
     - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
     - `col0.w` is the error code; non-zero means failure
+
+## Test Case: `dEQP-VK.pipeline.monolithic.image.suballocation.sampling_type.combined.view_type.2d.format.r8g8b8a8_unorm.count_4.size.32x16`
+
+- test case
+  - `vkt::pipeline::createImageTests`
+  - `createSuballocationTests`
+  - `createImageSamplingTypeTests`
+  - `createImageViewTypeTests`
+  - `createImageFormatTests`
+  - `createImageCountTests`
+  - `createImageSizeTests`
+  - `ImageTest`
+    - `allocationKind` is `ALLOCATION_KIND_SUBALLOCATED`
+    - `samplingType` is `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`
+    - `imageViewType` is `VK_IMAGE_VIEW_TYPE_2D`
+    - `imageFormat` is `VK_FORMAT_R8G8B8A8_UNORM`
+    - `imageCount` is 4
+    - `imageSize` is 32x16
+- `ImageTest::createInstance` creates a `ImageSamplingInstance`
+- `ImageSamplingInstance::setup`
+  - `m_texture` is 32x16, mipmapped
+  - `m_images` and `m_imageViews` are created and initialized from `m_texture`
+  - `m_sampler` is created
+  - `m_descriptorSet` is created and initialized
+    - the binding is an array of 4 descriptors
+  - `m_colorImages` and `m_colorAttachmentViews` are created
+  - `m_renderPass` is created
+  - `m_graphicsPipeline` is created
+    - vs passes through `position` and `texCoords`
+    - fs samples from the 4 `m_images` and outputs to the 4 `m_colorImages`
+  - `m_cmdBuffer` draws a rectangle (2 triangles)
 
 ## Test Case: `dEQP-VK.memory.pipeline_barrier.transfer_dst_storage_texel_buffer.1024`
 
