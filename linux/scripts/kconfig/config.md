@@ -329,7 +329,7 @@ Kernel Config
   - select `Misc devices`
     - select `Generic on-chip SRAM driver` if rk
     - select `EEPROM support`
-      - select `I2C EEPROMs / RAMs / ROMs from most vendors` if x86, depending on `I2C`
+      - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
     - if intel,
       - select `Intel Management Engine Interface`
       - select `ME Enabled Intel Chipsets`
@@ -411,7 +411,6 @@ Kernel Config
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
       - deselect all but the needed drivers
-    - select `/dev/nvram support` if x86
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`

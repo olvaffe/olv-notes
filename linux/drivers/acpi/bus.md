@@ -51,3 +51,10 @@ Kernel ACPI Bus
     `device_get_match_data` to get the associated data
     - the platform device's `fwnode` points to the one embedded in the acpi device
     - `device_get_match_data` calls `acpi_fwnode_device_get_match_data`
+
+## OF Match
+
+- `acpi_bus_match` calls `__acpi_match_device` to match driver/device
+- if the device has the special ID `ACPI_DT_NAMESPACE_HID` (`PRP0001`),
+  `acpi_of_match_device` matches using the device tree compatible string
+  instead
