@@ -1,18 +1,57 @@
 Mesa PanVK Command Stream
 =========================
 
+## CSF
+
+- based on Mali Performance Counters Reference Guide
+  - <https://developer.arm.com/documentation/107776/0101/GPU-activity>
+- there are
+  - CSF
+    - Command Stream Processor (MCU)
+    - Compute Iterator
+    - Vertex Iterator
+    - Fragment Iterator
+  - Tiler
+  - Shader Core
+    - Non-Fragment Frontend
+    - Fragment Frontend
+    - Execution Core
+    - Fragment Backend
+- the MCU schedules cmds on to one of the 3 iterators
+  - a compute cmd travels through
+    - MCU
+    - Compute Iterator
+    - Non-Fragment Frontend
+    - Execution Core
+  - a vertex cmd travels through
+    - MCU
+    - Vertex Iterator
+    - Tiler
+    - Non-Fragment Frontend
+    - Execution Core
+  - a fragment cmd travels through
+    - MCU
+    - Fragment Iterator
+    - Fragment Frontend
+    - Execution Core
+    - Fragment Backend
+
 ## Command Stream XML
 
 - `genxml/v10.xml`
 - CS aka CEU (Command Execution Unit)
   - 7 cs enums
-    - `CS Condition`
-    - `CS State`
-    - `CS Heap Operation`
-    - `CS Flush Mode`
-    - `CS Sync scope`
-    - `CS Exception type`
-    - `CS Opcode`
+    - `CS Condition` is for branch and sync wait
+    - `CS State` is for `MALI_CS_OPCODE_STORE_STATE` to read timestamp, cycle
+      count, error status, etc.
+    - `CS Heap Operation` is for `MALI_CS_OPCODE_HEAP_OPERATION`
+    - `CS Flush Mode` is for `MALI_CS_OPCODE_FLUSH_CACHE2` to control L2/LSC
+    - `CS Sync scope` is for sync add/set
+      - `MALI_CS_SYNC_SCOPE_CSG` for inter-subqueue sync
+      - `MALI_CS_SYNC_SCOPE_SYSTEM` for system-wide sync
+    - `CS Exception type` is for `MALI_CS_OPCODE_SET_EXCEPTION_HANDLER` to
+      handle tiler oom
+    - `CS Opcode` defines 39 opcodes for v10
   - 40 cs structs
     - `pandecode_cs` is a good place to know how they work
       - `interpret_ceu_instr`
@@ -26,57 +65,58 @@ Mesa PanVK Command Stream
       - the payload is ignored
     - `CS MOVE` does `dst_reg = imm48`
     - `CS MOVE32` does `dst_reg = imm32`
-    - `CS WAIT` waits the specified slots (scoreboards?)
+    - `CS WAIT` waits the specified scoreboard slots
       - the fw supports `scoreboard_slot_count` slots
       - userspace can decide which is for what
-      - `PANVK_SB_LS`, load/store
-      - `PANVK_SB_IMM_FLUSH`,
-      - `PANVK_SB_DEFERRED_SYNC`
-      - `PANVK_SB_DEFERRED_FLUSH`
-      - `PANVK_SB_ITER_START`
-      - `PANVK_SB_ITER_COUNT`
     - `CS RUN_COMPUTE` runs a compute job
-      - it expects reg0..reg39 to be set up, such as
-        - reg0 points to res table
-        - reg8 points to push consts
-        - reg16 points to shader
-        - reg24 points to local storage
-        - reg32 is global attr offset
-        - reg33 is wg size
-        - reg34..36 are wg offsets
-        - reg37..39 are wg counts
-    - `CS RUN_TILING` runs a tiling job, unused?
+      - it expects r0..r39 to be set up, such as
+        - r0 points to res table
+        - r8 points to push consts
+        - r16 points to shader
+        - r24 points to local storage
+        - r32 is global attr offset
+        - r33 is wg size
+        - r34..36 are wg offsets
+        - r37..39 are wg counts
+    - `CS RUN_TILING` runs a tiling job, unused on v10
     - `CS RUN_IDVS` runs an idvs (index-driven vs) job
       - traditional vs: vertex shading -> primitive assembly -> culling
         - wasted computation if a primitive is culled
       - idvs since bifrost: primitive assembly -> position shading -> culling -> varying shading
+      - it expects r0..r60 to be set up
     - `CS RUN_FRAGMENT` runs an fs job
+      - it expects r40..r46 to be set up
     - `CS RUN_FULLSCREEN` runs a fullscreen job
-    - `CS FINISH_TILING`
-    - `CS FINISH_FRAGMENT`
+    - `CS FINISH_TILING` waits for the tiler to be idle?
+    - `CS FINISH_FRAGMENT` waits for the fragment backend to be idle?
     - `CS ADD_IMMEDIATE32` does `dst_reg = src_reg + imm32`
     - `CS ADD_IMMEDIATE64` does `dst_reg64 = src_reg64 + imm32`
     - `CS UMIN32` does `dst_reg = min(src_reg1, src_reg2)`
-    - `CS LOAD_MULTIPLE` does `dst_reg = load(src_reg + imm16)`
-    - `CS STORE_MULTIPLE` does `store(src_reg1 + imm16, src_reg2)`
+    - `CS LOAD_MULTIPLE` does `dst_regs = [src_reg + imm16..]`
+    - `CS STORE_MULTIPLE` does `[src_reg + imm16..] = data_regs`
     - `CS BRANCH` jumps a signed imm16 offset if the reg meets the condition
     - `CS SET_SB_ENTRY` selects the scoreboard slots for endpoint tasks (frag
       & comp) and other tasks (tiler)
+      - perhaps endpoints tasks include tiler frag, comp while other tasks are
+        just load/store?
     - `CS PROGRESS_WAIT` is unused
-    - `CS SET_EXCEPTION_HANDLER` is unused
-    - `CS CALL` calls `(reg1, reg2)`
+    - `CS SET_EXCEPTION_HANDLER` is for optional tiler oom handling
+    - `CS CALL` calls `(reg1, reg2)` and returns
       - `reg1` is the addr
       - `reg2` is the length
-    - `CS JUMP` jumps to `(reg1, reg2)`
-      - why does it need the length?
+    - `CS JUMP` jumps to `(reg1, reg2)` and terminates
+      - `reg1` is the addr
+      - `reg2` is the length
     - `CS REQ_RESOURCE` is needed before/after running a job
       - it requests and releases the needed res?
-    - `CS FLUSH_CACHE2` flushes L2 and LSC caches
+    - `CS FLUSH_CACHE2` flushes L2, LSC, and L1 caches
       - this is used for barriers
-    - `CS SYNC_ADD32`  does `store(addr, load(addr) + src_reg)` after sync
-    - `CS SYNC_SET32` does `store(addr, src_reg)` after sync
-    - `CS SYNC_WAIT32` busy-waits until an `load(addr)` meets the condition
-    - `CS STORE_STATE` does `store(src_reg + imm16, state)`, where `state` is
+    - `CS SYNC_ADD32`  does `[addr_reg] += src_reg` after sync
+    - `CS SYNC_SET32` does `[addr_reg] = src_reg` after sync
+    - `CS SYNC_WAIT32` busy-waits until an `[addr_reg]` meets the condition
+      - these SYNC cmds are for inter-CS sync while scoreboarding is for
+        intra-CS sync
+    - `CS STORE_STATE` does `[addr_reg + imm16] = state`, where `state` is
       - `MALI_CS_STATE_TIMESTAMP`
       - `MALI_CS_STATE_CYCLE_COUNT`
       - `MALI_CS_STATE_DISJOINT_COUNT`
@@ -84,14 +124,54 @@ Mesa PanVK Command Stream
     - `CS PROT_REGION` is unused
     - `CS PROGRESS_STORE` is unused
     - `CS PROGRESS_LOAD` is unused
-    - `CS RUN_COMPUTE_INDIRECT` runs a compute job
+    - `CS RUN_COMPUTE_INDIRECT` runs a compute job indirectly
     - `CS ERROR_BARRIER` is unused
-    - `CS HEAP_SET` sets the heap va
-    - `CS HEAP_OPERATION`
+    - `CS HEAP_SET` sets the va of `MALI_TILER_HEAP` descriptor
+    - `CS HEAP_OPERATION` controls the tiler heap?
     - `CS TRACE_POINT` is unused
     - `CS SYNC_ADD64`
     - `CS SYNC_SET64`
     - `CS SYNC_WAIT64`
+- Scoreboarding
+  - `cs_instr_is_asynchronous`
+    - these are always async
+      - `MALI_CS_OPCODE_FLUSH_CACHE2`
+      - `MALI_CS_OPCODE_FINISH_TILING`
+      - `MALI_CS_OPCODE_LOAD_MULTIPLE`
+      - `MALI_CS_OPCODE_STORE_MULTIPLE`
+      - `MALI_CS_OPCODE_RUN_COMPUTE`
+      - `MALI_CS_OPCODE_RUN_COMPUTE_INDIRECT`
+      - `MALI_CS_OPCODE_RUN_FRAGMENT`
+      - `MALI_CS_OPCODE_RUN_FULLSCREEN`
+      - `MALI_CS_OPCODE_RUN_IDVS`
+      - `MALI_CS_OPCODE_RUN_TILING`
+    - these are async when a wait mask is specified
+      - `MALI_CS_OPCODE_FINISH_FRAGMENT`
+      - `MALI_CS_OPCODE_SYNC_ADD32`
+      - `MALI_CS_OPCODE_SYNC_SET32`
+      - `MALI_CS_OPCODE_SYNC_ADD64`
+      - `MALI_CS_OPCODE_SYNC_SET64`
+      - `MALI_CS_OPCODE_STORE_STATE`
+      - `MALI_CS_OPCODE_TRACE_POINT`
+      - `MALI_CS_OPCODE_HEAP_OPERATION`
+    - the rest are sync and do not use the scoreboard
+  - each CS has 8 scoreboard slots for async cmds
+  - some async cmds can explicitly specify a slot
+    - panvk uses
+      - `PANVK_SB_IMM_FLUSH` for some `MALI_CS_OPCODE_FLUSH_CACHE2`
+      - `PANVK_SB_DEFERRED_SYNC` for some sync add/set, some
+        `HEAP_OPERATION`, and `FINISH_FRAGMENT`
+      - `PANVK_SB_DEFERRED_FLUSH` for other `MALI_CS_OPCODE_FLUSH_CACHE2`
+  - others async cmds rely on the slots selected by the last
+    `MALI_CS_OPCODE_SET_SB_ENTRY`
+    - it seems `MALI_CS_OPCODE_SET_SB_ENTRY` selects two slots, one for
+      tiler/frag/compute and the other for load/store
+    - panvk uses
+      - `PANVK_SB_LS` for load/store
+      - `PANVK_SB_ITER_START` and later for tiler/frag/compute
+  - signaling and waiting
+    - an async cmd increments the specified slot
+    - `MALI_CS_OPCODE_WAIT` waits for the specified slots to reach 0
 
 ## panloader
 

@@ -59,6 +59,21 @@ Mesa PanVK
 - `panthor_kmod_dev_create`
   - each `panvk_physical_device` and each `panvk_device` own a `pan_kmod_dev`
   - `DRM_IOCTL_PANTHOR_DEV_QUERY`
+  - `drm_panthor_csif_info` on v10
+    - `csg_slot_count = 8` means the fw supports 8 CSGs
+      - if userspace creates more CSGs than the fw can support, the kernel
+        driver will rotate between them
+      - each `VkQueue` corresponds to a CSG
+    - `cs_slot_count = 8` means there are 8 CSs per CSG
+      - panvk creates 3 CSs per CSG, known as subqueues
+      - each CS has its own `drm_gpu_scheduler`
+    - `cs_reg_count = 96` means there are 96 cs regs per cs
+      - panvk uses r66..r83 for scratch, r84..r89 for subqueue seqnos, and
+        r90..r91 for subqueue ctx va
+    - `scoreboard_slot_count = 8` means there are 8 scoreboard slots per cs
+      - some cs cmds are async and increments a scoreboard slot
+    - `unpreserved_cs_reg_count = 4` means the highest 4 cs regs are used by
+      kernel
 - `panthor_kmod_dev_destroy`
 - `panthor_dev_query_props`
 - `panthor_kmod_dev_query_user_va_range`
