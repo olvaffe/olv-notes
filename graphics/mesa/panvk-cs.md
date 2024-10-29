@@ -1068,3 +1068,59 @@ Mesa PanVK Command Stream
     - vk `indexCount` is `vertex.count`
     - vk `firstIndex` is `index.offset`
     - vk `vertexOffset` is `index.vertex_offset`
+
+## Example: Decoded CS for a Simple Draw
+
+- `PANVK_SUBQUEUE_VERTEX_TILER`
+  - at draw,
+    - `prepare_draw`
+      - `update_tls` sets d24
+      - `get_tiler_desc`
+        - sets d40 to point to the tiler context
+        - stores to d40 to init various fields of the tiler context
+        - `panvk_per_arch(cs_pick_iter_sb)` waits and reuses a scoreboard
+        - `HEAP_OPERATION.vt_start`
+      - `prepare_push_uniforms` sets d8 and d12
+      - `prepare_vs` sets d0, d16, and d18
+      - `prepare_fs` sets d4 and d20
+      - sets various cs regs
+    - sets various cs regs for draw params
+    - `REQ_RESOURCE.idvs`
+    - `RUN_IDVS`
+    - `REQ_RESOURCE`
+  - at the end of the render pass, `panvk_per_arch(CmdEndRendering)` calls
+    `flush_tiling`
+    - `REQ_RESOURCE.tiler`
+    - `FINISH_TILING`
+    - `REQ_RESOURCE`
+    - `HEAP_OPERATION.vt_end`
+    - increments seqno
+    - increments scoreboard
+- `PANVK_SUBQUEUE_FRAGMENT`
+  - at the end of the render pass, `panvk_per_arch(CmdEndRendering)` issues
+    the fragment job
+    - `wait_finish_tiling` waits for the vertex subqueue
+    - `panvk_per_arch(cs_pick_iter_sb)` waits and reuses a scoreboard
+    - issues the fragment job
+      - sets various cs regs
+      - `REQ_RESOURCE.fragment`
+      - a few setup
+      - `RUN_FRAGMENT.tile_order=zorder`
+      - a few setup
+      - `REQ_RESOURCE`
+    - `FINISH_FRAGMENT.frag_end`
+    - increments seqno
+    - increments scoreboard
+  - at the end of the render pass, there is an implicit dependency to make
+    color and zs writes available
+    - `vk_common_CmdEndRenderPass` calls `panvk_per_arch(CmdPipelineBarrier2)`
+    - it waits for all scoreboards starting from `PANVK_SB_ITER_START`
+  - at the end of the command buffer
+    - `flush_sync_points` adds `relative_sync_point` to
+      `cs_progress_seqno_reg`
+    - `finish_cs` waits for all scoreboards and flushes all caches
+    - because we are in trace mode, there is also a debug sync
+- `PANVK_SUBQUEUE_COMPUTE`
+  - there is no compute cmd
+  - but the ops at the end of the render pass and at the end of the command
+    buffer apply here too
