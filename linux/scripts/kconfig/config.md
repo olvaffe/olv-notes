@@ -220,7 +220,7 @@ Kernel Config
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
 - select `Mitigations for CPU vulnerabilities`
-  - deselect `Mitigate speculative RAS overflow on AMD` if amd
+  - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
 - select `Power management and ACPI options`
   - select `Device power management core functionality`
     - select `Power Management Debug Support` if debug
@@ -317,7 +317,7 @@ Kernel Config
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
-  - select `Memory Technology Device (MTD) support`
+  - select `Memory Technology Device (MTD) support` if needed (for fw update)
     - select `Caching block device access to MTD devices`
     - select `SPI NOR device support`, depending on `SPI`
   - select `Block devices`
@@ -409,7 +409,7 @@ Kernel Config
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
     - select `Virtio console` if guest
-    - select `Hardware Random Number Generator Core support`
+    - select `Hardware Random Number Generator Core support` if needed
       - deselect all but the needed drivers
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
