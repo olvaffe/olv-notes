@@ -15,10 +15,6 @@ Vulkan
   - no new HW reqs
   - `git diff v1.2.203..v1.3.204`
 
-## Chapter 1. Preamble
-
-## Chapter 2. Introduction
-
 ## Chapter 3. Fundamentals
 
 - 3.2. Execution Model
@@ -340,9 +336,9 @@ Vulkan
     two sets of operations, defined by the command's two sync scopes
     - a sync scope of a sync command defines which ops are considered for
       execution dependency
-    - e.g., when the first sync scope is `VK_PIPELINE_STAGE_2_TRANSFER_BIT`
+    - e.g., when the first sync scope is `VK_PIPELINE_STAGE_2_COPY_BIT`
       and the second sync scope is `VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT`,
-      the sync cmd introduces execution dependences between transfer ops
+      the sync cmd introduces execution dependences between copy ops
       before the sync cmd and fs ops after the sync cmd
   - an execution dependency between two sets of ops guarantees that the first
     set happens-before the second set
@@ -2374,18 +2370,110 @@ Vulkan
 
 ## Appendix B: Memory Model
 
+- Agent
+  - an operation is any task that is executed on the system
+  - an operation is executed by a particular agent, such as
+    - an shader invocation
+    - a host thread
+    - a fixed-function stage of a pipeline
+- Memory Location
+  - a memory location identifies a unique storage for 8 bits of data
+  - a memory operation accesses a set of memory locations
+- Reference
+  - a reference is an object that a particular agent can use to access a set
+    of memory locations
+  - on the host, a reference is a cpu va
+  - on the device, a reference is 
+    - a descriptor
+    - a gpu va
+    - more
+  - two memory accesses through distinct references may require availability
+    and visibility operations
+- Availability and Visibility
+  - availability and visibility are states of a write operation
+    - availability is per memory domain
+    - visibility is per agent/reference pair
+    - both are per memory location for each write
+  - there is a one-to-one relation between memory domains and scopes
+  - vulkan defines these memory domains
+    - `host`, accessible by all host agents (cpus)
+    - these domains are nested one after another
+      - `device`, accessible by all device agents (all function blocks)
+      - `shader`, accessible by device shader agents, corresponding to
+        `Device` scope
+      - `queue family instance`, accessible by shader agents in a single queue
+        family, corresponding to `QueueFamily` scope
+      - `fragment interlock instance`, accessible by fragment shader agents
+        that overlap, corresponding to `FragmentInterlock` scope
+      - `shader call instance`, accessible by shader agents that are
+        shader-call-related, corresponding to `ShaderCallKHR` scope
+      - `workgroup instance`, accessible by shader agents in the same
+        workgroup, corresponding to `Workgroup` scope
+      - `subgroup instance`, accessible by shader agents in the same subgroup,
+        corresponding to the `Subgroup` scope
+  - for an availability operation,
+    - the source scope is a set of `(agent, reference, memory location)`
+      tuples
+    - the destination scope is a set of memory domains
+    - for all write operations that happen-before, their intersections with
+      the source scope are made available to the destination memory domains
+  - for a memory domain operation,
+    - the source scope is a memory domain
+    - the destination scope is also a memory domain
+    - for all availability operations that happen-before, their intersections
+      with the source memory domain is made available to the destination
+      memory domain
+  - for a visibility operation,
+    - the source scope is a set of memory domains
+    - the destination scope is a set of `(agent, reference, memory location)`
+      tuples
+    - for all availability or memory domain operations that happen-before,
+      their intersections with the source memory domains are made visibile to
+      the destination scope
 - Availability, Visibility, and Domain Operations
-  - when the first access scope includes `VK_ACCESS_HOST_WRITE_BIT`, the command
-    includes a memory domain operation from the host domain to the device
-    domain; when the second access scope include `VK_ACCESS_HOST_READ_BIT` or
-    `VK_ACCESS_HOST_WRITE_BIT`, it includes a memory domain operation from the
-    device domain to the host domain
-  - `vkFlushMappedMemoryRanges`s includes an availability operation
-  - `vkInvalidateMappedMemoryRanges` includes an visibility operation
-  - `vkQueueSubmit` includes both a domain operation (from the host to the device)
-    and a visibility operation
+  - `vkFlushMappedMemoryRanges` performs an availability operation
+    - the source scope is `(all host threads, all memory ranges specified)`
+    - the destination scope is the host memory domain
+  - `vkInvalidateMappedMemoryRanges` performs a visibility operation
+    - the source scope is the host memory domain
+    - the destination scope is `(all host threads, all memory ranges specified)`
+  - `vkQueueSubmit` performs a memory domain operation (from the host memory
+    domain to the device memory domain) and a visibility operation
+    - the source scope is the device memory domain
+    - the destination scope is `(all device agents, all device references)`
+  - a memory dependency performs
+    - if the source access mask includes `VK_ACCESS_HOST_WRITE_BIT`,
+      - a memory domain operation from the host memroy domain to the device
+        memory domain
+    - an availability operation
+      - the source scope is the first access scope
+      - the destination scope is the device memory domain
+    - a visibility operation
+      - the source scope is the device memory domain
+      - the destination scope is the second access scope
+    - if the destination access mask includes `VK_ACCESS_HOST_READ_BIT` or
+      `VK_ACCESS_HOST_WRITE_BIT`,
+      - a memory domain operation from the device memroy domain to the host
+        memory domain
 
 ## Appendix C: Compressed Image Formats
+
+- compressed formats are specified by <data-format.md>
+- sRGB
+  - R, G, and B components are linear
+  - R', G', and B' are non-linear values encoded from the R, G, and B
+    components
+- Block-Compressed Image Formats
+  - BC1, BC2, and BC3 are described in "S3TC Compressed Texture Image Formats"
+  - BC4 and BC5 are described in "RGTC Compressed Texture Image Formats"
+  - BC6H and BC7 are described in "BPTC Compressed Texture Image Formats"
+- ETC Compressed Image Formats
+  - ETC2 is described in "ETC2 Compressed Texture Image Formats"
+- ASTC Compressed Image Formats
+  - ASTC is described in "ASTC Compressed Texture Image Formats"
+- PVRTC Compressed Image Formats
+  - PVRTC is described in PVRTC Compressed Texture Image Formats"
+  - deprecated
 
 ## Appendix D: Core Revisions (Informative)
 
@@ -2452,99 +2540,3 @@ Vulkan
   - Required Limits
   - Required Extensions: 14 extensions
 - `xml/profiles/VP_KHR_roadmap.json`
-
-## Example
-
-- create a window
-  - `xcb_connect` to create a connection and find the root screen
-  - `xcb_create_window` and `xcb_map_window`
-- initialize vulkan
-  - `vkEnumerateInstanceVersion`
-  - `vkCreateInstance`
-  - `vkEnumeratePhysicalDevices`
-  - `vkGetPhysicalDeviceProperties2`
-  - `vkGetPhysicalDeviceFeatures2`
-  - `vkGetPhysicalDeviceMemoryProperties2`
-  - `vkGetPhysicalDeviceQueueFamilyProperties2`
-  - `vkGetPhysicalDeviceFormatProperties2`
-  - `vkEnumerateDeviceExtensionProperties`
-- initialize a logical device
-  - `vkCreateDevice`
-  - `vkGetDeviceQueue`
-  - `vkCreateSemaphore` twice for presentComplete and renderComplete
-- initialize a swapchain
-  - `vkCreateXcbSurfaceKHR` from the xcb connection and window
-  - `vkGetPhysicalDeviceSurfaceSupportKHR`
-  - `vkGetPhysicalDeviceSurfaceFormatsKHR`
-  - `vkCreateCommandPool`
-  - `vkGetPhysicalDeviceSurfaceCapabilitiesKHR`
-  - `vkGetPhysicalDeviceSurfacePresentModesKHR`
-  - `vkGetPhysicalDeviceSurfacePresentModesKHR`
-  - `vkCreateSwapchainKHR`
-  - `vkGetSwapchainImagesKHR`
-  - `vkCreateImageView`
-- 
-  - `vkAllocateCommandBuffers`
-  - `vkCreateFence`
-- create depth buffer
-  - `vkCreateImage`
-  - `vkGetImageMemoryRequirements`
-  - `vkAllocateMemory`
-  - `vkBindImageMemory`
-  - `vkCreateImageView`
-- create render pass
-  - `vkCreateRenderPass`
-- create pipeline cache
-  - `vkCreatePipelineCache`
-- create framebuffer
-  - `vkCreateFramebuffer`
-- load textures
-  - `vkCreateBuffer`
-  - `vkGetBufferMemoryRequirements`
-  - `vkAllocateMemory`
-  - `vkBindBufferMemory`
-  - `vkMapMemory`
-  - `vkUnmapMemory`
-  - `vkCreateImage`
-  - `vkGetImageMemoryRequirements`
-  - `vkAllocateMemory`
-  - `vkBindImageMemory`
-  - `vkCmdPipelineBarrier`
-  - `vkCmdCopyBufferToImage`
-  - `vkCmdPipelineBarrier`
-  - `vkCreateSampler`
-  - `vkCreateImageView`
-- create VBO
-  - `vkCreateBuffer` and ...
-- create UBO
-  - `vkCreateBuffer` and ...
-- vertex descriptions
-- descriptor set and pipeline layout
-  - `vkCreateDescriptorSetLayout`
-  - `vkCreatePipelineLayout`
-- pipeline
-  - `vkCreateGraphicsPipelines`
-- descriptor pool and set
-  - `vkCreateDescriptorPool`
-  - `vkAllocateDescriptorSets`
-  - `vkUpdateDescriptorSets`
-- build command buffer
-  - `vkBeginCommandBuffer`
-  - `vkCmdBeginRenderPass`
-  - `vkCmdSetViewport`
-  - `vkCmdSetScissor`
-  - `vkCmdBindDescriptorSets`
-  - `vkCmdBindPipeline`
-  - `vkCmdBindVertexBuffers`
-  - `vkCmdBindIndexBuffer`
-  - `vkCmdDrawIndexed`
-  - (more commands for UI)
-  - `vkCmdEndRenderPass`
-  - `vkEndCommandBuffer`
-- render loop
-  - `xcb_poll_for_event`
-  - `render`
-    - `vkAcquireNextImageKHR`
-    - `vkQueueSubmit`
-    - `vkQueuePresentKHR`
-    - `vkQueueWaitIdle`
