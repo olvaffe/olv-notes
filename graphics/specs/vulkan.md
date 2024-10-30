@@ -566,6 +566,58 @@ Vulkan
       that it does not incorrectly transition twice
     - a semaphore and `VK_PIPELINE_STAGE_ALL_COMMANDS_BIT` should be used for
       dependency between the two barriers on different queues
+- other depenencies
+  - host memory access
+    - `vkFlushMappedMemoryRanges` defines a memory dependency
+      - the first sync scope is all host operations that happened-before
+      - the first access scope is all host writes to the specified ranges
+      - the second sync scope is empty
+      - the second access scope is empty
+      - the host writes are made available to the host memory domain
+    - `vkInvalidateMappedMemoryRanges` defines a memory dependency
+      - the first sync scope is all host operations that happened-before
+      - the first access scope is empty
+      - the second sync scope is all host operations that happens-after
+      - the second access scope is all host reads from the specified ranges
+      - all previous writes available in the host domain are made visible to
+        future host reads
+  - subpasses
+    - `VkSubpassDependency2` defines a memory dependency when `srcSubpass` and
+      `dstSubpass` are different
+      - the first sync scope is all commands in the `srcSubpass` subpass in
+        `srcStageMask` stages
+        - if `srcSubpass` is `VK_SUBPASS_EXTERNAL`, all commands
+          happened-before `vkCmdBeginRenderPass2` 
+      - the first access scope is `srcStageMask`
+      - the second sync scope is all commands in the `dstSubpass` subpass in
+        `dstStageMask` stages
+        - if `dstSubpass` is `VK_SUBPASS_EXTERNAL`, all commands
+          happen-after `vkCmdEndRenderPass2` 
+      - the second access scope is `dstStageMask`
+    - there are also implicit subpass dependencies from/to
+      `VK_SUBPASS_EXTERNAL`, if none is specified
+  - queries
+    - `vkCmdWriteTimestamp2` defines an execution dependency
+      - the first sync scope is all commands happened-before in `stage` stage
+        - `stage` can be `VK_PIPELINE_STAGE_NONE`
+      - the second sync scope is this timestamp write op
+    - other cmds define execution dependencies similarly
+  - `VK_EXT_rasterization_order_attachment_access` is for coherent advanced
+    blending
+    - `VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT`
+      rasterizes fragments in primitive order and defines a memory dependency
+      among the fragments
+      - the first sync scope is `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT`
+      - the first access scope is `VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT`
+      - the second sync scope is `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT`
+      - the second access scope is `VK_ACCESS_2_INPUT_ATTACHMENT_READ_BIT`
+    - `VK_PIPELINE_DEPTH_STENCIL_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_DEPTH_ACCESS_BIT_EXT`
+      is similar
+      - the first sync scope is `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT` and
+        `VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT`
+      - the first access scope is `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT`
+      - the second sync scope is `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT`
+      - the second access scope is `VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT`
 
 ## Chapter 8. Render Pass
 
