@@ -566,6 +566,21 @@ Vulkan
       that it does not incorrectly transition twice
     - a semaphore and `VK_PIPELINE_STAGE_ALL_COMMANDS_BIT` should be used for
       dependency between the two barriers on different queues
+- 7.9. Host Write Ordering Guarantees
+  - `vkQueueSubmit2` defines a memory dependency
+    - the first sync scope is `vkQueueSubmit2` itself and anything that
+      happened-before
+    - the first access scope is all host writes that are available to the host
+      domain
+    - the second sync scope is all commands submitted by `vkQueueSubmit2` and
+      all future commands
+    - the second sync scope is all memory accesses performed by the device
+    - a memory domain op makes the host writes available to the host domain
+      become available to the device domain
+      - this is typically nop anyway
+    - a visibility op makes all writes available to the device domain become
+      visible to all device accesses
+      - this invalidates all device caches
 - other depenencies
   - host memory access
     - `vkFlushMappedMemoryRanges` defines a memory dependency
