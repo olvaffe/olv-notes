@@ -2455,6 +2455,25 @@ Vulkan
       `VK_ACCESS_HOST_WRITE_BIT`,
       - a memory domain operation from the device memroy domain to the host
         memory domain
+  - example
+    - suppose
+      - the cpu has a L2 for all cpu memory accesses
+      - the gpu has a L2 for all gpu memory accesses
+    - if the host domain was the cpu L2 and the device domain wsa the gpu L2,
+      it would not work
+      - a memory domain operation from the host to the device would flush the
+        cpu L2
+      - a memory domain operation from the device to the host would flush the
+        gpu L2
+      - a `VK_ACCESS_HOST_WRITE_BIT` in the src access mask of a memory
+        dependency would generate a memroy domain operation from the host to
+        the device
+        - but we could not encode cpu L2 flush into the cmdbuf
+    - it is more typical to have
+      - the host domain is the system memory
+      - the device domain is both the system memory and the gpu L2
+      - a memory domain operation from the host to the device is nop
+      - a memory domain operation from the device to the host flushes gpu L2
 
 ## Appendix C: Compressed Image Formats
 
