@@ -224,6 +224,7 @@ Kernel Config
 - select `Power management and ACPI options`
   - select `Device power management core functionality`
     - select `Power Management Debug Support` if debug
+  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
   - select `ACPI (Advanced Configuration and Power Interface) Support`
     - select `ACPI Time and Alarm (TAD) Device Support` if desired
     - select `Processor Aggregator` if desired
@@ -305,6 +306,7 @@ Kernel Config
       - select `Firmware loading facility`
         - select `Build named firmware blobs into the kernel binary` if desired (for microcode and built-in drivers)
         - select `Enable compressed firmware support`
+          - select `Enable ZSTD-compressed firmware support`
   - select `Firmware Drivers`
     - select `ARM System Control and Management Interface Protocol` if rk
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
@@ -408,6 +410,7 @@ Kernel Config
         - select `Mediatek serial port support` if mtk
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
+    - select `Serial device bus` if needed
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support` if needed
       - deselect all but the needed drivers
@@ -533,7 +536,7 @@ Kernel Config
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
       - select `Enable legacy fbdev support for your modesetting driver` (for vt)
       - select `AMD GPU` if amd
-        - select `Always enable userptr write support`
+        - select `Always enable userptr write support` if desired
       - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
         - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
       - select `MSM DRM` if qcom
@@ -709,6 +712,7 @@ Kernel Config
       - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
     - select `Backlight LED support for Chrome OS keyboards`
+    - select `ChromeOS EC Type-C Connector Control`
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
     - select `AMD SoC PMC driver` if amd
@@ -791,7 +795,7 @@ Kernel Config
     - select `MEDIATEK CCI DEVFREQ Driver` if old mtk
     - select `DEVFREQ-Event device Support`
       - select `ROCKCHIP DFI DEVFREQ event Driver` if rk
-  - select `External Connector Class (extcon) support`
+  - select `External Connector Class (extcon) support` if arm
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support`
     - select `Accelerometers`
@@ -853,6 +857,8 @@ Kernel Config
     - select `Qualcomm SC7180 interconnect driver`
     - select `Qualcomm SC7280 interconnect driver`
 - select `Cryptographic API`
+  - select `Accelerated Cryptographic Algorithms for CPU (x86)` if x86
+    - select `Ciphers: AES, modes: ECB, CBC, CTS, CTR, XTR, XTS, GCM (AES-NI)`
   - select `Hardware crypto devices`
     - select `Support for AMD Secure Processor` if amd
       - select `Secure Processor device driver`
