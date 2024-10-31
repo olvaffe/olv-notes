@@ -563,7 +563,7 @@ Vulkan
   - 7.4.4. Host Operations on Semaphores
   - 7.4.5. Importing Semaphore Payloads
 - 7.5. Events
-  - events can be used for fine-grained host/queue synchronization
+  - events can be used for fine-grained intra-queue or host/queue sync
   - they can also be used as a "split" barrier
     - say, we update an ssbo and sample from it; there is an irrelevant work
       that we can insert before vkCmdPipelineBarrier to better utilize the
@@ -572,6 +572,27 @@ Vulkan
       vkCmdPipelineBarrier or make it impractical, we can instead
       vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
     - the barrier is splitted into the signal half and wait half
+  - `vkCmdSetEvent2` defines a memory dependency and an event signal op
+    dependency and a event signal op
+    - the first sync scope is all cmds happened-before, limited by
+      `VkDependencyInfo`
+    - the first access scope is specified by `VkDependencyInfo`
+    - the second sync scope is the event signal op, and any ownerhsip transfer
+      or layout transition specified by `VkDependencyInfo`
+    - the second access scope is any ownerhsip transfer or layout transition
+  - `vkCmdWaitEvents2` defines a memory dependency
+    - the first sync scope is the same as that of the corresponding
+      `vkCmdSetEvent2` plus the event signal op
+    - the first access scope is the same as that of the corresponding
+      `vkCmdSetEvent2`
+    - the second sync scope is all cmds happens-after `vkCmdWaitEvents2`,
+      limited by the same `VkDependencyInfo`
+    - the second access scope is specified by the same `VkDependencyInfo`
+  - `vkCmdResetEvent2` defines an execution dependency and an event unsignal
+    op
+    - the first sync scope is all cmds happened-before limited to `stageMask`
+      stages
+    - the second sync scope is the event unsignal op
 - 7.6. Pipeline Barriers
   - `vkCmdPipelineBarrier2` defines memory deps specified by a
     `VkDependencyInfo`
