@@ -516,13 +516,35 @@ Vulkan
         dependency that needs to be be specified
       - `vkCmdPipelineBarrier` to the rescue
 - 7.3. Fences
+  - a fence defines a dep from a queue to the host
+    - the only device cmd is to signal a fence as a part of queue submission
+    - the host cmds can reset, wait, or query a fence
+    - there are only two states: signaled or unsignaled
+  - when a fence is submitted as a part of `vkQueueSubmit2`, a mem dep and a
+    fence signal op are defined
+    - the first sync scope is all cmds submitted
+    - the first access scope is all memory access performed by the device
+    - the second sync scope is the fence signal op
+    - the second access scope is empty
+  - `vkResetFences` defines a fence unsignal op, which sets the fence to
+    unsignaled
+    - the fence must have no pending queue cmd
+  - `vkWaitForFences` or `vkGetFenceStatus` defines an execution dep
+    - the first sync scope is the fence signal op
+    - the second sync scope is the host op to mark the fence signaled
+    - note that the fence mem dep associated with queue submit makes device
+      writes available in the device domain, but it does not make device
+      writes available in the host domain nor visible in the host domain
+  - Importing Fence Payloads
 - 7.4. Semaphores
   - 7.4.1. Semaphore Signaling
-    - the semaphore signal operation is a synchronization command
-      - it defines two synchronization scopes and their execution and memory
-        dependencies
-    - the first sync scope includes all commands in the batch
-    - the second sync scope includes the signal operation itself
+    - when a batch in queue submission signals a semaphore, it defines a
+      memory dependency and a semaphore signal op
+      - the first sync scope is all cmds in the batch limited to `stageMask`
+        stages
+      - the first access scope is all memory access performed by the device
+      - the second sync scope is the semaphore signal op
+      - the second access scope is empty
     - these are enough to make sure the semaphore signals after all commands
       in the batch are executed
       - and because of the fundamental signal operation order, all commands
@@ -530,9 +552,16 @@ Vulkan
     - IOW, a command can be reorderd before a prior signal operation and but
       after its own signal operation
   - 7.4.2. Semaphore Waiting
-    - the first sync scope includes all semaphore signal operations that
-      operate on the same semaphore
-    - the second sync scope includes all commands in the batch
+    - when a batch in queue submission waits on a semaphore, it defines a
+      memory dependency and a semaphore wait op
+      - the first sync scope is the prior semaphore signal op on the semaphore
+      - the first access scope is all memory access performed by the device
+      - the second sync scope is all cmds in the batch limited to `stageMask`
+        stages
+      - the second access scope is all memory access performed by the device
+  - 7.4.3. Semaphore State Requirements for Wait Operations
+  - 7.4.4. Host Operations on Semaphores
+  - 7.4.5. Importing Semaphore Payloads
 - 7.5. Events
   - events can be used for fine-grained host/queue synchronization
   - they can also be used as a "split" barrier
@@ -543,6 +572,9 @@ Vulkan
       vkCmdPipelineBarrier or make it impractical, we can instead
       vkCmdSetEvent after ssbo update and vkCmdWaitEvents before sampling
     - the barrier is splitted into the signal half and wait half
+- 7.6. Pipeline Barriers
+  - `vkCmdPipelineBarrier2` defines memory deps specified by a
+    `VkDependencyInfo`
 - 7.7. Memory Barriers
   - a barrier can perform a subset of these operations in order
     - availibility, controlled by `src{Stage,Access}Mask`
