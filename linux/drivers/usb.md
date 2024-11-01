@@ -102,6 +102,54 @@ USB
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
 
+## USB Device Classes
+
+- 00, Unspecified
+  - Device class is unspecified, interface descriptors are used to determine needed drivers
+- 01, Audio
+  - Speaker, microphone, sound card, MIDI
+- 02, Communications and CDC control
+  - UART and RS-232 serial adapter, modem, Wi-Fi adapter, Ethernet adapter.
+    Used together with class 0Ah (CDC-Data) below
+- 03, Human interface device (HID)
+  - Keyboard, mouse, joystick
+- 05, Physical interface device (PID)
+  - Force feedback joystick
+- 06, Media (PTP/MTP)
+  - Scanner, Camera
+- 07, Printer
+  - Laser printer, inkjet printer, CNC machine
+- 08, USB mass storage, USB Attached SCSI
+  - USB flash drive, memory card reader, digital audio player, digital camera,
+    external drive
+- 09, USB hub
+  - High speed USB hub
+- 0A, CDC-Data
+  - Used together with class 02h (Communications and CDC Control) above
+- 0B, Smart card
+  - USB smart card reader
+- 0D, Content security
+  - Fingerprint reader
+- 0E, Video
+  - Webcam
+- 0F, Personal healthcare device class (PHDC)
+  - Pulse monitor (watch)
+- 10, Audio/Video (AV)
+  - Webcam, TV
+- 11, Billboard
+  - Describes USB-C alternate modes supported by device
+- DC, Diagnostic device
+  - USB compliance testing device
+- E0, Wireless Controller
+  - Bluetooth adapter
+- EF, Miscellaneous
+  - ActiveSync device
+- FE, Application-specific
+  - IrDA Bridge, RNDIS, Test & Measurement Class (USBTMC), USB DFU (Device
+    Firmware Upgrade)
+- FF, Vendor-specific
+  - Indicates that a device needs vendor-specific drivers
+
 ## XHCI PCI
 
 - `xhci_pci_init` registers
