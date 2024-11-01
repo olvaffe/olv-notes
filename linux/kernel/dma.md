@@ -182,3 +182,37 @@ Kernel and DMA
     its pool and return the dma address to the shadow page 
   - in `dma_unmap_sg` or `dma_sync_sg_for_*`, swiotlb transparently memcpy's
     between the real page and the shadow page
+
+## Allocation
+
+- device props
+  - if `CONFIG_ARCH_HAS_DMA_OPS`, `get_dma_ops` returns `dev->dma_ops` or
+    `get_arch_dma_ops`
+    - `set_dma_ops` is barely called
+    - `get_arch_dma_ops` usually returns null
+    - this almost always returns null
+  - if `CONFIG_IOMMU_DMA`, `use_dma_iommu` returns `dev->dma_iommu`
+    - `iommu_probe_device` calls `iommu_setup_dma_ops` if there is iommu
+    - because `iommu_def_domain_type` is usually `IOMMU_DOMAIN_DMA`,
+      `dev->dma_iommu` is true
+    - `dma_alloc_direct` usually returns false as a result
+  - `dma_set_mask` sets `dev->dma_mask`
+  - `dma_set_coherent_mask` sets `dev->coherent_dma_mask`
+- alloc wrappers
+  - `dma_alloc_coherent` calls `dma_alloc_attrs`
+  - `dma_alloc_wc` calls `dma_alloc_attrs`
+  - `dma_alloc_noncoherent` calls `dma_alloc_pages`
+- when using dma iommu,
+  - `dma_alloc_pages` calls `dma_common_alloc_pages`
+    - it tries `dma_alloc_contiguous` to alloc from cma first
+      - otherwise, it `alloc_pages_node` which likely fail for large allocs
+    - `iommu_dma_map_page` sets up the iommu
+  - `dma_alloc_attrs` calls `iommu_dma_alloc`
+    - `iommu_dma_alloc_remap` allocs non-contiguous pages and sets up the
+      iommu to have a linear mapping
+  - `dma_alloc_noncontiguous` calls `iommu_dma_alloc_noncontiguous` to alloc
+    non-contiguous pages and sets up the iommu to have a linear mapping
+- when using direct dma
+  - `dma_alloc_pages` calls `dma_direct_alloc_pages`
+  - `dma_alloc_attrs` calls `dma_direct_alloc`
+  - `dma_alloc_noncontiguous` calls `dma_direct_alloc_pages`

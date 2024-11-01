@@ -9,6 +9,8 @@ Kernel IOMMU
     - `iommu.passthrough=0 iommu.strict=1`
     - set `iommu_def_domain_type` to `IOMMU_DOMAIN_DMA` and set
       `iommu_dma_strict`
+    - devices are translated, restricted to dma-mapped pages
+    - higher overhead, higher security
   - `IOMMU_DEFAULT_DMA_LAZY`
     - this is the default on x86
     - `iommu.passthrough=0 iommu.strict=0`
@@ -16,6 +18,8 @@ Kernel IOMMU
   - `IOMMU_DEFAULT_PASSTHROUGH`
     - `iommu.passthrough=1`
     - set `iommu_def_domain_type` to `IOMMU_DOMAIN_IDENTITY`
+    - trusted devices are identically-mapped
+    - lower overhead, lower security
 
 ## Controllers
 
