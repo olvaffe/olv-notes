@@ -32,6 +32,34 @@ Linux hda
     - other devices can have controllers for hda buses as well
       - they also call `snd_hdac_bus_init*` to init an hda bus
 
+## i915 HDMI
+
+- i915 `intel_display_driver_register`
+  - `intel_audio_init` inits audio clk
+  - `i915_audio_register` calls `component_add_typed` to add a
+    `I915_COMPONENT_AUDIO` component with `i915_audio_component_bind_ops`
+- on an old broadwell, there are two hdaudio pci devices
+  - `8086:160c` has `AZX_DRIVER_HDMI` and `AZX_DCAPS_INTEL_BROADWELL`
+  - `8086:9ca0` has `AZX_DRIVER_PCH` and `AZX_DCAPS_INTEL_PCH`
+- the legacy azx driver probes both pci devices
+  - for `8086:160c`, `azx_probe` calls `snd_hdac_i915_init` which calls
+    `snd_hdac_acomp_init`
+    - `component_match_add_typed` adds a component match using
+      `i915_component_master_match` to match the component added by i915
+    - `component_master_add_with_match` binds to the component added by i915
+    - `hdac_component_master_bind` calls `i915_audio_component_bind`
+    - the audio driver now has access to to `i915_audio_component_ops`
+- on `8086:160c` hda bus, there is a codec of id `0x80862808`
+  - `module_hda_codec_driver(hdmi_driver)` registers the codec driver
+  - `hda_codec_driver_probe` probes the codec
+  - `patch_i915_hsw_hdmi` is the patch function
+  - there are 3 audio output nodes
+- on `8086:9ca0` hda bus, there is a codec of id `0x10ec0288`
+  - `module_hda_codec_driver(realtek_driver)` registers the codec driver
+  - `hda_codec_driver_probe` probes the codec
+  - `patch_alc269` is the patch function
+  - there are 3 audio output nodes and 3 audio input nodes
+
 ## Intel
 
 - `snd_intel_dsp_driver_probe`
