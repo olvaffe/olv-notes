@@ -568,8 +568,10 @@ Kernel Config
     - select `Advanced Linux Sound Architecture`
       - select `Dynamic device file minor numbers` (for asoc on old kernel)
       - deselect `Support old ALSA API`
+      - select `Sequencer support` if desired (for midi)
       - select `HD-Audio` if x86
-        - select `HD Audio PCI`
+        - select `HD Audio PCI` if needed (for amd or old intel)
+          - new intel uses `SND_SOC_SOF_HDA_AUDIO_CODEC` instead
         - select `Build Realtek HD-audio codec support` if needed
         - select `Build HDMI/DisplayPort HD-audio codec support`
       - select `USB sound devices`
@@ -603,10 +605,6 @@ Kernel Config
             - select `SOF support for RENOIR`
             - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
-            - deselect all but needed drivers such as
-            - select `SOF support for Tigerlake`
-            - select `SOF support for Alderlake`
-            - select `SOF support for Meteorlake`
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
           - select `SOF support for MTK audio DSPs` if mtk
@@ -724,7 +722,7 @@ Kernel Config
     - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
     - select `Intel HID Event` if intel
     - select `Intel SCU platform driver` if intel
-  - select `Common Clock Framework` if arm
+  - select `Common Clock Framework`
     - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
