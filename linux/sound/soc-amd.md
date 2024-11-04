@@ -5,6 +5,8 @@ Kernel ASoC AMD
 
 - AMD Audio Coprocessor (ACP)
   - a pci device with `PCI_DEVICE(PCI_VENDOR_ID_AMD, ACP_PCI_DEV_ID)` (0x15e2)
+    - there might be a separate pci device for an hda controller
+      - this hda controller often has a codec for just hdmi
   - different revisions require different drivers
     - raven has rev 0x00 which is driven by `acp3x_driver`
     - renoir has rev 0x01 which is driven by `rn_acp_driver`
@@ -13,22 +15,22 @@ Kernel ASoC AMD
       `yc_acp6x_driver`
     - raphael has rev 0x62 which is driven by `rpl_acp6x_driver`
     - pink sardine (phoenix) has rev 0x63 which is driven by `ps_acp63_driver`
-  - even the same revision can have different firmwares and require different
-    drivers
-    - `snd_amd_acp_find_config` can return
-      - `FLAG_AMD_SOF`, which means acp uses the sof firmware
-        - renoir is driven by `snd_sof_pci_amd_rn_driver` instead
-        - vangogh is driven by `snd_sof_pci_amd_vgh_driver` instead
-        - rembrandt is driven by `snd_sof_pci_amd_rmb_driver` instead
-        - phoenix is driven by `snd_sof_pci_amd_acp63_driver` instead
-      - `FLAG_AMD_LEGACY`, which means acp uses the legacy firmware(?)
-        - all supported revisions are driven by `snd_amd_acp_pci_driver`
-          instead, which creates different platform devices for different
-          revisions
-        - renoir is driven by `renoir_driver` instead
-        - rembrandt is driven by `rembrandt_driver` instead
-        - phoenix  is driven by `acp63_driver` instead
-        - revision 0x70 is driven by `acp70_driver` instead
+  - there is also a newer `snd_amd_acp_pci_driver`
+    - it supports multiple revisions in a single pci driver
+    - it creates different platform devices for different revisions
+      - renoir (0x01) is driven by `renoir_driver` instead
+      - rembrandt (0x6f) is driven by `rembrandt_driver` instead
+      - phoenix (0x63) is driven by `acp63_driver` instead
+      - revision 0x70 and 0x71 are driven by `acp70_driver` instead
+  - there are even newer sof drivers, for when the acp runs sof firmware
+    - renoir is driven by `snd_sof_pci_amd_rn_driver` instead
+    - vangogh is driven by `snd_sof_pci_amd_vgh_driver` instead
+    - rembrandt is driven by `snd_sof_pci_amd_rmb_driver` instead
+    - phoenix is driven by `snd_sof_pci_amd_acp63_driver` instead
+  - `snd_amd_acp_find_config` decides which driver to use
+    - no flag uses the old drivers
+    - `FLAG_AMD_LEGACY` uses the common `snd_amd_acp_pci_driver`
+    - `FLAG_AMD_SOF` uses the sof drivers
 - how different drivers work
   - the default drivers usually power on acp, detect the config, and register
     config-dependent platform devices, and let platform drivers take over
