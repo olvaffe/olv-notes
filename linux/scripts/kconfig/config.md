@@ -462,8 +462,8 @@ Kernel Config
     - if rk
       - select `Pinctrl and GPIO driver for RK805 PMIC`
       - select `Rockchip gpio and pinctrl driver`
-  - select `GPIO Support` if rk
-    - select `Memory mapped GPIO drivers`
+  - select `GPIO Support`
+    - select `Memory mapped GPIO drivers` if rk
       - select `Rockchip GPIO support`
   - select `Power supply class support`
     - select `SBS Compliant gas gauge` if needed
@@ -570,17 +570,17 @@ Kernel Config
       - deselect `Support old ALSA API`
       - select `Sequencer support` if desired (for midi)
       - select `HD-Audio` if x86
-        - select `HD Audio PCI` if needed (for amd or old intel)
+        - select `HD Audio PCI` if old x86
           - new intel uses `SND_SOC_SOF_HDA_AUDIO_CODEC` instead
         - select `Build Realtek HD-audio codec support` if needed
         - select `Build HDMI/DisplayPort HD-audio codec support`
       - select `USB sound devices`
         - select `USB Audio/MIDI driver` if needed
       - select `ALSA for SoC audio support`
-        - select `AMD Audio Coprocessor - Renoir support` if amd
+        - select `AMD Audio Coprocessor - Renoir support` if old amd
           - select `AMD Renoir support for DMIC`
-        - select `AMD Audio ACP Common support` if amd and cros
-          - select `AMD SOF Machine Driver Support`
+        - select `AMD Audio ACP Common support` if amd
+          - select `AMD SOF Machine Driver Support` if cros
         - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
           - select `Use more user friendly long card names`
@@ -598,10 +598,10 @@ Kernel Config
         - select `ASoC support for Rockchip` if rk
           - select `Rockchip I2S Device Driver`
           - select `Rockchip I2S/TDM Device Driver`
-        - select `Sound Open Firmware Support` if intel or cros
+        - select `Sound Open Firmware Support`
           - select `SOF PCI enumeration support` if x86
           - select `SOF OF enumeration support` if arm
-          - select `SOF support for AMD audio DSPs` if amd
+          - select `SOF support for AMD audio DSPs` if amd and cros
             - select `SOF support for RENOIR`
             - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
