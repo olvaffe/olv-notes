@@ -42,6 +42,11 @@ Vim
   - `-I FOO+`
     - when an identifier is defined as `void FOO(bar) func_name`, this tells
       the parser toskips `FOO(bar)`
+- OmniCppComplete requirements
+  - `--c++-kinds=+p` adds prototypes
+  - `--fields=+iaS` adds inheritance (i), access (a) and function signatures
+    (S)
+  - `--extra=+q` adds context to the tag name
 
 ## Language Server Protocol
 

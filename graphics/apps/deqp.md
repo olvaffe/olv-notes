@@ -1523,6 +1523,37 @@ dEQP
   values
   - the fence is used to wait for the last submit
 
+## Test Case: `dEQP-VK.synchronization2.op.single_queue.event.write_ssbo_compute_read_copy_buffer.buffer_16384`
+
+- test case
+  - `createSynchronization2Tests`
+  - `createTestsInternal`
+  - `OperationTests::init`
+  - `createSynchronizedOperationSingleQueueTests`
+  - `createTests`
+  - `SyncTestCase`
+    - `m_type` is `SYNCHRONIZATION_TYPE_SYNCHRONIZATION2`
+    - `m_syncPrimitive` is `SYNC_PRIMITIVE_EVENT`
+    - `m_resourceDesc` is a 16KB buffer
+    - `m_writeOp` is `BufferSupport` because `writeOp` is
+      `OPERATION_NAME_WRITE_SSBO_COMPUTE`
+    - `m_readOp` is `CopyBuffer::Support` because `readOp` is
+      `OPERATION_NAME_READ_COPY_BUFFER`
+  - `SyncTestCase::createInstance` creates a `EventTestInstance`
+    - `m_writeOp` is `BufferImplementation`, created by `BufferSupport::build`
+    - `m_readOp` is `CopyBuffer::Implementation`, created by
+      `CopyBuffer::Support::build`
+- `EventTestInstance::iterate`
+  - `BufferImplementation::recordCommands` dispatches 1 thread to
+    - `for (int i = 0; i < 1024; ++i) { b_out.data[i] = b_in.data[i]; }`
+    - that's 1024 vec4s which is 16KB
+  - `vkCmdSetEvent2KHR` and `vkCmdWaitEvents2KHR`
+    - src `VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT` / `VK_ACCESS_2_SHADER_WRITE_BIT`
+    - dst `VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT` / `VK_ACCESS_2_TRANSFER_READ_BIT`
+  - `CopyBuffer::Implementation::recordCommands`
+    - `vkCmdCopyBuffer`
+    - `vkCmdPipelineBarrier2`
+
 ## Test Case: `dEQP-VK.texture.mipmap.2d.basic.nearest_nearest_clamp`
 
 - test case
