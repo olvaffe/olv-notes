@@ -422,6 +422,56 @@ dEQP
   - submit and get the sync fd
   - wait for queue idle
 
+## Test Case: `dEQP-VK.binding_model.shader_access.primary_cmd_buf.bind.uniform_texel_buffer.vertex.single_descriptor.offset_zero`
+
+- test case
+  - `vkt::BindingModel::createTests`
+  - `createShaderAccessTests`
+  - `createShaderAccessTexelBufferTests`
+    - `isPrimaryCmdBuf` is true
+    - `updateMethod` is `DESCRIPTOR_UPDATE_METHOD_NORMAL`
+    - `descriptorType` is `VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER`
+    - `exitingStages` is `VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT`
+    - `activeStages` is `VK_SHADER_STAGE_VERTEX_BIT`
+    - `descriptorSetCount` is `DESCRIPTOR_SET_COUNT_SINGLE`
+    - `ShaderInputInterface` is `SHADER_INPUT_SINGLE_DESCRIPTOR`
+    - `resourceFlags` is 0
+    - `bind2` is false
+  - `TexelBufferDescriptorCase`
+  - `TexelBufferRenderInstance`
+- `TexelBufferRenderInstance::TexelBufferRenderInstance`
+  - `SingleTargetRenderInstance::SingleTargetRenderInstance`
+    - `SingleTargetRenderInstance::createColorAttachment` creates a 128x128
+      image
+    - `SingleTargetRenderInstance::createColorAttachmentView` creates an image
+      view
+    - `makeRenderPass` creates a render pass
+    - `SingleTargetRenderInstance::createFramebuffer` creates a framebuffer
+    - `SingleTargetRenderInstance::createCommandPool` creates a cmd pool
+  - `TexelBufferRenderInstance::createDescriptorSetLayouts` creates a desc set
+    layout, with 1 binding for the tbo
+  - `TexelBufferRenderInstance::createPipelineLayout` creates a pipeline
+    layout
+  - `TexelBufferInstanceBuffers::TexelBufferInstanceBuffers`
+    - `TexelBufferInstanceBuffers::createSourceBuffers` creates and populates
+      a 512-byte buffer
+    - `TexelBufferInstanceBuffers::createSourceViews` creates a buf view
+  - `TexelBufferRenderInstance::createDescriptorPool` creates a desc pool
+  - `TexelBufferRenderInstance::createDescriptorSets` creates and updates a
+    desc set, with 1 descriptor for the buffer view
+- `SingleTargetRenderInstance::iterate`
+  - a barrier to transition the image to
+    `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+  - `SingleCmdRenderInstance::renderToTarget`
+    - create a pipeline
+      - fs is `o_color = frag_color;`
+    - begin a render pass
+    - `TexelBufferRenderInstance::writeDrawCmdBuffer`
+      - draw 4 quads (8 tris)
+      - quad x fetches `SAMPLE_POINT_x` of tbo
+  - `SingleTargetRenderInstance::readRenderTarget`
+  - `TexelBufferRenderInstance::verifyResultImage`
+
 ## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.simple_draw.simple_draw_triangle_list`
 
 - test creation
