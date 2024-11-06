@@ -463,8 +463,16 @@ Mesa PanVK Compiler
     - `I->dest[0]` is `dest` which is a temp for fetched texels
     - `I->src[0]` is `idx` which is the texcoords
     - `I->src[1]` is `src0` which is the idx for sampler desc
-      - formed by `pan_res_handle`
     - `I->src[2]` is `src1` which is the idx for texture desc
+    - descriptor index packing
+      - the descriptor indices for sampler and texture are formed by
+        `pan_res_handle`
+      - when `va_is_valid_const_narrow_index` is true for both, they can be
+        packed to u32
+        - bit 0..10: sampler index
+        - bit 11..15: sampler table
+        - bit 16..26: texture index
+        - bit 27..31: texture table
   - `va_pack_instr` packs
     - bit 0..7: `va_pack_src(I, 1)`
     - bit 16..21: `va_pack_reg(I, I->dest[0])`
