@@ -411,6 +411,7 @@ Mesa PanVK Compiler
   - (bit 11..15: unused)
   - bit 16..21: `<sr write="true" flags="false"/>`
     - base staging reg to write
+    - they are for texels
   - bit 22..25: `<write_mask/>`
   - bit 26..27: `<register_type/>`
     - it is supposed to be float, signed, or unsigned, but is never set
@@ -420,13 +421,14 @@ Mesa PanVK Compiler
     - the flow field can be used to wait for a slot
   - bit 33..35: `<sr_count/>`
     - number of staging regs to read
-    - typically 1
+    - they are for coords and depend on dim
   - bit 36..38: `<sr_write_count/>`
     - number of staging regs to write minus 1
-    - typically `4-1=3`
+    - typically `4-1=3` (f32) or `2-1=1` (f16)
   - bit 39: `<skip/>`
   - bit 40..45: `<sr read="true" flags="false"/>`
     - base staging reg to read
+    - they are for coords
   - bit 46: `<register_width/>`
     - 32 when set; 16 when clear
   - (bit 47: unused)
@@ -456,6 +458,19 @@ Mesa PanVK Compiler
     - `BI_SEG_POS` (pos sh output) to `VA_MEMORY_ACCESS_ISTREAM`
     - `BI_SEG_VARY` (vary sh output) to `VA_MEMORY_ACCESS_ESTREAM`
     - the rest are to `VA_MEMORY_ACCESS_NONE` (no hint)
+- `TEX_FETCH`
+  - `bi_emit_tex_valhall` and `bi_tex_fetch_to`
+    - `I->dest[0]` is `dest` which is a temp for fetched texels
+    - `I->src[0]` is `idx` which is the texcoords
+    - `I->src[1]` is `src0` which is the idx for sampler desc
+      - formed by `pan_res_handle`
+    - `I->src[2]` is `src1` which is the idx for texture desc
+  - `va_pack_instr` packs
+    - bit 0..7: `va_pack_src(I, 1)`
+    - bit 16..21: `va_pack_reg(I, I->dest[0])`
+    - bit 33..35: `bi_count_read_registers(I, 0)`
+    - bit 36..38: `bi_count_write_registers(I, 0) - 1`
+    - bit 40..45: `va_pack_reg(I, I->src[0])`
 
 ## VS
 
