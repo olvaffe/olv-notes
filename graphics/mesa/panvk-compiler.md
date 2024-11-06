@@ -359,10 +359,10 @@ Mesa PanVK Compiler
         - see `ISA.xml`
 - `bi_instr` is a pseudo instr
 
-## ISA Encoding
+## `ISA.xml` and `valhall.py`
 
-- see `va_pack_instr` for definitive definitions
 - an instruction has 64 bits
+  - see `va_pack_instr` for definitive definitions
   - bit 0..7: src0
   - bit 8..15: src1
   - bit 16..23: src2
@@ -383,22 +383,57 @@ Mesa PanVK Compiler
       - this terminates them when they are no longer needed
     - `VA_FLOW_END` terminates a thread
   - bit 63: reserved
-- messages
-  - bit 30..32: slot
+- `build_instr` parses a `<ins>` to an `Instruction`
+  - `build_source` parses each `<src>` to a `Source` in order
+    - pseudo srcs are ignored
+    - real srcs take up bit 0..5, 8..13, or 16..21 in order
+  - parses each `<dest>` to a `Dest`
+    - there is no `<dest>` so this is unused
+  - parses `srcs=` to `Source`
+    - there is no `srcs=` so this is unsued
+  - parses `dests=` to `Dest`
+    - there is no `srcs=` so this is unsued
+  - `build_staging` parses each `<sr>` to a `Staging` in order
+    - if write and no flags, it takes up bit 16..21
+    - otherwise, it takes up bit 40..45
+      - flags takes up bit 46..47
+  - `build_imm` parses each `<imm>` to an `Immediate` in order
+  - `build_modifier` parses each `<va_mod>` to a `Modifier` in order
+  - maps remaining xml tags to `Modifier`s
+    - it maps using `MODIFIERS`
+    - pseudo modifiers are ignored
+- `TEX_FETCH`
+  - bit 0..5: `<src size="64">Image to read from</src>`
+  - (bit 6..7: src flags)
+  - bit 8: `<wide_indices/>`
+  - bit 9: `<array_enable/>`
+  - bit 10: `<texel_offset/>`
+  - (bit 11..15: unused)
+  - bit 16..21: `<sr write="true" flags="false"/>`
+    - base staging reg to write
+  - bit 22..25: `<write_mask/>`
+  - bit 26..27: `<register_type/>`
+    - it is supposed to be float, signed, or unsigned, but is never set
+  - bit 28..29: `<dimension/>`
+  - bit 30..32: `<slot/>`
     - a message is async and a slot is specified
     - the flow field can be used to wait for a slot
-  - bit 33..35: read reg count
-  - bit 36..38: write reg count
-  - bit 39: skip (tex) or unsigned (load)
-  - bit 40..45: base reg id
-  - bit 46: read
-  - bit 47: write
-- non-messages
-  - bit 40..45: dest reg id
-    - this is ignored by those who do not have a dest
-    - `BRANCHZI` repurposes bit 40 for abs/rel addr
-  - bit 46: write lower 16 bits
-  - bit 47: write higher 16 bits
+  - bit 33..35: `<sr_count/>`
+    - number of staging regs to read
+    - typically 1
+  - bit 36..38: `<sr_write_count/>`
+    - number of staging regs to write minus 1
+    - typically `4-1=3`
+  - bit 39: `<skip/>`
+  - bit 40..45: `<sr read="true" flags="false"/>`
+    - base staging reg to read
+  - bit 46: `<register_width/>`
+    - 32 when set; 16 when clear
+  - (bit 47: unused)
+  - bit 48..56: primary opcode
+  - bit 57..58: fau page
+  - bit 59..62: flow
+  - bit 63: reserved
 
 ## ISA
 
