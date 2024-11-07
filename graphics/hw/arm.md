@@ -314,3 +314,82 @@ ARM Mali
   - 4x texture unit
   - a load-store cache
     - replaces the load-store unit
+
+## Valhall Arch
+
+- high-level blocks
+  - csf
+  - core group: tiler, mmu, l2, etc.
+  - shader stacks: each shader stack has an array of shader cores
+- OF node
+  - `power-domains` has one power domain for the entire gpu
+  - `clocks` has 3 clocks
+    - `core` is for csf
+    - `coregroup` is for core group
+    - `stacks` is for shader stacks
+  - `interrupts` has 3 interrupts
+    - `job` is from csf
+      - `panthor_job_irq_handler` saves the events
+      - `process_fw_events_work` handles the events (e.g., job completions)
+    - `mmu` is from mmu in core group
+      - `panthor_mmu_irq_handler` handles mmu faults
+    - `gpu` is from the rest of blocks
+      - `panthor_gpu_irq_handler` handles gpu faults and `GPU_CMD` events
+- fine-grained power domains
+  - these blocks can be individually powered: tiler, l2, shader cores
+  - each block a set of pm-related regs
+    - `PWRON` powers a block on, which takes time
+    - `PWROFF` powers a block off, which takes time
+    - `PWRTRANS` indicates blocks being powered on/off
+    - `READY` indicates block powered on and ready to execute
+  - there are also
+    - `PRESENT` indicates available blocks
+    - `PWRACTIVE` indicates busyness
+- gpu cmds
+  - there is a `GPU_CMD` reg for reset and cache flush
+  - `panthor_gpu_flush_caches` flushes caches, and blocks until a gpu irq with
+    `GPU_IRQ_CLEAN_CACHES_COMPLETED`
+  - `panthor_gpu_soft_reset` soft-resets, and blocks until a gpu irq with
+    `GPU_IRQ_RESET_COMPLETED`
+- caches
+  - all memory accesses go through mmu and reach l2 first
+    - including csf, tiler, shader core, etc.
+  - each shader core also has
+    - lsc, load/store cache
+    - other read-only caches for texture unit, attribute unit, etc.
+- csf
+  - MCU
+    - it runs the firmware
+    - it schedules and sends the command streams to CEUs
+      - it parses and executes some of the cs commands
+  - CEUs, command execution units
+    - it parses and executes the cs commands
+    - idvs jobs are executed by the bin iterator
+      - and then dispatched tiler
+    - compute jobs are executed by the compute iterator
+      - and then dispatched shader core
+    - frag jobs are executed by the frag iterator
+      - and then dispatched shader core
+  - mmio regs
+    - mmu control to set up address space
+    - gpu control to reset, etc.
+- tiler
+  - assembles input vertices and indices
+  - dispatches position jobs to transform vertex positions
+  - clips and culls
+  - dispatches varying jobs to transform vertex attributes
+  - saves the results as a list of tiles in the tile heap
+- shader core
+  - compute frontend
+    - it creates warps and dispatches them to the execution engine
+  - fragment frontend
+    - it is similar, but also includes rasterization, earlyz, etc.
+  - execution core
+    - execution engines
+    - lsc
+    - attribute unit
+    - varying unit
+    - texture unit
+  - fragment backend
+    - blender, tile buffer, and tile writeback
+    - depth and stencil
