@@ -472,6 +472,61 @@ dEQP
   - `SingleTargetRenderInstance::readRenderTarget`
   - `TexelBufferRenderInstance::verifyResultImage`
 
+## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.multiple_clears_within_render_pass.draw_clear_draw_c_r8g8b8a8_unorm_triangles`
+
+- test creation
+  - `vkt::Draw::createTests`
+  - `createChildren`
+    - `useDynamicRendering` is true
+    - `useSecondaryCmdBuffer` is false
+    - `secondaryCmdBufferCompletelyContainsDynamicRenderpass` is false
+    - `nestedSecondaryCmdBuffer` is false
+  - `MultipleClearsWithinRenderPassTests::init`
+  - `MultipleClearsWithinRenderPassTest`
+    - `format` is `VK_FORMAT_R8G8B8A8_UNORM`
+    - `depthFormat` is `VK_FORMAT_UNDEFINED`
+    - `topology` is `Topology::TRIANGLES`
+    - `expectedColor` is `(0.0, 0.5, 0.5, 1.0)`
+    - `expectedDepth` is 0.9
+    - `repeatCount` is 1
+    - `enableBlend` is true
+    - `steps` is
+      - `{ClearOp::DRAW, Vec4(1.0f, 0.0f, 0.0f, 1.0f), 0.7f}`
+      - `{ClearOp::CLEAR, Vec4(0.0f, 1.0f, 0.0f, 1.0f), 0.3f}`
+      - `{ClearOp::DRAW, Vec4(0.0f, 0.0f, 1.0f, 0.5f), 0.9f}}}`
+  - `MultipleClearsTest`
+- `MultipleClearsTest::MultipleClearsTest`
+  - create a 288-byte buffer for vertex data
+    - 6 vertices for a quad, needing `6 * sizeof(vec4) = 96` bytes
+    - 3 steps with varying depths, so `96 * 3 = 288`
+  - create a 400x300 color image and an image view
+  - create a graphics pipeline
+    - vs: `gl_Position = in_position;`
+    - fs: `out_color = u_color.color;` where `u_color` is push const
+    - viewport is 400x300
+    - blending
+    - no depth test
+- `MultipleClearsTest::iterate`
+  - create cmd pool and cmd buffer
+  - `MultipleClearsTest::preRenderCommands`
+    - transition image to `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+  - `MultipleClearsTest::beginDynamicRender`
+    - render area is 400x300
+    - load op is `VK_ATTACHMENT_LOAD_OP_LOAD`
+    - store op is `VK_ATTACHMENT_STORE_OP_STORE`
+  - `MultipleClearsTest::drawCommands`
+    - bind the pipeline and the vb
+    - for each of the 3 clear steps
+      - `ClearOp::DRAW`
+        - push the clear color
+        - draw the quad
+      - `ClearOp::CLEAR`
+        - `vkCmdClearAttachments` with the clear color
+  - a barrier that looks wrong
+  - another barrier that also looks wrong
+  - readback and verify
+    - `vkCmdCopyImage` to a linear image for verify
+
 ## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.simple_draw.simple_draw_triangle_list`
 
 - test creation
