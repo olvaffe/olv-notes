@@ -505,6 +505,8 @@ dEQP
     - fs: `out_color = u_color.color;` where `u_color` is push const
     - viewport is 400x300
     - blending
+      - color is `src * alpha + dst * (1-alpha)`
+      - alpha is `dst`
     - no depth test
 - `MultipleClearsTest::iterate`
   - create cmd pool and cmd buffer
