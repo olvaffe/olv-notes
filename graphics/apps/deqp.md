@@ -805,6 +805,38 @@ dEQP
     - `col0.z = (instanceIndex << 24) | ((atomicAdd(buf.counter, 1) + 1) & 0x00FFFFFFu);`
     - `col0.w` is the error code; non-zero means failure
 
+## Test Case: `dEQP-VK.glsl.440.linkage.varying.component.vert_in.vec2.as_float_float`
+
+- test case
+  - `createGlslTests`
+  - `createShaderLibraryGroup` with `vulkan/glsl/440/linkage.test`
+  - `ShaderLibraryGroup::init` parses the test file
+    - `group varying`
+    - `group component`
+    - `group vert_in`
+    - `group vec2`
+    - `case as_float_float`
+  - `ShaderCaseFactory::createCase`
+  - `ShaderCase::createInstance`
+- `ShaderCaseInstance::ShaderCaseInstance`
+  - `m_posNdxBuffer` is a 44-byte (`TOTAL_POS_NDX_SIZE`) buffer for pos attr and ib
+  - `m_inputBuffer` is a vb for test input values
+  - `m_referenceBuffer` is a ubo for test output values
+  - `m_uniformBuffer` is a ubo for test uniform values
+  - `m_renderPass` is the render pass
+  - `m_descriptorSetLayout` is the set layout with two ubos
+  - `m_pipeline` is the pipeline
+  - `m_rtImage` is 64x64 image(s)
+  - `m_readImageBuffer` is the readback buffer
+  - draw
+    - barrier to transition the color image
+    - render pass clear the color image
+    - draw the quad
+    - barrier to transition the color image
+    - `vkCmdCopyImageToBuffer`
+    - barrier for the copy
+- `ShaderCaseInstance::iterate`
+
 ## Test Case: `dEQP-VK.glsl.builtin.precision.fract.highp.*`
 
 - `addBuiltinPrecisionTests` adds all test cases
@@ -982,6 +1014,28 @@ dEQP
     - vs passes through `position` and `texCoords`
     - fs samples from the 4 `m_images` and outputs to the 4 `m_colorImages`
   - `m_cmdBuffer` draws a rectangle (2 triangles)
+
+## Test Case: `dEQP-VK.pipeline.monolithic.max_varyings.test_vertex_io_between_vertex_fragment`
+
+- test case
+  - `vkt::pipeline::createTests`
+  - `createMaxVaryingsTests`
+- `initPrograms`
+  - vs: `for (i = 0; i < arraySize; i++) outputData[i] = ivec4(i);`
+  - fs: checks all `inputData` and outputs green if success
+- `test`
+  - create a 32x32 image and image view
+  - create a `32*32*4` buffer for readback
+  - create a `6*sizeof(vec4)` buffer for 6 vertices (quad)
+  - create a render pass, framebuffer, pipeline layout, cmd pool, cmd buffer,
+    and specialized pipeline
+    - specialize to `min(maxVertexOutputComponents, maxFragmentInputComponents)` varyings
+  - draw
+    - barrier to transition image to `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+    - draw the quad
+    - barrier to trasition image to `VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL`
+    - `vkCmdCopyImageToBuffer` to readback
+    - barrier for the copy
 
 ## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.calibrated.*`
 
