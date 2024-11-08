@@ -412,7 +412,7 @@ Kernel Config
           - select `QCOM GENI Serial Console support`
     - select `Serial device bus` if needed
     - select `Virtio console` if guest
-    - select `Hardware Random Number Generator Core support` if needed
+    - select `Hardware Random Number Generator Core support`
       - deselect all but the needed drivers
     - select `TPM Hardware Support`
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
