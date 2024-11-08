@@ -350,25 +350,23 @@ Vulkan
   - execution dependences alone are not enough to avoid memory hazards
     - because of caches
   - types of memory access operations include
-    - an availability operation makes writes available to a memory domain
-      - e.g., `vkFlushMappedMemoryRanges` makes host writes available in host
-        domain
-    - a memory domain operation makes writes available in one domain
+    - an availability operation makes writes become available to a memory
+      domain
+      - e.g., `vkFlushMappedMemoryRanges` makes host writes become available
+        in host domain
+    - a memory domain operation makes writes available in one domain become
       available in another
-      - typically
-        - the host domain is the system memory
-        - the device domain is the system memory and the gpu L2 cache
+      - e.g., when the host domain is the system memory and the device domain
+        is the gpu L2 cache
         - a memory domain operation from the host domain to the device domain
-          is thus nop
+          is typically a gpu L2 invalidate
         - a memory domain operation from the device domain to the host domain
-          is thus a gpu L2 flush
+          is typically a gpu L2 flush
       - this is because `VK_ACCESS_HOST_WRITE_BIT` in src access mask and in
         dst access mask generates memory domain operations in opposite
         directions 
-        - we can encode gpu L2 flush into the cmdbuf
         - we typically can not encode cpu cache flush into the cmdbuf
-        - the memory domain operation from the host to the device thus must be
-          nop and the host domain must be a subset of the device domain
+        - but we can encode gpu L2 invalidate/flush into the cmdbuf
     - a visibility operation makes writes available to a domain become visible
       to specified memory accesses
       - e.g., `VK_ACCESS_SHADER_READ_BIT` in dst access mask makes writes
@@ -379,9 +377,9 @@ Vulkan
       happens-before the availibility operation
     - the availibility operation happens before the visibility operation
       - the availibility operation applies to memory accesses that are
-        defined the first access scope
+        defined in the first access scope
       - the visibility operation applies to memory accesses that are
-        defined the second access scope
+        defined in the second access scope
       - note that the sync scopes and the access scopes are different, but
         the sync scopes often limit the access scopes
     - the visibility operation happens-before the second set of operations
@@ -393,6 +391,9 @@ Vulkan
       are made available
     - the second access scope defines which accesses from the second set of
       ops the available writes are made visible to
+      - the available writes here include both
+        - pre-existing available writes, and
+        - those in the first access scope that were just made available
   - an memory dependency may include an image layout transition
     - it happens-after availability ops and happens-before visibility ops
     - it always applies to a subresource range
@@ -2614,17 +2615,18 @@ Vulkan
     - if the host domain was the cpu L2 and the device domain wsa the gpu L2,
       it would not work
       - a memory domain operation from the host to the device would flush the
-        cpu L2
+        cpu L2 and invalidate the gpu L2
       - a memory domain operation from the device to the host would flush the
-        gpu L2
+        gpu L2 and invalidate the cpu L2
       - a `VK_ACCESS_HOST_WRITE_BIT` in the src access mask of a memory
         dependency would generate a memroy domain operation from the host to
         the device
         - but we could not encode cpu L2 flush into the cmdbuf
     - it is more typical to have
       - the host domain is the system memory
-      - the device domain is both the system memory and the gpu L2
-      - a memory domain operation from the host to the device is nop
+      - the device domain is the gpu L2
+      - a memory domain operation from the host to the device invalidates gpu
+        L2
       - a memory domain operation from the device to the host flushes gpu L2
 
 ## Appendix C: Compressed Image Formats
