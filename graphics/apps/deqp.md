@@ -1071,6 +1071,87 @@ dEQP
   - in the dev domain, before and after should be ~200ms
   - in the host domain, before and after should be ~200ms
 
+## Test Case: `dEQP-VK.rasterization.rasterization_order_attachment_access.format_float.attachments_1_samples_1.multi_draw_barriers`
+
+- test case
+  - `vkt::rasterization::createTests`
+  - `createRasterizationTests`
+  - `createRasterizationOrderAttachmentAccessTests`
+  - `createRasterizationOrderAttachmentAccessFormatTests`
+  - `createRasterizationOrderAttachmentAccessTestVariations`
+  - `AttachmentAccessOrderColorTestCase`
+    - `explicitSync` is true
+    - `overlapDraws` is true
+    - `overlapPrimitives` is false
+    - `overlapInstances` is false
+    - `sampleCount` is `VK_SAMPLE_COUNT_1_BIT`
+    - `inputAttachmentNum` is 1
+    - `integerFormat` is false
+  - `AttachmentAccessOrderTestCase::createInstance`
+  - `AttachmentAccessOrderTestInstance`
+- `AttachmentAccessOrderTestInstance::AttachmentAccessOrderTestInstance`
+  - `makeDescriptorSetLayout` creates a descriptor set layout with a single
+    `VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT`
+  - `makeDescriptorSet` creates a descriptor set
+  - `createAttachments` creates pipeline layouts and color images for
+    subpasses
+    - subpass 0: a 8x8 image of format `VK_FORMAT_R32G32_SFLOAT`
+    - subpass 1: same
+  - `makeSampler` creates a sampler
+  - `writeDescriptorSets` writes the color attachment of subpass 0 as input
+    attachment
+  - `createRenderPass`
+    - two attachments for the two color images, with load and store
+    - subpass 0: first color image as both input att and color att
+    - subpass 1: first color image as input att and second color image as
+      color att
+    - dependency between subpass 0 and 1
+      - src: `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT` and
+        `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
+      - dst: `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT` and
+        `VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
+  - `makeFramebuffer` creates fb
+  - `createPipeline` creates pipelines for subpasses
+  - `createVertexBuffer` creates vb, a quad (two triangles)
+  - `createResultBuffer` creates a readback buf, size `8*8*sizeof(float2)`
+  - `createCommandPool` and `allocateCommandBuffer` create a cmdbuf
+- `AttachmentAccessOrderTestInstance::iterate`
+  - for both color images
+    - barrier to transition to `VK_IMAGE_LAYOUT_GENERAL`
+    - clear to `(0, 0, 0, 1)`
+  - barrier from the clears to input att read and color att read/write
+  - subpass 0
+    - draw the same quad for 6 times with barrier in-between
+    - vs outputs the pos and the prim id (0 and 1 for the two tris)
+    - fs
+      - `curIndex` is 0 to 5, corresponding to each of the 6 draws
+      - `subpassLoad` reads the previous value to `previous`
+      - effectively, it validates `previous` and `out = previous + (0, 1)` for
+        each draw
+        - on error, `out = (1, 0)` instead
+      - in other words, `out.x` indicates error and `out.y` indicates number
+        of draws
+    - barrier
+      - src is `VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT` and
+        `VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT`
+      - dst is `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT` and
+        `VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
+  - subpass 1
+    - draw a quad
+    - vs is the same as in subpass 0
+    - fs effectively passes through the input att to the color att with
+      `subpassLoad`
+  - barrier for the draws
+  - `vkCmdCopyImageToBuffer`
+  - barrier for the readback copy
+- `AttachmentAccessOrderTestInstance::validateResults`
+  - `numDraws` is 6
+  - `numPrimitives` is 2 (triangles)
+  - `numInstances` is 1
+  - for each of the 8x8 pixels
+    - x must be zero
+    - y must be `numDraws * numPrimitives / 2 * numInstances` (6)
+
 ## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
 
 - `DepthStencilResolveTest::createRenderPass`
