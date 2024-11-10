@@ -99,6 +99,70 @@ Kernel Config
   - select `Initial RAM filesystem and RAM disk (initramfs/initrd) support`
   - select `Kernel Performance Events And Counters`
     - select `Kernel performance events and counters`
+- select `Processor type and features` if x86
+  - select `Symmetric multi-processing support`
+  - select `Support x2apic`, depending on `IRQ_REMAP`
+  - deselect `Enable MPS table`
+  - deselect `Support for extended (non-PC) x86 platforms`
+  - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
+  - select `AMD ACPI2Platform devices support` if amd
+  - select `Linux guest support` if guest
+    - select `Enable paravirtualization code`
+  - select `Processor family (Core 2/newer Xeon)` if intel
+  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd
+  - select `EFI runtime service support` if uefi
+  - select `Timer frequency (1000 HZ)` if desired
+  - select `Built-in kernel command line` if desired
+    - select `Built-in command line overrides boot loader arguments` if desired
+- select `Platform selection` if arm
+  - select `Broadcom SoC Support` if rpi
+    - select `Broadcom BCM2835 family`
+  - select `MediaTek SoC Family` if mtk
+  - select `Qualcomm Platforms` if qcom
+  - select `Rockchip Platforms` if rk
+- select `Kernel Features` if arm
+  - select `Multi-core scheduler support`
+  - select `Timer frequency (1000 HZ)` if desired
+  - select `Enable paravirtualization code` if guest
+  - select `Kernel support for 32-bit EL0`
+- select `Boot options` if arm
+  - select `Default kernel command string` if desired
+    - select `Kernel command line type (Always use the default kernel command string)` if desired
+  - deselect `UEFI runtime support`
+- select `Mitigations for CPU vulnerabilities` if x86
+  - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
+- select `Power management and ACPI options` if x86
+  - select `Device power management core functionality`
+    - select `Power Management Debug Support` if debug
+  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
+  - select `ACPI (Advanced Configuration and Power Interface) Support`
+    - select `ACPI Time and Alarm (TAD) Device Support` if desired
+    - select `Processor Aggregator` if desired
+  - select `CPU Frequency scaling`
+    - select `CPU Frequency scaling`
+      - select `AMD Processor P-State driver` if amd
+        - select `AMD Processor P-State default mode` if cros
+          - guybrush requires 2
+      - select `ACPI Processor P-States driver` if amd
+  - select `Cpuidle Driver for Intel Processors` if intel
+- select `Power management options` if arm
+  - select `Device power management core functionality`
+    - select `Power Management Debug Support` if debug
+  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`
+- select `CPU Power Management` if arm
+  - select `CPU Idle`
+    - select `CPU idle PM support`
+      - select `ARM CPU Idle Drivers`
+        - select `PSCI CPU idle Driver`
+  - select `CPU Frequency scaling`
+    - select `CPU Frequency scaling`
+      - select `Generic DT based cpufreq driver`
+      - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
+      - select `MediaTek CPUFreq HW driver` if mtk
+      - select `QCOM CPUFreq HW driver` if qcom
+      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
+- select `Binary Emulations` if 86
+  - select `IA32 Emulation`
 - select `Virtualization` if desired
   - select `Kernel-based Virtual Machine (KVM) support`
     - select `KVM for Intel processors support` if intel
@@ -201,76 +265,6 @@ Kernel Config
   - select `Tracers`
     - select `Kernel Function Tracer` if desired
     - select `Trace syscalls`
-
-## Config: x86
-
-- select `Processor type and features`
-  - select `Symmetric multi-processing support`
-  - select `Support x2apic`, depending on `IRQ_REMAP`
-  - deselect `Enable MPS table`
-  - deselect `Support for extended (non-PC) x86 platforms`
-  - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
-  - select `AMD ACPI2Platform devices support` if amd
-  - select `Linux guest support` if guest
-    - select `Enable paravirtualization code`
-  - select `Processor family (Core 2/newer Xeon)` if intel
-  - select `Processor family (Opteron/Athlon64/Hammer/K8)` if amd
-  - select `EFI runtime service support` if uefi
-  - select `Timer frequency (1000 HZ)` if desired
-  - select `Built-in kernel command line` if desired
-    - select `Built-in command line overrides boot loader arguments` if desired
-- select `Mitigations for CPU vulnerabilities`
-  - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
-- select `Power management and ACPI options`
-  - select `Device power management core functionality`
-    - select `Power Management Debug Support` if debug
-  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
-  - select `ACPI (Advanced Configuration and Power Interface) Support`
-    - select `ACPI Time and Alarm (TAD) Device Support` if desired
-    - select `Processor Aggregator` if desired
-  - select `CPU Frequency scaling`
-    - select `CPU Frequency scaling`
-      - select `AMD Processor P-State driver` if amd
-        - select `AMD Processor P-State default mode` if cros
-          - guybrush requires 2
-      - select `ACPI Processor P-States driver` if amd
-  - select `Cpuidle Driver for Intel Processors` if intel
-- select `Binary Emulations`
-  - select `IA32 Emulation`
-
-## Config: arm64
-
-- select `Platform selection`
-  - select `Broadcom SoC Support` if rpi
-    - select `Broadcom BCM2835 family`
-  - select `MediaTek SoC Family` if mtk
-  - select `Qualcomm Platforms` if qcom
-  - select `Rockchip Platforms` if rk
-- select `Kernel Features`
-  - select `Multi-core scheduler support`
-  - select `Timer frequency (1000 HZ)` if desired
-  - select `Enable paravirtualization code` if guest
-  - select `Kernel support for 32-bit EL0`
-- select `Boot options`
-  - select `Default kernel command string` if desired
-    - select `Kernel command line type (Always use the default kernel command string)` if desired
-  - deselect `UEFI runtime support`
-- select `Power management options`
-  - select `Device power management core functionality`
-    - select `Power Management Debug Support` if debug
-  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`
-- select `CPU Power Management`
-  - select `CPU Idle`
-    - select `CPU idle PM support`
-      - select `ARM CPU Idle Drivers`
-        - select `PSCI CPU idle Driver`
-  - select `CPU Frequency scaling`
-    - select `CPU Frequency scaling`
-      - select `Generic DT based cpufreq driver`
-      - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
-      - select `MediaTek CPUFreq HW driver` if mtk
-      - select `QCOM CPUFreq HW driver` if qcom
-      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
 
 ## Config: Device Drivers
 
