@@ -73,6 +73,7 @@ Kernel Config
 ## Config: Common
 
 - select `General setup`
+  - deselect `Automatically append version information to the version string` if desired
   - select `System V IPC` if desired
   - select `POSIX Message Queues` if desired, depending on `NET`
   - select `Auditing support` if desired
@@ -537,7 +538,7 @@ Kernel Config
       - select `DRM Support for Rockchip` if rk
         - deselect `Rockchip VOP driver`
         - select `Rockchip VOP2 driver`
-        - select `Rockchip specific extensions for Synopsys DW HDMI`
+        - select `Rockchip specific extensions for Synopsys DW HDMI QP`
       - select `Virtio GPU driver` if guest
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
         - it requires `CMA` and `DMA_CMA` to work
