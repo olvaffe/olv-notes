@@ -971,9 +971,32 @@ dEQP
       - the result is from sampling image 2 (named `uncompressed`) and storing
         to `resultImage`
 
+## Test Case: `dEQP-VK.memory.mapping.suballocation.full.variable.implicit_unmap`
+
+- test case
+  - `vkt::memory::createTests`
+  - `createMappingTests`
+  - `testMemoryMapping`
+    - `allocationSize` is 0
+    - `mapping` is `(0, 0)`
+    - `flushMappings` is empty
+    - `invalidateMappings` is empty
+    - `remap` is false
+    - `implicitUnmap` is true
+    - `allocationKind` is `ALLOCATION_KIND_SUBALLOCATED`
+    - `memoryMap2` is false
+- `testMemoryMapping`
+  - `findLargeAllocationSize` test-allocs to find the largest alloc size,
+    capped at 256MB
+  - it loops for 128 times
+    - alloc 256MB mem
+    - map and write
+    - free mem without unmapping
+
 ## Test Case: `dEQP-VK.memory.pipeline_barrier.transfer_dst_storage_texel_buffer.1024`
 
 - test case
+  - `vkt::memory::createTests`
   - `createPipelineBarrierTests`
     - `writeUsage` is `USAGE_TRANSFER_DST`
     - `readUsage` is `USAGE_STORAGE_TEXEL_BUFFER`
