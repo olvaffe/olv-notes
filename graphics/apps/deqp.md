@@ -993,17 +993,25 @@ dEQP
     - map and write
     - free mem without unmapping
 
-## Test Case: `dEQP-VK.memory.pipeline_barrier.transfer_dst_storage_texel_buffer.1024`
+## Test Case: `dEQP-VK.memory.pipeline_barrier.host_write_storage_texel_buffer.1024`
 
 - test case
   - `vkt::memory::createTests`
   - `createPipelineBarrierTests`
-    - `writeUsage` is `USAGE_TRANSFER_DST`
-    - `readUsage` is `USAGE_STORAGE_TEXEL_BUFFER`
+  - `MemoryTestInstance`
+    - `usage` is `USAGE_HOST_WRITE | USAGE_STORAGE_TEXEL_BUFFER`
+    - `vertexBufferStride` is `DEFAULT_VERTEX_BUFFER_STRIDE` (2)
     - `size` is 1024
-- `MemoryTestInstance::iterate` iterates through
+    - `sharing` is `VK_SHARING_MODE_EXCLUSIVE`
+- `MemoryTestInstance::MemoryTestInstance`
+- `MemoryTestInstance::iterate` iterates through these stages for each memory
+  type
   - `MemoryTestInstance::createCommandsAndAllocateMemory`
-  - `MemoryTestInstance::prepare`
+    - `findMaxBufferSize` test-allocs 1024 bytes
+    - `createCommands` generates 50 random ops
+  - `MemoryTestInstance::prepare` prepares the 50 random ops
+    - `CreateBuffer::prepare` allocs a 1024-byte buffer
+    - etc.
   - `MemoryTestInstance::execute`
   - `MemoryTestInstance::verify`
 
