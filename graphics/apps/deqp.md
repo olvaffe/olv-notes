@@ -559,6 +559,50 @@ dEQP
   - `endDynamicRender`
   - `endCommandBuffer`
 
+## Test Case: `dEQP-VK.dynamic_rendering.primary_cmd_buff.basic.2_cmdbuffers_resuming`
+
+- test case
+  - `createDynamicRenderingTests`
+  - `createRenderPassTestsInternal`
+    - `renderingType` is `RENDERING_TYPE_DYNAMIC_RENDERING`
+    - `useSecondaryCmdBuffer` is false
+    - `secondaryCmdBufferCompletelyContainsDynamicRenderpass` is false
+    - `pipelineConstructionType` is `PIPELINE_CONSTRUCTION_TYPE_MONOLITHIC`
+  - `createDynamicRenderingBasicTests`
+  - `dynamicRenderingTests`
+    - `testType` is `TEST_TYPE_TWO_CMDBUF_RESUMING`
+    - `clearColor` is `(0, 0, 0, 1)`
+    - `depthClearValue` is 1
+    - `stencilClearValue` is 0
+    - `imageFormat` is `VK_FORMAT_R8G8B8A8_UNORM`
+    - `renderSize` is `(32, 32)`
+  - `BaseTestCase::createInstance`
+  - `TwoPrimaryCmdBufferResuming`
+- `TwoPrimaryCmdBufferResuming::TwoPrimaryCmdBufferResuming`
+  - `DynamicRenderingTestInstance::DynamicRenderingTestInstance`
+    - create a vb for 3 quads
+      - quad 0 covers the left half, z is 0
+      - quad 1 covers the right half, z is 0.2
+      - quad 2 covers the bottom half, z is 0
+    - create `COLOR_ATTACHMENTS_NUMBER` 32x32 color images, image views, and
+      readback buffers
+    - create a 32x32 zs image, image view, and readback buffers
+    - create an empty pipeline layout
+    - create a cmd pool and cmd buf
+- `DynamicRenderingTestInstance::iterate`
+  - `TestAttachmentType` can be
+    - 1 color, only depth, only stencil, multiple colors, all
+  - for each att type,
+    - `makeGraphicsPipeline` creates a pipeline
+      - vs outputs
+        - green for quad 0 and quad 2
+        - yellow for quad 1
+    - `TwoPrimaryCmdBufferResuming::rendering`
+      - first cmdbuf with `VK_RENDERING_SUSPENDING_BIT_KHR`
+        - two draws, for qaud 2 and quad 0
+      - second cmdbuf with `VK_RENDERING_RESUMING_BIT_KHR`
+        - 1 draw, for quad 1
+
 ## Test Case: `dEQP-VK.fragment_shading_rate.renderpass2.monolithic.fragdepth_baselevel.dynamic.attachment.noshaderrate.keep.replace.4x4.samples1.vs`
 
 - `FragmentShadingRate::createTests` calls
