@@ -95,3 +95,40 @@ Mesa CI
          --deqp-surface-type=pbuffer
          --deqp-gl-config-name=rgba8888d24s8ms0
          --deqp-visibility=hidden`
+
+## `panfrost-g610-vk`
+
+- dependencies
+  - sanity
+    - `sanity` runs `ci-fairy check-merge-request`
+  - container
+    - `alpine/x86_64_lava_ssh_client` runs `cbuild` to build an alpine
+      container for ssh to collabora lava test farm
+    - `debian/arm64_build` runs `cbuild` to build a debian container for
+      building arm64 images
+    - `debian/x86_64_pyutils` runs `cbuild` to build a debian container for
+      running python tests
+    - `kernel+rootfs_arm64` runs `.gitlab-ci/container/lava_build.sh` inside
+      `debian/arm64_build` container
+      - this builds a bootable image with deqp inside
+  - build-for-tests
+    - `debian-arm64` builds mesa inside `debian/arm64_build` container
+    - `python-test` runs `.gitlab-ci/run-pytest.sh` and
+      `.gitlab-ci/prepare-artifacts-python.sh` inside
+      `debian/x86_64_pyutils` container
+- extends
+  - `.lava-test-deqp` runs `setup-test-env.sh` and `lava-submit.sh` inside
+    `debian/x86_64_pyutils` container
+  - `.panfrost-test`
+  - `.lava-rk3588-rock-5b`
+  - `.panfrost-vk-rules`
+- `parallel` runs a job multiple times in parallel
+    - `CI_NODE_INDEX` and `CI_NODE_TOTAL` are set
+- `variables`
+  - `DEQP_FRACTION` is fraction of deqp tests to run
+  - `FDO_CI_CONCURRENT` is number of deqp-runners per dut
+- the gitlab test runner in collabora lava test farm
+  - it downloads kernel, dtb, rootfs, etc.
+  - it boots dut over network
+  - it sets up dut
+  - it sshs to dut to run test
