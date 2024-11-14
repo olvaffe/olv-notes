@@ -1,6 +1,42 @@
 Mesa CI
 =======
 
+## `gitlab-ci.yml`
+
+- top-level `.gitlab-ci.yml`
+  - it includes
+    - <https://gitlab.freedesktop.org/freedesktop/ci-templates>
+      - `/templates/ci-fairy.yml`
+      - `/templates/alpine.yml`
+      - `/templates/debian.yml`
+      - `/templates/fedora.yml`
+    - `.gitlab-ci/image-tags.yml`
+    - `.gitlab-ci/lava/lava-gitlab-ci.yml`
+    - `.gitlab-ci/container/gitlab-ci.yml`
+    - `.gitlab-ci/build/gitlab-ci.yml`
+    - `.gitlab-ci/test/gitlab-ci.yml`
+    - `.gitlab-ci/farm-rules.yml`
+    - `.gitlab-ci/test-source-dep.yml`
+    - `docs/gitlab-ci.yml`
+    - `src/**/ci/gitlab-ci.yml`
+- `.gitlab-ci/container/gitlab-ci.yml` defines jobs for the `container` stage
+  - `debian/x86_64_build` builds a x86-64 debian container used for building
+    mesa, deqp, etc.
+  - `debian/x86_64_pyutils` builds a x86-64 debian container used for running
+    python scripts
+  - more
+  - these jobs extend `.container` which sets `FDO_DISTRIBUTION_EXEC`
+    - this is the main script to build the container
+    - e.g., `debian/x86_64_test-vk` job will invoke
+      `.gitlab-ci/container/debian/x86_64_test-vk.sh`
+- `.gitlab-ci/build/gitlab-ci.yml` defines jobs for the `build-for-tests`
+  stage
+  - `debian-testing` builds mesa from within the `debian/x86_64_build`
+    container
+  - `python-test` runs and packs python scripts from within the
+    `debian/x86_64_pyutils` container
+  - more
+
 ## `vkcts-vega10-valve`
 
 - it has two chains of dependencies
