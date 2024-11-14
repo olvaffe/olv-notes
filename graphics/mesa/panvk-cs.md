@@ -1204,3 +1204,51 @@ Mesa PanVK Command Stream
   - there is no compute cmd
   - but the ops at the end of the render pass and at the end of the command
     buffer apply here too
+
+## `panvk_cs_subqueue_context`
+
+- `panvk_cs_subqueue_context` stores persistent subqueue states 
+  - `syncobjs` is the current subqueue seqno
+    - `init_subqueue` inits it to 1
+    - it is incremented after a job complete
+      - `relative_sync_point` is incremented when the job is emitted
+    - `wait_finish_tiling` and `CmdPipelineBarrier2` use it for inter-subqueue
+      wait
+  - `iter_sb` is the next subqueue iterator scoreboard slot
+    - `init_subqueue` inits it to 0
+    - `cs_pick_iter_sb` waits and reuses the slot
+    - after a job is emitted, it is incremented
+  - `render` is only for tiler and frag subqueues
+    - `desc_ringbuf` is for `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT`
+      - `syncobj` is the current ring head
+      - `ptr` is the va of the ring buffer
+      - `pos` is the current ring tail
+      - `init_render_desc_ringbuf` allocs a 512KB ring buffer for certain
+        descriptors
+        - the ring buffer binds to two consecutive gpu vas to appear linear on
+          wrap
+      - `get_tiler_desc` uses the ring buffer for tds on simul use
+        - i guess the tiler hw patches tds and we need to make sure each simul
+          use uses different tds
+      - `issue_fragment_jobs` uses the ring buffer for fbds on simul use
+        - why?
+    - `tiler_heap` is the va of the tiler heap desc
+      - `init_tiler` creates the kernel-managed tiler heap
+        - kmd allocs an opaque tiler context of size `HEAP_CONTEXT_SIZE`
+        - kmd also allocs the first chunk of the growable tiler heap
+      - `init_tiler` also inits `MALI_TILER_HEAP`, the tiler heap descriptor
+        - the descriptor describes the growable tiler heap
+      - `init_subqueue` points `tiler_heap` to the tiler heap desc
+      - `get_tiler_desc` copies the val into `heap` field of
+        `MALI_TILER_CONTEXT`
+    - `geom_buf` is the va of the geometry buffer
+      - `init_tiler` allocs a 64KB geometry buffer
+      - `init_subqueue` points `geom_buf` to the geometry buffer
+      - `get_tiler_desc` copies the val into `geometry_buffer` and
+        `geometry_buffer_size` fields of `MALI_TILER_CONTEXT`
+  - `debug_syncobjs` is the current debug seqno
+    - at the end of the cmdbuf, `finish_cs` flips it from 0 to 1
+    - on submit, `panvk_queue_submit`
+      - clears it to 0 for each subqueue
+      - submits and waits
+      - checks that all debug seqnos are 1 and there are no errors
