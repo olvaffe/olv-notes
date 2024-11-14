@@ -1231,7 +1231,8 @@ Mesa PanVK Command Stream
         - i guess the tiler hw patches tds and we need to make sure each simul
           use uses different tds
       - `issue_fragment_jobs` uses the ring buffer for fbds on simul use
-        - why?
+        - because `tiler` field of `MALI_FRAMEBUFFER_PARAMETERS` is patched to
+          the va of the tiler descriptor
     - `tiler_heap` is the va of the tiler heap desc
       - `init_tiler` creates the kernel-managed tiler heap
         - kmd allocs an opaque tiler context of size `HEAP_CONTEXT_SIZE`
@@ -1252,3 +1253,19 @@ Mesa PanVK Command Stream
       - clears it to 0 for each subqueue
       - submits and waits
       - checks that all debug seqnos are 1 and there are no errors
+- tiler and vs
+  - pos shader
+    - `LD_ATTR_IMM` loads an attr using the `MALI_ATTRIBUTE` descriptor
+    - manually transforms pos from clipped coord to fb coord
+    - `STORE.i128` (for vec4) stores the pos to the istream fifo
+      - the 64KB geometry buffer is the storage of the istream fifo
+  - tiler
+    - loads the pos from the istream fifo
+    - assembles, clips, and culls
+    - invokes the var shader
+  - var shader
+    - works the same way as the pos shader, except it stores varyings to the
+      estream fifo
+  - tiler
+    - loads the varyings from the estream fifo
+    - stores to the growable tiler heap
