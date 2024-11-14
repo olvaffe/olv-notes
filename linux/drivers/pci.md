@@ -90,6 +90,53 @@ PCI
   - it bridges the host bus with the PCI bus
 - PCIe
 
+## PCI configuration space
+
+- layout of the standard 256-byte configuration space
+  - dw0: device id, vendor id
+  - dw1: status, command
+  - dw2: class code, subclass, prog if, revision id
+  - dw3: bist, header type, latency timer, cacheline size
+- class code, subclass, prog if
+  - `00h` Device was built before Class Code definitions were finalized
+  - `01h` Mass storage controller
+    - scsi, sata, nvme, etc.
+  - `02h` Network controller
+    - ethernet, other (wifi), etc.
+  - `03h` Display controller
+    - vga compatible, etc.
+  - `04h` Multimedia device
+    - hdaudio, etc.
+  - `05h` Memory controller
+    - ram, flash, etc.
+  - `06h` Bridge device
+    - host (between cpu and pci), isa, pci, etc.
+  - `07h` Simple communication controllers
+    - serial, smart card, other, etc.
+  - `08h` Base system peripherals
+    - mmc, iommu, other, etc.
+  - `09h` Input devices
+    - keyboard, mouse, etc.
+  - `0Ah` Docking stations
+  - `0Bh` Processors
+    - coprocessor, etc.
+  - `0Ch` Serial bus controllers
+    - usb, smbus, other (i2c, spi), etc.
+    - for usb, prog if identifies the version
+      - ohci, ehci, xhci, usb4, etc.
+  - `0Dh` Wireless controller
+    - ir, rf, bt, etc.
+  - `0Eh` Intelligent I/O controllers
+  - `0Fh` Satellite communication controllers
+    - tv, audio, voice, etc.
+  - `10h` Encryption/Decryption controllers
+  - `11h` Data acquisition and signal processing controllers
+    - other (perf counter), etc.
+  - `12h` Processing accelerators
+  - `13h` Non-Essential Instrumentation
+  - `14h to FEh` Reserved
+  - `FFh` Device does not fit in any defined classes
+
 ## x86 PCI Setup
 
 - `pci_setup` parses pci= cmdline

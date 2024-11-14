@@ -163,32 +163,35 @@ USB
         for `xhci_hcd`
     - `usb_add_hcd` adds the `usb_hcd` to the core
 
-## lspci / lsusb
+## ThinkPad X1 Carbon Gen 9
 
-- Lenovo X1 Gen9
-  - specs
-    - 1x Thunderbolt 4 power input
-    - 1x Thunderbolt 4
-    - 2x USB-A 3.2 Gen1
-  - `lsusb -t`
-    - 2x 4-port USB 3.2 Gen2 (10Gbit/s) root hubs
-      - not used; used only when TB or USB3 device is plugged in?
-    - 1x 1-port USB 2.0 (480Mbit/s) root hub
-      - not used
-    - 1x 12-port USB 2.0 (480Mbit/s) root hub
-      - touchpad (12Mbit)
-      - camera (480Mbit)
-      - bluetooth (12Mbit)
-      - all 4 USB Type-A and Type-C ports
-  - I connect these to the ports
-    - security key (12Mbit)
-    - usb dock (480Mbit)
-      - built-in usb ethernet (480Mbit)
-      - monitor (480Mbit)
-        - keyboard (12Mbit) and mouse (12Mbit)
-- lspci -v
-  - one xHCI USB controller driven by `xhci_hcd` pci driver
-- most USB devices are driven by a `usb_device_driver` called `usb`
-  - the driver enumerates usb interfaces that can be driven by `usb_driver`s
-- A USB hub, root or not, is driven by a `usb_driver` called `hub`
-- A root hub starts a new bus
+- lspci
+  - two thunderbolt controllers
+    - `Intel Corporation Tiger Lake-LP Thunderbolt 4 NHI #0`
+    - `Intel Corporation Tiger Lake-LP Thunderbolt 4 NHI #1`
+  - two xhci controllers
+    - `Intel Corporation Tiger Lake-LP Thunderbolt 4 USB Controller`
+      - it provides a 1-port 2.0 hub (bus 1)
+      - it also provides a 4-port 3.0 hub (bus 2)
+    - `Intel Corporation Tiger Lake-LP USB 3.2 Gen 2x1 xHCI Host Controller`
+      - it provides a 12-port 2.0 hub (bus 3)
+      - it also provides a 4-port 3.0 hub (bus 4)
+- user manual
+  - left side
+    - USB-C (Thunderbolt 4) power connector
+      - usb 2.0 dev uses bus 3, port 6
+      - usb 3.0 dev uses bus 2, port 3
+    - USB-C (Thunderbolt 4) connector
+      - usb 2.0 dev uses bus 3, port 5
+      - usb 3.0 dev uses bus 2, port 2
+    - USB 3.2 connector Gen 1
+      - usb 2.0 dev uses bus 3, port 1
+      - usb 3.0 dev uses bus 4, port 1
+  - right side
+    - Always on USB 3.2 connector Gen 1
+      - usb 2.0 dev uses bus 3, port 7
+      - usb 3.0 dev uses bus 4, port 2
+- internal usb devices
+  - fingerprint reader uses bus 3, port 3
+  - camera uses bus 3, port 4
+  - bt uses bus 3, port 10
