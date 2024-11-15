@@ -101,6 +101,14 @@ USB
   - MacBook: 87W
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
+- Pinouts
+  - usb 1.x and 2.0 have 4 pins
+  - usb 3.0 has 9 pins
+  - type-c has 24 pins
+  - a type-a connector can internally connect to both 2.0 and 3.0 controllers
+    - it can use pin counts to tell between 2.0 and 3.0 cables
+  - a type-c connector is similar
+  - as such, a usb cable or adapter can have 4, 9, or 24 pins
 
 ## USB Device Classes
 
