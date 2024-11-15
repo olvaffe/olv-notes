@@ -69,6 +69,12 @@ Display
   - eDP 1.4b, 2015
   - eDP 1.5, 2021
 - DisplayID, an EDID replacement
+- Dual Mode
+  - when a dp connector supports dual-mode, it internally connects to both a
+    dp phy and an hdmi phy
+  - the display controller will output dp signal or hdmi signal depending on
+    whether the sink is dp or hdmi
+  - as such, dp-to-hdmi cable is a passive adapter and is simple
 
 ## HDMI
 
