@@ -439,3 +439,23 @@ Mesa Vulkan Runtime
   - `VK_QUEUE_SUBMIT_MODE_THREADED` calls `vk_queue_push_submit`
     - the queue thread uses `VK_SYNC_WAIT_PENDING` to wait all dependencies of
       a submit before calling `vk_queue_submit_final`
+
+## Device Lost
+
+- `vk_queue` tracks whether the queue has lost
+  - `vk_queue_set_lost` marks the queue and the device lost
+    - it is typically called when a submit fails unexpectedly (ioctl failures)
+    - it marks the queue lost and saves the reason (which ioctl fails)
+    - it also marks the device lost
+  - `vk_queue_is_lost` tests if the queue is marked lost
+- `vk_device` tracks whether the device has lost
+  - `vk_device_set_lost` marks the device lost
+    - it is typically called when
+      - a non-submit ioctl fails
+      - the kmd reports lost in `vk_device::check_status`, if implemented
+    - it marks the device lost, and reports the reason once
+  - `vk_device_is_lost` tests if the device is marked lost, and reports the
+    reason once
+- `vk_device_check_status` tests if the device is lost
+  - it tests if the device is marked lost
+  - if not, it calls `vk_device::check_status` if implemented
