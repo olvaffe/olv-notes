@@ -484,6 +484,44 @@ dEQP
   - `SingleTargetRenderInstance::readRenderTarget`
   - `TexelBufferRenderInstance::verifyResultImage`
 
+## Test Case: `dEQP-VK.compute.pipeline.device_group.dispatch_base`
+
+- test case
+  - `vkt::compute::createTests`
+  - `createBasicDeviceGroupComputeShaderTests`
+  - `DispatchBaseTest`
+    - `numValues` is 32768
+    - `localsize` is `(4, 2, 4)`
+    - `worksize` is `(16, 8, 8)`
+    - `splitsize`  is `(4, 8, 8)`
+    - `computePipelineConstructionType` is
+      `COMPUTE_PIPELINE_CONSTRUCTION_TYPE_PIPELINE`
+    - `useMaintenance5` is false
+  - `DispatchBaseTest::DispatchBaseTest`
+  - `DispatchBaseTest::createInstance`
+  - `DispatchBaseTestInstance`
+- `DispatchBaseTestInstance::DispatchBaseTestInstance`
+  - `ComputeTestInstance::createDeviceGroup` creates a custom instance and
+    device
+- `DispatchBaseTestInstance::iterate`
+  - `uniformBuffer` is a ubo with 3 u32s
+    - it holds `m_workSize`
+  - `buffer` is an ssbo with 32768 u32s
+    - it holds random vals
+  - create a descriptor set layout, pool, and set
+    - one ssbo desc and one ubo desc
+  - create a pipeline
+  - cmds
+    - barriers for ubo and ssbo
+    - dispatches
+      - `m_splitWorkSize` can be ignored
+      - `m_workSize` is `(16, 8, 8)`, global work group count
+      - `m_localSize` is `(4, 2, 4)`, local work group size
+      - the work item count is `16*8*8*4*2*4=32768`
+      - there are 8 dispatches, covering `(16, 2, 4)` groups at a time
+      - each thread inverts the bits of a value
+    - barrier for ssbo
+
 ## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.multiple_clears_within_render_pass.draw_clear_draw_c_r8g8b8a8_unorm_triangles`
 
 - test creation
