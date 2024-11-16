@@ -406,6 +406,12 @@ dEQP
   - 6th cmdbuffer
     - draw a quad to verify `m_multisampledCopyImage`
 
+## Test Case: `dEQP-VK.api.device_init.create_instance_device_intentional_alloc_fail.basic`
+
+- test case
+  - `createApiTests`
+  - `createDeviceInitializationTests`
+  - `createInstanceDeviceIntentionalAllocFail`
 ## Test Case: `dEQP-VK.api.external.fence.sync_fd.export_multiple_times_temporary`
 
 - `testFenceMultipleExports`
