@@ -412,6 +412,12 @@ dEQP
   - `createApiTests`
   - `createDeviceInitializationTests`
   - `createInstanceDeviceIntentionalAllocFail`
+- `createInstanceDeviceIntentionalAllocFail`
+  - it creates an instance, enumerates physical devices, and creates a device
+  - the twist is that it installs a custom allocator callback
+    - on first iteration, it counts the number of allocations
+    - on future iterations, it faills the Nth allocation
+
 ## Test Case: `dEQP-VK.api.external.fence.sync_fd.export_multiple_times_temporary`
 
 - `testFenceMultipleExports`
