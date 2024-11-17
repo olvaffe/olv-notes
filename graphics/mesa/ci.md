@@ -168,3 +168,33 @@ Mesa CI
   - it boots dut over network
   - it sets up dut
   - it sshs to dut to run test
+
+## deqp-runner
+
+- `.gitlab-ci/deqp-runner.sh` invokes `deqp-runner`
+- `DeqpTomlConfig::test_groups`
+  - it reads `--caselists <files>` to get all test cases
+  - it calls `TestCommand::split_tests_to_groups` to split test cases into
+    test groups
+    - `tests` is the vec of all test cases
+    - `tests.shuffle()` shuffles the vec with a fixed seed
+    - `tests.into_ter().skip(N).step_by(M).filter(F)`
+      - `N` is from `--fraction-start`
+      - `M` is from `--fraction`
+      - `F` is a regex match from `--include-tests`
+    - `tests` is splitted into a vec of test groups, where each group has
+      `--tests-per-group` test cases
+- `parallel_test` runs the test groups in parallel
+  - it forks `--jobs` threads and dispatches the test groups to the threads
+  - `TestCommand::process_caselist` runs a single test group
+    - if a test case is in `--skips`, it is skipped
+    - it invokes `deqp-vk` to run the remaining test cases and parses the
+      results
+      - `TestCommand::translate_result` translates the results
+        - it compares with `--baseline` and updates the test case status
+        - if a test case fails and matches against `--flakes`, the test case
+          status is updated to known flake
+    - if there is any unexpected failure, it runs the remaining test cases
+      again and marks any status change as flaky
+  - `results_collection` collects results from threads
+    - `RunnerResults::record_result` records a result
