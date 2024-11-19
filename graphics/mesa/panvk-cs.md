@@ -45,6 +45,16 @@ Mesa PanVK Command Stream
     - `CS State` is for `MALI_CS_OPCODE_STORE_STATE` to read timestamp, cycle
       count, error status, etc.
     - `CS Heap Operation` is for `MALI_CS_OPCODE_HEAP_OPERATION`
+      - `MALI_CS_HEAP_OPERATION_VERTEX_TILER_STARTED` increments
+        `panthor_fw_cs_output_iface::heap_vt_start`
+      - `MALI_CS_HEAP_OPERATION_VERTEX_TILER_COMPLETED` increments
+        `panthor_fw_cs_output_iface::heap_vt_end`
+      - `MALI_CS_HEAP_OPERATION_FRAGMENT_COMPLETED` increments
+        `panthor_fw_cs_output_iface::heap_frag_end`
+        - it is deprecated in favor of
+          `MALI_CS_FINISH_FRAGMENT::increment_fragment_completed`
+      - kmd can use these counters to decide what to do on tile heap oom
+        - allocate a new chunk or stall
     - `CS Flush Mode` is for `MALI_CS_OPCODE_FLUSH_CACHE2` to control L2/LSC
     - `CS Sync scope` is for sync add/set
       - `MALI_CS_SYNC_SCOPE_CSG` for inter-subqueue sync
@@ -127,7 +137,8 @@ Mesa PanVK Command Stream
     - `CS RUN_COMPUTE_INDIRECT` runs a compute job indirectly
     - `CS ERROR_BARRIER` is unused
     - `CS HEAP_SET` sets the va of `MALI_TILER_HEAP` descriptor
-    - `CS HEAP_OPERATION` controls the tiler heap?
+    - `CS HEAP_OPERATION` updates the counters exposed by
+      `panthor_fw_cs_output_iface` to kmd
     - `CS TRACE_POINT` is unused
     - `CS SYNC_ADD64`
     - `CS SYNC_SET64`
