@@ -63,8 +63,11 @@ GPU Benchmarks
   - `git clone --recurse-submodules https://github.com/KhronosGroup/Vulkan-Samples.git`
   - `cd Vulkan-Samples`
   - `cmake -H. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
+    - if wayland, `-DVKB_WSI_SELECTION=WAYLAND -DGLFW_BUILD_X11=OFF`
   - `ninja -C out`
   - `ln -sf out/app/bin/Debug/x86_64/vulkan_samples`
+- deploy
+  - `tar --zstd -hcf vulkan-samples.tar.zst vulkan_samples assets shaders --transform='s,,vulkan-samples/,'`
 - main loop
   - stack
     - `DescriptorManagement::update`
