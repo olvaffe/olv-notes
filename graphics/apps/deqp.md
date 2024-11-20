@@ -1277,6 +1277,103 @@ dEQP
     - x must be zero
     - y must be `numDraws * numPrimitives / 2 * numInstances` (6)
 
+## Test Case: `dEQP-VK.renderpass.suballocation.formats.r8g8b8a8_unorm.input.dont_care.dont_care.draw`
+
+- test case
+  - `vkt::createRenderPassTests`
+  - `createRenderPassTestsInternal`
+    - `renderingType` is `RENDERING_TYPE_RENDERPASS_LEGACY`
+    - `useSecondaryCmdBuffer` is false
+    - `secondaryCmdBufferCompletelyContainsDynamicRenderpass` is false
+    - `pipelineConstructionType` is `PIPELINE_CONSTRUCTION_TYPE_MONOLITHIC`
+  - `createSuballocationTests`
+  - `addRenderPassTests`
+    - `allocationKind` is `ALLOCATION_KIND_SUBALLOCATED`
+  - `addFormatTests`
+  - `renderPassTest`
+    - `renderPass` has 2 attachments, 2 subpasses, and 1 dep
+      - att 0 is `VK_FORMAT_R8G8B8A8_UINT` with `DONT_CARE` load/store
+      - att 1 is `VK_FORMAT_R8G8B8A8_UNORM` with `DONT_CARE` load and `STORE` store
+      - subpass 0 uses att 0 as color att
+      - subpass 1 uses att 0 as input att and att 1 as color att
+      - dep is between color att write and fs input att load
+    - `renderTypes` is `TestConfig::RENDERTYPES_DRAW`
+    - `commandBufferTypes` is `TestConfig::COMMANDBUFFERTYPES_INLINE`
+    - `imageMemory` is `TestConfig::IMAGEMEMORY_STRICT`
+    - `targetSize` is `(64, 64)`
+    - `renderPos` is `(0, 0)`
+    - `renderSize` is `(64, 64)`
+    - `useFormatCompCount` is false
+    - `seed` is 89246
+    - `drawStartNdx` is 0
+    - `allocationKind` is `ALLOCATION_KIND_SUBALLOCATED`
+  - `renderPassTest`
+- `createTestShaders` creates ahders
+  - vs passes through
+  - subpass 0 fs
+    - r is `(gl_FragCoord.x % 2 == 0 || gl_FragCoord.y % 2 == 0) ? 1.0 : 0.0`
+    - g is `(gl_FragCoord.x % 2 == 1 && gl_FragCoord.y % 2 == 0) ? 1.0 : 0.0`
+    - b is `(gl_FragCoord.x % 2 == 0 == gl_FragCoord.y % 2 == 1) ? 1.0 : 0.0`
+    - a is `(gl_FragCoord.x % 2 == 1 != gl_FragCoord.y % 2 == 1) ? 1.0 : 0.0`
+    - for every 2x2 grid,
+      - top-left is     `(1.0, 0.0, 0.0, 0.0)`
+      - top-right is    `(1.0, 1.0, 1.0, 1.0)`
+      - bottom-left is  `(1.0, 0.0, 1.0, 1.0)`
+      - bottom-right is `(0.0, 0.0, 0.0, 0.0)`
+  - subpass 1 fs
+    - for every 2x2 grid, a mask is built
+      - top-left is     `(0.0, 0.0, 0.0, 0.0)`
+      - top-right is    `(1.0, 1.0, 1.0, 1.0)`
+      - bottom-left is  `(1.0, 1.0, 1.0, 1.0)`
+      - bottom-right is `(0.0, 0.0, 0.0, 0.0)`
+    - it then `subpassLoad` and does a component-wise compare
+- `renderPassTest`
+  - `initializeImageClearValues` picks the clear colors
+    - att 0 uses `(1, 1, 1, 0)`
+    - att 1 uses `(0.0, 0.0, 1.0, 0.0)`
+    - for this test case, it will use `vkCmdClearColorImage`
+      - for other test cases, it may use clear load op or
+        `vkCmdClearAttachments`
+  - `initializeSubpassRenderInfo` picks the render info
+    - subpass 0
+      - viewport offset `(0, 0)` and size `(42, 42)`
+      - quad from `(0.0, -0.25)` to `(1.0, 1.0)`
+        - that is, `(21, 15)` to `(42, 42)` in screen coords
+    - subpass 1
+      - viewport offset `(21, 0)` and size `(42, 42)`
+      - quad from `(-1.0, 0.0)` to `(0.25, 1.0)`
+        - that is, `(21, 21)` to `(47, 42)` in screen coord
+  - `createRenderPass` create the render pass
+  - `AttachmentResources::AttachmentResources` creates attachment resources,
+    including images, image views, readback buffers
+    - att 0 is 64x64 `VK_FORMAT_R8G8B8A8_UINT`
+    - att 1 is 64x64 `VK_FORMAT_R8G8B8A8_UNORM`
+  - `pushImageInitializationCommands` records image init cmds
+    - barrier to transition both images to xfer dst
+    - `vkCmdClearColorImage` to clear both images
+    - barrier to transition both images to color att optimal
+  - `createFramebuffer` create the fb
+  - `SubpassRenderer::SubpassRenderer` creates desc set, vb, pipeline, etc.
+    - subpass 0 has no dset
+    - subpass 1 has a dset with an input att desc
+    - vb is initialized for the quad
+  - `pushRenderPassCommands` records render pass cmds
+    - for each subpass, `SubpassRenderer::pushRenderCommands`
+      - bind pipeline
+      - bind dset if any
+      - bind vb
+      - draw the quad
+  - `pushReadImagesToBuffers` records readback cmds
+    - barrier to transition both images to xfer src
+    - `vkCmdCopyImageToBuffer` to readback
+    - barrier for the copies
+  - `logAndVerifyImages` verifies
+    - because att 0 does not store, it always passes
+    - only att 1 is verified
+    - `renderColorImageForLog` converts color values for logging
+      - 1.0 remains 1.0
+      - the rest becomes 0.5
+
 ## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
 
 - `DepthStencilResolveTest::createRenderPass`
