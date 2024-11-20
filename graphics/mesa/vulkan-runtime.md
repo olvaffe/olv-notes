@@ -120,6 +120,18 @@ Mesa Vulkan Runtime
   - allocs a `vk_graphics_pipeline`
   - `vk_graphics_pipeline_state_fill` flattens `VkGraphicsPipelineCreateInfo`
     to `vk_graphics_pipeline_state`
+  - if not lib, `vk_dynamic_graphics_state_fill` inits
+    `vk_dynamic_graphics_state` from `vk_graphics_pipeline_state`
+    - the runtime provides generic dirty tracking; the idea is that
+      - if a pipeline has a non-dynamic state, and when the pipeline is bound
+        to cmdbuf, we want to mark the non-dynamic state dirty
+      - if we copy the non-dynamic state to `vk_dynamic_graphics_state` at
+        pipeline creation time here, we can treat it as a dynamic state
+    - all states that are not dynamic (not on `p->dynamic`) are copied to
+      `dyn` and are marked in `dyn->set`
+    - later, when the pipeline is bound, `vk_cmd_set_dynamic_graphics_state`
+      copies the non-dynamic states stored in `vk_dynamic_graphics_state` to
+      the cmdbuf
   - `vk_pipeline_precompile_shader` translates spirv to nir, with cache
   - `vk_graphics_pipeline_compile_shaders` compiles nir to binary, with cache
     - `pipeline->stages` are per-stage nirs and binaries
