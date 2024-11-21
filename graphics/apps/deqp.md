@@ -1396,6 +1396,47 @@ dEQP
       - 1.0 remains 1.0
       - the rest becomes 0.5
 
+## Test Case: `dEQP-VK.renderpass.suballocation.subpass_dependencies.implicit_dependencies.render_passes_2`
+
+- test creation
+  - `vkt::createRenderPassTests`
+  - `createRenderPassTestsInternal`
+  - `createRenderPassSubpassDependencyTests`
+    - render pass 0: 1 color att and 1 subpass, with implicit dep
+    - render pass 1: 1 color att and 1 subpass, with explicit dep
+    - `ExternalTestConfig`
+      - `format` is `VK_FORMAT_R8G8B8A8_UNORM`
+      - `imageSize` is `(128, 128)`
+      - `synchronizationType` is `SYNCHRONIZATION_TYPE_LEGACY`
+      - `blurKernel` is 12
+  - `ExternalDependencyTestInstance::ExternalDependencyTestInstance`
+- `ExternalPrograms::init`
+  - `quad-vert-0` and `quad-vert-1` generate a quad with texccords
+  - `quad-frag-0` ignores texcords and draws red, green, blue, and black
+    cells
+  - `quad-frag-1` samples from render pass 0 and blurs the color
+- `ExternalDependencyTestInstance::ExternalDependencyTestInstance`
+  - `ExternalDependencyTestInstance::createAndAllocateImages` creates the
+    color images for both passes
+  - `createImageViews` creates the image views
+  - `ExternalDependencyTestInstance::createSamplers` creates a sampler
+  - `createBuffer` creates the dst buffer
+  - `createRenderPasses` creates the render passes
+    - the only difference is implicit and explicit deps
+  - `createFramebuffers` creates the fbs
+  - `createDescriptorSetLayouts` creates a dset layout with a descriptor
+  - `createDescriptorSets` creates and updates a dset
+  - `createRenderPipelineLayouts` creates the pipeline layouts
+    - the first layout for render pass 0 is empty
+    - the second layout for render pass 1 uses the dset layout
+  - `createRenderPipelines` creates the pipelines
+- `ExternalDependencyTestInstance::iterateInternal`
+  - first pass: draw a quad
+  - second pass: draw a quad
+  - barrier
+  - `vkCmdCopyImageToBuffer` from the second image
+  - barrier
+
 ## Test Case: `dEQP-VK.renderpass2.depth_stencil_resolve.image_2d_49_13.samples_2.d16_unorm_s8_uint.depth_none_stencil_zero_testing_stencil`
 
 - `DepthStencilResolveTest::createRenderPass`
