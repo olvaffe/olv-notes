@@ -313,6 +313,13 @@ Vulkan
     - an impl might need to patch the last command of a secondary command
       buffer to jump back to the address of its caller
     - patching is not possible when the flag is set
+- 6.5. Command Buffer Submission
+  - render pass
+    - `vkCmdBeginRendering` and `vkCmdEndRendering` must appear in a single
+      cmdbuf
+    - `vkCmdBeginRenderPass` and `vkCmdEndRenderPass` must appear in a single
+      cmdbuf
+    - but a render pass can expand multiple cmdbufs
 - 6.7. Secondary Command Buffer Execution
   - vkCmdExecuteCommands can be inside or outside of a render pass
     - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
@@ -690,6 +697,29 @@ Vulkan
 
 ## Chapter 8. Render Pass
 
+- `vkCmdBeginRendering` and `vkCmdEndRendering` are the modern way to
+  begin/end a render pass
+  - no subpass though
+  - legacy way
+    - only the primary cmdbuf can have `vkCmdBeginRenderPass`,
+      `vkCmdNextSubpass`, and `vkCmdEndRenderPass`
+    - a render pass cannot span multiple primary cmdbufs
+    - but a render pass can span multiple secondary cmdbufs
+      - a secondary cmdbuf is entirely within or outside a render pass
+        depending on whether
+        `VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT` is set
+  - dynamic rendering can replace the legacy way directly, as long as there is
+    no subpass
+    - `vkCmdBeginRendering` replaces `vkCmdBeginRenderPass`
+    - `vkCmdEndRendering` replaces `vkCmdEndRenderPass`
+  - but dynamic rendering also has new tricks
+    - `vkCmdBeginRendering` and `vkCmdEndRendering` can appear in secondary
+      cmdbufs as well
+    - suspend/resume is the modern way for multi-thread recording
+    - an (active) render pass still cannot span multiple primary cmdbufs, but
+      a suspended render pass can span multiple primary or secondary cmdbufs
+      - `VkSubmitInfo2` has VUIDs to prevent a render pass to span multiple
+        submits 
 - 8.1. Render Pass Objects
   - `VkRenderPass` describes a rendering pass abstractly; no image but only their
     formats, etc.
