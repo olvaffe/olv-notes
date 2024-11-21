@@ -522,6 +522,28 @@ dEQP
       - each thread inverts the bits of a value
     - barrier for ssbo
 
+## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.linear_interpolation.no_offset_1_sample`
+
+- test creation
+  - `vkt::Draw::createTests`
+  - `createChildren`
+  - `createMultisampleLinearInterpolationTests`
+  - `MultipleClearsWithinRenderPassTest`
+  - `MultisampleLinearInterpolationTestCase`
+    - `renderSize` is `(16, 16)`
+    - `interpolationRange` is 1.0
+    - `offset` is `(0.0, 0.0)`
+    - `sampleCountFlagBits` is `VK_SAMPLE_COUNT_1_BIT`
+  - `MultisampleLinearInterpolationTestInstance`
+- `MultisampleLinearInterpolationTestCase::initPrograms`
+  - `vertRef` passes through pos and color
+  - `vertNoPer` passes through pos and `noperspective` color
+  - `fragRef` outputs a gradient where
+    - x-dir goes from red to green
+    - y-dir goes from green to red
+  - `fragNoPer` averages the color at offset `(0, 0)` and at the sample loc
+- `MultisampleLinearInterpolationTestInstance::iterate`
+
 ## Test Case: `dEQP-VK.draw.dynamic_rendering.primary_cmd_buff.multiple_clears_within_render_pass.draw_clear_draw_c_r8g8b8a8_unorm_triangles`
 
 - test creation
