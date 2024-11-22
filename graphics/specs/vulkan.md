@@ -1449,6 +1449,22 @@ Vulkan
     - `vkUpdateDescriptorSets` is used to update a descriptor set
     - a descriptor set may simply hold shallow pointers to various VkImageView,
       VkSampler, VkBuffer, etc.  HW descriptors are generated at draw time.
+  - push constants
+    - conceptually, there is a small ubo whose storage is managed by the
+      cmdbuf
+      - the ubo is always bound and uses `PushConstant` storage class
+      - the ubo has size `maxPushConstantsSize`
+      - `vkCmdPushConstants` updates the ubo
+    - internally, the hw typically has a per-stage special storage
+      - `vkCmdPushConstants` copies the data to a cpu buf, and at draw time,
+        the data is pushed to the special storage
+  - `VK_KHR_push_descriptor`
+    - conceptually, there is a small descriptor pool managed by the cmdbuf
+      - the pool has `maxBoundDescriptorSets * maxPushDescriptors` descriptors
+      - `vkCmdPushDescriptorSetKHR` allocates, updates, and binds the
+        specified dset
+        - if the dset already exists, it is either reused or recycled
+          depending on whether the layout is compatible or not
 
 ## Chapter 15. Shader Interfaces
 
