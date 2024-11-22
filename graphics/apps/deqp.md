@@ -1127,8 +1127,24 @@ dEQP
     - `createCommands` generates 50 random ops
   - `MemoryTestInstance::prepare` prepares the 50 random ops
     - `CreateBuffer::prepare` allocs a 1024-byte buffer
+    - `RenderVertexStorageTexelBuffer::prepare`
+      - `createPipelineWithResources`
+        - creates a dset layout with 1
+          `VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER` desc
+        - creates a pipeline layout
+        - creates a pipeline
+          - ia is point list
+          - vp is 256x256
+          - vs is `storage-texel-buffer.vert`
+            - it loads a r32ui from the buffer view and uses that as pos coords
+          - fs is `render-white.frag`
+            - `o_color = vec4(1.0);`
+      - creates a `VK_FORMAT_R32_UINT` buffer view
+        - the buffer size 1024 so there are 256 elements
     - etc.
   - `MemoryTestInstance::execute`
+    - `RenderVertexStorageTexelBuffer::submit` draws 512 points
+    - etc.
   - `MemoryTestInstance::verify`
 
 ## Test Case: `dEQP-VK.pipeline.monolithic.image.suballocation.sampling_type.combined.view_type.2d.format.r8g8b8a8_unorm.count_4.size.32x16`
