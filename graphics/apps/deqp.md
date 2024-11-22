@@ -5,9 +5,23 @@ dEQP
 
 - Build
   - `python3 external/fetch_sources.py`
-  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
-    - `DEQP_TARGET` is mostly for GL/GLES
+  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
+    - a debug build can be significantly slower when used with deqp-runner
+    - `DEQP_TARGET` is for GL/GLES and VK WSI
+      - `surfaceless` disables them
+      - `wayland` uses wayland
+      - `x11_egl` uses X11/EGL
+      - supported targets are under `targets/`
+    - force disable GLESv1
+      - edit `targets/x11_egl/x11_egl.cmake`
+      - I have to do this because my cross-compile sysroot has GLESv1 but my
+        target machine does not
   - `ninja`
+- cross-compile
+  - `-DCMAKE_TOOLCHAIN_FILE=aarch64.cmake`
+  - `-DWAYLAND_SCANNER=/usr/bin/wayland-scanner` if wayland
+  - `-DCMAKE_CXX_FLAGS="-static-libstdc++"` if the sysroot and the dut have
+    different libstdc++
 - Package
   - `cd out`
   - `mkdir deqp-dist`
@@ -29,34 +43,27 @@ dEQP
        --deqp-log-images=disable \
        --deqp-log-shader-sources=disable`
   - `--deqp-log-filename=<file.qpa>` to specify an alternative name
-  - ANV CI also has
-    - `ANV_ABORT_ON_DEVICE_LOSS=true`
-    - `MESA_VK_WSI_PRESENT_MODE=immediate`
-    - `--deqp-surface-type=fbo`
-    - `--deqp-shadercache=disable`
-    - see
-      <https://gitlab.freedesktop.org/Mesa_CI/mesa_jenkins/-/blob/master/vulkancts-test/build.py>
-    - or <https://mesa-ci.01.org/>
-      - Job: vulkancts
-      - Revisions: to see the commits
-      - Platforms: pick desired platform such as gen9
-      - Group: dEQP-VK
 - EGL/GLES
-  - set `DEQP_TARGET` to one of the desired targets under `targets/`
-    - e.g., `x11_egl`
-  - force disable GLESv1
-    - edit `targets/x11_egl/x11_egl.cmake`
-    - I have to do this because my cross-compile sysroot has GLESv1 but my
-      target machine does not
-  - Run GLES
-    - `EGL_PLATFORM=surfaceless
-       external/modules/gles2/deqp-gles2 \
-         --deqp-surface-type=pbuffer \
-         --deqp-gl-config-name=rgba8888d24s8ms0 \
-         --deqp-surface-width=256 \
-         --deqp-surface-height=256`
-    - all arguments required becaues of surfaceless?
-    - replace gles2 by gles3 and gles31
+  - `EGL_PLATFORM=surfaceless
+     external/modules/gles2/deqp-gles2 \
+       --deqp-surface-type=pbuffer \
+       --deqp-gl-config-name=rgba8888d24s8ms0 \
+       --deqp-surface-width=256 \
+       --deqp-surface-height=256`
+  - all arguments required becaues of surfaceless?
+  - replace gles2 by gles3 and gles31
+- ANV CI also has
+  - `ANV_ABORT_ON_DEVICE_LOSS=true`
+  - `MESA_VK_WSI_PRESENT_MODE=immediate`
+  - `--deqp-surface-type=fbo`
+  - `--deqp-shadercache=disable`
+  - see
+    <https://gitlab.freedesktop.org/Mesa_CI/mesa_jenkins/-/blob/master/vulkancts-test/build.py>
+  - or <https://mesa-ci.01.org/>
+    - Job: vulkancts
+    - Revisions: to see the commits
+    - Platforms: pick desired platform such as gen9
+    - Group: dEQP-VK
 
 ## Android
 
