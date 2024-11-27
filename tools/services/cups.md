@@ -1,6 +1,42 @@
 CUPS
 ====
 
+## Modern Printers and Standards
+
+- modern printer specs
+  - sleep power: 0.5W
+  - network printing
+    - ethernet/wifi
+    - mDNS/DNS-SD
+    - IPP
+  - usb printing
+    - USB Printer Class
+    - IPP
+  - certifications
+    - IPP Everywhere
+    - Mopria
+    - AirPrint
+- standard bodies
+  - PWG, The Printer Working Group, by IEEE
+    - <https://www.pwg.org/>
+    - PWG 5100.x: IPP, IPP Everyhwere
+    - PWG 5102.x: PWG Raster Format
+  - Mopria, by printer vendors
+    - <https://mopria.org/>
+  - AirPrint, by Apple
+- standard PDLs (page description languages):
+  - <https://openprinting.github.io/driverless/01-standards-and-their-pdls/>
+  - PDF: successor of PostScript
+  - PWG Raster: based on cusp's raster
+  - PCLM: raster-only subset of PDF
+  - Apple Raster: based on cusp's raster
+  - JPEG
+- how does a modern printer work?
+  - <https://openprinting.github.io/driverless/02-workflow/>
+  - discovery: mDNS/DNS-SD
+  - communication: IPP
+  - PDLs: varies
+
 ## Overview
 
 - <https://openprinting.github.io/cups/>
