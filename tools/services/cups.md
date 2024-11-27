@@ -37,6 +37,33 @@ CUPS
   - communication: IPP
   - PDLs: varies
 
+## CUPS v3
+
+- not ready yet
+- <https://openprinting.github.io/current/>
+- <https://github.com/OpenPrinting/libcups> implements IPP and standard PDLs
+  - it takes pdf as input and can output pdf/pwg/etc
+- <https://github.com/OpenPrinting/cups-local> is a local print daemon
+  - it discovers and uses libcups to talk to IPP printers
+  - apps talk to this local daemon
+- <https://github.com/OpenPrinting/cups-sharing> is a remote print daemon
+  - it discovers and uses libcups to talk to IPP printers
+  - it provides remote access
+  - apps can talk to this remote daemon as well
+- non-IPP printers
+  - <https://github.com/michaelrsweet/pappl> is a framework to emulate IPP
+    printers
+  - <https://github.com/OpenPrinting/hplip-printer-app> emulates IPP printers
+    on top of HPLIP which supports many HP printers
+  - <https://github.com/OpenPrinting/gutenprint-printer-app> emulates IPP
+    printers on top of Gutenprint which supports many Canon/Epson printers
+  - <https://github.com/OpenPrinting/ghostscript-printer-app> emulates IPP
+    printers on top of GhostScript which supports a variety of printers
+  - <https://github.com/OpenPrinting/ps-printer-app> emulates IPP printers on
+    top of PostScript printers
+  - <https://github.com/OpenPrinting/pappl-retrofit> emulates IPP printers on
+    top of CUPS legacy printers
+
 ## Overview
 
 - <https://openprinting.github.io/cups/>
