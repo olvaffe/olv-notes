@@ -8,6 +8,14 @@ Das U-Boot
   - quarterly release
   - a release is tagged on the first Monday of each quarter
   - then the merge window is opened for 3 weeks
+- <https://docs.u-boot.org/en/stable/usage/spl_boot.html>
+  - on power on, primary cpu executes bootrom stored in mask rom
+  - bootrom loads spl to sram and jumps to spl
+  - spl initializes dram, loads uboot proper to dram, and jumps to uboot
+    proper
+  - in rk3588
+    - "spl" consists of memory training blob and uboot spl
+    - "uboot proper" consists of atf as bl31 and uboot proper as bl33
 
 ## Build
 
