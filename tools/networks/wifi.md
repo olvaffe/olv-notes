@@ -376,6 +376,29 @@ WiFi
     - `CTRL-EVENT-SCAN-RESULTS`
     - `CTRL-EVENT-CONNECTED`
   - `reassociate` is `disconnect` and `reconnect`
+- after a scan, `wpa_supplicant_get_scan_results` gets and sorts the results
+  - with nl80211 driver, `wpa_driver_nl80211_get_scan_results` returns
+    `wpa_scan_results`
+    - `nl80211_parse_bss_info` parses the data from kernel nl80211 to
+      `wpa_scan_results`
+    - nl80211 does not report noise nor qual
+      - `WPA_SCAN_NOISE_INVALID` and `WPA_SCAN_QUAL_INVALID` are always set
+    - most hw / kernel driver can report `NL80211_BSS_SIGNAL_MBM`
+      - `WPA_SCAN_LEVEL_DBM` is set
+  - `scan_snr` guesses noise and snr
+    - `res->level` is already in dbm and `res->qual` is 0
+    - `res->noise` is set to -92 (`DEFAULT_NOISE_FLOOR_5GHZ` and
+      `DEFAULT_NOISE_FLOOR_6GHZ`) on 5ghz/6ghz or -89
+      (`DEFAULT_NOISE_FLOOR_2GHZ`) on 2.4ghz
+    - `res->snr` is `res->level - res->noise`
+  - `wpa_scan_result_compar` sorts the results
+    - wpa is always preferred over non-wpa
+    - snr is adjusted by channel width and is capped to 25 (`GREAT_SNR`)
+    - if snr is good enough or close enough
+      - wpa3-sae is preferred over wpa2
+      - higher estimated throughput is preferred
+      - 6ghz is preferred over 5ghz over 2.4ghz
+    - otherwise, higher snr is preferred
 
 ## My APs
 
