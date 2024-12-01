@@ -77,6 +77,16 @@ Broadcom SoC
 
 - <https://github.com/raspberrypi/firmware/> is the official
   proprietary/prebuilt firmwares
+  - <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html>
+  - on rpi0 to rpi3, `bootcode.bin` parses `config.txt` and loads one of the
+    gpu (VideoCore) fw
+    - `start.elf` is regular
+    - `start_x.elf` includes extra codecs
+    - `start_db.elf` includes debug
+    - `start_cd.elf` is cut-down
+  - on rpi4, eeprom fw parses `config.txt` and loads one of the `start4*.elf`
+    gpu (VideoCore) fw
+  - `fixup*.dat` are the corresponding memory layout data files?
 - <https://github.com/christinaa/rpi-open-firmware> is a semi-working open
   source firmware
   - it provides vpu stage2 bootloader and firmware

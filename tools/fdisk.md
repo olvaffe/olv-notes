@@ -20,23 +20,43 @@ fdisk
   - /var: 8G (down to 3G after pacman -Sc)
   - /usr: 5G
   - rest: 1G
-
-## Booting
-
-- EFI finds the bootloader on ESP
-- bootloader finds its config files on ESP
-  - e.g., `systemd-boot` finds `/loader/loader.conf` on ESP
-- bootloader finds bootloader entries (`/loader/entries/*.conf`) on ESP and,
-  if exists, XBOOTLDR
-- bootloader entries refer to kernel/initramfs files using absolute paths on
-  the same partitions
-  - that is, a bootloader entry and its associated kernel/initramfs must be on
-    the same partition
 - <https://uapi-group.org/specifications/specs/boot_loader_specification/>
   - if ESP is large enough to hold kernels, it should be mounted to `/boot`
   - if ESP is too small to hold kernels, it should be moutned to `/efi`
     - another partition, XBOOTLDR, should be created and moutned to `/boot`
       instead
+
+## Booting
+
+- when the cpu is powered on,
+  - on x86, the cpu typically executes the firmware stored in spi nor
+    - the fw performs very early init, including dram init
+      - e.g., the fw can be coreboot
+    - the fw loads edk2 to dram and jumps to edk2
+      - e.g., edk2 can be a coreboot payload
+    - edk2 picks the bootloader
+      - it consults `BootOrder` variable if defined
+      - otherwise, it falls back to `\EFI\BOOT\BOOTX64.EFI` on ESP
+  - on arm, the cpu typically executes the bootrom stored in mask rom
+    - the bootrom loads the fw from spi nor, spi eeprom, emmc, sd, etc.
+      - the bootrom is read-only and can never be updated
+    - the fw performs very early init, including dram init
+      - e.g., the fw can be uboot spl
+    - the fw loads BL31 and BL33 and jumps to BL31/BL33
+      - e.g., BL31 can be atf and BL33 can be uboot proper
+    - uboot proper can boot to edk2, or more commonly, boot to kernel directly
+- edk2 finds the bootloader on ESP
+  - bootloader finds its config files on ESP
+    - e.g., `systemd-boot` finds `/loader/loader.conf` on ESP
+  - bootloader finds bootloader entries (`/loader/entries/*.conf`) on ESP and,
+    if exists, XBOOTLDR
+  - bootloader entries refer to kernel/initramfs files using absolute paths on
+    the same partitions
+    - that is, a bootloader entry and its associated kernel/initramfs must be on
+      the same partition
+- uboot proper can itself be the bootloader
+  - it finds its config file, `/extlinux/extlinux.conf`, on ESP
+  - it can also load `/EFI/BOOT/BOOTAA64.EFI` on ESP like edk2 does
 
 ## Data Migration
 
@@ -98,7 +118,9 @@ fdisk
     - preloader initializes dram
   - partition 2 is at sector 16384 (0x4000, 8MB)
     - preloader usually finds the bootloader at sector 16384
-    - common bootloader is u-boot
+    - common bootloader is u-boot proper, in which case
+      - the preloader includes uboot spl
+      - this partition also includes atf
   - partition 3 is at sector 24576 (0x6000, 12MB)
     - u-boot includes tf-a and does not need this partition
   - partition 4 is at sector 32768 (0x8000, 16MB)
@@ -110,32 +132,31 @@ fdisk
     partition
   - vpu `start4.elf` functions as the bootloader and boots `kernel8.img`
 - partition table
-  - fdisk considers 2048 to be the first usable sector and we cannot have
-    partitions starting before sector 2048
+  - fdisk by default considers 2048 to be the first usable sector
     - that is, it sets "First usable LBA for partitions" field in the gpt
       header to 2048
     - use `echo -e "label:gpt\nfirst-lba: 34" | sfdisk <image>`, or
       `parted <image> mklabel gpt`, to set the field to 34
-  - reserved: sector 64 to 16383
-    - for rockchip preloader
-  - reserved: sector 16384 to 32767
-    - for rockchip u-boot
-  - partition 1: sector 32768, size 1GB, esp, fat32
+  - partition 1: sector 64 to 16383
+    - for rockchip preloader (ddr training and uboot spl)
+  - partition 2: sector 16384 to 32767
+    - for rockchip bootloader (atf and uboot proper)
+  - partition 3: sector 32768, size 1GB, esp, fat32
     - for `/boot/firmware` on broadcom
     - label `RASPIFIRM`
-  - partition 2: size 1GB, xbootldr, fat32
+  - partition 4: size 1GB, xbootldr, fat32
     - for `/boot`
     - label `RASPIBOOT`
-  - partition 3: rest, ext4
+  - partition 5: rest, ext4
     - for rootfs
     - label `RASPIROOT`
   - on rockchip, u-boot will find `/boot/extlinux/extlinux.conf` on partition
-    2
+    4
   - on broadcom, vpu `start4.elf` will find `/boot/firmware/kernel8.img` on
-    partition 1
+    partition 3
     - kernel/initramfs must be copied from `/boot` to `/boot/firmware`
     - alternatively, `/boot/firmware/kernel8.img` can be u-boot which will
-      find `/boot/extlinux/extlinux.conf` on partition 2
+      find `/boot/extlinux/extlinux.conf` on partition 4
 
 ## GPT
 
