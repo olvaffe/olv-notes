@@ -14,6 +14,8 @@ Vulkan
 - 1.3 was released in 2022
   - no new HW reqs
   - `git diff v1.2.203..v1.3.204`
+- 1.4 was released in 2024
+  - `git diff v1.3.302..v1.4.303`
 
 ## Chapter 3. Fundamentals
 
@@ -2696,6 +2698,49 @@ Vulkan
 
 ## Appendix D: Core Revisions (Informative)
 
+- Version 1.4
+  - 16 promoted extensions
+    - `VK_KHR_dynamic_rendering_local_read`
+    - `VK_KHR_global_priority`
+    - `VK_KHR_push_descriptor`
+    - `VK_KHR_vertex_attribute_divisor`
+    - `VK_EXT_host_image_copy`
+  - SPIR-V 1.6
+  - Streaming Transfers
+    - xfer over gfx and compute
+    - at least one of host image copy or dedicated xfer queue
+  - `VK_SUBGROUP_FEATURE_CLUSTERED_BIT` and
+    `VK_SUBGROUP_FEATURE_ROTATE_CLUSTERED_BIT`
+  - required by roadmap 2022
+    - `fullDrawIndexUint32`
+    - `imageCubeArray`
+    - `independentBlend`
+    - `sampleRateShading`
+    - `drawIndirectFirstInstance`
+    - `depthClamp`
+    - `depthBiasClamp`
+    - `samplerAnisotropy`
+    - `fragmentStoresAndAtomics`
+    - `shaderStorageImageExtendedFormats`
+    - `shaderUniformBufferArrayDynamicIndexing`
+    - `shaderSampledImageArrayDynamicIndexing`
+    - `shaderStorageBufferArrayDynamicIndexing`
+    - `shaderStorageImageArrayDynamicIndexing`
+    - `samplerYcbcrConversion`
+    - `samplerMirrorClampToEdge`
+    - `scalarBlockLayout`
+    - `shaderUniformTexelBufferArrayDynamicIndexing`
+    - `shaderStorageTexelBufferArrayDynamicIndexing`
+  - required by roadmap 2024
+    - `shaderImageGatherExtended`
+    - `shaderInt16`
+    - `storageBuffer16BitAccess`
+    - `shaderInt8`
+    - `storageBuffer8BitAccess`
+  - `largePoints`
+  - `variablePointers`
+  - `variablePointersStorageBuffer`
+  - new limits
 - Version 1.3
   - 23 promoted extensions
     - `VK_KHR_dynamic_rendering`
