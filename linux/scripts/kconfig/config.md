@@ -531,8 +531,8 @@ Kernel Config
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
         - it requires `CMA` and `DMA_CMA` to work
       - select `Display Panels` if arm
-        - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
         - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
+        - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Display Interface Bridges` if arm
         - select `Display connector support`
         - select `ITE IT6505 DisplayPort bridge` if needed
