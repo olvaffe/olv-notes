@@ -141,6 +141,124 @@ Mesa PanVK
   - `enumerate_drm_physical_devices_locked` silently ignores
     `VK_ERROR_INCOMPATIBLE_DRIVER`
 
+## Formats and Modifiers
+
+- format users
+  - per-draw descriptors
+    - `<struct name="Attribute" size="8" align="32">`
+      - an `Attribute` corresponds to a vertex attrib
+      - they are referred to by a `Resource` table (driver-internal descriptor
+        set)
+    - `<struct name="Texture" size="8" align="32">`
+      - a `Texture` corresponds to a sampled image, storage image, or tbo/ibo
+      - they are referred to by a `Resource` table
+      - they are also referred to by `Shader Environment` of `Draw`
+        - a `Draw` is a dcd pipeline for render pass load/store
+        - because fb preload is sampling, it also implies that each
+          color/depth att gets a `Texture`
+    - `<struct name="Plane" size="8" align="32">`
+      - a `Plane` corresponds to a "slice" of a `Texture`
+        - there are `levels * layers * samples * planes` slices
+      - they are referred to by a `Texture`
+  - per-draw blend
+    - `<struct name="Blend" size="4" align="16">`
+      - a `Blend` corresponds to a color buffer
+      - they are referred to by cs `d50` reg
+      - they are also referred to by `Draw`, a dcd pipeline for render pass
+        load/store
+    - `<struct name="Internal Blend" align="8">`
+      - an `Internal Blend` corresponds to a blend mode (fixed-function or
+        shader)
+      - it is embedded in a `Blend`
+      - it is also hardcoded for each generated blend shader
+        - blender is the hw unit to write back from tilebuffer to memory
+        - blender only supports simple blend ops with 6 common formats
+        - for unsupported blend ops or formats, fs calls a blend shader to
+          perform the blending and to request blender to write back the
+          blended value as an opaque value
+  - per-render-pass framebuffer
+    - `<aggregate name="Framebuffer" align="64">`
+      - a `Framebuffer` corresponds to a render pass and consists of
+        - `Framebuffer Parameters`
+        - `Framebuffer Padding`
+        - zero or one `ZS CRC Extension`
+        - zero or more `Render Target`
+      - it is referred to by cs `d40` reg
+    - `<struct name="ZS CRC Extension" align="64" size="16">`
+      - a `ZS CRC Extension` corresponds to a depth/stencil and/or crc buffer
+      - it is referred to by `Framebuffer`
+    - `<struct name="Render Target" align="64">`
+      - a `Render Target` corresponds to a color buffer
+      - it is referred to by `Framebuffer`
+- different format users use different format enums
+  - 22-bit `Pixel Format`
+    - this is used by
+      - `<struct name="Attribute" size="8" align="32">`
+      - `<struct name="Texture" size="8" align="32">`
+      - `<struct name="Internal Blend" align="8">`
+      - different descriptors support different formats
+    - bit 0..11 is `RGB Component Order`
+    - bit 12..19 is `Format`
+      - these can be roughly categorized into
+        - color (renderable) formats
+        - depth/stencil formats
+        - compressed formats
+        - planar formats
+        - other formats (scaled, weird size, etc.)
+      - all except other formats are usually texturable
+      - color and other formats can be used as vertex formats
+    - bit 20 is srgb
+    - bit 21 must be 0 (it indicates big endian before v7)
+  - `Clump Format` and `Clump Ordering`
+    - only for non-AFxC `<struct name="Plane" size="8" align="32">`
+    - what are these for?
+  - `Register File Format`
+    - only for `<struct name="Internal Blend" align="8">`
+      - this tells the blender how to interpret the fs output value
+    - F16, F32, I32, U32, I16, U16
+  - `Color Buffer Internal Format`
+    - only for `<struct name="Render Target" align="64">`
+      - this is the tilebuffer color format
+    - mostly RAW8, RAW16, RAW32, RAW64, RAW128 (block size in bits)
+    - but also some 6 color formats supported by fixed-function blending
+  - `Color Format`
+    - only for `<struct name="Render Target" align="64">`
+      - this is the writeback color format
+    - mostly RAW8, RAW16, RAW24, RAW32, RAW48, RAW64, RAW96, RAW128, and all
+      the way to RAW2048 (block size in bits)
+    - but also some common color formats supported by fixed-function blending
+  - `Z Internal Format`
+    - only for `<struct name="Framebuffer Parameters" align="64">`
+      - this is the tilebuffer depth format
+      - the stencil format is always S8
+    - D16, D24, and D32
+  - `ZS Format` and `S Format`
+    - only for `<struct name="ZS CRC Extension" align="64" size="16">`
+      - they are the writeback depth/stencil formats
+    - for depth: D16, D24X8, D24S8, and D32
+    - for stencil: only S8 should be used; X24S8 is a waste
+- Swizzles
+  - 22-bit `Pixel Format` has `RGB Component Order` for limited swizzle
+    - this is for, for example, `VK_FORMAT_R8G8B8A8_UNORM` and
+      `VK_FORMAT_B8G8R8A8_UNORM` which differ only in component order
+  - some structs also have a 12-bit `Swizzle` for arbitrary swizzle
+    - `<struct name="Texture" size="8" align="32">`
+    - `<struct name="Render Target" align="64">`
+    - this is for `VkComponentMapping`
+- Modifiers
+  - `Plane Type`
+    - this is only for `<struct name="Plane" size="8" align="32">`
+    - generic, astc, afbc, afrc, chroma 2p
+  - `Block Format`
+    - this is for
+      - `<struct name="Render Target" align="64">`
+      - `<struct name="ZS CRC Extension" align="64" size="16">`
+    - linear, tiled, afbc, afbc tiled
+    - what is no write for?
+- Clear Colors
+- Border Colors
+- Blend Constants
+
 ## Device
 
 - `panvk_CreateDevice` calls `panvk_per_arch(create_device)`
