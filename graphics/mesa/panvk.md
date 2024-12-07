@@ -269,6 +269,13 @@ Mesa PanVK
     - if the user-specified blend constant does not have the same values for
       all channels, it must fall back to the blend shader
 - Border Colors
+  - `<struct name="Sampler" size="8" align="32">`
+    - `Border Color` is mempcy from user-specified `VkClearColorValue`
+    - the user specifies `VkClearColorValue` as the border color
+      - the format is typically unknown
+      - the type (int or float) is known
+      - when sampling from the border, the specified int or float value is
+        returned
 
 ## Device
 
