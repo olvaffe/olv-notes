@@ -256,8 +256,19 @@ Mesa PanVK
     - linear, tiled, afbc, afbc tiled
     - what is no write for?
 - Clear Colors
-- Border Colors
+  - `<struct name="Framebuffer Parameters" align="64">`
+    - `Z Clear` is f32
+    - `S Clear` is u8
+  - `<struct name="Render Target" align="64">`
+    - `Clear` is format-dependent
+    - the hw memsets the tilebuffer to the opaque value
+    - the driver must pack the clear value according to the rt format
 - Blend Constants
+  - `<struct name="Blend" size="4" align="16">`
+    - `Constant` is a single 16-bit unorm
+    - if the user-specified blend constant does not have the same values for
+      all channels, it must fall back to the blend shader
+- Border Colors
 
 ## Device
 
