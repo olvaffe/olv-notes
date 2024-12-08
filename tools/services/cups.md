@@ -42,6 +42,75 @@ CUPS
   - communication: IPP
   - PDLs: varies
 
+## CUPS v2
+
+- the current version, but being deprecated
+- <https://github.com/OpenPrinting/cups>
+  - backends: `dnssd`, `http(s)`, `ipp(s)`, `snmp`, `socket`, `usb`
+  - filters: `commandtops`, `gziptoany`, `pstops`, `rasterto*`
+  - bsd printing system compat
+    - `lpc` configs queues
+    - `lprm` cancels jobs
+    - `lpq` queries queues
+    - `lpr` submits jobs
+  - sysv printing system compat
+    - `lpadmin` configs queues
+    - `cancel` cancels jobs
+    - `lpmove` moves jobs
+    - `lpstat` queries queues
+    - `lp` submits jobs
+  - sysv-inspired commands
+    - `cupsaccept` accepts jobs
+    - `cupsreject` rejects jobs
+    - `cupsenable` enables queues
+    - `cupsdisable`  disables queues
+  - cups commands
+    - `cupsctl` configs `/etc/cups/cupsd.conf`
+    - `cupsd` implments IPP 2.1, most of IPP Everywhere, and a webadmin
+      interface
+    - `cupsfilter` converts files using filters
+    - `cupstestppd` validates ppd files
+    - `lpinfo` lists available drivers (`-m`) and available devices (`-v`)
+    - `lpoptions` configs printers
+  - ipp commands
+    - `ippeveprinter` simulates an IPP Everywhere printer
+      - this is the origin of PAPPL
+    - `ippfind`
+    - `ipptool`
+  - ppd commands
+    - `ppdc`
+    - `ppdhtml`
+    - `ppdi`
+    - `ppdmerge`
+    - `ppdpo`
+- <https://github.com/OpenPrinting/cups-filters>
+  - cups components that apple did not need
+  - backends: `beh`, `driverless`, `parallel`, `serial`
+  - drivers: `driverless`
+  - filters: many, but the relevant ones are `pdftopdf` and `pdftoraster`
+    - that is, modern cups takes pdfs and outputs one of the standard PDLs
+      using `pdftopdf`, or `pdftoraster` followed by `rastertopwg`
+- <https://github.com/OpenPrinting/cups-browsed>
+  - `cups-browsed` sets up queues for all discovered printers automatically
+  - `/etc/cups/cups-browsed.conf`
+    - `CreateIPPPrinterQueues`
+      - `All` is default and create queues for all discovered printers
+      - `Driverless` creates queues for discovered printers that are capable
+        of AirPrint or IPP Everywhere
+    - `UseCUPSGeneratedPPDs`
+      - `Yes` uses cups to generate ppds for created queues
+      - `No` is the default and uses cups-filter to generate ppds for
+        created queues
+  - cups has a ppd generator
+    - when creating a queue manually with `lpadmin -m everywhere`, cups
+      generates a ppd for the queue by querying the IPP-Everywhere-capable
+      printer
+    - this should not be used anymore
+  - cups-filter also has a ppd generator
+    - `lpadmin -m driverless`
+    - it works better than the one built into cups
+    - `driverless` is also a standalone tool
+
 ## CUPS v3
 
 - <https://openprinting.github.io/current/>
@@ -73,12 +142,18 @@ CUPS
     top of PostScript printers
   - <https://github.com/OpenPrinting/pappl-retrofit> emulates IPP printers on
     top of CUPS legacy printers
+- Other Libraries
+  - <https://github.com/OpenPrinting/libcupsfilters> extracted from
+    cups-filters for filtering (format conversions)
+  - <https://github.com/OpenPrinting/libppd> extracted from cups for legacy
+    PPD support
 
 ## Legacy Canon Printers
 
 - ufrii, currently v6.00
   - mixed open/proprietary driver
     - UFR II stands for Ultra Fast Rendering v2
+    - arch aur `cnrdrvcups-lb`
   - `/usr/lib/cups/backend/cnusbufr2` is the usb backend to communicate with
     the printer
   - `/usr/share/cups/model/*.ppd` describes the supported printers
