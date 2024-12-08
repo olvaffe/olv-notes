@@ -197,6 +197,69 @@ CUPS
   - `/usr/lib/cups/filter/rastertocarps` converts cups raster format to carps
     format
 
+## Add a Local Printer
+
+- `ID 04a9:2759 Canon, Inc. MF3010` is a legacy usb printer
+  - `lpinfo -v` lists available devices
+    - `direct cnusbufr2:/dev/usb/lp0`
+    - `direct usb://Canon/MF3010?serial=foo&interface=1`
+  - `lpinfo -m | grep 3010` lists available models (drivers)
+    - `CNRCUPSMF3010ZS.ppd Canon MF3010`
+  - `lpadmin -p mf3010 -E -v 'usb://Canon/MF3010?serial=foo&interface=1' -m 'CNRCUPSMF3010ZS.ppd'`
+    adds a queue
+    - `-p mf3010` adds queue `mf3010`
+    - `-E` enables the queue and accepts jobs
+    - `-v` specifies the device to use
+    - `-m` specifies the driver to use
+      - cups v3 is IPP Everywhere-only and this is deprecated
+      - will need to use pappl to simulate an IPP Everywhere printer
+  - `lpstat -t` shows queue stats
+    - `scheduler is running` indicates cupsd is running
+    - `no system default destination` indicates no default queue
+      - `lpadmin -d mf3010` to set as default
+    - `device for mf3010: usb://Canon/MF3010?serial=foo&interface=1` indicates
+      queue `mf3010` uses device `usb://Canon/MF3010?serial=foo&interface=1`
+    - `mf3010 accepting requests since ...` indicates the queue accepts jobs
+      - `cupsreject mf3010` to reject
+      - `cupsaccept mf3010` to accept
+    - `printer mf3010 is idle.  enabled since ...` indicates the queue is
+      idle and is enabled
+      - `cupsdisable mf3010` to disable
+      - `cupsenable mf3010` to enable
+  - `lp -d mf3010 test.txt` prints a text file
+- debug filtering
+  - `cupsfilter -p /usr/share/ppd/cupsfilters/Generic-PDF_Printer-PDF.ppd test.txt > test.pdf`
+    runs the filters as if we are printing `test.txt` to `Generic-PDF_Printer-PDF.ppd`
+  - the input mime is auto-detected to be `text/plain`
+  - the output mime is specified in ppd to be `application/pdf`
+  - `universal` filter accepts all mimes and picks `texttopdf` filter to do
+    the real work
+  - `pdftopdf` filter uses qpdf to simplify the pdf
+    - printers do not implement every pdf feature
+
+## Share a Local Printer
+
+- `lpadmin -p mf3010 -o printer-is-shared=true` marks `mf3010` shared
+  - this updates `/etc/cups/printers.conf`
+- `cupsctl --share-printers` makes `cupsd` accept remote requests
+  - this updates `/etc/cups/cupsd.conf`
+  - `Listen localhost:631` becomes `Port 631`
+  - `Browsing On` advertises shared queues using avahi
+  - `<Location />Order allow,deny  Allow @LOCAL</Location>`
+    - all http requests starting with `/` are denied by default, but are
+      allowed if coming from the local subnet
+- `ippfind` finds the shared queue
+  - `ipp://foo.local:631/printers/mf3010`
+  - make sure avahi is running
+  - might need to restart avahi and cupsd
+  - does not seem to be too reliable
+- to use the shared queue, on the remote machine,
+  - install `cups-browsed` to automate queue creation
+  - `lpadmin -p test -E -v 'ipp://foo.local:631/printers/mf3010' -m 'driverless:ipp://foo.local:631/printers/mf3010`
+    creates the queue manually
+  - `driverless 'ipp://foo.local:631/printers/mf3010'` to see the generated
+    ppd
+
 ## Old
 
 - cups
