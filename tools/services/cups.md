@@ -255,7 +255,7 @@ CUPS
   - does not seem to be too reliable
 - to use the shared queue, on the remote machine,
   - install `cups-browsed` to automate queue creation
-  - `lpadmin -p test -E -v 'ipp://foo.local:631/printers/mf3010' -m 'driverless:ipp://foo.local:631/printers/mf3010`
+  - `lpadmin -p test -E -v 'ipp://foo.local:631/printers/mf3010' -m 'driverless:ipp://foo.local:631/printers/mf3010'`
     creates the queue manually
   - `driverless 'ipp://foo.local:631/printers/mf3010'` to see the generated
     ppd
