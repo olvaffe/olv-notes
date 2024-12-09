@@ -78,3 +78,11 @@ NetworkManager
 - `[device]`
   - `match-device=` specifies the device
   - `managed=` specifies whether the device is managed or ignored
+
+## nm-applet
+
+- by default, nm-applet calls `gtk_status_icon_new` to create a status icon
+  - it internally uses `XEmbed` protocol and is not supported on wayland
+- when `--indicator` is specified, or when on wayland since nm-applet 1.32.0,
+  it switches to `app_indicator_new`
+  - it internally uses `StatusNotifierItem` protocol
