@@ -160,9 +160,26 @@ CUPS
   - `/usr/lib/cups/filter/rastertoufr2` converts cups raster format to UFR2,
     LIPSLX, UFR2 LT, or CARPS2 format
     - it forks off `/usr/bin/cnrsdrvufr2` to do the real work
-  - `/usr/lib/cups/filter/pdftocpca` converts pdf to CPCA format?
+  - `/usr/lib/cups/filter/pdftocpca` converts pdf to CPCA (Common Peripheral
+    Controlling Architecture) format
     - it forks off `/usr/bin/cnpdfdrv` to do the real work
     - it does not appear to be used
+  - essential package contents
+    - `/usr/lib/cups/filter/rastertoufr2`
+      - `/usr/bin/cnrsdrvufr2`
+        - `/usr/lib/libufr2filterr.so.1.0.0`
+        - `/usr/lib/libcaepcmufr2.so.1.0`
+    - `/usr/lib/libcanonufr2r.so.1.0.0` is specified in `CN_PdlWrapper_PdlPath`
+      - `/usr/lib/libcanon_slimufr2.so.1.0.0`
+      - `/usr/bin/cnjbigufr2` compresses data using `jbigkit`
+      - `/usr/bin/cnpkmoduleufr2r`
+    - `/usr/share/caepcm`
+    - `/usr/share/cups`
+  - re-package deb
+    - `dpkg-deb -R cnrdrvcups-ufr2-us_6.00-1.02_amd64.deb repack`
+    - edit `repack/DEBIAN/control` to remove `cups-bsd` and `libgtk-3-0`
+    - remove `repack/DEBIAN/post*`
+    - `dpkg-deb -b repack repack.deb`
 - cnijfilter2, currently v6.80
   - mixed open/proprietary driver
     - IJ stands for inkjet
