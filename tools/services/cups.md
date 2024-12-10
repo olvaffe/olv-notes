@@ -179,7 +179,7 @@ CUPS
     - `dpkg-deb -R cnrdrvcups-ufr2-us_6.00-1.02_amd64.deb repack`
     - edit `repack/DEBIAN/control` to remove `cups-bsd` and `libgtk-3-0`
     - remove `repack/DEBIAN/post*`
-    - `dpkg-deb -b repack repack.deb`
+    - `dpkg-deb -b --root-owner-group repack repack.deb`
 - cnijfilter2, currently v6.80
   - mixed open/proprietary driver
     - IJ stands for inkjet
