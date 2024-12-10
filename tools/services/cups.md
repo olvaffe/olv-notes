@@ -315,3 +315,18 @@ CUPS
     - `load_drivers` to scan drivers (ppd generators) in
       `/usr/lib/cups/driver`
   - `lpinfo` also prints out `everywhere IPP Everywhere` as an additional ppd
+
+## `lpadmin`
+
+- `lpadmin -p` calls `set_printer_options`
+  - it connects to cupsd and sends an `IPP_OP_CUPS_ADD_MODIFY_PRINTER` req
+  - `cupsd` calls `add_printer` to handle the req
+    - if the printer does not exist, `cupsdAddPrinter` creates the printer on
+      demand
+    - the uri is `<scheme>://...` and it checks for
+      `/usr/lib/cups/backend/<scheme>`
+    - if the ppd name is `everywhere`, `create_local_bg_thread` generates the
+      ppd on the fly
+    - otherwise, `copy_model` invokes `cups-driverd cat $ppd_name`
+      - when `driverless`, `cups-driverd` invokes
+        `/usr/lib/cups/driver/driverless` to generate the ppd on the fly
