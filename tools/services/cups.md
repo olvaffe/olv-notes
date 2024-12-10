@@ -47,7 +47,18 @@ CUPS
 - the current version, but being deprecated
 - <https://github.com/OpenPrinting/cups>
   - backends: `dnssd`, `http(s)`, `ipp(s)`, `snmp`, `socket`, `usb`
+    - a backend is invoked with `job-id user title copies options [file]` and
+      specific envvars to send data to a device
+      - `dnssd` execves another backend
+    - some backends also support discovery when invoked without any argument
+      - `usb` lists supported usb devices
+      - `dnssd` browses dns-sd
   - filters: `commandtops`, `gziptoany`, `pstops`, `rasterto*`
+    - a filter converts data from one format to another
+  - drivers: `everywhere`
+    - a driver queries device caps and generates a ppd
+    - `everywhere` is built-in and works with any conformant IPP Everywhere
+      device
   - bsd printing system compat
     - `lpc` configs queues
     - `lprm` cancels jobs
@@ -86,7 +97,14 @@ CUPS
 - <https://github.com/OpenPrinting/cups-filters>
   - cups components that apple did not need
   - backends: `beh`, `driverless`, `parallel`, `serial`
+    - `driverless` only supports ipp device discovery
+      - it invokes `ippfind` to discover real ipp devices
+      - remote cups queues are emulated ipp devices and are ignored
+        - they advertise `printer-type` in their dns-sd records
+        - `ippfind` is asked to skip them
   - drivers: `driverless`
+    - `driverless` generates a ppd from any ipp device
+      - unlike `everhwhere`, which only supports ipp everywhere devices
   - filters: many, but the relevant ones are `pdftopdf` and `pdftoraster`
     - that is, modern cups takes pdfs and outputs one of the standard PDLs
       using `pdftopdf`, or `pdftoraster` followed by `rastertopwg`
