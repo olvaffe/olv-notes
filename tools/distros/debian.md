@@ -42,26 +42,32 @@ Debian
 
 - packages
   - `apt-mark` packages appropriately
-  - boot: `init linux-image-arm64`
-  - admin
-    - `locales man-db sudo systemd-resolved systemd-zram-generator vim whiptail`
-    - `dosfstools fdisk`
-    - `auditd logrotate unattended-upgrades`
+  - boot
+    - `init linux-image-arm64`
+  - base
+    - `sudo vim`
+    - `fdisk dosfstools`
+    - `systemd-zram-generator`
+    - `locales man-db whiptail logrotate`
   - network
-    - `iproute2 iputils-ping nftables wireguard`
+    - `systemd-resolved`
+    - `iproute2 iputils-ping nftables`
     - `wireless-regdb wpasupplicant` (or `iwd`)
-    - `ssh msmtp`
-  - container
-    - `containers-storage podman`
+    - `ssh`
   - rpi
-    - `bluez-firmware firmware-brcm80211 raspi-firmware`
+    - `raspi-firmware firmware-brcm80211 bluez-firmware`
     - remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
       `/usr/local`, and `/boot/firmware`
   - gce
     - `grub-cloud-amd64 linux-image-cloud-amd64`
     - `google-compute-engine-oslogin google-guest-agent`
     - `google-cloud-sdk google-compute-engine google-osconfig-agent`
-  - extra
+  - server
+    - `unattended-upgrades auditd msmtp`
+    - `wireguard qrencode`
+    - `podman containers-storage`
+    - `cups sane-utils`
+  - tools
     - `file git lsof strace`
     - `pciutils usbutils`
     - `curl`
