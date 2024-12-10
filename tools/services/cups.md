@@ -295,25 +295,23 @@ CUPS
   - `driverless 'ipp://foo.local:631/printers/mf3010'` to see the generated
     ppd
 
-## Old
+## `lpinfo`
 
-- cups
-  - drivers come from ppds and `/usr/lib/cups/driver/*`
-  - to enum devices, `lpinfo -v`
-  - to enum driver, `lpinfo -m`
-  - RAW: `lpadmin -p <name> -v <device> -E`
-  - COOKED: `lpadmin -p <name> -v <device> -P <ppd> -E`
-- `scheduler/dirsvc.c` to DNS-SD
-- data formats
-  - CUPS -> printer: CUPS will check if it can convert the data to a format
-    that the printer understands.
-  - client -> CUPS: client is supposed to send in a format CUPS understands.
-    - CUPS only accepts files of types defined in /etc/cups/mime.types.  Edit
-      also /etc/cups/mime.convs
-  - CUPS with gs support: pdftops, pstoraster!
-  - CUPS without gs support: Many formats are no longer supported.
-- Best Practice for print server:
-  - CUPS without gs support + Raw support + Windows client driver
-  - On usb device inserted/removed, do something
-  - Listen on public iface
-  - Printers should be published for remote printing (samba is local)
+- `lpinfo` processes arguments in order
+  - `-l -v` and `-v -l` are different
+- `lpinfo -v` calls `cupsGetDevices`
+  - it connects to cupsd and sends an `IPP_OP_CUPS_GET_DEVICES` request
+  - cupsd invokes `/usr/lib/cups/daemon/cups-deviced`
+  - `cups-deviced` scans `/usr/lib/cups/backend` and calls `start_backend` to
+    invoke each backend
+  - `get_device` parses the backend stdout for devices
+- `lpinfo -m` connects to cups and sends an `IPP_OP_CUPS_GET_PPDS` request
+  - cupsd invokes `/usr/lib/cups/daemon/cups-driverd list`
+  - `cups-driverd` calls
+    - `load_ppds` to scan static data in
+      - `/usr/share/cups/model`
+      - `/usr/share/cups/drv`
+      - `/usr/share/ppds`
+    - `load_drivers` to scan drivers (ppd generators) in
+      `/usr/lib/cups/driver`
+  - `lpinfo` also prints out `everywhere IPP Everywhere` as an additional ppd
