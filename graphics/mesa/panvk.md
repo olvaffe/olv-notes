@@ -276,6 +276,23 @@ Mesa PanVK
       - the type (int or float) is known
       - when sampling from the border, the specified int or float value is
         returned
+- YUV
+  - `<struct name="Render Target YUV Overlay" size="16">`
+    - this is for YUV rendering and can be ignored for now?
+  - 22-bit `Pixel Format`
+    - for RGB, this consists of
+      - bit 0..11 is `RGB Component Order`
+      - bit 12..19 is `Format`
+      - bit 20 is srgb
+      - bit 21 must be 0 (it indicates big endian before v7)
+    - for YUV, this consists of
+      - bit 0..2 is `YUV Swizzle`
+      - bit 3 is swap
+      - bit 4..8 must be 0
+      - bit 9..11 is `YUV Cr Siting`
+      - bit 12..19 is `Format`
+      - bit 20..21 must be 0
+  - `Clump Format` and `Clump Ordering`
 
 ## Device
 
