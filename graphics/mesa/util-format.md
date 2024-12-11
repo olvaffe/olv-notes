@@ -246,3 +246,76 @@ Mesa Formats
     formats using swizzle (`swiz1`)
   - api typically allows users to swizzle (`swiz2`)
   - the final swizzle should be `swiz[i] = swiz1[swiz2[i]]`
+
+## YCbCr
+
+- `eglCreateImage` with `EGL_LINUX_DMA_BUF_EXT`
+  - mesa egl parses the attrs and calls `dri2_from_dma_bufs`
+    - `width` is from `EGL_WIDTH`
+    - `height` is from `EGL_HEIGHT`
+    - `fourcc` is from `EGL_LINUX_DRM_FOURCC_EXT`
+    - `modifier` is from `EGL_DMA_BUF_PLANE0_MODIFIER_{LO,HI}_EXT`
+    - `num_fds` is the memory plane count derived from the highest
+      `EGL_DMA_BUF_PLANE{0,1,2,3}_MODIFIER_{LO,HI}_EXT`
+    - `fds`, `strides`, `offsets` are from
+      `EGL_DMA_BUF_PLANE{0,1,2,3}_{FD,OFFSET,PITCH}_EXT`
+    - `yuv_color_space` is from `EGL_YUV_COLOR_SPACE_HINT_EXT`
+    - `sample_range` is from `EGL_SAMPLE_RANGE_HINT_EXT`
+    - `horizontal_siting` is from `EGL_YUV_CHROMA_HORIZONTAL_SITING_HINT_EXT`
+    - `vertical_siting` is from `EGL_YUV_CHROMA_VERTICAL_SITING_HINT_EXT`
+    - `flags` is from `EGL_PROTECTED_CONTENT_EXT`
+  - `dri2_get_mapping_by_fourcc` maps the fourcc to `dri2_format_mapping`
+    - `dri_fourcc` is the fourcc
+    - if fourcc is tri-planar
+      - `dri_format` is `__DRI_IMAGE_FORMAT_NONE`
+      - `dri_components` is `__DRI_IMAGE_COMPONENTS_Y_U_V`
+      - `pipe_format` is always `PIPE_FORMAT_IYUV`
+        - it does not use the exact pipe formats, such as `PIPE_FORMAT_YV12`
+      - `nplanes` is 3
+      - `planes` describes the 3 planes in YUV order
+        - `buffer_index` is similar to a swizzle
+          - `planes[1].buffer_index = 2` means U is at memory plane 2
+        - `width_shift` and `height_shift` are subsampling
+        - `dri_format` is always `__DRI_IMAGE_FORMAT_R8`
+    - if fourcc is bi-planar
+      - `dri_format` is `__DRI_IMAGE_FORMAT_NONE`
+      - `dri_components` is `__DRI_IMAGE_COMPONENTS_Y_UV`
+      - `pipe_format` is the exact pipe format, such as `PIPE_FORMAT_NV12`
+      - `nplanes` is 2
+      - `planes` describes the 2 planes in Y and UV order
+        - `buffer_index` is always 0 for Y and 1 for UV
+        - `width_shift` and `height_shift` are subsampling
+        - `dri_format` is the closest rgba `__DRI_IMAGE_FORMAT_*`
+          - `__DRI_IMAGE_FORMAT_R8` for 8-bit Y
+          - `__DRI_IMAGE_FORMAT_R16` for 16-bit Y
+          - `__DRI_IMAGE_FORMAT_GR88` for 8-bit UV
+          - `__DRI_IMAGE_FORMAT_GR1616` for 16-bit UV
+          - `__DRI_IMAGE_FORMAT_NONE` if no corresponding dri format
+    - if fourcc is packed and is not subsampled
+      - `dri_format` is closest rgba `__DRI_IMAGE_FORMAT_*`
+      - `dri_components` is
+        - `__DRI_IMAGE_COMPONENTS_AYUV` if alpha
+        - `__DRI_IMAGE_COMPONENTS_XYUV` if no alpha
+      - `pipe_format` is the exact pipe format, such as `PIPE_FORMAT_AYUV`
+      - `nplanes` is 1
+      - `planes` describes the packed YUV plane
+        - `buffer_index` is always 0
+        - `width_shift` and `height_shift` are always 0
+        - `dri_format` is the same as the iamge `dri_format`
+    - if fourcc is packed and is subsampled
+      - `dri_format` is `__DRI_IMAGE_FORMAT_NONE`
+      - `dri_components` is
+        - `__DRI_IMAGE_COMPONENTS_Y_XUXV`, if Y first
+        - `__DRI_IMAGE_COMPONENTS_Y_UXVX`, if U/V first
+      - `pipe_format` is the exact pipe format, such as `PIPE_FORMAT_YUYV`
+      - `nplanes` is 2
+      - `planes` describes the 2 planes in Y and UV order
+        - `buffer_index` is always 0
+        - `width_shift` and `height_shift` are subsampling
+        - `dri_format` is the closest rgba `__DRI_IMAGE_FORMAT_*`
+          - `__DRI_IMAGE_FORMAT_GR88` for 8-bit Y
+            - it samples YU or YV, and discards chroma to keep just lumi
+          - `__DRI_IMAGE_FORMAT_ARGB8888` or `__DRI_IMAGE_FORMAT_ABGR8888` for
+            8-bit UV
+            - it samples YUYV or UYVY, and discards lumo to keep just chroma
+
