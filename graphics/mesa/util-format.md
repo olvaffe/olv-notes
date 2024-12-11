@@ -209,3 +209,13 @@ Mesa Formats
     - `PIPE_FORMAT_Y16_U16_V16_420_UNORM`
     - `PIPE_FORMAT_Y16_U16_V16_422_UNORM`
     - `PIPE_FORMAT_Y16_U16_V16_444_UNORM`
+  - hw support
+    - hw typically lacks native support
+      - its sampler either cannot sample yuv format or does not convert yuv to
+        rgb
+    - hw might support sampling yuv formats as rgb formats
+      - its sampler treat yuv format as equivalent rgb format, and can sample
+        without colorspace conversion
+      - colorspace conversion requires driver emulation
+    - hw might lack support completely
+      - both sampling and colorspace conversion require driver emulation
