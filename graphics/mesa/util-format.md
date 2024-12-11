@@ -318,4 +318,72 @@ Mesa Formats
           - `__DRI_IMAGE_FORMAT_ARGB8888` or `__DRI_IMAGE_FORMAT_ABGR8888` for
             8-bit UV
             - it samples YUYV or UYVY, and discards lumo to keep just chroma
-
+  - `dri2_get_modifier_num_planes` gets the expected memory plane count from
+    the driver to validate against user-specified memory plane count
+  - `dri_create_image_from_winsys` creates the image
+    - if `map->pipe_format` is not natively supported, which is most likely,
+      it may fallback to an alternative format
+      - if fourcc is tri-planar,
+        - `dri2_get_mapping_by_fourcc` somehow always maps them to
+          `PIPE_FORMAT_IYUV`
+        - but no driver supports `PIPE_FORMAT_IYUV` natively
+        - `DRM_FORMAT_YUV420` may be remapped to
+          `PIPE_FORMAT_R8_G8_B8_420_UNORM`
+          - Y plane is considered R8
+          - Cb plane is considered G8
+          - Cr plane is considered B8
+        - `DRM_FORMAT_YVU420` may be remapped to
+          `PIPE_FORMAT_R8_B8_G8_420_UNORM`
+          - Y plane is considered R8
+          - Cr plane is considered B8
+          - Cb plane is considered G8
+      - if fourcc is bi-planar,
+        - `DRM_FORMAT_NV12` may be remapped to `PIPE_FORMAT_R8_G8B8_420_UNORM`
+          - Y plane is considered R8
+          - CbCr plane is considered G8B8
+        - `DRM_FORMAT_NV21` may be remapped to `PIPE_FORMAT_R8_B8G8_420_UNORM`
+          - Y plane is considered R8
+          - CrCb plane is considered B8G8
+        - `DRM_FORMAT_NV16` may be remapped to `PIPE_FORMAT_R8_G8B8_422_UNORM`
+        - `DRM_FORMAT_NV15` may be remapped to
+          `PIPE_FORMAT_R10_G10B10_420_UNORM`
+        - `DRM_FORMAT_NV20` may be remapped to
+          `PIPE_FORMAT_R10_G10B10_422_UNORM`
+      - if fourcc is packed and is subsampled
+        - `DRM_FORMAT_YUYV` may be remapped to `PIPE_FORMAT_R8G8_R8B8_UNORM`
+          - Y channel is considered R8
+          - Cb channel is considered G8
+          - Cr channel is considered B8
+        - `DRM_FORMAT_YVYU` may be remapped to `PIPE_FORMAT_R8B8_R8G8_UNORM`
+          - Y channel is considered R8
+          - Cr channel is considered B8
+          - Cb channel is considered G8
+        - `DRM_FORMAT_UYVY` may be remapped to `PIPE_FORMAT_G8R8_B8R8_UNORM`
+        - `DRM_FORMAT_VYUY` may be remapped to `PIPE_FORMAT_B8R8_G8R8_UNORM`
+    - if the pipe format can be sampled, natively or after fallback,
+      `resource_from_handle` is called from the last memory plane to the first
+      memory plane
+      - non-format planes are imported without a format
+      - format planes are imported with the same pipe format but with
+        width/height adjusted to subsampling
+    - if the pipe format is not supported at all,
+      - non-format planes are imported without a format
+      - `map->nplanes` and `map->planes` are used in place of real format
+        planes
+      - it will be emulated and sampled plane-by-plane
+- `glEGLImageTargetTexStorageEXT` with `GL_TEXTURE_EXTERNAL_OES`
+  - `st_get_egl_image`
+    - `dri_get_egl_image` looks up the image created by `dri2_from_dma_bufs`
+    - `native_supported` is set depending on whether the pipe format is
+      natively supported, or is a fallback or is emulated
+  - `st_bind_egl_image` binds the image
+    - the mesa format is based on the effective pipe format
+- `glDraw*`
+  - `st_prepare_draw` calls `st_validate_state` to validate the state
+  - `st_update_fp` updates the fp state
+  - `st_get_external_sampler_key` gets the fp variant key for external
+    samplers
+  - `st_get_fp_variant` returns the fp variant
+    - `nir_lower_tex` is called with yuv lowering
+      - this pass expects YUV to be in RGB channels respectively
+      - this differs from vulkan where YUV are in GBR channels respectively
