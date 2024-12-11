@@ -87,3 +87,22 @@ Piglit
     - otherwise, it shows a window and enters the mainloop
       - the mainloop calls `config->display` to draw the window
       - if `-auto`, it calls `piglit_report_result` to report and exit
+
+## `ext_image_dma_buf_import-sample_yuv`
+
+- `piglit_init`
+  - requires `EGL_EXT_image_dma_buf_import` and `GL_OES_EGL_image_external`
+  - parses `-fmt=<fourcc>`
+- `piglit_display`
+  - calls `glClear` to clear color and depth
+  - calls `piglit_create_dma_buf` to create a 4x4 dmabuf
+  - `sample_buffer`
+    - `egl_image_for_dma_buf_fd` creates an egl image for the dmabuf
+    - `texture_for_egl_image` creates a gl texture for the egl image
+    - `sample_tex` draws a quad
+      - vs
+        - `texcoords = piglit_texcoords.xy;`
+        - `gl_Position = piglit_vertex;`
+      - fs
+        - `uniform samplerExternalOES sampler;`
+        - `gl_FragColor = texture2D(sampler, texcoords);`
