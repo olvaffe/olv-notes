@@ -173,7 +173,9 @@ Mesa Formats
     - `PIPE_FORMAT_B8R8_G8R8_UNORM`
     - `PIPE_FORMAT_R8B8_R8G8_UNORM`
     - `PIPE_FORMAT_G8B8_G8R8_UNORM`
+      - `VK_FORMAT_G8B8G8R8_422_UNORM`
     - `PIPE_FORMAT_B8G8_R8G8_UNORM`
+      - `VK_FORMAT_B8G8R8G8_422_UNORM`
     - `PIPE_FORMAT_Y210`
     - `PIPE_FORMAT_Y212`
     - `PIPE_FORMAT_Y216`
@@ -185,15 +187,21 @@ Mesa Formats
     - `PIPE_FORMAT_R8_G8B8_420_UNORM`
     - `PIPE_FORMAT_R8_B8G8_420_UNORM`
     - `PIPE_FORMAT_G8_B8R8_420_UNORM`
+      - `VK_FORMAT_G8_B8R8_2PLANE_420_UNORM`
     - `PIPE_FORMAT_R10_G10B10_420_UNORM`
     - `PIPE_FORMAT_R10_G10B10_422_UNORM`
     - `PIPE_FORMAT_X6G10_X6B10X6R10_420_UNORM`
+      - `VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16`
     - `PIPE_FORMAT_X4G12_X4B12X4R12_420_UNORM`
+      - `VK_FORMAT_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16`
     - `PIPE_FORMAT_NV16`
+      - `VK_FORMAT_G8_B8R8_2PLANE_422_UNORM`
     - `PIPE_FORMAT_Y16_U16V16_422_UNORM`
+      - `VK_FORMAT_G16_B16R16_2PLANE_422_UNORM`
     - `PIPE_FORMAT_P010`
     - `PIPE_FORMAT_P012`
     - `PIPE_FORMAT_P016`
+      - `VK_FORMAT_G16_B16R16_2PLANE_420_UNORM`
     - `PIPE_FORMAT_P030`
   - these are tri-planar
     - `PIPE_FORMAT_YV12`
@@ -202,13 +210,19 @@ Mesa Formats
     - `PIPE_FORMAT_R8_G8_B8_420_UNORM`
     - `PIPE_FORMAT_R8_B8_G8_420_UNORM`
     - `PIPE_FORMAT_G8_B8_R8_420_UNORM`
+      - `VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM`
     - `PIPE_FORMAT_R8_G8_B8_UNORM`
     - `PIPE_FORMAT_Y8_U8_V8_422_UNORM`
+      - `VK_FORMAT_G8_B8_R8_3PLANE_422_UNORM`
     - `PIPE_FORMAT_Y8_U8_V8_444_UNORM`
+      - `VK_FORMAT_G8_B8_R8_3PLANE_444_UNORM`
     - `PIPE_FORMAT_Y8_U8_V8_440_UNORM`
     - `PIPE_FORMAT_Y16_U16_V16_420_UNORM`
+      - `VK_FORMAT_G16_B16_R16_3PLANE_420_UNORM`
     - `PIPE_FORMAT_Y16_U16_V16_422_UNORM`
+      - `VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM`
     - `PIPE_FORMAT_Y16_U16_V16_444_UNORM`
+      - `VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM`
   - hw support
     - hw typically lacks native support
       - its sampler either cannot sample yuv format or does not convert yuv to
@@ -219,3 +233,16 @@ Mesa Formats
       - colorspace conversion requires driver emulation
     - hw might lack support completely
       - both sampling and colorspace conversion require driver emulation
+
+## Swizzles
+
+- `swizzle` is in RGBA order
+  - `swizzle[0]` specifies the source of the R value
+  - `swizzle[1]` specifies the source of the G value
+  - `swizzle[2]` specifies the source of the B value
+  - `swizzle[3]` specifies the source of the A value
+- `util_format_compose_swizzles` composes two swizzles
+  - hw typically supports only canonical formats and driver emulates other
+    formats using swizzle (`swiz1`)
+  - api typically allows users to swizzle (`swiz2`)
+  - the final swizzle should be `swiz[i] = swiz1[swiz2[i]]`
