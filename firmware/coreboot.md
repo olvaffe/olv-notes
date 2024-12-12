@@ -126,6 +126,15 @@ coreboot
   - [5MB..20MB] is for legacy CBFS
   - [20MB..28MB] is for RW
   - [28MB..32MB] is for coreboot.rom
+- <https://github.com/coreboot/coreboot/blob/main/src/mainboard/google/rauru/chromeos.fmd>
+  - 8MB flash
+    - [0MB..4MB] `WP_RO`
+    - [4MB..5.5MB] `RW_SECTION_A` and `RW_MISC`
+    - [5.5MB..7MB] `RW_SECTION_B` and `RW_SHARED`
+    - [7MB..8MB] `RW_LEGACY`
+  - `cbfstool <ap-fw.bin> layout -w` shows the same info
+  - `cbfstool <ap-fw.bin> print [-r COREBOOT]` shows the contents of `COREBOOT`
+    CBFS region
 
 ## vboot
 
