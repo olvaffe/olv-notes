@@ -1,6 +1,40 @@
 Android Kernel
 ==============
 
+## Overview
+
+- <https://source.android.com/docs/core/architecture/kernel>
+  - historically, android combines LTS kernel with Android-specific patches to
+    form Android Common Kernel (ACK)
+  - Since 5.4, ACK is also known as Generic Kernel Image (GKI) and consists of
+    - generic core kernel
+    - GKI modules
+      - they are built from the same source tree and have no abi issue
+    - vendor modules
+      - they may be built from a different source tree
+      - GKI promises a stable abi, Kernel Module Interface (KMI), for vendor
+        modules
+- <https://source.android.com/docs/core/architecture/kernel/android-common>
+  - `android-mainline` is the primary development branch
+    - it merges in upstream mainline whenever a tag (rc or release) is added
+    - it branches off whenever a release is declared an lts
+  - each branch is named `android<ANDROID_RELEASE>-<KERNEL_VERSION>`
+    - each branch promises a stable abi (KMI) for modules
+  - Android 15 (2024, V) launches with 6.6 to 6.1
+  - Android 14 (2023, U) launches with 6.1 to 5.10
+  - Android 13 (2022, T) launches with 5.15 to 5.4
+  - Android 12 (2021, S) launches with 5.10 to 4.19
+  - Android 11 (2020, R) launches with 5.4 to 4.19
+  - for upgrades, the kernel version might not need change
+    - a device launched with android 11 and upgraded to android 15 can stay at
+      4.19 kernel
+- <https://source.android.com/docs/core/architecture/kernel/generic-kernel-image>
+  - devices launching with android 11 / kernel 5.4, or later, must support GKI
+  - devices launching with android 12 / kernel 5.10, or later, must use GKI
+- <https://source.android.com/docs/core/architecture/android-kernel-file-system-support>
+  - supported fs: exfat, ext4, f2fs, fuse, incfs, vfat, erofs
+  - virtual fs: debugfs, overlayfs, procfs, sysfs, tmpfs, tracefs
+
 ## Build
 
 - <https://source.android.com/docs/setup/build/building-kernels>
