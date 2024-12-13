@@ -12,25 +12,26 @@ Wayland
     - `<interface name="wl_registry" version="1">`
     - `<interface name="wl_callback" version="1">`
     - `<interface name="wl_compositor" version="6">`
-    - `<interface name="wl_shm_pool" version="1">`
-    - `<interface name="wl_shm" version="1">`
+    - `<interface name="wl_shm_pool" version="2">`
+    - `<interface name="wl_shm" version="2">`
     - `<interface name="wl_buffer" version="1">`
     - `<interface name="wl_data_offer" version="3">`
     - `<interface name="wl_data_source" version="3">`
     - `<interface name="wl_data_device" version="3">`
     - `<interface name="wl_data_device_manager" version="3">`
     - `<interface name="wl_shell" version="1">`
-      - deprecated
+      - deprecated by `xdg_shell`
     - `<interface name="wl_shell_surface" version="1">`
     - `<interface name="wl_surface" version="6">`
-    - `<interface name="wl_seat" version="9">`
-    - `<interface name="wl_pointer" version="9">`
-    - `<interface name="wl_keyboard" version="9">`
-    - `<interface name="wl_touch" version="9">`
+    - `<interface name="wl_seat" version="10">`
+    - `<interface name="wl_pointer" version="10">`
+    - `<interface name="wl_keyboard" version="10">`
+    - `<interface name="wl_touch" version="10">`
     - `<interface name="wl_output" version="4">`
     - `<interface name="wl_region" version="1">`
     - `<interface name="wl_subcompositor" version="1">`
     - `<interface name="wl_subsurface" version="1">`
+    - `<interface name="wl_fixes" version="1">`
 - <https://gitlab.freedesktop.org/wayland/wayland-utils.git>
   - the only utility is `wayland-info`
 - <https://gitlab.freedesktop.org/wayland/weston.git>
@@ -38,27 +39,55 @@ Wayland
     full-featured compositor
 - <https://gitlab.freedesktop.org/wayland/wayland-protocols.git>
   - protocol phases
-    - in the development phase, the protocol, the client, and the compositor
-      changes take the form of MRs and must not be merged
-    - in the testing phase, the protocol change is merged to and the
-      client/compositor changes are encouraged
-      - only backward-compatible changes are allowed in this phase
-      - if major design flaws are found, a new major version is introduced to
-        completely replace the current version
-      - otherwise, it gets promoted to stable
+    - development phase
+      - the protocol may be added to `experimental/`, and is actively
+        developed in the form of an MR
+      - MRs for clients and compositors are developed as test vehicles
+      - incompatible changes are allowed
+    - testing phase
+      - the protocol is added to `staging/`
+      - client and compositor implementations are encouraged
+      - incompatible changes are NOT allowed
+      - if design flaws are found, the procotol may see a major version bump
+        or be entirely replaced
+    - stable phase
+      - the protocol is added to `stable/`
+    - unstable phase
+      - no longer used
+      - the protocol is added to `unstable/`
+      - interface names are prefixed by z
+      - promotion to stable phase is always an incompatible change
   - directory tree
     - `stable` is for current stable protocols
     - `staging` is for protocols in the testing phase
     - `deprecated` is for deprecated protocols
     - `unstable` is historical and should not be used for new protocols
-      - the protocol names are prefixed by `z`
-      - only backward-compatible changes are allowed
-      - when it gets stablized, backward-incompatible changes are made in the
-        process
+  - naming conventions
+    - xml file path should be `foo/foo-vN.xml` for protocol `foo` at major
+      version `N`
+    - protocol and interface names
+      - window-managing protocols should use `xdg_` prefix
+      - fundamental protocols should use `wp_` prefix
+        - os-specific ones should use `wp_<os>_` prefix
+      - other protocols should use `ext_` prefix
+      - all protocols should use `_vN` suffix, where N is the major version
   - stable protocols
+    - `<protocol name="linux_dmabuf_v1">`
+      - `<interface name="zwp_linux_dmabuf_v1" version="5">`
+      - `<interface name="zwp_linux_buffer_params_v1" version="5">`
+      - `<interface name="zwp_linux_dmabuf_feedback_v1" version="5">`
     - `<protocol name="presentation_time">`
-      - `<interface name="wp_presentation" version="1">`
-      - `<interface name="wp_presentation_feedback" version="1">`
+      - `<interface name="wp_presentation" version="2">`
+      - `<interface name="wp_presentation_feedback" version="2">`
+    - `<<protocol name="tablet_v2">`
+      - `<interface name="zwp_tablet_manager_v2" version="1">`
+      - `<interface name="zwp_tablet_seat_v2" version="1">`
+      - `<interface name="zwp_tablet_tool_v2" version="1">`
+      - `<interface name="zwp_tablet_v2" version="1">`
+      - `<interface name="zwp_tablet_pad_ring_v2" version="1">`
+      - `<interface name="zwp_tablet_pad_strip_v2" version="1">`
+      - `<interface name="zwp_tablet_pad_group_v2" version="1">`
+      - `<interface name="zwp_tablet_pad_v2" version="1">`
     - `<protocol name="viewporter">`
       - `<interface name="wp_viewporter" version="1">`
       - `<interface name="wp_viewport" version="1">`
@@ -68,66 +97,81 @@ Wayland
       - `<interface name="xdg_surface" version="6">`
       - `<interface name="xdg_toplevel" version="6">`
       - `<interface name="xdg_popup" version="6">`
-  - staging protocols
-    - `<protocol name="content_type_v1">`
-      - `<interface name="wp_content_type_manager_v1" version="1">`
-      - `<interface name="wp_content_type_v1" version="1">`
-    - `<protocol name="cursor_shape_v1">`
-      - `<interface name="wp_cursor_shape_manager_v1" version="1">`
-      - `<interface name="wp_cursor_shape_device_v1" version="1">`
+  - selected staging protocols
+    - `<protocol name="alpha_modifier_v1">`
+      - this allows a client to speicify the alpha for a surface
+      - `<interface name="wp_alpha_modifier_v1" version="1">`
+      - `<interface name="wp_alpha_modifier_surface_v1" version="1">`
+    - `<protocol name="commit_timing_v1">`
+      - it allows a client to specify a timestamp for presentation
+      - `<interface name="wp_commit_timing_manager_v1" version="1">`
+      - `<interface name="wp_commit_timer_v1" version="1">`
     - `<protocol name="drm_lease_v1">`
+      - it allows a client to lease a drm device (and act as a vr compositor)
       - `<interface name="wp_drm_lease_device_v1" version="1">`
       - `<interface name="wp_drm_lease_connector_v1" version="1">`
       - `<interface name="wp_drm_lease_request_v1" version="1">`
       - `<interface name="wp_drm_lease_v1" version="1">`
-    - `<protocol name="ext_foreign_toplevel_list_v1">`
-      - `<interface name="ext_foreign_toplevel_list_v1" version="1">`
-      - `<interface name="ext_foreign_toplevel_handle_v1" version="1">`
-    - `<protocol name="ext_idle_notify_v1">`
-      - `<interface name="ext_idle_notifier_v1" version="1">`
-      - `<interface name="ext_idle_notification_v1" version="1">`
-    - `<protocol name="ext_session_lock_v1">`
-      - `<interface name="ext_session_lock_manager_v1" version="1">`
-      - `<interface name="ext_session_lock_v1" version="1">`
-      - `<interface name="ext_session_lock_surface_v1" version="1">`
-    - `<protocol name="ext_transient_seat_v1">`
-      - `<interface name="ext_transient_seat_manager_v1" version="1">`
-      - `<interface name="ext_transient_seat_v1" version="1">`
+    - `<protocol name="ext_data_control_v1">`
+      - it allows a special client to act as a clipboard manager
+      - `<interface name="ext_data_control_manager_v1" version="1">`
+      - `<interface name="ext_data_control_device_v1" version="1">`
+      - `<interface name="ext_data_control_source_v1" version="1">`
+      - `<interface name="ext_data_control_offer_v1" version="1">`
+    - `<protocol name="ext_image_capture_source_v1">`
+      - it allows a client to select a capture source
+      - `<interface name="ext_image_capture_source_v1" version="1">`
+      - `<interface name="ext_output_image_capture_source_manager_v1" version="1">`
+      - `<interface name="ext_foreign_toplevel_image_capture_source_manager_v1" version="1">`
+    - `<protocol name="ext_image_copy_capture_v1">`
+      - it allows a client to copy the contents of a capture source to a
+        buffer
+      - `<interface name="ext_image_copy_capture_manager_v1" version="1">`
+      - `<interface name="ext_image_copy_capture_session_v1" version="1">`
+      - `<interface name="ext_image_copy_capture_frame_v1" version="1">`
+      - `<interface name="ext_image_copy_capture_cursor_session_v1" version="1">`
+    - `<protocol name="fifo_v1">`
+      - it allows a client to present multiple frames in fifo mode rather than
+        mailbox mode
+      - `<interface name="wp_fifo_manager_v1" version="1">`
+      - `<interface name="wp_fifo_v1" version="1">`
     - `<protocol name="fractional_scale_v1">`
+      - it allows a client to receive fractional scale
       - `<interface name="wp_fractional_scale_manager_v1" version="1">`
       - `<interface name="wp_fractional_scale_v1" version="1">`
-    - `<protocol name="security_context_v1">`
-      - `<interface name="wp_security_context_manager_v1" version="1">`
-      - `<interface name="wp_security_context_v1" version="1">`
-    - `<protocol name="single_pixel_buffer_v1">`
-      - `<interface name="wp_single_pixel_buffer_manager_v1" version="1">`
+    - `<protocol name="linux_drm_syncobj_v1">`
+      - it allows a client to associate a timeline syncobj with a surface for
+        explicit sync
+      - `<interface name="wp_linux_drm_syncobj_manager_v1" version="1">`
+      - `<interface name="wp_linux_drm_syncobj_timeline_v1" version="1">`
+      - `<interface name="wp_linux_drm_syncobj_surface_v1" version="1">`
     - `<protocol name="tearing_control_v1">`
+      - it allows a client to present async (disable vsync), for lower latency
+        at the cost of tearing
       - `<interface name="wp_tearing_control_manager_v1" version="1">`
       - `<interface name="wp_tearing_control_v1" version="1">`
-    - `<protocol name="xdg_activation_v1">`
-      - `<interface name="xdg_activation_v1" version="1">`
-      - `<interface name="xdg_activation_token_v1" version="1">`
     - `<protocol name="xwayland_shell_v1">`
+      - it is used by xwayland server and is hidden from regular clients
       - `<interface name="xwayland_shell_v1" version="1">`
       - `<interface name="xwayland_surface_v1" version="1">`
   - selected unstable protocols
     - `<protocol name="idle_inhibit_unstable_v1">`
+      - it allows a client to inhibit screen saver/blanking
       - `<interface name="zwp_idle_inhibit_manager_v1" version="1">`
       - `<interface name="zwp_idle_inhibitor_v1" version="1">`
     - `<protocol name="input_method_unstable_v1">`
+      - it is used by special clients such as input method daemons or virtual
+        keyboards
+        - I guess the input method daemon can grab the hw keyboard, process hw
+          keys, and send utf8 text to the compositor
+        - the compositor uses another protocol to send the utf8 text to app
+          clients
       - `<interface name="zwp_input_method_context_v1" version="1">`
       - `<interface name="zwp_input_method_v1" version="1">`
       - `<interface name="zwp_input_panel_v1" version="1">`
       - `<interface name="zwp_input_panel_surface_v1" version="1">`
-    - `<protocol name="linux_dmabuf_unstable_v1">`
-      - `<interface name="zwp_linux_dmabuf_v1" version="4">`
-      - `<interface name="zwp_linux_buffer_params_v1" version="4">`
-      - `<interface name="zwp_linux_dmabuf_feedback_v1" version="4">`
-    - `<protocol name="zwp_linux_explicit_synchronization_unstable_v1">`
-      - `<interface name="zwp_linux_explicit_synchronization_v1" version="2">`
-      - `<interface name="zwp_linux_surface_synchronization_v1" version="2">`
-      - `<interface name="zwp_linux_buffer_release_v1" version="1">`
     - `<protocol name="text_input_unstable_v3">`
+      - it is used by normal clients to receive utf8 text as input
       - `<interface name="zwp_text_input_v3" version="1">`
       - `<interface name="zwp_text_input_manager_v3" version="1">`
 
