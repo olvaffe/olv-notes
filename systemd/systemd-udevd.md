@@ -69,11 +69,25 @@ udev
 
 ## Coldplug and Hotplug
 
-- coldplug and hotplug send uevents
-  - `systemd-udev-trigger.service` invokes `udevadm trigger` to write `add` to
-    `/sys/devices/*/uevent`, which triggers the kernel to send uevents for
-    existing devices
-  - when a device is hotplugged, the kernel sends uevents for the new device
+- kernel uevents
+  - when a device is hotplugged, the kernel sends a uevent for the new device
+  - `systemd-udev-trigger.service` invokes `udevadm trigger` on boot
+    - `device_enumerator_scan_devices_and_subsystems` scans `/sys`
+    - `sd_device_trigger_with_uuid` calls `sd_device_set_sysattr_value` to write
+      `change` to sysfs `uevent` of the device, to trigger a kernel uevent
+- `systemd-udevd` has a `sd_device_monitor` to monitor uevents
+  - a `sd_device_monitor` monitors `AF_NETLINK` / `NETLINK_KOBJECT_UEVENT`
+  - on uevent, `device_monitor_event_handler` is called
+    - it calls `on_uevent` provided by udevd which adds the event to
+      `manager->events`
+  - udevd mainloop calls `event_queue_start` to process `manager->events`
+    - `worker_spawn` spawns workers to process events
+  - `udev_worker_main` is the entrypoint of a worker
+    - `worker_process_device` processes a device
+      - `udev_event_execute_rules` executes the rules
+        - rule `IMPORT{builtin}="hwdb"` calls `builtin_hwdb`
+          - `udev_builtin_hwdb_lookup` adds matching props to the device
+      - `udev_event_execute_run` invokes `RUN=`
 - udevd drivers.rules does
   - if `MODALIAS` is set in the uevent, invoke `kmod load $env{MODALIAS}`
 

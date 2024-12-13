@@ -33,3 +33,22 @@ libsystemd
   - `sd_id128_*`
 - `sd-path.h` provides apis to look up xdg paths
   - `sd_path_lookup*`
+
+## `sd-device`
+
+- `sd_device` works with a device
+  - `sd_device_new_from_*` creates an `sd_device`
+    - `sd_device_new_from_syspath` creates from a `/sys/...` dir
+      - the dir should contain `uevent`
+    - `device->syspath` is set to the sysfs dir of the device
+    - `device->properties` has one property
+      - `DEVPATH`, which is the sysfs path without `/sys` prefix
+  - `sd_device_get_property_value` gets a prop val
+    - `device_read_uevent_file` parses sysfs `uevent` on demand
+      - props are added to `device->properties`
+      - some are also set to `device` fields for quick access
+    - `device_read_db` parses hwdb for the device on demand
+      - it parses `/run/udev/data/<device-id>`
+      - `E:` lines are props and are added to `device->properties`
+- `sd_device_enumerator` enumerates devices
+- `sd_device_monitor` monitors hotplugs
