@@ -321,8 +321,17 @@ Wayland
   - `sync` method causes a `sync` event to be posted immediately
   - `frame` method causes a `frame` event to be posted when the next frame is
     completed
+- `wl_event_loop`
+  - There are four kinds of sources: fd, timer, signal, and idle.  Through the
+    use of signalfd(2) and timerfd_create(2), signal and timer sources are
+    treated like fd sources, which are epoll_wait()ed.
+  - `wl_event_loop_wait` invokes `epoll_wait` to wait for a max of 32
+    epoll_event.
+    - For each event, `source->interface->dispatch` is invoked
+    - If there is no event, `dispatch_idles` is invoked and all idle sources is
+      invoked _and_ destroyed.
 
-## Deep look at simple-shm
+## How does a client work
 
 - Connect to display
   - `wl_display_connect(name)` connects to the named socket, or `wayland-0` if
@@ -332,71 +341,6 @@ Wayland
   - `wl_display_add_global_listener` add a callback to be invoked on each global
     objects
   - `wl_display_iterate` is called to read inbound data
-
-## Rendering Models
-
-- a `wl_surface` is a rectangular area that receives inputs and presents
-  `wl_buffer`
-  - many surface states are double-buffered;
-  - protocol requests change the pending states
-  - `wl_surface_commit` atomically makes all pending states current
-    - the values of the pending states after commit are case by case
-      - pending damage state becomes empty
-      - pending scale state is unchanged
-  - `wl_surface_attach` attaches a `wl_buffer` to a `wl_surface`
-  - `wl_surface_frame` returns a `wl_callback` that is used to notify frame
-    presented
-- a `wl_buffer` is a content-provider for a `wl_surface`.  It is created from
-  factory interfaces and can be attached to surfaces.
-  - `release` event is used to notify that the buffer is released by the
-    server and can be reused for other purposes (e.g., draw next frame)
-- `wl_shm`
-  - client allocates a shmem
-    - client can access any area of the shmem
-  - `wl_shm_create_pool` creates a `wl_shm_pool` from the shmem fd
-    - server is granted access any area of the shmem
-  - client suballocates from the shmem and call `wl_shm_pool_create_buffer`
-    - client and server both know which area is used as the storage of the
-      `wl_buffer`
-- `wl_drm`
-  - interface defined by Mesa, not Wayland
-  - client allocates a GPU BO and export dmabuf
-    - client can render to BO
-  - `wl_drm_create_prime_buffer` to create a buffer from the dmabuf
-    - server can sample from BO
-  - originally, flink is used instead of dmabuf
-- `zwp_linux_dmabuf_v1`
-  - it is similar to `wl_drm` but with multi-planar and modifier support
-
-## Xwayland
-
-- build
-  - `meson out -Dxorg=false -Dxnest=false -Dxvfb=false -Dxwayland=true -Dglamor=true`
-- without glamor, `wl_shm` is used
-- with glamor, `wl_drm` and/or `zwp_linux_dmabuf_v1` are used
-  - `xwl_glamor_init_backends` initializes backends supported by EGL
-    - it does not communicate with the server yet
-  - `wl_registry_add_listener` and `xwl_screen_roundtrip` initializes the
-    global objects
-    - it keeps making roundtrips until there is no event
-  - `xwl_glamor_select_backend` selects the backend
-  - `xwl_glamor_init` initializes the backend
-    - `xwl_glamor_gbm_init_egl`
-    - `glamor_init`
-    - `xwl_glamor_gbm_init_screen`
-- when xwayland flips in `xwl_present_flip`, it calls
-  - `wl_surface_attach` to attach the new dma-buf
-  - `wl_surface_frame` to request a frame callback
-  - `wl_surface_damage_buffer` to damage
-  - `wl_surface_commit` to commit
-  - `wl_display_flush` to flush
-  - after a while, the frame callback is received
-    - this happens when wayland is ready for another `wl_surface_commit`
-    - xwayland calls `xwl_present_frame_callback` to send
-      `PresentCompleteNotify` to the client and to execute another flip
-
-## How does a client work
-
 - Render with SHM
   - `display = wl_display_connect(NULL)` to connecto to the server and return
     `wl_display`
@@ -452,8 +396,72 @@ Wayland
   - for DRM-based buffer, there is zero copy.
   - DRM-based buffers are not supported by core, but by mesa.  It is an internal
     mechanism
+- init seq
+  - `wl_display_create`
+  - `wl_display_set_compositor`
+  - `wl_display_add_socket`
+  - `wl_display_run`
+- when a new connection is made, a new client is created and `client->source`
+  is added to display event loop
+  - `WL_DISPLAY_RANGE` and `WL_DISPLAY_GLOBAL` for each global are sent to the
+    new client
+  - Then, each global is informed of the new client, which gives it a chance
+    to send additional events.  Note that client is not stored in any of
+    `wl_display`'s lists.
+- dispatch happens in `wl_client_connection_data`, which is invoked when data
+  is available
+- When a client commits, compositor `schedule_repaint` and
+  `wl_client_send_acknowledge`
+- When the compositor repaints, `wl_display_post_frame` is invoked
+  - all clients on `display->pending_frame_list` is sent
+    `WL_COMPOSITOR_FRAME`
+  - `display->pending_frame_list` is cleared
+  - repaint exits early if not needed
+- The seq is attach/map -> commit -> acknowledge -> repaint -> frame
 
-## mesa
+## `wl_surface` and `wl_buffer`
+
+- a `wl_surface` is a rectangular area that receives inputs and presents
+  `wl_buffer`
+  - many surface states are double-buffered;
+  - protocol requests change the pending states
+  - `wl_surface_commit` atomically makes all pending states current
+    - the values of the pending states after commit are case by case
+      - pending damage state becomes empty
+      - pending scale state is unchanged
+  - `wl_surface_attach` attaches a `wl_buffer` to a `wl_surface`
+    - a surface is like a texture object and a buffer is like a texture image
+  - `wl_surface_map` maps a surface onto the screen
+    - the geometry needs not be the same as the buffer size.  A matrix will be
+      applied
+  - `wl_surface_damage` marks a region of the attached buffer dirty
+    - so that the texture may be updated and a repaint is scheduled
+  - `wl_surface_frame` returns a `wl_callback` that is used to notify frame
+    presented
+  - `wl_display_sync_callback`
+- a `wl_buffer` is a content-provider for a `wl_surface`.  It is created from
+  factory interfaces and can be attached to surfaces.
+  - `release` event is used to notify that the buffer is released by the
+    server and can be reused for other purposes (e.g., draw next frame)
+- `wl_shm`
+  - client allocates a shmem
+    - client can access any area of the shmem
+  - `wl_shm_create_pool` creates a `wl_shm_pool` from the shmem fd
+    - server is granted access any area of the shmem
+  - client suballocates from the shmem and call `wl_shm_pool_create_buffer`
+    - client and server both know which area is used as the storage of the
+      `wl_buffer`
+- `wl_drm`
+  - interface defined by Mesa, not Wayland
+  - client allocates a GPU BO and export dmabuf
+    - client can render to BO
+  - `wl_drm_create_prime_buffer` to create a buffer from the dmabuf
+    - server can sample from BO
+  - originally, flink is used instead of dmabuf
+- `zwp_linux_dmabuf_v1`
+  - it is similar to `wl_drm` but with multi-planar and modifier support
+
+## EGL
 
 - `libwayland-drm` defines `wl_drm` interface that is for internal use
   - when a client connects, `wl_drm` advertises the DRM device name
@@ -472,6 +480,33 @@ Wayland
   - The color buffers of an `EGLSurface` are allocated by the DRI driver.
   - For each color buffer, there is an associated `wl_buffer` created using
     `wl_drm` interface
+
+## Xwayland
+
+- build
+  - `meson out -Dxorg=false -Dxnest=false -Dxvfb=false -Dxwayland=true -Dglamor=true`
+- without glamor, `wl_shm` is used
+- with glamor, `wl_drm` and/or `zwp_linux_dmabuf_v1` are used
+  - `xwl_glamor_init_backends` initializes backends supported by EGL
+    - it does not communicate with the server yet
+  - `wl_registry_add_listener` and `xwl_screen_roundtrip` initializes the
+    global objects
+    - it keeps making roundtrips until there is no event
+  - `xwl_glamor_select_backend` selects the backend
+  - `xwl_glamor_init` initializes the backend
+    - `xwl_glamor_gbm_init_egl`
+    - `glamor_init`
+    - `xwl_glamor_gbm_init_screen`
+- when xwayland flips in `xwl_present_flip`, it calls
+  - `wl_surface_attach` to attach the new dma-buf
+  - `wl_surface_frame` to request a frame callback
+  - `wl_surface_damage_buffer` to damage
+  - `wl_surface_commit` to commit
+  - `wl_display_flush` to flush
+  - after a while, the frame callback is received
+    - this happens when wayland is ready for another `wl_surface_commit`
+    - xwayland calls `xwl_present_frame_callback` to send
+      `PresentCompleteNotify` to the client and to execute another flip
 
 ## weston libwindow, the utility library
 
@@ -509,38 +544,6 @@ Wayland
     usable area.
 - Mainloop
   - invoke `display_run` to enter the mainloop
-
-## Server Repaint
-
-- Transformation
-  - `struct wl_matrix` is column-major, same as a GL matrix
-  - `wlsc_matrix_multiply(M, N) = N x M`
-  - surface transform: scale and then translate
-    - from `[0, 1]*[0, 1]` to `[x, x+w]*[y, y+h]`
-  - output transform: translate and then scale
-    - from `[x, x+w]*[y, y+h]` to `[-1, 1]*[-1, 1]`
-  - shader transform: surface transform and then output transform
-- Y==0 is top
-- whenever a repaint is required (surface damaged, mapped, or destroyed; input
-  device moved), `wlsc_compositor_schedule_repaint` is called.  It schedules
-  `repaint` to be called in 1ms.
-- `repaint` draws `surface_list` in reverse order and draws `input_device_list`
-  in normal order.  It then calls `present`
-- `present` makes sure the new frame is visible on the screen.  It may schedule
-  a page flip or do a copy from back to front.  When the new frame is finally
-  visible, `wlsc_compositor_finish_frame` is called.  That sends a frame event
-  to each interested client.
-
-## Surface Interface
-
-- `wl_surface_attach` attaches a buffer to a surface
-  - a surface is like a texture object and a buffer is like a texture image
-- `wl_surface_map` maps a surface onto the screen
-  - the geometry needs not be the same as the buffer size.  A matrix will be
-    applied
-- `wl_surface_damage` marks a region of the attached buffer dirty
-  - so that the texture may be updated and a repaint is scheduled
-- `wl_display_sync_callback`
 
 ## DnD
 
@@ -620,111 +623,3 @@ Wayland
     `shell_resize`.  If neither, a `device_button` event is sent to the client.
   - `wlsc_input_device_end_grab` is called if the button is released.  It in
     turn calls `wlsc_input_device_set_pointer_focus`
-
-overview
-- (client) invokes wl_compositor_create_surface to create surface
-- (client) invokes wl_surface_attach to attach a gem buffer to the surface
-- (client) invokes wl_surface_map to specify the geometry of the surface
-- (client) invokes wl_compositor_commit to commit changes
-- (server) upon commit, compositor invokes schedule_repaint
-- (server) upon map, surface remembers the new geometry
-- (server) upon attach, surface creates a EGLSurface for the specified gem buffer
-- (server) upon create_surface, compositor malloc()s a new surface
-- after attach, the gem buffer belongs to the server
-- further modifications should go through surface copy method
-
-libwayland-server.so :				\
-	wayland.o				\
-	event-loop.o				\
-	connection.o				\
-	wayland-util.o				\
-	wayland-protocol.o
-
-idea
-- everything is wl_object, including wl_display itself
-- all objects are stored in display->objects.  They are either from display or
-  clients (e.g., through create_surface).
-- an wl_object consists of id, interface, and implementation.  display's
-  objects has id in [0, 255).  0 means no such id, 1 is the id of the display.
-  When a client connects, a range is reserved for the client.  When the range
-  is running out, another range is reserved.
-- an wl_inteface describes the events and methods of a wl_object.
-  the details are stored in wl_message, which consists of name, signature, and types (unused?)
-
-protocol
-- wl_display_interface: events like invalid_object, invalid_method, no_memory, global, ...
-- wl_compositor_interface: methods like create_surface and commit;
-			   events like acknowledge and frame
-- wl_surface_interface: methods like destroy, attach, map, copy, and damage.
-- wl_input_device_interface: events like motion, button, keyboard_focus
-- wl_output_interface: events like geometry
-
-wl_connection
-- a connection is established for each client.
-- I/O to fd happens in wl_connection_data.  When WL_CONNECTION_READABLE,
-  "in" buffer is updated.  data is read from fd, and in->head is incremented.
-  When WL_CONNECTION_WRITABLE, "out" buffer is updated.  data is written to fd,
-  and out->tail is incremented.  If "out" buffer is empty after writing,
-  connection->update is called with WL_CONNECTION_READABLE.
-- wl_connection_copy and wl_connection_consume copy data from "in" buffer.
-- wl_connection_write copies data to "output" buffer.  If "out" buffer was
-  empty before copy, connection->update is called with
-  WL_CONNECTION_READABLE | WL_CONNECTION_WRITABLE.
-- In wl_connection_create, connection->update is called with WL_CONNECTION_READABLE.
-- protocol: SENDER[32]OPCODE[16]SIZE[16]DATA[variable]
-- signature: o -> object id, n -> an unallocated object id
-- wl_connection_vmarshal marshals the arguments and invokes wl_connection_write.
-- wl_connection_demarshal demarshals data from wl_connection_copy and
-  invokes supplied callback.
-
-wl_event_loop
-- There are four kinds of sources: fd, timer, signal, and idle.  Through the
-  use of signalfd(2) and timerfd_create(2), signal and timer sources are
-  treated like fd sources, which are epoll_wait()ed.
-- wl_event_loop_wait invokes epoll_wait to wait for a max of 32 epoll_event.
-  For each event, source->interface->dispatch is invoked.  If there is
-  no event, dispatch_idles is invoked and all idle sources is invoked
-  _and_ destroyed.
-
-wayland display:
-- init seq: wl_display_create, wl_display_set_compositor, wl_display_add_socket, and wl_display_run.
-- when a new connection is made, a new client is created and client->source is
-  added to display event loop.  WL_DISPLAY_RANGE and WL_DISPLAY_GLOBAL for
-  each global are sent to the new client.  Then, each global is informed of
-  the new client, which gives it a chance to send additional events.  Note
-  that client is not stored in any of wl_display's lists.
-- dispatch happens in wl_client_connection_data, which is invoked when data is available.
-- When a client commits, compositor schedule_repaint and wl_client_send_acknowledge.
-- When the compositor repaints, wl_display_post_frame is invoked and all clients on
-  display->pending_frame_list is sent WL_COMPOSITOR_FRAME.  display->pending_frame_list is cleared.
-- repaint exits early if not needed.  The seq is attach/map -> commit -> acknowledge -> repaint -> frame
-
-wayland-system-compositor :			\
-	wayland-system-compositor.o		\
-	evdev.o					\
-	cairo-util.o				\
-	wayland-util.o
-
-evdev_input_device:
-- evdev_input_device_create takes a wlsc_input_device, and a display and path
-- path is opened (for input events) and added to display event loop
-- on events, notify_button, notify_key, or notify_motion is called upon wlsc_input_device
-
-wayland-system-compositor.c
-- a wlsc_compositor has a list of wlsc_output and wlsc_input_device
-  respectively.  They are created through create_output and
-  evdev_input_device_create.  ATM, they are called once.  That is, there is
-  only one output and one input.
-- a udev rule is installed to mark all mouse and kbd, and card0.  All mice and
-  kbds report to the single wlsc_input_device.
-- in create_output, init_egl is called to get EGLDisplay, EGLConfig, and
-  EGLContext, which is stored in ec.  A wlsc_output is malloc()ed.  Current drm
-  mode is queried and a gem buffer of size mode->hdisplay * mode->vdisplay * 4 is
-  created, which is used as fb.  It then invokes eglCreateSurfaceForName to
-  create a EGLSurface on the gem buffer.  The surface is stored in output->surface.
-  Finally, background_create is invoked to create output->background.
-- at the end of init_libudev, pointer_create is invoked to create pointer sprite.
-- on notify_*, device->grab_surface or device->keyboard_focus might change.
-  event is reported to the related surface.  compositor repaint is scheduled.
-
-
