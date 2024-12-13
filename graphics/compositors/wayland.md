@@ -623,3 +623,40 @@ Wayland
     `shell_resize`.  If neither, a `device_button` event is sent to the client.
   - `wlsc_input_device_end_grab` is called if the button is released.  It in
     turn calls `wlsc_input_device_set_pointer_focus`
+
+## `linux_dmabuf_v1`
+
+- `zwp_linux_dmabuf_v1`
+  - `create_params` creates a temporary `zwp_linux_buffer_params_v1` used to
+    specify buffer parameters
+  - `get_default_feedback` returns the global `zwp_linux_dmabuf_feedback_v1`
+  - `get_surface_feedback` returns a surface `zwp_linux_dmabuf_feedback_v1`
+- `zwp_linux_buffer_params_v1`
+  - `add` adds a memory plane to the params
+  - `create_immed` creates a `wl_buffer` based on the specified params
+  - `create` creates a `wl_buffer` asynchronously
+    - `created` returns the `wl_buffer`
+    - `failed` indicates failure
+- `zwp_linux_dmabuf_feedback_v1`
+  - `format_table` sends a shmem to the client
+    - the contents are an array of 16-byte element, where each element is
+      - 4-byte format
+      - 4-byte padding
+      - 8-bite modifier
+    - the contents must not mutate
+    - to update the contents, a new shmem must be sent
+  - `main_device` sends a `dev_t` to the client
+    - this is the drm device that the compositor uses when falling back to GPU
+      composition
+  - compositor sends one or more tranches to the client, in descending order
+    of preference, where each tranche is
+    - `tranche_target_device` sends a `dev_t` to the client
+      - this is the drm device that the compositor prefers to use to access
+        buffers belonging to this tranche
+    - `tranche_flags` sends a `flags` to the client
+      - `scanout` means the compositor will attempt to do direct scanout first
+        before falling back to gpu composition
+    - `tranche_formats` sends an array of u16 to the client
+      - they are indices into the format table
+    - `tranche_done` marks the end of the current tranche
+  - `done` marks the end of all events
