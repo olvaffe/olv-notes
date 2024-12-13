@@ -31,6 +31,16 @@ Android Kernel
 - <https://source.android.com/docs/core/architecture/kernel/generic-kernel-image>
   - devices launching with android 11 / kernel 5.4, or later, must support GKI
   - devices launching with android 12 / kernel 5.10, or later, must use GKI
+- <https://source.android.com/docs/core/architecture/kernel/modules>
+  - GKI modules are built from the same source tree as the GKI kernel is
+    - protected GKI modules
+      - they are conceptually a part of core kernel and can use internal abi
+      - they are built as modules only to save space
+    - unprotected GKI modules
+      - they are conceptually vendor modules and must use KMI abi
+      - they can be overriden by real vendor modules
+  - vendor modules may be built from any source tree
+    - they must use KMI abi
 - <https://source.android.com/docs/core/architecture/android-kernel-file-system-support>
   - supported fs: exfat, ext4, f2fs, fuse, incfs, vfat, erofs
   - virtual fs: debugfs, overlayfs, procfs, sysfs, tmpfs, tracefs
@@ -38,6 +48,7 @@ Android Kernel
 ## Build
 
 - <https://source.android.com/docs/setup/build/building-kernels>
+  - <https://android.googlesource.com/kernel/common>
 - `repo init -u https://android.googlesource.com/kernel/manifest -b BRANCH`
   - android15 ack uses `common-android15-6.6`
   - there is also `common-android15-6.6-desktop` for desktop
