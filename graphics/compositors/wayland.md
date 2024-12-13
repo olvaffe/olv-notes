@@ -218,6 +218,9 @@ Wayland
   - wayland protocols define many interfaces
   - a server supporting an interface can advertise it using a global
   - multiple server-side objects supporting the interface can be created
+
+## `wl_connection`
+
 - `wl_connection` is an abstraction of the socket fd to the compositor
   - there are `in`/`out` and `fds_in`/`fds_out` buffers
   - calling `wl_connection_data` with `WL_CONNECTION_WRITABLE` writes `out` and
@@ -232,7 +235,92 @@ Wayland
     connection was empty, the `update` callback is called with both
     `WL_CONNECTION_WRITABLE` and `WL_CONNECTION_READABLE` set, meaning there are
     data to be written and read.
-- See also `mesa-wayland`
+- `struct wl_connection`
+  - A connection is created with an fd and an update callback
+    - update is called to indicate the connection is now readable or writable
+  - Two internal ring buffers, in and out, are used for buffered I/O
+    - `WL_CONNECTION_WRITABLE` means the `out` is not empty
+    - `WL_CONNECTION_READABLE` is always set
+  - Another two internal ring buffers, fds_in and fds_out, are used fd exchange
+  - data in `in` can be copied out by `wl_connection_copy`; the tail in `in` is
+    not incremented until `wl_connection_consume`
+  - `out` is written to by `wl_connection_write`.  If `out` was empty,
+    `WL_CONNECTION_WRITABLE` is set
+  - `wl_connection_data` reads from and writes to fd
+    - data read are buffered in `in`
+    - fds read are buffered in `fds_in`
+    - data in `out` and fds in `fds_out` are written
+    - the size of the data in `in` are returned
+- Signatures
+  - `u` unsigned int
+  - `i` signed int
+  - `n` new object
+  - `s` string length + string + extra `void *` (string pointer for ffi call)
+  - `o` object id + extra `void *` (object pointer for ffi call)
+  - `a` array length + array data + extra `void *` (array pointer for ffi call) + extra `struct wl_array`
+  - `h` fd + extra `uint32_t` (marshalled directly to `fds_out`)
+- Methods and Events
+  - the same protocol format
+  - an event is at least two `uint32_t` (header)
+    - the first one is the object id
+    - the second one is the event size (higher 16 bits) and opcode (lower 16
+      bits).
+  - after deciding the receiving object of the event and the opcode,
+    `wl_connection_demarshal` is called to construct a closure
+    - the args is the event signature plus 2 pointers: one for user data and the
+      other for the object
+
+## Wayland IPC
+
+- Interfaces
+  - the protocol defines interfaces
+  - an interface is represented by a `struct wl_interface`
+    - `name`/`version`: the name and version of the interface
+    - `methods`/`events`:  methods/events of the interface.  Each of them is
+      described by a `struct wl_message`, which consists of the name and the
+      signature
+  - everything must be described by an interface, including `struct wl_display` 
+- Objects
+  - an object is represented by a `struct wl_object`
+  - an object consists of an interface, an implementation, and an id.
+  - everything is an object, including `struct wl_display`.  A display has id 1.
+- Proxies
+  - a proxy is a data strucutre to make an interface appear to be a local object
+  - listerners can be added to a proxy to handle events
+  - methods can be invoked directly with a proxy
+
+## Client API
+
+- On client side, each object is also a proxy
+- `wl_display_iterate` performs I/O to the server.  The read data are events and
+  are dispatched to proxies.
+- `wl_proxy_create_for_id` creates a proxy for an object id
+  - a proxy for a server created object (display, compositor, ...)
+- `wl_proxy_create` allocates an object id and creates a proxy for it
+  - a proxy for a client created object (surface, buffer, drag, ...)
+  - it is called a resource (of a client) on the server
+
+## Server API
+
+- `wl_display_create` creates a server display
+  - a display has a `wl_event_loop`
+  - also a hash table for objects
+- `wl_display_add_socket` adds a listening socket
+- `wl_client_create` is called whenever a client connects
+  - when there are data to read, `wl_client_connection_data` is called.  It
+    processes all methods (input)
+  - a connection for I/O is created
+  - a range event and a global event for each global are posted
+- `wl_client_add_resource`
+  - a client has a list of resources
+  - they will be gone with the client
+  - things like `wl_frame_listener` are also resources
+- `wl_display_add_global` adds a global object
+- `wl_client_post_event` sends an event to a client
+- display interface
+  - `sync` method causes a `sync` event to be posted immediately
+  - `frame` method causes a `frame` event to be posted when the next frame is
+    completed
 
 ## Deep look at simple-shm
 
@@ -421,95 +509,6 @@ Wayland
     usable area.
 - Mainloop
   - invoke `display_run` to enter the mainloop
-
-## Connection
-
-- `struct wl_connection`
-  - A connection is created with an fd and an update callback
-    - update is called to indicate the connection is now readable or writable
-  - Two internal ring buffers, in and out, are used for buffered I/O
-    - `WL_CONNECTION_WRITABLE` means the `out` is not empty
-    - `WL_CONNECTION_READABLE` is always set
-  - Another two internal ring buffers, fds_in and fds_out, are used fd exchange
-  - data in `in` can be copied out by `wl_connection_copy`; the tail in `in` is
-    not incremented until `wl_connection_consume`
-  - `out` is written to by `wl_connection_write`.  If `out` was empty,
-    `WL_CONNECTION_WRITABLE` is set
-  - `wl_connection_data` reads from and writes to fd
-    - data read are buffered in `in`
-    - fds read are buffered in `fds_in`
-    - data in `out` and fds in `fds_out` are written
-    - the size of the data in `in` are returned
-- Signatures
-  - `u` unsigned int
-  - `i` signed int
-  - `n` new object
-  - `s` string length + string + extra `void *` (string pointer for ffi call)
-  - `o` object id + extra `void *` (object pointer for ffi call)
-  - `a` array length + array data + extra `void *` (array pointer for ffi call) + extra `struct wl_array`
-  - `h` fd + extra `uint32_t` (marshalled directly to `fds_out`)
-- Methods and Events
-  - the same protocol format
-  - an event is at least two `uint32_t` (header)
-    - the first one is the object id
-    - the second one is the event size (higher 16 bits) and opcode (lower 16
-      bits).
-  - after deciding the receiving object of the event and the opcode,
-    `wl_connection_demarshal` is called to construct a closure
-    - the args is the event signature plus 2 pointers: one for user data and the
-      other for the object
-
-## Wayland IPC
-
-- Interfaces
-  - the protocol defines interfaces
-  - an interface is represented by a `struct wl_interface`
-    - `name`/`version`: the name and version of the interface
-    - `methods`/`events`:  methods/events of the interface.  Each of them is
-      described by a `struct wl_message`, which consists of the name and the
-      signature
-  - everything must be described by an interface, including `struct wl_display` 
-- Objects
-  - an object is represented by a `struct wl_object`
-  - an object consists of an interface, an implementation, and an id.
-  - everything is an object, including `struct wl_display`.  A display has id 1.
-- Proxies
-  - a proxy is a data strucutre to make an interface appear to be a local object
-  - listerners can be added to a proxy to handle events
-  - methods can be invoked directly with a proxy
-
-## Client API
-
-- On client side, each object is also a proxy
-- `wl_display_iterate` performs I/O to the server.  The read data are events and
-  are dispatched to proxies.
-- `wl_proxy_create_for_id` creates a proxy for an object id
-  - a proxy for a server created object (display, compositor, ...)
-- `wl_proxy_create` allocates an object id and creates a proxy for it
-  - a proxy for a client created object (surface, buffer, drag, ...)
-  - it is called a resource (of a client) on the server
-
-## Server API
-
-- `wl_display_create` creates a server display
-  - a display has a `wl_event_loop`
-  - also a hash table for objects
-- `wl_display_add_socket` adds a listening socket
-- `wl_client_create` is called whenever a client connects
-  - when there are data to read, `wl_client_connection_data` is called.  It
-    processes all methods (input)
-  - a connection for I/O is created
-  - a range event and a global event for each global are posted
-- `wl_client_add_resource`
-  - a client has a list of resources
-  - they will be gone with the client
-  - things like `wl_frame_listener` are also resources
-- `wl_display_add_global` adds a global object
-- `wl_client_post_event` sends an event to a client
-- display interface
-  - `sync` method causes a `sync` event to be posted immediately
-  - `frame` method causes a `frame` event to be posted when the next frame is
-    completed
 
 ## Server Repaint
 
