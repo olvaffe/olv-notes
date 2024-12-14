@@ -137,6 +137,39 @@ wlroots
   renderer support `WLR_BUFFER_CAP_DMABUF` or `WLR_BUFFER_CAP_DATA_PTR`
   - pure hw (when gbm is disabled) or sw renderer (when no gles/vulkan)
 
+## `wlr_shm_create_with_renderer`
+
+- `wlr_renderer_get_texture_formats` returns the drm formats that a renderer
+  supports for sampling, which is initialized in
+  - `get_gles2_shm_formats` for gles2
+  - `get_pixman_drm_formats` for pixman
+  - `vulkan_format_props_query` for vulkan
+- `wlr_shm_create` creates `wlr_shm`, the wlr global for the interface
+  - `wl_global_create` creates the wl global
+  - `wl_display_add_destroy_listener` adds a dtor to clean up
+  - `wlr_buffer_register_resource_interface` registers a callback for
+    `wlr_buffer_try_from_resource`, which casts `wl_resource` to `wlr_buffer`
+- `wl_shm` interface
+  - `shm_bind` is called when a client binds to the interface
+    - `wl_resource_create` creates a wl resource for the iface
+    - `wl_resource_set_implementation` sets the impl to `shm_impl`
+    - `wl_shm_send_format` sends formats to client
+  - `shm_handle_create_pool` is called when a client creates a pool
+    - `mapping_create` creates a `wlr_shm_mapping` from the client-provided
+      shm
+    - `wl_resource_create` creates a wl resource for `wl_shm_pool` iface
+    - `wl_resource_set_implementation` sets the impl to `pool_impl`
+- `wl_shm_pool` interface
+  - `pool_handle_create_buffer` is called when a client allocs a buffer
+    - `wl_resource_create` creates a wl resource for `wl_buffer` iface
+    - `wl_resource_set_implementation` sets the impl to `wl_buffer_impl`
+    - `wlr_buffer_init` inits the wlr internal `wlr_buffer`
+- `buffer_impl` is the impl of wlr internal `wlr_buffer`
+  - when a backend wants to present an shm, it calls `wlr_buffer_get_shm` to
+    retrieve the shm fd
+  - when a renderer wants to sample from an shm, it calls
+    `wlr_buffer_begin_data_ptr_access` to retrieve the data pointer
+
 ## seatd
 
 - <https://git.sr.ht/~kennylevinsen/seatd>
