@@ -64,6 +64,142 @@ wlroots
     - e.g., `drm` backend requires `WLR_BUFFER_CAP_DMABUF`
     - note that dumb allocator requires a primary drm fd
 
+## `wlr_backend_autocreate`
+
+- this returns a `wlr_multi_backend`
+  - a multi backend is a `wlr_backend` that contains a list of other backends
+  - it dispatches all operations to the list of other backends
+- On wayland, this calls `wlr_wl_backend_create` and `wlr_wl_output_create`
+  - it connects to Wayland display and initializes the connection
+  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_WAYLAND_EXT` to
+    create a `wlr_renderer`
+  - it gets the drm fd from the renderer and calls `wlr_gbm_allocator_create`
+    to create a `gbm_device`
+  - when it comes time to present, `output_commit` creates the `wl_buffer`s
+    from dma-bufs exported from `gbm_bo`s
+- On X11, this calls `wlr_x11_backend_create` and `wlr_x11_output_create`
+  - it connects to X11 display and initializes the connection
+  - it uses DRI3 to get the drm fd and calls `wlr_gbm_allocator_create` to
+    create a `gbm_device`
+  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_GBM_KHR` to create
+    a `wlr_renderer`
+  - when it comes time to present, `output_commit` creates the `xcb_pixmap_t`s
+    from dma-bufs exported from `gbm_bo`s
+- On DRM, this calls `wlr_libinput_backend_create` and
+  `wlr_drm_backend_create`
+  - with the help of `wlr_session` created by `wlr_session_create`
+    - users normally don't have the privileges to open drm or evdev devices
+    - when a session wraps a `logind` user session, opening is done by
+      `logind`, which has the concept of seats and devices attached to seats
+  - it opens the DRM node to get the drm fd and calls
+    `wlr_gbm_allocator_create` to create a `gbm_device`
+  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_GBM_KHR` to create
+    a `wlr_renderer`
+  - when it comes time to present, `drm_connector_commit` calls
+    `drm_fb_import` to create DRM fbs from dma-bufs exported from `gbm_bo`s
+
+## `wlr_renderer_autocreate`
+
+- `wlr_egl_init` initializes `wlr_egl`
+  - it uses the platform specified by the backend
+  - `EGL_OPENGL_ES2_BIT` is appended to attrs
+  - these extensions are required
+    - `EGL_EXT_client_extensions`
+    - `EGL_EXT_platform_base`
+    - I believe things fail down later when some other extensions are not
+      supported.  For example,
+      - `eglMakeCurrent` is always called with `EGL_NO_SURFACE`.  It fails
+      	without `EGL_KHR_surfaceless_context`.
+- `wlr_gles2_renderer_create` creates `wlr_renderer`
+  - these extensions are required
+    - `GL_EXT_texture_format_BGRA8888`
+    - `GL_EXT_unpack_subimage`
+
+## seatd
+
+- <https://git.sr.ht/~kennylevinsen/seatd>
+  - the codebase is smaller
+  - `/run/seatd.sock` expects the user to be in `seat` group
+- initialization
+  - `server_init` calls `seat_create` with `seat0` and `vt_bound` set
+  - `open_socket` listens on `/run/seatd.sock`
+  - `poller_poll` polls the socket
+- `server_handle_connection` handles connections to the socket
+  - `server_add_client` calls `client_create` to create a client
+- `client_handle_connection` handles client opcodes
+  - `CLIENT_OPEN_SEAT` is handled by `handle_open_seat`
+    - `seat_add_client`
+      - `seat_update_vt` sets `seat->cur_vt` and `client->session` to the
+        current vt (usually 1)
+    - `seat_open_client`
+      - `vt_open` opens the current vt and switches to
+        `VT_PROCESS`/`KD_GRAPHICS`/etc
+  - `CLIENT_CLOSE_SEAT` is handled by `handle_close_seat`
+    - `seat_remove_client` closes all opened devices
+    - `seat_close_client` closes the current client (and activates the next
+      client if any)
+      - `vt_close` restores the vt
+  - `CLIENT_OPEN_DEVICE` is handled by `handle_open_device`
+    - `seat_open_device` opens a device node and adds it to `client->devices`
+      - if `SEAT_DEVICE_TYPE_DRM`, the fd is made drm master
+      - if `SEAT_DEVICE_TYPE_EVDEV`, no special handling
+  - `CLIENT_CLOSE_DEVICE` is handled by `handle_close_device`
+    - `seat_close_device` closes the device
+  - `CLIENT_SWITCH_SESSION` is handled by `handle_switch_session`
+    - because `vt_bound` is set, `vt_switch` initiates the switch 
+  - `CLIENT_DISABLE_SEAT` is handled by `handle_disable_seat`
+    - `seat_ack_disable_client` acks the disabling of the active client
+  - `CLIENT_PING`
+- session switch
+  - user presses `CTRL-ALT-Fx`
+  - compositor receives `XKB_KEY_XF86Switch_VT_x` and calls
+    `libseat_switch_session` 
+  - seatd receives `CLIENT_SWITCH_SESSION`
+    - `vt_switch` switches vt
+    - `server_handle_vt_rel` calls `seat_vt_release`
+      - `seat_disable_client` disables the active client and sends
+        `SERVER_DISABLE_SEAT` to the client
+      - compositor calls `libseat_disable_seat` in response to
+        `SERVER_DISABLE_SEAT`
+        - seatd receives `CLIENT_DISABLE_SEAT`
+      - `vt_ack` releases the vt
+    - `server_handle_vt_acq` calls `seat_vt_activate`
+      - `seat->cur_vt` is updated
+      - `vt_ack` acquires the vk
+      - `seat_activate` picks the next client for the new vt and calls
+        `seat_open_client` to open the client and send `SERVER_ENABLE_SEAT`
+- libseat logind backend
+  - `seat_impl::open_seat`
+    - it determines the session id which is from `XDG_SESSION_ID=c1`
+    - `sd_session_get_seat` returns the seat name if the session is attached
+      to a seat
+    - `sd_bus_default_system` returns the system bus
+    - `org.freedesktop.login1.Manager.GetSession` retruns
+      `/org/freedesktop/login1/session/c1`
+      - `dbus-send --system --dest=org.freedesktop.login1 --print-reply /org/freedesktop/login1 org.freedesktop.login1.Manager.GetSession string:c1`
+    - `org.freedesktop.login1.Manager.GetSeat` retruns
+      `/org/freedesktop/login1/seat/seat0`
+    - add signal matches
+      - `PauseDevice` and `ResumeDevice` of the session
+      - `PropertiesChanged` of the session and the seat
+    - `org.freedesktop.login1.Session.Activate` to activate the session
+    - `org.freedesktop.login1.Session.TakeControl` to take control
+    - `org.freedesktop.login1.Session.SetType` to set the type (wayland)
+  - `seat_impl::disable_seat` is nop
+  - `seat_impl::close_seat`
+    - `org.freedesktop.login1.Session.ReleaseControl`
+  - `seat_impl::seat_name` returns `sd_session_get_seat`
+  - `seat_impl::open_device`
+    - `org.freedesktop.login1.Session.TakeDevice`
+  - `seat_impl::close_device`
+    - `org.freedesktop.login1.Session.ReleaseDevice`
+  - `seat_impl::switch_session`
+    - `org.freedesktop.login1.Seat.SwitchTo`
+  - `seat_impl::get_fd`
+    - `sd_bus_get_fd`
+  - `seat_impl::dispatch`
+    - `sd_bus_process`
+
 ## sway
 
 - require `WAYLAND_DISPLAY=wayland-1`
@@ -160,57 +296,6 @@ wlroots
   - this calls `wl_display_run` to enter the mainloop
 
 
-## `wlr_backend_autocreate`
-
-- this returns a `wlr_multi_backend`
-  - a multi backend is a `wlr_backend` that contains a list of other backends
-  - it dispatches all operations to the list of other backends
-- On wayland, this calls `wlr_wl_backend_create` and `wlr_wl_output_create`
-  - it connects to Wayland display and initializes the connection
-  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_WAYLAND_EXT` to
-    create a `wlr_renderer`
-  - it gets the drm fd from the renderer and calls `wlr_gbm_allocator_create`
-    to create a `gbm_device`
-  - when it comes time to present, `output_commit` creates the `wl_buffer`s
-    from dma-bufs exported from `gbm_bo`s
-- On X11, this calls `wlr_x11_backend_create` and `wlr_x11_output_create`
-  - it connects to X11 display and initializes the connection
-  - it uses DRI3 to get the drm fd and calls `wlr_gbm_allocator_create` to
-    create a `gbm_device`
-  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_GBM_KHR` to create
-    a `wlr_renderer`
-  - when it comes time to present, `output_commit` creates the `xcb_pixmap_t`s
-    from dma-bufs exported from `gbm_bo`s
-- On DRM, this calls `wlr_libinput_backend_create` and
-  `wlr_drm_backend_create`
-  - with the help of `wlr_session` created by `wlr_session_create`
-    - users normally don't have the privileges to open drm or evdev devices
-    - when a session wraps a `logind` user session, opening is done by
-      `logind`, which has the concept of seats and devices attached to seats
-  - it opens the DRM node to get the drm fd and calls
-    `wlr_gbm_allocator_create` to create a `gbm_device`
-  - `wlr_renderer_autocreate` is called with `EGL_PLATFORM_GBM_KHR` to create
-    a `wlr_renderer`
-  - when it comes time to present, `drm_connector_commit` calls
-    `drm_fb_import` to create DRM fbs from dma-bufs exported from `gbm_bo`s
-
-## `wlr_renderer_autocreate`
-
-- `wlr_egl_init` initializes `wlr_egl`
-  - it uses the platform specified by the backend
-  - `EGL_OPENGL_ES2_BIT` is appended to attrs
-  - these extensions are required
-    - `EGL_EXT_client_extensions`
-    - `EGL_EXT_platform_base`
-    - I believe things fail down later when some other extensions are not
-      supported.  For example,
-      - `eglMakeCurrent` is always called with `EGL_NO_SURFACE`.  It fails
-      	without `EGL_KHR_surfaceless_context`.
-- `wlr_gles2_renderer_create` creates `wlr_renderer`
-  - these extensions are required
-    - `GL_EXT_texture_format_BGRA8888`
-    - `GL_EXT_unpack_subimage`
-
 ## output
 
 - a compositor normally wraps `wlr_output` in a `wlr_output_damage`
@@ -288,91 +373,6 @@ wlroots
   - libseat `noop_open_seat` does not initialize `initial_setup` to true
   - mesa `dri_swrast_kms_init_screen` does not initialize
     `has_reset_status_query` to true
-
-## seatd
-
-- <https://git.sr.ht/~kennylevinsen/seatd>
-  - the codebase is smaller
-  - `/run/seatd.sock` expects the user to be in `seat` group
-- initialization
-  - `server_init` calls `seat_create` with `seat0` and `vt_bound` set
-  - `open_socket` listens on `/run/seatd.sock`
-  - `poller_poll` polls the socket
-- `server_handle_connection` handles connections to the socket
-  - `server_add_client` calls `client_create` to create a client
-- `client_handle_connection` handles client opcodes
-  - `CLIENT_OPEN_SEAT` is handled by `handle_open_seat`
-    - `seat_add_client`
-      - `seat_update_vt` sets `seat->cur_vt` and `client->session` to the
-        current vt (usually 1)
-    - `seat_open_client`
-      - `vt_open` opens the current vt and switches to
-        `VT_PROCESS`/`KD_GRAPHICS`/etc
-  - `CLIENT_CLOSE_SEAT` is handled by `handle_close_seat`
-    - `seat_remove_client` closes all opened devices
-    - `seat_close_client` closes the current client (and activates the next
-      client if any)
-      - `vt_close` restores the vt
-  - `CLIENT_OPEN_DEVICE` is handled by `handle_open_device`
-    - `seat_open_device` opens a device node and adds it to `client->devices`
-      - if `SEAT_DEVICE_TYPE_DRM`, the fd is made drm master
-      - if `SEAT_DEVICE_TYPE_EVDEV`, no special handling
-  - `CLIENT_CLOSE_DEVICE` is handled by `handle_close_device`
-    - `seat_close_device` closes the device
-  - `CLIENT_SWITCH_SESSION` is handled by `handle_switch_session`
-    - because `vt_bound` is set, `vt_switch` initiates the switch 
-  - `CLIENT_DISABLE_SEAT` is handled by `handle_disable_seat`
-    - `seat_ack_disable_client` acks the disabling of the active client
-  - `CLIENT_PING`
-- session switch
-  - user presses `CTRL-ALT-Fx`
-  - compositor receives `XKB_KEY_XF86Switch_VT_x` and calls
-    `libseat_switch_session` 
-  - seatd receives `CLIENT_SWITCH_SESSION`
-    - `vt_switch` switches vt
-    - `server_handle_vt_rel` calls `seat_vt_release`
-      - `seat_disable_client` disables the active client and sends
-        `SERVER_DISABLE_SEAT` to the client
-      - compositor calls `libseat_disable_seat` in response to
-        `SERVER_DISABLE_SEAT`
-        - seatd receives `CLIENT_DISABLE_SEAT`
-      - `vt_ack` releases the vt
-    - `server_handle_vt_acq` calls `seat_vt_activate`
-      - `seat->cur_vt` is updated
-      - `vt_ack` acquires the vk
-      - `seat_activate` picks the next client for the new vt and calls
-        `seat_open_client` to open the client and send `SERVER_ENABLE_SEAT`
-- libseat logind backend
-  - `seat_impl::open_seat`
-    - it determines the session id which is from `XDG_SESSION_ID=c1`
-    - `sd_session_get_seat` returns the seat name if the session is attached
-      to a seat
-    - `sd_bus_default_system` returns the system bus
-    - `org.freedesktop.login1.Manager.GetSession` retruns
-      `/org/freedesktop/login1/session/c1`
-      - `dbus-send --system --dest=org.freedesktop.login1 --print-reply /org/freedesktop/login1 org.freedesktop.login1.Manager.GetSession string:c1`
-    - `org.freedesktop.login1.Manager.GetSeat` retruns
-      `/org/freedesktop/login1/seat/seat0`
-    - add signal matches
-      - `PauseDevice` and `ResumeDevice` of the session
-      - `PropertiesChanged` of the session and the seat
-    - `org.freedesktop.login1.Session.Activate` to activate the session
-    - `org.freedesktop.login1.Session.TakeControl` to take control
-    - `org.freedesktop.login1.Session.SetType` to set the type (wayland)
-  - `seat_impl::disable_seat` is nop
-  - `seat_impl::close_seat`
-    - `org.freedesktop.login1.Session.ReleaseControl`
-  - `seat_impl::seat_name` returns `sd_session_get_seat`
-  - `seat_impl::open_device`
-    - `org.freedesktop.login1.Session.TakeDevice`
-  - `seat_impl::close_device`
-    - `org.freedesktop.login1.Session.ReleaseDevice`
-  - `seat_impl::switch_session`
-    - `org.freedesktop.login1.Seat.SwitchTo`
-  - `seat_impl::get_fd`
-    - `sd_bus_get_fd`
-  - `seat_impl::dispatch`
-    - `sd_bus_process`
 
 ## Renderer
 
