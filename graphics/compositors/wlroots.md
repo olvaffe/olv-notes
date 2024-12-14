@@ -200,6 +200,8 @@ wlroots
   - `seat_impl::dispatch`
     - `sd_bus_process`
 
+## tinywl
+
 ## sway
 
 - require `WAYLAND_DISPLAY=wayland-1`
