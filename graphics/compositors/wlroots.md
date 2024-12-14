@@ -115,6 +115,28 @@ wlroots
     - `GL_EXT_texture_format_BGRA8888`
     - `GL_EXT_unpack_subimage`
 
+## `wlr_allocator_autocreate`
+
+- `backend_caps` specifies the types of buffers that a backend supports
+  - `WLR_BUFFER_CAP_DMABUF` for drm
+  - all caps for headless
+  - `WLR_BUFFER_CAP_DMABUF` if `linux_dmabuf_v1` and `WLR_BUFFER_CAP_SHM` if
+    `wl_shm` for wayland
+  - `WLR_BUFFER_CAP_DMABUF` if dri3 and `WLR_BUFFER_CAP_SHM` if xshm for x11
+- `renderer_caps` specifies the types of buffers that a renderer supports
+  - `WLR_BUFFER_CAP_DMABUF` for gles2 and vulkan
+  - `WLR_BUFFER_CAP_DATA_PTR` for pixman
+- gbm is used when there is a drm fd, and both backend and renderer support
+  `WLR_BUFFER_CAP_DMABUF`
+  - that is, both backend and renderer support dmabufs exported from gbm bos
+  - pure hw
+- shm is used when both backend and renderer support either
+  `WLR_BUFFER_CAP_SHM` or `WLR_BUFFER_CAP_DATA_PTR`
+  - pure sw
+- kms dumb is used when there is a master drm fd, and both backend and
+  renderer support `WLR_BUFFER_CAP_DMABUF` or `WLR_BUFFER_CAP_DATA_PTR`
+  - pure hw (when gbm is disabled) or sw renderer (when no gles/vulkan)
+
 ## seatd
 
 - <https://git.sr.ht/~kennylevinsen/seatd>
@@ -234,13 +256,8 @@ wlroots
     - `wlr_renderer_init_wl_shm`
     - `wlr_linux_dmabuf_v1_create_with_renderer`
   - `wlr_allocator_autocreate` creates a `wlr_allocator`
-    - `backend_caps` typically contains `WLR_BUFFER_CAP_DMABUF`
-    - `renderer_caps` is `WLR_BUFFER_CAP_DMABUF` for vk/gl renderers and
-      `WLR_BUFFER_CAP_DATA_PTR` for pixman
-    - gbm backend is picked when both backend and renderer support
-      `WLR_BUFFER_CAP_DMABUF`
-      - that is, when both backend and renderer support dmabufs exported from
-        gbm bos
+    - this takes the backend and the renderer so that it can pick an allocator
+      compatible with both
   - `wlr_output_layout_create` creates a `wl_output_layout`
     - it lays out multiple physical outputs?
   - `wlr_scene_create` and `wlr_scene_attach_output_layout`
