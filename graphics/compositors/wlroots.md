@@ -170,6 +170,40 @@ wlroots
   - when a renderer wants to sample from an shm, it calls
     `wlr_buffer_begin_data_ptr_access` to retrieve the data pointer
 
+## Output Devices
+
+- drm backend initialization
+  - `wlr_session_create` creates a session
+    - it uses libseat to connect to logind or seatd
+    - it uses libudev to connect to udevd
+    - on uevent, `handle_udev_event` emits `add_drm_card`, `remove`, or
+      `change`
+  - `wlr_session_find_gpus` uses libudev to enumerate drm devices
+  - `wlr_drm_backend_create` creates a backend for each drm device
+    - it registers `handle_dev_change` to handle dev changes
+    - on `WLR_DEVICE_HOTPLUG`, it calls `scan_drm_connectors`
+- `scan_drm_connectors` is called when the session becomes active or when
+  there is a hotplug
+  - `create_drm_connector` creates a `wlr_drm_connector` for each drm
+    connector
+  - `connect_drm_connector` inits `wlr_output` embedded in `wlr_drm_connector`
+    if there is a monitor connected
+  - it emits `drm->backend.events.new_output` to notify the compositor
+- compositor handles `new_output` signal for each new output
+  - `wlr_output_init_render` sets the allocator and renderer
+  - `wlr_output_commit_state` modesets the state
+    - `output_ensure_buffer` preps a buffer cleared to black
+    - `drm_connector_commit` modesets
+  - `wlr_scene_output_create` adds the output to the scene graph
+- `handle_drm_event` handles drm events
+  - `handle_page_flip` is called after the initial commit is flipped
+  - it calls `wlr_output_send_frame` to notify the compositor
+- compositor handles output `frame` event
+  - `wlr_scene_output_commit` renders and commits
+    - it early returns if `wlr_scene_output_needs_frame` returns false
+    - `wlr_scene_output_build_state` renders
+    - `wlr_output_commit_state` commits
+
 ## seatd
 
 - <https://git.sr.ht/~kennylevinsen/seatd>
