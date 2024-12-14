@@ -223,6 +223,55 @@ wlroots
     - when wlr calls `wl_signal_emit`, all listeners of the signal are notified
     - `wl_container_of` is used to go from a `wl_listener` to its containing
       wlr global
+- initialization
+  - `wlr_backend_autocreate` creates a `wlr_backend`
+    - this takes the event loop so that the backend can add event sources or
+      dtors
+  - `wlr_renderer_autocreate` creates a `wlr_renderer`
+    - this takes the backend so that the renderer can get the drm fd from the
+      backend
+  - `wlr_renderer_init_wl_display` adds a few wlr globals
+    - `wlr_renderer_init_wl_shm`
+    - `wlr_linux_dmabuf_v1_create_with_renderer`
+  - `wlr_allocator_autocreate` creates a `wlr_allocator`
+    - `backend_caps` typically contains `WLR_BUFFER_CAP_DMABUF`
+    - `renderer_caps` is `WLR_BUFFER_CAP_DMABUF` for vk/gl renderers and
+      `WLR_BUFFER_CAP_DATA_PTR` for pixman
+    - gbm backend is picked when both backend and renderer support
+      `WLR_BUFFER_CAP_DMABUF`
+      - that is, when both backend and renderer support dmabufs exported from
+        gbm bos
+  - `wlr_output_layout_create` creates a `wl_output_layout`
+    - it lays out multiple physical outputs?
+  - `wlr_scene_create` and `wlr_scene_attach_output_layout`
+    - these create a `wlr_scene` scene graph and attach the output layout to it
+  - `wlr_cursor_create` and `wlr_cursor_attach_output_layout`
+    - these create a `wlr_cursor` and attach the output layout to it
+  - `wlr_xcursor_manager_create` creates a `wlr_xcursor_manager`
+    - it can load an xcursor theme
+  - add more wlr globals
+    - `wlr_compositor_create`
+    - `wlr_subcompositor_create`
+    - `wlr_data_device_manager_create`
+    - `wlr_xdg_shell_create`
+    - `wlr_seat_create`
+  - `wlr_backend_start` starts the backend
+    - this enumerates backend input and output devices, add them as event
+      sources, and notifies tinywl through `backend->events.new_input` and
+      `backend->events.new_output`
+  - `wl_display_run` runs the event loop
+- signal listeners
+  - `server_new_output` handles new output devices
+  - `server_new_xdg_toplevel` handles new toplevels
+  - `server_new_xdg_popup` handles new popups
+  - `server_cursor_motion` handles cursor relative motions
+  - `server_cursor_motion_absolute` handles cursor abs motions
+  - `server_cursor_button` handles cursor buttons
+  - `server_cursor_axis` handles cursor scrolls
+  - `server_cursor_frame` marks the end of a group of cursor events
+  - `server_new_input` handles new input devices
+  - `seat_request_cursor` handles new client cursor image
+  - `seat_request_set_selection` handles client ctrl-c copy
 
 ## sway
 
