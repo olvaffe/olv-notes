@@ -204,6 +204,35 @@ wlroots
     - `wlr_scene_output_build_state` renders
     - `wlr_output_commit_state` commits
 
+## Surfaces
+
+- init
+  - `wlr_compositor_create` creates the global for `wl_compositor`
+  - `wlr_xdg_shell_create` creates the global for `xdg_wm_base`
+- surface creation
+  - when client creates a wl surface, `compositor_create_surface` creates a
+    `wlr_surface` and emits compositor `new_surface` signal
+  - when client creates an xdg surface, `xdg_shell_handle_get_xdg_surface`
+    creates a `wlr_xdg_surface` and emits xdg-shell `new_surface` signal
+    - `xdg_surface_implementation` is the impl of the `wlr_xdg_surface`
+  - when client gets the toplevel of the xdg surface,
+    `xdg_surface_handle_get_toplevel` creates a `wlr_xdg_toplevel` and emits
+    xdg-shell `new_toplevel` signal
+- surface commit
+  - when client updates surface states and commits, `surface_handle_commit`
+    handles the commit request
+    - if the role is toplevel, `xdg_surface_role_client_commit` calls
+      `handle_xdg_toplevel_client_commit`
+    - `surface_commit_state` commits `surface->pending` to `surface->current`
+    - if the role is toplevel, `xdg_surface_role_commit`
+    - it emits surface `commit` signal
+- the compositor calls `wlr_scene_create` to manage surfaces
+  - on xdg-shell `new_toplevel` signal, compositor calls
+    `wlr_scene_xdg_surface_create` to create a scene tree for the xdg surface
+    - `wlr_scene_subsurface_tree_create` calls `wlr_scene_surface_create`
+      - on surface `commit` signal, `handle_scene_surface_surface_commit`
+        calls `wlr_output_schedule_frame`
+
 ## seatd
 
 - <https://git.sr.ht/~kennylevinsen/seatd>
