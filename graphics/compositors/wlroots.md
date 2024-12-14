@@ -202,6 +202,28 @@ wlroots
 
 ## tinywl
 
+- direct use of `wayland-server-core.h`
+  - `wl_display_*`, to manage `wl_display`
+    - `wl_display_create` creates a `wl_display` form thin air
+    - `wl_display_get_event_loop` returns `display->loop`, the event loop
+    - `wl_display_add_socket_auto` creates a socket
+      - it finds the available socket at `$XDG_RUNTIME_DIR/wayland-%d`
+      - it creates the socket and adds it to the event loop
+      - it returns the basename of the socket
+    - `wl_display_run` runs the event loop
+    - `wl_display_terminate` resets `display->run` and notifies the event loop
+      - it causes `wl_display_run` to return
+    - `wl_display_destroy_clients` destroys all client resources
+    - `wl_display_destroy` destroys the display
+  - `wl_list_*`, similar to kernel `list_*`
+  - `wl_signal_add` and `wl_container_of`
+    - a wlr global often has a few `wl_signal`s
+    - a tinywl global wraps the wlr global and often has a few `wl_listener`s
+    - `wl_signal_add` adds a listerner to a signal
+    - when wlr calls `wl_signal_emit`, all listeners of the signal are notified
+    - `wl_container_of` is used to go from a `wl_listener` to its containing
+      wlr global
+
 ## sway
 
 - require `WAYLAND_DISPLAY=wayland-1`
