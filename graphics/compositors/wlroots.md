@@ -170,6 +170,31 @@ wlroots
   - when a renderer wants to sample from an shm, it calls
     `wlr_buffer_begin_data_ptr_access` to retrieve the data pointer
 
+## Input Devices
+
+- libinput backend initialization
+  - `wlr_session_create` creates a session
+    - it uses libseat to connect to logind or seatd
+  - `wlr_libinput_backend_create` creates the backend
+  - libinput `backend_start` calls
+    - `libinput_udev_create_context`
+    - `libinput_udev_assign_seat`
+    - `libinput_get_fd` to add the fd as an event source
+  - `handle_libinput_readable` is called on start, on hotplug, or on input
+    events
+- `handle_libinput_readable`
+  - on `LIBINPUT_EVENT_DEVICE_ADDED`, `handle_device_added` creates a
+    `wlr_libinput_input_device` and emits `backend.events.new_input`
+    - `init_device_keyboard` inits a `wlr_keyboard`
+    - `init_device_pointer` inits a `wlr_pointer`
+    - `init_device_switch` inits a `wlr_switch`
+    - `init_device_touch` inits a `wlr_touch`
+  - on `LIBINPUT_EVENT_KEYBOARD_KEY`, `handle_keyboard_key` calls
+    `wlr_keyboard_notify_key` to update the keyboard state and emit
+    `keyboard->events.key`
+  - on `LIBINPUT_EVENT_POINTER_MOTION`, `handle_pointer_motion` emits
+    `pointer->events.motion` and `pointer->events.frame`
+
 ## Output Devices
 
 - drm backend initialization
@@ -182,8 +207,8 @@ wlroots
   - `wlr_drm_backend_create` creates a backend for each drm device
     - it registers `handle_dev_change` to handle dev changes
     - on `WLR_DEVICE_HOTPLUG`, it calls `scan_drm_connectors`
-- `scan_drm_connectors` is called when the session becomes active or when
-  there is a hotplug
+- `scan_drm_connectors` is called on start, when the session becomes active,
+  or when there is a hotplug
   - `create_drm_connector` creates a `wlr_drm_connector` for each drm
     connector
   - `connect_drm_connector` inits `wlr_output` embedded in `wlr_drm_connector`
