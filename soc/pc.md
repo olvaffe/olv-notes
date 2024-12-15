@@ -213,9 +213,9 @@ PC DIY
   - DDR5-5600 means 5600 MT/s
     - the bus runs at 2800 MHz and DDR means 2 transactions per clock
     - the bus is 64-bit wide and dual-channel means 128-bit per transaction
-    - the bandwidth is thus `5600 * 128 / 8 = 89.6 GB/s` if dual-channel
+    - the bandwidth is thus `5600 * 128 / 8 / 1024 = 87.5 GB/s` if dual-channel
   - DDR4-3200 means 3200 MT/s
-    - the bandwidth is `3200 * 128 / 8 = 51.2 GB/s` if dual-channel
+    - the bandwidth is `3200 * 128 / 8 / 1024 = 50.0 GB/s` if dual-channel
 
 ## Storage
 
