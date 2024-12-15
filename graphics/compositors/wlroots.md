@@ -264,6 +264,17 @@ wlroots
     - `surface_commit_state` commits `surface->pending` to `surface->current`
     - if the role is toplevel, `xdg_surface_role_commit`
     - it emits surface `commit` signal
+  - `surface_commit_state` updates the surface state
+    - if there is a buffer change, `surface_apply_damage`
+      - if there is `surface->buffer`, `wlr_client_buffer_apply_damage`
+        applies the damage
+        - `vulkan_texture_update_from_buffer` uploads the cpu data to vk image
+        - if the buf is shm, `wlr_buffer_begin_data_ptr_access` returns a cpu
+          pointer for the data
+        - if the buf is dma-buf, `wlr_buffer_begin_data_ptr_access` fails
+      - if there is no `surface->buffer` or cpu data upload fails,
+        `wlr_client_buffer_create` creates a new client buffer
+        - `vulkan_texture_from_buffer`
 - the compositor calls `wlr_scene_create` to manage surfaces
   - on xdg-shell `new_toplevel` signal, compositor calls
     `wlr_scene_xdg_surface_create` to create a scene tree for the xdg surface
