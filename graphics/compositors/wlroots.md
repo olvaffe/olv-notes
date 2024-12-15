@@ -53,7 +53,7 @@ wlroots
     - `vulkan` is still experimental and must be specified explicitly
       - it queries the drm fd from the backend similar to in `gles2`
       - it requires `VK_EXT_physical_device_drm` and uses the physical device
-        matching the drm fd 
+        matching the drm fd
 - `wlr_allocator_autocreate`
   - there are multiple allocators
     - gbm, using `gbm_bo_create`
@@ -228,6 +228,19 @@ wlroots
     - it early returns if `wlr_scene_output_needs_frame` returns false
     - `wlr_scene_output_build_state` renders
     - `wlr_output_commit_state` commits
+- output device power on/off
+  - compositor calls these to power on/off
+    - `wlr_output_state_init`
+    - `wlr_output_state_set_enabled` sets `WLR_OUTPUT_STATE_ENABLED`
+    - `wlr_output_commit_state`
+    - `wlr_output_state_finish`
+  - on drm, `drm_connector_commit` commits the state
+    - `drm_connector_state_init` inits `wlr_drm_connector_state` from
+      `wlr_output_state`
+      - `output_pending_enabled` translates `WLR_OUTPUT_STATE_ENABLED` to
+        `active`
+    - `drm_commit` calls `atomic_device_commit` to commit atomically
+      - if not active, the connector uses crtc id 0
 
 ## Surfaces
 
@@ -255,8 +268,31 @@ wlroots
   - on xdg-shell `new_toplevel` signal, compositor calls
     `wlr_scene_xdg_surface_create` to create a scene tree for the xdg surface
     - `wlr_scene_subsurface_tree_create` calls `wlr_scene_surface_create`
-      - on surface `commit` signal, `handle_scene_surface_surface_commit`
-        calls `wlr_output_schedule_frame`
+  - on surface `commit` signal, `handle_scene_surface_surface_commit` calls
+    `wlr_output_schedule_frame` which installs a idle timer to call
+    `wlr_output_send_frame`
+  - on output `frame` signal, compositor calls `wlr_scene_output_commit` to
+    render the scene graph and commit the output
+
+## Scene Graphs
+
+- on output `frame` signal, compositor calls `wlr_scene_output_commit`
+- `wlr_scene_output_build_state`
+  - `wlr_output_configure_primary_swapchain` configures `output->swapchain`
+  - `wlr_swapchain_acquire` acquires a `wlr_buffer`
+  - `wlr_renderer_begin_buffer_pass` begins a render pass to render to the
+    buffer
+    - `vulkan_begin_buffer_pass` begins a cmdbuf and begins a render pass
+  - `scene_entry_render` calls `wlr_render_pass_add_texture` to render a node
+    - vk `render_pass_add_texture` updates descriptor set, binds pipeline, and
+      draws
+  - `wlr_render_pass_submit` submits the render pass
+    - vk `render_pass_submit` ends the render pass, emits barriers, ends the
+      cmdbuf, and submits the cmdbuf
+  - `wlr_output_state_set_buffer` sets the buffer to the output
+- `wlr_output_commit_state` commits the state
+  - on drm atomic, `drm_connector_commit` calls `drm_commit` which calls
+    `atomic_device_commit`
 
 ## seatd
 
@@ -289,14 +325,14 @@ wlroots
   - `CLIENT_CLOSE_DEVICE` is handled by `handle_close_device`
     - `seat_close_device` closes the device
   - `CLIENT_SWITCH_SESSION` is handled by `handle_switch_session`
-    - because `vt_bound` is set, `vt_switch` initiates the switch 
+    - because `vt_bound` is set, `vt_switch` initiates the switch
   - `CLIENT_DISABLE_SEAT` is handled by `handle_disable_seat`
     - `seat_ack_disable_client` acks the disabling of the active client
   - `CLIENT_PING`
 - session switch
   - user presses `CTRL-ALT-Fx`
   - compositor receives `XKB_KEY_XF86Switch_VT_x` and calls
-    `libseat_switch_session` 
+    `libseat_switch_session`
   - seatd receives `CLIENT_SWITCH_SESSION`
     - `vt_switch` switches vt
     - `server_handle_vt_rel` calls `seat_vt_release`
@@ -506,23 +542,6 @@ wlroots
 - `server_run`
   - this calls `wl_display_run` to enter the mainloop
 
-
-## output
-
-- a compositor normally wraps `wlr_output` in a `wlr_output_damage`
-  - when a `wlr_output` needs a frame, it calls `wlr_output_send_frame` to
-    send a frame signal
-  - `wlr_output_damage` handles the signal in `output_handle_frame` and sends
-    its own frame signal
-  - `damage_handle_frame` in sway handles the signal
-    - `output_repaint_timer_handler` uses `wlr_renderer` to render the frame
-      - `wlr_renderer_begin`
-      - render
-      - `wlr_renderer_end`
-    - it calls `wlr_output_commit` after rendering
-- output power on and off
-  - `wlr_output_state_set_enabled` controls output power state
-  - when output is off, `wlr_output` does not ask for frames
 
 ## vkms
 
