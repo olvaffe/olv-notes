@@ -298,6 +298,14 @@ Rockchip SoCs
     - `/dev/ttyFIQ0` becomes `/dev/ttyS2` after applying
       `fdtoverlays /dtb/rockchip/overlay/rk3588-uart2-m0.dtbo`
 
+## RK3588 Mali
+
+- <https://github.com/armbian/linux-rockchip/tree/rk-6.1-rkr4.1>
+  - rkr4.1 is rockchip sdk 4.1
+  - mali ddk is `g25p0-00eac0`, which seems to be based on `r50p0-00eac0`
+- <https://github.com/JeffyCN/mirrors/tree/libmali>
+  - mali ddk is `g24p0-4`
+
 ## RK3588S Datasheet and Devicetree
 
 - eMMC
