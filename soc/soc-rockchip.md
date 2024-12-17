@@ -305,6 +305,24 @@ Rockchip SoCs
   - mali ddk is `g25p0-00eac0`, which seems to be based on `r50p0-00eac0`
 - <https://github.com/JeffyCN/mirrors/tree/libmali>
   - mali ddk is `g24p0-4`
+- setup
+  - download any rolling release image based on Rockchip BSP kernel
+  - loop mount the image to get these files/dirs
+    - `boot/vmlinuz`
+    - `boot/initrd.img` (or `boot/uInitrd`)
+    - `boot/dtb/rockchip/rk3588s-orangepi-5.dtb`
+    - `boot/dtb/rockchip/overlay/rockchip-rk3588-panthor-gpu.dtbo`
+    - `lib/modules`
+  - edit `/boot/extlinux/extlinux.conf` to add `label armbian 6.1.x`
+    - `kernel /armbian.kernel`
+    - `initrd /armbian.initrd`
+    - `fdt /armbian.dtb`
+    - `#fdtoverlays /armbian.dtbo`
+    - `append console=ttyS2,1500000 debug root=PARTLABEL=arch-root rootwait ro`
+  - get the userspace
+    - `wget https://github.com/JeffyCN/mirrors/raw/refs/heads/libmali/lib/aarch64-linux-gnu/libmali-valhall-g610-g24p0-x11-wayland-gbm.so`
+    - there are `dummy`, `gbm`, `wayland-gbm`, `x11-gbm`, and
+      `x11-wayland-gbm` variants
 
 ## RK3588S Datasheet and Devicetree
 
