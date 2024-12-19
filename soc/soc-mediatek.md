@@ -266,3 +266,182 @@ MediaTek SoCs
         - `compatible = "maxim,max98390";`
       - `spk_l_amp: amplifier@39`
         - `compatible = "maxim,max98390";`
+
+## MT8196 GPUEB
+
+- <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
+- `CONFIG_MTK_MBOX` provides `mtk_mbox_device` to talk to tinsys mbox directly
+  - a client fills out `mtk_mbox_device` and calls `mtk_mbox_probe`
+    - this ioremaps resources and requests irq
+  - `mtk_mbox_write` sends data to the mbox using mmio
+  - `mtk_mbox_trigger_irq` notifies the mbox about the data
+  - on irq, `mtk_mbox_isr` calls the client-provided callbacks
+  - `mtk_mbox_read` receives data from the mbox using mmio
+- `CONFIG_RPMSG_MTK` provides `rpmsg_device` on top of `mtk_mbox_device`
+  - a client calls `mtk_rpmsg_create_mbox_device` to wrap an `mtk_mbox_device`
+  - `mtk_rpmsg_create_channel` creates a `mtk_rpmsg_channel_info_mbox`, the
+    private data for use with `rpmsg_create_ept`
+  - `rpmsg_create_ept` calls `mtk_rpmsg_create_ept` to create a
+    `rpmsg_endpoint`
+    - the rx cb is unused
+  - `rpmsg_send` calls `mtk_rpmsg_send` to send data to the mbox
+    - `mtk_mbox_write` writes data to the mbox
+    - `mtk_mbox_trigger_irq` notifies the mbox
+  - there is no proper `rpmsg_driver`
+- `CONFIG_MTK_IPI` provides `mtk_ipi_device` on top of `mtk_mbox_device`
+  - a client calls `mtk_ipi_device_register` to wrap an `mtk_mbox_device`
+    - `mtk_rpmsg_create_mbox_device` wraps the `mtk_mbox_device`
+    - `rpmsg_create_ept` creates an endpoint for each channel
+    - that is, it uses `CONFIG_RPMSG_MTK` internally
+  - `mtk_ipi_register` updates the rx cb and buf for a channel
+  - `mtk_ipi_send` sends data to a channel
+    - `rpmsg_trysend` seneds data to the corresonding `rpmsg_endpoint`
+  - on irq, `mtk_mbox_isr` calls `ipi_isr_cb`
+  - `mtk_ipi_recv` calls the rx cb registered with `mtk_ipi_register`
+    - `mtk_mbox_polling` or `mtk_mbox_read` should have been called to receive
+      the data to `pin_r->pin_buf`
+- `__gpueb_pdrv_probe` probes `mediatek,gpueb`
+  - some global variables are initialized
+    - `g_gpueb_gpr_base` is `gpueb_gpr_base`
+    - `g_gpueb_cfgreg_base` is `gpueb_cfgreg_base`
+    - `g_mfg0_pwr_con` is `mfg0_pwr_con`
+  - `gpueb_ipi_init` inits `gpueb_mboxdev` and `gpueb_ipidev`
+    - `gpueb_ipi_table_init` fills out `gpueb_mboxdev`
+      - `name` is `GPUEB_MBOXDEV_NAME` (`gpueb_mboxdev`)
+      - `count` is `mbox-count` (1)
+      - `g_mbox_size` is `mbox-size` (160)
+      - `g_slot_size` is `slot-size` (4)
+      - `g_ts_mbox` is `ts-mbox` (0)
+      - `send_count` is len(`send-table`) / 3 (36 / 3 = 12)
+      - `recv_count` is len(`recv-table`) / 5 (60 / 5 = 12)
+      - `gpueb_mbox_pin_send_name` is `send-name-table`
+        - `IPI_ID_FAST_DVFS_EVENT`, ged eb
+        - `IPI_ID_GPUFREQ`, gpufreq
+          - `CMD_POWER_CONTROL`
+          - etc
+        - `IPI_ID_SLEEP`, ghpm
+          - `GPUEB_SLEEP_IPI_MAGIC_NUMBER` before powering off ghpm
+        - `IPI_ID_TIMER`, gpueb timesync
+        - `IPI_ID_FHCTL`, no user
+        - `IPI_ID_CCF`, gpueb hwvoter
+        - `IPI_ID_GPUMPU`, gpueb gpumpu (unused)
+        - `IPI_ID_FAST_DVFS`, ged eb
+          - `GPUFDVFS_IPI_SET_NEW_FREQ`
+          - `GPUFDVFS_IPI_PMU_START`
+          - `GPUFDVFS_IPI_SET_POWER_STATE`
+          - etc
+        - `CH_IPIR_C_MET`
+        - `CH_IPIS_C_MET`
+        - `IPI_ID_BRISKET`, no user
+        - `IPI_ID_PPB`, no user
+      - `gpueb_mbox_pin_recv_name` is `recv-name-table`
+      - `info_table` is a `mtk_mbox_info`
+        - `id` is 0
+        - `slot` is `g_mbox_size`
+        - `enable` is 1
+        - `is64d` is 0
+        - `opt` is `MBOX_OPT_SMEM`
+      - `pin_send_table` and `gpueb_mbox_pin_send` are 12 `mtk_mbox_pin_send`
+        - `chan_id` and `pin_index` are 0..11
+        - `mbox` is 0
+        - `msg_size` is variable
+          - they sum to 56
+      - `pin_recv_table` and `gpueb_mbox_pin_recv` are 12 `mtk_mbox_pin_recv`
+        - `chan_id` and `pin_index` are 0..11
+        - `mbox` is 0
+        - `msg_size` is variable
+          - they sum to 36
+        - `recv_opt` is 0 (receive) or 1 (response)
+        - `cb_ctx_opt` is 0 (isr context) or 1 (process context)
+    - `gpueb_ipidev` is filled out
+      - `name` is `gpueb_ipidev`
+      - `id` is `IPI_DEV_GPUEB`
+      - `mbdev` is `gpueb_mboxdev`
+      - `timeout_handler` is `gpueb_plat_ipi_timeout_cb`
+    - `mtk_mbox_probe` inits `gpueb_mboxdev`
+      - this initializes `info_table` and requests resources and irq
+      - `base` is `mbox0_base` (0x4b09fd80)
+      - `slot` is 160
+      - `init_base_reg` is `mbox0_init` (0x4b170008)
+      - `set_irq_reg` is `mbox0_set` (0x4b170004)
+      - `clr_irq_reg` is `mbox0_clr` (0x4b170074)
+      - `send_status_reg` is `mbox0_send` (0x4b170000)
+      - `recv_status_reg` is `mbox0_recv` (0x4b170078)
+      - `irq_num` is `mbox0` (608)
+      - `mtk_mbox_isr` is the irq handler
+    - `mtk_ipi_device_register` inits `gpueb_ipidev`
+      - `mtk_rpmsg_create_mbox_device` creates an rpmsg dev
+      - `mtk_rpmsg_create_channel` creates `send_count` channels
+      - `rpmsg_create_ept` creates `send_count` epts  without rx cb
+      - `ipi_cb` is `ipi_isr_cb`
+    - `g_gpueb_mbox_ipi` is `mbox0_send`
+  - `gpueb_reserved_mem_init`
+    - `gpueb_mem_base_phys` and `gpueb_mem_size` are `mediatek,gpueb-resv-mem`
+      - 0xa0000000 and 2MB
+    - `gpueb_mem_num` is len(`gpueb-mem-table`) (2)
+    - `gpueb_reserve_mblock_ary_name` is `gpueb-mem-name-table`
+      (`MEM_ID_GPUFREQ` and `MEM_ID_LOG`)
+    - `gpueb_reserve_mblock_ary` is `gpueb-mem-table`
+    - `gpueb_mem_base_virt` is `ioremap_wc`
+  - `gpueb_logger_support` is `gpueb-logger-support` (0)
+  - `gpueb_debug_init` creates `/proc/gpueb`
+  - `gpueb_timesync_init`
+    - `g_gpueb_ts_mbox` is 0
+    - `g_gpueb_ts_mbox_offset_base` is `IPI_ID_TIMER` (15)
+    - `create_workqueue` creates wq `gpueb_ts_wq` with work `timesync_ws`
+    - more
+  - `gpueb_hw_voter_dbg_init`
+    - `mtk_ipi_register` registers channel `IPI_ID_CCF` (5)
+    - `gpueb_hw_voter_create_procfs` creates `/proc/gpueb_hw_voter`
+  - `ghpm_wrapper_init`
+    - `g_ghpm_support` is `ghpm-support` (1)
+- `__ghpm_pdrv_probe` probes `mediatek,ghpm`
+  - some global variables are initialized
+    - `g_mfg_rpc_base` is `mfg_rpc`
+    - `g_spm_mfg0_pwr_con` is `spm_mfg0_pwr_con`
+    - `g_clk_cfg_6` is `clk_cfg_6`
+    - `g_clk_cfg_6_set` is `clk_cfg_6_set`
+    - `g_clk_cfg_6_clr` is `clk_cfg_6_clr`
+    - `mfg_mt8196_e2_id_con` is `mfg_mt8196_e2_id_con`
+    - `g_gpueb_lp_state_gpr` is `GPUEB_SRAM_GPR10`
+    - `g_ipi_channel` is `IPI_ID_SLEEP` (2)
+    - `g_gpueb_slot_size` is 4
+    - `ghpm_fp` is `platform_ghpm_fp`
+    - `g_ghpm_ready` is 1
+  - `mtk_ipi_register` registers `g_ipi_channel`
+- `gpufreq_wrapper_pdrv_probe` probes `mediatek,gpufreq_wrapper`
+  - some global variables are initialized
+    - `g_dual_buck` is `dual-buck` (1)
+    - `g_gpueb_support` is `gpueb-support` (1)
+    - `g_gpufreq_bringup` is `gpufreq-bringup` (0)
+  - `gpufreq_shared_memory_init`
+    - `gpueb_mem_pa` and `gpueb_mem_size` are `mediatek,gpueb-resv-mem`
+    - `g_shared_status` points to the first dw
+    - `g_shared_mem_pa` points to the begining
+    - `g_shared_mem_size` is 16KB
+  - `gpufreq_gpueb_init`
+    - `g_ipi_channel` is `IPI_ID_GPUFREQ`
+    - `mtk_ipi_register`
+    - `gpueb_gpr_addr` is `GPUEB_SRAM_GPR13`
+    - `g_ipi_magic` is from `GPUEB_SRAM_GPR13`
+    - `gpufreq_ipi_to_gpueb` sends `CMD_INIT_SHARED_MEM`
+    - `mtk_ipi_send_compl_to_gpueb`
+      - `rpmsg_trysend` calls `mtk_mbox_send`
+        - it copies msg to shm and triggers mbox irq
+      - `mtk_mbox_polling`
+  - `g_gpufreq_ready`
+- `ged_pdrv_probe` probes `mediatek,ged`
+  - `ged_gpufreq_init`
+- when mali calls `pm_callback_power_on` to power on the device
+  - `ghpm_ctrl` calls `__ghpm_ctrl`
+    - write `CLK_CKFG_6_CLR` to turn on `CLK_MFG_EB`
+    - poll `MFG_GHPM_RO0_CON` for `GHPM_STATE` and `GHPM_PWR_STATE`
+    - play with `MFG_GHPM_CFG0_CON` to turn on GHPM
+  - `wait_gpueb` calls `__wait_gpueb`
+    - it polls these registers
+      - `MFG_GHPM_RO0_CON`
+      - `mfg0_pwr_sta()`
+      - `g_gpueb_lp_state_gpr`
+  - `pm_callback_power_on_nolock`
+    - `gpufreq_power_control` sends `CMD_POWER_CONTROL` to gpueb
+  - `mtk_notify_gpu_power_change`
