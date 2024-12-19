@@ -45,11 +45,17 @@ Intel GPUs
 - Xe-LPG
   - Meteor Lake, 2023, Intel 4, 14th gen, Gfx12.5
     - `intel_device_info_mtl_u`, etc.
+  - Arrow Lake, 2024, 3nm, Ultra 1st gen, Gfx12.5
+    - `intel_device_info_arl_u`, etc.
 - Xe2
-  - Arc (DG3, Battlemage)
-  - Lunar Lake
+  - Arc (DG3, Battlemage), 2024, 5nm, Gfx20
+    - `intel_device_info_bmg`
+  - Lunar Lake, 2024, 3nm, Ultra 2nd gen, Gfx20
+    - `intel_device_info_lnl`
 - Xe3
   - Arc (DG4, Celestial)
+  - Panthor Lake
+    - `intel_device_info_ptl`
 - Xe4
   - Arc (DG5, Druid)
 
