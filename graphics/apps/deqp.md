@@ -1207,6 +1207,53 @@ dEQP
     - `vkCmdCopyImageToBuffer` to readback
     - barrier for the copy
 
+## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.basic_graphics_tests.vertex_input_stage_out_of_render_pass`
+
+- test case
+  - `vkt::pipeline::createTimestampTests`
+    - `TimestampTestParam`
+      - `pipelineConstructionType` is `PIPELINE_CONSTRUCTION_TYPE_MONOLITHIC`
+      - `stages` is `[VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT]`
+      - `stageCount` is 2
+      - `inRenderPass` is false
+      - `hostQueryReset` is false
+      - `transferOnlyQueue` is false
+      - `queryResultFlags` is `VK_QUERY_RESULT_64_BIT|VK_QUERY_RESULT_WAIT_BIT`
+  - `BasicGraphicsTest::BasicGraphicsTest`
+- `BasicGraphicsTestInstance::BasicGraphicsTestInstance`
+  - `TimestampTestInstance::TimestampTestInstance`
+    - `createQueryPool` creates a query pool with 8 timestamp queries
+    - `createCommandPool` creates a cmd pool
+    - `allocateCommandBuffer` creates a cmdbuf
+  - `BasicGraphicsTestInstance::buildVertexBuffer`
+    - `createBufferAndBindMemory` creates a vb of size 1024
+    - `createOverlappingQuads` preps vb for 4 overlapping quads
+  - `BasicGraphicsTestInstance::buildRenderPass`
+    - `RenderPassWrapper` creates a render pass with
+      `VK_FORMAT_R8G8B8A8_UNORM` and `VK_FORMAT_D16_UNORM`
+    - the load op is clear and the store op is store
+  - `BasicGraphicsTestInstance::buildFrameBuffer`
+    - `createImage2DAndBindMemory` creates a 32x32 color image and a 32x32
+      depth image
+    - `createImageView` creates image views
+    - `m_renderPass.createFramebuffer` creates fb
+  - `PipelineLayoutWrapper` creates an empty pipeline layout
+- `TimestampTestInstance::iterate`
+  - `BasicGraphicsTestInstance::buildPipeline` builds the pipeline
+    - vs
+      - `gl_Position = position;`
+      - `vtxColor = color;`
+    - fs: `fragColor = vtxColor;`
+  - `BasicGraphicsTestInstance::configCommandBuffer`
+    - barriers to transition image layouts
+    - `vkCmdResetQueryPool`
+    - `m_renderPass.begin`
+      - clear color is `0.39f, 0.58f, 0.93f, 1.0f`
+      - clear depth is `1.0f`
+    - draw with 24 vertices (4 quads)
+    - `vkCmdWriteTimestamp` with `VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT`
+    - `vkCmdWriteTimestamp` with `VK_PIPELINE_STAGE_VERTEX_INPUT_BIT`
+
 ## Test Case: `dEQP-VK.pipeline.monolithic.timestamp.calibrated.*`
 
 - properties and features
