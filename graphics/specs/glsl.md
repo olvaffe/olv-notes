@@ -292,7 +292,53 @@ GLSL
   - vs inputs
     - gl-only: `gl_VertexID` and `gl_InstanceID`
     - vk-only: `gl_VertexIndex` and `gl_InstanceIndex`
-    - `gl_DrawID`, `gl_BaseVertex`, and `gl_BaseInstance`
+    - `gl_BaseVertex`, `gl_BaseInstance`, and `gl_DrawID`
+    - spirv
+      - `VertexId`
+      - `InstanceId`
+      - `VertexIndex`
+      - `InstanceIndex`
+      - `BaseVertex`
+      - `BaseInstance`
+      - `DrawIndex`
+    - mesa
+      - see `vtn_get_builtin_location`
+      - `SYSTEM_VALUE_VERTEX_ID`
+        - equivalent to `SYSTEM_VALUE_VERTEX_ID_ZERO_BASE + SYSTEM_VALUE_FIRST_VERTEX`
+      - `SYSTEM_VALUE_INSTANCE_ID`
+      - `SYSTEM_VALUE_VERTEX_ID`
+      - `SYSTEM_VALUE_INSTANCE_INDEX`
+      - `SYSTEM_VALUE_BASE_VERTEX` (gl) or `SYSTEM_VALUE_FIRST_VERTEX` (vk)
+      - `SYSTEM_VALUE_BASE_INSTANCE`
+      - `SYSTEM_VALUE_DRAW_ID`
+    - with `glDrawArraysInstancedBaseInstance(mode, first, count, instancecount, baseinstance)`
+      - `gl_VertexID` is between `[first, first + count)`
+      - `gl_InstanceID` is between `[0, instancecount)`
+        - note the inconsistency from `gl_VertexID`!
+      - `gl_BaseVertex` is 0
+      - `gl_BaseInstance` is `baseinstance`
+      - `gl_DrawID` is 0
+    - with `glDrawElementsBaseVertex(..., indices, basevertex)`
+      - `gl_VertexID` is `indices[i] + basevertex`
+      - `gl_BaseVertex` is `basevertex`
+    - with `glMultiDrawArrays(..., drawcount)`
+      - `gl_DrawID` is between `[0, drawcount)`
+    - with `vkCmdDraw(cmd, vertexCount, instanceCount, firstVertex, firstInstance)`
+      - `gl_VertexIndex` is between `[firstVertex, firstVertex + vertexCount)`
+        - same as `gl_VertexId`
+      - `gl_InstanceIndex` is between `[firstInstance, firstInstance + instancecount)`
+        - different from `gl_InstanceId`
+      - `gl_BaseVertex` is `firstVertex`
+        - different from gl
+      - `gl_BaseInstance` is `firstInstance`
+        - same as gl
+      - `gl_DrawID` is 0
+        - same as gl
+    - with `vkCmdDrawIndexed(cmd, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance)`
+      - `gl_VertexIndex` is `indices[i] + vertexOffset`
+      - `gl_BaseVertex` is `vertexOffset`
+    - with `vkCmdDrawMultiEXT(cmd, drawCount, ...)`
+      - `gl_DrawID` is between `[0, drawCount)`
   - vs outputs:
     - `gl_PerVertex`
       - `gl_Position`
