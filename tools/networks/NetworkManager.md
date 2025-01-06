@@ -63,6 +63,8 @@ NetworkManager
     - systemd-resolved uses systemd-resolved
     - both `dnsmasq` and `systemd-resolved` provide dbus interfaces to receive
       DNS servers and options from NM
+      - to see the upstream dns servers of dnsmasq,
+        `sudo dbus-send --system --print-reply --dest=org.freedesktop.NetworkManager.dnsmasq /uk/org/thekelleys/dnsmasq org.freedesktop.NetworkManager.dnsmasq.GetServerMetrics`
 - `[keyfile]`
   - `path=` specifies the location of keyfiles.  By default,
     `/etc/NetworkManager/system-connections`
