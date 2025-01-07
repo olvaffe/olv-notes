@@ -132,31 +132,41 @@ Data Manipulation
 - MPEG
   - MPEG-1 (and 2) part-3 Layer III / MP3
     - 1993
+    - ffmpeg
   - MPEG-2 Part 7 AAC
     - 1997
+    - ffmpeg, fdk-aac
   - MPEG-4 Part 3 HE-AAC
     - 2003
-  - MPEG-H Part 3 3D Audio
-    - 2015
+    - ffmpeg, fdk-aac
+  - MPEG-D Part 3 xHE-AAC
+    - 2012
+    - fdk-aac
 - Dolby
   - AC-3
     - 1991
+    - ffmpeg
   - E-AC-3
     - 2012
+    - ffmpeg
   - AC-4
     - 2015
 - Apple
   - ALAC
     - 2004
     - used by Apple
+    - ffmpeg
 - Xiph
   - Vorbis
     - 2000
     - used by streaming
+    - ffmpeg, libvorbis
   - FLAC
     - 2001
+    - ffmpeg, libflac
   - Opus
     - 2012
+    - ffmpeg, libopus
 
 ## Image Compressions
 
