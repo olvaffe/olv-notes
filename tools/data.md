@@ -96,36 +96,46 @@ Data Manipulation
   - MPEG-1 part-2
     - 1993
     - used by VCD
+    - ffmpeg
   - MPEG-2 part-2 / H.262
     - 1995
     - used by DVD, Blu-ray, SDTV (DVB, ATSC)
+    - ffmpeg
   - MPEG-4 part-2
     - 1999
     - used by DivX, Xvid
+    - xvid, ffmpeg
   - MPEG-4 part-10 AVC / H.264
     - 2003
     - used by Blu-ray, HDTV/UHDTV (DVB, ATSC), streaming
+    - x264, ffmpeg
   - MPEG-H Part 2 HEVC / H.265
     - 2013
     - used by UHD Blu-ray, UHDTV
+    - x265, ffmpeg
   - MPEG-I Part 3 VVC / H.266
     - 2020
     - used by ???
+    - vvenc, vvdec
 - Microsoft
   - VC-1
     - 2006
     - used by some Blu-ray, WMV, streaming
+    - ffmpeg
 - Google
   - VP8
     - 2008
     - used by streaming
+    - libvpx, ffmpeg
   - VP9
     - 2013
     - used by streaming
+    - libvpx, ffmpeg
 - AOMedia
   - AV1
     - 2018
     - used by streaming
+    - svt-av1, dav1d, dav1d, libaom-av1, ffmpeg
 
 ## Audio Compressions
 
@@ -160,13 +170,13 @@ Data Manipulation
   - Vorbis
     - 2000
     - used by streaming
-    - ffmpeg, libvorbis
+    - libvorbis, ffmpeg
   - FLAC
     - 2001
-    - ffmpeg, libflac
+    - libflac, ffmpeg
   - Opus
     - 2012
-    - ffmpeg, libopus
+    - libopus, ffmpeg
 
 ## Image Compressions
 
