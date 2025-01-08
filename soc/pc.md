@@ -98,31 +98,21 @@ PC DIY
         - this caps chipset bandwidth
     - USB 3.2 Gen2 (10Gbps): x4
     - USB 2.0 (480Mbps): x1
-- Ryzen 5 5600G
-  - <https://www.amd.com/en/product/11176>
-  - Arch: Zen 3, 7nm
-  - Clock: 3.9GHz
-  - TDP: 65W
-  - RAM: DDR4-3200
-  - GPU: GCN5, 7CU, 1900MHz
+- Ryzen 7 8700G
+  - <https://www.amd.com/en/products/processors/desktops/ryzen/8000-series/amd-ryzen-7-8700g.html>
+  - General
+    - Core: Zen 4, 4nm, x8, 4.2GHz boosted to 5.1GHz
+    - Cache: L1 64KB per core, L2 1MB per core, L3 16MB shared
+    - TDP: 65W
   - Connectivity:
-    - PCIe 4.0: 24 lanes
-      - 4 lanes for chipset downlink
-        - this caps chipset bandwidth
-    - USB 3.2 Gen1 (5Gbps): x4
-- AMD Ryzen 9 6900HX
-  - <https://www.amd.com/en/product/11541>
-  - Arch: Zen 3+, 6nm
-  - Clock: 3.3GHz
-  - TDP: 45W
-  - RAM: LPDDR5-6400
-  - GPU: RDNA2, 12CU, 2400MHz
-  - Connectivity:
-    - PCIe 4.0: 20 lanes
-      - 4 lanes for chipset downlink
-        - this caps chipset bandwidth
-    - USB 3.2 Gen2 (10Gbps): x2
-    - USB 2.0 (480Mbps): x4
+    - USB Gen4 (40Gbps): x2
+    - USB Gen2 (10Gbps): x2
+    - USB 2.0 (480Mbps): x1
+    - PCIe 4.0: x20 lanes
+      - x4 lanes reserved for chipset downlink and cap chipset bandwidth
+      - typically, mobo allocates x8 lanes for dgpu and 2 x4 lanes for m2
+    - RAM: DDR5-5200 with expo overclocking
+  - GPU: RDNA3, 12CU, 2900MHz
 
 ## Motherboards
 
