@@ -83,21 +83,20 @@ PC DIY
       - x2.94 plus bigger L1/L2/L3 plus 64MB L3
     - $690
       - x3.00
-- Ryzen 5 7600
-  - <https://www.amd.com/en/product/12756>
-  - Arch: Zen 4, 5nm
-  - Clock: 3.8GHz
-  - TDP: 65W
-  - RAM: DDR5-5200
-  - GPU: RDNA2, 2CU, 2200MHz
+- Ryzen 7 9700X
+  - <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9700x.html>
+  - General
+    - Core: Zen 5, 4nm, x8, 3.8GHz boosted to 5.5GHz
+    - Cache: L1 80KB per core, L2 1MB per core, L3 32MB shared
+    - TDP: 65W
   - Connectivity:
-    - PCIe 5.0: 28 lanes
-      - 16 lanes for gpu
-      - 8 lanes for nvme
-      - 4 lanes for chipset downlink
-        - this caps chipset bandwidth
-    - USB 3.2 Gen2 (10Gbps): x4
+    - USB Gen2 (10Gbps): x4
     - USB 2.0 (480Mbps): x1
+    - PCIe 5.0: x28 lanes
+      - x4 lanes reserved for chipset downlink which cap chipset bandwidth
+      - typically, mobo allocates x16 lanes for dgpu and 2 x4 lanes for m2
+    - RAM: DDR5-5600 with expo overclocking
+  - GPU: RDNA2, 2CU, 2200MHz
 - Ryzen 7 8700G
   - <https://www.amd.com/en/products/processors/desktops/ryzen/8000-series/amd-ryzen-7-8700g.html>
   - General
@@ -109,7 +108,7 @@ PC DIY
     - USB Gen2 (10Gbps): x2
     - USB 2.0 (480Mbps): x1
     - PCIe 4.0: x20 lanes
-      - x4 lanes reserved for chipset downlink and cap chipset bandwidth
+      - x4 lanes reserved for chipset downlink which cap chipset bandwidth
       - typically, mobo allocates x8 lanes for dgpu and 2 x4 lanes for m2
     - RAM: DDR5-5200 with expo overclocking
   - GPU: RDNA3, 12CU, 2900MHz
