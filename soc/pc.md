@@ -502,16 +502,41 @@ PC
 
 ## Laptops
 
-- Dell
-  - Dell
-    - base: inspiron 3xxx
-    - plus: inspiron 5xxx
-    - premium: inspiron 7xxx / xps 9xxx
-  - Dell Pro
-    - base: latitude 3xxx
-    - plus: latitude 5xxx
-    - premium: latitude 7xxx / 9xxx
-  - Dell Pro Max
-    - base: precision 3xxx
-    - plus: precision 5xxx
-    - premium: precision 7xxx
+- consumer
+  - midrange
+    - lenovo ideapad
+    - hp pavillion
+    - dell inspiron
+    - asus vivobook
+    - acer aspire
+  - highend
+    - lenovo yoga
+    - hp envy / spectre
+    - dell xps
+    - asus zenbook
+    - acer swift
+- gamer
+  - midrange
+    - lenovo loq
+    - hp victus
+    - dell g
+    - asus tuf
+    - acer nitro
+  - highend
+    - lenovo legion
+    - hp omen
+    - dell alienware
+    - asus rog
+    - acer predator
+- workstation
+  - lenovo thinkpad p
+  - hp zbook
+  - dell precision
+  - asus proart
+  - acer conceptd
+- business
+  - lenovo thinkpad e / thinkpad t / thinkpad x
+  - hp probook / elitebook
+  - dell vostro / latitude
+  - asus expertbook
+  - acer travelmate
