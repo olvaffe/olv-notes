@@ -16,18 +16,12 @@ Arch Linux
   - system clock
     - `timedatectl set-ntp true`
   - partition disk with fdisk
-    - see <disk.md>
     - 1M for BIOS boot partition (type 4), if bios
-    - 260M for EFI system partition (type 1), esp
+    - 1G for EFI system partition (type 1), esp
       - `mkfs.vfat -F32 <part>`
     - remainder for root partition
-      - `mkfs.btrfs <part>`
-      - `mkdir roots homes`
-      - `btrfs subvolume create roots/current` for real root
-      - `mkdir roots/current/{boot,home}`
-      - `btrfs subvolume create homes/current` for real home
-      - `btrfs subvolume set-default roots/current`
-  - mount partitions to /mnt, /mnt/home, and /mnt/boot
+      - `mkfs.ext4 <part>`
+  - mount partitions to `/mnt` and `/mnt/boot`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist`
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
@@ -39,10 +33,8 @@ Arch Linux
   - `hwclock --systohc`
     - this updates `/etc/adjtime` so should be done in chroot
   - install more packages
-    - `pacman -S linux linux-firmware`
-    - `pacman -S btrfs-progs dosfstools`
+    - `pacman -S linux linux-firmware dosfstools sudo vim`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
-    - `pacman -S sudo vim`
     - `pacman -S grub`, if using BIOS
     - `pacman -S broadcom-wl-dkms`, or other out-of-tree drivers
   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
@@ -73,55 +65,76 @@ Arch Linux
 
 ## Post-Installation
 
-- login as user
-  - `git clone https://github.com/olvaffe/olv-etc.git`
-  - ./olv-etc/create-links
 - network
   - for quick connection, see `Installation`
-  - for wired, <../networks/systemd-networkd.md>
-    - create `/etc/systemd/network/blah.network`
-    - `systemctl enable --now systemd-networkd systemd-resolved`
-  - for wireless,
-    - if need built-in dhcp, create `/etc/iwd/main.conf`
-      - `[General]`
-      - `EnableNetworkConfiguration=true`
-    - `systemctl enable --now iwd systemd-resolved`
+  - create `/etc/systemd/network/foo.network`
+  - `systemctl enable --now iwd systemd-networkd systemd-resolved`
+  - `iwctl station <iface> connect <ssid>`
   - for wireless adapter that requiers out-of-tree driver,
     - `dkms autoinstall`
     - `/etc/modules-load.d`
     - `/etc/modprobe.d/blacklist.conf`
-- minimal packages
-  - boot, `base linux linux-firmware`
-    - also `btrfs-progs dosfstools`
-    - also `zram-generator`
-      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
+- login as user
+  - `git clone https://github.com/olvaffe/olv-etc.git`
+  - `./olv-etc/create-links`
+- packages
+  - base
+    - `base linux linux-firmware intel-ucode`
+    - `dosfstools btrfs-progs`
+    - `zram-generator`
+      - `echo -e '[zram0]\nzram-size = ram' > /etc/systemd/zram-generator.conf`
       - `systemctl daemon-reload`
       - `zramctl`
-  - wifi, `iwd` or `wpa_supplicant`
-    - also `networkmanager`
-  - tools, `sudo vim man-db`
-  - devel, `base-devel git ctags meson`
-    - also `gdb perf strace man-pages debuginfod`
-  - gui, `sway polkit i3status swayidle swaylock mako`
-    - `alacritty google-chrome noto-fonts noto-fonts-cjk`
+    - `sudo vim`
+    - `openssh wireguard-tools`
+  - network
+    - `iwd` or `wpa_supplicant`
+    - `networkmanager`
+    - `linux-headers broadcom-wl-dkms`
+  - tools
+    - `bc imagemagick unzip zip wget`
+    - `dmidecode usbutils`
+    - `htop iw lsof`
+    - `man-db man-pages`
+    - `picocom`
+    - `python-pip`
+  - devel
+    - `base-devel ccache ctags gdb git meson cmake`
+    - `perf trace-cmd strace debuginfod`
+    - `llvm clang`
+    - `ruff`
+  - mesa devel
+    - `python-mako python-yaml wayland-protocols libxrandr`
+    - `llvm glslang libclc shaderc spirv-llvm-translator`
+    - `vulkan-validation-layers vulkan-extra-layers`
+  - cross-compile
+    - `multilib-devel`
+      - uncomment the `[multilib]` section in `/etc/pacman.conf`
+    - `aarch64-linux-gnu-gcc`
+    - `qemu-user-static qemu-user-static-binfmt`
+  - gui
+    - `sway polkit i3status swayidle swaylock mako`
+    - `mesa mesa-utils vulkan-intel vulkan-radeon vulkan-tools`
+    - `noto-fonts noto-fonts-cjk`
+    - `alacritty google-chrome gtk4`
     - `brightnessctl wl-clipboard wayland-utils`
+    - `xorg-xwayland`
+    - `fcitx5-chewing fcitx5-configtool fcitx5-gtk`
     - `imv grim slurp`
-    - `mesa mesa-utils vulkan-radeon vulkan-tools`
-  - bluetooth, `bluez bluez-utils`
-  - printer, `cups samsung-unified-driver-printer`
-  - audio, `pipewire pipewire-pulse pavucontrol`
-  - misc
-    - `python-mako wayland-protocols libxrandr llvm` for mesa
-    - `cmake` for cmake
-    - `aarch64-linux-gnu-gcc` for cross-compile
-      - also `qemu-user-static qemu-user-static-binfmt`
-- x11
-  - xwayland: `xorg-xwayland`
-  - X11: `xorg xorg-xinit i3 xterm`
-- 32-bit
-  - uncomment the `[multilib]` section in `/etc/pacman.conf`
-  - `pacman -S multilib-devel`
-  - `pacman -S lib32-{mesa,libdrm,libunwind,libx11}`
+    - `mpv intel-media-driver`
+  - legacy x11
+    - `xorg xorg-xinit i3 xterm`
+  - audio
+    - `pipewire pipewire-pulse`
+    - `pavucontrol`
+  - bluetooth
+    - `bluez bluez-utils`
+    - `bcm20702a1-firmware`
+  - printer
+    - `cups`
+    - `cnrdrvcups-lb samsung-unified-driver-printer`
+  - 32-bit
+    - `lib32-{mesa,libdrm,libunwind,libx11}`
 
 ## Installation on USB drive
 
