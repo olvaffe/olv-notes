@@ -426,6 +426,20 @@ PC
       - 50W: 38dB
       - 100W: 45dB
       - 200W: 57dB
+- pc idle power consumption
+  - beefy
+    - cpu: 20W
+    - gpu: 30W
+    - mobo: 10W
+    - ram: 5W
+    - fans: 5W
+    - the system consumes 100W if the psu is at 70% efficiency
+  - low-end
+    - cpu: 6W
+    - mobo: 4W
+    - ram: 3W
+    - fans: 3W
+    - the system consumes 20W if the psu is at 80% efficiency
 - phones and laptops
   - pixel 3 xl
     - battery
