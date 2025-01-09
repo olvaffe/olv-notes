@@ -205,6 +205,22 @@ PC
     - the bandwidth is thus `5600 * 128 / 8 / 1024 = 87.5 GB/s` if dual-channel
   - DDR4-3200 means 3200 MT/s
     - the bandwidth is `3200 * 128 / 8 / 1024 = 50.0 GB/s` if dual-channel
+- in practice
+  - the memory controller typically supports 2 channels
+  - a mobo typically has 2 dimms per channel
+    - to benefit from dual-channel, install ddr5 modules to different channels
+  - a 16GB ddr5 module typically has 8 16Gb ddr5 dies on one side
+    - those dies on the same side are called a rank
+    - the module is thus referred to as 1Rx8 (1 rank, 8 dies)
+    - avoid 8GB ddr5 modules
+      - they are 1Rx8
+      - the memory controller accesses an entire rank at a time, and it is a
+        waste when a rank only has 8 dies
+  - a 32GB ddr5 module typically is 2Rx8 (2 ranks, 8 dies each)
+    - the memory controller can do rank interleaving and is slightly faster
+    - but only if the freq is not reduced due to having to access both ranks
+- power consumption
+  - a 16GB DDR5 module consumes 3W on idle and 6-9W on busy
 
 ## Storage
 
