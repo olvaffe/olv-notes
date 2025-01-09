@@ -30,6 +30,8 @@ Arch Linux
   - mount partitions to /mnt, /mnt/home, and /mnt/boot
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist`
+    - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
+    - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
   - `pacstrap /mnt base`
   - `genfstab -U /mnt >> /mnt/etc/fstab` and double-check
 - Enter chroot
@@ -52,7 +54,7 @@ Arch Linux
   - create user
     - `useradd -m -G wheel <user>`
     - `passwd <user>`
-    - `visudo`
+    - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
   - traditionally, also
     - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
       - replaced by `libnss_myhostname`
