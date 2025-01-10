@@ -36,7 +36,7 @@ Arch Linux
     - `pacman -S linux linux-firmware dosfstools sudo vim`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
     - `pacman -S grub`, if using BIOS
-    - `pacman -S broadcom-wl-dkms`, or other out-of-tree drivers
+    - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
   - `systemd-firstboot --prompt`, or
     - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
@@ -67,7 +67,7 @@ Arch Linux
 
 - network
   - for quick connection, see `Installation`
-  - create `/etc/systemd/network/foo.network`
+  - `echo -e '[Match]\nName=*\n[Network]\nDHCP=yes' > /etc/systemd/network/all.network`
   - `systemctl enable --now iwd systemd-networkd systemd-resolved`
   - `iwctl station <iface> connect <ssid>`
   - for wireless adapter that requiers out-of-tree driver,
@@ -97,15 +97,14 @@ Arch Linux
     - `htop iw lsof`
     - `man-db man-pages`
     - `picocom`
-    - `python-pip`
   - devel
     - `base-devel ccache ctags gdb git meson cmake`
     - `perf trace-cmd strace debuginfod`
     - `llvm clang`
-    - `ruff`
+    - `python-pip ruff`
   - mesa devel
     - `python-mako python-yaml wayland-protocols libxrandr`
-    - `llvm glslang libclc shaderc spirv-llvm-translator`
+    - `llvm glslang libclc spirv-llvm-translator`
     - `vulkan-validation-layers vulkan-extra-layers`
   - cross-compile
     - `multilib-devel`
@@ -192,48 +191,9 @@ Arch Linux
 - update
   - `pacman -Syu`
   - `pacman -Scc`
-
-## Installation in crosvm
-
-- create disk image
-  - `crosvm create_qcow2 arch.qcow2 <size-in-bytes>`
-- prepare iso, kernel and initramfs
-  - download iso
-  - extract kernel and initramfs under `arch/boot/x86_64` in iso
-    - use loop mount or 7z
-- start crosvm
-  - `--rwdisk arch.qcow2 --disk <path-to-iso> -p archisodevice=/dev/vdb`
-  - `--host_ip 192.168.0.1 --netmask 255.255.255.0 --mac 12:34:56:78:9a:bc`
-  - `--disable-sandbox`
-- installation
-  - for network,
-    - `ip addr add 192.168.0.2/24 dev enp0s5`
-    - `ip route add default via 192.168.0.1`
-  - `arch.qcow2` is `/dev/vda`
-    - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
-    - but can still partition, format, and bootstrap normally for qemu
-
-## Installation in Another Distro
-
-- boostrap a disk image
-  - `fallocate -l 32G arch.img`
-  - `mkfs.ext4 arch.img`
-  - `mkdir arch`
-  - `sudo mount arch.img arch`
-  - `sudo tar xf archlinux-bootstrap-x86_64.tar.gz -C arch --strip 1`
-  - `sudo vim arch/etc/pacman.d/mirrorlist`
-  - `sudo umount arch`
-  - `rmdir arch`
-- installation
-  - `sudo systemd-nspawn -i arch.img --private-users=identity`
-  - `pacman-key --init`
-  - `pacman-key --populate`
-  - `pacman -R arch-install-scripts`
-  - `pacman -Syu sudo vim`
-  - `visudo`
-  - `useradd -m -G wheel olv`
-  - `passwd -d olv`
-- boot
+- boot with nspawn
+  - THIS DOES NOT WORK
+    - the more common way is to bind-mount wayland/x11/pipewire sockets
   - `sudo systemd-nspawn -i arch.img --private-users=identity -b --bind /dev/dri --bind /dev/input --bind /dev/snd`
     - man `systemd.resource-control`
       - `systemctl set-property machine-arch.img.scope DeviceAllow='char-drm rw'`
@@ -241,10 +201,26 @@ Arch Linux
     - fix up `/etc/groups` in the chroot
     - `--network-veth`
     - <https://systemd.io/CONTAINER_INTERFACE/>
-  - THIS DOES NOT WORK
     - sway, libinput, pipewire rely on udev for device discovery
     - systemd-udev is not running
-  - the more common way is to bind-mount wayland/x11/pipewire sockets
+
+## Installation in crosvm
+
+- prepare iso, kernel and initramfs
+  - download iso
+  - extract kernel and initramfs under `arch/boot/x86_64` in iso
+    - use loop mount or 7z
+- start crosvm
+  - `--rwdisk arch.img --disk <path-to-iso> -p archisodevice=/dev/vdb`
+  - `--host_ip 192.168.0.1 --netmask 255.255.255.0 --mac 12:34:56:78:9a:bc`
+  - `--disable-sandbox`
+- installation
+  - for network,
+    - `ip addr add 192.168.0.2/24 dev enp0s5`
+    - `ip route add default via 192.168.0.1`
+  - `arch.img` is `/dev/vda`
+    - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
+    - but can still partition, format, and bootstrap normally for qemu
 
 ## Tidy Up an Existing Installation
 
@@ -303,54 +279,56 @@ Arch Linux
 
 ## `base` package
 
+- archlinux-keyring
+- bash
+- bzip2
+- coreutils
+  - ls, mv cp, sync, cat, chmod, chown, basename, cut, date, df, du, echo,
+    env, chroot, etc.
+- file
 - filesystem
   - directory strucutre (e.g., /root, /usr/bin)
   - basic links (e.g., /bin to /usr/bin)
   - some files in /etc (e.g., passwd, group, mtod)
+- findutils
+  - find, xargs
+- gawk
 - gcc-libs
   - gcc runtime libraries (`libgcc_s.so`, `libstdc++.so`, `libatomic.so`,
     `libasan.so`)
+- gettext
 - glibc
   - headers
   - libraries (ld-linux-x86-64, libc, libdl, libm, libresolv, crt\*.o, etc)
   - tools (ldconfig, ldd, locale, locale-gen, iconv, etc)
+- grep
+- gzip
+- iproute2
+  - ip, ss, bridge
+- iputils
+  - ping, tftpd, etc.
+- licenses
+- pacman
+- pciutils
+  - lspci
+- procps-ng
+  - ps, top, free, pidof, pkill
+- psmisc
+  - fuser, killall, pstree, etc.
+- sed
+- shadow
+  - grouadd, passwd, useradd, lastlog, newgidmap, newuidmap, etc.
 - systemd
   - systemd, systemctl, timedatectl, networkctl, resolvect, loginctl,
     localectl, udevadm, etc.
 - systemd-sysvcompat
   - init (symlink to systemd), reboot, shutdown, poweroff, halt (symlinks to
     systemctl)
+- tar
 - util-linux
   - agetty, blkid, dmesg, fdisk, kill, login, fsck, mkfs, mount, mountpoint,
     findmnt, rfkill, su, switch_root, nsenter, unshare, lsns, etc.
-- bash
-- shadow
-  - grouadd, passwd, useradd, lastlog, newgidmap, newuidmap, etc.
-- coreutils
-  - ls, mv cp, sync, cat, chmod, chown, basename, cut, date, df, du, echo,
-    env, chroot, etc.
-- iputils
-  - ping, tftpd, etc.
-- iproute2
-  - ip, ss, bridge
-- procps-ng - ps, top, free, pidof, pkill
-- psmisc
-  - fuser, killall, pstree, etc.
-- findutils
-  - find, xargs
-- grep
-- sed
-- gawk
-- tar
-- bzip2
-- gzip
 - xz
-- file
-- gettext
-- pciutils
-  - lspci
-- licenses
-- pacman
 
 ## Big Picture Mode
 
@@ -366,10 +344,10 @@ Arch Linux
   - add `quiet` such that kernel does not print messages before `plymouth`
     takes over
   - add `splash` such that `plymouth` shows the theme
-kernel
+- kernel
   - i915 has a "fastboot" mode that is enabled by default since skylake and
     can be forced elsewhere with `i915.fastboot=1`
-  - amdgpu has a "seamless" mode that is only enabled for vangogh
+  - amdgpu has a "seamless" mode that is only enabled on DCN3+ (RDNA2+) APU
 - systemd
   - add `/etc/systemd/system/getty@tty1.service.d/autologin.conf` to override
     `getty@tty1.service`
