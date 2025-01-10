@@ -112,6 +112,17 @@ PC
       - typically, mobo allocates x8 lanes for dgpu and 2 x4 lanes for m2
     - RAM: DDR5-5200 with expo overclocking
   - GPU: RDNA3, 12CU, 2900MHz
+- Core i5-5200U
+  - <https://www.intel.com/content/www/us/en/products/sku/85212/intel-core-i55200u-processor-3m-cache-up-to-2-70-ghz/specifications.html>
+  - Core: Broadwell, 14nm, x2, 2.2GHz boosted to 2.7GHz
+  - TDP: 15W
+  - RAPL metrics
+    - `stress -c 4`: pkg 12.5W (core 11W@2.5GHz), dram 1W
+    - `ninja`: pkg 14.5W (core 12.5W@2.5GHz), dram 1.5W
+    - shadertoy: pkg 15W (core 1W@1.0GHz, uncore 5W), dram 1W
+    - `ninja` plus shadertoy
+      - first 20s: pkg 25W (core 21W@2.2GHz, uncore 1.5W), dram 1.5W
+      -      then: pkg 15W (core 10W@1.2GHz, uncore 1.5W), dram 1.5W
 
 ## Motherboards
 
