@@ -123,6 +123,19 @@ PC
     - `ninja` plus shadertoy
       - first 20s: pkg 25W (core 21W@2.2GHz, uncore 1.5W), dram 1.5W
       -      then: pkg 15W (core 10W@1.2GHz, uncore 1.5W), dram 1.5W
+- Core i7-1185G7
+  - <https://www.intel.com/content/www/us/en/products/sku/208664/intel-core-i71185g7-processor-12m-cache-up-to-4-80-ghz-with-ipu/specifications.html>
+  - Core: Willow Cove, 10nm, x4, 3.0GHz boosted to 4.8GHz
+  - TDP: 28W
+  - RAPL metrics
+    - `ninja`
+      - 0..5s: pkg 35W (core 32W@3.3GHz)
+      -  then: pkg 15W (core 12W@2.2GHz)
+    - shadertoy: pkg 22W (core 2W@0.8GHz, uncore 17W@1.35GHz)
+    - `ninja` plus shadertoy
+      -  0..5s: pkg 36W (core 15W@2.5GHz, uncore 17W@1.35GHz)
+      - 6..10s: pkg 26W (core 9W@2.2GHz, uncore 14W@1.35GHz)
+      -   then: pkg 15W (core 5W@1.3GHz, uncore 6W@1.35GHz)
 
 ## Motherboards
 
