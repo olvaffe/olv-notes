@@ -136,6 +136,18 @@ PC
       -  0..5s: pkg 36W (core 15W@2.5GHz, uncore 17W@1.35GHz)
       - 6..10s: pkg 26W (core 9W@2.2GHz, uncore 14W@1.35GHz)
       -   then: pkg 15W (core 5W@1.3GHz, uncore 6W@1.35GHz)
+- Core Ultra 5 135U
+  - <https://www.intel.com/content/www/us/en/products/sku/237328/intel-core-ultra-5-processor-135u-12m-cache-up-to-4-40-ghz/specifications.html>
+  - Core: 4nm, x2 (1.6GHz boosted to 4.4GHz), x8 (1.1GHz boosted to 3.6GHz), x2 (0.7GHz boosted to 2.1GHz)
+  - TDP: 15W
+  - RAPL metrics
+    - `stress-ng -c 14`
+      - 0..60s: pkg 30W (core 26W)
+      -   then: pkg 15W (core 12W)
+    - shadertoy: pkg 15W (core 0.5W, uncore 9.5W)
+    - `stress-ng -c 14` plus shadertoy
+      - 0..30s: pkg 34W (core 24W, uncore 6W)
+      -   then: pkg 15W (core 8.5W, uncore 3W)
 
 ## Motherboards
 

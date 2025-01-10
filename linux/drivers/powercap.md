@@ -23,7 +23,7 @@ Kernel Powercap
     - what a "system" means is platform-defined
     - on a laptop, it typically means the entire laptop including the screen
       (that is, it measures the power input)
-- `sudo turbostat -q -i 1 -S -s Avg_MHz,GFXMHz,PkgWatt,CorWatt,GFXWatt,RAMWatt,SysWatt`
+- `sudo turbostat -q -i 1 -S -s Avg_MHz,CoreTmp,PkgTmp,GFXMHz,PkgWatt,CorWatt,GFXWatt,RAMWatt,SysWatt`
 
 
 ## Core
