@@ -402,6 +402,42 @@ PC
     - 50dB: annoying
   - it seems frequencies and background decibels both play a role
     - for fan noises in a 25dB room, 40dB from a distance is acceptable
+- Noctua Fans
+  - NF-A20: 200x200x30
+  - NF-A15: 140x150x25
+  - NF-A14x25: 140x140x25
+  - NF-A14x15: 140x140x15
+  - NF-A12x25: 120x120x25
+  - NF-A12x15: 120x120x15
+  - NF-A9: 92x92x25
+  - NF-A9x14: 92x92x14
+  - NF-A8: 80x80x25
+  - NF-A6x25: 60x60x25
+  - NF-A6x15: 60x60x15
+  - NF-A4x20: 40x40x20
+  - NF-A4x10: 40x40x10
+  - 5V: 5V (instead of 12V)
+  - PWM: 4-pin controlled by PWM (instead of 3-pin controlled by voltage)
+  - A: generic and best for cpu heatsink
+  - F: pressure-optimized and best for water cooling heatsink
+  - S: airflow-optimized and best for case
+- Noctua Coolers
+  - standing
+    - NH-D15 G2: 228W, 168mm, NF-A14x25 x2
+    - NH-D15: 183W, 165mm, NF-A15 x2
+    - NH-D15S: 167W, 160mm, NF-A15
+    - NH-U14S: 162W, 165mm, NF-A15
+    - NH-U12A: 169W, 158mm, NF-A12x25 x2
+    - NH-D12L: 148W, 145mm, NF-A12x25
+    - NH-U12S: 129W, 158mm, NF-F12
+    - NH-U9S: 93W, 125mm, NF-A9
+    - NH-D9L: 88W, 110mm, NF-A9
+  - flat
+    - NH-C14S: 119W, 115mm, NF-A14x25
+    - NH-L12Sx77: 100W, 77mm, NF-A12x15
+    - NH-L12S: 88W, 70mm, NF-A12x15
+    - NH-L9x65: 67W, 69mm, NF-A9x14
+    - NH-L9i: 59W, 37mm, NF-A9x14
 
 ## PSUs
 
