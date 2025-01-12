@@ -145,3 +145,23 @@ FFmpeg
   - opus for quality and open
   - aac for compat, targeting 64kbs/ch
     - e.g., `-ac 2 -c:a aac -b:a 128k`
+- for casual trancode with best compat,
+  - container: mp4, which lacks subtitle support
+  - video codec: h264, 8-bit
+  - audio codec: aac
+  - assuming stream 0 is video, stream 1 is audio, and stream 2 is image-based
+    subtitle
+  - `-filter_complex '[0:0][0:2]overlay,scale=-1:720'` burns in subtitle and
+    resize to 720p
+  - `-map 0:1` picks the audio track
+  - `-c:v libx264 -preset slow -crf 23`
+  - `-c:a aac -ac 2 -b:a 128k`
+- for archival trancode with open formats,
+  - container: mkv
+  - video codec: av1, 10-bit
+  - audio codec: opus
+  - `-c:v libsvtav1 -crf 20 -preset 4 -pix_fmt yuv420p10le`
+    - <https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/Docs/CommonQuestions.md#what-presets-do>
+    - <https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/Docs/CommonQuestions.md#8-or-10-bit-encoding>
+  - `-c:a opus -b:a 128k` for stereo, `256k` for 5.1, `450k` for 7.1
+    - <https://wiki.xiph.org/Opus_Recommended_Settings>
