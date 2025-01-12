@@ -116,3 +116,32 @@ FFmpeg
 - one buffer is allocated for AVFrame, another buffer is allocated for
   compressed data
 - `avcodec_encode_video` encodes a frame and outputs to the second buffer.
+
+## Blu-ray
+
+- native video formats
+  - the most common format is 1920x1080, 24fps, 8-bit
+    - 4K is 3840x2160, 24fps, 10-bit
+  - it can be h262, h264, vc1
+    - 4K is h265
+- native audio formats
+  - the most common format is 48khz, 5.1ch, 24-bit
+    - it can go up to 96khz or 192khz, but rare
+    - it can go up to 7.1ch
+  - it can be uncompressed (pcm/lpcm), dolby truehd (ac3), dts-hd (dts)
+- transcode video formats
+  - ideally, keep the native resolution and fps
+    - if optimizing for size, `-filter:v scale=-1:720` to downsize to 720p
+    - `-pix_fmt yuv420p10le` to use 10-bit to avoid banding
+  - av1 for quality and open
+  - h264 for compat
+    - e.g., `-pix_fmt yuv420p10le -filter:v scale=-1:720 -c:v libx264 -preset slow -crf 23`
+  - to burn in image-based subtitle, `-filter_complex '[0:0][0:2]overlay[v]' -map '[v]'`
+    - that is, overlay stream 0 and stream 2
+- transcode audio formats
+  - ideally, keep the native sample rate, sample depth, and channels
+    - if optimizing for size, `-ac 2` to downmix to 2 channels
+    - no point in changing the sample rate/depth
+  - opus for quality and open
+  - aac for compat, targeting 64kbs/ch
+    - e.g., `-ac 2 -c:a aac -b:a 128k`
