@@ -119,6 +119,14 @@ FFmpeg
 
 ## Blu-ray
 
+- DRM
+  - the player has a host key and a host cert
+  - the player reads MKB (media key block) from the disk, decrypts it using
+    host key, and gets the media key
+  - the player presents the host cert to read VID (volume id) from BD-ROM mark
+    region
+  - the player generates VUK (volume unique key) from media key and VID
+  - the player uses VUK to descript the contents
 - native video formats
   - the most common format is 1920x1080, 24fps, 8-bit
     - 4K is 3840x2160, 24fps, 10-bit
