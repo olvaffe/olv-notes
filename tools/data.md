@@ -219,6 +219,18 @@ Data Manipulation
     - DSA, 1994
     - ECDSA, 2000
     - EdDSA, 2011 (ED25519)
+  - authenticated (which combines symmetric with mac)
+    - AES-GCM
+    - ChaCha20-Poly1305
+  - modes of operation (of block ciphers)
+    - a block cipher is a symmetric-key encryption that operates on
+      fixed-length blocks
+    - a mode of operation is an algorithm to encrypt multiple blocks, turning
+      a block cipher into a stream cipher
+    - ECB, block-by-block
+    - CBC, each block is XORed with the prior encrypted block first
+    - CTR, each block is XORed with the encrypted counter
+    - XTS
 - key exchange algorithms
   - DH, 1976 (Diffie–Hellman)
     - A and B publicly agree `x` and `p`
@@ -228,6 +240,13 @@ Data Manipulation
     - B sends the result of `x^b mod p` to A
     - both A and B use the result of `x^(ab) mod p` as the secret key
   - ECDH (Elliptic-curve Diffie–Hellman)
+- e.g.,
+  - two parties use key exchange to generate a shared secret key over an
+    inscure connection
+  - two parties use the shared secret key and symmetric-key encryption to
+    create a secure connection
+  - one party authenticates the other using asymmetric-key encryption, by
+    encrypting a challenge using the other's public key
 
 ## Hash Functions
 
