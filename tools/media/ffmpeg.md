@@ -126,7 +126,8 @@ FFmpeg
   - the player presents the host cert to read VID (volume id) from BD-ROM mark
     region
   - the player generates VUK (volume unique key) from media key and VID
-  - the player uses VUK to descript the contents
+  - the player reads title keys, descrypts them using VUK
+  - the player descripts contents using title keys
 - native video formats
   - the most common format is 1920x1080, 24fps, 8-bit
     - 4K is 3840x2160, 24fps, 10-bit
