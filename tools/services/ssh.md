@@ -82,3 +82,17 @@ SSH
     - `ssh host sh` does not
   - `-T`, `-t`, and `-tt` can explicit control whether a pty is allocated by
     sshd
+
+## SSH agent
+
+- `ssh-keygen` generates a key on disk
+  - it defaults to Ed25519 and saves the privkey to `~/.ssh/id_ed25519`
+  - the privkey is optionally encrypted
+  - it also generates the pubkey from the privkey
+    - `ssh-keygen -y` re-generates the pubkey from the privkey
+- `ssh-agent` caches (decrypted) keys in memory
+  - it listens on `SSH_AUTH_SOCK` for connections
+- `ssh-add` manages `ssh-agent`
+  - without arg, it adds decrypted `~/.ssh/id_ed25519` to the agent
+  - `ssh-add -L` lists all cached keys
+- `ssh` connects to `SSH_AUTH_SOCK` to get the cached keys

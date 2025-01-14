@@ -80,6 +80,28 @@ WireGuard
       pre/post up/down
     - `SaveConfig` saves config on shutdown
 
+## systemd-networkd
+
+- `/etc/systemd/network/wg0.netdev`
+  - `chown root:systemd-network`
+  - `chmod 640`
+  - `[NetDev]`
+    - `Name=wg0`
+    - `Kind=wireguard`
+  - `[WireGuard]`
+    - `PrivateKey=...`
+    - `ListenPort=51820` if this is server
+  - `[WireGuardPeer]` for each peer
+    - `PublicKey=...`
+    - `AllowedIPs=...`
+    - `Endpoint=...` if this peer is server
+- `/etc/systemd/network/wg0.network`
+  - `[Match]`
+    - `Name=wg0`
+    - `Kind=wireguard`
+  - `[Network]`
+    - `Address=...`
+
 ## Protocol
 
 - <https://www.wireguard.com/protocol/>
