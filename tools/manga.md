@@ -65,6 +65,28 @@ Manga
   - <https://libbyapp.com/>
     - ADE
 
+## Pricing
+
+- 36K, physical
+  - NT$60, 1993
+  - NT$65
+  - NT$75, 1997?-2000
+  - NT$80, 2000-2004
+  - NT$85, 2004-2007
+  - NT$90, 2007-2008
+  - NT$95, 2008-2013
+  - NT$100, 2013-2023
+  - NT$105, 2023-2023
+  - NT$110, 2023-
+- 36K, ebook
+  - NT$55, 2024, physical x 0.5
+  - NT$80, 2024, physical x 0.7
+- Kobo Deals
+  - anniversary, Sep 1, 27% off
+  - gift card NT$2000 for 400 points
+  - rakuten market, Tue, 25% off
+  - pchome, 6-8 every month, 25% off
+
 ## Resources
 
 - <https://everythingmoe.com/>
