@@ -53,17 +53,20 @@ E-Book
     - only the device can open the e-book
 - some platforms provide the option to download ebooks
   - e.g., google play, kobo, libby, etc.
+    - for libby, once the reading option is selected for a rental, it is
+      locked
   - if the ebook is not drm protected, it typically downloads as plain pdf or epub
   - otherwise, they typically use ADEPT (Adobe Digital Experience Protection
     Technology) and the ebook is downloaded as a small `.acsm` file
-  - an `.ascm` file is a text file describing the ebook to the adobe server
+  - an `.acsm` file is a text file describing the ebook to the adobe server
     - the resource is identified by a uuid
-    - if rented, there is an expiration
+    - the `.acsm` file has an expiration
+    - if rented, there is also an retal expiration
   - ADE (adobe digital editions) can download the encrypted pdf or epub from
-    the adobe server using the `.ascm` file
+    the adobe server using the `.acsm` file
 - Adobe Adept
   - <https://blog.soutade.fr/post/2021/05/acsm-to-epub-without-wineade-linux-armv7-only.html>
-    - adobe provides `librmsdk.so` to parse an `.ascm` file and to download
+    - adobe provides `librmsdk.so` to parse an `.acsm` file and to download
       the encrypted pdf/epub from ACS (Adobe Content Server)
     - <https://forge.soutade.fr/soutade/ACSMDownloader.git> is a open-source
       client of `librmsdk.so`
@@ -90,3 +93,20 @@ E-Book
       - this includes the private key to decrypt pdf/epub
   - <https://github.com/Leseratte10/acsm-calibre-plugin> is a rewrite in
     python for calibre
+
+## Calibre
+
+- plugins
+  - `Preferences -> Advanced -> Plugins`
+    - plugins are installed to `~/.config/calibre/plugins`
+  - `Get new plugins`
+    - `DeACSM` downloads epub/pdf specified by `.acsm` file from adobe server
+      - <https://github.com/Leseratte10/acsm-calibre-plugin>
+      - configure the plugin to log in with adobe id
+      - adding `.acsm` as a book downloads encrypted epub/pdf from the server
+  - `Load plugin from file`
+    - `DeDRM` decrypts adobe adept drm
+      - <https://github.com/noDRM/DeDRM_tools>
+      - `./make_release.py && unzip DeDRM_tools.zip DeDRM_plugin.zip`
+      - it imports keys from `DeACSM` automatically, or configure the plugin
+        to add manually
