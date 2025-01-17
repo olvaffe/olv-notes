@@ -101,3 +101,72 @@ Manga
   - <https://mangapark.io/>
   - <https://mangafire.to/home>
   - <https://proxy.cubari.moe/>
+
+## CBZ
+
+- CBZ
+  - <https://wiki.mobileread.com/wiki/CBR_and_CBZ>
+  - `.zip` renamed
+  - images are in jpg, png, webp
+  - images are displayed in alphabetical order
+    - no dir structure
+    - I guess dirs are treated as a part of filenames
+  - no metadata
+- `comicinfo.xml` at the root of CBZ archive
+  - <https://github.com/anansi-project/comicinfo>
+  - `Series` is the series name
+  - `Number` and `Title` are the chapter number and title
+    - an archive is considered a chapter
+  - `Volume` is the volume the chapter belongs to
+  - `Summary` is the summary of the chapter
+  - `Count` is the total chapter count of the series
+  - `PageCount` is the page count of the chapter
+  - `Year`, `Month`, and `Day` are the release date
+  - `LanguageISO` is the language
+  - `Format` is the binding format or the digital format
+  - `BlackAndWhite` and `Manga`
+  - `Characters`, `Teams`, `Locations`, and `MainCharacterOrTeam` are
+    characters/teams/locations in the chapter
+  - `ScanInformation` is the scan info
+  - `StoryArc` and `StoryArcNumber` are the arc the chapter belongs to
+  - `SeriesGroup`
+  - `AgeRating`
+  - `CommunityRating`
+  - `Review`
+  - `Notes`
+  - `GTIN`
+  - `Publisher` is the publisher (group)
+  - `Imprint` is the publisher (member of group)
+  - `Genre` and `Tags`
+  - `Web`
+  - creator fields
+    - `Writer` writes the story
+    - `Penciller` draws the graphics in pencil
+    - `Inker` draws over in pen and brush
+    - `Colorist` applies colors
+    - `Letterer` draws texts and speech bubbles
+    - `CoverArtist` draws the cover art
+    - `Editor` is the editor
+    - `Translator` translates to another language
+  - `<Pages>`
+    - `Image` is the page number
+    - `Type` is the type (cover, story, ad, preview, etc.)
+    - `DoublePage` indicates whether the page is a double spread
+    - `ImageWidth`, `ImageHeight`, and `ImageSize` are file width/height/size
+    - `Bookmark` is for bookmark
+- tools
+  - <https://github.com/MangaManagerORG/Manga-Manager> for manga and comic
+  - <https://github.com/comictagger/comictagger> for comic only
+  - <https://github.com/Snd-R/komf>
+- Kavita
+  - <https://github.com/Kareadita/Kavita/discussions/2717>
+    - cover of a chapter is the first image with `cover` in its filename, or
+      the first image
+  - <https://github.com/Snd-R/komf>
+- Tachiyomi
+  - <https://tachiyomi.org/docs/guides/local-source/>
+  - `/local/<series title>`
+    - `cover.jpg`
+    - `details.json`
+    - `<chapter1>.cbz`
+    - `<chapter2>.cbz`
