@@ -101,6 +101,8 @@ Manga
   - <https://mangapark.io/>
   - <https://mangafire.to/home>
   - <https://proxy.cubari.moe/>
+- highest rated mangas by years
+  - <https://www.mangaupdates.com/stats/new?orderby=rating&perpage=50&year=2015>
 
 ## CBZ
 
