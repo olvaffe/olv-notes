@@ -941,6 +941,34 @@ Chromium Browser
           `SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame` on the gpu
           thread
         - ultimately, the gpu thread calls `SkiaOutputDevice::Draw`
+- `RasterDecoderImpl::DoBeginRasterCHROMIUM` begins a raster pass
+- `RasterDecoderImpl::DoRasterCHROMIUM` replays the raster ops
+- `RasterDecoderImpl::DoEndRasterCHROMIUM` ends a raster pass
+  - `FlushWriteAccess` calls `skgpu::ganesh::Flush` to flush the surface
+    - `skgpu::ganesh::Flush` calls `GrDirectContext::flush`
+    - `GrDirectContextPriv::flushSurfaces` calls
+      `GrDrawingManager::flushSurfaces` and `GrDrawingManager::flush`
+    - `GrDrawingManager::executeRenderTasks` calls `GrOp::execute`
+      - `OpsTask::onExecute`
+        - `create_render_pass` creates a render pass
+          - `GrVkGpu::onGetOpsRenderPass` calls `GrVkOpsRenderPass::set`
+        - `GrOpsRenderPass::begin` begins a render pass
+        - various `GrOp::execute` to draw
+        - `GrOpsRenderPass::end` calls `GrVkOpsRenderPass::onEnd`
+          - `GrVkSecondaryCommandBuffer::end` ends the secondary cmdbuf
+        - `GrVkGpu::submit` calls
+          - `GrVkOpsRenderPass::submit` execs secondary cmdbuf from primary
+            cmdbuf and ends the vk render pass
+          - `GrVkOpsRenderPass::reset` resets the states
+  - `SharedContextState::SubmitIfNecessary` may or may not call
+    `GrDirectContext::submit`
+- `GrCacheController::PerformDeferredCleanup` is called periodically
+  - `GrDirectContext::performDeferredCleanup`
+    - `GrDirectContext::checkAsyncWorkCompletion`
+    - `GrVkGpu::checkFinishedCallbacks`
+    - `GrVkResourceProvider::checkCommandBuffers` checks if any cmdbuf has
+      completed and releases the resources
+  - chrome may call `GrDirectContext::checkAsyncWorkCompletion` directly too
 
 ## GPU and WebGL
 
