@@ -110,3 +110,39 @@ E-Book
       - `./make_release.py && unzip DeDRM_tools.zip DeDRM_plugin.zip`
       - it imports keys from `DeACSM` automatically, or configure the plugin
         to add manually
+
+## EPUB
+
+- <https://www.w3.org/TR/epub-33/>
+- an epub publication is a bundle of resources in OCF format
+  - it is a zip archive with suffix `.epub`
+  - `mimetype` is `application/epub+zip`
+  - `META-INF/container.xml`
+    - `<container><rootfiles><rootfile ...>`
+      - `full-path` is the path of the `.opf` file
+      - `media-type` is `application/oebps-package+xml`
+- a package document is an xml document in OPF format
+  - it is an xml file with suffix `.opf` and mimetype
+    `application/oebps-package+xml`
+  - `<package>`
+    - `<metadata>`
+      - `<dc:identifier>` is an uuid
+      - `<dc:title>` is the title
+      - `<dc:language>` is the lang code, such as `en-US`
+      - `<dc:creator>` is the main creator
+      - `<dc:contributor>` is the secondary creator
+      - `<dc:date>` is the publication date
+      - `<dc:subject>` is the subject (e.g., supernatural)
+      - `<dc:type>` indicates a specialized type (e.g., dict)
+    - `<manifest>` contains a list of `<item>` for each resource
+      - `id` is the unique id of the resource
+      - `href` is its url
+      - `media-type` is its mime type
+    - `<spine>` contains a list of `<itemref>` to represent the default
+      reading order
+      - `idref` is the id of the referenced `<item>`
+      - `properties` is the properties
+        - for a manga,
+          - `rendition:spread-none` is typically used for cover
+          - `rendition:page-spread-right` and `rendition:page-spread-left` are
+            for following two-page spreads
