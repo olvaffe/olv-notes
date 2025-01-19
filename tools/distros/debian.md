@@ -292,3 +292,25 @@ Debian
   - `unattended-upgrades.log` contains the invocation log (no update, update
     package X)
   - `unattended-upgrades-dpkg.log` contains dpkg stdout
+
+## Users and Groups
+
+- <https://salsa.debian.org/debian/base-passwd/-/raw/master/doc/users-and-groups.sgml>
+  - only global static ids
+- `root` is the superuser
+- `daemon` is a legacy user
+  - daemons should run as indivitual users nowadays
+  - legacy daemons that have fs system may run as `daemon.daemon`
+  - legacy daemons that have no fs system may run as `nobody.nogroup`
+- `bin` is a legacy user
+  - in 80's, softwares could be installed and updated as user `bin`
+- `sys` is a legacy user
+  - kernels could be installed and updated as user `sys`
+  - it was obsoleted by `bin` which was also obsoleted
+- `sync` runs `/bin/sync` on login
+  - it allows anyone to sync if `sync` does not have a password
+- `games` is for games to write their high score files
+- `man` is for updating `/var/cache/man` db
+- `lp` is for `/dev/lp*`
+- `mail` is for `/var/mail`
+- more
