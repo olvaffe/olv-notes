@@ -111,10 +111,11 @@ Manga
   - `.zip` renamed
   - images are in jpg, png, webp
   - images are displayed in alphabetical order
-    - no dir structure
     - I guess dirs are treated as a part of filenames
+    - becaues a cbz can be renamed, it is better not to have a top-level dir
+      of the name of the cbz inside the archive
   - no metadata
-- `comicinfo.xml` at the root of CBZ archive
+- `ComicInfo.xml` at the root of CBZ archive
   - <https://github.com/anansi-project/comicinfo>
   - `Series` is the series name
   - `Number` and `Title` are the chapter number and title
@@ -160,11 +161,17 @@ Manga
   - <https://github.com/MangaManagerORG/Manga-Manager> for manga and comic
   - <https://github.com/comictagger/comictagger> for comic only
   - <https://github.com/Snd-R/komf>
+
+## Library
+
 - Kavita
+  - <https://wiki.kavitareader.com/guides/scanner/>
   - <https://github.com/Kareadita/Kavita/discussions/2717>
     - cover of a chapter is the first image with `cover` in its filename, or
       the first image
   - <https://github.com/Snd-R/komf>
+- Komga
+  - <https://komga.org/docs/guides/scan-analysis-refresh/>
 - Tachiyomi
   - <https://tachiyomi.org/docs/guides/local-source/>
   - `/local/<series title>`
