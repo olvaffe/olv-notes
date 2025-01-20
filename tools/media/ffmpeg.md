@@ -203,6 +203,8 @@ FFmpeg
   - reading most VOBs result in I/O error
     - `[sr0] tag#0 Sense Key : Illegal Request [current]`
     - `[sr0] tag#0 Add. Sense: Read of scrambled sector without authentication`
+  - the video is typically `mpeg2video (Main), yuv420p(tv, progressive), 720x480 [SAR 32:27 DAR 16:9], 29.97 fps`
+  - the audio is typically `ac3, 48000 Hz, 5.1(side), fltp, 384 kb/s`
 - <https://en.wikipedia.org/wiki/Content_Scramble_System>
   - there are 3 participants: disc, drive, and player
   - there are 3 protection methods
@@ -216,3 +218,10 @@ FFmpeg
   - due to legal concerns, player typically uses `libdvdread` to access the
     dvd
   - when `libdvdcss` exists, `libdvdread` uses it to decrypt
+- for casual trancode with best compat,
+  `ffmpeg -i 'concat:<input1>.vob|<input2>.vob' -filter_complex '[0:1][0:7]overlay' -c:v libx264 -preset slow -crf 19 -c:a aac -ac 2 -b:a 128k <output>.mp4`
+  - `-filter_complex '[0:1][0:7]overlay'` overlays stream 7 (subtitle) over
+    stream 1 (video)
+    - this does not work when stream 7 means different langs for
+      `<input1>.vob` and `<input2>.vob`
+  - `-ac 2` downmixes to stereo
