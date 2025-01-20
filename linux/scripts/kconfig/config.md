@@ -205,6 +205,10 @@ Kernel Config
   - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
   - select `Overlay filesystem support` if desired
+  - select `CD-ROM/DVD Filesystems` if desired
+    - select `ISO 9660 CDROM file system support`
+      - select `Microsoft Joliet CDROM extensions`
+    - select `UDF file system support`
   - select `DOS/FAT/NT Filesystems`
     - select `VFAT (Windows-95) fs support` if esp
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`

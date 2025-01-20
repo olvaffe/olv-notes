@@ -177,12 +177,40 @@ FFmpeg
 
 ## DVD-Video
 
+- <https://en.wikipedia.org/wiki/DVD-Video>
+  - the fs is UDF
+  - `AUDIO_TS` is empty
+    - it is for DVD-Audio
+  - `VIDEO_TS`
+    - VMG (video manager) files
+      - `VIDEO_TS.IFO` is the metadata for the disc
+      - `VIDEO_TS.BUP` is the backup of `VIDEO_TS.IFO`
+      - `VIDEO_TS.VOB` is the first-play object, usually copyright notice or
+    - multiple VTS (video title set) files
+      - `VTS_mm_0.IFO` is the metadata for VTS `mm`
+        - `mm` ranges from 01 to 99
+      - `VTS_mm_0.BUP` is the backup of `VTS_mm_0.IFO`
+      - `VTS_mm_n.VOB` are the video objects for VTS `mm`
+        - `0` is the menu
+        - `1` or later is the video
+      - for a tv show, each `mm` typically corresponds to an episode
+- <https://en.wikipedia.org/wiki/VOB>
+  - VOB is a subset of MPEG-PS container
+    - PS stands for program stream and uses `.mpg`, `.mpeg`, `.m2p`, or `ps`
+      as the suffix
+  - reading most VOBs result in I/O error
+    - `[sr0] tag#0 Sense Key : Illegal Request [current]`
+    - `[sr0] tag#0 Add. Sense: Read of scrambled sector without authentication`
 - <https://en.wikipedia.org/wiki/Content_Scramble_System>
   - there are 3 participants: disc, drive, and player
   - there are 3 protection methods
     - the drive may deny access if the disc has a different region code
       - `regionset` can change the drive region (usually up to 5 times)
+        - it uses cdrom `DVD_AUTH` ioctl
     - the drive may deny access to certain disk regions unless the player
       authenticates
     - the data may be encrypted and the player need to decrypt
 - <https://en.wikipedia.org/wiki/Libdvdcss>
+  - due to legal concerns, player typically uses `libdvdread` to access the
+    dvd
+  - when `libdvdcss` exists, `libdvdread` uses it to decrypt
