@@ -5,6 +5,10 @@ Flatpak
 
 - `pacman -S flatpak`
   - when prompted for portal, select `xdg-desktop-portal-wlr` for wlroots
+- manage remote repos
+  - `remotes -d` lists repos with details
+  - `remote-ls flathub --app` lists apps in `flathub` repo
+  - `remote-info flathub org.gimp.GIMP` shows info about `org.gimp.GIMP`
 - `flatpak search <app>` to search
 - `flatpak install <appid>` to install
   - apps are installed to `/var/lib/flatpak`
