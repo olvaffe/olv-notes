@@ -193,6 +193,8 @@ FFmpeg
       - `VTS_mm_n.VOB` are the video objects for VTS `mm`
         - `0` is the menu
         - `1` or later is the video
+          - DVD-Video requires each VOB file to be less than 1GB, and as such,
+            the video is splitted into multiple VOB files
       - for a tv show, each `mm` typically corresponds to an episode
 - <https://en.wikipedia.org/wiki/VOB>
   - VOB is a subset of MPEG-PS container
