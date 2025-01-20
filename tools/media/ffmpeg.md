@@ -174,3 +174,15 @@ FFmpeg
     - <https://gitlab.com/AOMediaCodec/SVT-AV1/-/blob/master/Docs/CommonQuestions.md#8-or-10-bit-encoding>
   - `-c:a opus -b:a 128k` for stereo, `256k` for 5.1, `450k` for 7.1
     - <https://wiki.xiph.org/Opus_Recommended_Settings>
+
+## DVD-Video
+
+- <https://en.wikipedia.org/wiki/Content_Scramble_System>
+  - there are 3 participants: disc, drive, and player
+  - there are 3 protection methods
+    - the drive may deny access if the disc has a different region code
+      - `regionset` can change the drive region (usually up to 5 times)
+    - the drive may deny access to certain disk regions unless the player
+      authenticates
+    - the data may be encrypted and the player need to decrypt
+- <https://en.wikipedia.org/wiki/Libdvdcss>
