@@ -10,6 +10,39 @@ JavaScript
 - install packages through npm
   - `npm install -g <package>`
 
+## Popular Projects
+
+- server-side web frameworks
+  - <https://github.com/expressjs/express>
+  - <https://github.com/django/django>, python
+  - <https://github.com/pallets/flask>, python
+  - <https://github.com/rails/rails>, ruby
+  - <https://github.com/gin-gonic/gin>, go
+  - <https://github.com/laravel/laravel>, php
+  - <https://github.com/spring-projects/spring-boot>, java
+  - <https://github.com/dotnet/aspnetcore>, .net
+- client-side web app frameworks
+  - <https://github.com/facebook/react>
+  - <https://github.com/vuejs/core>
+  - <https://github.com/sveltejs/svelte>
+- css frameworks
+  - <https://github.com/twbs/bootstrap>
+  - <https://github.com/tailwindlabs/tailwindcss>
+- libraries
+  - <https://github.com/d3/d3>, to visualize data
+  - <https://github.com/axios/axios>, to make async http requests
+  - <https://github.com/mrdoob/three.js>, for 3D
+- module bundlers
+  - <https://github.com/webpack/webpack>
+- desktop apps
+  - <https://github.com/electron/electron>, based on chromium
+  - <https://github.com/tauri-apps/tauri>, based on system webviews
+- javascript runtimes
+  - <https://github.com/nodejs/node>
+  - <https://github.com/denoland/deno>
+- node modules
+  - <https://github.com/puppeteer/puppeteer>, to control (headless) chrome
+
 ## Resources
 
 - <https://developer.mozilla.org/en/JavaScript/Guide>
