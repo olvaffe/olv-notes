@@ -3,16 +3,19 @@ Flatpak
 
 ## Usage
 
-- `pacman -S flatpak`
-  - when prompted for portal, select `xdg-desktop-portal-wlr` for wlroots
+- `pacman -S flatpak xdg-desktop-portal-wlr xdg-desktop-portal-gtk`
 - manage remote repos
   - `remotes -d` lists repos with details
   - `remote-ls flathub --app` lists apps in `flathub` repo
   - `remote-info flathub org.gimp.GIMP` shows info about `org.gimp.GIMP`
-- `flatpak search <app>` to search
-- `flatpak install <appid>` to install
-  - apps are installed to `/var/lib/flatpak`
-- `flatpak run <appid>` to run
+- manage apps
+  - `search <app>` searches for `<app>`
+  - `install <appid>` to install
+    - apps are installed to `/var/lib/flatpak`
+  - `uninstall <appid>` to uninstall
+  - `update` to update
+- run apps
+  - `run <appid>` to run
 
 ## `xdg-desktop-portal`
 
@@ -39,3 +42,11 @@ Flatpak
     - `dbus-update-activation-environment --systemd XDG_CURRENT_DESKTOP`
   - `systemctl --user restart xdg-desktop-portal` to restart
   - `journalctl --user -u xdg-desktop-portal` to see the log
+
+## Popular Apps
+
+- `com.google.Chrome`
+- `org.libreoffice.LibreOffice`
+- `com.calibre_ebook.calibre`
+- `com.github.PintaProject.Pinta`
+- `io.mpv.Mpv`
