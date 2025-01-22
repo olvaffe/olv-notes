@@ -1,6 +1,57 @@
 PC
 ==
 
+## Computer
+
+- by size
+  - supercomputers
+    - for scientific research and simulation
+  - mainframe computers
+    - ibm z, size of a rack
+  - minicomputers
+    - not used anymore
+  - microcomputers
+- microcomputers
+  - static
+    - rackmount
+    - workstation
+    - desktop
+    - all-in-one
+    - appliance
+      - smart tv, smart speaker, game console, etc.
+  - mobile
+    - laptop
+    - tablet
+    - handheld
+      - smartphone, game console, e-reader, etc.
+    - wearable
+      - smartwatch, smartglasses, etc.
+  - other
+    - embedded system
+    - single-board computer
+    - in-vehicle infotainment (ivi)
+
+## IBM PC
+
+- History
+  - 1981, IBM PC, 8088
+    - ISA bus
+    - 8250 UART
+    - 5.25-inch floppy disk
+    - MDA/CGA video
+  - 1983, IBM XT, 8088
+  - 1984, IBM AT, 80286
+    - AT keyboard
+    - 16450 UART
+    - MDA/CGA/EGA/PGA video
+  - 1987, IBM PS/2, 80386
+    - 16550 UART
+    - 3.5-inch floppy disk
+    - 72-pin SIMM
+    - PS/2 port
+    - VGA video
+
+
 ## CPUs
 
 - Intel Core
