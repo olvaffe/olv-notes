@@ -222,8 +222,10 @@ FFmpeg
   `ffmpeg -i 'concat:<input1>.vob|<input2>.vob' -filter_complex '[0:1][0:7]overlay' -c:v libx264 -preset slow -crf 19 -c:a aac -ac 2 -b:a 128k <output>.mp4`
   - `-filter_complex '[0:1][0:7]overlay'` overlays stream 7 (subtitle) over
     stream 1 (video)
-    - this does not work when stream 7 means different langs for
-      `<input1>.vob` and `<input2>.vob`
+    - ffmpeg assigns the next stream index for each new stream in the file
+    - stream 7 of `<input1>.vob` and `<input2>.vob` may be different streams
+    - but stream 7 of `concat:<input1>.vob|<input2>.vob` is the same stream,
+      because they are considered a single file now
   - `-ac 2` downmixes to stereo
   - `-probesize 500M -analyzeduration 100M` to detect more streams
   - `-ifo_palette <input>.ifo` to get dvdsub palette
