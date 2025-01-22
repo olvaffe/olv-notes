@@ -715,3 +715,20 @@ The C++ Programming Language
     - block:
     - region:
   - modeling memory-mapped IO (slide 140)
+
+## Top GitHub Repos
+
+- <https://github.com/electron/electron>, cross-platform gui library based on
+  chromium
+- <https://github.com/godotengine/godot>, game engine
+- <https://github.com/opencv/opencv>, computer vision
+- <https://github.com/protocolbuffers/protobuf>, data serialization
+- <https://github.com/tesseract-ocr/tesseract>, OCR
+- <https://github.com/ocornut/imgui>, gui library
+- <https://github.com/topjohnwu/Magisk>, android rooting
+- <https://github.com/WerWolv/ImHex>, RE tool
+- <https://github.com/google/googletest>, test framework
+- <https://github.com/SerenityOS/serenity>, self-contained os
+- <https://github.com/qbittorrent/qBittorrent>, torrent client
+- <https://github.com/emscripten-core/emscripten>, LLVM to WebAssembly
+- <https://github.com/xbmc/xbmc>, home theater

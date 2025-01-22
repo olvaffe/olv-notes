@@ -27,3 +27,18 @@ Go
   - some old build systems require the pre-compiled standard library to be
     installed to `$GOROOT/pkg`, like before 1.20
     - `GODEBUG=installgoroot=all go install std`
+
+## Top GitHub Repos
+
+- <https://github.com/kubernetes/kubernetes>, container management
+- <https://github.com/fatedier/frp>, reverse proxy
+- <https://github.com/gin-gonic/gin>, (server-side) web framework
+- <https://github.com/gohugoio/hugo>, static site generator
+- <https://github.com/syncthing/syncthing>, two-way sync
+- <https://github.com/caddyserver/caddy>, http server
+- <https://github.com/minio/minio>, object storage
+- <https://github.com/rclone/rclone>, rsync for cloud storage
+- <https://github.com/evanw/esbuild>, js bundler
+- <https://github.com/go-kit/kit>, (server-side) web framework
+- <https://github.com/kataras/iris>, (server-side) web framework
+- <https://github.com/containers/podman>, docker-like

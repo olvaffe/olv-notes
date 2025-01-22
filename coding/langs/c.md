@@ -619,3 +619,17 @@ the sizeof(long) actually varies between the targets we care about.
     - { produce(); down(&mutex); push(); if (count == 1) signal(&cv); up(&mutex); }
   - consumer: while (true)
     - { down(&mutex); if (count == 0) { wait(&cv, &mutex); } pop(); up(&mutex); consume(); }
+
+## Top GitHub Repos
+
+- <https://github.com/obsproject/obs-studio>, streaming
+- <https://github.com/mpv-player/mpv>, media player
+- <https://github.com/nothings/stb>, single-file libraries
+- <https://github.com/facebook/zstd>, compression
+- <https://github.com/radareorg/radare2>, RE tools
+- <https://github.com/swaywm/sway>, wayland compositor
+- <https://github.com/memcached/memcached>, cache
+- <https://github.com/glfw/glfw>, cross-platform winsys for 3d
+- <https://github.com/audacity/audacity>, audio editor
+- <https://github.com/ImageMagick/ImageMagick>, image cli tools
+- <https://github.com/fastfetch-cli/fastfetch>, print sysinfo
