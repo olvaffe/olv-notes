@@ -253,6 +253,11 @@ Qualcomm SoC
     - SM{8650,8635}
     - 4nm
     - Adreno {750,735}
+  - 8 Elite
+    - 2024
+    - SM8750
+    - 3nm
+    - Adreno 830
 
 ## History: Compute Platforms
 
