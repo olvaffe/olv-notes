@@ -49,3 +49,18 @@ Java
     - has proprietary components?
   - Eclipse
     - <https://adoptium.net/>
+
+## Top GitHub Repos
+
+- <https://github.com/spring-projects/spring-boot>, (server-side) web framework
+- <https://github.com/elastic/elasticsearch>, search engine
+- <https://github.com/spring-projects/spring-framework>, enterprise app
+  framework
+- <https://github.com/NationalSecurityAgency/ghidra>, RE tool
+- <https://github.com/Stirling-Tools/Stirling-PDF>, web-based pdf tools
+- <https://github.com/netty/netty>, async io
+- <https://github.com/SeleniumHQ/selenium>, webdriver
+- <https://github.com/bazelbuild/bazel>, build system
+- <https://github.com/jenkinsci/jenkins>, CI
+- <https://github.com/iBotPeaches/Apktool>, apk RE
+- <https://github.com/thingsboard/thingsboard>, dashboard for iot
