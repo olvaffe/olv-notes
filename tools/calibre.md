@@ -146,3 +146,54 @@ E-Book
           - `rendition:spread-none` is typically used for cover
           - `rendition:page-spread-right` and `rendition:page-spread-left` are
             for following two-page spreads
+
+## CBZ
+
+- CBZ
+  - <https://wiki.mobileread.com/wiki/CBR_and_CBZ>
+  - `.zip` renamed
+  - images are in jpg, png, webp
+  - images are displayed in alphabetical order
+    - I guess dirs are treated as a part of filenames
+    - becaues a cbz can be renamed, it is better not to have a top-level dir
+      of the name of the cbz inside the archive
+  - no metadata
+- `ComicInfo.xml` at the root of CBZ archive
+  - <https://github.com/anansi-project/comicinfo>
+  - `Series` is the series name
+  - `Number` and `Title` are the chapter number and title
+    - an archive is considered a chapter
+  - `Volume` is the volume the chapter belongs to
+  - `Summary` is the summary of the chapter
+  - `Count` is the total chapter count of the series
+  - `PageCount` is the page count of the chapter
+  - `Year`, `Month`, and `Day` are the release date
+  - `LanguageISO` is the language
+  - `Format` is the binding format or the digital format
+  - `BlackAndWhite` and `Manga`
+  - `Characters`, `Teams`, `Locations`, and `MainCharacterOrTeam` are
+    characters/teams/locations in the chapter
+  - `ScanInformation` is the scan info
+  - `StoryArc` and `StoryArcNumber` are the arc the chapter belongs to
+  - `SeriesGroup`
+  - `AgeRating`
+  - `CommunityRating`
+  - `Review`
+  - `Notes`
+  - `GTIN`
+  - `Publisher` is the publisher (group)
+  - `Imprint` is the publisher (member of group)
+  - `Genre` and `Tags`
+  - `Web`
+  - creator fields
+    - `Writer` writes the story
+    - `Penciller` draws the graphics in pencil
+    - `Inker` draws over in pen and brush
+    - `Colorist` applies colors
+    - `Letterer` draws texts and speech bubbles
+    - `CoverArtist` draws the cover art
+    - `Editor` is the editor
+    - `Translator` translates to another language
+  - `<Pages>`
+    - `Image` is the page number
+    - `Type` is the type (cover, story, ad, preview, etc.)
