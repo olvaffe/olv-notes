@@ -59,6 +59,29 @@ Rust
   - <https://crates.io/crates/syn>
   - <https://crates.io/crates/thiserror>
 
+## Top GitHub Repos
+
+- <https://github.com/denoland/deno>, node-like javascript runtime
+- <https://github.com/tauri-apps/tauri>, html-based desktop gui framework
+- <https://github.com/rustdesk/rustdesk>, remote desktop
+- <https://github.com/alacritty/alacritty>, terminal
+- <https://github.com/BurntSushi/ripgrep>, fast grep
+- <https://github.com/dani-garcia/vaultwarden>, bitwarden server impl
+- <https://github.com/bevyengine/bevy>, game engine
+- <https://github.com/astral-sh/ruff>, python formatter
+- <https://github.com/swc-project/swc>, transpile modern js to legacy js
+- <https://github.com/tokio-rs/tokio>, async io
+- <https://github.com/vercel/turborepo>, js bundler
+- <https://github.com/iced-rs/iced>, cross-platform gui library
+- <https://github.com/rwf2/Rocket>, (server-side) web framework
+- <https://github.com/emilk/egui>, immediate-mode gui library
+- <https://github.com/cloudflare/pingora>, (server-side) web framework
+- <https://github.com/actix/actix-web>, (server-side) web framework
+- <https://github.com/tokio-rs/axum>, (server-side) web framework
+- <https://github.com/leptos-rs/leptos>, (client-side) web framework
+- <https://github.com/hyperium/hyper>, http request
+- <https://github.com/clap-rs/clap>, arg parser
+
 ## Installation
 
 - `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
