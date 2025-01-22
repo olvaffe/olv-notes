@@ -225,3 +225,5 @@ FFmpeg
     - this does not work when stream 7 means different langs for
       `<input1>.vob` and `<input2>.vob`
   - `-ac 2` downmixes to stereo
+  - `-probesize 500M -analyzeduration 100M` to detect more streams
+  - `-ifo_palette <input>.ifo` to get dvdsub palette
