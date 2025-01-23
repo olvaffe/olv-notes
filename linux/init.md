@@ -83,6 +83,26 @@ Kernel init
     - if a param is unknown at this point (non-early and non module-param;
       iow, defined by `__setup`, it is handled by `unknown_bootoption`
       - e.g., `console=` is handled by `unknown_bootoption`
+- minimal cmdline
+  - `root=` is required, whether kernel or initramfs mounts it
+    - `root_dev_setup` parses `root=` to `saved_root_name`
+    - `prepare_namespace` mounts `saved_root_name` when there is no initramfs
+      - `parse_root_device` parses `saved_root_name` to `ROOT_DEV`
+      - `mount_root` mounts the root
+  - `rootwait` is required if the root device is probed asynchronously
+    - it causes `wait_for_root` to be called to wait indefinitely until the
+      device shows up
+  - `ro`/`rw` is not needed
+    - `ro` is the default
+    - `systemd-remount-fs` will remount `/` according to `/etc/fstab`
+  - `quiet`/`debug` is optional
+    - `console_loglevel` defaults to 7 (`CONFIG_CONSOLE_LOGLEVEL_DEFAULT`)
+    - `debug` sets it to 10 (`CONSOLE_LOGLEVEL_DEBUG`)
+    - `quiet` sets it to 4 (`CONFIG_CONSOLE_LOGLEVEL_QUIET`)
+  - `console=ttyS0,115200 console=tty0` is optional
+    - printk logs to all `console=`
+    - `/dev/console` is the last `console=`
+    - when none specified, printk picks the first capabie device as the console
 
 ## `arch_call_rest_init`
 
