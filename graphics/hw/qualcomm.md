@@ -3,6 +3,7 @@ Qualcomm Adreno
 
 ## History
 
+- <https://en.wikipedia.org/wiki/Adreno>
 - `freedreno_devices.py`
 - A2XX
   - Adreno 200
