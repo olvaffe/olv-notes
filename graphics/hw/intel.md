@@ -55,7 +55,7 @@ Intel GPUs
 - Xe3
   - Arc (DG4, Celestial)
   - Panthor Lake
-    - `intel_device_info_ptl`
+    - `intel_device_info_ptl`, Gfx30
 - Xe4
   - Arc (DG5, Druid)
 

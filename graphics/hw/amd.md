@@ -78,10 +78,10 @@ AMD
     - Navi 3x
     - RDNA3
 - `GFX11_5`
-  - APU only?
-    - RDNA3 refresh?
+  - APU only (Strix Point) released in 2024
+    - RDNA 3.5
 - `GFX12`
-  - Radeon RX 8000 released in ?
+  - Radeon RX 9000 released in 2025
     - Navi 4x
     - RDNA4
 

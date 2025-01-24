@@ -73,7 +73,7 @@ ARM Mali
   - e.g., dimensity 9300
 - 2024: 5th gen
   - Mali-{G625,G725}, Immortalis-G925
-  - e.g., dimensity 9400?
+  - e.g., dimensity 9400
 
 ## Resources
 

@@ -131,7 +131,7 @@ nVidia
     - GeForce 40
     - Direct3D 12.0 Ultimate with `12_2` feature level
 - Blackwell
-  - GB20x, 2024
+  - GB20x, 2025
     - GeForce 50
     - Direct3D 12.0 Ultimate with `12_2` feature level
 - Rubin

@@ -3,7 +3,64 @@ Qualcomm Adreno
 
 ## History
 
-- <../machines/soc-qualcomm.md>
+- `freedreno_devices.py`
+- A2XX
+  - Adreno 200
+  - Adreno 201
+  - Adreno 205
+  - Adreno 220
+- A3XX
+  - Adreno 305
+  - Adreno 305B
+  - Adreno 306A
+  - Adreno 307
+  - Adreno 320
+  - Adreno 330
+- A4XX
+  - Adreno 405
+  - Adreno 420
+  - Adreno 430
+- A5XX
+  - Adreno 505
+  - Adreno 506
+  - Adreno 508
+  - Adreno 509
+  - Adreno 510
+  - Adreno 512
+  - Adreno 530
+  - Adreno 540
+- A6XX Gen1
+  - Adreno 605
+  - Adreno 608
+  - Adreno 610
+  - Adreno 612
+  - Adreno 615
+  - Adreno 616
+  - Adreno 618
+  - Adreno 619
+  - Adreno 620
+  - Adreno 630
+- A6XX Gen2
+  - Adreno 640
+  - Adreno 680
+- A6XX Gen3
+  - Adreno 621
+  - Adreno 650
+- A6XX Gen4
+  - Adreno 635
+  - Adreno 643
+  - Adreno 660
+  - Adreno 662
+  - Adreno 663
+  - Adreno 690
+- A7XX Gen1
+  - Adreno 725
+  - Adreno 730
+- A7XX Gen2
+  - Adreno 735
+  - Adreno 740
+- A7XX Gen3
+  - Adreno 750
 
 ## Architecture
 
