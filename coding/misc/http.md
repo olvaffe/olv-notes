@@ -1,6 +1,13 @@
 Web Scraping
 ============
 
+## URL
+
+- <https://datatracker.ietf.org/doc/html/rfc3986>
+- `<scheme>://<authority>/<path>?<query>#<fragment>`
+  - `<authority>` is `<userinfo>@<host>:<port>`
+  - `<path>` can be suffixed by `;<param>`
+
 ## HTTP Request
 
 - a request line
