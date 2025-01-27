@@ -259,3 +259,78 @@ Compression
   - footer
     - `CRC32` is the crc32 of the original file
     - `ISIZE` is the size of the original file mod 2^32
+
+## zip
+
+- <https://en.wikipedia.org/wiki/ZIP_(file_format)>
+  - <https://pkware.cachefly.net/webdocs/APPNOTE/APPNOTE-6.3.10.TXT>
+  - End of central directory (EOCD) record at the end
+    - byte 0: `PK\5\6`
+    - byte 4: Number of this disk, 0 unless multi-part
+    - byte 6: Disk where central directory starts, 0 unless multi-part
+    - byte 8: Number of central directory records on this disk
+    - byte 10: Total number of central directory records
+    - byte 12: Size of central directory (bytes)
+    - byte 16: Offset of start of central directory
+    - byte 20: Comment length
+    - byte 22: Comment
+      - because of arbitrary comment, must scan backward to find the start of
+        EOCD
+  - each file has a Central directory file header (CDFH)
+    - byte 0: `PK\1\2`
+    - byte 4: Version made by
+      - the higher byte is the compat os
+        - 0 for dos
+      - the lower byte is the compat zip spec version times 10
+        - 2.0: folder, deflate
+        - 4.5: zip64
+        - 4.6: bzip
+        - 6.3: lzma
+    - byte 6: Version needed to extract (minimum)
+    - byte 8: General purpose bit flag
+    - byte 10: Compression method
+      - 0 for stored
+      - 8 for deflate
+      - 12 for bzip
+      - 14 for lzma
+      - 93 for zstd
+      - 95 for xz
+    - byte 12: File last modification time
+      - bit 0..4: day (1-31)
+      - bit 5..8: month (1-12)
+      - bit 9..15: year (relative to 1980)
+    - byte 14: File last modification date
+      - bit 0..4: second divided by 2 (0..29)
+      - bit 5..10: minute (0-59)
+      - bit 11..15: hour (0-23)
+    - byte 16: CRC-32 of uncompressed data
+    - byte 20: Compressed size
+    - byte 24: Uncompressed size
+    - byte 28: File name length (n)
+    - byte 30: Extra field length (m)
+    - byte 32: File comment length (k)
+    - byte 34: Disk number where file starts, 0 unless multi-part
+    - byte 36: Internal file attributes
+    - byte 38: External file attributes
+    - byte 42: Relative offset of local file header
+    - byte 46: File name
+    - byte 46+n: Extra field
+      - each field consists of header and data
+      - each header consists of 2-byte header id and 2-byte data size
+        - 0x5455 is extended timestamp (mtime/atime/ctime in epoch)
+    - byte 46+n+m: File comment
+  - each file has a local file header (for redundancy) followed by the
+    compressed data
+    - byte 0: `PK\3\4`
+    - byte 4: Version needed to extract (minimum)
+    - byte 6: General purpose bit flag
+    - byte 8: Compression method
+    - byte 10: File last modification time in DOS format
+    - byte 12: File last modification date in DOS format
+    - byte 14: CRC-32 of uncompressed data
+    - byte 18: Compressed size
+    - byte 22: Uncompressed size
+    - byte 26: File name length (n)
+    - byte 28: Extra field length
+    - byte 30: File name
+    - byte 30+n: Extra field
