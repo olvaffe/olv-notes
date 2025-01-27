@@ -236,3 +236,26 @@ Compression
   - tar reads/writes N blocks at a time
     - N is 20 by default and the minimum tarball size is thus 10240
     - `-b` can set N
+
+## gzip
+
+- <https://datatracker.ietf.org/doc/html/rfc1952>
+  - header
+    - `ID1` and `ID2` are 0x1f and 0x8b
+    - `CM`, compression method, is typically 8 which denotes deflate
+    - `FLG` is
+      - bit 0, `FTEXT`
+      - bit 1, `FHCRC`
+      - bit 2, `FEXTRA`
+      - bit 3, `FNAME`
+      - bit 4, `FCOMMENT`
+    - `MTIME` is the 4-byte modification time of the original file
+    - `XFL` is extra flags
+    - `OS` is os/fs
+      - 3 is UNIX
+  - if `FNAME`, zero-terminated name of the orignal file
+  - if `FCOMMENT`, zero-terminated comment
+  - compressed data
+  - footer
+    - `CRC32` is the crc32 of the original file
+    - `ISIZE` is the size of the original file mod 2^32
