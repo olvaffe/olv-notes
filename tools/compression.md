@@ -193,3 +193,46 @@ Compression
   - 2021
   - lossy outperforms AV1 / HEVC / WebP
   - lossless outperforms WebP / PNG
+
+## tar
+
+- `tar --format` supports
+  - `gnu`, based on posix 1988
+    - this is the default
+  - `ustar`, defined in posix 1988
+  - `posix` or `pax`, defined in posix 2001
+  - other legacy formats
+- <https://www.gnu.org/software/tar/manual/html_node/Standard.html>
+  - an archive consists of a series of 512-byte blocks
+  - a file entry consists of
+    - a block for header
+      - all fields are strings and are null-terminated
+        - numeric values are converted to zero-filled octal numbers
+        - e.g., value 10 for a field of width 8 becomes `0000012\0`
+      - `char name[100];     /*   0 */`
+      - `char mode[8];       /* 100 */`
+      - `char uid[8];        /* 108 */`
+      - `char gid[8];        /* 116 */`
+      - `char size[12];      /* 124 */` is the size of the contents
+      - `char mtime[12];     /* 136 */`
+      - `char chksum[8];     /* 148 */` is the sum of all bytes in the header
+      - `char typeflag;      /* 156 */`
+        - `0` is regular file
+        - `1` is link
+        - `3` is character special
+        - `4` is block special
+        - `5` is directory
+        - `6` is FIFO special
+      - `char linkname[100]; /* 157 */`
+      - `char magic[6];      /* 257 */` is `ustar `
+      - `char version[2];    /* 263 */` is ` `
+      - `char uname[32];     /* 265 */` is the user name
+      - `char gname[32];     /* 297 */` is the group name
+      - `char devmajor[8];   /* 329 */` is major if dev
+      - `char devminor[8];   /* 337 */` is minor if dev
+      - `char prefix[155];   /* 345 */`
+    - zero or more blocks for contents
+  - an end-of-archive entry consists of 2 blocks of zeros
+  - tar reads/writes N blocks at a time
+    - N is 20 by default and the minimum tarball size is thus 10240
+    - `-b` can set N
