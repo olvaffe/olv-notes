@@ -67,7 +67,13 @@ Manga
 
 ## Pricing
 
-- 36K, physical
+- current prices
+  - 36K: physical NT$110, ebook NT$80
+  - 32K: physical NT$140, ebook NT$98
+    - or physical NT$150, ebook NT$105
+    - or physical NT$130, ebook NT$90
+  - 10-15% off is common for physical
+- historical prices, 36K physical
   - NT$60, 1993
   - NT$65
   - NT$75, 1997?-2000
@@ -78,7 +84,7 @@ Manga
   - NT$100, 2013-2023
   - NT$105, 2023-2023
   - NT$110, 2023-
-- 36K, ebook
+- historical prices, 36K ebook
   - NT$55, 2024, physical x 0.5
   - NT$80, 2024, physical x 0.7
 - Kobo Deals
