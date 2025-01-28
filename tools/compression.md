@@ -255,10 +255,29 @@ Compression
       - 3 is UNIX
   - if `FNAME`, zero-terminated name of the orignal file
   - if `FCOMMENT`, zero-terminated comment
-  - compressed data
+  - deflate-compressed data
+    - <https://datatracker.ietf.org/doc/html/rfc1951>
   - footer
     - `CRC32` is the crc32 of the original file
     - `ISIZE` is the size of the original file mod 2^32
+- <https://datatracker.ietf.org/doc/html/rfc1950>
+  - header
+    - `CMF`
+      - bit 0..3: CM, typically 8 to denote deflate
+      - bit 0..3: CINFO, log2 of window size
+    - `FLG`
+      - bit 0..4: FCHECK, a checksum
+      - bit 5: FDICT, preset dictionary
+      - bit 6..7: FLEVEL, compression level
+    - if `FLG.FDICT`, `DICTID`
+  - deflate-compressed data
+  - footer
+    - `ADLER32` checksum
+- http `Content-Encoding`
+  - `gzip` denotes gzip format
+  - `deflate` denotes zlib format
+  - unlike zip, both formats do not require random access and can be used for
+    streaming
 
 ## zip
 
