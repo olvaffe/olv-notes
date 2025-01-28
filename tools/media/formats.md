@@ -1,0 +1,118 @@
+Media Formats
+=============
+
+## Video Compressions
+
+- MPEG
+  - MPEG-1 part-2
+    - 1993
+    - used by VCD
+    - ffmpeg
+  - MPEG-2 part-2 / H.262
+    - 1995
+    - used by DVD, Blu-ray, SDTV (DVB, ATSC)
+    - ffmpeg
+  - MPEG-4 part-2
+    - 1999
+    - used by DivX, Xvid
+    - xvid, ffmpeg
+  - MPEG-4 part-10 AVC / H.264
+    - 2003
+    - used by Blu-ray, HDTV/UHDTV (DVB, ATSC), streaming
+    - x264, ffmpeg
+  - MPEG-H Part 2 HEVC / H.265
+    - 2013
+    - used by UHD Blu-ray, UHDTV
+    - x265, ffmpeg
+  - MPEG-I Part 3 VVC / H.266
+    - 2020
+    - used by ???
+    - vvenc, vvdec
+- Microsoft
+  - VC-1
+    - 2006
+    - used by some Blu-ray, WMV, streaming
+    - ffmpeg
+- Google
+  - VP8
+    - 2008
+    - used by streaming
+    - libvpx, ffmpeg
+  - VP9
+    - 2013
+    - used by streaming
+    - libvpx, ffmpeg
+- AOMedia
+  - AV1
+    - 2018
+    - used by streaming
+    - svt-av1, dav1d, dav1d, libaom-av1, ffmpeg
+
+## Audio Compressions
+
+- MPEG
+  - MPEG-1 (and 2) part-3 Layer III / MP3
+    - 1993
+    - ffmpeg
+  - MPEG-2 Part 7 AAC
+    - 1997
+    - ffmpeg, fdk-aac
+  - MPEG-4 Part 3 HE-AAC
+    - 2003
+    - ffmpeg, fdk-aac
+  - MPEG-D Part 3 xHE-AAC
+    - 2012
+    - fdk-aac
+- Dolby
+  - AC-3
+    - 1991
+    - ffmpeg
+  - E-AC-3
+    - 2012
+    - ffmpeg
+  - AC-4
+    - 2015
+- Apple
+  - ALAC
+    - 2004
+    - used by Apple
+    - ffmpeg
+- Xiph
+  - Vorbis
+    - 2000
+    - used by streaming
+    - libvorbis, ffmpeg
+  - FLAC
+    - 2001
+    - libflac, ffmpeg
+  - Opus
+    - 2012
+    - libopus, ffmpeg
+
+## Image Compressions
+
+- GIF
+  - 1992
+  - used for animation
+- JPEG
+  - 1992
+  - used everywhere
+- PNG
+  - 1996
+  - used for lossless
+- AVC in HEIF
+  - 2003
+  - no user?
+- WebP
+  - 2011
+  - used for web
+- HEVC in HEIF
+  - 2013
+  - used by Apple
+- AV1 in HEIF
+  - 2019
+  - no user?
+- JPEG-XL
+  - 2021
+  - lossy outperforms AV1 / HEVC / WebP
+  - lossless outperforms WebP / PNG
