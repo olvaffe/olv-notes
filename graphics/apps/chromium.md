@@ -1796,6 +1796,7 @@ Chromium Browser
     - `LayerTreeHostImpl::CommitComplete` calls `TileManager::PrepareTiles`
   - browser `CompositorTileWorker1` thread `RasterTaskImpl::RunOnWorkerThread`
     - `OneCopyRasterBufferProvider::RasterBufferImpl::Playback`
+      - this is software rasterization
   - browser `CrBrowserMain` thread `SingleThreadProxy::DoComposite`
     - `LayerTreeHostImpl::PrepareToDraw`
     - `LayerTreeHostImpl::DrawLayers`
@@ -1816,3 +1817,8 @@ Chromium Browser
   - gpu `CrGpuMain` thread
     - `SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass`
     - `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+- when gpu rasterization,
+  `GpuRasterBufferProvider::RasterBufferImpl::Playback` is called instead of
+  `OneCopyRasterBufferProvider::RasterBufferImpl::Playback`
+  - `GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource` calls
+    `BeginRasterCHROMIUM`, `RasterCHROMIUM`, and `EndRasterCHROMIUM`
