@@ -1822,3 +1822,59 @@ Chromium Browser
   `OneCopyRasterBufferProvider::RasterBufferImpl::Playback`
   - `GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource` calls
     `BeginRasterCHROMIUM`, `RasterCHROMIUM`, and `EndRasterCHROMIUM`
+
+## MotionMark
+
+- <https://github.com/WebKit/MotionMark>
+  - `python -m http.server -d MotionMark` and open
+    <http://localhost:8000/index.html>
+- `window.addEventListener("load", ...)`
+  - `window.sectionsManager` is `SectionsManager`
+  - `window.benchmarkController` is `BenchmarkController`
+  - `BenchmarkController::initialize` detects the framerate
+    - it disables the start button
+    - `detectFrameRate`
+      - `requestAnimationFrame` calls `tick` on next repaint
+      - it measures the time needed for 300 repaints
+      - `finish` returns the closest well-known framerate, typically 60
+    - `frameRateDeterminationComplete` shows the detected framerate and
+      enables the start button
+- `<button id="start-button" onclick="benchmarkController.startBenchmark()">`
+  calls `BenchmarkController::startBenchmark`
+  - `determineCanvasSize` adds a class to `<body>` depending on the screen
+    width
+    - `window.matchMedia` queries the screen width
+      - <https://en.wikipedia.org/wiki/Media_queries> 
+    - `document.body.classList.add` adds the class
+    - CSS picks the size for `frame-container`
+      - `small` is 568x320
+      - `medium` is 900x600
+      - `large` is 1600x800
+  - `benchmarkDefaultParameters` specifies the default test options
+    - open `developer.html` instead to customize the options
+  - `Suites` contains a single `Suite` (unless in `developer.html`)
+    - the `MotionMark` suite consists of several tests
+      - `Multiply` uses `core/multiply.html`
+      - `Canvas Arcs` uses `core/canvas-stage.html?pathType=arcs`
+      - `Leaves` uses `core/leaves.html`
+      - `Paths` uses `core/canvas-stage.html?pathType=linePath`
+      - `Canvas Lines` uses `core/canvas-stage.html?pathType=line&lineCap=square`
+      - `Images` uses `core/image-data.html`
+      - `Design` uses `core/design.html`
+      - `Suits` uses `core/suits.html`
+  - `_startBenchmark`
+    - `ensureRunnerClient` creates `BenchmarkRunnerClient`
+    - `BenchmarkRunner::runMultipleIterations` runs the tests
+      - `BenchmarkRunnerClient::willStartFirstIteration` creates
+        `ResultsDashboard`
+      - `runAllSteps` calls `step`
+        - first step creates a `BenchmarkRunnerState`
+          - this is an iterator pointint to the first test of first suite
+        - first test calls `_appendFrame`
+          - this inserts an `<iframe>` into `<section id="test-container">`
+        - `prepareCurrentTest` points the `<iframe>` to the test url and calls
+          `_runBenchmarkAndRecordResults`
+          - it creates `contentWindow.benchmarkClass` test class and runs it
+    - `SectionsManager::showSection`
+- `Benchmark::run`
+- `MultiplyBenchmark` is a `Benchmark` with `MultiplyStage`
