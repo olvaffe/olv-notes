@@ -17,6 +17,9 @@ iproute2
 - replaces `bridge-utils`
   - <https://git.kernel.org/pub/scm/network/bridge/bridge-utils.git>
   - use ioctl to communicate with the kernel
+- does not replace `iputils`
+  - <https://github.com/iputils/iputils>
+  - `ping`, `tracepath`
 
 ## OSI
 
