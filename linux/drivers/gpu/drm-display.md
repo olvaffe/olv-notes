@@ -1,5 +1,5 @@
-Display
-=======
+Linux DRM Display
+=================
 
 ## EDID
 
@@ -152,5 +152,3 @@ Display
   - XGA, 1024x768
   - SXGA, 1280x1024
   - UXGA, 1600x1200
-
-## Planes
