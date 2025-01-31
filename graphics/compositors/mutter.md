@@ -1,8 +1,10 @@
-Gnome Shell
-===========
+Mutter
+======
 
-## Components
+## Gnome Shell
 
+- <https://gitlab.gnome.org/GNOME/gnome-shell>
+  - a plugin of mutter
 - `src/`
   - `libst.so` provides Shell Toolkit.  It is based on clutter.
   - `libgnome-shell.so` provides Gnome Shell.
