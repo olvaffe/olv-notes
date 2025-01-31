@@ -104,11 +104,15 @@ XDG Specs
   - a `$topdir` is the mountpoint of a partition
   - this is to avoid copying
 
-## Recent File Storage Specification
+## Desktop Bookmark
 
-- <https://specifications.freedesktop.org/recent-file-spec/recent-file-spec-latest.html>
-- uses `~/.recently-used`
-- gnome uses `$XDG_DATA_HOME/recently-used.xbel`
+- <https://www.freedesktop.org/wiki/Specifications/desktop-bookmark-spec/>
+- `$XDG_USER_DATA/recently-used.xbel`
+  - bookmarks to recently used resources
+- `$XDG_USER_DATA/recent-applications.xbel`
+  - bookmarks to recently used applications (to their desktop entries)
+- `$XDG_USER_DATA/shortcuts.xbel`
+  - bookmarks to user-defined folders
 
 ## Others
 
@@ -142,7 +146,3 @@ XDG Specs
     - if there is `XDG_${NAME}_DIR=<path>` and `<path>` does not exist, it
       assumes the user does not want it anymore and changes `<path>` to
       `$HOME`
-- Flash player
-  - it creates `~/.adobe` and `~/.macromedia`
-- Nautilus
-  - it uses `.gtk-bookmarks` for bookmarks
