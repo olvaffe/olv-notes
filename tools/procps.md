@@ -13,6 +13,8 @@ procps
   - etc.
 - <https://gitlab.com/psmisc/psmisc>
   - `killall`, `pstree`, `fuser`
+- <https://github.com/lsof-org/lsof>
+  - `lsof`
 
 ## uptime
 
