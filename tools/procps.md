@@ -11,6 +11,8 @@ procps
   - `w`
   - `watch`
   - etc.
+- <https://gitlab.com/psmisc/psmisc>
+  - `killall`, `pstree`, `fuser`
 
 ## uptime
 
