@@ -661,8 +661,10 @@ Chromium Browser
 - `Benchmark::run`
 - `MultiplyBenchmark` is a `Benchmark` with `MultiplyStage`
 
-## Life of a Pixel
+## Life of a Pixel/Frame
 
+- <https://chromium.googlesource.com/chromium/src/+/HEAD/docs/life_of_a_frame.md>
+- <https://bit.ly/lifeofapixel>
 - when user enters a url, browser process
   - `CrBrowserMain` calls `OpenCurrentURL` to open the url
   - this starts a navigation flow
@@ -686,9 +688,12 @@ Chromium Browser
   - `HTMLDocumentParser` and `HTMLTreeBuilder` parses html to DOM
   - `CSSParser` styles DOM
   - `HTMLParserScriptRunner` execs js
-- when the compositor needs a new frame (e.g., in response to vsync)
+- when the compositor needs a new frame (e.g., in response to vsync), it asks
+  clients (e.g., tabs, canvass, browser ui, etc.) to submit new
+  `CompositorFrame`s
   - gpu `VizCompositorThread` calls `DisplayScheduler::OnBeginFrame`
   - renderer `Compositor` calls `ExternalBeginFrameSource::OnBeginFrame`
+    - when the client is a tab
   - renderer `CrRendererMain` calls `ProxyMain::BeginMainFrame`
     - `LocalFrameView::RunStyleAndLayoutLifecyclePhases` updates dom style and layout
     - `LocalFrameView::RunPrePaintLifecyclePhase` prepaints
@@ -721,11 +726,24 @@ Chromium Browser
     `CompositorFrameSinkImpl::SubmitCompositorFrame`
     - `Surface::QueueFrame`
     - `Surface::ActivateFrame`
-- when the compositor latches a new frame (e.g., also in response to vsync)
+- when the compositor presents a new frame (e.g., also in response to vsync)
   - gpu `VizCompositorThread` calls `DisplayScheduler::OnBeginFrameDeadline`
-  - `DisplayScheduler::DrawAndSwap` calls `Display::DrawAndSwap`
-  - `DirectRenderer::DrawFrame`
-    - this draws with `SkiaRenderer`
-  - `SkiaRenderer::SwapBuffers`
-    - `SkiaOutputSurfaceImpl::SwapBuffers` calls
-      `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+    - `DisplayScheduler::DrawAndSwap` calls `Display::DrawAndSwap`
+    - `SurfaceAggregator::Aggregate` aggregates all `CompositorFrame`s from
+      all clients to an `AggregatedFrame`
+    - `DirectRenderer::DrawFrame` draws the `AggregatedFrame`
+      - this draws with `SkiaRenderer` and draws to `GrDeferredDisplayList`
+    - `SkiaRenderer::SwapBuffers`
+      - `SkiaOutputSurfaceImpl::SwapBuffers`
+  - gpu `CrGpuMain`
+    - `SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass`
+      - this replays `GrDeferredDisplayList`
+    - `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
+      - `SkiaOutputDevice::Submit` calls `GrDirectContext::submit` to submit
+        (`glFlush` or `vkQueueSubmit`) cmdbufs to gpu
+      - `SkiaOutputSurfaceImplOnGpu::PostSubmit` calls
+        `SkiaOutputSurfaceImplOnGpu::PresentFrame`
+        - `SkiaOutputDeviceBufferQueue::ScheduleOverlays`
+        - `SkiaOutputDeviceBufferQueue::Present`
+          - on wayland, this calls `GbmSurfacelessWayland::Present`
+          - on drm, this calls `GbmSurfaceless::Present`
