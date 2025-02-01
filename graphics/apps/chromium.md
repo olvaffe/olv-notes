@@ -660,3 +660,72 @@ Chromium Browser
     - `SectionsManager::showSection`
 - `Benchmark::run`
 - `MultiplyBenchmark` is a `Benchmark` with `MultiplyStage`
+
+## Life of a Pixel
+
+- when user enters a url, browser process
+  - `CrBrowserMain` calls `OpenCurrentURL` to open the url
+  - this starts a navigation flow
+    - `NavigationRequest::NavigationRequest`
+    - `NavigationRequest::BeginNavigation`
+    - `NavigationRequest::StartNavigation`
+    - `NavigationRequest::OnResponseStarted`
+      - `RenderFrameHostManager::CreateSpeculativeRenderFrame` calls
+        `RenderFrameHostImpl::CreateRenderFrame`
+    - `NavigationRequest::CommitNavigation`
+      - `RenderFrameHostImpl::CommitNavigation`
+- in response to `RenderFrameHostImpl::CreateRenderFrame`, renderer process
+  - `CrRendererMain` calls `AgentSchedulingGroup::CreateFrame`
+  - this starts a loading flow
+    - `DocumentLoader::DocumentLoader`
+    - `DocumentLoader::CommitNavigation`
+    - `DocumentLoader::StartLoadingResponse`
+    - `DocumentLoader::FinishedLoading`
+- in response to `RenderFrameHostImpl::CommitNavigation`, renderer process
+  - `CrRendererMain` calls `RenderFrameImpl::CommitNavigation`
+  - `HTMLDocumentParser` and `HTMLTreeBuilder` parses html to DOM
+  - `CSSParser` styles DOM
+  - `HTMLParserScriptRunner` execs js
+- when the compositor needs a new frame (e.g., in response to vsync)
+  - gpu `VizCompositorThread` calls `DisplayScheduler::OnBeginFrame`
+  - renderer `Compositor` calls `ExternalBeginFrameSource::OnBeginFrame`
+  - renderer `CrRendererMain` calls `ProxyMain::BeginMainFrame`
+    - `LocalFrameView::RunStyleAndLayoutLifecyclePhases` updates dom style and layout
+    - `LocalFrameView::RunPrePaintLifecyclePhase` prepaints
+    - `LocalFrameView::RunPaintLifecyclePhase` paints
+      - this converts layout tree to display items / paint ops
+    - `LayerTreeHost::DoUpdateLayers` updates layers
+      - this converts layout tree to layer list
+    - `ProxyMain::BeginMainFrame::commit`
+  - renderer `Compositor` calls `ProxyImpl::ReadyToCommit`
+    - `LayerTreeHostImpl::BeginCommit`
+    - `LayerTreeHostImpl::FinishCommit`
+    - `LayerTreeHostImpl::CommitComplete`
+      - `LayerTreeImpl::UpdateTiles`
+      - `TileManager::PrepareTiles`
+        - `TileManager::AssignGpuMemoryToTiles`
+        - `TileManager::ScheduleTasks`
+          - this divides layers into tiles and `RasterTask`s
+          - `GpuRasterBuffer::Playback` requests the gpu process to rasterize
+            `RasterTask`s
+    - `TileManager::CheckForCompletedTasksAndIssueSignals`
+      - `LayerTreeHostImpl::ActivateSyncTree` activates the latest rasterized
+        layers (they are double-buffered) for drawing
+    - `ProxyImpl::ScheduledActionDraw` draws layers
+      - `LayerTreeHostImpl::PrepareToDraw`
+      - `LayerTreeHostImpl::DrawLayers`
+        - `LayerTreeHostImpl::GenerateCompositorFrame`
+        - `GpuChannel::Flush`
+        - `LayerContextImpl::SubmitCompositorFrame`
+  - gpu `VizCompositorThread` calls
+    `CompositorFrameSinkImpl::SubmitCompositorFrame`
+    - `Surface::QueueFrame`
+    - `Surface::ActivateFrame`
+- when the compositor latches a new frame (e.g., also in response to vsync)
+  - gpu `VizCompositorThread` calls `DisplayScheduler::OnBeginFrameDeadline`
+  - `DisplayScheduler::DrawAndSwap` calls `Display::DrawAndSwap`
+  - `DirectRenderer::DrawFrame`
+    - this draws with `SkiaRenderer`
+  - `SkiaRenderer::SwapBuffers`
+    - `SkiaOutputSurfaceImpl::SwapBuffers` calls
+      `SkiaOutputSurfaceImplOnGpu::SwapBuffers`
