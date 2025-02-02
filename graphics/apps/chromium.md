@@ -538,6 +538,67 @@ Chromium Browser
   - the gpu process cannot connect to the perfetto socket due to sandboxing,
     which can be disabled by `--disable-gpu-sandbox`
 
+## Perfetto: Graphics Pipeline
+
+- `STEP_ISSUE_BEGIN_FRAME` is on gpu `VizCompositorThread`
+  - `RootCompositorFrameSinkImpl` has a `DelayBasedBeginFrameSource` as
+    `synthetic_begin_frame_source_` that ticks at vsync freq
+  - on `DelayBasedBeginFrameSource::OnTimerTick`,
+    - `CompositorFrameSinkSupport::OnBeginFrame` emits the trace event
+    - `DisplayScheduler::BeginFrame` calls
+      `DisplayScheduler::ScheduleBeginFrameDeadline` to schedule a deadline
+      - upon deadline, viz latches and aggregates all client frames, draws,
+        and presents
+      - it is picked to be next vsync minus
+        `BeginFrameArgs::DefaultEstimatedDisplayDrawTime`, to give clients
+        time to generate client frames and to give viz time to aggregate, draw
+        and swap
+- `STEP_RECEIVE_BEGIN_FRAME` is on renderer `Compositor` (the impl thread)
+  - `AsyncLayerTreeFrameSink::OnBeginFrame` emits the trace event
+  - `ExternalBeginFrameSource::OnBeginFrame` calls
+    `Scheduler::ScheduleBeginImplFrameDeadline` to schedule a deadline on
+    `Compositor` thread
+    - the idea is to reduce latency
+  - upon deadline, `Scheduler::OnBeginImplFrameDeadline` is called
+    - `ProxyImpl::ScheduledActionSendBeginMainFrame` tells `CrRendererMain`
+      (the main thread) to update and commit the layer tree
+    - `ProxyImpl::ScheduledActionDraw` trigger the following steps
+- `STEP_GENERATE_COMPOSITOR_FRAME` and `STEP_SUBMIT_COMPOSITOR_FRAME` are on
+  renderer `Compositor`
+  - `ProxyImpl::DrawInternal` emits `STEP_GENERATE_COMPOSITOR_FRAME`
+    - `LayerTreeHostImpl::DrawLayers` emits `STEP_SUBMIT_COMPOSITOR_FRAME`
+- `STEP_RECEIVE_COMPOSITOR_FRAME` is on gpu `VizCompositorThread`
+  - `CompositorFrameSinkSupport::MaybeSubmitCompositorFrame` emits the trace
+    event
+  - `Surface::QueueFrame` calls `Surface::CommitFrame`
+    - this may call `DisplayScheduler::OnPendingSurfacesChanged` and
+      re-schedule the deadline to happen immediately if all surfaces are
+      activated
+- `STEP_DRAW_AND_SWAP`, `STEP_SURFACE_AGGREGATION`, and
+  `STEP_SEND_BUFFER_SWAP` are on gpu `VizCompositorThread`
+  - `DisplayScheduler::OnBeginFrameDeadline` calls `Display::DrawAndSwap`
+  - `Display::DrawAndSwap` emits `STEP_DRAW_AND_SWAP` and
+    `STEP_SEND_BUFFER_SWAP`
+    - `SurfaceAggregator::Aggregate` emits `STEP_SURFACE_AGGREGATION`
+    - `SkiaRenderer::SwapBuffers` triggers the following step
+- `STEP_BUFFER_SWAP_POST_SUBMIT` is on gpu `CrGpuMain`
+  - `SkiaOutputSurfaceImplOnGpu::SwapBuffers` submits the gpu job and calls
+    `SkiaOutputSurfaceImplOnGpu::PostSubmit` which emits the trace event
+- on wayland, `STEP_BACKEND_SEND_BUFFER_SWAP`,
+  `STEP_BACKEND_SEND_BUFFER_POST_SUBMIT`, and
+  `STEP_BACKEND_FINISH_BUFFER_SWAP` are on browser `CrBrowserMain`
+  - `WaylandFrameManager::RecordFrame` emits `STEP_BACKEND_SEND_BUFFER_SWAP`
+  - `WaylandFrameManager::PlayBackFrame` emits `STEP_BACKEND_SEND_BUFFER_POST_SUBMIT`
+  - `WaylandFrameManager::MaybeProcessSubmittedFrames` emits
+    `STEP_BACKEND_FINISH_BUFFER_SWAP`
+- `STEP_FINISH_BUFFER_SWAP` is on gpu `CrGpuMain`
+  - `SkiaOutputDevice::FinishSwapBuffers` emits the trace event when the swap
+    is scheduled
+    - the swap will happen on next vsync
+- `STEP_SWAP_BUFFERS_ACK` is on gpu `VizCompositorThread`
+  - `SkiaOutputSurfaceImpl::DidSwapBuffersComplete` calls
+    `Display::DidReceiveSwapBuffersAck` which emits the trace event
+
 ## ML
 
 - `services/on_device_model`
