@@ -808,3 +808,48 @@ Chromium Browser
         - `SkiaOutputDeviceBufferQueue::Present`
           - on wayland, this calls `GbmSurfacelessWayland::Present`
           - on drm, this calls `GbmSurfaceless::Present`
+
+## Frame Metrics
+
+- `LayerTreeHostImpl`
+  - it has
+    - `CompositorFrameReportingController`
+    - `FrameSequenceTrackerCollection`
+    - `TotalFrameCounter`
+    - `DroppedFrameCounter`
+    - `BeginFrameTracker`
+  - on events, it calls
+    - `FrameSequenceTrackerCollection::StartSequence`
+    - `FrameSequenceTrackerCollection::NotifyBeginImplFrame`
+    - `FrameSequenceTrackerCollection::NotifyFrameEnd`
+    - `FrameSequenceTrackerCollection::StopSequence`
+- collection
+  - `CompositorFrameReportingController`
+    - `WillBeginImplFrame` creates a `CompositorFrameReporter`
+      - this is called from `Scheduler::BeginImplFrame`
+    - `AdvanceReporterStage` will advance the reporter to next stages until
+      `DidSubmitCompositorFrame` destroys the reporter
+    - `AddSortedFrame`
+      - `FrameSequenceTrackerCollection::AddSortedFrame`
+      - `FrameSequenceTracker::AddSortedFrame`
+      - `FrameSequenceMetrics::AddSortedFrame`
+  - `CompositorFrameReporter`
+    - dtor calls `DroppedFrameCounter::OnEndFrame`
+  - `DroppedFrameCounter`
+    - it has a `FrameSorter` to batch and sort frames
+    - `OnBeginFrame` adds `viz::BeginFrameArgs` to the sorter
+    - `OnEndFrame` adds `FrameInfo` to the sorter
+      - this causes the sorter to call `NotifyFrameResult` which calls into
+        `CompositorFrameReportingController::AddSortedFrame`
+- report
+  - `FrameSequenceTrackerCollection::StopSequence`
+    - `FrameSequenceMetrics::ReportMetrics`
+  - `FrameSequenceTrackerCollection`
+    - `StartSequence` creates a `FrameSequenceTracker` of the specified type
+    - `StopSequence` destroys the tracker and calls
+      `FrameSequenceMetrics::ReportMetrics`
+  - `FrameSequenceTracker`
+    - it has
+      - `FrameSequenceMetrics`
+  - `FrameSequenceMetrics`
+    - `ReportMetrics` reports the metrics as uma histograms
