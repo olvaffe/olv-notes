@@ -1,6 +1,36 @@
 Chromium Media
 ==============
 
+## Life of a WebRTC Frame
+
+- `Service: video_capture.mojom.VideoCaptureService` process
+  - `V4L2CaptureDelegate::DoCapture` waits for the camera to capture a frame
+  - `VideoCaptureDeviceClient::OnIncomingCapturedData` post-processes the
+    frame
+  - `VideoCaptureDeviceClient::OnIncomingCapturedBufferExt` calls
+    `VideoFrameReceiverOnTaskRunner::OnFrameReadyInBuffer`
+- browser process
+  - `VideoCaptureController::OnFrameReadyInBuffer`
+- renderer process
+  - blink `VideoCaptureImpl::OnBufferReady` calls
+    `VideoCaptureImpl::OnVideoFrameReady` which calls
+    `VideoTrackAdapter::DeliverFrameOnVideoTaskRunner`
+  - `Media` thread calls `WebMediaPlayerMS::FrameDeliverer::OnVideoFrame`
+    - `media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame` copies
+      the video frame from cpu buffer to gpu buffer
+  - `Chrome_ChildIOThread` thread calls
+    `WebMediaPlayerMSCompositor::EnqueueFrame`
+  - `VideoFrameCompositor` thread calls
+    `WebMediaPlayerMSCompositor::RenderWithoutAlgorithmOnCompositor`
+    - `VideoFrameSubmitter::DidReceiveFrame` calls
+      `VideoFrameSubmitter::SubmitFrame`
+  - gpu process
+    - `VizCompositorThread` calls `FrameSinkBundleImpl::Submit`
+    - `CompositorFrameSinkImpl::SubmitCompositorFrame` calls
+      `CompositorFrameSinkSupport::MaybeSubmitCompositorFrame`
+      - this starts a `Graphics.Pipeline` trace event at
+        `STEP_RECEIVE_COMPOSITOR_FRAME` step
+
 ## Media
 
 - <https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/media/README.md#playback>
