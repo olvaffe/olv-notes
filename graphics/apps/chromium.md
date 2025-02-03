@@ -853,3 +853,23 @@ Chromium Browser
       - `FrameSequenceMetrics`
   - `FrameSequenceMetrics`
     - `ReportMetrics` reports the metrics as uma histograms
+- example: dropped frame
+  - typically, while animating, we should see this sequence of events
+    repeatedly
+    - vsync -> renderer begin frame -> renderer composite frame -> aggregate frame -> draw -> swap
+    - or, in trace view,
+      - `Display::FrameDisplayed`
+      - `DelayBasedBeginFrameSource::OnTimerTick`
+      - `ExternalBeginFrameSource::OnBeginFrame`
+      - `SingleThreadProxy::DoComposite`
+      - `DisplayScheduler::OnBeginFrameDeadline`
+      - `Display::DrawAndSwap`
+  - but when begin frame and composite frame take too long inside blink and
+    miss the vsync interval
+    - viz does not call `OnBeginFrameDeadline` because there is no frame to
+      composite
+    - viz still schedules a begin frame on next vsync, but that frame is
+      dropped by `Scheduler::FinishImplFrame` with
+      `FrameSkippedReason::kDrawThrottled`
+      - `DroppedFrameCounter::NotifyFrameResult` will emit a
+        `DroppedFrameDuration` trace event
