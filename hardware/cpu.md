@@ -182,3 +182,35 @@ CPU
 - e.g.,
   - `i5-13400` runs at 2.5/1.8GHz and TDP is 65W
   - `i5-13400T` runs at 1.3/1.0GHz and TDP is 35W
+
+## Die Cost
+
+- for 3nm process,
+  - the cost is about $20K
+  - the yield rate is about 80%
+  - a wafer is typically 300mm (diameter)
+    - also known as 12"
+- die size
+  - it varies, but the ballpark number is 110~170mm2
+  - it is easy to calculate the die cost from process cost, wafer size, yield
+    rate, and die size
+  - an soc die typically has these ip blocks
+    - cpu cores
+    - per-core l1/l2 caches
+    - shared l3 caches
+    - gpu
+      - shader engines
+      - media engine
+      - display engine
+    - npu
+    - io
+      - pcie
+      - usb
+      - misc
+    - wifi, bt, modem, etc.
+- standard cells
+  - they are like primitives to build logic gate, io pad, sram, clock, etc.
+  - they can be optimized for performance or die area
+    - HD: high-density, optmized for perf-per-mm2
+    - HP: high-performance, can reach much higher performance but with much
+      bigger area
