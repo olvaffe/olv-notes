@@ -110,6 +110,9 @@ E-Book
       - `./make_release.py && unzip DeDRM_tools.zip DeDRM_plugin.zip`
       - it imports keys from `DeACSM` automatically, or configure the plugin
         to add manually
+- CLI
+  - `calibedb list` lists the library
+  - `calibedb add` adds a file to the library
 
 ## EPUB
 
