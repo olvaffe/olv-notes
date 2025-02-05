@@ -1,6 +1,30 @@
 E-Book
 ======
 
+## Calibre
+
+- plugins
+  - `Preferences -> Advanced -> Plugins`
+    - plugins are installed to `~/.config/calibre/plugins`
+  - `Get new plugins`
+    - `DeACSM` downloads epub/pdf specified by `.acsm` file from adobe server
+      - <https://github.com/Leseratte10/acsm-calibre-plugin>
+      - configure the plugin to log in with adobe id
+      - adding `.acsm` as a book downloads encrypted epub/pdf from the server
+  - `Load plugin from file`
+    - `DeDRM` decrypts adobe adept drm
+      - <https://github.com/noDRM/DeDRM_tools>
+      - `./make_release.py && unzip DeDRM_tools.zip DeDRM_plugin.zip`
+      - it imports keys from `DeACSM` automatically, or configure the plugin
+        to add manually
+- CLI
+  - `calibredb list` lists the library
+  - `calibredb add` adds a file to the library
+
+## Calibre Plugin
+
+- <https://manual.calibre-ebook.com/creating_plugins.html>
+
 ## Formats
 
 - <http://wiki.mobileread.com/wiki/>
@@ -93,26 +117,6 @@ E-Book
       - this includes the private key to decrypt pdf/epub
   - <https://github.com/Leseratte10/acsm-calibre-plugin> is a rewrite in
     python for calibre
-
-## Calibre
-
-- plugins
-  - `Preferences -> Advanced -> Plugins`
-    - plugins are installed to `~/.config/calibre/plugins`
-  - `Get new plugins`
-    - `DeACSM` downloads epub/pdf specified by `.acsm` file from adobe server
-      - <https://github.com/Leseratte10/acsm-calibre-plugin>
-      - configure the plugin to log in with adobe id
-      - adding `.acsm` as a book downloads encrypted epub/pdf from the server
-  - `Load plugin from file`
-    - `DeDRM` decrypts adobe adept drm
-      - <https://github.com/noDRM/DeDRM_tools>
-      - `./make_release.py && unzip DeDRM_tools.zip DeDRM_plugin.zip`
-      - it imports keys from `DeACSM` automatically, or configure the plugin
-        to add manually
-- CLI
-  - `calibedb list` lists the library
-  - `calibedb add` adds a file to the library
 
 ## EPUB
 
