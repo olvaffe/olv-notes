@@ -25,6 +25,83 @@ E-Book
 
 - <https://manual.calibre-ebook.com/creating_plugins.html>
 
+## Kobo Desktop App
+
+- `Kobo.sqlite`
+  - `.tables` shows all tables
+  - `.schema user`
+    - `UserId` is a uuid, associated with user account?
+    - `UserKey`
+    - `RefreshToken`
+    - `AuthToken`
+    - `AuthType` is `Bearer`
+    - `SyncContinuationToken`
+    - `KoboAccessToken`
+    - there is only 1 user
+  - `.schema content_keys`
+    - `volumeId` is the uuid of an epub
+      - the encrypted epub is at `kepub/<volumeId>`
+    - `elementId` is the path of an encrypted file within the epub
+    - `elementKey` is the base64-encoded 128-bit aes key
+    - there is 1 row for each encrypted file within each epub
+  - `.schema content`
+    - `ContentID` is `volumeId`, optionally plus path within the epub
+    - `Title` is the title
+    - `Attribution` is the author
+    - `Description` is the description
+    - `Series` is the series
+    - `Publisher` is the publisher
+    - `IsEncrypted` is encrypted
+    - many more
+    - there is 1 row for each epub, and for each file within each epub
+- drm scheme
+  - a file within an epub may be encrypted
+  - if a file is encrypted, the secret key used to encrypt the file is stored
+    in `elementKey` field of `content_keys` table
+    - the secret key is base64-encoded to be stored as ascii in the db
+    - the secret key is itself encrypted by the user key before storage
+  - the user key is derived as follows
+    - it starts with a fixed string, which depends on the app version
+    - it appends the mac addr of the first nic
+    - it calculates sha256
+    - it appends the user id from `UserId` field of `user` table
+    - it calculates sha256 again
+    - it uses the last 128-bit as the user key
+      - sha256 is 256-bit, aka 32 byte, aka 64 hexadecimal chars
+    - iow, the user key depends on
+      - the app version
+      - the hardware (first nic)
+      - the user
+- <https://github.com/TnS-hun/kobo-book-downloader>
+  - this simulates the android app and talks to <https://storeapi.kobo.com/v1>
+    directly
+  - <https://storeapi.kobo.com/v1/auth/device>
+    - this can register a new device before login
+      - generate a uuid as the device id
+      - make a request to get `AccessToken` and `RefreshToken`
+  - <https://storeapi.kobo.com/v1/auth/refresh>
+    - whenever we get error 401, we should make a request to refresh
+      `AccessToken` and `RefreshToken`
+  - <https://storeapi.kobo.com/v1/initialization>
+    - initialize the session
+  - <https://authorize.kobo.com/signin> (`sign_in_page`)
+    - sign in with user name, password, and captcha
+    - get `userId` (uuid associated with the user account) and `userKey`
+  - <https://storeapi.kobo.com/v1/auth/device> again
+    - make a request with a valid `userKey` and get `UserKey`
+    - future requests use both `AccessToken` and `UserKey`
+  - <https://storeapi.kobo.com/v1/products/books/{ProductId}/access> (`content_access_book`)
+    - `ContentKeys` is the `path-within-epub -> base64-encoded 128-bit aes key`
+      - that is, aes keys for each encrypted files within the epub
+    - `ContentUrls` is the download url of the epub
+  - to decrypt a file within a epub
+    - derive the user 128-bit aes key
+      - sha256 of device id plus user id
+      - take the last 128-bit
+    - derive the content 128-bit aes key
+      - base64 decode the recieved content key
+      - decrypt with the user aes key
+
 ## Formats
 
 - <http://wiki.mobileread.com/wiki/>

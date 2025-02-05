@@ -50,3 +50,4 @@ Flatpak
 - `com.calibre_ebook.calibre`
 - `com.github.PintaProject.Pinta`
 - `io.mpv.Mpv`
+- `com.usebottles.bottles`
