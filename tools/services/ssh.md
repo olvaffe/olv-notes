@@ -20,8 +20,7 @@ SSH
     - some ciphers do not need separate macs for message integrity
 - client and server encrypts all messages using the agreed cipher and secrete
   key
-- server authenticate client
-  - `PubkeyAuthentication` uses client pubkey to authenticate client
+- server authenticate client - `PubkeyAuthentication` uses client pubkey to authenticate client
     - server encrypts a challenge using client pubkey
     - client decrypts the challenge using client privkey
   - `PasswordAuthentication` uses client password to authenticate client
@@ -82,6 +81,38 @@ SSH
     - `ssh host sh` does not
   - `-T`, `-t`, and `-tt` can explicit control whether a pty is allocated by
     sshd
+- expriment: `ssh <remote>`
+  - local has a single process, `ssh <remote>` itself
+    - the stdio connects to the controlling tty
+    - there is a socket connecting to remote
+    - the controlling tty is in raw mode
+    - it forwards data between the controlling tty and the socket
+  - remote has 3 processes
+    - `sshd: olv [priv]` runs as root
+      - it waits for the session to end and performs cleanup
+      - this is similar to when a user logs in locally, `login` runs as root
+        and waits for the session to end
+    - `sshd: olv@pts/0` runs as user
+      - the stdio connects to `/dev/null`
+      - there is a socket connecting to local
+      - there is a fd connecting to `/dev/ptmx`
+      - it acts as a terminal emulator and forwards data between ptmx and the
+        socket
+    - `-bash` runs as user
+      - the stdio connects to a pty (`/dev/pts/X`)
+- expriment: `ssh <remote> sleep infinity`
+  - local has a single process, `ssh <remote> sleep infinity` itself
+    - same as above
+  - remote has 3 processes
+    - `sshd: olv [priv]` runs as root
+      - same as above
+    - `sshd: olv@notty` runs as user
+      - the stdio connects to `/dev/null`
+      - there is a socket connecting to local
+      - there are 3 pipes connecting to `sleep infinity`
+      - it forwards data between the pipes and the socket
+    - `sleep infinity` runs as user
+      - the stdio connects to the 3 pipes
 
 ## SSH agent
 
