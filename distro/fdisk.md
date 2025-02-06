@@ -85,6 +85,14 @@ fdisk
   - `rsync -qaHAXSx / /mnt`
     - `-q` is quiet
     - `-a` is archive (recursive and preserves most things)
+      - equivalent to `-rlptgoD`
+        - `-r` recurses into dirs
+        - `-l` copies links as links
+        - `-p` preserves permissions
+        - `-t` preserves mtimes
+        - `-g` preserves groups
+        - `-o` preserves users
+        - `-D` preserves special files and device files
     - `-H` preserves hard links
     - `-A` preserves acls
     - `-X` preserves xattrs
