@@ -171,6 +171,9 @@ Homelab
   - `gcloud components update`
 - init
   - `gcloud init`
+- auth
+  - `gcloud auth list` lists accounts
+  - `gcloud auth login` logs in
 - compute
   - os login
     - `gcloud compute project-info add-metadata --metadata=enable-oslogin=true`
