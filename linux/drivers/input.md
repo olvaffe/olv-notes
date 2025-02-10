@@ -195,3 +195,26 @@ Input subsystem
   - force feedback (`EV_FF`)
   - gyroscope (`EV_ABS`)
   - accelerometer
+
+## Userspace
+
+- <https://gitlab.freedesktop.org/libevdev/libevdev>
+  - libevdev is a low-level wrapper for evdev
+- <https://gitlab.freedesktop.org/libevdev/evemu>
+  - evdev provides tools to debug evdev
+  - `evemu-describe` shows info about an evdev
+  - `evemu-record` shows (optionally records) events for an evdev
+  - `evemu-device` creates an uinput evdev
+  - `evemu-play` generates a sequence of events
+  - `evemu-event` generates an event
+- <https://gitlab.freedesktop.org/libinput/libinput>
+  - libinput is a high-level wrapper for evdev
+  - it depends on
+    - `libudev`
+    - `mtdev`, for multi-touch
+    - `libevdev`
+    - `libwacom`
+  - userspace compositors use libinput
+- <https://gitlab.freedesktop.org/libinput/libei>
+  - libei provides emulated input
+  - userspace compositors may use libei, but the adoption rate is low
