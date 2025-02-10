@@ -41,6 +41,20 @@ Kernel MTD
     - raw nand for storage
   - eMMC
     - nand-behind-ftl-controller for storage
+- <https://en.wikipedia.org/wiki/Boot_ROM>
+  - on x86, the boot rom is typcailly stored in nor
+    - it can be flashed and can lead to brick
+    - it consists of early init (e.g., coreboot, proprietary, etc.) and
+      payload (e.g., edk2, depthcharge, etc.)
+    - it chainloads bootloader (e.g., systemd-boot, grub, etc.)
+  - on arm, the boot rom is typically stored in mask rom
+    - it cannot be flashed and cannot lead to brick
+    - it consists of early init and payload
+    - payload exhausts boot options and tries to find the bootloader in
+      - eeprom or nor, typically behind spi controller
+      - emmc, behind emmc controller
+      - sd card, behind sd/mmc controller
+      - usb storage, behind usb controller
 
 ## Subsystems
 
