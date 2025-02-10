@@ -114,7 +114,7 @@ Das U-Boot
     - also at <https://github.com/rockchip-linux/rkbin>
   - build uboot
     - `make orangepi-5-rk3588s_defconfig`
-    - `ROCKCHIP_TPL=rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin
+    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin
        BL31=arm-trusted-firmware/build/rk3588/release/bl31/bl31.elf
        CROSS_COMPILE=aarch64-linux-gnu- make`
     - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
@@ -127,9 +127,9 @@ Das U-Boot
           `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000` for
           `CONFIG_ARCH_ROCKCHIP`
   - flash to sdcard
-    - `dd if=u-boot-rockchip.bin of=/dev/sda seek=64`
+    - `dd if=u-boot-rockchip.bin of=/dev/mmcblk0 seek=64`
   - flash to spi flash
-    - `dd if=u-boot-rockchip.bin of=/dev/mtdblock0`
+    - `dd if=u-boot-rockchip-spi.bin of=/dev/mtdblock0`
 - boot sequence
   - bootrom jumps to spi flash sector 0x40
   - `ROCKCHIP_TPL=rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.16.bin`
