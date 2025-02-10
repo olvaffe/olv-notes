@@ -33,64 +33,67 @@ Rockchip SoCs
   - PX30, A35 x4
   - PX5, A53 x8 @1.5GHz
 
-## NanoPI R5S Boot Sequence
+## RK3588 Boot Sequence
 
-- <https://wiki.pine64.org/wiki/RK3399_boot_sequence>
-  - BootRom (BROM)
-    - after reset, cpu0 executes bootrom stored in the read-only memory
-    - bootrom tries to load the bootloader from, in order,
-      - nor or nand flash on spi1
-        - it issues 0x9f (Read Identification)
-        - it uses 0x03 (nor) or 0x13 (nand) to read blocks
-        - it looks for for the bootloader magic number in the first 32 bytes
-      - emmc
-        - it looks for the bootloader magic number at sector 0x40
-      - sd on sdmmc
-        - same as emmc after sdmmc controller initialization
-      - over usb by putting the OTG0 usb controller in device mode (id
-        `2207:330c`)
-        - the board usually has a maskrom button, which forces all prior
-          methods to fail and forces bootrom to enter this mode
-    - the bootloader consists of up to 3 parts
-      - id block, which is the header
-      - first stage, which is loaded to and executed from sram
-        - it's main job is to initialize dram
-      - optional second stage, which is loaded to and executed from low dram
-        - it's main job is to chainload another bootloader
-        - the first stage can choose to do both jobs without returning to
-          bootram
-      - if over usb, the host sends the first stage using request 0x0471 and the
-        second stage using request 0x0472
-  - U-Boot as the bootloader
-    - it consists of 4 parts
-      - TPL, which is loaded by bootrom to sram
-        - it initializes dram, and returns to bootrom
-      - SPL, which is loaded by bootrom to low dram
-        - it loads respective parts of TF-A (ARM Trusted Firmware-A) BL31
-          firmware to dram, sram, and pmu sram
-        - it also loads u-boot proper to dram
-      - TF-A BL31
-        - it sets up EL2 to run u-boot proper
-        - it stays resident until system shutdown
-      - U-Boot proper
-- <https://opensource.rock-chips.com/wiki_Rockusb>
-  - bootrom has a minimal rockusb implementation
-    - it only supports `rkdeveloptool db` (`DownloadBoot`), which tells
-      bootrom to run the specified bootloader
-  - the proprietary bootloader (`rkxx_loader_vx.xx.bin`) has two rockusb
-    implementations
-    - it consits of `ddr.bin`, `usbplug.bin`, and `miniloader.bin`
-    - after `rkdeveloptool db rkxx_loader_vx.xx.bin`, the device will run
-      `ddr.bin` to initialize dram and run `usbplug.bin` to enter rockusb mode
-    - `miniloader.bin` has another rockusb implementation that is entered when
-      - the recovery key or the volume up key is pressed, or
-      - it cannot find the next bootloader at sector 0x4000
-  - u-boot provides anothe rockusb implementation
+- BootRom (BROM)
+  - <https://wiki.pine64.org/wiki/RK3399_boot_sequence>
+  - after reset, cpu0 executes bootrom stored in the read-only memory
+  - bootrom tries to load the bootloader from, in order,
+    - nor or nand flash on spi1
+      - it issues 0x9f (Read Identification)
+      - it uses 0x03 (nor) or 0x13 (nand) to read blocks
+      - it looks for for the bootloader magic number in the first 32 bytes
+    - emmc
+      - it looks for the bootloader magic number at sector 0x40
+    - sd on sdmmc
+      - same as emmc after sdmmc controller initialization
+    - over usb by putting the OTG0 usb controller in device mode (id
+      `2207:330c`)
+      - the board usually has a maskrom button, which forces all other methods
+        to fail and forces bootrom to load the bootloader over usb
+- usb recovery bootloader (`rkxx_loader_vx.xx.bin`)
+  - <https://opensource.rock-chips.com/wiki_Rockusb>
+    - bootrom can load the bootloader over usb using rockusb protocol
+    - the bootrom only has a minimal impl and only supports `rkdeveloptool db`
+      (`DownloadBoot`)
+  - <https://github.com/rockchip-linux/rkbin>
+    - `./tools/boot_merger RKBOOT/RK3588MINIALL.ini` to generate
+      `rk3588_spl_loader_v1.16.113.bin`
+    - `rkxx_loader_vx.xx.bin` consists of
+      - `ddr.bin`, which initializes dram
+      - `usbplug.bin`, which provides the full rockusb impl
+      - `miniloader.bin`, not used in recovery
+  - <https://github.com/rockchip-linux/rkdeveloptool.git>
+    - `autoreconf -i && ./configure && make` to build `rkdeveloptool`
+    - `./rkdeveloptool db rk3588_spl_loader_v1.16.113.bin` tells the bootrom
+      to boot the specified bootloader, to `usbplug.bin` to gain full rockusb
+      support
+    - `./rkdeveloptool ef` (`EraseFlash`) tells `usbplug.bin` to erase the spi
+      flash
+      - the normal flow will now find the stage1 from emmc or sd, rather than
+        from flash
+- proprietary bootloader
+  - it consists of `ddr.bin` and `miniloader.bin`
+    - bootrom loads `ddr.bin` to sram and executes it to initial dram
+    - bootrom loads `miniloader.bin` to dram and executes it
+    - `miniloader.bin` loads u-boot from sector 0x4000 and executes u-boot
+  - `miniloader.bin` also has a full rockusb impl that is entered when it
+    cannot find u-boot or, when recovery key or volume up key is pressed
+- u-boot bootloader
+  - it consists of 4 parts
+    - TPL, which is loaded by bootrom to sram
+      - it initializes dram, and returns to bootrom
+    - SPL, which is loaded by bootrom to low dram
+      - it loads respective parts of TF-A (ARM Trusted Firmware-A) BL31
+        firmware to dram, sram, and pmu sram
+      - it also loads u-boot proper to dram
+    - TF-A BL31
+      - it sets up EL2 to run u-boot proper
+      - it stays resident until system shutdown
+    - U-Boot proper
+  - u-boot provides another rockusb implementation
     - `rockusb 0 mmc 0` to enter
 - <https://opensource.rock-chips.com/wiki_Boot_option>
-  - make sure bootrom is in rockusb/maskrom mode
-  - `rkdeveloptool db rkxx_loader_vx.xx.bin` to initialize dram (`ddr.bin`)
-    and enter another rockusb mode (`usbplug.bin`)
   - `rkdeveloptool wl 0x40 idbloader.img` to write `idbloader.img` to sector
     0x40
     - it consists of the idblock header, `u-boot-tpl.bin`, and
