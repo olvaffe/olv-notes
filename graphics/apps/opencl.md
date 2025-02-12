@@ -336,6 +336,8 @@ OpenCL Apps
     - `clspv::AnnotationToMetadataPass`
     - `clspv::WrapKernelPass`
     - `clspv::NativeMathPass`
+      - it replaces cl builtins by glsl natives
+        - e.g., `Builtins::kAbs` by `glsl::ExtInst::ExtInstSAbs`
     - `clspv::ZeroInitializeAllocasPass`
     - `clspv::KernelArgNamesToMetadataPass`
     - `clspv::AddFunctionAttributesPass`
@@ -351,8 +353,12 @@ OpenCL Apps
     - `clspv::InlineEntryPointsPass`
     - `clspv::FunctionInternalizerPass`
     - `clspv::ReplaceOpenCLBuiltinPass`
+      - it lowers cl builtins by llvm instrs/intrinsics
+        - e.g., `Builtins::kMad` by `Instruction::FMul` and
+          `Instruction::FAdd`
     - `clspv::FixupBuiltinsPass`
     - `clspv::ThreeElementVectorLoweringPass`
+    - `clspv::LongVectorLoweringPass`
     - `clspv::SimplifyPointerBitcastPass`
     - `clspv::ReplacePointerBitcastPass`
     - `DCEPass`
