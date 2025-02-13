@@ -116,33 +116,58 @@ ANGLE
 
 ## `eglGetDisplay`
 
-- <https://chromium.googlesource.com/angle/angle/+/refs/heads/main/extensions/EGL_ANGLE_platform_angle.txt>
-- stack
-    #0 egl::Display::GetDisplayFromNativeDisplay
-    #1 egl::GetDisplay
-    #2 EGL_GetDisplay
-    #3 eglGetDisplay
-- `GetDisplayFromNativeDisplay`
-  - platform type is `EGL_PLATFORM_ANGLE_ANGLE`
-  - display type is `EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE`
-    - when `ANGLE_DEFAULT_PLATFORM` is not set, it is mapped to
-      `EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE`
-    - `ANGLE_DEFAULT_PLATFORM=gl` maps it to
-      `EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE`
-    - `vulkan` or `swiftshader` maps it to
-      `EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE`
-    - it can also be set programatically by apps through attrib
-      `EGL_PLATFORM_ANGLE_TYPE_ANGLE`
-  - device type is `0`
-    - it is mapped to `EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE`
-    - `ANGLE_DEFAULT_PLATFORM=swiftshader` maps it to
-      `EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE`
-    - it can also be set programatically by apps through attrib
-      `EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE`
-  - platform type is `0`
-    - it is mapped to `EGL_PLATFORM_X11_EXT` on Linux/X11
-    - it can also be set programatically by apps through attrib
-      `EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE`
+- `eglGetDisplay` calls
+  - `EGL_GetDisplay`
+  - `egl::GetDisplay`
+  - `egl::Display::GetDisplayFromNativeDisplay` with
+    `EGL_PLATFORM_ANGLE_ANGLE`
+- `eglGetPlatformDisplay` calls
+  - `EGL_GetPlatformDisplay`
+  - `egl::GetPlatformDisplay`
+  - `egl::Display::GetDisplayFromNativeDisplay` with specified platform
+- `egl::Display::GetDisplayFromNativeDisplay`
+  - the attrs are initialized from user-specified attrs
+    - while angle supports several platforms, the only platform with attrs is
+      `EGL_PLATFORM_ANGLE_ANGLE`
+    - `EGL_PLATFORM_ANGLE_TYPE_ANGLE` can be
+      - `EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE`
+      - `EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE` if angle-vk
+      - `EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE` if angle-gl
+      - `EGL_PLATFORM_ANGLE_TYPE_WEBGPU_ANGLE` if angle-dawn
+    - `EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE` is for angle-gl
+    - `EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE` is for angle-gl
+    - `EGL_PLATFORM_ANGLE_DEBUG_LAYERS_ENABLED` is for angle-vk and enables
+      debug layers
+    - `EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE` can be
+      - `EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE` for hw accel
+      - `EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE` for swiftshader
+      - `EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE` for testing
+    - `EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE` is for angle-vk
+      - `EGL_PLATFORM_WAYLAND_EXT` connects to wayland and uses
+        `VK_KHR_wayland_surface` for surfaces
+      - `EGL_PLATFORM_VULKAN_DISPLAY_MODE_SIMPLE_ANGLE` uses `VK_KHR_display`
+        for surfaces
+      - `EGL_PLATFORM_VULKAN_DISPLAY_MODE_HEADLESS_ANGLE` uses
+        `VK_EXT_headless_surface` for surfaces
+      - `EGL_PLATFORM_SURFACELESS_MESA` does not support surfaces
+  - `UpdateAttribsFromEnvironment` inits attrs to defaults
+    - if `EGL_PLATFORM_ANGLE_TYPE_ANGLE` is
+      `EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE`, `GetDisplayTypeFromEnvironment`
+      picks a default
+      - if there is only angle-vk, it picks
+        `EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE`
+      - if there are more than one backends, env `ANGLE_DEFAULT_PLATFORM` can
+        pick the desired backend
+    - if no `EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE`,
+      `GetDeviceTypeFromEnvironment` picks
+      `EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE` by default
+      - env `ANGLE_DEFAULT_PLATFORM` can pick swiftshader or null
+    - if no `EGL_PLATFORM_ANGLE_NATIVE_PLATFORM_TYPE_ANGLE`,
+      `GetPlatformTypeFromEnvironment` picks one depending on the compile-time
+      config
+      - `EGL_PLATFORM_WAYLAND_EXT` if `angle_use_wayland`
+      - 0 if `angle_use_vulkan_display` and `angle_vulkan_display_mode = "offscreen"`
+  - `CreateDisplayFromAttribs` creates a new `DisplayImpl` based on attrs
 
 ## `eglInitialize`
 
