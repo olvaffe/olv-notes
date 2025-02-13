@@ -895,3 +895,84 @@ Chromium GPU
 ## Wayland
 
 - XDG_RUNTIME_DIR=/var/run/chrome
+
+## DRM
+
+- monitor hotplug
+  - `BrowserMain` creates and initializes `BrowserMainRunnerImpl`
+    - `BrowserMainLoop::Init` calls
+      `ChromeContentBrowserClient::CreateBrowserMainParts`
+      - `ChromeBrowserMainExtraPartsAsh` calls `ash::Shell::CreateInstance`
+        indirectly
+      - `ash::Shell::InitializeDisplayManager` creates a
+        `DrmNativeDisplayDelegate`
+    - `BrowserMainLoop::InitializeToolkit` calls `aura::Env::CreateInstance`
+      - `aura::Env::Init` calls `ui::OzonePlatform::InitializeForUI`
+      - `OzonePlatformDrm::InitializeUI` creates
+        - `DeviceManager` to monitor udev devs
+        - `DrmWindowHostManager` to manage drm fbs?
+        - `DrmDisplayHostManager` to manage drm devs and crtcs
+      - `DrmDisplayHostManager::OnDeviceEvent` handles udev events
+  - on monitor hotplug,
+    - browser `DrmDisplayHostManager::OnUpdateGraphicsDevice` calls gpu
+      `HostDrmDevice::GpuShouldDisplayEventTriggerConfiguration`
+    - gpu process
+      - viz `HostDrmDevice::GpuShouldDisplayEventTriggerConfiguration`
+      - drm `DrmThread::ShouldDisplayEventTriggerConfiguration`
+        - `DrmGpuDisplayManager::ShouldDisplayEventTriggerConfiguration` parses
+          the event to determine if it should trigger
+    - browser
+      `DrmDisplayHostManager::GpuShouldDisplayEventTriggerConfiguration` calls
+      `DrmDisplayHostManager::NotifyDisplayDelegate`
+    - `DrmNativeDisplayDelegate::OnConfigurationChanged` calls
+      `DisplayConfigurator::OnConfigurationChanged`
+    - `DisplayConfigurator::ConfigureDisplays` configures displays
+      - `UpdateDisplayConfigurationTask::Run` calls
+        - `DrmNativeDisplayDelegate::GetDisplays`
+        - `DrmDisplayHostManager::UpdateDisplays`
+        - `HostDrmDevice::GpuRefreshNativeDisplays`
+        - `DrmThread::RefreshNativeDisplays`
+        - `DrmGpuDisplayManager::GetDisplays`
+        - `UpdateDisplayConfigurationTask::OnDisplaysUpdated`
+      - `UpdateDisplayConfigurationTask::EnterState` calls
+        - `DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout`
+        - `ConfigureDisplaysTask::Run`
+        - `DrmNativeDisplayDelegate::Configure`
+        - `DrmDisplayHostManager::ConfigureDisplays`
+        - `HostDrmDevice::GpuConfigureNativeDisplays`
+        - `DrmThread::ConfigureNativeDisplays`
+        - `DrmGpuDisplayManager::ConfigureDisplays`
+        - `UpdateDisplayConfigurationTask::OnStateEntered`
+    - `DisplayConfigurator::OnConfigured` is called after displays are
+      configured
+      - `DisplayConfigurator::NotifyDisplayStateObservers`
+      - `DisplayChangeObserver::OnDisplayConfigurationChanged`
+      - `DisplayManager::OnNativeDisplaysChanged`
+      - `DisplayManager::UpdateDisplaysWith`
+      - `DisplayManager::NotifyDisplayAdded`
+        - `WindowTreeHostManager::CreateDisplay` creates a
+          `AshWindowTreeHost` for the display
+      - more
+    - when mirroring
+      - `WindowTreeHostManager::AddWindowTreeHostForDisplay` creates a
+        `AshWindowTreeHost` for the display with `MirrorWindowController`
+      - `MirrorWindowController::UpdateWindow` calls
+        `CreateRootWindowTransformerForMirroredDisplay` to create a
+        transformer
+        - this scales the window when the two displays have different
+          resolution
+- gpu process `DrmThread`
+  - `OzonePlatformDrm::InitializeGPU` creates a `DrmThreadProxy` and
+    `OzonePlatformDrm::AfterSandboxEntry` calls
+    `DrmThreadProxy::StartDrmThread` to create the thread
+  - `DrmDeviceManager` manages drm devices
+    - `DrmThread::AddGraphicsDevice` adds a drm device to the manager
+    - each drm device is represented by a `DrmDevice`
+  - `DrmGpuDisplayManager` manages drm crtcs
+    - `DrmGpuDisplayManager::GetDisplays` queries crtcs and creates
+      `DrmDisplay` to manage them
+  - `ScreenManager` manages active drm crtcs
+    - `ScreenManager::AddDisplayControllersForDisplay` adds a
+      `HardwareDisplayController` for a `DrmDisplay`
+- gpu process `VizCompositorThread`
+  - when a monitor is added/removed, `DrmDisplayHostManager::OnDeviceEvent`
