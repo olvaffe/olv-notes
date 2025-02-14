@@ -85,26 +85,22 @@ Chrome OS Kernel
 
 - `src/scripts/build_kernel_image.sh` is used to create the kernel image
 - the script generates these cmdline options
-  - `console=`
-  - `loglevel=${FLAGS_loglevel}`
-  - `init=/sbin/init`
-  - `cros_secure`
-  - `drm.trace=0x106`
-  - `root=${root_dev}`
+  - `root=/dev/dm-0` by default
   - `rootwait`
   - `ro`
-  - `dm_verity.error_behavior=${FLAGS_verity_error_behavior}`
-  - `dm_verity.max_bios=${FLAGS_verity_max_ios}`
-  - `dm_verity.dev_wait=${dev_wait}`
-  - `${device_mapper_args}`
-    - `dm=\"1 vroot none ro 1,${table}\"`
-  - `${FLAGS_boot_args}`
-    - `noinitrd`
-    - `cros_debug`
+  - `dm_verity.error_behavior=3`
+  - `dm_verity.max_bios=-1`
+  - `dm_verity.dev_wait=1`
+  - `dm=\"1 vroot none ro 1,${table}\"`
+  - `noinitrd`
   - `vt.global_cursor_default=0`
   - `kern_guid=%U`
     - `%U` will be replaced by kernel partition uuid by depthcharge
-  - `cros_lsb_release_hash=${FLAGS_version_attestation_hash}`
+  - `console=` disables console by default
+  - `loglevel=7` by default
+  - `init=/sbin/init`
+  - `cros_secure` indicates the bootloader is depthcharge
+  - `drm.trace=0x106` is cros-specific
   - if x86,
     - `add_efi_memmap`
     - `noresume`
@@ -116,6 +112,16 @@ Chrome OS Kernel
     - `xdomain=0`
     - `i915.enable_psr=1`
     - `swiotlb=65536`
+- `src/scripts/update_kernel.sh`
+  - `get_bootargs` uses `src/build/images/<BOARD>/latest/config.txt` or
+    `ssh dut dump_kernel_config`
+- `src/platform/vboot_reference/scripts/image_signing/make_dev_ssd.sh`
+  - `--remove_rootfs_verification`
+    - it updates kernel cmdline to
+      - replace `ro` by `rw`
+      - replace `root=/dev/dm-0` by `root=PARTUUID=%U/PARTNROFF=1`
+    - `enable_rw_mount` clears reserved ext2 features
+      - otherwise, kernel would only mount it as ro
 
 ## Linux Distro: Config
 
