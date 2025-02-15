@@ -35,6 +35,100 @@ Gentoo
 - `emerge`
 - `equery`
 
+## Gentoo Development Guide
+
+- <https://devmanual.gentoo.org/>
+- Quickstart ebuild guide
+- General concepts
+- Ebuild writing
+  - `<name>-<version>.ebuild`
+    - non-normal releases (alpha, beta, rc, patch, etc.) may be suffixed
+    - gentoo revisions may be sufficed if any, starting from `-r1`
+    - live ebuilds use 9999 as the version
+  - use tabs for indention, with `tabstop=4`
+  - `EAPI=n` without quotation
+    - use 7 or later
+  - `if use <foo>` or `use <foo> && ...`
+    - `if ! use <foo>` or `use <foo> || ...` for negation
+  - `die` for fatal errors
+  - `einfo` (green, not logged), `elog` (green), `ewarn` (yellow), `eerror` (red)
+  - Predefined read-only variables
+    - `P` is `<name>-<version>`
+    - `PN` is `<name>`
+    - `PV` is `<version>`
+    - `PR` is gentoo revision
+    - `PF` is `<name>-<version>-<revision>`
+    - `WORKDIR` is path to build dir, such as `${PORTAGE_BUILDDIR}/work`
+    - `T` is path to temp dir, such as `${PORTAGE_BUILDDIR}/temp`
+    - `D` is path to temp install dir, such as `${PORTAGE_BUILDDIR}/image`
+  - Ebuild-defined variables
+    - `EAPI` is the eapi
+    - `SRC_URI` is a list of source uris
+    - `SLOT` is the slot; use `SLOT="0"` if not needed
+    - `KEYWORDS`
+    - `IUSE` is a list of USE flags
+    - `REQUIRED_USE` validates USE combos
+    - `DEPEND` is for `CHOST`
+    - `BDEPEND` is for `CBUILD`
+    - `RDEPEND` is for runtime deps
+    - `S` defaults to `${WORKDIR}/${P}`
+  - User environment
+    - `AR` and `ARFLAGS`
+    - `AS` and `ASFLAGS`
+    - `CC`, `CFLAGS`, and `CPPFLAGS`
+    - `CXX` and `CXXFLAGS`
+    - `LD` and `LDFLAGS`
+  - `inherit <eclasses>`
+  - Ebuild phase functions
+    - `pkg_pretend` for early sanity checks during dep calculation
+    - `pkg_setup` for early checks and configs before building
+    - `src_unpack` unpacks package, default to unpack all `SRC_URI`
+    - `src_prepare` prepares package, default to apply all `PATCHES`
+    - `src_configure` configures package
+      - `econf` uses
+        - `--prefix="${EPREFIX}"/usr`
+        - `--build="${CBUILD}"`
+        - `--host="${CHOST}"`
+        - `--target="${CTARGET}"`
+        - `--with-sysroot="${ESYSROOT:-/}"`
+    - `src_compile` builds package
+    - `src_test` runs pre-install tests
+    - `src_install` installs package to `D`
+    - `pkg_preinst` is called before installing image to `ROOT`
+    - `pkg_postinst` is called after installing image to `ROOT`
+  - `metadata.xml` specifies metadata about a package
+- Ebuild maintenance
+- Eclass writing guide
+  - `@ECLASS_VARIABLE` is a global variable
+  - `@FUNCTION` is a function
+  - `@VARIABLE` is a function variable
+- Profiles
+  - `profiles/categories`
+  - `profiles/info_*`
+  - `profiles/*/make.defaults`
+  - `profiles/*/package.mask`
+  - `profiles/*/packages`
+  - `profiles/updates/`
+  - `profiles/use.*.desc`
+  - `profiles/*/use.mask`
+- Keywording and stabilization
+  - `KEYWORDS`
+    - `<arch>`: stable
+      - e.g., `amd64`, `x86`, `arm64`, `arm`, `sparc`
+    - `~<arch>`: testing
+    - `-<arch>`: known bad
+    - `*`: wildcard
+      - `-* <arch>`: only stable on `<arch>`
+      - do not use `*` or `~*`
+        - cros uses `~*` for 9999 ebuilds
+- Tasks reference
+- Function reference
+- Eclass reference
+- Tools reference
+- Hosted projects
+- Arch specific notes
+- Appendices
+
 ## Dependencies
 
 - <https://devmanual.gentoo.org/general-concepts/dependencies/>
@@ -87,3 +181,19 @@ Gentoo
 - <https://devmanual.gentoo.org/general-concepts/use-flags/index.html>
 - `IUSE` defaults
   - `+`/`-` enables/disables a USE flag by default
+
+## Package Manager Specification
+
+- <https://wiki.gentoo.org/wiki/Project:Package_Manager_Specification>
+  - standarized ebuild environment
+  - versions
+    - EAPI 0: 2008, portage 2.0.53
+    - EAPI 1: 2008, portage 2.1.3.19
+    - EAPI 2: 2008, portage 2.1.6.4
+    - EAPI 3: 2010, portage 2.1.7.17
+    - EAPI 4: 2011, portage 2.1.9.42
+    - EAPI 5: 2012, portage 2.1.11.31
+    - EAPI 6: 2015, portage 2.2.26
+    - EAPI 7: 2018, portage 2.3.40-r1
+      - cros uses EAPI 7
+    - EAPI 8: 2021, portage 3.0.20-r6
