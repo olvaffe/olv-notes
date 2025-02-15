@@ -124,6 +124,9 @@ Gentoo
 - Tasks reference
 - Function reference
 - Eclass reference
+  - `flag-o-matic.eclass` provides functions to work with compiler flags
+  - `python-any-r1.eclass` determines best python version based on
+    `PYTHON_COMPAT`
 - Tools reference
 - Hosted projects
 - Arch specific notes
