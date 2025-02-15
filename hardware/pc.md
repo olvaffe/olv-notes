@@ -311,6 +311,13 @@ PC
 
 ## Storage
 
+- HDD
+  - interfaces
+    - SATA III: 6Gb/s, usable 4.8Gb/s or 600MB/s
+    - SAS: rare, scsi successor, superset of sata
+  - platter sizes: 2.5" and 3.5"
+    - 3.5" capacity: ~8TB
+    - 2.5" capacity: ~1TB
 - m2 1TB
   - $40 ~ $100
 - m.2 standard
