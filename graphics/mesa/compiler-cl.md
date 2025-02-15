@@ -72,3 +72,16 @@ Mesa CLC
   - `clc_free_parsed_spirv` is a wrapper to `clc_free_kernels_info`
   - `clc_specialize_spirv` is a wrapper to `clc_spirv_specialize`
   - `clc_debug_flags` inits debug flags from `CLC_DEBUG`
+
+## Users
+
+- `mesa_clc` calls `clc_compile_c_to_spirv` to compile input `.cl` files to
+  spirv, calls `clc_link_spirv` to link them, and writes linked spirv to the
+  output `.spv` file
+- `vtn_bindgen2` calls `spirv_to_nir` to translate input `.spv` to nir, and
+  outputs C code that can rebuild the nir
+  - combined with `mesa_clc`, they enable drivers to write nir passes in cl
+- `panfrost_compile` calls `spirv_to_nir` to translate input `.spv` to nir,
+  pre-compiles nir to binary for each arch, and outputs C code that embeds the
+  binaries
+  - this enables drivers to write internal kernels in cl
