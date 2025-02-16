@@ -76,8 +76,11 @@ PCI
 - the connector has 75 positions, up to 67 pins
   - key A: pcie x1, usb 2.0, etc.
   - key B: pcie x2, usb 3.0, sata, etc.
+    - typically for sata, used by m2 sata ssd
   - key E: pcie x1, usb 2.0, etc.
+    - typically for pcie, used by wifi/bt card
   - key M: pcie x4, sata, etc.
+    - typically for pcie, used by m2 nvme ssd
   - a socket supports only a certain key type
   - a module can support multiple key types
     - a key B+M module fits both B-key and M-key sockets

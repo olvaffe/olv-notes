@@ -312,12 +312,27 @@ PC
 ## Storage
 
 - HDD
-  - interfaces
+  - form factors
+    - 3.5" platter: ~8TB
+    - 2.5" platter: ~1TB
+  - connectors
     - SATA III: 6Gb/s, usable 4.8Gb/s or 600MB/s
     - SAS: rare, scsi successor, superset of sata
-  - platter sizes: 2.5" and 3.5"
-    - 3.5" capacity: ~8TB
-    - 2.5" capacity: ~1TB
+  - protocols
+    - AHCI: with SATA
+    - SCSI: with SAS
+- SSD
+  - form factors
+    - 2.5"
+    - m2 2242
+    - m2 2280
+  - connectors
+    - sata: with 2.5"
+    - sata-over-m2: typically with m2 2242, key b
+    - pcie-over-m2: typically with m2 2280, key m
+  - protocols
+    - ahci: with sata
+    - nvme: with pcie
 - m2 1TB
   - $40 ~ $100
 - m.2 standard
