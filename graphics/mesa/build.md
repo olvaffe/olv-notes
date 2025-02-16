@@ -1,6 +1,49 @@
 Mesa meson
 ==========
 
+## Dependencies
+
+- some drivers (e.g., intel, panfrost, asahi) and frontends (e.g., rusticl)
+  compile clc to spirv, and they depend on
+  - `libclang-cpp.so`, or its static equivalent, to compile clc to llvm ir
+  - `libLLVM.so`, or its static equivalent, to process llvm ir
+  - `LLVMSPIRVLib`, to translate llvm ir to spirv
+  - `libclc`, to link spirv with `spirv64-mesa3d-.spv` (or `spirv-mesa3d-.spv`)
+  - `SPIRV-Tools`, to link, parse, specialize, disassemble spirv
+- platform wayland depends on
+  - `wayland-client`, to talk to server
+  - `wayland-protocols`, for various protocols
+  - `wayland-scanner`, to generate protocol code
+  - `wayland-server`, for legacy `wl_drm`
+  - `wayland-egl-backend`, for egl
+- platform x11 depends on
+  - `xcb`, for core
+  - `xcb-xfixes`, for xfixes
+  - `xcb-dri3`, for dri3
+  - `xcb-present`, for present
+  - `xcb-sync`, for sync (with xshmfence)
+  - `xshmfence`, for xshmfence
+  - `xcb-randr`, for randr (to detect xwayland, refresh rate, etc.)
+  - `xcb-shm`, for swrast
+  - `x11-xcb`, to fish `xcb_connection_t` out of `Display`
+  - `xrandr`, not used but `VK_EXT_acquire_xlib_display` requires the header
+  - glx supports indirect glx, and mixes xlib and xcb
+    - `xcb-glx`, for indirect glx
+    - `xcb-dri2`, for dri2
+    - `glproto`, for indirect gl cmds
+    - `dri2proto`, for xlib dri2
+    - `xfixes`, for xlib xfixes
+    - `xxf86vm`, to get current modeline for `GLX_OML_sync_control`
+- misc dependencies
+  - `zlib`, for disk cache
+  - `libzstd`, for disk cache
+  - `expat`, for drirc
+  - `perfetto`, for perfetto
+  - `libglvnd`, for glvnd
+  - `libva`, for va
+  - `libelf`, for amd llvm compiler
+  - `libudev`, for `VK_EXT_display_control`
+
 ## Common Options
 
 - vulkan-only build
