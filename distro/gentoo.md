@@ -127,6 +127,9 @@ Gentoo
   - `flag-o-matic.eclass` provides functions to work with compiler flags
   - `python-any-r1.eclass` determines best python version based on
     `PYTHON_COMPAT`
+  - `meson.eclass`
+    - `local emesonargs=(...)` for ebuild-provided args
+    - `MYMESONARGS` for user-provided args
 - Tools reference
 - Hosted projects
 - Arch specific notes
