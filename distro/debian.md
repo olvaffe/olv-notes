@@ -38,6 +38,19 @@ Debian
   - `deb http://deb.debian.org/debian-security/ bookworm-security main non-free-firmware`
   - `deb http://deb.debian.org/debian bookworm-updates main non-free-firmware`
 
+## Freeze Policy
+
+- <https://release.debian.org/testing/freeze_policy.html>
+- month N: transition and toolchain freeze
+  - no new transitions, no toolchain change, no large/disruptive change
+- month N+1: soft freeze
+  - only small changes
+- month N+2: hard freeze
+  - only small changes to non-key packages
+- month N+4.5: full freeze
+  - only release-critical changes
+- month N+5: release
+
 ## Initial Setup
 
 - packages
