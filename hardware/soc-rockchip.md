@@ -22,9 +22,11 @@ Rockchip SoCs
   - RK3399, A72 x2 @1.8GHz + A53 x4 @1.4GHz
   - RK3399Pro, A72 x2 @1.8GHz + A53 x4 @1.4GHz
 - RK35 series
+  - RK3562, A53 x4 @2.0GHZ
   - RK3566, A55 x4
   - RK3568, A55 x4 @2.0GHz
   - RK3568J, A55 x4
+  - RK3576, A72 x4 + A53 x4
   - RK3582, A76 x2 + A55 x4, no GPU
   - RK3588, A76 x4 + A55 x4
 - RK Power series

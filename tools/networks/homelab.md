@@ -66,6 +66,58 @@ Homelab
   - debian
     - `unattended-upgrades`
 
+## Router
+
+- HW
+  - Netgate 1100
+    - Marvell Armada 3720LP, A53 x2@1.2G
+    - 1GB DDR4
+    - 8GB eMMC
+    - Marvell 88E6141, 1GbE x3
+    - 3.48W idle
+    - 927Mbps (forwarding) , 607Mbps (firewall)
+  - Netgate 2100
+    - Marvell Armada 3720LP, A53 x2@1.2G
+    - 4GB DDR4
+    - 8GB eMMC
+    - Marvell 88E6141, 1GbE x4
+      - another 1GbE WAN port
+    - 4W idle
+    - 2.2Gbps (forwarding) , 964Mbps (firewall)
+  - OpenWrt One
+    - MediaTek MT7981B, A53 x2@1.3G
+    - 1GB DDR4
+    - 256MB NAND
+      - 16MB NOR (for recovery)
+    - 1GbE x1
+      - another 2.5GbE WAN port
+    - MediaTek MT7976C, dual-band WiFi 6
+    - 4.7W idle
+    - 940Mbps
+- SBC
+  - NanoPi R3S
+    - Rockchip RK3566, A55 x4@1.8G
+    - 2GB DDR4
+    - 32GB eMMC
+    - RTL8211F, 1GbE x1
+      - another RTL8111H, 1GbE x1
+  - NanoPi R5S-LTS
+    - Rockchip RK3568B2, A55 x4@2G
+    - 2GB/4GB DDR4
+    - 8GB/32GB eMMC
+    - RTL8211F, 1GbE x1
+      - another RTL8125BG, 2.5GbE x2
+  - Radxa E25
+    - Rockchip RK3568, A55 x4@2G
+    - 2GB/4GB/8GB DDR4
+    - 8GB/16GB/32GB eMMC
+- iperf3
+  - `iperf3 -s` on the server
+  - `iperf3 -c <server>` on the client
+    - client sends data to server
+  - `iperf3 -c <server> -R` on the client
+    - server sends data to client
+
 ## Credentials
 
 - google app password (gmail)
