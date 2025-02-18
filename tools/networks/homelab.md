@@ -117,13 +117,29 @@ Homelab
     - client sends data to server
   - `iperf3 -c <server> -R` on the client
     - server sends data to client
+- routing
+  - `net.ipv4.conf.all.forwarding=1`
+  - `net.ipv6.conf.all.forwarding=1`
+- firewall
+  - `type filter hook input priority filter; policy drop;`
+    - `iifname "<lan>" accept`
+    - `iifname "lo" accept`
+  - `type filter hook output priority filter; policy accept;`
+  - `type filter hook forward priority filter; policy drop;`
+    - `ct state established,related accept`
+    - `iifname "<lan>" accept`
+    - `ip daddr <server> tcp dport <port> accept`
+  - `type nat hook prerouting priority dstnat; policy accept;`
+    - `ip daddr <router> tcp dport <port> dnat to <server>`
+  - `type nat hook postrouting priority srcnat; policy accept;`
+    - `oifname "<wan>" masquerade`
+    - `ip daddr <server> masquerade`
 - monitoring
   - router
     - node exporter collects hardware and os metrics
-    - prometheus in agent mode scrapes metrics and writes to remote server
   - server
-    - tsdb receives and stores metrics
-    - webapp visualizes metrics
+    - prometheus scrapes metrics
+    - grafana visualizes metrics
 - logging
   - router
     - `Storage=volatile` and `systemd-journald-upload`
@@ -141,7 +157,6 @@ Homelab
     - this supports rfc 2136 but not 2845
   - simply `dnsmasq`?
 - ipv6 ra
-- firewall
 
 ## Credentials
 

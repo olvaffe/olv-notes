@@ -134,3 +134,16 @@ Linux net core
 - `dev_hard_start_xmit` calls `xmit_one` to transmit one skb at a time
   - `netdev_start_xmit` calls `ops->ndo_start_xmit`, which points to the
     hw driver callback
+
+## sysctl
+
+- when `net.ipv4.conf.all.forwarding` (or `net.ipv4.ip_forward`) are set,
+  - `devinet_sysctl_forward` calls `inet_forward_change`
+    - `IN_DEV_CONF_SET` sets `IPV4_DEVCONF_FORWARDING` for a netdev
+  - `IN_DEV_FORWARD` tests if forwarding is enabled for a netdev
+- when `net.ipv6.conf.all.forwarding` is set,
+  - `addrconf_sysctl_forward` calls `addrconf_fixup_forwarding`
+    - `net->ipv6.devconf_all->forwarding` is set
+    - `addrconf_forward_change` sets `idev->cnf.forwarding` for each netdev
+  - `ip6_forward` tests `net->ipv6.devconf_all->forwarding` to see if
+    forwarding is enabled
