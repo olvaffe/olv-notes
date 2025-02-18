@@ -53,6 +53,31 @@ LLVM
 - build stage2 compiler
   - to build the same stuff using the stage1 compiler
 
+## Build for Mesa CLC
+
+- build
+  - `git clone https://github.com/llvm/llvm-project.git`
+  - `cd llvm-project`
+  - `git -C llvm/projects clone https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git`
+  - `git -C llvm/projects clone https://github.com/KhronosGroup/SPIRV-Headers.git`
+  - `cmake -Sllvm -Bout -GNinja \
+         -DCMAKE_BUILD_TYPE=Debug \
+         -DCMAKE_INSTALL_PREFIX="$PWD/install" \
+         -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+         -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+         -DLLVM_BUILD_LLVM_DYLIB=ON \
+         -DLLVM_ENABLE_PROJECTS="clang;libclc" \
+         -DLLVM_TARGETS_TO_BUILD= \
+         -DLLVM_ENABLE_RTTI=ON \
+         -DLLVM_LINK_LLVM_DYLIB=ON \
+         -DLIBCLC_TARGETS_TO_BUILD="spirv-mesa3d-;spirv64-mesa3d-" \
+         -DLLVM_SPIRV="$PWD/out/bin/llvm-spirv"`
+  - `ninja -C out install`
+- mesa
+  - `LLVM_CONFIG=<install>/bin/llvm-config`
+  - `PKG_CONFIG_PATH=<install>/lib/pkgconfig`
+  - `LD_LIBRARY_PATH=<install>/lib`
+
 ## Debian Packaging
 
 - `libllvm$ver` for `libLLVM-$ver.so.1`
