@@ -117,15 +117,31 @@ Homelab
     - client sends data to server
   - `iperf3 -c <server> -R` on the client
     - server sends data to client
-
-## Monitoring
-
-- router
-  - node exporter collects hardware and os metrics
-  - prometheus in agent mode scrapes metrics and writes to remote server
-- server
-  - tsdb receives and stores metrics
-  - webapp visualizes metrics
+- monitoring
+  - router
+    - node exporter collects hardware and os metrics
+    - prometheus in agent mode scrapes metrics and writes to remote server
+  - server
+    - tsdb receives and stores metrics
+    - webapp visualizes metrics
+- logging
+  - router
+    - `Storage=volatile` and `systemd-journald-upload`
+  - server
+    - `systemd-journald-remote`
+- ntp
+  - `timedatectl set-ntp true`
+- dynamic dns
+  - `curl -s https://www.duckdns.org/update?domains=<domain>&token=<token>`
+- dhcp and dns
+  - `kea-dhcp4` assigns ipv4
+  - `kea-dhcp-ddns` updates DNS records
+    - this requires dns server to support rfc 2136 (and 2845?)
+  - `unbound` resolves names
+    - this supports rfc 2136 but not 2845
+  - simply `dnsmasq`?
+- ipv6 ra
+- firewall
 
 ## Credentials
 
