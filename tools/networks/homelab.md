@@ -118,6 +118,15 @@ Homelab
   - `iperf3 -c <server> -R` on the client
     - server sends data to client
 
+## Monitoring
+
+- router
+  - node exporter collects hardware and os metrics
+  - prometheus in agent mode scrapes metrics and writes to remote server
+- server
+  - tsdb receives and stores metrics
+  - webapp visualizes metrics
+
 ## Credentials
 
 - google app password (gmail)
