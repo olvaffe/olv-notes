@@ -129,11 +129,11 @@ Homelab
     - `ct state established,related accept`
     - `iifname "<lan>" accept`
     - `ip daddr <server> tcp dport <port> accept`
+- ipv4 nat
   - `type nat hook prerouting priority dstnat; policy accept;`
-    - `ip daddr <router> tcp dport <port> dnat to <server>`
+    - `iifname "<wan>" tcp dport <port> dnat to <server>`
   - `type nat hook postrouting priority srcnat; policy accept;`
     - `oifname "<wan>" masquerade`
-    - `ip daddr <server> masquerade`
 - monitoring
   - router
     - node exporter collects hardware and os metrics
