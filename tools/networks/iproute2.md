@@ -77,7 +77,7 @@ iproute2
   - `ioctl(TUNSETIFF)` to control tap0
 - experiment
   - assign an address to tap0
-    - `sudo ip addr add 192.168.0.1 dev tap0`
+    - `sudo ip addr add 192.168.0.1/24 dev tap0`
   - set up routing
     - `sudo ip route add 192.168.0.0/24 via 192.168.0.1 dev tap0`
   - inside an vm, assign 192.168.0.2 to the emulated device

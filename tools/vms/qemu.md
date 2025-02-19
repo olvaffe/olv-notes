@@ -83,6 +83,14 @@ QEMU
   - `echo -e '[Match]\nName=*\n[Network]\nDHCP=yes' > /etc/systemd/network/all.network`
   - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
   - `systemctl enable --now systemd-networkd systemd-resolved`
+- tap networking: `-nic tap,model=virtio-net-pci`
+  - host setup
+    - `sysctl net.ipv4.conf.all.forwarding=1`
+    - `nft ...`
+    - `ip tuntap add tap0 mode tap user $(whoami)`
+    - `ip link set tap0 up`
+    - `ip addr add 192.168.0.1/24 dev tap0`
+    - `dnsmasq -d --port 0 --interface tap0 --bind-interfaces --dhcp-range 192.168.0.10,192.168.0.20 --log-dhcp`
 
 ## Bootstrap with ISO
 
