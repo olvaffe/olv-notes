@@ -76,6 +76,13 @@ QEMU
     - `echo -e "/dev/sda1\t/boot\tvfat\trw\t0\t2" >> /etc/fstab`
 - first boot
   - `qemu-system-x86_64 -accel kvm -cpu host -m 2G -bios /usr/share/edk2/x64/OVMF.4m.fd -serial mon:stdio -drive file=test.img,format=raw -nodefaults -nographic`
+- slirp networking: `-nic user,model=virtio-net-pci`
+  - qemu emulates
+    - gateway/firewall/dhcp: `10.0.2.2`
+    - dns: `10.0.2.3`
+  - `echo -e '[Match]\nName=*\n[Network]\nDHCP=yes' > /etc/systemd/network/all.network`
+  - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
+  - `systemctl enable --now systemd-networkd systemd-resolved`
 
 ## Bootstrap with ISO
 
