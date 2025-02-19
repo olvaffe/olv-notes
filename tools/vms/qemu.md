@@ -113,26 +113,39 @@ QEMU
   - this also enables `linuxboot.bin` option rom which boots the kernel directly
     - source code at `pc-bios/optionrom/linuxboot.S`
 
-## Examples
+## Example: Slirp Networking
 
-- slirp networking: `-nic user,model=virtio-net-pci`
-  - qemu emulates
-    - gateway/firewall/dhcp: `10.0.2.2`
-    - dns: `10.0.2.3`
-  - `echo -e '[Match]\nName=*\n[Network]\nDHCP=yes' > /etc/systemd/network/all.network`
+- `-nic user,model=virtio-net-pci`
+  - this emulates a virtio-net pci card
+  - it connects to a network where
+    - gateway/firewall/dhcp is at 10.0.2.2
+    - dns is at 10.0.2.3
+- vm setup
+  - `echo -e '[Match]\nName=en*\n[Network]\nDHCP=yes' > /etc/systemd/network/en.network`
   - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
   - `systemctl enable --now systemd-networkd systemd-resolved`
-- tap networking: `-nic tap,model=virtio-net-pci`
-  - host setup
-    - `sysctl net.ipv4.conf.all.forwarding=1`
-    - `nft ...`
+
+## Example: Tap Networking
+
+- host setup
+  - `sysctl net.ipv4.conf.all.forwarding=1`
+  - nft
+    - `nft flush ruleset`
+    - `nft add table ip nat`
+    - `nft add chain ip nat postrouting '{type nat hook postrouting priority srcnat;}'`
+    - `nft add rule ip nat postrouting oifname <iface> masquerade`
+  - tap
     - `ip tuntap add tap0 mode tap user $(whoami)`
     - `ip link set tap0 up`
     - `ip addr add 192.168.0.1/24 dev tap0`
-    - `dnsmasq -d --port 0 --interface tap0 --bind-interfaces --dhcp-range 192.168.0.10,192.168.0.20 --log-dhcp`
-      - `systemd-networkd` and `dhcpcd` reject the offers from dnsmasq,
-        complaining checksum failure
-      - use `systemd-networkd` with `DHCPServer=yes` for now
+  - dhcp
+    - `dnsmasq -d --port 0 --listen-address 192.168.0.1 --bind-interfaces --dhcp-range 192.168.0.10,192.168.0.20`
+      - or, use `systemd-networkd` with `DHCPServer=yes`
+- `-nic tap,ifname=tap0,model=virtio-net-pci,script=no,downscript=no`
+  - tx-checksumming seems broken with virtio-net-pci
+    - remove `model=virtio-net-pci` or `ethtool -K tap0 tx-checksumming off`
+      to work around
+    - otherwise, dhcp offers from dnsmasq have bad checksums
 
 ## Bootstrap with ISO
 
