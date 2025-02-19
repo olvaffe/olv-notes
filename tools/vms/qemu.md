@@ -50,6 +50,33 @@ QEMU
   - `slirp` enables userspace network emulation
   - `virglrenderer` requires virglrenderer and enables `-vga virtio`
 
+## Examples
+
+- create gpt disk image
+  - `fallocate -l 4G test.img`
+  - `echo -e 'label:gpt\nsize=260M,type=uefi\ntype=linux' | sfdisk test.img`
+  - `losetup -P /dev/loop0 test.img`
+  - `mkfs.fat -F32 /dev/loop0p1`
+  - `mkfs.ext4 /dev/loop0p2`
+  - `mount /dev/loop0p2 /mnt`
+  - arch
+    - `mkdir -p /mnt/var/lib/pacman`
+    - `pacman --root /mnt -Sy base`
+    - `vi /mnt/etc/pacman.d/mirrorlist`
+  - `umount /mnt`
+  - `losetup -D`
+  - `systemd-nspawn -i test.img`
+    - `pacman-key --init`
+    - `pacman-key --populate`
+    - `pacman -S linux vim`
+    - `echo 'root:test0000' | chpasswd`
+    - `bootctl install`
+    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 loglevel=7 root=/dev/sda2" > /boot/loader/entries/arch.conf`
+    - `echo -e "/dev/sda2\t/\text4\trw\t0\t1" > /etc/fstab`
+    - `echo -e "/dev/sda1\t/boot\tvfat\trw\t0\t2" >> /etc/fstab`
+- first boot
+  - `qemu-system-x86_64 -accel kvm -cpu host -m 2G -bios /usr/share/edk2/x64/OVMF.4m.fd -serial mon:stdio -drive file=test.img,format=raw -nodefaults -nographic`
+
 ## Bootstrap with ISO
 
 - `fallocate -l 32GiB arch.img`
