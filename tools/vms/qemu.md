@@ -147,6 +147,25 @@ QEMU
       to work around
     - otherwise, dhcp offers from dnsmasq have bad checksums
 
+## Example: Bridge Networking Between VMs
+
+- host setup
+  - bridge
+    - `ip link add br0 type bridge`
+    - `ip link set br0 up`
+  - tap
+    - `ip tuntap add tap0 mode tap user $(whoami)`
+    - `ip tuntap add tap1 mode tap user $(whoami)`
+    - `ip link set tap0 master br0`
+    - `ip link set tap1 master br0`
+    - `ip link set tap0 up`
+    - `ip link set tap1 up`
+- first vm with tap0
+  - `ip address add 192.168.1.1/24 dev enp0s1`
+    - or, set up forwarding/firewall/nat/dhcp/dns
+- second vm with tap1
+  - `ip address add 192.168.1.2/24 dev enp0s1`
+
 ## Bootstrap with ISO
 
 - `fallocate -l 32GiB arch.img`
