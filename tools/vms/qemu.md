@@ -91,6 +91,9 @@ QEMU
     - `ip link set tap0 up`
     - `ip addr add 192.168.0.1/24 dev tap0`
     - `dnsmasq -d --port 0 --interface tap0 --bind-interfaces --dhcp-range 192.168.0.10,192.168.0.20 --log-dhcp`
+      - `systemd-networkd` and `dhcpcd` reject the offers from dnsmasq,
+        complaining checksum failure
+      - use `systemd-networkd` with `DHCPServer=yes` for now
 
 ## Bootstrap with ISO
 
