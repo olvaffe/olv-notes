@@ -3,7 +3,7 @@ QEMU
 
 ## Get Source Code
 
-- `git clone https://git.qemu.org/git/qemu.git`
+- `git clone https://gitlab.com/qemu-project/qemu.git`
 - `cd qemu`
 - `git submodule init`
 - `git submodule update --recursive`
@@ -42,6 +42,8 @@ QEMU
   - it invokes meson as `out/pyvenv/bin/meson setup \
       -Dopengl=enabled -Dsdl=enabled -Dslirp=enabled -Dvirglrenderer=enabled \
       --native-file config-meson.cross -Ddocs=disabled -Dplugins=true out`
+  - or, `../configure --target-list=x86_64-softmmu --skip-meson` and run meson
+    manually
 - `ninja` builds qemu proper
 - `make` builds qemu proper and firmwares
 - meson options
@@ -50,32 +52,69 @@ QEMU
   - `slirp` enables userspace network emulation
   - `virglrenderer` requires virglrenderer and enables `-vga virtio`
 
-## Examples
+## Example: GPT Disk Image
 
-- create gpt disk image
-  - `fallocate -l 4G test.img`
-  - `echo -e 'label:gpt\nsize=260M,type=uefi\ntype=linux' | sfdisk test.img`
-  - `losetup -P /dev/loop0 test.img`
-  - `mkfs.fat -F32 /dev/loop0p1`
-  - `mkfs.ext4 /dev/loop0p2`
-  - `mount /dev/loop0p2 /mnt`
+- `fallocate -l 4G test.img`
+- `echo -e 'label:gpt\nsize=260M,type=uefi\ntype=linux' | sfdisk test.img`
+- `losetup -P /dev/loop0 test.img`
+- `mkfs.fat -F32 /dev/loop0p1`
+- `mkfs.ext4 /dev/loop0p2`
+- `mount /dev/loop0p2 /mnt`
   - arch
     - `mkdir -p /mnt/var/lib/pacman`
     - `pacman --root /mnt -Sy base`
     - `vi /mnt/etc/pacman.d/mirrorlist`
-  - `umount /mnt`
-  - `losetup -D`
-  - `systemd-nspawn -i test.img`
+  - debian
+    - `debootstrap testing /mnt`
+- `umount /mnt`
+- `losetup -D`
+- `systemd-nspawn -i test.img`
+  - arch
     - `pacman-key --init`
     - `pacman-key --populate`
     - `pacman -S linux vim`
-    - `echo 'root:test0000' | chpasswd`
     - `bootctl install`
-    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 loglevel=7 root=/dev/sda2" > /boot/loader/entries/arch.conf`
-    - `echo -e "/dev/sda2\t/\text4\trw\t0\t1" > /etc/fstab`
-    - `echo -e "/dev/sda1\t/boot\tvfat\trw\t0\t2" >> /etc/fstab`
-- first boot
-  - `qemu-system-x86_64 -accel kvm -cpu host -m 2G -bios /usr/share/edk2/x64/OVMF.4m.fd -serial mon:stdio -drive file=test.img,format=raw -nodefaults -nographic`
+    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 root=/dev/sda2 loglevel=7" > /boot/loader/entries/arch.conf`
+      - `loglevel=7` because arch has `CONFIG_CONSOLE_LOGLEVEL_DEFAULT=4`
+  - debian
+    - `echo "console=ttyS0,115200 root=/dev/sda2 noresume" > /etc/kernel/cmdline`
+      - `noresume` because debian initrd waits for swap for resume
+    - `apt install linux-image-amd64 vim systemd-{resolved,timesyncd,boot}`
+  - `echo 'root:test0000' | chpasswd`
+  - `echo -e "/dev/sda2\t/\text4\trw\t0\t1\n/dev/sda1\t/boot\tvfat\trw\t0\t2" > /etc/fstab`
+
+## Example: Power Up
+
+- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G`
+  - this powers on the machine with default devices
+  - to escape mouse grab, `ctrl-alt-g`
+- `-nodefaults` disables default devices
+  - this includes audio, serial, parallel, monitor, floppy, cdrom, vga, and net
+  - serial, parallel, and monitor are typically dummy and unusable
+- `-nographic` runs headless
+  - it has several implications
+    - `-machine q35,graphics=off` tells the bios to output to serial
+    - `-vga none` disable vga emulation
+    - `-display none` disables host window
+    - `-serial mon:stdio` enables serial/parallel
+  - to access monitor and exit qemu, `ctrl-a x`
+
+## Example: Bootloader
+
+- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G -nodefaults -nographic -serial mon:stdio -bios /usr/share/ovmf/OVMF.fd -drive file=test.img,format=raw`
+  - this runs qemu headless and without default devices
+  - `-bios` specifies OVMF instead of the default seabios at `pc-bios/bios.bin`
+    - this is done because systemd-boot only supports uefi
+    - a better way is to use `-pflash` to separate ovmf ro code and rw vars
+  - OVMF however does not appear to support virtio-blk
+  - remove `/boot/NvVars` if it gets misconfigured
+- `-kernel ... -initrd ... -append ...` skips bootloader and boots kernel directly
+  - this preloads specified kernel/initrd/cmdline into vm memory
+  - this also enables `linuxboot.bin` option rom which boots the kernel directly
+    - source code at `pc-bios/optionrom/linuxboot.S`
+
+## Examples
+
 - slirp networking: `-nic user,model=virtio-net-pci`
   - qemu emulates
     - gateway/firewall/dhcp: `10.0.2.2`
