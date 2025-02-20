@@ -1,6 +1,150 @@
 nftables
 ========
 
+## Overview
+
+- `man 8 nft` overview
+- Options
+  - `-f` to read cmds from file or stdin
+  - `-c` to dryrun
+    - otherwise, changes are applied atomically
+  - `-a` to show object handles
+  - `-s` to omit stateful info
+  - `-j` to output in json
+- Input File Formats
+  - cmds are parsed line-wise
+  - a cmd ends on newline or semicolon
+  - a hash begins a comment until newline
+  - `include "filename"` includes another file
+  - `define var = expr` defines a variable, referred to by `$var`
+- Address Families
+  - `ip` is ipv4
+    - `prerouting`
+    - `input`
+    - `forward`
+    - `output`
+    - `postrouting`
+    - `ingress`
+  - `ip6` is ipv6
+    - same hooks as ipv4
+  - `inet` is ipv4/ipv6
+    - same hooks as ipv4
+  - `arp` is ipv4 arp
+    - `input`
+    - `output`
+  - `bridge` is bridge
+    - same hooks as ipv4
+  - `netdev` is netdev
+    - `ingress`
+    - `egress`
+- Ruleset
+  - `list ruleset` shows the ruleset
+  - `flush ruleset` clears the ruleset
+- Tables
+  - `{add | create} table [family] table-name [{...}]` creates a table
+    - `create` differs from `add` in that it fails if the table exists
+    - it defaults to `add` if neither is specified
+    - `family` defaults to `ip`
+  - `{delete | destroy | list | flush} table [family] table-name`
+    - `delete` differs from `destroy` in that it fails if the table does not
+      exist
+- Chains
+  - `{add | create} chain [family] table-name chain-name [{...}]` creates a
+    chain
+    - it can also nest under `table {...}`
+      - `add`, `family`, and `table-name` are always implied
+  - `{delete | destroy | list | flush} chain [family] table-name chain-name`
+  - `rename chain [family] table-name chain-name new-name`
+- Rules
+  - `{add | insert} rule [family] table-name chain-name [handle rule-handle] stmt`
+    - `add` appends the rule to the chain, or after the specified rule handle
+    - `insert` prepends the rule to the chain, or before the specified rule handle
+    - it can also nest under `chain {...}`
+      - `add`, `rule`, `famliy`, `table-name`, and `chain-name` are always implied
+    - `stmt` consists of expressions and statements
+  - `{delete |destroy | reset} rule [family] table-name chain-name handle rule-handle`
+    - `reset` resets stateful objects
+- Sets
+  - `add set [family] table-name set-name {...}` creates a set
+    - it can also nest under `table {...}`
+      - `add`, `family`, and `table-name` are always implied
+  - `{delete | destroy | list | flush | reset} set [family] table-name set-name`
+- Maps
+  - `add map [family] table-name map-name {...}` creates a map
+    - it can also nest under `table {...}`
+      - `add`, `family`, and `table-name` are always implied
+  - `{delete | destroy | list | flush | reset} map [family] table-name map-name`
+- Elements
+  - `{add | create | delete | destroy | get | reset } element [family] table-name set-name {...}`
+    - it works with maps and sets
+    - internally, there are only sets; maps are sets whose elements are pairs
+- Flowtables
+  - `{add | create} flowtable [family] table-name flowtable-name {...}`
+    creates a flowtable
+  - `{delete | destroy | list} flowtable [family] table-name flowtable-name`
+- Listing
+- Stateful Objects
+  - `{add | delete | destroy | list} {counter | quota | limit} [family] table-name object-name`
+    - `counter` consists of two u64 to count packet count and packet size
+    - `quota` consists of a u64
+    - `limit` is for rate limiting
+    - there are also `ct helper`, `ct timeout`, `ct expectation`
+  - `{delete | destroy} {counter | quota | limit} [family] table-name handle object-handle`
+  - `reset {counter | quota} [family] table-name object-name`
+- Expressions
+  - each expression has a value and a data type
+  - a complex regression can be formed from binary, logical, relational, and
+    other types of expressions
+- Data Types
+  - int, bitmask, string, bool, various addr types, icmp types, etc.
+- Primary Expressions
+  - a primary expr is a const or refers to a datum from packet's payload,
+    metadata, etc.
+  - `meta`, `socket`, `osf`, `fib`, `ipsec`, `numgen`, hash
+- Payload Expressions
+  - a payload expr is a primary expr referring to a datum from packet's payload
+  - layer 2: `ether`, `vlan`, `arp`
+  - layer 3: `ip`, `icmp`, `igmp`, `ip6`, `icmpv6`
+  - layer 4+: `tcp`, `udp`, `udplite`, `sctp`, `dccp`
+  - `ah`, `esp`, `comp`, `gre`, `geneve`, `gretap`, `vxlan`, raw, ext hdr
+  - `ct` (ct is not a pyalod...)
+- Statements
+  - it seems rules are evalutated from left to right, with implicit relational
+    and logical expressions
+    - `tcp dport 80 iifname eth0` has two implicit `==` and one implicit `&&`
+  - a stmt is an action, and is either terminal or non-terminal
+  - verdict: `accept`, `drop`, `queue`, `continue`, `return`, `jump`, `goto`
+  - payload: `payload-expr set`
+  - ext header: `ext-hdr-expr set`
+  - log: `log`
+  - reject: `reject`
+  - counter: `counter`
+  - conntrack: `ct-expr set`
+  - notrack: `notrack`
+  - meta: `meta-expr set`
+  - limit: `limit`
+  - nat: `snat`, `dnat`, `masquerade`, `redirect`
+  - tproxy: `tproxy`
+  - synproxy: `synproxy`
+  - flow: `flow`
+  - queue: `queue`
+  - dup: `dup`
+  - fwd: `fwd`
+  - set: `{add|update} @set {expr}`
+    - this works with sets and maps
+    - the set/map should have been created with
+      - `timeout` to remove element automatically
+      - `size` to cap max element count
+    - when an object is already in the set, `add` is nop while `update`
+      refreshes the timeout
+  - map: `expr map { elems }`
+    - this performs a map lookup
+  - vmap: `expr vmap { elems }`
+    - this performs a vmap lookup
+  - xt: `xt`
+- Additional Commands
+  - `monitor`
+
 ## Basics
 
 - ruleset
@@ -292,3 +436,79 @@ nftables
   - `OUTPUT`
     - `iptables -P OUTPUT ACCEPT` sets the policy to accept, meaning an egress
       packet is accepted unless it is explicitly dropped
+
+## Advanced Data Structures
+
+- <https://wiki.nftables.org/wiki-nftables/index.php/Counters>
+  - `counter foo {}` defines a counter to count both 64-bit packets and bytes
+  - `tcp dport 80 counter name foo` increments the counter for each packet for
+    port 80
+  - `nft list counters` lists all counters
+  - `nft reset counters` resets all counters
+- <https://wiki.nftables.org/wiki-nftables/index.php/Limits>
+  - `limit foo { rate 10/second }` defines a limit
+    - it matches a packet when the rate is less than 10 packets per second
+  - `tcp dport 80 limit name foo accept` accepts a packet when it is matched
+    by the limit
+  - `nft list limits` lists all limits
+  - `nft reset limits` resets all limits
+- <https://wiki.nftables.org/wiki-nftables/index.php/Sets>
+  - `nft add set <family> <table> foo '{type ipv4_addr;}'` defines a set of
+    `ipv4_addr`
+  - `nft add element <family> <table> foo { 192.168.0.10 }` adds an ipv4 addr
+  - `ip saddr @foo accept` accepts a packet when saddr is in the set
+   - set specification
+    - `type`
+      - `ipv4_addr` for ipv4 addr
+      - `ipv6_addr` for ipv6 addr
+      - `ether_addr` for ether addr
+      - `inet_proto` for inet proto (tcp, udp, icmp, etc.)
+      - `inet_service` for inet port (tcp 80, udp 67, etc.)
+      - `mark` for mark
+      - `ifname` for ifname
+    - `timeout` specifies timeout of elemnets
+    - `flags`
+      - `constant` means the set is immutable
+      - `interval` means elements can be intervals
+      - `timeout` means there can be per-element timeout
+    - `counter` enables per-element counter
+- <https://wiki.nftables.org/wiki-nftables/index.php/Maps>
+  - internally, a map is a set where each element is a pair
+- <https://wiki.nftables.org/wiki-nftables/index.php/Verdict_Maps_(vmaps)>
+  - a vmap is a map whose value type is verdict
+  - valid verdicts are
+    - `accept`
+    - `drop`
+    - `queue`
+    - `continue`
+    - `return`
+    - `jump <chain>`
+    - `goto <chain>`
+
+## Sets
+
+- set parsing
+  - `add ...` is matched by `base_cmd`
+  - `add set ...` is matched by `add_cmd`
+    - `set_spec` is the set name
+    - `set_block_alloc` allocs a `set`
+    - `set_block` inits `set->key`, `set->flags`, `set->timeout`, etc.
+      - flags are parsed to
+        - `NFT_SET_CONSTANT`
+        - `NFT_SET_INTERVAL`
+        - `NFT_SET_TIMEOUT`
+        - `NFT_SET_EVAL` (dynamic)
+    - `cmd_alloc` allocs a `CMD_ADD`/`CMD_OBJ_SET` cmd
+- set evaluation
+  - `cmd_evaluate` evaludates the add set cmd
+    - `cmd_evaluate_add`
+    - `set_evaluate`
+- rule parsing
+  - `{add|update} @foo {...}` is matched by `set_stmt`
+    - the op is `NFT_DYNSET_OP_ADD` or `NFT_DYNSET_OP_UPDATE`
+    - `set_stmt_alloc` allocs a `stmt` with `set_stmt_ops`
+- rule evaluation
+  - `stmt_evaluate` calls `stmt_evaluate_set`
+- kernel
+  - `nft_dynset_eval` evaluates the dynamic add/update
+  - if `NFT_DYNSET_OP_UPDATE`, it refreshes the timeout
