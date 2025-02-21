@@ -37,6 +37,31 @@ Rockchip SoCs
 
 ## RK3588 Boot Sequence
 
+- RK3568 Technical Reference Manual
+  - cpu starts at 0xffff0000 which is mapped to 20KB BootRom
+  - bootrom finds spl bootloader from, in order,
+    - external spi nor flash
+    - external spi nand flash
+    - external nand flash
+    - external emmc flash
+    - external sdmmc card
+  - if it finds spl,
+    - load ddr init from spl to sram
+    - init ddr
+    - load rest of spl to ddr
+    - run spl
+  - if it does not find spl,
+    - init usb
+    - wait and download ddr init over usb to sram
+    - init ddr
+    - wait and download loader over usb to ddr
+    - run loader
+- when spl bootloader is u-boot,
+  - ddr init is also known as `ROCKCHIP_TPL` and is proprietary
+  - the rest of spl is built from u-boot
+  - u-boot spl loads and runs u-boot proper, which may consist of
+    - atf, also known as `BL31`, and is built from atf
+    - the rest is built from u-boot
 - BootRom (BROM)
   - <https://wiki.pine64.org/wiki/RK3399_boot_sequence>
   - after reset, cpu0 executes bootrom stored in the read-only memory
@@ -78,9 +103,9 @@ Rockchip SoCs
   - it consists of `ddr.bin` and `miniloader.bin`
     - bootrom loads `ddr.bin` to sram and executes it to initial dram
     - bootrom loads `miniloader.bin` to dram and executes it
-    - `miniloader.bin` loads u-boot from sector 0x4000 and executes u-boot
+    - `miniloader.bin` loads u-boot proper from sector 0x4000 and executes u-boot
   - `miniloader.bin` also has a full rockusb impl that is entered when it
-    cannot find u-boot or, when recovery key or volume up key is pressed
+    cannot find u-boot proper or, when recovery key or volume up key is pressed
 - u-boot bootloader
   - it consists of 4 parts
     - TPL, which is loaded by bootrom to sram
@@ -331,6 +356,10 @@ Rockchip SoCs
 
 ## RK3588S Datasheet and Devicetree
 
+- docs
+  - RK3588 Brief Datasheet, 3 pages
+  - RK3588 Datasheet, 35 pages
+  - RK3588 Technical Reference Manual , 2287+3706 pages
 - eMMC
   - `sdhci: mmc@fe2e0000`
   - `dwcmshc_probe` probes the controller
