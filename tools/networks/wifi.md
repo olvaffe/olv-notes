@@ -422,3 +422,24 @@ WiFi
     - the ap picks a 20MHz ch at 2.4GHz and a 40MHz ch at 5.GHz (due to
       inferences)
     - the client is only capable of MCS 7 and 800ns GI
+
+## Omada APs
+
+- wifi6
+  - EAP610: 1201+574Mbps, 1Gbps PoE, 11W
+    - flash 16GB, ram 256MB
+    - EAP613: no power adapter
+    - EAP620 HD: more concurrent clients, 14.9W
+      - ram 512MB
+  - EAP650: 2402+574Mbps, 1Gbps PoE, 14.7W
+    - EAP653: no power adapter
+    - EAP653 UR: ultra range, 15.5W
+  - EAP660 HD: 2402+1148Mbps, 2.5Gbps PoE, 22.3W
+  - EAP670: 4804+574Mbps, 2.5Gbps PoE, 22.3W
+    - EAP673: no power adapter
+    - EAP683 UR: ultra range, 23.69W
+- wifi7
+  - EAP723: 4324+688Mbps, 2.5Gbps PoE, 19.5W
+  - EAP772: 5760+4320+574Mbps, 2.5Gbps PoE, 25.44W
+    - EAP773: 10Gbps PoE
+  - EAP783: 11520+8640+1376Mbps, 10Gbps PoE++, 39W
