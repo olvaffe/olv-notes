@@ -29,9 +29,9 @@ Broadcom SoC
   - when using a 25W power adapter, it caps the downstream usb port to 1.6A
     (8W)
 
-## Raspberry Pi 4 Boot Flow
+## Raspberry Pi: First and Second Stage Bootloaders
 
-- <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#raspberry-pi-4-and-raspberry-pi-5-boot-flow>
+- <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#eeprom-boot-flow>
 - VideoCore has two main processors with differnet instruction sets
   - a VPU, dual-core dual-issue 16-way SIMD for system managements, codecs,
     etc.
@@ -46,38 +46,42 @@ Broadcom SoC
     - its job is to reflash the real stage2 bootloader to SPI EEPROM
   - VPU looks for the stage2 bootloader in SPI EEPROM
     - this is the normal boot flow
-  - otherwise, it enters USB device boot
+  - otherwise, it waits and loads `recovery.bin` from USB
 - VPU executes stage2 bootloader from EEPROM
   - VPU initializes more of the system, including clocks and SDRAM
   - VPU checks the config on EEPROM which affects the boot flow
-    - it can load the firmware, `start4.elf`, locally from SD card, USB
-      storage, or NVMe to SDRAM
+    - it can load the firmware locally from SD card, USB storage, or NVMe to
+      SDRAM
       - if gpt, the partition type must be ESP or MS basic data
     - it can also load the firmware over network or USB (by entering usb
       gadget mode) to SDRAM
     - if it finds `pieeprom.upd` on local storage, it updates the stage2
       bootloader on EEPROM
+- <https://github.com/raspberrypi/rpi-eeprom> provides tools to update
+  the second stage bootloader and to edit bootloader configs
+
+## Raspberry Pi: Firmware
+
+- at the end of stage2 bootloader, VPU loads the VPU firmware
+ - on legacy rpis, VPU loads `bootcode.bin` which chainloads `start.elf`
+ - on rpi4, VPU loads `start4.elf`
+ - on rpi5, no loading is needed because the firmware is embedded in stage2
 - VPU executes the firmware (`start4.elf`) from SDRAM
+  - the firmware is a full RTOS based on ThreadX
   - it parses `config.txt`, with these default values
     - `cmdline=cmdline.txt`, which reads kernel cmdline from `cmdline.txt`
-    - `kernel=kernel8.img`, which loads kernel from `kernel8.img`
+    - `kernel=kernel8.img`, which loads kernel from `kernel8.img` (armv8)
     - `enable_uart=0`, which disables uart by default
-    - `armstub=?`, which uses armstub built-in in `start4.elf` by default
+    - `armstub=?`, which uses armstub embedded in `start4.elf` by default
+      - <https://github.com/raspberrypi/tools/tree/master/armstubs>
+      - armstub starts in EL3, performs initializations, switches to EL2, and
+        jumps to the kernel
+      - on rpi4, `armstub8.S` is used, corresponding to `kernel8.img`
   - it loads various AP (ARM CPU) images
   - ARM CPU is out of reset and starts running
-  - the firmware is actually a full RTOS based on ThreadX
 - CPU executes some initializations, armstub, and kernel
-  - <https://github.com/raspberrypi/tools/tree/master/armstubs>
-    - it is incorporated into `start4.elf`
-    - `armstub8.S` is used, corresponding to `kernel8.img`
-  - armstub starts in EL3, performs initializations, switches to EL2, and
-    jumps to the kernel
-
-## Firmwares
-
 - <https://github.com/raspberrypi/firmware/> is the official
   proprietary/prebuilt firmwares
-  - <https://www.raspberrypi.com/documentation/computers/raspberry-pi.html>
   - on rpi0 to rpi3, `bootcode.bin` parses `config.txt` and loads one of the
     gpu (VideoCore) fw
     - `start.elf` is regular
