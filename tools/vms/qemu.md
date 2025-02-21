@@ -96,7 +96,7 @@ QEMU
   - serial, parallel, and monitor are typically dummy and unusable
 - `-nographic` runs headless
   - it has several implications
-    - `-machine q35,graphics=off` tells the bios to output to serial
+    - `-machine q35,graphics=off` tells seabios to output to serial
     - `-vga none` disable vga emulation
     - `-display none` disables host window
     - `-serial mon:stdio` enables serial/parallel (if not disabled by `-nodefaults`)
@@ -331,7 +331,21 @@ QEMU
       - this is driven by `virtio_input` guest driver
     - `-device virtio-mouse-pci` to add a frontend mouse
 - VGA
-  - 
+  - the legacy way
+    - `-display` for the backend
+    - `-vga` for the frontend
+  - the new way
+    - `-display` for the backend
+    - `-device` for the frontend
+    - example
+      - `-display sdl,gl=on` for sdl/gl-based backend
+      - `-device virtio-vga-gl` to add a frontend virtio-gpu card
+        - this is driven by `virtio_gpu` guest driver
+        - this is vga-compatible so it also works without the guest driver
+      - or,
+        - `-device virtio-vga`, with vga, no virgl
+        - `-device virtio-gpu-pci`, no vga, no virgl
+        - `-device virtio-gpu-gl-pci`, no vga, with virgl
 
 ## Starup
 
