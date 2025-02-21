@@ -74,20 +74,23 @@ QEMU
     - `pacman-key --populate`
     - `pacman -S linux vim`
     - `bootctl install`
-    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 root=/dev/sda2 loglevel=7" > /boot/loader/entries/arch.conf`
+    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 root=/dev/vda2 loglevel=7" > /boot/loader/entries/arch.conf`
       - `loglevel=7` because arch has `CONFIG_CONSOLE_LOGLEVEL_DEFAULT=4`
   - debian
-    - `echo "console=ttyS0,115200 root=/dev/sda2 noresume" > /etc/kernel/cmdline`
+    - `echo "console=ttyS0,115200 root=/dev/vda2 noresume" > /etc/kernel/cmdline`
       - `noresume` because debian initrd waits for swap for resume
     - `apt install linux-image-amd64 vim systemd-{resolved,timesyncd,boot}`
   - `echo 'root:test0000' | chpasswd`
-  - `echo -e "/dev/sda2\t/\text4\trw\t0\t1\n/dev/sda1\t/boot\tvfat\trw\t0\t2" > /etc/fstab`
+  - `echo -e "/dev/vda2\t/\text4\trw\t0\t1\n/dev/vda1\t/boot\tvfat\trw\t0\t2" > /etc/fstab`
+- `zstd test.img`
 
 ## Example: Power Up
 
 - `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G`
   - this powers on the machine with default devices
   - to escape mouse grab, `ctrl-alt-g`
+- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G -nodefaults -nographic -serial mon:stdio`
+  - this is without default devices and is headless
 - `-nodefaults` disables default devices
   - this includes audio, serial, parallel, monitor, floppy, cdrom, vga, and net
   - serial, parallel, and monitor are typically dummy and unusable
@@ -96,18 +99,17 @@ QEMU
     - `-machine q35,graphics=off` tells the bios to output to serial
     - `-vga none` disable vga emulation
     - `-display none` disables host window
-    - `-serial mon:stdio` enables serial/parallel
+    - `-serial mon:stdio` enables serial/parallel (if not disabled by `-nodefaults`)
   - to access monitor and exit qemu, `ctrl-a x`
 
-## Example: Bootloader
+## Example: Boot Kernel
 
-- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G -nodefaults -nographic -serial mon:stdio -bios /usr/share/ovmf/OVMF.fd -drive file=test.img,format=raw`
-  - this runs qemu headless and without default devices
+- `-bios /usr/share/ovmf/OVMF.fd -drive file=test.img,format=raw,if=virtio`
   - `-bios` specifies OVMF instead of the default seabios at `pc-bios/bios.bin`
     - this is done because systemd-boot only supports uefi
     - a better way is to use `-pflash` to separate ovmf ro code and rw vars
-  - OVMF however does not appear to support virtio-blk
-  - remove `/boot/NvVars` if it gets misconfigured
+  - remove `/boot/NvVars` on rootfs if uefi gets misconfigured
+    - this happens whenever the drive is set up differently
 - `-kernel ... -initrd ... -append ...` skips bootloader and boots kernel directly
   - this preloads specified kernel/initrd/cmdline into vm memory
   - this also enables `linuxboot.bin` option rom which boots the kernel directly
@@ -285,24 +287,28 @@ QEMU
   - example
     - `-nic user,model=virtio-net-pci`
 - Block devices
-  - the old way
-    - `-drive if=TYPE,format=qcow2,file=FOO`
+  - the legacy way
+    - `-hda <img>` expands to `-drive media=disk,index=0,file=<img>`
+    - `-hdb <img>` expands to `-drive media=disk,index=1,file=<img>`
+    - `-cdrom <img>` expands to `-drive media=cdrom,index=2,file=<img>`
+    - `-fda <img>` expands to `-drive if=floppy,index=0,file=<img>`
+    - `-mtdblock <img>` expands to `-drive if=mtd,file=<img>`
+    - `-sd <img>` expands to `-drive if=sd,file=<img>`
+    - `-pflash <img>` expands to `-drive if=pflash,file=<img>`
   - the new way
-    - `-device TYPE,drive=BLAH` for the frontend
     - `-blockdev driver=TYPE,node-name=BLAH` for the backend
+    - `-device TYPE,drive=BLAH` for the frontend
+    - example
+      - `-blockdev driver=file,node-name=foo,filename=<path>` for
+        accessing the file
+      - `-blockdev driver=raw,node-name=bar,file=foo` for using the file above
+        as a raw image
+      - `-device virtio-blk-pci,drive=bar` to add a frontend virtio-blk pci
+        device
+        - or, `-device ide-hd,drive=bar`, to add a frontend SATA disk on the
+          SATA bus
   - the convenient way
-    - `-hda`, `-cdrom`, `-pflash`
-  - example
-    - `-device ide-hd,drive=BLAH` to add the frontend disk
-    - `-blockdev driver=file,node-name=FILE,filename=PATH_TO_IMAGE` for
-      accessing the file
-    - `-blockdev driver=qcow2,node-name=BLAH,file=FILE` for accessing the file
-      as a qcow2 image
-  - example
-    - `-device virtio-scsi-pci` to add a frontend SCSI HBA
-    - `-device scsi-hd,drive=BLAH` to add the frontend disk
-    - `-blockdev driver=file,node-name=BLAH,filename=PATH_TO_FILE` for the
-      backend
+    - `-drive file=<path>,format=raw,if=virtio`
 - Input devices
   - `-device virtio-keyboard-pci`
   - `-device virtio-mouse-pci`
