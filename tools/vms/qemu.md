@@ -267,25 +267,39 @@ QEMU
 - `-nodefaults` to disable default devices
 - Character devices
   - the new way
-    - `-device TYPE,chardev=BLAH` for the frontend
     - `-chardev TYPE,id=BLAH` for the backend
+    - `-device TYPE,chardev=BLAH` for the frontend
+    - example
+      - `-chardev file,path=<path>,id=foo` to use a file as backend
+      - `-device virtio-serial-pci` to add a frontend console bus
+        - this is driven by `virtio_console` guest driver
+      - `-device virtconsole,chardev=foo` to add a frontend console port
+        - this port shows up as `/dev/vport0p0` in the guest
+        - qemu also sends `VIRTIO_CONSOLE_CONSOLE_PORT`, which causes the port
+          to be owned by hvc and is accessible as `/dev/hvc0`
+      - or, `-device virtserialport,chardev=foo`
+        - this port shows up and is accessible as `/dev/vport0p0` in the guest
+    - another example
+      - `-chardev stdio,mux=on,id=foo` to use stdio as backend
+      - `-device isa-serial,chardev:foo` to connect guest `/dev/ttyS0` to the backend
+      - `-mon chardev=foo` to connect monitor to the backend
   - the convenient way
-    - `-serial`
-  - example
-    - `-device virtio-serial` to add a frontend bus
-    - `-device virtserialport,chardev=BLAH` to add the frontend
-    - `-chardev socket,path=FOO,id=BLAH`
+    - `-serial mon:stdio`
 - Network devices
   - the legacy way
-    - `-net nic,model=MODEL` for the frontend
     - `-net BACKEND` for the backend
+    - `-net nic,model=MODEL` for the frontend
   - the new way
-    - `-device MODEL,netdev=BLAH` for the frontend
-    - `-netdev BACKEND,id=BLAH` for the backend
+    - `-netdev BACKEND,id=foo` for the backend
+    - `-device MODEL,netdev=foo` for the frontend
+    - example
+      - `-netdev user,id=foo` to use slirp as the backend
+      - `-device virtio-net-pci,netdev=foo` to add frontend virtio-net pci
+        - this is driven by `virtio_net` guest driver
   - the convenient way
     - `-nic BACKEND,model=MODEL`
-  - example
-    - `-nic user,model=virtio-net-pci`
+    - example
+      - `-nic user,model=virtio-net-pci`
 - Block devices
   - the legacy way
     - `-hda <img>` expands to `-drive media=disk,index=0,file=<img>`
@@ -305,13 +319,17 @@ QEMU
         as a raw image
       - `-device virtio-blk-pci,drive=bar` to add a frontend virtio-blk pci
         device
-        - or, `-device ide-hd,drive=bar`, to add a frontend SATA disk on the
-          SATA bus
+        - this is driven by `virtio_blk` guest driver
+      - or, `-device ide-hd,drive=bar`, to add a frontend SATA disk on the
+        SATA bus
   - the convenient way
     - `-drive file=<path>,format=raw,if=virtio`
 - Input devices
-  - `-device virtio-keyboard-pci`
-  - `-device virtio-mouse-pci`
+  - the new way
+    - `-display` for the backend
+    - `-device virtio-keyboard-pci` to add a frontend keyboard
+      - this is driven by `virtio_input` guest driver
+    - `-device virtio-mouse-pci` to add a frontend mouse
 - VGA
   - 
 
