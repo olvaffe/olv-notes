@@ -34,3 +34,5 @@ TCP/UDP Ports
   - https: tcp 8920
 - kavita
   - http: tcp 5000
+- systemd-journal-remote
+  - http: tcp 19532

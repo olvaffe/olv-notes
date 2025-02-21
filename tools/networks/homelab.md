@@ -122,6 +122,7 @@ Homelab
   - `net.ipv6.conf.all.forwarding=1`
 - firewall
   - `type filter hook input priority filter; policy drop;`
+    - `ct state established,related accept`
     - `iifname "<lan>" accept`
     - `iifname "lo" accept`
   - `type filter hook output priority filter; policy accept;`
@@ -134,9 +135,26 @@ Homelab
     - `iifname "<wan>" tcp dport <port> dnat to <server>`
   - `type nat hook postrouting priority srcnat; policy accept;`
     - `oifname "<wan>" masquerade`
+- forward stats
+  - `set forward_tx { type ipv4_addr; size 1024; flags dynamic,timeout; counter; timeout 1h; }`
+  - `set forward_rx { type ipv4_addr; size 1024; flags dynamic,timeout; counter; timeout 1h; }`
+  - `type filter hook forward priority filter + 1; policy accept;`
+    - `iifname "<wan>" update @forward_rx { ip daddr }`
+    - `iifname "<lan>" update @forward_tx { ip saddr }`
 - monitoring
   - router
     - node exporter collects hardware and os metrics
+      - cpu, mem, io, net
+    - health
+      - gateway: `ping $(ip route show default | cut -d' ' -f3)`
+      - network: `networkctl`
+      - time: `timedatectl`
+      - generic services: `systemctl`
+        - `unbound`
+        - `kea-dhcp4-server`
+        - `prometheus-node-exporter`
+        - `ssh`
+        - `systemd-journald` and `systemd-journal-upload`
   - server
     - prometheus scrapes metrics
     - grafana visualizes metrics
