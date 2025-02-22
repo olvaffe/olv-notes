@@ -317,6 +317,14 @@ Das U-Boot
 ## Standard Boot
 
 - <https://docs.u-boot.org/en/stable/develop/bootstd.html>
+  - concepts
+    - a bootdev is a thin layer on top of a physical device, to provide
+      generic access to the device
+    - a bootmeth is a way to find bootflows on bootdevs
+      - `bootmeth_extlinux` looks for `extlinux/extlinux.conf`
+    - a bootflow is a file describing boot entries
+      - it is provided by the distro
+      - the format is based on pxelinux, extlinux, and systemd-boot
 - configs
   - `CONFIG_BOOTSTD` is enabled by default to show the config items
   - `CONFIG_BOOTSTD_DEFAULTS` enables commonly needed features
