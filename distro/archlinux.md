@@ -357,6 +357,23 @@ Arch Linux
 - login
   - `touch ~/.hushlogin` to do a quiet login
 
+## Kernel
+
+- `linux` installs to `/usr/lib/modules/<version>` entirely
+- `kmod` includes `/usr/share/libalpm/hooks/60-depmod.hook`
+  - it runs `/usr/share/libalpm/scripts/depmod` when there are changes to
+    `/usr/lib/modules/*`
+  - the script runs `depmod`
+- `mkinitcpio` includes `/usr/share/libalpm/hooks/60-mkinitcpio-remove.hook`
+  and `/usr/share/libalpm/hooks/90-mkinitcpio-install.hook`
+  - they run `/usr/share/libalpm/scripts/mkinitcpio` when there are relevant
+    changes
+  - on install, the script
+    - creates `/etc/mkinitcpio.d/linux.preset` from
+      `/usr/share/mkinitcpio/hook.preset` if missing
+    - copies `/usr/lib/modules/<version>/vmlinuz` to `/boot/vmlinuz-linux`
+    - runs `mkinitcpio -p linux`
+
 ## mkinitcpio
 
 - options
