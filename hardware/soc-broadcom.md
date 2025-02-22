@@ -109,6 +109,25 @@ Broadcom SoC
   - copy `u-boot.bin` to the boot dir
   - specify `kernel=u-boot.bin` in `config.txt`
 
+## Minimal Boot Partition
+
+- `git clone --depth 1 https://github.com/raspberrypi/firmware`
+  - copy these to esp
+    - `boot/start4.elf`
+    - `boot/fixup4.dat`
+  - if downstream kernel,
+    - copy these to esp too
+      - `boot/kernel8.img`
+      - `boot/bcm2711-rpi-4-b.dtb`
+    - `cp -r modules/<version>-v8+ /usr/lib/modules`
+    - downstream kernel is needed for eeprom bootloader update
+- create `config.txt` on esp
+  - `auto_initramfs=1`, to load `initramfs8` as initramfs
+  - `enable_uart=1`, to enable uart
+- create `cmdline.txt` on esp
+  - `console=ttyS0,115200 console=tty0 root=PARTUUID=... rootwait`
+    - note that `UUID=...` only works with initramfs
+
 ## Distros
 
 - <https://www.raspberrypi.com/software/> is the official distro
