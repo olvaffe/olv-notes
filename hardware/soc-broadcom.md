@@ -111,7 +111,7 @@ Broadcom SoC
 
 ## Minimal Boot Partition
 
-- `git clone --depth 1 https://github.com/raspberrypi/firmware`
+- <https://github.com/raspberrypi/firmware>
   - copy these to esp
     - `boot/start4.elf`
     - `boot/fixup4.dat`
