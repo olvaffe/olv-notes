@@ -194,6 +194,33 @@ Debian
   - they need to be fixed otherwise the linker can unexpectedly fall back to
     the static libraries
 
+## Kernel
+
+- `linux-image-<version>` installs to
+  - `/usr/lib/modules/<version>`
+  - `/boot/System.map-<version>`
+  - `/boot/config-<version>`
+  - `/boot/vmlinuz-<version>`
+- <https://salsa.debian.org/kernel-team/linux>
+  - `image.preinst.in` runs `/etc/kernel/preinst.d`
+  - `image.postinst.in` runs `depmod` and `/etc/kernel/postinst.d`
+  - `image.prerm.in` runs `/etc/kernel/prerm.d`
+  - `image.postrm.in` runs `/etc/kernel/postrm.d`
+- `grub2-common` provides postinst and postrm scripts to invoke `update-grub`
+  to update the grub boot menu
+- `initramfs-tools` provides postinst and postrm scripts to invoke
+  `update-initramfs`
+  - on postinst, `update-initramfs -c -k <ver>` creates initramfs
+  - on postrm, `update-initramfs -d -k <ver>` removes initramfs
+- `systemd-boot` provides postinst and postrm scripts to invoke
+  `kernel-install`
+  - on postinst, `kernel-install add <ver> <img>`
+  - on postrm, `kernel-install remove <ver>`
+  - `kernel-install` runs all scripts under `/usr/lib/kernel/install.d` and
+    `/etc/kernel/install.d`
+    - `90-loaderentry.install` copies kernel/initramfs and creates a loader
+      entry for the kernel
+
 ## Toolchain Packages
 
 - `binutils` and dependencies
