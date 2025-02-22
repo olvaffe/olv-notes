@@ -59,6 +59,16 @@ Broadcom SoC
       bootloader on EEPROM
 - <https://github.com/raspberrypi/rpi-eeprom> provides tools to update
   the second stage bootloader and to edit bootloader configs
+- troubleshooting
+  - if the bootloader fails to transition to the firmware, it should show a
+    diagnostics screen on HDMI output
+    - this can be disabled by `DISABLE_HDMI=1`
+    - the bootloader seems picky on the monitor though
+  - `BOOT_UART=1` instructs the bootloader to output to uart
+  - `BOOT_ORDER` selects the boot order
+    - 1 for sd, 2 for pxe, 4 for usb, e to stop, f to restart from first entry
+    - default is 0xf41; reading from right to left, it means finding from sd
+      then usb with a indefinite loop
 
 ## Raspberry Pi: Firmware
 
@@ -80,6 +90,10 @@ Broadcom SoC
   - it loads various AP (ARM CPU) images
   - ARM CPU is out of reset and starts running
 - CPU executes some initializations, armstub, and kernel
+- troubleshooting
+  - the firmware shows a rainbow splash screen
+    - this can be disabled by `disable_splash=1`
+  - `enable_uart=1` enables `/dev/ttyS0` for the kernel
 - <https://github.com/raspberrypi/firmware/> is the official
   proprietary/prebuilt firmwares
   - on rpi0 to rpi3, `bootcode.bin` parses `config.txt` and loads one of the
