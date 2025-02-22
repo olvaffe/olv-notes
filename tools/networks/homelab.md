@@ -117,6 +117,10 @@ Homelab
     - client sends data to server
   - `iperf3 -c <server> -R` on the client
     - server sends data to client
+- partitioning
+  - `/`: 4GB
+  - `/boot`: 1GB
+  - `/var`: 11GB
 - routing
   - `net.ipv4.conf.all.forwarding=1`
   - `net.ipv6.conf.all.forwarding=1`
