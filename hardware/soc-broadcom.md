@@ -127,6 +127,8 @@ Broadcom SoC
 - create `cmdline.txt` on esp
   - `console=ttyS0,115200 console=tty0 root=PARTUUID=... rootwait`
     - note that `UUID=...` only works with initramfs
+- when using distro kernel, we need postinst hooks to copy installed kernel as
+  `kernel8.img` and generated initramfs as `initramfs8`
 
 ## Distros
 
