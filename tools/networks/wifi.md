@@ -427,7 +427,8 @@ WiFi
 
 - wifi6
   - EAP610: 1201+574Mbps, 1Gbps PoE, 11W
-    - flash 16GB, ram 256MB
+    - v2: IPQ6018 (A53@1.8G x4), ram 512MB, flash 128MB
+    - v3: MT7621 (MIPS1004Kc@880M x2), ram 256MB, flash 16MB
     - EAP613: no power adapter
     - EAP620 HD: more concurrent clients, 14.9W
       - ram 512MB
