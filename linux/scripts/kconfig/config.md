@@ -632,6 +632,7 @@ Kernel Config
     - select `OHCI HCD (USB 1.1) support` if needed
       - select `Generic OHCI driver for a platform device` if rk
     - select `USB Mass Storage support`
+      - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `Onboard USB hub support` if qcom
