@@ -120,7 +120,7 @@ Homelab
 - partitioning
   - `/`: 4GB
   - `/boot`: 1GB
-  - `/var`: 11GB
+  - `/var`: 8GB
 - routing
   - `net.ipv4.conf.all.forwarding=1`
   - `net.ipv6.conf.all.forwarding=1`
@@ -179,6 +179,24 @@ Homelab
     - this supports rfc 2136 but not 2845
   - simply `dnsmasq`?
 - ipv6 ra
+
+## Server
+
+- partitioning
+  - `/`: 4GB
+  - `/boot`: 1GB
+  - `/var`: 8GB
+  - `/home`: 32GB
+  - `/srv`: rest
+- services
+  - wireguard
+  - ssh
+  - cups / airsane / avahi
+- pods
+  - omada
+  - ha
+  - jellyfin
+  - kavita
 
 ## Credentials
 
