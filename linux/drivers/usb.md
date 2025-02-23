@@ -102,13 +102,22 @@ USB
   - Laptop: 65W, 45W
   - Phone: 18W, 30W
 - Pinouts
-  - usb 1.x and 2.0 have 4 pins
-  - usb 3.0 has 9 pins
+  - usb 1.x and 2.0 have 4 pins on the same side
+    - VBUS, D-, D+, GND
+  - usb 3.0 has 9 pins on the same side
+    - VBUS, D-, D+, GND
+    - TX-, TX+, GND, RX-, RX+
   - type-c has 24 pins
+    - symmetrical 12 pins on each side, to be flippable
+    - new pins are: CC (for pd), SBU (for altmode)
   - a type-a connector can internally connect to both 2.0 and 3.0 controllers
     - it can use pin counts to tell between 2.0 and 3.0 cables
   - a type-c connector is similar
   - as such, a usb cable or adapter can have 4, 9, or 24 pins
+  - inferior usb-c cables
+    - usb 2.0: no TX/RX
+    - no altmode: no SBU
+    - power-only: only VBUS, CC, GND (and symmetrical, so 6 pins)
 
 ## USB Device Classes
 
