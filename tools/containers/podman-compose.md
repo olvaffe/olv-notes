@@ -17,5 +17,5 @@ Podman Compose
   - `podman compose systemd -a register` generates
     `~/.config/containers/compose`, pointing to `podman-composer.yml` in the
     current directory
-  - `systemctl --user enable --now podman-compose@kavita.service` enables and
+  - `systemctl --user enable --now podman-compose@<pod-user>.service` enables and
     starts the user service
