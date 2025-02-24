@@ -90,6 +90,49 @@ Debian
   - `visudo`
   - `useradd -m olv`
 
+## dpkg and apt
+
+- dpkg works with the local package database
+  - `/var/lib/dpkg` is the database
+  - when a `.deb` is installed,
+    - the control info is added to `/var/lib/dpkg/status`
+      - this also adds `Status` field
+    - the metadata are processed and saved to `/var/lib/dpkg/info`
+    - the contents are unpacked to `/`
+  - `dpkg` and `dpkg-*` work with `/var/lib/dpkg`
+- apt works with remote sources
+  - `/var/lib/apt` is the database
+  - package indices from sources are saved to `/var/lib/apt/lists`
+    - only a subset of package control info is included
+  - when a package is installed,
+    - it resolves dependencies based on package indices
+    - it downloads and installs `.deb`
+  - `apt` and `apt-*` work with `/var/lib/apt`
+- interesting control info fields
+  - `Package` is the name
+  - `Version` is the version
+  - `Description` is the description
+  - `Installed-Size` is the installed size
+  - `Essential` specifies whether a package is essential or not
+    - `dpkg -r` refuses to remove essential packages unless `--force-remove-essential`
+  - `Priority`
+    - `required` has ~35 packages for a rootfs that one can chroot into and
+      install more packages
+    - `important` has ~30 packages for a rootfs with minimum admin tools
+      (e.g., init, editor, net)
+    - `standard` has ~40 packages for a rootfs with standard admin tools
+    - `optional` is the rest
+  - inter-relationship fields
+    - `Depends`
+    - `Pre-Depends`
+    - `Recommends`
+    - `Suggests`
+    - `Breaks`
+    - `Conflicts`
+    - `Provides`
+    - `Replaces`
+    - `Enhances`
+
 ## APT
 
 - `apt-get`
@@ -108,8 +151,10 @@ Debian
   - `autoremove` removes packages that were installed as dependencies but are
     not dependencies anymore
 - `apt-cache`
-  - `show` shows info of listed packages
-  - `search` searches matching packages
+  - `show` shows info of listed packages (see `man apt-patterns`)
+    - e.g., `apt-cache show ~E` shows essential pacakges and
+            `apt-cache show ~prequired` shows packages with required priority
+  - `search` searches matching packages using regex
   - `depends` lists dependeices of listed packages
   - `rdepends` lists reverse-dependeices of listed packages
 - `apt-mark`
@@ -138,12 +183,16 @@ Debian
   - `-i <pkg>.deb` installs `<pkg>.deb`
   - `-r <pkg>` removes an installed package
   - `-P <pkg>` purges an installed package
-  - `-L <pkg>` lists the contents an installed package
-  - `-l` lists installed packages
-  - `-S <path>` lists packages who own `<path>`
+  - `-L <pkg>` is `dpkg-query -L`
+  - `-l` is `dpkg-query -l`
+  - `-S <path>` is `dpkg-query -S`
 - `dpkg-deb`
   - `-c <pkg>.deb` shows the contents of `<pkg>.deb`
   - `-x <pkg>.deb <dir>` extracts `<pkg>.deb` to `<dir>`
+- `dpkg-query`
+  - `-L` lists the contents an installed package
+  - `-l` lists installed packages
+  - `-S` lists packages who own `<path>`
 
 ## deb
 
@@ -165,6 +214,10 @@ Debian
     - this forbids bootstrapping another architecture
 - `sudo debootstrap stable stable-chroot`
   - or replace `sudo` by `fakechroot fakeroot`
+- `debootstrap --print-debs stable tmp` prints installed packages
+  - the list is from `work_out_debs` in
+    `/usr/share/debootstrap/scripts/debian-common`
+  - it includes packages with `Priority: required` and `Essential: yes`
 
 ## cross-`debootstrap`
 
