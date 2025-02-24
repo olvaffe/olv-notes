@@ -115,6 +115,16 @@ Debian
   - `Installed-Size` is the installed size
   - `Essential` specifies whether a package is essential or not
     - `dpkg -r` refuses to remove essential packages unless `--force-remove-essential`
+  - `Protected` is undocumented
+    - the package may not be installed, but once installed, it is treated as
+      `Essential`
+    - it was renamed from `Important`
+    - there are these `Protected`/`Important` packages
+      - `e2fsprogs`
+      - `grub-efi-amd64-signed`
+      - `init`
+      - `libgcc-s1`
+      - `login`
   - `Priority`
     - `required` has ~35 packages for a rootfs that one can chroot into and
       install more packages
@@ -164,15 +174,6 @@ Debian
     respectively
   - `minimize-manual` marks dependencies of meta packages as automatically
     installed
-- to clean up packages,
-  - `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
-  - `apt autoremove --dry-run` to selectively mark packages manual
-  - `apt autoremove` to remove unneeded ones
-  - this ignores packages that are on `Recommends` or `Suggests`
-    - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
-    - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
-    - A recommends B when A is pointless without B for most users
-    - A suggests B when A is enhanced by B
 - to find orphaned files,
   - `cat /var/lib/dpkg/info/*.list | sed -e 's,^/\(bin\|lib\|sbin\),/usr/\1,' | sort | uniq > dpkg.list`
   - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
@@ -202,6 +203,20 @@ Debian
   - `control.tar.xz` contains package metadata and install scripts
   - `data.tar.xz` contains files
 - `ar x <pkg>.deb` to extracts them
+
+## Minimize Packages
+
+- `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
+- `apt autoremove --dry-run -o APT::Autoremove::SuggestsImportant=0` to
+  selectively mark packages manual
+  - it ignores packages that are on `Recommends` or `Suggests` by default
+  - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
+    - A recommends B when A is pointless without B for most users
+  - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
+    - A suggests B when A is enhanced by B
+- `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
+- without marking any package manual, we will end up with a system with only
+  `Essential/Important/Protected` packages and their dependencies/recommends
 
 ## `debootstrap`
 
