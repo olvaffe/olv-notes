@@ -11,6 +11,8 @@ Podman Compose
 - as root,
   - `podman compose systemd -a create-unit` generates
     `/etc/systemd/user/podman-compose@.service`
+  - if using `/var` for pod users, `useradd -r -b /var/lib -m -F -s /bin/bash
+    <pod-user>` creates the pod user
   - `loginctl enable-linger <pod-user>` makes the pod user linger
 - as pod user,
   - create `podman-composer.yml` for the pod
