@@ -132,6 +132,23 @@ IPv6
 - suppose we have an IPv4 address, how do we connect to IPv6 network?
 - suppose we have an IPv4 address, how do we listen to an IPv6 address?
 
+## ISP example
+
+- isp is allocated a prefx from RIR, Regional Internet Registry
+  - it's usually /32
+- isp assigns link prefix to isp router
+  - it's usually /64
+- isp router sends link prefix from isp router to cpe, consumer-premises
+  equipment, using ra
+- cpe (home router) construct an address from link prefix using slaac
+  - at this point, home router can communicate with ips router and the
+    internet
+- cpe requests a routed prefix from isp dhcpv6 server
+  - it can be requested but is usually /64 or /64
+  - isp will route the routed prefix to cpe
+- cpe sends routed prefix to home clients using ra
+- home clients construct addresses from routed prefix using slaac
+
 ## DHCPv6
 
 - ISPs usually use DHCPv6 to configure home routers
