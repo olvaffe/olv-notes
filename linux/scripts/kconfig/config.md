@@ -349,6 +349,7 @@ Kernel Config
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
+      - select `Realtek 8169/8168/8101/8125 ethernet support` if old rk
       - select `STMicroelectronics devices` if rk
         - select `STMicroelectronics Multi-Gigabit Ethernet driver`
     - select `PHY Device support and infrastructure` if rk
@@ -375,7 +376,7 @@ Kernel Config
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
-        - select `GPIO Buttons` if old mtk
+        - select `GPIO Buttons` if old mtk/rk
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -494,6 +495,7 @@ Kernel Config
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if mtk
     - select `Qualcomm SPMI PMICs` if qcom
+    - select `Rockchip RK805/RK808/RK809/RK816/RK817/RK818 Power Management Chip` if old rk
     - select `Rockchip RK806 Power Management Chip` if rk
   - select `Voltage and Current Regulator Support` if arm
     - select `Fixed voltage regulator support`
@@ -530,6 +532,7 @@ Kernel Config
       - select `DRM Support for Rockchip` if rk
         - deselect `Rockchip VOP driver`
         - select `Rockchip VOP2 driver`
+        - select `Rockchip specific extensions for Synopsys DW HDMI` if old rk
         - select `Rockchip specific extensions for Synopsys DW HDMI QP`
       - select `Virtio GPU driver` if guest
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
@@ -546,7 +549,7 @@ Kernel Config
         - select `DRM DPTX Support for MediaTek SoCs`
         - select `DRM HDMI Support for Mediatek SoCs`
       - select `Simple framebuffer driver` if needed
-      - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk
+      - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk or old rk
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
@@ -771,6 +774,7 @@ Kernel Config
       - select `Qualcomm Technologies, Inc. (QTI) Sleep stats driver`
       - select `Qualcomm APR/GPR Bus (Asynchronous/Generic Packet Router)`
       - select `QCOM Interconnect Bandwidth Monitor driver`
+    - select `Rockchip IO domain support` if old rk
   - select `PM Domains` if arm
     - select `Qualcomm PM Domains` if qcom
       - select `Qualcomm RPMh Power domain driver`
