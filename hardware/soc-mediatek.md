@@ -272,6 +272,14 @@ MediaTek SoCs
 - <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
 - clocksource
   - `systimer: systimer@1c400000` is `mediatek,mt6765-timer`
+- firmware
+  - `firmware: firmware`
+    - `scmi: scmi` is `arm,scmi`
+      - it uses a mailbox: `tinysys_mbox`
+      - ACMI resembles ACPI, a fw that exposes various interfaces for various
+        functions
+      - the interfaces are usually standardized
+      - but in this case, the fw is tinysys and the interface is specific to tinysys
 - gpu
   - `dp_intf0: dp-intf@32430000` and `dp_intf1: dp-intf@32440000` are `mediatek,mt8196-dp-intf`
   - `dsi0: dsi@32490000` is `mediatek,mt8196-dsi`
@@ -293,6 +301,8 @@ MediaTek SoCs
   - `adsp_mailbox0: mailbox@1a350000` and `adsp_mailbox1: mailbox@1a360000` are `mediatek,mt8186-adsp-mbox`
   - `tinysys_mbox: mailbox@1c351000` is `mediatek,tinysys_mbox`
   - `gce0: gce@300c0000` and `gce1: gce@30140000` are `mediatek,mt8196-gce`
+    - Global Command Engine, used to read/write display-related regs
+    - th drive exposes the mbox as cmdq interface
   - `apu_mailbox: mailbox@4c200000` is `mediatek,mt8196-apu-mailbox`
 - media
   - `video_codec: video@36000000` is `mediatek,mt8196-vcodec-dec`
@@ -301,20 +311,32 @@ MediaTek SoCs
   - `jpeg-encoder` is `mediatek,mt8196-jpgenc`
 - memory
   - `memory-controller@10236000 ` is `mediatek,mt8196-dramc`
+    - dram controller
   - `nsmpu: nsmpu@1046f00`, `ssmpu: ssmpu@1056f000`, and more are `mediatek,smpu`
+    - smpu controller
   - `smi_disp_common: smi-comm@30020000`, `smi_mdp_common: smi-comm@30021000`, and more are `mediatek,mt8196-smi-common`
+    - Smart Multimedia Interface
+    - enable/disable iommu, and control pm/clk for local arbiter
   - `smi_larb0: larb@32a60000` to `smi_larb47: larb@38c90000` are `mediatek,mt8196-smi-larb`
   - `smi_disp_venc_sub_comm0: smi-sub-comm@38070000`, `smi_mdp_venc_sub_comm1: smi-sub-comm@38870000` and more are `mediatek,mt8196-smi-sub-common`
 - misc
   - `slbc: slbc@117800` is `mediatek,mt8196-slbc`
+    - System Level Buffer and Cache
   - `cm_mgr: cm-mgr@c100000` is `mediatek,mt8196-cm-mgr`
+    - manager for dram opp
   - `sram@1c350000` and `sram@1c360000` are `mmio-sram`
+    - `scmi_tx_shmem: mailbox-sram@0` and `scmi_rx_shmem: mailbox-sram@0` are
+      `arm,scmi-shmem`
 - mmc
   - `mmc1: mmc@16310000` and `mmc2: mmc@16320000` are `mediatek,mt8196-mmc`
 - nvmem
   - `efuse: efuse@13260000` is `mediatek,efuse`
+    - for soc info
 - pci
   - `pcie0: pcie@16910000` to `pcie2: pcie@16970000` are `mediatek,mt8196-pcie`
+    - `pcie0` connects to `pciephy0`
+    - `pcie1` connects to `pciephy1`
+    - `pcie2` connects to `pciephy2`
 - phy
   - `mipi_tx_config0: mipi-tx-config@130b0000` is `mt8196-mipi-tx`
   - `u2phy0: usb-phy0@16730000`, `u2phy1: usb-phy1@16740000`, and `u3phy0: usb3-phy0@16773000` are `mediatek,xsphy`
@@ -323,27 +345,48 @@ MediaTek SoCs
   - `pio: pinctrl@1002d000` is `mediatek,mt8196-pinctrl`
 - pmdomain
   - `scpsys: power-controller@1c004000` is `mediatek,mt8196-scpsys-hwv`
+    - it seems SPM-related, System Power Manager?
   - `hfrpsys: power-controller@31b50000` is `mediatek,mt8196-hfrpsys-hwv`
+    - it seems MMPC-related
 - pwm
   - `disp_pwm0: disp-pwm0@160b0000` and `disp_pwm1: disp-pwm1@160c0000` are `mediatek,mt8183-disp-pwm`
+    - pwm for backlight
   - `pwm: pwm@16330000` is `mediatek,pwm`
+    - unused
 - remoteproc
   - `mcupm: mcupm@c240000` is `mediatek,mt8196-mcupm`
+    - mcusys (cpu) power management
+    - it is powered on before kernel
   - `apusys_rv: remoteproc@19001000` is `mediatek,mt8196-apusys_rv`
+    - apusys (npu) coprocessor
+    - it runs `apusys.img` with a mailbox: `apu_mailbox`
   - `vcp: vcp@31800000` is `mediatek,vcp`
+    - video codec coprocessor
+    - it runs `vcp.img`
 - soc
   - `devapc_apinfra_dramc: devapc@102f3000`, `devapc_apinfra_emi: devapc@10613000`, and more are `mediatek,mt8196-devapc`
+    - it prevents slaves from being accessed by unexpected masters, as a part
+      of trustzone
   - `dvfsrc: dvfsrc@1c013000` is `mediatek,mt8196-dvfsrc`
+    - Dynamic Voltage and Frequency Scaling Resource Collector
+    - it monitors loads of various blocks and remoteprocs, and pick the
+      minimum operating voltage and dram freq to save power
   - `apusys-apummu` is `mediatek,rv-apummu-mt8196`
   - `mtk_apu_mem_code: mtk-apu-mem-code` is `mediatek, apu_mem_code`
   - `mtk_apu_mem_data: mtk-apu-mem-data` is `mediatek, apu_mem_data`
   - `mvpu` is `mediatek, mt8196-mvpu`
+    - MediaTek Vision Processing Unit, part of apusys
   - `vdisp-ctrl` is `mediatek,mt8196-vdisp-ctrl`
+    - adjust voltage for display controller dynamically
   - `vmm: vmm` is `mediatek,mt8196-vmm`
+    - adjust voltage for vcp dynamically
 - sound
   - `adsp: adsp@1a000000` is `mediatek,mt8196-dsp`
+    - it runs sof fw with 2 mailboxes: `adsp_mailbox0` and `adsp_mailbox1`
   - `afe: mt8196-afe-pcm@1a110000` is `mediatek,mt8196-sound`
+    - this is the sound controller, bound by asoc platform driver
   - `sound: sound` is `mediatek,mt8196-mt6681-sound`
+    - this is  bound by asoc machine driver
 - spi
   - `spi0: spi@16110000` to `spi7: spi@161f0000` are `mediatek,mt8196-spi`
   - `nor_flash: spi@16340000` is `mediatek,mt8186-nor`
@@ -352,6 +395,7 @@ MediaTek SoCs
 - thermal
   - `therm_intf: therm-intf@114000` is `mediatek,therm_intf`
   - `lvts: thermal-sensor@14414000` is `mediatek,mt8196-lvts`
+    - it defines ~30 thermal zones: `soc_max`, `cpu-N-thermal`, `gpuN-thermal`, etc.
 - tty
   - `uart0: serial@16000000` to `uart2: serial@16020000` are `mediatek,mt6577-uart`
   - `uart3: serial@16030000` are `mediatek,mt6985-uart`
@@ -359,6 +403,8 @@ MediaTek SoCs
   - `ufshci: ufshci@16810000` is `mediatek,mt8183-ufshci`
 - usb
   - `xhci0: usb@16700000` and `xhci1: usb1@16710000` are `mediatek,mtk-xhci`
+    - `xhci0` connects to two phys: `u2phy0` for usb2 and `u3phy0` for usb3
+    - `xhci1` connects to one phy: `u2phy1` for usb2
 - watchdog
   - `watchdog: watchdog@1c010000` is `mediatek,mt6589-wdt`
 
