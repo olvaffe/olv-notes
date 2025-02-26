@@ -267,6 +267,101 @@ MediaTek SoCs
       - `spk_l_amp: amplifier@39`
         - `compatible = "maxim,max98390";`
 
+## MT8196 SoC
+
+- <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
+- clocksource
+  - `systimer: systimer@1c400000` is `mediatek,mt6765-timer`
+- gpu
+  - `dp_intf0: dp-intf@32430000` and `dp_intf1: dp-intf@32440000` are `mediatek,mt8196-dp-intf`
+  - `dsi0: dsi@32490000` is `mediatek,mt8196-dsi`
+  - `disp_dvo0: disp-dvo0@324c0000` is `mediatek,mt8196-edp-dvo`
+  - `dp_tx: dp-tx@3ec00000` is `mediatek,mt8196-dp-tx`
+  - `edp_tx: edp-tx@3ec40000` is `mediatek,mt8196-edp-tx`
+  - `gpu: gpu@48000000` is `arm,mali-valhall-csf`
+  - `gpufreq: gpufreq@48500000` is `mediatek,gpufreq`
+  - `gpupdma: gpupdma@48540000` is `mediatek,gpupdma`
+  - `gpueb: gpueb@4b000000` is `mediatek,gpueb`
+  - `ghpm: ghpm@4b800000` is `mediatek,ghpm`
+- i2c
+  - `i2c0: i2c@13130000` to `i2c14: i2c@162c0000` are `mediatek,mt8188-i2c`
+- iommu
+  - `mm_smmu: iommu@30800000`, `gpu_smmu: iommu@48600000`, and `apu_smmu: iommu@4c000000` are `arm,smmu-v3`
+- irqchip
+  - `gic: interrupt-controller@c400000` is `arm,gic-v3`
+- mailbox
+  - `adsp_mailbox0: mailbox@1a350000` and `adsp_mailbox1: mailbox@1a360000` are `mediatek,mt8186-adsp-mbox`
+  - `tinysys_mbox: mailbox@1c351000` is `mediatek,tinysys_mbox`
+  - `gce0: gce@300c0000` and `gce1: gce@30140000` are `mediatek,mt8196-gce`
+  - `apu_mailbox: mailbox@4c200000` is `mediatek,mt8196-apu-mailbox`
+- media
+  - `video_codec: video@36000000` is `mediatek,mt8196-vcodec-dec`
+  - `venc: video-codec@38020000` is `mediatek,mt8196-vcodec-enc`
+  - `jpeg-decoder` is `mediatek,mt8196-jpgdec`
+  - `jpeg-encoder` is `mediatek,mt8196-jpgenc`
+- memory
+  - `memory-controller@10236000 ` is `mediatek,mt8196-dramc`
+  - `nsmpu: nsmpu@1046f00`, `ssmpu: ssmpu@1056f000`, and more are `mediatek,smpu`
+  - `smi_disp_common: smi-comm@30020000`, `smi_mdp_common: smi-comm@30021000`, and more are `mediatek,mt8196-smi-common`
+  - `smi_larb0: larb@32a60000` to `smi_larb47: larb@38c90000` are `mediatek,mt8196-smi-larb`
+  - `smi_disp_venc_sub_comm0: smi-sub-comm@38070000`, `smi_mdp_venc_sub_comm1: smi-sub-comm@38870000` and more are `mediatek,mt8196-smi-sub-common`
+- misc
+  - `slbc: slbc@117800` is `mediatek,mt8196-slbc`
+  - `cm_mgr: cm-mgr@c100000` is `mediatek,mt8196-cm-mgr`
+  - `sram@1c350000` and `sram@1c360000` are `mmio-sram`
+- mmc
+  - `mmc1: mmc@16310000` and `mmc2: mmc@16320000` are `mediatek,mt8196-mmc`
+- nvmem
+  - `efuse: efuse@13260000` is `mediatek,efuse`
+- pci
+  - `pcie0: pcie@16910000` to `pcie2: pcie@16970000` are `mediatek,mt8196-pcie`
+- phy
+  - `mipi_tx_config0: mipi-tx-config@130b0000` is `mt8196-mipi-tx`
+  - `u2phy0: usb-phy0@16730000`, `u2phy1: usb-phy1@16740000`, and `u3phy0: usb3-phy0@16773000` are `mediatek,xsphy`
+  - `pciephy0: phy@16900000` to `pciephy2: phy@16960000` are `mediatek,mt8196-pcie-phy`
+- pinctrl
+  - `pio: pinctrl@1002d000` is `mediatek,mt8196-pinctrl`
+- pmdomain
+  - `scpsys: power-controller@1c004000` is `mediatek,mt8196-scpsys-hwv`
+  - `hfrpsys: power-controller@31b50000` is `mediatek,mt8196-hfrpsys-hwv`
+- pwm
+  - `disp_pwm0: disp-pwm0@160b0000` and `disp_pwm1: disp-pwm1@160c0000` are `mediatek,mt8183-disp-pwm`
+  - `pwm: pwm@16330000` is `mediatek,pwm`
+- remoteproc
+  - `mcupm: mcupm@c240000` is `mediatek,mt8196-mcupm`
+  - `apusys_rv: remoteproc@19001000` is `mediatek,mt8196-apusys_rv`
+  - `vcp: vcp@31800000` is `mediatek,vcp`
+- soc
+  - `devapc_apinfra_dramc: devapc@102f3000`, `devapc_apinfra_emi: devapc@10613000`, and more are `mediatek,mt8196-devapc`
+  - `dvfsrc: dvfsrc@1c013000` is `mediatek,mt8196-dvfsrc`
+  - `apusys-apummu` is `mediatek,rv-apummu-mt8196`
+  - `mtk_apu_mem_code: mtk-apu-mem-code` is `mediatek, apu_mem_code`
+  - `mtk_apu_mem_data: mtk-apu-mem-data` is `mediatek, apu_mem_data`
+  - `mvpu` is `mediatek, mt8196-mvpu`
+  - `vdisp-ctrl` is `mediatek,mt8196-vdisp-ctrl`
+  - `vmm: vmm` is `mediatek,mt8196-vmm`
+- sound
+  - `adsp: adsp@1a000000` is `mediatek,mt8196-dsp`
+  - `afe: mt8196-afe-pcm@1a110000` is `mediatek,mt8196-sound`
+  - `sound: sound` is `mediatek,mt8196-mt6681-sound`
+- spi
+  - `spi0: spi@16110000` to `spi7: spi@161f0000` are `mediatek,mt8196-spi`
+  - `nor_flash: spi@16340000` is `mediatek,mt8186-nor`
+- spmi
+  - `spmi: spmi@1c01a000` is `mediatek,mt8196-spmi`
+- thermal
+  - `therm_intf: therm-intf@114000` is `mediatek,therm_intf`
+  - `lvts: thermal-sensor@14414000` is `mediatek,mt8196-lvts`
+- tty
+  - `uart0: serial@16000000` to `uart2: serial@16020000` are `mediatek,mt6577-uart`
+  - `uart3: serial@16030000` are `mediatek,mt6985-uart`
+- ufs
+  - `ufshci: ufshci@16810000` is `mediatek,mt8183-ufshci`
+- usb
+  - `xhci0: usb@16700000` and `xhci1: usb1@16710000` are `mediatek,mtk-xhci`
+- watchdog
+  - `watchdog: watchdog@1c010000` is `mediatek,mt6589-wdt`
+
 ## MT8196 GPUEB
 
 - <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
