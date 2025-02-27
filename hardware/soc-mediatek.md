@@ -286,11 +286,18 @@ MediaTek SoCs
   - `disp_dvo0: disp-dvo0@324c0000` is `mediatek,mt8196-edp-dvo`
   - `dp_tx: dp-tx@3ec00000` is `mediatek,mt8196-dp-tx`
   - `edp_tx: edp-tx@3ec40000` is `mediatek,mt8196-edp-tx`
+    - on rauru, `panel: panel` is `edp-panel`
+      - on navi, it is `samsung,atna33xc20`
+        - it has backlight control and does not use `disp_pwm0`
   - `gpu: gpu@48000000` is `arm,mali-valhall-csf`
   - `gpufreq: gpufreq@48500000` is `mediatek,gpufreq`
   - `gpupdma: gpupdma@48540000` is `mediatek,gpupdma`
   - `gpueb: gpueb@4b000000` is `mediatek,gpueb`
   - `ghpm: ghpm@4b800000` is `mediatek,ghpm`
+  - on rauru/navi,
+    - `disp_dvo0` -> `edp_tx` -> `panel`
+    - `dsi0` -> `anx_bridge` -> `usb_c0`
+    - `dp_intf0`/`dp_intf1` -> `dp_tx` -> `sound`
 - i2c
   - `i2c0: i2c@13130000` to `i2c14: i2c@162c0000` are `mediatek,mt8188-i2c`
   - on rauru
@@ -299,6 +306,7 @@ MediaTek SoCs
     - `i2c1`: `tpm@50` is `google,cr50`
     - `i2c2`: `touchscreen: touchscreen@41` is `ilitek,ili2901`
       - on navi: `touchscreen@14` is `goodix,gt7375p`
+        - on navi sku1, it is disabled
     - `i2c3`: `nau8825: audio-codec@1a` is `nuvoton,nau8825`
       - on navi:
         - `quad_tas2563: audio-codec@4d` is `ti,tas2563`
@@ -368,7 +376,6 @@ MediaTek SoCs
 - pwm
   - `disp_pwm0: disp-pwm0@160b0000` and `disp_pwm1: disp-pwm1@160c0000` are `mediatek,mt8183-disp-pwm`
     - pwm for backlight
-    - on rauru, it's enabled
   - `pwm: pwm@16330000` is `mediatek,pwm`
     - unused
 - remoteproc
@@ -405,11 +412,19 @@ MediaTek SoCs
     - this is the sound controller, bound by asoc platform driver
   - `sound: sound` is `mediatek,mt8196-mt6681-sound`
     - this is  bound by asoc machine driver
+    - on navi, it is `mt8196-rt5682s-sound` instead
 - spi
   - `spi0: spi@16110000` to `spi7: spi@161f0000` are `mediatek,mt8196-spi`
     - on rauru,
       - `spi1`: `cros_ec: ec@0` is `google,cros-ec-spi`
+        - `i2c_tunnel: i2c-tunnel` is `google,cros-ec-i2c-tunnel`
+          - `battery: sbs-battery@b` is `sbs,sbs-battery`
+        - `keyboard_controller: keyboard-controller` is `google,cros-ec-keyb`
+        - `typec` is `google,cros-ec-typec`
+          - `usb_c0: connector@0` and `usb_c1: connector@1` are `usb-c-connector`
+        - on navi, `keyboard-backlight` is `google,cros-kbd-led-backlight`
       - `spi5`: `cros_ec_fp: ec@0` is `google,cros-ec-spi`
+        - on navi, it is disabled
   - `nor_flash: spi@16340000` is `mediatek,mt8186-nor`
     - spi controller for nor flash
     - on rauru, the flash is `jedec,spi-nor`
@@ -429,6 +444,7 @@ MediaTek SoCs
 - tty
   - `uart0: serial@16000000` to `uart2: serial@16020000` are `mediatek,mt6577-uart`
   - `uart3: serial@16030000` are `mediatek,mt6985-uart`
+  - on rauru, only `uart0` and `uart1` are enabled
 - ufs
   - `ufshci: ufshci@16810000` is `mediatek,mt8183-ufshci`
 - usb
