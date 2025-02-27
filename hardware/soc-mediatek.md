@@ -293,6 +293,21 @@ MediaTek SoCs
   - `ghpm: ghpm@4b800000` is `mediatek,ghpm`
 - i2c
   - `i2c0: i2c@13130000` to `i2c14: i2c@162c0000` are `mediatek,mt8188-i2c`
+  - on rauru
+    - `i2c0`: `trackpad_elan: trackpad@15` is `elan,ekth3000`
+      - on navi: `trackpad@2c` and `trackpad@38` are `hid-over-i2c`
+    - `i2c1`: `tpm@50` is `google,cr50`
+    - `i2c2`: `touchscreen: touchscreen@41` is `ilitek,ili2901`
+      - on navi: `touchscreen@14` is `goodix,gt7375p`
+    - `i2c3`: `nau8825: audio-codec@1a` is `nuvoton,nau8825`
+      - on navi:
+        - `quad_tas2563: audio-codec@4d` is `ti,tas2563`
+        - `rt5682s: audio-codec@1a` is `realtek,rt5682s`
+    - `i2c4`: sar
+      - on navi: `anx_bridge: anx7625@58` is `analogix,anx7625`
+        - it converts mipi/dsi to dp
+    - `i2c5`: ec hid keyboard
+    - `i2c6`: eusb
 - iommu
   - `mm_smmu: iommu@30800000`, `gpu_smmu: iommu@48600000`, and `apu_smmu: iommu@4c000000` are `arm,smmu-v3`
 - irqchip
@@ -337,6 +352,8 @@ MediaTek SoCs
     - `pcie0` connects to `pciephy0`
     - `pcie1` connects to `pciephy1`
     - `pcie2` connects to `pciephy2`
+  - on rauru, only `pcie0` is enabled
+    - it has a MT7925E wireless card
 - phy
   - `mipi_tx_config0: mipi-tx-config@130b0000` is `mt8196-mipi-tx`
   - `u2phy0: usb-phy0@16730000`, `u2phy1: usb-phy1@16740000`, and `u3phy0: usb3-phy0@16773000` are `mediatek,xsphy`
@@ -351,6 +368,7 @@ MediaTek SoCs
 - pwm
   - `disp_pwm0: disp-pwm0@160b0000` and `disp_pwm1: disp-pwm1@160c0000` are `mediatek,mt8183-disp-pwm`
     - pwm for backlight
+    - on rauru, it's enabled
   - `pwm: pwm@16330000` is `mediatek,pwm`
     - unused
 - remoteproc
@@ -389,9 +407,21 @@ MediaTek SoCs
     - this is  bound by asoc machine driver
 - spi
   - `spi0: spi@16110000` to `spi7: spi@161f0000` are `mediatek,mt8196-spi`
+    - on rauru,
+      - `spi1`: `cros_ec: ec@0` is `google,cros-ec-spi`
+      - `spi5`: `cros_ec_fp: ec@0` is `google,cros-ec-spi`
   - `nor_flash: spi@16340000` is `mediatek,mt8186-nor`
+    - spi controller for nor flash
+    - on rauru, the flash is `jedec,spi-nor`
 - spmi
   - `spmi: spmi@1c01a000` is `mediatek,mt8196-spmi`
+    - on rauru,
+      - `main_pmic: pmic@4` is `mediatek,mt6363`
+      - `second_pmic@5` is `mediatek,mt6373`
+      - `mt6685_mfd: mt6685_mfd` is `mediatek,mt6685`
+        - rtc
+      - `mt6316_6: mt6316@6` to `mt6316_8: mt6316@8` and `mt6316_15: mt6316@15` are `mediatek,mt6316`
+        - mfd with regulators
 - thermal
   - `therm_intf: therm-intf@114000` is `mediatek,therm_intf`
   - `lvts: thermal-sensor@14414000` is `mediatek,mt8196-lvts`
@@ -403,8 +433,10 @@ MediaTek SoCs
   - `ufshci: ufshci@16810000` is `mediatek,mt8183-ufshci`
 - usb
   - `xhci0: usb@16700000` and `xhci1: usb1@16710000` are `mediatek,mtk-xhci`
-    - `xhci0` connects to two phys: `u2phy0` for usb2 and `u3phy0` for usb3
-    - `xhci1` connects to one phy: `u2phy1` for usb2
+    - `xhci0` connects to two phys: `u2phy0` for usb 2.0 and `u3phy0` for usb 3.0
+      - on rauru,  usb 2.0 has a bluetooth dongle
+    - `xhci1` connects to one phy: `u2phy1` for usb 2.0
+      - on rauru, it has a usb camera
 - watchdog
   - `watchdog: watchdog@1c010000` is `mediatek,mt6589-wdt`
 
