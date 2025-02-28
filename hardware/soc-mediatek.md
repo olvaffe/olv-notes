@@ -527,6 +527,7 @@ MediaTek SoCs
   - `CONFIG_MTK_VMM` for (smart) media regulator
   - `CONFIG_ARM_SMMU_V3_MEDIATEK` for iommu (for display, vcp)
   - `CONFIG_MTK_CMDQ_MBOX` for GCE (for display register write offloading)
+  - `CONFIG_MTK_SMI` for SMI (for display exdma)
   - `CONFIG_MTK_MMSYS` for display pipelines (2 on-screen, 2 off-screen, 1
     audio output)
     - `CONFIG_DRM_MEDIATEK` for components of pipelines
