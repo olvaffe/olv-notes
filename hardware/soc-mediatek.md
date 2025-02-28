@@ -456,6 +456,31 @@ MediaTek SoCs
 - watchdog
   - `watchdog: watchdog@1c010000` is `mediatek,mt6589-wdt`
 
+## MT8196 Drivers
+
+- e.g., `uart0: serial@16000000`
+  - it inherits `interrupt-parent = <&gic>` from its grandparent
+  - it has two clks: `clk26m` and `pericfg_ao_clk`
+  - `CONFIG_ARM_GIC_V3` drives `gic`
+  - `CONFIG_COMMON_CLK` drives `clk26m`
+  - `CONFIG_COMMON_CLK_MT8196` drives `pericfg_ao_clk`, `cksys_clk` and more
+    - it calls `syscon_regmap_lookup_by_phandle("hw-voter-regmap")` and returns
+      the regmap defined by `hwv` node
+  - `CONFIG_SERIAL_8250_MT6577` drives `uart0`
+- e.g., `ufshci: ufshci@16810000`
+  - it has 9 irqs from `gic`
+  - it has 14 clocks from `cksys_clk` and `ufscfg_ao_clk`
+  - it has 3 regulators: `dvfsrc_vcore`, `mt6363_vemc`, `mt6363_vufs12`
+  - it has 3 resets from `ufscfgao_rst`
+  - `CONFIG_COMMON_CLK_MT8196_UFSSYS` drives `ufscfg_ao_clk`
+  - `CONFIG_MTK_DVFSRC` drives `dvfsrc` and `CONFIG_REGULATOR_MTK_DVFSRC`
+    drives `dvfsrc_vcore`
+  - `CONFIG_RESET_TI_SYSCON` drives `ufscfgao_rst`
+  - `CONFIG_SPMI_MTK_PMIF` drives `spmi`, `CONFIG_MFD_MTK_SPMI_PMIC` drives
+    `main_pmic`, and `CONFIG_REGULATOR_MT6363` drives `mt6363_*`
+    - also `spmi` depends on `pio`
+  - `CONFIG_PINCTRL_MT8196` drives `pio`
+
 ## MT8196 GPUEB
 
 - <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
