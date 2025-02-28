@@ -280,7 +280,7 @@ MediaTek SoCs
         functions
       - the interfaces are usually standardized
       - but in this case, the fw is tinysys and the interface is specific to tinysys
-- gpu
+- display
   - `dp_intf0: dp-intf@32430000` and `dp_intf1: dp-intf@32440000` are `mediatek,mt8196-dp-intf`
   - `dsi0: dsi@32490000` is `mediatek,mt8196-dsi`
   - `disp_dvo0: disp-dvo0@324c0000` is `mediatek,mt8196-edp-dvo`
@@ -289,15 +289,16 @@ MediaTek SoCs
     - on rauru, `panel: panel` is `edp-panel`
       - on navi, it is `samsung,atna33xc20`
         - it has backlight control and does not use `disp_pwm0`
+  - on rauru/navi,
+    - `disp_dvo0` -> `edp_tx` -> `panel`
+    - `dsi0` -> `anx_bridge` -> `usb_c0`
+    - `dp_intf0`/`dp_intf1` -> `dp_tx` -> `sound`
+- gpu
   - `gpu: gpu@48000000` is `arm,mali-valhall-csf`
   - `gpufreq: gpufreq@48500000` is `mediatek,gpufreq`
   - `gpupdma: gpupdma@48540000` is `mediatek,gpupdma`
   - `gpueb: gpueb@4b000000` is `mediatek,gpueb`
   - `ghpm: ghpm@4b800000` is `mediatek,ghpm`
-  - on rauru/navi,
-    - `disp_dvo0` -> `edp_tx` -> `panel`
-    - `dsi0` -> `anx_bridge` -> `usb_c0`
-    - `dp_intf0`/`dp_intf1` -> `dp_tx` -> `sound`
 - i2c
   - `i2c0: i2c@13130000` to `i2c14: i2c@162c0000` are `mediatek,mt8188-i2c`
   - on rauru
@@ -525,8 +526,15 @@ MediaTek SoCs
   - `CONFIG_MTK_VDISP` for (smart) display regulator
   - `CONFIG_MTK_VMM` for (smart) media regulator
   - `CONFIG_ARM_SMMU_V3_MEDIATEK` for iommu (for display, vcp)
-  - `CONFIG_MTK_CMDQ_MBOX` for GCE
-  - tbd
+  - `CONFIG_MTK_CMDQ_MBOX` for GCE (for display register write offloading)
+  - `CONFIG_MTK_MMSYS` for display pipelines (2 on-screen, 2 off-screen, 1
+    audio output)
+    - `CONFIG_DRM_MEDIATEK` for components of pipelines
+      - `mtk_drm_bind` creates a single `drm_device` after all 4
+        on-scrren/off-screen pipelines are bound
+    - `CONFIG_DRM_MEDIATEK_DP` for dp/edp
+      - `CONFIG_PHY_MTK_DP` for dp/edp ph (for builtin display)y
+    - `CONFIG_PHY_MTK_MIPI_DSI` for dsi phy (for external display)
 - gpu drivers
   - tbd
 
