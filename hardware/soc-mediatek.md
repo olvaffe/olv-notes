@@ -491,6 +491,44 @@ MediaTek SoCs
   - `CONFIG_PHY_MTK_XSPHY` drives `u2port0` and `u3port0`
   - `CONFIG_COMMON_CLK_MT8196` drives the clocks
   - `CONFIG_MTK_SCPSYS` drives `scpsys`
+- base drivers
+  - `CONFIG_ARM_GIC_V3` for irqchip
+  - `CONFIG_COMMON_CLK_MT8196*` for various clks
+    - `CONFIG_RESET_TI_SYSCON` for reset controllers (for UFS, PCIe)
+  - `CONFIG_SPMI_MTK_PMIF` for spmi bus
+    - `CONFIG_MFD_MTK_SPMI_PMIC` for various PMICs
+      - `CONFIG_REGULATOR_MT6316` for MT6316 regulator (for CPU cores)
+      - `CONFIG_REGULATOR_MT6363` for MT6363 regulator (for SOC, UFS, memory)
+      - `CONFIG_REGULATOR_MT6373` for MT6373 regulator (for panel, touch, trackpad, sd card)
+  - `CONFIG_MTK_SCPSYS` for pmdomain (for usb, pcie, audio, vcp, dp)
+  - `CONFIG_PINCTRL_MT8196` for pinctrl (for audio, usb 5v, dp, pcie, i2c, mmc, nor, spi)
+  - `CONFIG_MTK_MBOX` for low-level hw mbox to communicate with some
+    coprocessors (gpueb, mcupm)
+    - `CONFIG_RPMSG_MTK` for rpmsg iface
+      - `CONFIG_MTK_IPI` for high-level ipi iface
+- misc drivers
+  - `CONFIG_MTK_DVFSRC` for DVFSRC
+    - `CONFIG_REGULATOR_MTK_DVFSRC` for DVFSRC regulator (for UFS)
+  - `CONFIG_MEDIATEK_SPMI_PMIC_ADC` for MT6363/MT6373 ADC
+  - `CONFIG_MFD_MT6685` for MT6685 PMIC
+    - `CONFIG_RTC_DRV_MT6685` for MT6685 RTC
+  - `CONFIG_SERIAL_8250_MT6577` for MT6577 UART
+  - `CONFIG_MTK_TINYSYS_MBOX` for tinysys mailbox (as a transport for SCMI)
+    - `CONFIG_MTK_TINYSYS_SCMI` for tinysys protocol (as an extension for SCMI)
+      - `CONFIG_MTK_CM_MGR_MT8196` for memory tuning?
+      - `CONFIG_MTK_SLBC_MT8196` for memory tuning?
+  - `CONFIG_MTK_TINYSYS_MCUPM_SUPPORT` for MCUPM
+    - MCUPM is a coprocessor that is started by bootloader to manage MCUSYS
+      (cpu) power
+    - this driver is for querying stats?
+- display and media drivers
+  - `CONFIG_MTK_VDISP` for (smart) display regulator
+  - `CONFIG_MTK_VMM` for (smart) media regulator
+  - `CONFIG_ARM_SMMU_V3_MEDIATEK` for iommu (for display, vcp)
+  - `CONFIG_MTK_CMDQ_MBOX` for GCE
+  - tbd
+- gpu drivers
+  - tbd
 
 ## MT8196 GPUEB
 
