@@ -194,18 +194,6 @@ Device Tree
 - schemas
   - <https://github.com/devicetree-org/dt-schema>
   - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings>
-- graph
-  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/graph.yaml>
-    - the parent-child relations are not enough
-    - phandles
-    - ports and endpoints
-- pmdomain
-  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/power-domain/power-domain-consumer.yaml>
-  - `dev_pm_domain_attach_by_name` parses `power-domain-names` and
-    `power-domains`
-    - `genpd_get_from_provider` returns the power domain
-    - the power controller driver should have called
-      `of_genpd_add_provider_onecell` to register the power domain
 - clk
   - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/clock/clock.yaml>
     - `#clock-cells` is typically 0, and specifier is omitted from `clocks`
@@ -217,12 +205,44 @@ Device Tree
   - `of_clk_set_defaults` parsed `assigned-clocks` and `assigned-clock-rates`
     - it is called from `platform_probe` as a clock consumer
       - `clk_set_rate` is called on the assigned clocks
-- regulator
-  <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/regulator/regulator.yaml>
-  - `of_get_regulator` parses `%s-supply`
-    - drivers typically call `devm_regulator_get` which calls `regulator_get`
-    - the regulator driver should have called `devm_regulator_register` to
-      register the regulator
+- graph
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/graph.yaml>
+    - the parent-child relations are not enough
+    - phandles
+    - ports and endpoints
+- mbox
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/mbox/mbox-consumer.yaml>
+    - `mbox-names` is mbox names
+    - `mboxes` is `(phandle, specifier)` pairs
+    - `shmem` is `phandle` array
+  - `mbox_request_channel_byname` parses `mbox-names` and `mboxes` to return
+    the mbox channel
+- pci
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pci/pci-bus-common.yaml>
+    - `device_type` is `pci`
+- pinctrl
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pinctrl/pinctrl-consumer.yaml>
+    - `pinctrl-names` is state names
+    - `pinctrl-%d` is `phandle`
+  - `pinctrl_get` parses `pinctrl-names` and `pinctrl-%d` to convert each of
+    them to a `pinctrl_map`
+    - this is different from clk, mbox, etc.
+    - e.g., a mmc controller might require a different state depending on the
+      speed of the inserted sd card
+- pmdomain
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/power-domain/power-domain-consumer.yaml>
+  - `dev_pm_domain_attach_by_name` parses `power-domain-names` and
+    `power-domains`
+    - `genpd_get_from_provider` returns the power domain
+    - the power controller driver should have called
+      `of_genpd_add_provider_onecell` to register the power domain
+- reset
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/reset/reset.yaml>
+    - `reset-names` is reset names
+    - `resets` is `(phandle, specifier)` pairs
+  - `__of_reset_control_get` parses `reset-names` and `resets` to return the
+    reset controller
+    - it falls back to `reset-gpios`
 - opp
   - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/opp/opp-v2-base.yaml>
   - `devm_pm_opp_of_add_table` parses `operating-points-v2` and opp table
@@ -231,9 +251,30 @@ Device Tree
   - `dev_pm_opp_calc_power` parses `dynamic-power-coefficient`
     - the prop is the device capacitance and is used to estimate the power
       consumption at a given frequency and voltage (from opp)
-- pci
-  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pci/pci-bus-common.yaml>
-    - `device_type` is `pci`
+- regulator
+  <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/devicetree/bindings/regulator/regulator.yaml>
+  - `of_get_regulator` parses `%s-supply`
+    - drivers typically call `devm_regulator_get` which calls `regulator_get`
+    - the regulator driver should have called `devm_regulator_register` to
+      register the regulator
+- node dependencies
+  - all parent nodes
+  - `clocks` and `clock-names` indiciate a clock consumer
+    - the device requires some or all of the clocks to function
+  - `mboxes` and `mbox-names` indicate a mailbox consumer
+    - the device uses some or all of the mailboxes for communication
+    - this is commonly used by coprocessors
+  - `pinctrl-%d` and `pinctrl-names` indicate a pinctrl consumer
+    - an soc typically has more ip blocks than it has physical pins
+    - when a device is an ip block, it might require the pinctrl to be
+      configured in a certain way to function
+  - `power-domains` and `power-domains-names` indicate a pmdomain consumer
+    - the power rail to the device might need to be switched on for the device
+      to function
+  - `resets` and `reset-names` indicate a reset consumer
+    - the device has reset pins connected to the reset controller
+  - `%s-supply` indicates a regulator consumer
+    - the device requires some or all of the regulators to function
 
 ## Example
 
