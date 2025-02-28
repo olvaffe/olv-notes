@@ -463,7 +463,8 @@ MediaTek SoCs
   - it has two clks: `clk26m` and `pericfg_ao_clk`
   - `CONFIG_ARM_GIC_V3` drives `gic`
   - `CONFIG_COMMON_CLK` drives `clk26m`
-  - `CONFIG_COMMON_CLK_MT8196` drives `pericfg_ao_clk`, `cksys_clk` and more
+  - `CONFIG_COMMON_CLK_MT8196` drives `pericfg_ao_clk`, `cksys_clk`,
+    `vlp_cksys_clk` and more
     - it calls `syscon_regmap_lookup_by_phandle("hw-voter-regmap")` and returns
       the regmap defined by `hwv` node
   - `CONFIG_SERIAL_8250_MT6577` drives `uart0`
@@ -480,6 +481,16 @@ MediaTek SoCs
     `main_pmic`, and `CONFIG_REGULATOR_MT6363` drives `mt6363_*`
     - also `spmi` depends on `pio`
   - `CONFIG_PINCTRL_MT8196` drives `pio`
+- e.g., `xhci0: usb@16700000`
+  - it has 2 irqs from `gic` and `pio`
+  - it has 2 phys: `u2port0` for 2.0 and `u3port0` for 3.0
+  - it has 3 clocks from `vlp_cksys_clk` and `cksys_clk`
+  - it has a pmdomain: `scpsys`
+  - `CONFIG_ARM_GIC_V3` drives `gic`
+  - `CONFIG_PINCTRL_MT8196` drives `pio`
+  - `CONFIG_PHY_MTK_XSPHY` drives `u2port0` and `u3port0`
+  - `CONFIG_COMMON_CLK_MT8196` drives the clocks
+  - `CONFIG_MTK_SCPSYS` drives `scpsys`
 
 ## MT8196 GPUEB
 

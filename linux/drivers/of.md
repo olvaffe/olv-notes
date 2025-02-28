@@ -220,6 +220,11 @@ Device Tree
 - pci
   - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pci/pci-bus-common.yaml>
     - `device_type` is `pci`
+- phy
+  - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/phy/phy-consumer.yaml>
+    - `phy-names` is phy names
+    - `phys` is `(phandle, specifier)` pairs
+  - `phy_get` parses `phy-names` and `phys` to return the phy
 - pinctrl
   - <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/pinctrl/pinctrl-consumer.yaml>
     - `pinctrl-names` is state names
@@ -264,6 +269,9 @@ Device Tree
   - `mboxes` and `mbox-names` indicate a mailbox consumer
     - the device uses some or all of the mailboxes for communication
     - this is commonly used by coprocessors
+  - `phys` and `phy-names` indicate a phy consumer
+    - this happens with controllers that have connectors, such as usb
+    - the device (controller) needs the phy (connector) to be useful
   - `pinctrl-%d` and `pinctrl-names` indicate a pinctrl consumer
     - an soc typically has more ip blocks than it has physical pins
     - when a device is an ip block, it might require the pinctrl to be
