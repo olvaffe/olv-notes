@@ -539,6 +539,33 @@ MediaTek SoCs
 - gpu drivers
   - tbd
 
+## MT8196 GPU
+
+- `Kconfig`
+  - `MTK_GPU_SUPPORT` enables the menu
+  - `MTK_GPUFREQ_V2` defaults to y
+  - `MALI_MTK` enables the ddk driver
+  - `MALI_MTK_CSF_SUPPORT` enables csf support
+  - `MALI_MTK_BASE_MODULES` enables optional features
+  - `MALI_MTK_PLATFORM_NAME` selects the platform
+- `Kbuild`, which takes precedence over `Makefile`
+  - `Kbuild-mtk-custom-env` adds
+    - `-DMALI_MTK_COMMON`
+    - `-DMALI_MTK_DEBUG_FS`
+    - `-DMALI_MTK_DEVFREQ_ENABLE`
+    - `-DMALI_MTK_DEVFREQ_GOVERNOR`
+    - `-DMALI_MTK_DEVFREQ_THERMAL`
+    - `-DMALI_MTK_GHPM_STAGE1_ENABLE`
+    - `-DMALI_MTK_GPUEB_IRQ`
+  - `platform/mediatek/mtk_platform_common/Kbuild` adds 4 source files
+- `platform/mediatek/mtk_proprietary`
+  - `ged` builds `ged` module
+  - `gpu_bm` builds `mtk_gpu_qos` module
+  - `gpueb` builds `mtk_gpueb`, `mtk_ghpm`, and `mtk_ghpm_swwa`
+  - `gpufreq` builds `mtk_gpufreq_wrapper` and `mtk_gpufreq_mt8196`
+  - `gpu_pdma` builds `mtk_gpu_pdma_mt8196`
+  - `hal` builds `mtk_gpu_hal`
+
 ## MT8196 GPUEB
 
 - <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
