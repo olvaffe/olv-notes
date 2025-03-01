@@ -528,6 +528,7 @@ MediaTek SoCs
   - `CONFIG_ARM_SMMU_V3_MEDIATEK` for iommu (for display, vcp)
   - `CONFIG_MTK_CMDQ_MBOX` for GCE (for display register write offloading)
   - `CONFIG_MTK_SMI` for SMI (for display exdma)
+    - without this, memory access from display stalls forever silently
   - `CONFIG_MTK_MMSYS` for display pipelines (2 on-screen, 2 off-screen, 1
     audio output)
     - `CONFIG_DRM_MEDIATEK` for components of pipelines
