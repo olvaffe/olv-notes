@@ -57,6 +57,17 @@ IPv6
   - 4-bit flag
   - 4-bit scope
   - 112-bit group id
+- global unique addresses (GUAs), aka "public ip"
+  - <https://www.iana.org/assignments/ipv6-unicast-address-assignments/ipv6-unicast-address-assignments.xhtml>
+  - they were often allocated in /19 to /23 before 2006, and in /12 after Oct 2006
+  - ARIN, American Registry for Internet Numbers
+    - `2001:400::/23`, 1999
+    - `2001:1800::/23`, 2003
+    - `2001:4800::/23`, 2004
+    - `2600::/12`, Oct 2006
+    - `2610::/23`, 2005
+    - `2620::/23`, Sep 2006
+    - `2630::/12`, 2019
 - special addresses
   - `::/0`: default route
   - `::/128`: unspecified address
@@ -70,11 +81,25 @@ IPv6
   - `2001:20::/28`: ORCHIDv2
   - `2001:db8::/32`: used in docs as examples
   - `2002::/16`: 6to4 scheme (deprecated)
-  - `fc00::/7`: unique local addresses
+  - `fc00::/7`: unique local addresses (ULA)
     - private networks similar to `192.168.0.0/24` in IPv4
-    - `fc00::/8` is not defined and only `fd00::/8` is used
+    - `fc00::/8` is not defined
+    - `fd00::/8` is defined as follows
+      - 8-bit prefix/l: always 0xfd
+      - 40-bit global id: randomly generated
+        - this is to avoid conflict when two companies with their own private
+          networks merge
+      - 16-bit subnet id
+      - 64-bit interface id
   - `fe80::/64` from `fe80::/10`: link local address
     - similar to `169.254.0.0/16` in IPv4
+    - they are never routed
+      - for comparison, ULAs can be routed within their private networks
+    - each nic is required to have a (generated) link-local address
+      - the address is used by NDP (neighbor discover protocol), DHCPv6, etc.
+    - a router sits on the intersection of multiple links
+      - given a link-local address, it does not know which nic to use
+      - a zone index must be specified, e.g., by appending `%eth0` to the addr
   - `ff00::/8`: multicast
     - `ff01::/16`: node-local
     - `ff02::/16`: link-local
