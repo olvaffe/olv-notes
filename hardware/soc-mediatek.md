@@ -549,16 +549,36 @@ MediaTek SoCs
   - `MALI_MTK_CSF_SUPPORT` enables csf support
   - `MALI_MTK_BASE_MODULES` enables optional features
   - `MALI_MTK_PLATFORM_NAME` selects the platform
-- `Kbuild`, which takes precedence over `Makefile`
-  - `Kbuild-mtk-custom-env` adds
-    - `-DMALI_MTK_COMMON`
-    - `-DMALI_MTK_DEBUG_FS`
-    - `-DMALI_MTK_DEVFREQ_ENABLE`
-    - `-DMALI_MTK_DEVFREQ_GOVERNOR`
-    - `-DMALI_MTK_DEVFREQ_THERMAL`
-    - `-DMALI_MTK_GHPM_STAGE1_ENABLE`
-    - `-DMALI_MTK_GPUEB_IRQ`
-  - `platform/mediatek/mtk_platform_common/Kbuild` adds 4 source files
+- MT8196-specific DDK modifications
+  - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2b0918badca3b06a0371cf4cb21785d202033004>
+  - `Kbuild`, which takes precedence over `Makefile`
+    - `Kbuild-mtk-custom-env` adds
+      - `-DMALI_MTK_COMMON`
+      - `-DMALI_MTK_DEBUG_FS`
+      - `-DMALI_MTK_DEVFREQ_ENABLE`
+      - `-DMALI_MTK_DEVFREQ_GOVERNOR`
+      - `-DMALI_MTK_DEVFREQ_THERMAL`
+      - `-DMALI_MTK_GHPM_STAGE1_ENABLE`
+      - `-DMALI_MTK_GPUEB_IRQ`
+    - `platform/mediatek/Kbuild` adds `mali_kbase_config_mt8196.c`
+    - `platform/mediatek/mtk_platform_common/Kbuild` adds
+      - `mtk_platform_common.c`
+      - `mtk_platform_devfreq_thermal.c`
+      - `mtk_platform_devfreq_governor.c`
+      - `mtk_platform_dvfs.c`
+  - `gpu/mali_kbase_devfreq.c`
+    - `mtk_devfreq_init_freq_table` inits gpueb devfreq
+    - `MTK_GPU_DEVFREQ_GOVERNOR_GPUEB` instead of `simple_ondemand`
+    - `mtk_devfreq_cooling_power_ops` instead of `kbase_ipa_power_model_ops`
+  - `gpu/mali_kbase_gpuprops_backend.c`
+    - `gpufreq_get_shader_present`
+  - `csf/mali_kbase_csf_reset_gpu.c`
+    - request an extra irq, `gpueb_mbox1`, which can trigger gpu reset
+    - `gpueb_get_mbox1_irq` queries the reason
+    - `gpueb_clr_mbox1_irq` acks the irq
+  - `device/backend/mali_kbase_device_csf.c`
+    - `mtk_common_device_init`
+  - `POWER_MANAGEMENT_CALLBACKS` is defined to MT8196-specific `pm_callbacks`
 - `platform/mediatek/mtk_proprietary`
   - `ged` builds `ged` module
   - `gpu_bm` builds `mtk_gpu_qos` module
