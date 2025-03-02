@@ -745,3 +745,23 @@ MediaTek SoCs
   - `pm_callback_power_on_nolock`
     - `gpufreq_power_control` sends `CMD_POWER_CONTROL` to gpueb
   - `mtk_notify_gpu_power_change`
+
+## MT8196 AP Firmware
+
+- <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-boot/>
+  - `sys-boot/coreboot` mainly builds from
+    - <https://chromium.googlesource.com/chromiumos/third_party/coreboot>
+      - most have been upstreamed, including blobs
+    - <https://chromium.googlesource.com/chromiumos/third_party/arm-trusted-firmware>
+      - mt8196-specific changes include dvfsrc vcore, smmu, spm, pmic, etc.
+      - most have been upstreamed
+    - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference>
+  - `sys-boot/libpayload` mainly builds from
+    - <https://chromium.googlesource.com/chromiumos/third_party/coreboot>
+    - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference>
+  - `sys-boot/depthcharge` mainly builds from
+    - <https://chromium.googlesource.com/chromiumos/platform/depthcharge>
+      - mt8196-specific changes include storage, sound (beep), display, etc.
+    - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference>
+    - <https://chromium.googlesource.com/chromiumos/third_party/coreboot>
+- <https://chromium.googlesource.com/chromiumos/third_party/coreboot/+/refs/heads/main/3rdparty/blobs/soc/mediatek/mt8196/>
