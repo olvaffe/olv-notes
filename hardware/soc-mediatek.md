@@ -586,6 +586,31 @@ MediaTek SoCs
   - `gpufreq` builds `mtk_gpufreq_wrapper` and `mtk_gpufreq_mt8196`
   - `gpu_pdma` builds `mtk_gpu_pdma_mt8196`
   - `hal` builds `mtk_gpu_hal`
+- DDK integration
+  - `mtk_common_device_init` is called early during init
+    - `mtk_platform_pm_init` sets up `pm_callbacks` for runtime pm
+    - `mtk_devfreq_governor_init` adds `MTK_GPU_DEVFREQ_GOVERNOR_GPUEB`
+      governor
+    - `mtk_dvfs_init` inits callbacks for the proprietary modules
+  - `kbase_backend_late_init` is called late during init
+    - `kbase_devfreq_init` creates a gpueb-based devfreq device and registers
+      it as a cooling device
+  - `kbase_pm_clock_on` is called to power on the gpu
+    - `pm_callback_power_on` uses gpueb to power on
+- Proprietary modules
+  - `gpu_pdma` provides `/dev/gpu_pdma` to userspace
+    - it appears unused
+  - `gpu_bm` provides gpu bandwidth prediction to `ged`
+    - it is unused because `MTK_GPU_BM_2` is undefined
+    - ti also by provides `/proc/mgq` to userspace to adjust the mode
+  - `mtk_gpu_hal` provides various wrapper functions
+    - most of them call into callbacks provided by `ged`
+  - `gpufreq` provides gpufreq support to various other components
+    - it talks to gpueb internally
+    - it provdes `/proc/gpufreqv2` to userspace
+  - `ged`
+    - because there is no `mediatek,gpu_fdvfs`, it does not use gpueb
+    - it provides `/proc/ged`, `/sys/kernel/ged`, and `/sys/kernel/debug/ged` to userspace
 
 ## MT8196 GPUEB
 
