@@ -580,7 +580,17 @@ MediaTek SoCs
     - `mtk_common_device_init`
   - `POWER_MANAGEMENT_CALLBACKS` is defined to MT8196-specific `pm_callbacks`
 - `platform/mediatek/mtk_proprietary`
-  - `ged` builds `ged` module
+  - `ged` builds `ged` module with these defines
+    - `-DMTK_GPUFREQ_V2`
+    - `-DMTK_GED_KPI`
+    - `-DMET_USER_EVENT_SUPPORT -DMTK_GPU_DVFS`
+    - `-DGED_DVFS_DEBUG_BUF`
+    - `-DCONFIG_MTK_GPU_FW_IDLE`
+    - `-DCONFIG_MTK_GPU_APO_SUPPORT`
+    - `-DCONFIG_MTK_GPU_POWER_ON_OFF_TEST`
+    - `-DMTK_GPU_SLC_POLICY`
+    - `-DENABLE_COMMON_DVFS -DENABLE_TIMER_BACKUP`
+    - `-DGED_DEBUG_FS`
   - `gpu_bm` builds `mtk_gpu_qos` module
   - `gpueb` builds `mtk_gpueb`, `mtk_ghpm`, and `mtk_ghpm_swwa`
   - `gpufreq` builds `mtk_gpufreq_wrapper` and `mtk_gpufreq_mt8196`
@@ -608,9 +618,40 @@ MediaTek SoCs
   - `gpufreq` provides gpufreq support to various other components
     - it talks to gpueb internally
     - it provdes `/proc/gpufreqv2` to userspace
-  - `ged`
-    - because there is no `mediatek,gpu_fdvfs`, it does not use gpueb
-    - it provides `/proc/ged`, `/sys/kernel/ged`, and `/sys/kernel/debug/ged` to userspace
+  - `ged` has many submodules
+    - creates `/proc/ged` for ged bridge ioctls
+    - `check_eb_config` disables all of `g_ged_fdvfs_support`,
+      `g_ged_gpu_freq_notify_support`, and  `g_ged_gpueb_support`
+    - `check_apo_policy` sets `g_ged_apo_support` to 2
+    - `check_frame_base_optimize` sets `g_ged_frame_base_optimize` to 1
+    - `ged_sysfs_init` creates `/sys/kernel/ged`
+    - `ged_debugFS_init` creates `/sys/kernel/debug/ged`
+    - `ged_log_system_init` creates
+      - `/sys/kernel/debug/ged/gedlog`
+      - `/sys/kernel/ged/gpu_debug`
+    - `ged_hal_init`
+      - creates `/sys/kernel/ged/hal`
+      - `ged_dcs_init_platform_info` is disabled by dt
+      - `ged_segment_id_init` is disabled by dt
+      - `ged_gpufreq_init`
+        - no `g_async_*`
+        - no `g_mask_table` nor `g_virtual_*` because dcs is disabled by dt
+      - `ged_dvfs_init_opp_cost`
+      - `ged_notify_sw_vsync_system_init`
+      - `ged_dvfs_system_init`
+        - it inits a bunch of callbacks for other submodules
+      - `ged_ge_init` inits gralloc extra
+      - `ged_kpi_system_init`
+        - `update_gpu_fps_table` sets several fps levels: 10, 30, 60, 90, 120
+      - `ged_gpu_tuner_init` creates `/sys/kernel/ged/gpu_tuner`
+      - `ged_gpu_slc_init` is diabled by dt
+  - `gpueb`
+    - dt seems to define pseudo supplier/consumer depenencies such that
+      - `__gpueb_pdrv_probe` probes `mediatek,gpueb` first
+      - `__ghpm_pdrv_probe` probes `mediatek,ghpm` next
+      - `__ghpm_swwa_pdrv_probe` is not called
+  - I am guessing that mali calls `gpufreq` and `gpueb` directly, and we don't
+    really use `ged`
 
 ## MT8196 GPUEB
 
