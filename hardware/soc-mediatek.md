@@ -652,6 +652,103 @@ MediaTek SoCs
       - `__ghpm_swwa_pdrv_probe` is not called
   - I am guessing that mali calls `gpufreq` and `gpueb` directly, and we don't
     really use `ged`
+- gpufreq
+  - `gpufreq_shared_memory_init` maps gpueb mem for direct access to
+    `gpufreq_shared_status`
+    - `opp_num_stack` is opp count for `TARGET_STACK`
+    - `cur_fstack` is the current freq for `TARGET_STACK`
+    - `power_control`, when false, means gpu is always on
+    - `active_sleep_control`, when false, means gpu is always active
+    - `asensor_info` corresponds to `/proc/gpufreqv2/asensor_info`
+    - `opp_num_gpu` and `working_table_gpu` correspond to
+      `/proc/gpufreqv2/gpu_signed_opp_table` and
+      `/proc/gpufreqv2/gpu_working_opp_table`
+    - `opp_num_stack` and `working_table_stack` correspond to
+      `/proc/gpufreqv2/stack_signed_opp_table` and
+      `/proc/gpufreqv2/stack_working_opp_table`
+    - `limit_table` corresponds to `/proc/gpufreqv2/limit_table`
+    - `/proc/gpufreqv2/gpufreq_status`
+      - `cur_oppidx_gpu`, `cur_fgpu`, `cur_vgpu`, `cur_vsram_gpu` are current
+        gpu opp idx, freq, voltage
+      - `cur_oppidx_stack`, `cur_fstack`, `cur_vstack`, `cur_vsram_stack` are
+        current stack opp idx, freq, voltage
+      - `cur_fmeter_fgpu`, `cur_out_fgpu`, `cur_regulator_vgpu`,
+        `cur_regulator_vsram_gpu` are current real gpu freq and voltage
+      - `cur_fmeter_fstack`, `cur_out_fstack`, `cur_regulator_vstack`,
+        `cur_regulator_vsram_stack` are current real stack freq and voltage
+      - `segment_id`, `opp_num_gpu`, `signed_opp_num_gpu`, `dac_low_vgpu` are
+        segment id, opp count, etc. for gpu
+      - `segment_id`, `opp_num_stack`, `signed_opp_num_stack`, `dac_low_vstack` are
+        segment id, opp count, etc. for stack
+      - `cur_ceiling`, `cur_c_limiter`, `cur_c_priority` are current limiter
+        ceiling
+      - `cur_floor`, `cur_f_limiter`, `cur_f_priority` are current limiter
+        floor
+      - `power_count`, `active_count`, `cg_count`, `mtcmos_count`, `buck_count`
+      - `power_time_h`, `power_time_l`, `dvfs_state`
+        - dvfs state is `gpufreq_dvfs_state`
+      - `mfg_pwr_status`, `shader_present`
+      - `aging_margin`, `avs_margin`, `gpm1_mode`, `gpm3_mode`, `dfd_mode`
+      - `temperature`, `temper_comp_norm_gpu`, `temper_comp_high_gpu`,
+        `temper_comp_norm_stack`, `temper_comp_high_stack`
+      - `dbg_version`, `kdbg_version`, `ptp_version`, `sb_version`, `chip_type`
+      - `ptp3_status`
+    - `/proc/gpufreqv2/mfgsys_config`
+      - `asensor_enable`, `aging_load`, `aging_margin`
+      - `avs_enable`, `avs_margin`
+      - `gpm1_mode`, `gpm3_mode`
+      - `temper_comp_mode`, `ht_temper_comp_mode`
+      - `ips_mode`, `ips_info`
+      - `stress_test`, `test_mode`
+      - `aging_table_gpu` and `aging_table_stack`
+      - `avs_table_gpu` and `avs_table_stack`
+      - `gpm3_table`
+      - `profile_time`
+        - there are 5 profiles, `gpufreq_profile_type`
+      - `slt2_bmodel`
+  - `gpufreq_gpueb_init` inits the channel to gpueb
+    - `gpueb_get_send_PIN_ID_by_name` returns the channel id
+    - `mtk_ipi_register` registers the channel
+    - `gpufreq_ipi_to_gpueb` sends an ipi to gpueb
+      - `CMD_INIT_SHARED_MEM` informs gpueb the addr of the shared status
+  - `gpufreq_get_freq_by_idx` sends `CMD_GET_FREQ_BY_IDX` to query opp freq
+    for the specified idx
+    - gpueb sorts opp freqs from high to low
+  - `gpufreq_get_power_by_idx` sends `CMD_GET_POWER_BY_IDX` to query opp
+    voltage for the specified idx
+  - `gpufreq_get_oppidx_by_freq` sends `CMD_GET_OPPIDX_BY_FREQ` to query opp
+    idx for the specified freq
+  - `gpufreq_get_leakage_power` sends `CMD_GET_LEAKAGE_POWER` to query leakage
+    for the specified voltage
+  - `gpufreq_set_limit` sends `CMD_SET_LIMIT` to update the limit table
+    - `limiter` is the entry to update
+    - `ceiling_info` and `floor_info` are max/min freqs (and gpueb will
+      translate them to idx), or
+      - `GPUPPM_KEEP_IDX` to keep the current idx
+      - `GPUPPM_RESET_IDX` or `GPUPPM_DEFAULT_IDX` to reset to default idx
+  - `gpufreq_power_control` sends `CMD_POWER_CONTROL` to power on/off gpu
+  - `gpufreq_active_sleep_control` sends `CMD_ACTIVE_SLEEP_CONTROL` to set gpu
+    active/idle state
+  - `gpufreq_commit` sends `CMD_COMMIT` to commit to an opp idx
+    - the idx is capped by the current limit
+  - `gpufreq_dual_commit` sends `CMD_DUAL_COMMIT` to commit to an opp idx
+    - the idx is capped by the current limit
+  - `gpufreq_pdca_config` sends `CMD_PDCA_CONFIG`
+  - `gpufreq_update_debug_opp_info` sends `CMD_UPDATE_DEBUG_OPP_INFO`
+  - `gpufreq_switch_limit` sends `CMD_SWITCH_LIMIT` to enable/disable a limit
+    table entry
+  - `gpufreq_fix_target_oppidx` sends `CMD_FIX_TARGET_OPPIDX` to fix to the
+    specified idx, or -1 to disable fixed idx
+    - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
+  - `gpufreq_fix_dual_target_oppidx` sends `CMD_FIX_DUAL_TARGET_OPPIDX`
+    - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
+  - `gpufreq_fix_custom_freq_volt` sends `CMD_FIX_CUSTOM_FREQ_VOLT` to set
+    custom freq/voltage
+    - it corresponds to `/proc/gpufreqv2/fix_custom_freq_volt`
+  - `gpufreq_fix_dual_custom_freq_volt` sends `CMD_FIX_DUAL_CUSTOM_FREQ_VOLT`
+    - it corresponds to `/proc/gpufreqv2/fix_custom_freq_volt`
+  - `gpufreq_set_mfgsys_config` sends `CMD_SET_MFGSYS_CONFIG` to config mfgsys
+  - `gpufreq_mssv_commit` sends `CMD_MSSV_COMMIT`
 
 ## MT8196 GPUEB
 
