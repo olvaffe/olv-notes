@@ -1,0 +1,74 @@
+Prometheus
+==========
+
+## Node Exporter
+
+- collector
+  - `init` calls `registerCollector` to register a collector with default
+    enable/disable and a ctor
+  - `Update` is called when prometheus calls `Collect`
+- collectors
+  - `arp` parses `/proc/net/arp`
+  - `bcache` parses `/sys/fs/bcache`
+  - `bonding` parses `/sys/class/net/bonding_masters`
+  - `btrfs` parses `/sys/fs/btrfs`
+  - `buddyinfo` parses `/proc/buddyinfo`
+  - `cgroups` parses `/proc/cgroups`
+  - `conntrack` parses `/proc/sys/net/netfilter`
+  - `cpu` parses `/proc/cpuinfo`, `/proc/stat`, and `/sys/devices/system/cpu/cpu*`
+  - `cpufreq` parses `/sys/devices/system/cpu/cpu*/cpufreq`
+  - `cpu_vulnerabilities` parses `/sys/devices/system/cpu/vulnerabilities`
+  - `diskstats` parses `/proc/diskstats`
+  - `dmi` parses `/sys/class/dmi/id`
+  - `drm` parses `/sys/class/drm/card*`
+  - `edac` parses `/sys/devices/system/edac/mc`
+  - `entropy` parses `/proc/sys/kernel/random`
+  - `ethtool` parses `/sys/class/net`, and uses `NETLINK_GENERIC` / `ETHTOOL_GENL_NAME`
+  - `filefd` parses `/proc/sys/fs/file-nr`
+  - `filesystem` parses `/proc/1/mountinfo` and uses `statfs()`
+  - `hwmon` parses `/sys/class/hwmon`
+  - `interrupts` parses `/proc/interrupts`
+  - `ipvs` parses `/proc/net/ip_vs{,_stats}`
+  - `ksmd` parses `/sys/kernel/mm/ksm`
+  - `lnstat` parses `/proc/net/stat`
+  - `loadavg` parses `/proc/loadavg`
+  - `logind` uses `org.freedesktop.login1`
+  - `mdadm` parses `/proc/mdstat`
+  - `meminfo` parses `/proc/meminfo`
+  - `meminfo_numa` parses `/sys/devices/system/node/node*/{meminfo,numastat}`
+  - `mountstats` parses `/proc/self/{mountstats,mountinfo}`
+  - `netclass` uses `NETLINK_GENERIC` / `ETHTOOL_GENL_NAME`, `NETLINK_ROUTE` / `RTM_GETLINK`, and parses `/sys/class/net`
+  - `netdev` uses `NETLINK_ROUTE` / `RTM_GETLINK`
+  - `netstat` parses `/proc/net/netstat`
+  - `network_route` uses `NETLINK_ROUTE` / `RTM_GETROUTE`
+  - `nfsd` parses `/proc/net/rpc/nfsd`
+  - `nfs` parses `/proc/net/rpc/nfs`
+  - `nvme` parses `/sys/class/nvme`
+  - `os` parses `/etc/os-release`
+  - `perf` uses perf
+  - `powersupplyclass` parses `/sys/class/power_supply`
+  - `pressure` parses `/proc/pressure`
+  - `processes` parses `/proc/<pids>`
+  - `qdisc` uses `NETLINK_ROUTE` / `RTM_GETQDISC`
+  - `rapl` parses `/sys/class/powercap`
+  - `schedstat` parses `/proc/schedstat`
+  - `selinux` parses `/sys/fs/selinux`
+  - `slabinfo` parses `/proc/slabinfo`
+  - `sockstat` parses `/proc/net/sockstat{,6}`
+  - `softirqs` parses `/proc/softirqs`
+  - `softnet` parses `/proc/net/softnet_stat`
+  - `stat` parses `/proc/stat`
+  - `sysctl` parses `/proc/sys` knobs listed in `--collector.sysctl.include`
+  - `systemd` uses `org.freedesktop.systemd1`
+  - `tcpstat` uses `NETLINK_SOCK_DIAG`
+  - `textfile` parses `*.prom` under `--collector.textfile.directory`
+  - `thermal_zone` parses `/sys/class/thermal`
+  - `time` uses `clock_gettime()` and parses `/sys/devices/system/clocksource`
+  - `timex` uses `adjtimex()`
+  - `udp_queues` parses `/proc/net/udp{,6}`
+  - `uname` uses `uname()`
+  - `vmstat` parses `/proc/vmstat`
+  - `watchdog` parses `/sys/class/watchdog`
+  - `wifi` uses `NETLINK_GENERIC` / `NL80211_GENL_NAME`
+  - `xfrm` parses `/proc/net/xfrm_stat`
+  - `zoneinfo` parses `/proc/zoneinfo`
