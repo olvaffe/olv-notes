@@ -16,6 +16,7 @@ Prometheus
   - `cgroups` parses `/proc/cgroups`
   - `conntrack` parses `/proc/sys/net/netfilter`
   - `cpu` parses `/proc/cpuinfo`, `/proc/stat`, and `/sys/devices/system/cpu/cpu*`
+    - `/proc/stat` shows how much time cpu is idle/busy/etc since boot
   - `cpufreq` parses `/sys/devices/system/cpu/cpu*/cpufreq`
   - `cpu_vulnerabilities` parses `/sys/devices/system/cpu/vulnerabilities`
   - `diskstats` parses `/proc/diskstats`
@@ -26,20 +27,28 @@ Prometheus
   - `ethtool` parses `/sys/class/net`, and uses `NETLINK_GENERIC` / `ETHTOOL_GENL_NAME`
   - `filefd` parses `/proc/sys/fs/file-nr`
   - `filesystem` parses `/proc/1/mountinfo` and uses `statfs()`
+    - shows filesystem total/used sizes, etc.
   - `hwmon` parses `/sys/class/hwmon`
+    - shows temps, fans, voltages, etc.
   - `interrupts` parses `/proc/interrupts`
   - `ipvs` parses `/proc/net/ip_vs{,_stats}`
   - `ksmd` parses `/sys/kernel/mm/ksm`
   - `lnstat` parses `/proc/net/stat`
   - `loadavg` parses `/proc/loadavg`
+    - over the last 1m, 5m, and 15m, how many processes are running/runnable
+      on average
   - `logind` uses `org.freedesktop.login1`
   - `mdadm` parses `/proc/mdstat`
   - `meminfo` parses `/proc/meminfo`
+    - mem and swap available/total
   - `meminfo_numa` parses `/sys/devices/system/node/node*/{meminfo,numastat}`
-  - `mountstats` parses `/proc/self/{mountstats,mountinfo}`
+  - `mountstats` parses `/proc/self/{mountstats,mountinfo}` for nfs
   - `netclass` uses `NETLINK_GENERIC` / `ETHTOOL_GENL_NAME`, `NETLINK_ROUTE` / `RTM_GETLINK`, and parses `/sys/class/net`
+    - link state, speed, tx, rx, etc.
+    - it used to only parse `/sys/class/net`, but it now uses netlink as well
+      and becomes a super set of `netdev`
   - `netdev` uses `NETLINK_ROUTE` / `RTM_GETLINK`
-  - `netstat` parses `/proc/net/netstat`
+  - `netstat` parses `/proc/net/{netstat,snmp,snmp6}`
   - `network_route` uses `NETLINK_ROUTE` / `RTM_GETROUTE`
   - `nfsd` parses `/proc/net/rpc/nfsd`
   - `nfs` parses `/proc/net/rpc/nfs`
@@ -63,6 +72,7 @@ Prometheus
   - `tcpstat` uses `NETLINK_SOCK_DIAG`
   - `textfile` parses `*.prom` under `--collector.textfile.directory`
   - `thermal_zone` parses `/sys/class/thermal`
+    - shows thermal stats
   - `time` uses `clock_gettime()` and parses `/sys/devices/system/clocksource`
   - `timex` uses `adjtimex()`
   - `udp_queues` parses `/proc/net/udp{,6}`
