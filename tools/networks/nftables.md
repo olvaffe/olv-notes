@@ -542,3 +542,14 @@ nftables
       - generally, `do_command` builds an `nlmsghdr` to be sent to the kernel
       - but this list cmd does not need to communicate to the kernel, and just
         prints the sets from the cache
+- relevant netlink `nlmsghdr`
+  - `NFT_MSG_GETTABLE` gets all tables
+    - all messages include the family
+    - `NFTA_TABLE_NAME` specifies the table name
+  - `NFT_MSG_GETSET` gets all sets
+    - `NFTA_SET_TABLE` specifies the table the set belongs to
+    - `NFTA_SET_NAME` specifies the set name
+    - `NFTA_SET_FLAGS` specifies the set flags
+  - `NFT_MSG_GETSETELEM` gets elements of a set
+    - `NFTA_SET_ELEM_LIST_SET` identifies the set
+    - `NFTA_SET_ELEM_LIST_TABLE` identifies the table
