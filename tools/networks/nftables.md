@@ -512,3 +512,33 @@ nftables
 - kernel
   - `nft_dynset_eval` evaluates the dynamic add/update
   - if `NFT_DYNSET_OP_UPDATE`, it refreshes the timeout
+
+# `nft list sets`
+
+- `nft_ctx_new` opens a socket for `NETLINK_NETFILTER`
+- `nft_run_cmd_from_buffer` runs `list sets`
+  - `nft_parse_bison_buffer` parses `list sets` to a cmd
+    - `op` is `CMD_LIST`
+    - `obj` is `CMD_OBJ_SETS`
+  - `nft_evaluate` evaluates the cmd
+    - `nft_cache_evaluate` peeks the cmd and decides what to cache
+      - `NFT_CACHE_TABLE` caches tables
+      - `NFT_CACHE_SET` caches sets
+      - `NFT_CACHE_SETELEM` caches set elements
+      - `NFT_CACHE_REFRESH` refreshes the cache
+    - `nft_cache_update` updates the cache based on the cache flags
+      - `cache_init_tables` calls `mnl_nft_table_dump` to dump all tables and
+        caches the tables
+      - `cache_init_objects`
+        - `set_cache_dump` calls `mnl_nft_set_dump` to dump all sets
+        - it then loops through all cached tables and
+          - `set_cache_init` caches the sets for each table
+          - `netlink_list_setelems` calls `mnl_nft_setelem_get` to dump all
+            set elements for each set and caches the elements
+    - `cmd_evaluate` calls `cmd_evaluate_list` to evaluate the list cmd
+      - generally, evaluation updates the cache according to the cmd
+      - but this list cmd is nop because everything is already in cache
+    - `nft_netlink` calls `do_command` to do the list cmd
+      - generally, `do_command` builds an `nlmsghdr` to be sent to the kernel
+      - but this list cmd does not need to communicate to the kernel, and just
+        prints the sets from the cache
