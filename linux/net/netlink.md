@@ -1,0 +1,90 @@
+Linux netlink
+=============
+
+## Userspace
+
+- `socket(AF_NETLINK, SOCK_RAW, netlink_family)` creates the socket
+  - `NETLINK_ROUTE` is used by `ip`
+  - `NETLINK_NETFILTER` is used by `nft`
+  - `NETLINK_KOBJECT_UEVENT` is used by `systemd-udevd`
+  - `NETLINK_SOCK_DIAG` for diagnostic info
+  - `NETLINK_SELINUX` for selinux
+  - `NETLINK_AUDIT` for audit
+  - `NETLINK_GENERIC` is used by the rest
+- `connect(sock, addr, sizeof(addr))` connects to kernel
+  - `sockaddr_nl` is the socket address
+  - `nl_family` is `AF_NETLINK`
+  - `nl_pad` is 0
+  - `nl_pid` is 0
+  - `nl_groups` is 0
+- `nlmsghdr` is the message header for both requests and responses
+  - `nlmsg_len` is the message size, including the header
+  - `nlmsg_type` is the message type
+    - `NLMSG_NOOP` is ignored
+    - `NLMSG_ERROR` indicates an error, with `nlmsgerr` as paylaod
+    - `NLMSG_DONE` marks the end of a multi-part message
+    - the other message types depend on `netlink_family`
+  - `nlmsg_flags` is the message flags
+    - `NLM_F_REQUEST` must be set on all requests
+    - `NLM_F_MULTI` marks a message multi-part
+    - `NLM_F_ACK` asks kernel to respond an ack
+    - `NLM_F_ECHO` asks kernel to echo
+    - for "get" requests
+      - `NLM_F_ROOT` asks kernel to return everything (e.g., all routes)
+      - `NLM_F_MATCH` is not implemented
+      - `NLM_F_DUMP` is equivalent to `NLM_F_ROOT|NLM_F_MATCH`
+    - for "new" requests
+      - `NLM_F_REPLACE`
+      - `NLM_F_EXCL`
+      - `NLM_F_CREATE`
+      - `NLM_F_APPEND`
+  - `nlmsg_seq` and `nlmsg_pid` are opaque to kernel and are copied to
+    response such that userspace can match request/response
+- message payload
+  - message payload depends on the message type
+  - they typically follow the same structure
+    - a payload header
+    - zero or more TLA attributes, where an attr consists of
+      - 16-bit len
+      - 16-bit type
+      - variable-length val
+- `NETLINK_ROUTE` family
+  - `RTM_{NEW,DEL,GET}LINK` message types
+    - `ifinfomsg` is the payload header, followed by attrs
+    - `IFLA_*` are attr types
+  - `RTM_{NEW,DEL,GET}ADDR` message types
+    - `ifaddrmsg` is the payload header, followed by attrs
+    - `IFA_*` are attr types
+  - `RTM_{NEW,DEL,GET}ROUTE` message types
+    - `rtmsg` is the payload header, followed by attrs
+    - `RTA_*` are attr types
+  - `RTM_{NEW,DEL,GET}NEIGH` message types
+    - `ndmsg` is the payload header, followed by attrs
+    - `NDA_*` are attr types
+  - `RTM_{NEW,DEL,GET}RULE` message types
+    - also uses `rtmsg`
+  - `RTM_{NEW,DEL,GET}QDISC` message types
+    - `tcmsg` is the payload header, followed by attrs
+    - `TCA_*` are attr types
+  - `RTM_{NEW,DEL,GET}CLASS` message types
+    - also uses `tcmsg`
+  - `RTM_{NEW,DEL,GET}FILTER` message types
+    - also uses `tcmsg`
+- `NETLINK_GENERIC` family
+  - `GENL_ID_CTRL` message type
+    - `genlmsghdr` is the payload header, followed by attrs
+    - `CTRL_ATTR_*` are attr types
+    - this is used to resolve a netlink family name to a dynamic family id
+  - "dynamic family id" message type
+    - `genlmsghdr` is the payload header, followed by attrs
+      - `cmd` is the real cmd (while the message type is used to identify the
+        real netlink family)
+      - `version` is the netlink family version number
+    - attr types depend on the famliy and the cmd
+- `ethtool` dynamic family
+  - the dynamic family id is the message type
+  - `ETHTOOL_MSG_*` is the real cmd
+  - `ETHTOOL_MSG_LINKINFO_GET` cmd
+    - `ETHTOOL_A_LINKINFO_*` are attr types
+  - `ETHTOOL_MSG_LINKMODES_GET` cmd
+    - `ETHTOOL_A_LINKMODES_**` are attr types
