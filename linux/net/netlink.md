@@ -70,6 +70,31 @@ Linux netlink
     - also uses `tcmsg`
   - `RTM_{NEW,DEL,GET}FILTER` message types
     - also uses `tcmsg`
+- `NETLINK_NETFILTER` family
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}TABLE` message type
+    - `nfgenmsg` is the payload header, followed by attrs
+      - `nfgen_family` is the family the table belongs to
+      - `version` is always 0
+      - `res_id`
+    - `NFTA_TABLE_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}CHAIN` message types
+    - also uses `nfgenmsg`
+    - `NFTA_CHAIN_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}RULE` message types
+    - also uses `nfgenmsg`
+    - `NFTA_RULE_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}SET` message types
+    - also uses `nfgenmsg`
+    - `NFTA_SET_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}SETELEM` message types
+    - also uses `nfgenmsg`
+    - `NFTA_SET_ELEM_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}OBJ` message types
+    - also uses `nfgenmsg`
+    - `NFTA_OBJ_*` are attr types
+  - `(NFNL_SUBSYS_NFTABLES << 8) | NFT_MSG_{NEW,GET,DEL}FLOWTABLE` message types
+    - also uses `nfgenmsg`
+    - `NFTA_FLOWTABLE_*` are attr types
 - `NETLINK_GENERIC` family
   - `GENL_ID_CTRL` message type
     - `genlmsghdr` is the payload header, followed by attrs
