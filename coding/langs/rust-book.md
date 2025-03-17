@@ -279,6 +279,43 @@ The Rust Programming Language
     - it is the scope for which a reference is valid
     - the compiler can infer the lifetime usually
     - when it can't, the lifetime needs to be annotated
+  - note that compiler always knows the exact lifetime of each individual
+    reference statically
+    - when a reference is live, it borrows from the referred value
+      - if the referred value goes away while borrowed, compiler generates an
+        error
+    - what the compiler does not know is the relation between two references
+      - e.g., `fn foo(s: &str) -> &str { s }` and `let a = String::new(); let b = foo(&a);`
+      - we know that
+        - `&a` creates a reference to `a` (`a` has one borrower, `&a`)
+        - `s` is a copy of the reference (`a` has two borrowers, `&a` and `s`)
+        - `foo` copies `s` to the return value (`a` has three borrowers, `&a`,
+          `s`, and ret)
+        - `s` goes out of scope (`a` has two borrowers, `&a` and ret)
+        - `b` binds to the return value (`a` has two borrowers, `&a` and `b`)
+        - `&a` goes out of scope  (`a` has one borrower, `b`)
+      - what the compiler knows is that
+        - `foo` takes a reference and returns a reference, based on the
+          function signature
+        - `b` binds to the return value
+        - the lifetime of `b`
+          - remember that the compiler always knows the lifetime of individual
+            reference
+      - what the compiler does not know (wihtout lifetime annotation or
+        inference) is that
+        - `b` references `a`
+      - we can annotate `foo` explicitly: `fn foo<'a>(s: &'a str) -> &'a str` 
+        - the compiler can infer the same in this case
+          - in other cases, such as `fn foo<s1: &str, s2: &str) -> &str`, the
+            compiler cannot infer
+        - the anotation describes the relation between two references
+          - `s` and ret have the same lifetime
+          - based on the new signature, `let b = foo(&a);` means
+            - `b` has a known lifetime statically
+            - `'a` denotes the known lifetime
+            - `s` has the same lifetime
+            - `&a` has the same lifetime
+            - `a` is borrowed for the lifetime of `b`
   - lifetime annotation syntax
     - on references: `&'a i32`, `&'a mut i32`
     - on functions: `fn foo<'a>`
