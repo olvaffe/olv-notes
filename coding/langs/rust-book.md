@@ -280,6 +280,7 @@ The Rust Programming Language
       - a value is bits in memory
       - each value has a owner
       - when the owner of a value goes out of scope, the value is dropped
+        - the compiler always knows the scope/liveness of the owner statically
     - reference
       - a reference borrows a value from its owner
       - a reference acts as if it owns the value
@@ -309,75 +310,65 @@ The Rust Programming Language
         reference are separated
   - every reference has a lifetime
     - it is the scope for which a reference is valid
+      - this is the confusing part
+      - the scope/liveness of a reference (or any variable) is always known
+        statically
+      - the lifetime/loan of a reference is a separate concept
+        - it is usually tied to the scope/liveness of the reference, but not
+          always
     - the compiler can infer the lifetime usually
     - when it can't, the lifetime needs to be annotated
-  - note that compiler always knows the exact lifetime of each individual
-    reference statically
-    - when a reference is live, it borrows from the referred value
-      - if the referred value goes away while borrowed, compiler generates an
-        error
-    - what the compiler does not know is the relation between two references
-      - e.g., `fn foo(s: &str) -> &str { s }` and `let a = String::new(); let b = foo(&a);`
-      - we know that
-        - `&a` creates a reference to `a` (`a` has one borrower, `&a`)
-        - `s` is a copy of the reference (`a` has two borrowers, `&a` and `s`)
-        - `foo` copies `s` to the return value (`a` has three borrowers, `&a`,
-          `s`, and ret)
-        - `s` goes out of scope (`a` has two borrowers, `&a` and ret)
-        - `b` binds to the return value (`a` has two borrowers, `&a` and `b`)
-        - `&a` goes out of scope  (`a` has one borrower, `b`)
-      - what the compiler knows is that
-        - `foo` takes a reference and returns a reference, based on the
-          function signature
-        - `b` binds to the return value
-        - the lifetime of `b`
-          - remember that the compiler always knows the lifetime of individual
-            reference
-      - what the compiler does not know (wihtout lifetime annotation or
-        inference) is that
-        - `b` references `a`
-      - we can annotate `foo` explicitly: `fn foo<'a>(s: &'a str) -> &'a str` 
-        - the compiler can infer the same in this case
-          - in other cases, such as `fn foo<s1: &str, s2: &str) -> &str`, the
-            compiler cannot infer
-        - the anotation describes the relation between two references
-          - `s` and ret have the same lifetime
-          - based on the new signature, `let b = foo(&a);` means
-            - `b` has a known lifetime statically
-            - `'a` denotes the known lifetime
-            - `s` has the same lifetime
-            - `&a` has the same lifetime
-            - `a` is borrowed for the lifetime of `b`
-  - lifetime annotation syntax
-    - on references: `&'a i32`, `&'a mut i32`
-    - on functions: `fn foo<'a>`
-    - on structs: `struct Foo<'a>`
-    - on impls: `impl<'a>`
-  - when a function returns a reference, the reference has a lifetime
-    - the compiler knows that it either refers to a global variable or to a
-      function parameter that also is a reference
-      - it can't refer to owned parameters or local variables, because those
-        die when the function returns
-    - if there is only one parameter that is a reference, the compiler infers
-      the lifetime of the return value to be the lifetime of the parameter
-      - this is always safe, although when the return value refers to a global
-        variable, the actual lifetime can be longer (`'static`)
-    - if there are multiple parameters that are references, the compiler can't
-      infer the lifetime and requires explicit annotations
-    - if there is no parameter that are references, the comper does not infer
-      the lifetime and requires explicit annotations
-      - but why?
-    - `fn foo<'a>(x: &'a i32, y: &i32) -> &'a i32` means the returned
-      reference is valid when `x` is
-    - `fn foo<'a>(x: &'a i32, y: &'a i32) -> &'a i32` means the returned
-      reference is valid when both `x` and `y` are
-  - when a struct has fields that are references, the struct has a lifetime
+  - lifetime annotation syntax: `&'a i32`, `&'a mut i32`
+    - explicit annotation does not change the liftime of any reference, just
+      describes relations between references
+      - this is also confusing
+      - indeed explicit annotation merely gives a lifetime a name
+      - but when two references are annotated with the same name, one of them
+        has its lifetime changed (unless they already have the same lifetime
+        to begin with)
+    - annotate a single reference by itself is pointless
+      - compiler knows the scope/liveness of the reference statically, and can
+        tie the lifetime/loan to the scope/liveness
+      - annotation is meant to describe relations between multiple references
+  - lifetime annotation in function signatures: `fn foo<'a>`
+    - the syntax of a generic lifetime is similar to that of a generic type
+    - a note on subtyping
+      - when `'b` outlives `'a`, `'b` is a subtype
+      - that means a reference with `'b` can be used in places where `'a` is
+        expected
+      - that is different from generic type `T`, which must match exactly
+    - the book emphasizes that annotations do not change lifetimes again
+      - I think it is utterly wrong, or at least confusing
+    - `fn longest<'a>(x: &'a str, y: &'a str) -> &'a str`
+      - the book says that the compiler picks `'a` to be the overlap of `x`
+        and `y`, and makes `'a` the lifetime of the return value
+        - it reads to me that, since `x` and `y` are local to `longest`,
+          compiler picks `'a` to be the scope of `longest` and the return
+          value is useless
+      - but I think what really happens is
+        - compiler knows the scope/liveness of `x`, `y`, and the owner of the
+          return value
+          - e.g., `x` and `y` are local and are scoped to `longest`
+        - compiler picks `'a` to be the scope/liveness of the owner of the
+          return value
+        - compiler requires `x` and `y` to outlive `'a`
+        - as such, the caller keeps the inputs borrowed for as long as the
+          return value is valid
+    - e.g., `fn foo<'a>(x: &'a i32, y: &i32) -> &'a i32` means, as long as the
+      returned reference is valid, so is `x`
+    - e.g., `fn foo<'a>(x: &'a i32, y: &'a i32) -> &'a i32` means, as long as
+      the returned reference is valid, so are `x` and `y`
+  - lifetime annotation in structs: `struct Foo<'a>`
+    - again, the syntax is the same as that of generic types
+    - fields annotated with `'a` must outlive `'a`
+      - in layman terms, when the struct is valid, those fields are also valid
     - the compiler does not try to infer the lifetime of the struct and
       requires explicit annotation
-    - `struct Foo<'a>(&'a i32)` means the struct is valid when the field is
-    - `struct Foo<'a>(&'a i32, &'a i32)` means the struct is valid when both
-      fields are
-    - `struct Foo<'a, 'b>(&'a i32, &'b i32)` means...?
+    - e.g., `struct Foo<'a>(&'a i32)` means, as long as the the struct is
+      valid, so is the field
+    - e.g., `struct Foo<'a>(&'a i32, &'a i32)` means, as long as the struct is
+      valid, so are both fields
+    - e.g., `struct Foo<'a, 'b>(&'a i32, &'b i32)` means...?
   - lifetime elision
     - the compiler assigns lifetimes following 3 rules
       - it assigns lifetimes to all input references
@@ -390,138 +381,70 @@ The Rust Programming Language
           or a field of self
     - unless all output references have assigned lifetimes, the compiler
       generates an error and requires explicit annotations
-  - all string literals have `'static` lifetime
-    - they are stored in the binary directly
-    - do numeric literals also have `'static` lifetime?
-- I still don't get it.  Let's restart.
-  - value, type, and ownership
-    - a value is stored in memory
-      - it can be stored in stack, heap, or `'static`
-      - to access a value, we must know its addr and size
-    - a value must have a type
-      - the type decides the interpretation
-      - unless the type is DST, it also decides the size
-    - a value must have an owner
-      - when it loses the owner, it is dropped
-      - the ownership can be moved to a different owner
-    - a value can have borrowers
-      - there are several rules, originated from the idea that each borrower
-        acts as if it owns the value despite it does not
-      - when there is any borrower, the owner cannot mutate the value
-        - because each borrower thinks it is the owner, it does not expect
-          the real owner to mutate the value behind its back
-      - there can be multiple immutable borrowers
-        - each immutable borrower as well as the owner sees the immutable
-          value
-      - there can be at most one mutable borrower
-        - the mutable borrower gains full access to the value
-        - the owner loses access to the value
-  - pattern and variable
-    - a pattern can match a value, optionally binds the value to a variable
-      - in `let a = 3`, `a` is a pattern, `3` is a value, and `a` binds to `3`
-      - in `let mut a = 3; a = a + 1;`
-        - `a` matches and binds to `3`
-        - `a + 1` evaluates to a temp
-        - `a` matches and binds to the temp
-    - the variable becomes the owner of the value, or a copy of the value when
-      its type supports `Copy` trait
-      - in `let a = 3; let b = &a; let c = b;`
-        - `a` is the owner of `3`
-        - `&a` evalutes to a temp
-        - `b` binds to a copy of the temp, because `&T` implements the `Copy`
-          trait
-        - `c` binds to a copy of `b`
-    - when the variable goes out of scope, the value loses its owner and is
-      dropped
-  - lifetime
-    - remember this is done by the borrow checker during static analysis
-      - any use of an invalid variable causes a compile-time error
-    - a value has a lifetime
-      - starts when the value is allocated/initialized
-      - ends when the value is dropped
-    - when a variable is the owner of a value, the variable is valid until the
-      value gets moved out
-      - the value gets a new owner and the current variable becomes invalid
-    - when a variable is a borrower of a value, the variable is valid until
-      the the borrowed value is dropped
-      - if the borrowed value has type `T` and lifetime `'a`, the variable
-        binds to a value of type `&'a T`
-        - the variable, or the value it binds to, is called a reference
-      - the borrow has a lifetime too
-        - starts when the reference is allocated/initialized
-        - ends after the reference is last used
-      - if the lifetime of the borrow is not a subset of `'a`, the borrow
-        checker generates a compile-time error
-      - e.g., `let a; {a = &vec!(1)}; a;` generates an error that goes away
-        after removing the last statement (to shorten the lifetime of the
-        borrow) or removing the curly braces (to lengthen the lifetime of the
-        value)
-- experiments with function lifetime annotations
-  - `fn foo<'a>()`
-    - `let x: &'static i32 = &3;` passes
-      - it claims the referenced value outlives `'static`, which is correct
-        because `3` has the lifetime of `'static`
-    - `let x: &'a i32 = &3;` passes
-      - it claims the referenced value outlives `'a`, which is correct because
-        `3` has the lifetime of `'static`
-    - `let x = 3; let y: &'static i32 = &x;` fails
-      - it claims the referenced value outlives `'static`, which is incorrect
-        because `x` has the lifetime of the body
-    - `let x = 3; let y: &'a i32 = &x;` fails
-      - it looks like `x` does not outlive `'a`, suggesting that `'a` strictly
-        outlives the body
-  - `fn foo<'a>() -> &'a i32`
-    - `&3` passes, because `3` is `'static` and outlives `'a`
-    - `const C: i32 = 3; &C` passes, because `C` is `'static` too
-    - `let x = 3; &x` fails, suggesting `'a` strictly outlives the body
-  - `fn foo<'a>(v: &'a i32)`
-    - `let x: &'a i32 = v;` passes, because `*v` is `'a`
-    - `let x: &'a i32 = &3;` passes, because `3` is `'static` and outlives
-      `'a`
-      - this is known as subtyping: when `'b` outlives `'a`, `&'b T` is a
-        subtype of `&'a T` and we can treat `&'b T` as `&'a T`
-    - `let x = 3; let mut y = &x; y = &3; y = v;` passes
-      - when annotated with `'_` or not annotated, `&'b i32` is a subtype for
-        any `'b` and `y` can bind to any of them
-    - `let x = 3; let y: &'a i32 = &x;` fails, suggesting that `'a` strictly
-      outlives the body
-      - this makes sense because when a caller calls this function, the input
-        decides `'a` and the input outlives the body
-    - `let x: &'static i32 = v` fails, suggesting that `'a` does not always
-      outlive `'static`
-      - we can add a lifetime bound `'a: 'static` to make it pass, but it
-        also restricts what the function takes
-      - this is similar to generics and trait bounds
-  - `fn foo<'a>(v: &'a i32) -> &'a i32`
-    - `v` passes, because `*v` is `'a`
-    - `&3` passes, because `3` is `'static` and outlives `'a`
-      - this is different from generics
-      - in `fn foo<T>(v: T) -> T`, the input and ret must have the same type
-      - in this example, thanks to subtyping, ret only needs to outlive the
-        input
-    - what happens internally is probably
-      - the compiler sees a call to the function
-      - the input references a value of concrete lifetime `'x`
-      - the output type has an annotated lifetime `'y`
-        - it is normally not annotated which implies `'_`
-      - the compiler replaces `'a` by `'x`
-      - the compiler generates an error if `'x` does not outlive `'y`
-        - thanks to subtyping, `'x` and `'y` does not need to match
-  - `fn foo<'a>(v1: &'a i32, v2: &'a i32) -> &'a i32`
-    - what happens internally is probably
-      - the compiler sees a call to the function
-      - the inputs reference a value of concrete lifetime `'x` and another
-        value of concrete lifetime `'y`
-      - the output type has an annotated lifetime `'z`
-        - it is normally not annotated which implies `'_`
-      - the compiler replaces `'a` by `intersection('x, 'y)`
-      - the compiler generates an error if `intersection('x, 'y)` does not
-        outlive `'z`
-        - thanks to subtyping, `'x`, `'y`, and `'z` does not need to match
+    - if there is no parameter that are references, the compiler does not infer
+      the lifetime and requires explicit annotations
+      - but why?
+  - lifetime annotation on impls: `impl<'a>`
+    - again, the syntax is the same as that of generic types
+  - `'static`
+    - all string literals have `'static` lifetime
+      - they are stored in the binary directly
+- e.g., `fn foo(s: &str) -> &str { s }` and `let a = String::new(); let b = foo(&a);`
+  - we know that
+    - `&a` creates a reference to `a` (`a` has one borrower, `&a`)
+    - `s` is a copy of the reference (`a` has two borrowers, `&a` and `s`)
+    - `foo` copies `s` to the return value (`a` has three borrowers, `&a`,
+      `s`, and ret)
+    - `s` goes out of scope but its lifetime goes on (`a` still has three
+      borrowers)
+      - its lifetime is extended by the inferred `'a`, which is tied to ret
+    - `b` binds to the return value (`a` still has three borrowers)
+    - `&a` goes out of scope  (`a` still has three borrowers)
+    - at this point, only `b` is in scope and `a` is borrowed for as long as
+      `b` is in scope
+  - the compiler only sees the function signature, and assuming no lifetime
+    inference, only knows that
+    - `foo` takes a reference and returns a reference
+    - `b` binds to the return value
+    - it does not see the function body and does not know that `b` references
+      `a`
+  - with explicit annotation (or with lifetime inference), the signature
+    becomes `fn foo<'a>(s: &'a str) -> &'a str`
+    - the annotation describes the relation between two references
+      - `s` and ret have the same lifetime
+    - with that,
+      - the compiler already always knows the scope of `b` statically
+      - it ties `'a` to the scope of `b`
+      - it knows `s` has the same lifetime `'a`
+      - it knows `&a` has the same lifetime `'a`
+      - as a result, `a` is borrowed for as long as `b` is in scope
+    - note that there are cases when the compiler cannot infer the lifetimes
+      and explicit annotation is required
+      - e.g., `fn bar<s1: &str, s2: &str) -> &str`
+- e.g., `fn foo<'a>(v: &'a i32) -> &'a i32 { body }`
+  - body can be `v`, because `v` has `'a`
+  - body can be `&3`, because `&3` has `'static` and outlives `'a`
+    - this is different from generics
+    - in `fn foo<T>(v: T) -> T`, the input and ret must have the same type
+    - in this example, thanks to subtyping, ret only needs to outlive the
+      input
+- e.g., `fn foo<'a>() { body }`
+  - this is pointless because `'a` is meant to describe relations between
+    multiple references
+  - when body is `let x = 3; let y: &'a i32 = &x;`, the compiler complains
+    - the scope of `x` is the function body
+    - it looks like `'a` is the scope of the call, which covers both the
+      function body and the (non-existing) return value
+    - that's why the compiler complains
 - how I got confused
   - `&'a T`
-    - I thought `'a` was the lifetime of the borrow
-    - but it is actually the lifetime of the referenced value
+    - I thought `'a` was both the lifetime and the scope of a reference
+    - but the lifetime (or loan) and the scope (or liveness) of a reference
+      are separated
+      - lifetime only applies to references
+      - scope applies to all variables, including references
+    - `'a` only applies to the lifetime
+    - compiler always knows the scope statically
   - `fn foo<'a, T>(v1: &'a T, v2: &'a T) -> &'a T`
     - I could not understand why `T` is an exact match but `'a` is not
     - but it is actually just subtyping
