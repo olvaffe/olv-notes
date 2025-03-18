@@ -275,6 +275,38 @@ The Rust Programming Language
       - if a type implements a trait, at least one of them must be defined by
         the current crate
 - 10.3. Validating References with Lifetimes
+  - REMINDERS
+    - ownership
+      - a value is bits in memory
+      - each value has a owner
+      - when the owner of a value goes out of scope, the value is dropped
+    - reference
+      - a reference borrows a value from its owner
+      - a reference acts as if it owns the value
+        - the value owner cannot go out of scope and drop the value while it
+          is borrowed
+        - there can be multiple immutable references at the same time
+          - because none of the references can mutate the value, it is as if
+            every reference owns the value
+        - there can only be a single mutable reference at any time
+          - otherwise, the value could be mutated by another mutable reference
+      - a reference is itself the owner of a value as well
+        - the value is the address of the referred value
+        - when a reference goes out of scope, the address is dropped
+    - lifetime of a reference
+      - a reference owns a value (pointer) and borrows from another value
+        (pointee)
+      - when a reference goes out of scope, the pointer is dropped
+        - iow, the scope/liveness of the reference ends
+      - but when a reference goes out of scope, the pointee can still be
+        borrowed!
+        - iow, the scope/liveness of the reference ends, but the lifetime/loan
+          of the reference may go on!
+        - e.g., `fn foo<'a>(s: &'a str) -> &'a str { s }`
+          - `s` is local to `foo` and goes out of scope when the fn ends
+          - but the lifetime/loan goes on with the return value
+      - iow, the scope/liveness of a reference and the lifetime/loan of a
+        reference are separated
   - every reference has a lifetime
     - it is the scope for which a reference is valid
     - the compiler can infer the lifetime usually
