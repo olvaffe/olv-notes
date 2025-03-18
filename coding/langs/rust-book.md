@@ -450,6 +450,9 @@ The Rust Programming Language
       - if it was, `t` would be moved because `&mut T` does not implement
         `Copy` and that would be undesirable
       - instead, the compiler rewrites `t` to `&mut *t` to "re-borrow" `t`
+        - the compiler allows a mutable reference, or a subset of it, to be
+          reborrowed
+        - e.g., `let mut a = (1, 2); let b = &mut a; let c = &mut b.0;`
     - `&mut *t` is a temp reference of `t` with the lifetime scoped to `clear`
     - `self` is a move from `&mut *t`
 - how I got confused
