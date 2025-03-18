@@ -436,6 +436,22 @@ The Rust Programming Language
     - it looks like `'a` is the scope of the call, which covers both the
       function body and the (non-existing) return value
     - that's why the compiler complains
+- e.g., `let mut s = String::new();`
+  - `s.is_empty()` is the same as `String::is_empty(&s)`
+    - `&s` is a temp reference of `s` with the lifetime scoped to `is_empty`
+    - `self` is a copy of `&s` (because all `&T` implements `Copy`)
+  - `s.clear()` is the same as `String::clear(&mut s)`
+    - `&mut s` is a temp reference of `s` with the lifetime scoped to `clear`
+    - `self` is a move from `&mut s` (because `&mut T` does not implement `Copy`)
+  - `let t = &s; t.is_empty();` is the same as `String::is_empty(t)`
+    - `self` is a copy of `t`
+  - `let t = &mut s; t.clear();` is the same as `String::clear(&mut *t)`
+    - note that it is not the same as `String::clear(t)`
+      - if it was, `t` would be moved because `&mut T` does not implement
+        `Copy` and that would be undesirable
+      - instead, the compiler rewrites `t` to `&mut *t` to "re-borrow" `t`
+    - `&mut *t` is a temp reference of `t` with the lifetime scoped to `clear`
+    - `self` is a move from `&mut *t`
 - how I got confused
   - `&'a T`
     - I thought `'a` was both the lifetime and the scope of a reference
