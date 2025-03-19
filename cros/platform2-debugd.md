@@ -1,0 +1,224 @@
+platform2 debugd
+================
+
+## Feedback Logs
+
+- chrome `DebugDaemonLogSource` collects from `debugd`
+- debugd `LogTool::GetFeedbackLogs` gets feedback logs
+  - `kCommandLogs`
+    - `CLIENT_ID` from `metrics_client -i`
+    - `LOGDATE` from `date --utc; date`
+    - `amdgpu_*` from `/sys/kernel/debug/dri/0/amdgpu_*`
+    - `android_app_storage` from `du`
+    - `arcvm_console_output` from `vm_pstore_dump crosvm`
+    - `atmel_*` from `atmel_tools.sh`
+    - `audit_log` from `audit_log_filter`
+    - `bios_log` from `/sys/firmware/log`
+    - `bios_stacked_times` from `cbmem -s`
+    - `blkid` from `blkid`
+    - `bootstat_summary` from `bootstat_summary`
+    - `borealis_crosvm.log` from `/run/daemon-store/crosvm/*/log/`
+    - `bt_usb_disconnects` from `bt_usb_disconnect_helper`
+    - `buddyinfo` from `/proc/buddyinfo`
+    - `cbi_info` from `/usr/share/userfeedback/scripts/cbi_info`
+    - `chromeos-pgmem` from `chromeos-pgmem`
+    - `console-ramoops` from `/sys/fs/pstore/console-ramoops*`
+    - `cpuinfo` from `/proc/cpuinfo`
+    - `cr50_version`
+    - `cros_ec_panicinfo`
+    - `cros_ec_pdinfo`
+    - `cros_fp_panicinfo`
+    - `cros_tp console`
+    - `cros_tp frame`
+    - `cros_tp version`
+    - `crosid` from `crosid -v`
+    - `crostini`
+    - `crostini_crosvm.log`
+    - `dmesg` from `dmesg`
+    - `drm_gem_objects` from `/sys/kernel/debug/dri/?/gem`
+    - `drm_state` from `/sys/kernel/debug/dri/?/state`
+    - `drm_trace` from `/sys/kernel/tracing/instances/drm/trace`
+    - `drm_trace_legacy`
+    - `edid-decode` from `/sys/class/drm/card?-*/edid`
+    - `file-nr` from `/proc/sys/fs/file-nr`
+    - `folder_size_dump` from `folder_size_dump`
+    - `folder_size_dump_user` from `folder_size_dump`
+    - `font_info`
+    - `framebuffer` from `/sys/kernel/debug/dri/?/framebuffer`
+    - `fwupd_state`
+    - `fwupd_version`
+    - `hardware_class` from `crossystem hwid`
+    - `hardware_verification_report`
+    - `hostname`
+    - `hwsec_status`
+    - `i915_error_state` from `/sys/kernel/debug/dri/0/i915_error_state`
+    - `i915_error_state_decoded`
+    - `i915_gem_gtt` from `/sys/kernel/debug/dri/0/i915_gem_gtt`
+    - `i915_gem_objects` from `/sys/kernel/debug/dri/0/i915_gem_objects`
+    - `ifconfig` from `ifconfig -a`
+    - `input_devices`
+    - `interrupts` from `/proc/interrupts`
+    - `iw_list`
+    - `iwlmvm_module_params`
+    - `iwlwifi_module_params`
+    - `kbmcu_info`
+    - `kbmcu_log`
+    - `kernel-crashes` from `/var/spool/crash/kernel.*.kcrash`
+    - `lpstat`
+    - `lsblk` from `lsblk -a`
+    - `lsmod` from `lsmod`
+    - `lsusb` from `lusb -tvv`
+    - `lsusb_verbose` from `lsusb --verbose`
+    - `ltr_show`
+    - `lvs`
+    - `mali_memory`
+    - `meminfo` from `/proc/meminfo`
+    - `mmc_err_stats`
+    - `modetest` from `modetest`
+    - `mountinfo` from `/proc/1/mountinfo`
+    - `nvmap_iovmm`
+    - `oemdata`
+    - `package_cstate_show` from `/sys/kernel/debug/pmc_core/package_cstate_show`
+    - `pagetypeinfo` from `/proc/pagetypeinfo`
+    - `pch_ip_power_gating_status`
+    - `pchg_info`
+    - `platform_identity_customization_id`
+    - `platform_identity_model`
+    - `platform_identity_name`
+    - `platform_identity_sku`
+    - `platform_identity_whitelabel_tag`
+    - `power_supply_info` from `power_supply_info`
+    - `power_supply_sysfs` from `print_sysfs_power_supply_data`
+    - `primary_io_devices` from `vmc list-primary-io-devices`
+    - `ps` from `ps auxZ`
+    - `pvs`
+    - `qcom_fw_info`
+    - `segmentation_feature_level`
+    - `segmentation_scope_level`
+    - `sensor_info` from `/usr/share/userfeedback/scripts/sensor_info`
+    - `slabinfo` `/proc/slabinfo`
+    - `stateful_trim_data`
+    - `stateful_trim_state`
+    - `storage_quota_usage`
+    - `substate_live_status_registers`
+    - `substate_requirements`
+    - `substate_residencies`
+    - `substate_status_registers`
+    - `swap_info`
+    - `system_log_stats`
+    - `threads` from `ps -T axo pid,ppid,spid,pcpu,ni,stat,time,comm`
+    - `top memory` from `top -o \"+%MEM\" -w128 -bcn 1`
+    - `top thread` from `top -Hbc -w128 -n 1`
+    - `touch_fw_version`
+    - `typec_connector_class`
+    - `uname` from `uname -a`
+    - `uptime` from `/proc/uptime`
+    - `usb4 devices`
+    - `vmstat` from `/proc/vmstat`
+    - `wakeup_sources`
+    - `zram block device stat names`
+    - `zram block device stat values` from `/sys/block/zram0/stat`
+    - `zram new stats names`
+    - `zram new stats values` from `/sys/block/zram0/mm_stat`
+  - `kCommandLogsVerbose`
+    - `lspci_verbose`
+    - `drm_trace_verbose`
+  - `kFeedbackLogs`
+    - `amd_pmc_idlemask`
+    - `amd_s0ix_stats`
+    - `amd_smu_fw_info`
+    - `amd_stb`
+    - `arcvm_psi` from `android-sh cat /proc/pressure/memory`
+    - `arcvm_zram_mm_stat`
+    - `arcvm_zram_stat`
+    - `borealis_fossilize_wrap_log`
+    - `borealis_frames`
+    - `borealis_frames_summary`
+    - `borealis_frames_stats`
+    - `borealis_launch_log`
+    - `borealis_proton_crash_reports`
+    - `borealis_quirks`
+    - `borealis_rootfs_reports`
+    - `borealis_steam_log`
+    - `borealis_xwindump`
+    - `iwlwifi_firmware_version`
+    - `iwlwifi_sysasserts`
+    - `iwlwifi_sysasserts_count`
+    - `mm-esim-status`
+    - `mm-status`
+    - `network-devices`
+    - `network-services`
+    - `psi_cpu` from `/proc/pressure/cpu`
+    - `psi_io` from `/proc/pressure/io`
+    - `psi_memory` from `/proc/pressure/memory`
+    - `shill_connection_diagnostic`
+    - `wifi_connection_attempts`
+    - `wifi_connection_timeouts`
+    - `wifi_driver_errors`
+    - `wifi_driver_errors_count`
+  - `kVarLogFileLogs`
+    - `atrus_logs`
+    - `auth_failure`
+    - `bio_crypto_init.LATEST`
+    - `bio_crypto_init.PREVIOUS`
+    - `bio_fw_updater.LATEST`
+    - `bio_fw_updater.PREVIOUS`
+    - `biod.LATEST`
+    - `biod.PREVIOUS`
+    - `bios_info` from `/var/log/bios_info.txt`
+    - `bios_times`
+    - `bluetooth.log`
+    - `cheets_log` from `/var/log/arc.log`
+    - `chrome_system_log` from `/var/log/chrome/chrome`
+    - `chrome_system_log.PREVIOUS`
+    - `clobber-state.log`
+    - `clobber.log`
+    - `cros_ec.log` from `/var/log/cros_ec.log`
+    - `cros_ec.previous`
+    - `cros_fp.log`
+    - `cros_fp.previous`
+    - `cros_ish.log`
+    - `cros_ish.previous`
+    - `cros_scp.log`
+    - `cros_scp.previous`
+    - `display-debug`
+    - `ec_info` from `/var/log/ec_info.txt`
+    - `eventlog` from `/var/log/eventlog.txt`
+    - `extensions.log`
+    - `fwupd_log`
+    - `gsclog`
+    - `hammerd`
+    - `hypervisor.log`
+    - `nbr_minios_log`
+    - `nbr_update_engine_log`
+    - `nbr_upstart_log`
+    - `powerd.LATEST` from `/var/log/power_manager/powerd.LATEST`
+    - `powerd.PREVIOUS`
+    - `powerd.out`
+    - `powerwash_count`
+    - `secagentd`
+    - `storage_info` from `/var/log/storage_info.txt`
+    - `syslog` from `/var/log/messages`
+    - `tlsdate`
+    - `tpm-firmware-updater`
+    - `typecd`
+    - `ui_log` from `/var/log/ui/ui.LATEST`
+    - `update_engine.log`
+    - `upstart`
+    - `verified boot`
+    - `vmlog.1.LATEST`
+    - `vmlog.1.PREVIOUS`
+    - `vmlog.LATEST` from `/var/log/vmlog/vmlog.LATEST`
+    - `vmlog.PREVIOUS`
+    - `vpd_2.0`
+  - `GetArcBugReportInDictionary`
+    - `arc-bugreport-backup`
+    - `arc-bugreport` from `android-sh arc-bugreport`
+  - `GetBluetoothBqr`
+  - `GetLsbReleaseInfo`
+    - `CHROMEOS_RELEASE_VERSION`, etc. from `/etc/lsb-release`
+  - `GetPerfData`
+    - `perf-data` from `perf record -a -g -F 499` for 2 seconds
+    - `perfetto-data` from `perfetto -c /usr/share/debugd/perfetto_feedback_config.textproto --txt` for 2.5 seconds
+  - `GetOsReleaseInfo`
+    - `os-release *` from `/etc/os-release`
