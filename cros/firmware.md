@@ -520,3 +520,9 @@ Chrome OS Firmware
   - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
   - `crossystem dev_boot_legacy=1`
   - `Ctrl-L` in boot prompt
+
+## Command Lines
+
+- `ectool chargeoverride dontcharge` forces discharge
+- `dut-control lid_open:no` closes the lid
+  - `yes` to open
