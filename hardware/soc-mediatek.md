@@ -726,6 +726,37 @@ MediaTek SoCs
       translate them to idx), or
       - `GPUPPM_KEEP_IDX` to keep the current idx
       - `GPUPPM_RESET_IDX` or `GPUPPM_DEFAULT_IDX` to reset to default idx
+    - according to `__gpuppm_sort_limit`
+      - each limiter has `priority`, `ceiling`, `c_enable`, `floor`, `f_enable`
+        - `ceiling` and `floor` are the opp idx, the bigger the slower
+      - `cur_ceiling` is the max of `ceiling` of all enabled limiters
+        - `c_enable` decides if a limiter is enabled
+        - `ceiling` of `GPUPPM_DEFAULT_IDX` (-1) or `max_oppidx` (0) are ignored
+        - `LIMIT_SEGMENT` is ignored initially; if no limiter is enabled,
+          `LIMIT_SEGMENT` is used
+      - `cur_floor` is the min of `floor` of all enabled limiters
+        - `f_enable` decides if a limiter is enabled
+        - `floor` of `GPUPPM_DEFAULT_IDX` (-1) or `min_oppidx` are ignored
+        - `LIMIT_SEGMENT` is ignored initially; if no limiter is enabled,
+          `LIMIT_SEGMENT` is used
+      - if `cur_ceiling` is larger than `cur_floor`, one is reset to another
+        based on the respective limiter priorities
+        - larger limiter priority value has higher priority
+      - iow, the effective opp idx is bound by the max (slowest) of all
+        enabled ceilings and the min (fastest) of al enabled floors
+    - by default, gpueb has
+      - `LIMIT_SEGMENT` has priority 9, ceiling 0, and floor 51
+      - `LIMIT_THERMAL_EB` has priority 6 and ceiling 7
+      - `cur_ceiling` is thus 7 and `cur_floor` is thus 51
+      - effective opp idx is bound between 7 and 51
+    - `CMD_FIX_TARGET_OPPIDX` appears to set `LIMIT_FIXCMD` limiter
+      - `LIMIT_FIXCMD` has priority 2, and ceiling/floor are set by the cmd
+      - e.g., with fixed oppidx 10,
+        - `cur_ceiling` is 10 and `cur_floor` is 10
+      - e.g., with fixed oppidx 0,
+        - `cur_ceiling` is 7 (from `LIMIT_THERMAL_EB`) and `cur_floor` is 0
+        - because ceiling is larger than floor, and because `LIMIT_THERMAL_EB`
+          has higher priority, `cur_floor` is set to 7
   - `gpufreq_power_control` sends `CMD_POWER_CONTROL` to power on/off gpu
   - `gpufreq_active_sleep_control` sends `CMD_ACTIVE_SLEEP_CONTROL` to set gpu
     active/idle state
@@ -740,6 +771,7 @@ MediaTek SoCs
   - `gpufreq_fix_target_oppidx` sends `CMD_FIX_TARGET_OPPIDX` to fix to the
     specified idx, or -1 to disable fixed idx
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
+    - it appears to set `LIMIT_FIXCMD` limiter
   - `gpufreq_fix_dual_target_oppidx` sends `CMD_FIX_DUAL_TARGET_OPPIDX`
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
   - `gpufreq_fix_custom_freq_volt` sends `CMD_FIX_CUSTOM_FREQ_VOLT` to set
