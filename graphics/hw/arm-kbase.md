@@ -370,6 +370,34 @@ ARM Mali kbase
   - `kbasep_cs_queue_kick` can tell kmd a queue group has new cmds when the
     queue group is not active due to the rotation
 
+## kinstr
+
+- `KBASE_IOCTL_KINSTR_PRFCNT_SETUP` sets up perf counter
+  - the idea is to set up a shmem as a ring buffer for samples
+    - kernel writes samples to the ring buffer
+    - userspace reads samples from the ring buffer
+  - `kbase_kinstr_prfcnt_client` manages the shmem
+    - the ioctl returns an fd to represent the client
+    - userspace controls the client through the fd
+- `kbasep_kinstr_prfcnt_client_dump` writes a sample to the ring buffer
+  - `kbase_hwcnt_accumulator_dump` dumps enabled hw counters
+    - `kbasep_hwcnt_backend_csf_dump_request` requests a dump
+      - `kbasep_hwcnt_backend_csf_if_fw_timestamp_ns` returns
+        `ktime_get_raw_ns`
+      - `kbasep_hwcnt_backend_csf_if_fw_get_gpu_cycle_count` returns gpu cycle
+        counts
+        - `KBASE_CLOCK_DOMAIN_TOP` corresponds to `GPU_CONTROL__CYCLE_COUNT`
+          - this appears to be used for timestamping, not perfcnt
+        - `KBASE_CLOCK_DOMAIN_SHADER_CORES` is subjected to dvfs
+          - this appears to be used for "gpu cycles"
+      - `kbasep_hwcnt_backend_csf_cc_update` updates `cycle_count_elapsed`
+        - it calculates the elapsed cycle counts since the last request
+      - `kbasep_hwcnt_backend_csf_if_fw_dump_request` rings the csf doorbell
+    - on irq, `kbase_hwcnt_backend_csf_on_prfcnt_sample` is called
+      - `kbasep_hwcnt_backend_csf_dump_worker` accumualtes raw samples
+    - `kbasep_hwcnt_backend_csf_dump_wait` waits for the dump worker
+    - `kbasep_hwcnt_backend_csf_dump_get` copies cycle counts and samples out
+
 ## v10 and v13
 
 - search for `GPU_ID.*MAKE` for v10 and v13 differences

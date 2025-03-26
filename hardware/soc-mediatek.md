@@ -746,8 +746,10 @@ MediaTek SoCs
         enabled ceilings and the min (fastest) of al enabled floors
     - by default, gpueb has
       - `LIMIT_SEGMENT` has priority 9, ceiling 0, and floor 51
-      - `LIMIT_THERMAL_EB` has priority 6 and ceiling 7
-      - `cur_ceiling` is thus 7 and `cur_floor` is thus 51
+      - `cur_ceiling` is thus 0 and `cur_floor` is thus 51
+      - effective opp idx is bound between 0 and 51
+    - when under load,
+      - `LIMIT_THERMAL_EB` has priority 6 and ceiling 7 (imposed by gpueb)
       - effective opp idx is bound between 7 and 51
     - `CMD_FIX_TARGET_OPPIDX` appears to set `LIMIT_FIXCMD` limiter
       - `LIMIT_FIXCMD` has priority 2, and ceiling/floor are set by the cmd
@@ -772,6 +774,8 @@ MediaTek SoCs
     specified idx, or -1 to disable fixed idx
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
     - it appears to set `LIMIT_FIXCMD` limiter
+    - when the gpu is idle, it is at a idle frequency that is much lower than
+      the lowest opp freq
   - `gpufreq_fix_dual_target_oppidx` sends `CMD_FIX_DUAL_TARGET_OPPIDX`
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
   - `gpufreq_fix_custom_freq_volt` sends `CMD_FIX_CUSTOM_FREQ_VOLT` to set

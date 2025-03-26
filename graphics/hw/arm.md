@@ -82,6 +82,21 @@ ARM Mali
 - Performance Counters
   - <https://developer.arm.com/documentation/102812/latest/>
   - <https://developer.arm.com/documentation/107775/latest/>
+    - there is a counter that increments every gpu cycle, which is subjected
+      to dvfs and pm
+    - `$MaliGPUCyclesAnyQueueActive` increments when any queue has any work in
+      a gpu cycle
+      - gpu utilization is thus `$MaliGPUCyclesAnyQueueActive / GpuCycles * 100`
+    - `$MaliShaderCoreCyclesAnyWorkloadActive` increments when any shader core
+      has any work in a shader core cycle
+      - shader core may have a lower freq than `GpuCycles` on some devices
+      - on such devices, shader core utilization is never 100%
+    - `$MaliShaderCoreCyclesExecutionCoreActive` increments when the shader
+      core has any warp
+      - shader core includes the entire fs pipeline (rasterizer, eu, blender)
+        - compute makes use of eu only
+      - eu utilization is thus
+        `$MaliShaderCoreCyclesExecutionCoreActive / $MaliShaderCoreCyclesAnyWorkloadActive * 100`
   - <https://developer.arm.com/documentation/108081/latest>
   - <https://developer.arm.com/documentation/109780/latest>
   - <https://developer.arm.com/documentation/109793/latest/>
