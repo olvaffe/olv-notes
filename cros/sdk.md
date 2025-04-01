@@ -197,7 +197,15 @@ Chrome OS SDK
   - `cros flash ssh://<DUT-IP> xbuddy://remote/<<BOARD>/<VERSION>/<TYPE>`
   - `TYPE` can be
     - `test` (default) is `base` plus dev and test packages
-      - `chromiumos_test_image.tar.xz`
+      - `full_dev_part_ROOT.bin.gz` is the root partition
+      - `full_dev_part_KERN.bin.gz` is the kernel partition
+      - `stateful.tgz` is for the stateful partition
+        - the physical stateful partition is a lvm PV, `lvm pvdisplay`
+        - it is divided into more than 30 lvm LVs, `lvm lvdisplay`
+        - one of the LV, `unencrypted`, is mounted to `/mnt/stateful_partition`
+        - `stateful.tgz` is unpacked to `dev_image` and `var_overlay`
+        - `dev_image` is bind-mounted to `/usr/local`
+      - `chromiumos_test_image.tar.xz` is for when flashing to `usb://`
     - `base` is the base image signed with dev key
       - `chromiumos_base_image.tar.xz`
     - `recovery` is the recovery image signed with dev key
