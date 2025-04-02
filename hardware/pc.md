@@ -680,16 +680,22 @@ PC
 - consumer
   - midrange
     - lenovo ideapad
-    - hp pavillion
-    - dell inspiron
+    - hp omnibook 5/7 (was pavilion)
+    - dell base/plus (was inspiron)
     - asus vivobook
     - acer aspire
   - highend
     - lenovo yoga
-    - hp envy / spectre
-    - dell xps
+    - hp omnibook 9/x/ultra (was envy / spectre)
+    - dell premium (was xps)
     - asus zenbook
     - acer swift
+- business
+  - lenovo thinkpad e / thinkpad t / thinkpad x
+  - hp probook / elitebook
+  - dell pro base/plus/premium (was vostro / latitude)
+  - asus expertbook
+  - acer travelmate
 - gamer
   - midrange
     - lenovo loq
@@ -709,9 +715,3 @@ PC
   - dell precision
   - asus proart
   - acer conceptd
-- business
-  - lenovo thinkpad e / thinkpad t / thinkpad x
-  - hp probook / elitebook
-  - dell vostro / latitude
-  - asus expertbook
-  - acer travelmate
