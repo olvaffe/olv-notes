@@ -87,6 +87,7 @@ Kernel repos
 
 ## SoC
 
+- <https://docs.kernel.org/process/maintainer-soc.html>
 - downstream of
   - <https://git.kernel.org/pub/scm/linux/kernel/git/soc/soc.git>
   - <https://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git>
