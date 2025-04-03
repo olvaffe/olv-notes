@@ -663,9 +663,15 @@ MediaTek SoCs
     - `opp_num_gpu` and `working_table_gpu` correspond to
       `/proc/gpufreqv2/gpu_signed_opp_table` and
       `/proc/gpufreqv2/gpu_working_opp_table`
+      - this corresponds to `core` clk, which drives csf and reg access
+      - `coregroup` clk has the same freq, which drives tiler, mmu, l2, mem
+        access
     - `opp_num_stack` and `working_table_stack` correspond to
       `/proc/gpufreqv2/stack_signed_opp_table` and
       `/proc/gpufreqv2/stack_working_opp_table`
+      - this corresponds to `stacks` clk, which drives shader stacks and
+        shader cores
+      - `stacks` freq is always equal to or lower than `core`
     - `limit_table` corresponds to `/proc/gpufreqv2/limit_table`
     - `/proc/gpufreqv2/gpufreq_status`
       - `cur_oppidx_gpu`, `cur_fgpu`, `cur_vgpu`, `cur_vsram_gpu` are current
@@ -764,6 +770,8 @@ MediaTek SoCs
     active/idle state
   - `gpufreq_commit` sends `CMD_COMMIT` to commit to an opp idx
     - the idx is capped by the current limit
+    - i guess this is a hint to set both gpu and stack to the specified idx
+    - at any opp idx, stack freq is always equal to or less than gpu freq
   - `gpufreq_dual_commit` sends `CMD_DUAL_COMMIT` to commit to an opp idx
     - the idx is capped by the current limit
   - `gpufreq_pdca_config` sends `CMD_PDCA_CONFIG`

@@ -339,9 +339,13 @@ ARM Mali
 - OF node
   - `power-domains` has one power domain for the entire gpu
   - `clocks` has 3 clocks
-    - `core` is for csf
-    - `coregroup` is for core group
-    - `stacks` is for shader stacks
+    - `core` is for csf and reg access
+      - this is also the clock controlled by devfreq/opp
+    - `coregroup` is for tiler, mmu, l2, mem access
+      - this is optional and should have the same freq as `core`
+    - `stacks` is for shader stacks and shader cores
+      - this is optional and should have the same freq as, or lower freq than,
+        `core`
   - `interrupts` has 3 interrupts
     - `job` is from csf
       - `panthor_job_irq_handler` saves the events
