@@ -307,6 +307,8 @@ Qualcomm SoC
   - X Elite/Plus
     - 2024
     - X1E-{78,80,84}, X1P-{42,46,64,66}
+      - `hamoa`: 10-core and 12-core, with X1-85 gpu
+      - `purwa`: 8-core, with X1-45 gpu
     - 4nm
     - Adreno X1
 
