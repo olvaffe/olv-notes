@@ -90,6 +90,9 @@ MediaTek SoCs
     - `mt8195-tomato-rev3.dts`
   - 2021, Kompanio 1300T / MT8797, 6nm, Cortex-{A78,A55}, Mali-G77 MC9
   - 2022, Kompanio 1380 / MT8195T, 6nm, Cortex-{A78,A55}, Mali-G57 MC5
+  - 2025, Kompanio Ultra 910 / MT8196, 3nm, Cortex-{X925x1,X4x3,A720x4}, Immortalis-G925 MC11
+    - cros: rauru
+    - `mt8196-rauru-navi-sku1.dts`
 
 ## MT8195 SoC
 
@@ -537,8 +540,6 @@ MediaTek SoCs
     - `CONFIG_DRM_MEDIATEK_DP` for dp/edp
       - `CONFIG_PHY_MTK_DP` for dp/edp ph (for builtin display)y
     - `CONFIG_PHY_MTK_MIPI_DSI` for dsi phy (for external display)
-- gpu drivers
-  - tbd
 
 ## MT8196 GPU
 
@@ -650,9 +651,19 @@ MediaTek SoCs
       - `__gpueb_pdrv_probe` probes `mediatek,gpueb` first
       - `__ghpm_pdrv_probe` probes `mediatek,ghpm` next
       - `__ghpm_swwa_pdrv_probe` is not called
-  - I am guessing that mali calls `gpufreq` and `gpueb` directly, and we don't
-    really use `ged`
-- gpufreq
+  - it looks like
+    - `gpueb` is the bottom-most driver to talk to gpueb
+    - `gpufreq` talks to `gpueb` to control the freq
+    - `ged` has a hrtimer every 16.6ms because fdvfs is disabled
+      - mali calls `ged_dvfs_gpu_clock_switch_notify` on power state change
+      - it starts an hrtimer with `GED_DVFS_FB_TIMER_TIMEOUT` (16.6ms)
+      - `ged_notify_sw_sync_work_handle` calls `ged_dvfs_run` to update freq
+        and re-arms the hrtimer
+        - `ged_dvfs_run` checks the load and calls `ged_dvfs_gpu_freq_commit`
+          to commit a new freq
+        - `ged_dvfs_gpu_freq_commit_fp` points to `mtk_common_ged_dvfs_commit`
+          which calls `gpufreq_commit` from `gpufreq`
+- `gpufreq`
   - `gpufreq_shared_memory_init` maps gpueb mem for direct access to
     `gpufreq_shared_status`
     - `opp_num_stack` is opp count for `TARGET_STACK`
@@ -769,11 +780,14 @@ MediaTek SoCs
   - `gpufreq_active_sleep_control` sends `CMD_ACTIVE_SLEEP_CONTROL` to set gpu
     active/idle state
   - `gpufreq_commit` sends `CMD_COMMIT` to commit to an opp idx
-    - the idx is capped by the current limit
-    - i guess this is a hint to set both gpu and stack to the specified idx
-    - at any opp idx, stack freq is always equal to or less than gpu freq
+    - this picks a new opp idx for both gpu and stack
+      - at any opp idx, stack freq is always equal to or less than gpu freq
+    - the idx is clamped by the current limit
+    - when the gpu is idle, it is at a idle frequency that is much lower than
+      the lowest opp freq
   - `gpufreq_dual_commit` sends `CMD_DUAL_COMMIT` to commit to an opp idx
-    - the idx is capped by the current limit
+    - this picks new opp indices for gpu and stack separately
+    - the indices are clamped by the current limit
   - `gpufreq_pdca_config` sends `CMD_PDCA_CONFIG`
   - `gpufreq_update_debug_opp_info` sends `CMD_UPDATE_DEBUG_OPP_INFO`
   - `gpufreq_switch_limit` sends `CMD_SWITCH_LIMIT` to enable/disable a limit
@@ -781,9 +795,8 @@ MediaTek SoCs
   - `gpufreq_fix_target_oppidx` sends `CMD_FIX_TARGET_OPPIDX` to fix to the
     specified idx, or -1 to disable fixed idx
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
-    - it appears to set `LIMIT_FIXCMD` limiter
-    - when the gpu is idle, it is at a idle frequency that is much lower than
-      the lowest opp freq
+    - it appears to set `LIMIT_FIXCMD` limiter, rather than committing the opp
+      idx
   - `gpufreq_fix_dual_target_oppidx` sends `CMD_FIX_DUAL_TARGET_OPPIDX`
     - it corresponds to `/proc/gpufreqv2/fix_target_opp_index`
   - `gpufreq_fix_custom_freq_volt` sends `CMD_FIX_CUSTOM_FREQ_VOLT` to set
