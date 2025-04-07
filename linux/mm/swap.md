@@ -1,6 +1,17 @@
 Kernel swap
 ===========
 
+## `do_swap_page`
+
+- when `handle_mm_fault` handles a page fault, if the pte has never been set
+  up, `do_pte_missing` allocs the page and points pte to the page
+- if the pte exists, but `pte_present` returns false, `do_swap_page` swaps the
+  page in
+- `pte_to_swp_entry` converts `pte_t` to `swp_entry_t`
+- `swap_cache_get_folio` looks up the page from swapcache
+- on swapcache miss, `swapin_readahead` swaps in the page with RA
+  - this is considered a major page fault
+
 ## swap
 
 - `swapon` syscall adds a swap device/file
