@@ -1,6 +1,29 @@
 DRM AMD Display
 ===============
 
+## Overview
+
+- DC and DM
+  - DC is OS-agnostic and talks to hw
+  - DM is OS-dependent and sits between DRM and DC
+- DC/DM is required for Vega+ (gfx9+)
+  - gfx6-8 can use DC/DM or legacy paths
+
+## DCN
+
+- <https://docs.kernel.org/gpu/amdgpu/display/dcn-overview.html>
+- frontend
+  - DCHUB reads pixel data from SDP and feeds them into DCN
+  - DPP performs pre-blend processing
+  - MPC blends multiple planes
+- backend
+  - OPP performs post-blend processing
+  - OPTC
+  - DIO
+- DMCUB, aka DMUB, stands for display microcontroller unit b
+  - psr, panel self refresh
+  - abm, adaptive backlight management
+
 ## Display
 
 - display ip blocks
@@ -47,3 +70,24 @@ DRM AMD Display
     - `TILE` is
       - `AMD_FMT_MOD_TILE_GFX9_64K_D`
       - `AMD_FMT_MOD_TILE_GFX9_64K_S`
+
+## DisplayPort
+
+- during init, `amdgpu_dm_connector_init` inits a connector
+  - `amdgpu_dm_initialize_dp_connector` is called if the connector is DP
+  - `drm_dp_mst_topology_mgr_init` manages MST for the connector
+- on hotplug, the sink (monitor) generates an HPD (hotplug detect) long or
+  short pulse
+  - `handle_hpd_irq` handles long pulse
+  - `handle_hpd_rx_irq` handles short pulse
+  - `dm_handle_mst_sideband_msg_ready_event` handles MST messages
+    - `drm_dp_mst_handle_up_req` schedules `drm_dp_mst_up_req_work`
+    - `drm_dp_mst_process_up_req` schedules `drm_dp_mst_link_probe_work`
+    - `drm_dp_mst_port_add_connector` calls `dm_dp_add_mst_connector` to add a
+      connector
+- on unplug, i guess the same path calls `drm_dp_mst_topology_put_port` to
+  remove the port and connector
+- <https://gitlab.freedesktop.org/drm/amd/-/issues/4006>
+  - with hdcp, `hdcp_update_display` queues `event_property_validate` with a
+    shallow pointer to the connector
+  - it results in UAF if the connector is destroyed before the work

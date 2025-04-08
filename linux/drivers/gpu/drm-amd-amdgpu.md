@@ -8,7 +8,9 @@ DRM amdgpu
 - `CONFIG_DRM_AMDGPU_CIK` enables experimental CIK (gfx7) support
 - `CONFIG_DRM_AMD_ISP` enables ISP support for mipi cameras
   - new ip block on strix halo apu
-- `CONFIG_DRM_AMD_DC`
+- `CONFIG_DRM_AMD_DC` enables DC/DM support
+  - SI/CIK/VI (gfx6-8) can use DC/DM or legacy path
+  - Vega and later (gfx9+) requires DC/DM
 - `CONFIG_DRM_AMD_ACP` enables ACP support for i2s audio codecs
   - ip block on VI (gfx8)
 - `CONFIG_HSA_AMD` enables HSA driver
