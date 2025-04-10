@@ -280,6 +280,8 @@ Qualcomm SoC
     - SDM7280
     - 6nm
     - Adreno 7c+ Gen3 (Adreno 635)
+    - idp reference design: `sc7280-idp.dts`
+    - compute reference design: `sc7280-crd-r3.dts`
     - cros: herobrine
       - `sc7280-herobrine-villager-r1.dts`
 - Snapdragon 8 Compute Platforms
@@ -311,6 +313,8 @@ Qualcomm SoC
       - `purwa`: 8-core, with X1-45 gpu
     - 4nm
     - Adreno X1
+    - qualcomm compute platform: `x1e80100-qcp.dts`
+    - compute reference design: `x1e80100-crd.dts`
 
 ## History: Gaming Platforms
 
