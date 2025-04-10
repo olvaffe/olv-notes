@@ -247,6 +247,20 @@ Chrome OS Firmware
       `depthcharge.ldscript.S`
     - in libpayload, `_entry` jumps to `_init` which calls `start_main` which
       calls `main`
+- it is best to use firmware branch, such as `firmware-rex-15709.B`, for all
+  repos
+  - at the least, use the firmware branch for
+    - `third_party/coreboot`
+    - `third_party/arm-trusted-firmware` (if arm)
+  - and workon
+    - `sys-boot/chromeos-bootimage`
+    - `sys-boot/coreboot`
+    - `sys-boot/depthcharge`
+    - `sys-boot/libpayload`
+  - if android, use `firmware-android-*` for
+    - `overlays/chromiumos-overlay`
+    - `platform/depthcharge`
+    - `platform/vboot_reference`
 
 ## Suzy-Q
 
