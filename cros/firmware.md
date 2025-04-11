@@ -247,20 +247,36 @@ Chrome OS Firmware
       `depthcharge.ldscript.S`
     - in libpayload, `_entry` jumps to `_init` which calls `start_main` which
       calls `main`
-- it is best to use firmware branch, such as `firmware-rex-15709.B`, for all
-  repos
-  - at the least, use the firmware branch for
+- ebuilds
+  - `sys-boot/coreboot` builds coreboot and atf binaries (not the final fw),
+    mainly from
+    - `third_party/coreboot`
+    - `third_party/arm-trusted-firmware`
+    - `platform/vboot_reference`
+  - `sys-boot/libpayload` builds static libraries and headers from
+    - `third_party/coreboot`
+    - `platform/vboot_reference`
+  - `sys-boot/depthcharge` builds depthcharge binary from
+    - `platform/depthcharge`
+    - `third_party/coreboot`
+    - `platform/vboot_reference`
+    - it also links to libpaylaod
+  - `sys-boot/chromeos-bootimage` builds the final ap fw by packing the
+    various binaries
+- it is best to use firmware branch, such as `firmware-rex-15709.B`, for
+  `overlays/chromiumos-overlay`
+  - this will use the correct commits for various ebuilds
+  - workon ebuilds
+    - `sys-boot/coreboot`
+    - `sys-boot/libpayload`
+    - `sys-boot/depthcharge`
+    - `sys-boot/chromeos-bootimage`
+  - workon repos should use the fw branch
     - `third_party/coreboot`
     - `third_party/arm-trusted-firmware` (if arm)
-  - and workon
-    - `sys-boot/chromeos-bootimage`
-    - `sys-boot/coreboot`
-    - `sys-boot/depthcharge`
-    - `sys-boot/libpayload`
-  - if android, use `firmware-android-*` for
-    - `overlays/chromiumos-overlay`
-    - `platform/depthcharge`
     - `platform/vboot_reference`
+    - `platform/depthcharge`
+  - if android, use `firmware-android-*`
 
 ## Suzy-Q
 
