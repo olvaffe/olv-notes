@@ -267,6 +267,14 @@ Android Build System
   - p1: `userdata`, 4G
   - p2: `KERN-A`, 32M, only by recovery usb image
   - p3: `super`, 8G, `super.img`
+    - `m superimage` runs `build_super_image` which runs `lpmake` to pack
+      these to `super.img`
+      - `system.img`
+      - `system_ext.img`
+      - `system_dlkm.img`
+      - `vendor.img`
+      - `vendor_dlkm.img`
+      - `product.img`
   - p4: `KERN-B`, unused
   - p5: `ROOT-B`, unused
   - p6: `KERN-C`, unused
