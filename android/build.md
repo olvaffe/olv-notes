@@ -13,6 +13,7 @@ Android Build System
     - followed by `m`, it makes sure no stale files are in the final images
   - `m dist` generates `foo-img.zip` for fastboot update, and `foo-ota.zip`
     for ota, and foo-specific images
+    - it generates all files added by `dist-for-goals`
 - `source build/envsetup.sh`
   - `validate_current_shell` makes sure the shell is bash or zsh
   - `set_global_paths` updates `$PATH`
@@ -246,6 +247,57 @@ Android Build System
 - `target/board/Android.mk`
   - `INSTALLED_ANDROID_INFO_TXT_TARGET := $(PRODUCT_OUT)/android-info.txt`
     - e.g., it can be generated from `TARGET_BOARD_INFO_FILES`
+
+## Desktop
+
+- if `PACK_DESKTOP_FILESYSTEM_IMAGES`, it builds `PACK_IMAGE_TARGET`
+  (`android-desktop_image.bin`)
+  - this is a live usb image
+  - `PACK_IMAGE_SCRIPT` is `pack_image` script
+- it depends on `IMAGES` which is
+  - `INSTALLED_BOOTIMAGE_TARGET` (`boot.img`)
+  - `INSTALLED_SUPERIMAGE_TARGET` (`super.img`)
+  - `INSTALLED_INIT_BOOT_IMAGE_TARGET` (`init_boot.img`)
+  - `INSTALLED_VENDOR_BOOTIMAGE_TARGET` (`vendor_boot.img`)
+  - `INSTALLED_VBMETAIMAGE_TARGET` (`vbmeta.img`)
+  - `INSTALLED_USERDATAIMAGE_TARGET` (`userdata.img`)
+- the disk layout is similar to
+  <https://chromium.googlesource.com/chromiumos/platform/crosutils/+/refs/heads/main/build_library/disk_layout_v3.json>
+  - see also <https://source.android.com/docs/core/architecture/partitions>
+  - p1: `userdata`, 4G
+  - p2: `KERN-A`, 32M, only by recovery usb image
+  - p3: `super`, 8G, `super.img`
+  - p4: `KERN-B`, unused
+  - p5: `ROOT-B`, unused
+  - p6: `KERN-C`, unused
+  - p7: `ROOT-C`, unused
+  - p8: `OEM`, 4M
+  - p9: `MINIOS-A`, 128M
+  - p10: `MINIOS-B`, 128M
+  - p11
+  - p12: `EFI-SYSTEM`, 64M, only by non-chromebook uefi system
+  - p13: `boot_a`, 64M, `boot.img`
+    - `m bootimage` runs `mkbootimg` to pack `INSTALLED_KERNEL_TARGET`
+      (`kernel`) to `boot.img`
+  - p14: `boot_b`, 64M
+  - p15: `vbmeta_a`, 4M, `vbmeta.img`
+  - p16: `vbmeta_b`, 4M
+  - p17: `metadata`, 16M, generated
+  - p18: `init_boot_a`, 32M, `init_boot.img`
+    - `m initbootimage` runs `mkbootimg` to pack `INSTALLED_RAMDISK_TARGET`
+      (`ramdisk.img`) to `init_boot.img`
+  - p19: `init_boot_b`, 32M
+  - p20: `vendor_boot_a`, 32M, `vendor_boot.img`
+    - `m vendorbootimage` runs `mkbootimg` to pack these to `vendor_boot.img`
+      - `INTERNAL_KERNEL_CMDLINE` (`BOARD_KERNEL_CMDLINE`)
+      - `INTERNAL_VENDOR_RAMDISK_TARGET` (`vendor_ramdisk.cpio.lz4`)
+      - `INTERNAL_VENDOR_RAMDISK_FRAGMENTS` (`recovery.cpio.lz4`)
+  - p21: `vendor_boot_b`, 32M
+  - p22: `pvmfw_a`, 4M, `pvmfw.img`
+  - p23: `pvmfw_b`, 4M
+  - p24: `misc`, 4M
+  - p25: `RWFW-A`, unused
+  - p26: `RWFW-B`, unused
 
 ## boot.img (of x86): 
 

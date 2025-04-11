@@ -54,13 +54,44 @@ Android Kernel
   - there is also `common-android15-6.6-desktop` for desktop
 - `tools/bazel build //common:kernel_aarch64`
   - the binaries are under `bazel-bin/common/kernel_aarch64`
-- manifest
-  - `build/` has bazel rules to build the kernel
-  - `common/` is the ACK kernel source code
-  - `common-modules/` is the ACK kernel module source code
-  - `external/` consists of external projects such as bazel, libcap, lz4,
-    python, etc.
-  - `kernel/` for configs and tests
-  - `prebuilt/` consists of asuite, build-tools, clang, gcc, jdk, ndk, rust,
-    tradefed, etc.
-  - `tools/` has mkbootimg
+- <https://android.googlesource.com/kernel/manifest/+/refs/heads/common-android16-6.12-desktop/default.xml>
+  - `build` is the build rules
+  - `common` is the aosp common kernel
+  - `common-modules` is the aosp common modules
+  - `external` is external dependencies
+  - `kernel` is the aosp common kernel configs
+  - `prebuilt` is the prebuilt toolchains and tools
+  - `tools` is aosp build tools
+  - `private` is vendor modules
+    - <https://source.android.com/docs/setup/build/building-pixel-kernels>
+    - <https://android.googlesource.com/kernel/manifest/+/refs/heads/android-gs-tegu-6.1-android15-d4/default.xml>
+    - `devices/google/foo` is the build rules
+    - `google-modules` is the vendor modules
+
+## Kleaf
+
+- <https://android.googlesource.com/kernel/build/+/refs/heads/main/kleaf/README.md>
+- `tools/bazel build //common:kernel_aarch64`
+  - the bazel build file is `common/BUILD.bazel`
+    - make goals is `_GKI_X86_64_MAKE_GOALS`, which is equivalent to
+      `make bzImage modules`
+  - the kernel config file is `common/arch/arm64/configs/gki_defconfig`
+  - the output is `bazel-bin/common/kernel_aarch64/`
+    - kernel image, modules, symbols, etc.
+- `tools/bazel build //common:kernel_aarch64_dist`
+  - various android images, such as `boot.img`, `system_dlkm.img`
+  - packaged headers, such as `kernel-headers.tar.gz`
+- `tools/bazel run //common:kernel_aarch64_dist`
+  - this copies files to `out/kernel_aarch64/dist/`
+- `tools/bazel build //private/devices/google/foo:foo`
+  - the bazel build file is `private/devices/google/foo/BUILD.bazel`
+    - make goals is `dtbs modules`, which is equivalent to `make dtbs modules`
+  - the output is `bazel-bin/private/devices/google/foo/foo/`
+    - dtbs, vendor modules
+- `tools/bazel build //private/devices/google/foo:foo_dist`
+  - various android images, such as `vendor_dlkm.img`
+  - this also builds external modules
+    - e.g., `private/google-modules/bar/BUILD.bazel`
+- `tools/bazel run //private/devices/google/foo:foo_dist`
+  - this copies files to `out/foo/dist/`
+- for cros, the kernel image and the dtbs are packaged to fit image
