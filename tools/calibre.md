@@ -3,6 +3,10 @@ E-Book
 
 ## Calibre
 
+- install
+  - `curl -o calibre-linux-installer.sh https://download.calibre-ebook.com/linux-installer.sh`
+  - `chmod +x calibre-linux-installer.sh`
+  - `./calibre-linux-installer.sh install_dir=$HOME isolated=1`
 - plugins
   - `Preferences -> Advanced -> Plugins`
     - plugins are installed to `~/.config/calibre/plugins`
