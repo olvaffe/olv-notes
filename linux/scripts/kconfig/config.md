@@ -659,6 +659,9 @@ Kernel Config
     - select `Qualcomm SDHCI Controller Support` if qcom
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
+  - select `Universal Flash Storage Controller` if needed
+    - select `Platform bus based UFS Controller support`
+      - select `Mediatek specific hooks to UFS controller platform driver` if new mtk
   - select `LED Support`
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
