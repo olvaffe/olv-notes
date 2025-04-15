@@ -1,6 +1,126 @@
 Android System Overview
 =======================
 
+## Generic Boot Partition
+
+- <https://source.android.com/docs/core/architecture/partitions/generic-boot>
+  - bootloader loads `vendor_ramdisk.img` and `ramdisk.img` to memory
+  - kernel decompresses both to initramfs
+- `ramdisk.img` contents
+  - `/init`
+  - `/system/{bin,etc}`, for modprobe, start, stop, getprop, setprop, etc.
+  - empty dirs as mountpoints
+    - `/{debug_ramdisk,dev,metadata,mnt,proc,second_stage_resources,sys}`
+    - `/first_stage_ramdisk/{debug_ramdisk,dev,metadata,mnt,proc,second_stage_resources,sys}`
+- `vendor_ramdisk.img` contents
+  - `/first_stage_ramdisk/system/bin` for e2fsprogs
+  - `/lib/modules`
+  - `/system/etc` for fstab
+- `/init` is built from `first_stage_main.cpp`
+  - `android::init::FirstStageMain`
+    - mounts pseudo fs and tmpfs
+    - logs `init first stage started!`
+    - `LoadKernelModules` loads all modules under `/lib/modules`
+    - `FirstStageMount::Create` parses fstab
+    - `FirstStageMountVBootV2::DoCreateDevices` creates block devices and dm
+    - `FirstStageMountVBootV2::DoFirstStageMount` mounts partitions
+    - execs `/system/bin/init` with `selinux_setup`
+- `/system/bin/init` with `selinux_setup`
+  - `android::init::SetupSelinux`
+    - `LoadSelinuxPolicyAndroid` loads selinux policy
+    - execs `/system/bin/init` with `second_stage`
+- `/system/bin/init` with `second_stage`
+  - `android::init::SecondStageMain`
+    - logs `init second stage started!`
+    - `PropertyInit` inits props from dtb, cmdline, bootconfig, `build.prop`,
+      `default.prop`, etc.
+    - `MountExtraFilesystems` mounts `/apex`, etc.
+    - `SelinuxRestoreContext` runs `restorecon`
+    - `StartPropertyService` starts prop service over socket
+    - `LoadBootScripts` loads `*.rc`
+    - queues various actions
+      - `SetupCgroups`
+      - `SetKptrRestrict`
+      - `TestPerfEventSelinux`
+      - `early-init`
+      - `ConnectEarlyStageSnapuserd`
+      - `wait_for_coldboot_done`
+      - `SetMmapRndBits`
+      - `KeychordInit`
+      - `init`
+      - `late-init`
+      - `queue_property_triggers`
+    - runs the mainloop
+
+## Init RC
+
+- `early-init`
+  - `ueventd`
+- `init`
+  - `logd`
+  - `lmkd` (low memory killer)
+  - `servicemanager`
+  - `hwservicemanager`
+  - `vndservicemanager` (if any)
+  - `trusty_security_vm_launcher`
+- `late-init`
+  - `early-fs`
+    - `vold`
+  - `fs`
+  - `post-fs`
+  - `late-fs`
+    - `early_hal`
+      - `android.system.suspend-service`
+      - `keystore2`
+      - `android.hardware.boot-service`
+      - `android.hardware.security.keymint-service`
+  - `post-fs-data`
+    - `tombstoned`
+  - `load-bpf-programs`
+  - `bpf-progs-loaded`
+  - `zygote-start`
+    - `statsd`
+    - `zygote`
+      - `system_server`
+      - `com.android.systemui`
+      - more
+    - `zygote_secondary`
+  - `firmware_mounts_complete`
+  - `early-boot`
+  - `boot`
+    - `hal`
+      - `android.hardware.gatekeeper-service`
+      - `android.hardware.power-service`
+      - `android.hardware.graphics.allocator-service`
+      - `android.hardware.composer.hwc3-service`
+      - `android.hardware.camera.provider@2.7-service`
+      - more
+    - `core`
+      - `aconfigd-system`
+      - `aconfigd-mainline`
+      - `audioserver`
+      - `gpuservice`
+      - `surfaceflinger`
+- `main`
+  - `netd`
+  - `mdnsd`
+  - `cameraserver`
+  - `incidentd`
+  - `installd`
+  - `mediaserver`
+  - `storaged`
+  - `wificond`
+- `late_start`
+  - `traced`
+  - `traced_probes`
+  - `perfetto_persistent_sysui_tracing_for_bugreport`
+  - `gatekeeperd`
+  - `update_engine`
+  - `logcatd`
+- `start` and `stop` are provided by `system/core/toolbox`
+  - they assume `netd`, `surfaceflinger`, `audioserver`, and `zygote` by
+    default
+
 ## processes
 
 - Processes and their sources
