@@ -1,0 +1,209 @@
+ARM Mali CSF
+============
+
+## HW
+
+- MCU
+  - it shares the system memory with cpu for FW, GLB, CSGs, and CSs
+  - it executes the FW and exposes GLB/CSGs/CSs to host driver
+  - it emulates some of the CSF instructions
+- CSHW
+  - it has two or more CSHWIF to execute command streams in parallel
+    - each has its own register file
+  - some CSF instrs are executed by CEU
+  - some CSF instrs are emulated by MCU
+- hardware iterators
+  - they take jobs from CSHW, split jobs into tasks, and dispatch tasks to
+    shader cores
+- registers
+  - `GPU_CONTROL` regs for gpu control
+  - `JOB_CONTROL` regs for csf-to-host irq control
+  - `DOORBELLS` regs for host-to-csf signaling
+  - `USER` regs for direct userspace access
+
+## `GPU_CONTROL` regs
+
+- `GPU_ID`
+  - arch major/minor/rev, where arch major/minor identifies the fw to load
+  - prod major identifies the product line for the arch major
+  - ver major/minor/status
+- `L2_FEATURES` (`GPU_L2_FEATURES` in panthor)
+  - bit 7:0 (`GPU_L2_FEATURES_LINE_SIZE`): log2 of cache line size (e.g., 6
+    indicates 64)
+  - bit 15:8: log2 of cache associativity (e.g., 3 indicates 8)
+  - bit 23:16: log2 of cache slice size (e.g., 0x12 indicates 256KB per L2 slice)
+  - bit 31:24: log2 of bus width in bits (e.g., 7 indicates 128)
+- `CORE_FEATURES` (`GPU_CORE_FEATURES` in panthor)
+- `TILER_FEATURES` (`GPU_TILER_FEATURES` in panthor)
+  - bit 5:0: log2 of bin size (e.g., 9 indicates 512 bytes)
+  - bit 11:8: max level (e.g., 8, but should use hardcoded 4 on later archs)
+- `MEM_FEATURES` (`GPU_MEM_FEATURES` in panthor)
+  - bit 0 (`GROUPS_L2_COHERENT`) indicates shader cores within a group are
+    coherent
+  - bit 11:8: L2 slice count minus 1 (e.g., 3 indicates 4 L2 slices)
+- `MMU_FEATURES` (`GPU_MMU_FEATURES` in panthor)
+  - bit 7:0: va bits (e.g., 48)
+  - bit 15:8: pa bits (e.g., 40)
+- `AS_PRESENT` (`GPU_AS_PRESENT` in panthor)
+  - e.g., 0xff indicates AS 0 to 7
+- `CSF_ID` (`GPU_CSF_ID` in panthor)
+- `GPU_IRQ_RAWSTAT` (`GPU_INT_RAWSTAT` in panthor)
+  - irq sources that are active
+  - bit 0 (`GPU_IRQ_FAULT`)
+  - bit 1 (`GPU_IRQ_PROTM_FAULT`)
+  - bit 8 (`GPU_IRQ_RESET_COMPLETED`)
+  - bit 17 (`GPU_IRQ_CLEAN_CACHES_COMPLETED`)
+- `GPU_IRQ_CLEAR` (`GPU_INT_CLEAR` in panthor)
+  - irq sources to clear
+- `GPU_IRQ_MASK` (`GPU_INT_MASK` in panthor)
+  - irq sources to enable
+- `GPU_IRQ_STATUS` (`GPU_INT_STAT` in panthor)
+  - `GPU_IRQ_RAWSTAT & GPU_IRQ_MASK`
+- `GPU_COMMAND` (`GPU_CMD` in panthor)
+  - `GPU_SOFT_RESET` resets gpu and leaves external bus in defined and idle state
+  - `GPU_FLUSH_CACHES` flushes/invalidtes L2/LSC/other caches
+- `GPU_STATUS`
+- `GPU_FAULTSTATUS` (`GPU_FAULT_STATUS` in panthor)
+  - bit 7:0: exception type
+    - `GPU_BUS_FAULT` indicates external bus fault
+    - `GPU_SHAREABILITY_FAULT` indicates a cache line is accessed as both
+      shareable and non-shareable within gpu
+    - `SYSTEM_SHAREABILITY_FAULT` indicates a cache line is accessed as both
+      shareable and non-shareable outside gpu
+    - `GPU_CACHEABILITY_FAULT` indicates a cache line is accessed as both
+      cacheable and non-cacheable within gpu
+  - bit 9:8: access type (r, w, x)
+  - bit 10: `GPU_FAULTADDRESS` is valid
+  - bit 11: job AS id is valid
+  - bit 15:12: job AS id
+  - bit 31:16: source id
+- `GPU_FAULTADDRESS` (`GPU_FAULT_ADDR_LO` in panthor)
+- `L2_CONFIG`
+- `PWR_KEY` (`GPU_PWR_KEY` in panthor)
+- `PWR_OVERRIDE0` (`GPU_PWR_OVERRIDE0` in panthor)
+- `PWR_OVERRIDE1` (`GPU_PWR_OVERRIDE1` in panthor)
+- `GPU_FEATURES`
+- `PRFCNT_FEATURES`
+- `TIMESTAMP_OFFSET` (`GPU_TIMESTAMP_OFFSET_LO` in panthor)
+- `CYCLE_COUNT` (`GPU_CYCLE_COUNT_LO` in panthor)
+- `TIMESTAMP` (`GPU_TIMESTAMP_LO` in panthor)
+  - returns the current value of the system counter whose frequency can be
+    read from `CNTFRQ_EL0`
+- `THREAD_MAX_THREADS` (`GPU_THREAD_MAX_THREADS` in panthor)
+- `THREAD_MAX_WORKGROUP_SIZE` (`GPU_THREAD_MAX_WORKGROUP_SIZE` in panthor)
+- `THREAD_MAX_BARRIER_SIZE` (`GPU_THREAD_MAX_BARRIER_SIZE` in panthor)
+- `THREAD_FEATURES` (`GPU_THREAD_FEATURES` in panthor)
+- `TEXTURE_FEATURES` (`GPU_TEXTURE_FEATURES` in panthor)
+  - supported compressed formats
+- `TEXTURE_FEATURES_1`
+- `TEXTURE_FEATURES_2`
+- `TEXTURE_FEATURES_3`
+- `DOORBELL_FEATURES`
+- `GPU_COMMAND_ARG0`
+- `GPU_COMMAND_ARG1`
+- `SHADER_PRESENT` (`GPU_SHADER_PRESENT_LO` in panthor)
+  - e.g., 0x50005 indicates shader core 0, 2, 16, 18
+- `TILER_PRESENT` (`GPU_TILER_PRESENT_LO` in panthor)
+  - e.g., 0x1 indicates tiler 0
+- `L2_PRESENT` (`GPU_L2_PRESENT_LO` in panthor)
+  - e.g., 0x1 indicates L2 0
+- `SHADER_READY`
+- `TILER_READY`
+- `L2_READY`
+- `SHADER_PWRON`
+- `SHADER_PWRFEATURES`
+- `TILER_PWRON`
+- `L2_PWRON`
+- `SHADER_PWROFF`
+- `TILER_PWROFF`
+- `L2_PWROFF`
+- `SHADER_PWRTRANS`
+- `TILER_PWRTRANS`
+- `L2_PWRTRANS`
+- `SHADER_PWRACTIVE`
+- `TILER_PWRACTIVE`
+- `L2_PWRACTIVE`
+  - ok, this works the same way for `SHADER`, `TILER`, and `L2` blocks
+    - but it seems `SHADER` and `TILER` are controlled by CSF
+    - only `L2` is controlled by the host driver
+  - `L2_READY` indicates L2 is powered up and ready
+  - `L2_PWRON` requests L2 to be powered on
+  - `L2_PWROFF` requests L2 to be powered off
+  - `L2_PWRTRANS` indicates L2 is undergone power transition
+  - `L2_PWRACTIVE` indicates L2 is busy
+- `REVIDR` (`GPU_REVID` in panthor)
+- `ASN_HASH`
+- `AMBA_FEATURES` (`GPU_COHERENCY_FEATURES` in panthor)
+  - indicates protocols/features supported by the amba bus the gpu is
+    connected to
+- `AMBA_ENABLE` (`GPU_COHERENCY_PROTOCOL` in panthor)
+  - selects protocols/features of the amba bus the gpu is connected to
+- `SYSC_PBHA_OVERRIDE`
+- `SYSC_ALLOC`
+- `MCU_CONTROL`
+  - `DISABLE` requests mcu to stop
+  - `ENABLE` requests mcu to start
+  - `AUTO` requests mcu to start, and will restart automatically on fast reset
+- `MCU_STATUS`
+  - `DISABLED` means mcu is not running
+  - `ENABLED` means mcu is running
+  - `HALT` means mcu halts itself (for fast reset)
+  - `FATAL` means mcu hits fatal error
+- `MCU_FEATURES`
+
+## `MMU_CONTROL` regs
+
+- MMU is not a part of CSF
+- `IRQ_RAWSTAT` (`MMU_INT_RAWSTAT` in panthor)
+  - irq sources that are active
+  - bit 15:0: which AS page faults
+  - bit 31:16: which AS has cmd completed
+- `IRQ_CLEAR` (`MMU_INT_CLEAR` in panthor)
+  - irq sources to clear
+- `IRQ_MASK` (`MMU_INT_MASK` in panthor)
+  - irq sources to enable
+- `IRQ_STATUS` (`MMU_INT_STAT` in panthor)
+  - `IRQ_RAWSTAT & IRQ_MASK`
+- `ASn` (`MMU_AS` in panthor)
+  - `TRANSTAB` is the addr of the base page table
+  - `MEMATTR` is the memattrs for 8 memory types
+    - bit 0: alloc cacheline for inner cache write
+    - bit 1: alloc cacheline for inner cache read
+    - bit 3:2: respect bit 0 and 1, or let bus decide
+    - bit 5:4: coherency
+    - bit 7:6: shared, non-cached, write-back, fault
+  - `LOCKADDR` specifies addr/size for command
+  - `COMMAND`
+    - `AS_COMMAND_NOP` is nop
+    - `AS_COMMAND_UPDATE` commits `TRANSTAB`, `MEMATTR`, and `TRANSCFG` to hw
+    - `AS_COMMAND_LOCK` locks a region for pt update
+    - `AS_COMMAND_UNLOCK` unlocks a region
+    - `AS_COMMAND_FLUSH_PT` flushes/invalidates L2 and then unlock
+    - `AS_COMMAND_FLUSH_MEM` flushes/invalidates all caches and then unlock
+  - `FAULTSTATUS`
+    - bit 7:0: exception type
+      - `TRANSLATION_FAULT_n` hits an invalid pt entry at level n
+      - `PERMISSION_FAULT_n` violates permission, level n
+      - `ACCESS_FLAG_n` violates page table access flag
+      - `ADDRESS_SIZE_FAULT_IN` violates `TRANSCFG` input addr bits
+      - `ADDRESS_SIZE_FAULT_OUTn` violates `TRANSCFG` output addr bits
+      - `MEMORY_ATTRIBUTE_FAULT_n` means `MEMATTR` level n disallows access
+    - bit 9:8: access type (r, w, x, atomic)
+    - bit 31:16: source id
+  - `FAULTADDRESS`
+  - `STATUS`
+    - bit 0: an external command is active
+    - bit 1: an internal command is active
+  - `TRANSCFG`
+    - bit 3:0: `AS_TRANSCFG_ADRMODE_AARCH64_4K` means 4K page table
+    - bit 10:6: 55 minus input address bits (e.g., 7 for 48-bit)
+    - bit 18:14: 55 minus output address bits, but can be 0
+    - bit 22: `AS_TRANSCFG_SL_CONCAT`
+    - bit 25:24: NC, WB, etc.
+    - bit 29:28: non-shareable, outer-shareable, inner-shareable
+    - bit 30: `AS_TRANSCFG_PTW_RA` read should allocate cacheline
+    - bit 33: disable hierarchical access perm
+    - bit 34: disable access fault checking
+    - bit 35: disallow exec on writable page
+    - bit 36: force exec on readable page
+  - `FAULTEXTRA` is extra fault info
