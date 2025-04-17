@@ -334,14 +334,7 @@ ARM Mali CSF
 - `CSG_REQ`
   - `STATE` requests to terminate/start/suspend/resume a CSG
   - `EP_CFG` commits `CSG_EP_REQ` and `CSG_ALLOW_*`
-  - `STATUS_UPDATE` requuests to update
-    - `CSG_STATUS_EP_CURRENT`
-    - `CSG_STATUS_EP_REQ`
-    - `CS_STATUS_CMD_PTR`
-    - `CS_STATUS_WAIT`
-    - `CS_STATUS_WAIT_SYNC_POINTER`
-    - `CS_STATUS_WAIT_SYNC_VALUE`
-    - `CS_STATUS_REQ_RESOURCE`
+  - `STATUS_UPDATE` requuests to update `CSG_STATUS_*` and `CS_STATUS_*`
   - `SYNC_UPDATE` acks `SYNC_UPDATE`
     - gpu sets `SYNC_UPDATE` in `CSG_ACK` when the CSG executes certain `SYNC_*`
       instructions (i guess when the sync scope is system)
@@ -383,3 +376,131 @@ ARM Mali CSF
 - `CSG_STATUS_STATE`
   - bit 0 (`CSG_STATUS_STATE_IS_IDLE`): CSG is idle
 - `CSG_RESOURCE_DEP`
+
+## `STREAM_CONTROL_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_cs_control_iface` in panthor
+- `STREAM_FEATURES`
+  - bit 7:0: number of regs in CSHWIF
+  - bit 15:8: number of scoreboards
+  - bit 16: support compute
+  - bit 17: support frag
+  - bit 18: support tiler
+- `STREAM_INPUT_VA` va of `CS_KERNEL_INPUT_BLOCK`
+- `STREAM_OUTPUT_VA` va of `CS_KERNEL_OUTPUT_BLOCK`
+
+## `CS_KERNEL_INPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_cs_input_iface` in panthor
+- `CS_REQ`
+  - `STATE` requests to start/stop a CS
+  - `EXTRACT_EVENT`
+  - `IDLE_SYNC_WAIT` consider the CS idle when `SYNC_WAIT` stalls
+  - `IDLE_PROTM_PEND`
+  - `IDLE_EMPTY` consider the CS idle when when ring buffer is empty
+  - `IDLE_RESOURCE_REQ` consider the CS idle when `REQ_RESOURCE` stalls
+  - `IDLE_SHARED_SB_DEC`
+  - `TILER_OOM` acks `TILER_OOM`
+    - gpu toggles the bit in `CS_ACK` upon tiler oom
+  - `PROTM_PEND`
+  - `FATAL` acks `FATAL`
+    - gpu toggles the bit in `CS_ACK` upon unrecoverable err
+  - `FAULT` acks `FAULT`
+    - gpu toggles the bit in `CS_ACK` upon recoverable err
+- `CS_CONFIG`
+  - `PRIORITY` 0..15, with 15 being the highest priority within the CSG
+  - `USER_DOORBELL` which doorbell to use
+- `CS_ACK_IRQ_MASK`
+  - irq sources to enable
+  - when `CS_ACK` is updated, and the changed bits are in `CS_ACK_IRQ_MASK`,
+    generate an irq
+- `CS_BASE` va of the ring buffer
+- `CS_SIZE` size of the ring buffer
+- `CS_TILER_HEAP_START` start of extra tiler heap chunk on `TILER_OOM`
+- `CS_TILER_HEAP_END` end of extra tiler heap chunk on `TILER_OOM`
+- `CS_USER_INPUT` va of `CS_USER_INPUT_BLOCK`
+- `CS_USER_OUTPUT` va of `CS_USER_OUTPUT_BLOCK`
+- `CS_INSTR_CONFIG`
+- `CS_INSTR_BUFFER_SIZE`
+- `CS_INSTR_BUFFER_BASE`
+- `CS_INSTR_BUFFER_OFFSET_POINTER`
+
+## `CS_KERNEL_OUTPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_cs_output_iface` in panthor
+- `CS_ACK` see `CS_REQ`
+- `CS_STATUS_CMD_PTR` reports the va of the next instr
+- `CS_STATUS_WAIT` reports the wait status
+  - `SB_MASK` if waiting for scoreboard entry n
+  - `SB_SOURCE` is one of
+    - `NONE`
+    - `WAIT` if executing `WAIT` instr
+  - `SYNC_WAIT_CONDITION` is `SYNC_WAIT` cond
+  - `PROGRESS_WAIT` if executing `PROGRESS_WAIT` instr
+  - `PROTM_PEND` if waiting for protected mode
+  - `SYNC_WAIT_SIZE` is 64-bit if set; 32-bit if cleared
+  - `SYNC_WAIT` if executing `SYNC_WAIT` instr
+- `CS_STATUS_REQ_RESOURCE` reports requested and allocated resources
+- `CS_STATUS_WAIT_SYNC_POINTER` reports va of `SYNC_WAIT`
+- `CS_STATUS_WAIT_SYNC_VALUE` reports val of `SYNC_WAIT`
+- `CS_STATUS_SCOREBOARDS` reports non-zero scoreboard entries
+- `CS_STATUS_BLOCKED_REASON` reports the block reason
+  - `UNBLOCKED` not blocked
+  - `SB_WAIT` blocked by `WAIT` instr
+  - `PROGRESS_WAIT` blocked by `PROGRESS_WAIT` instr
+  - `SYNC_WAIT` blocked by `SYNC_WAIT` instr
+  - `DEFERRED` blocked by deferred instruction
+  - `RESOURCE` blocked by `REQ_RESOURCE` instr
+  - `FLUSH` blocked by `FLUSH_CACHE2` instr
+- `CS_STATUS_WAIT_SYNC_VALUE_HI` reports higher 32-bit of `SYNC_WAIT` val
+- `CS_FAULT` recoverable error info
+  - `EXCEPTION_TYPE`
+    - `OK`
+    - `KABOOM` shader core executes `KABOOM`
+    - `CS_RESOURCE_TERMINATED` another job causes iterator to terminate
+    - `CS_BUS_FAULT`
+    - `CS_INHERIT_FAULT` `SYNC_WAIT` fails with an error
+    - `INSTR_INVALID_PC` bad shader instr pc
+    - `INSTR_INVALID_ENC` bad shader instr encoding
+    - `INSTR_BARRIER_FAULT`
+    - `DATA_INVALID_FAULT` invalid input data
+    - `TILE_RANGE_FAULT` bad tile
+    - `ADDR_RANGE_FAULT` out-of-range access
+    - `IMPRECISE_FAULT` unkonwn reason
+    - `RESOURCE_EVICTION_TIMEOUT`
+  - `EXCEPTION_DATA`
+- `CS_FATAL` unrecoverable error info
+  - `EXCEPTION_TYPE`
+    - `OK`
+    - `CS_CONFIG_FAULT`
+    - `CS_UNRECOVERABLE`
+    - `CS_ENDPOINT_FAULT` no available shader cores
+    - `CS_BUS_FAULT`
+    - `CS_INVALID_INSTRUCTION` illegal CSF instr
+    - `CS_CALL_STACK_OVERFLOW` too deep `CALL` instr
+    - `FIRMWARE_INTERNAL_ERROR`
+  - `EXCEPTION_DATA`
+- `CS_FAULT_INFO`
+- `CS_FATAL_INFO`
+- `CS_HEAP_VT_START` number of vertex/tiler ops started
+- `CS_HEAP_VT_END` number of vertex/tiler ops completed
+- `CS_HEAP_FRAG_END` number of frag ops completed
+- `CS_HEAP_ADDRESS` va of heap ctx that hits OOM
+
+## `CS_USER_INPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_ringbuf_input_iface` in panthor
+- `CS_INSERT` is the ring buffer tail
+- `CS_EXTRACT_INIT` is the initial ring buffer head, copied to `CS_EXTRACT`
+  when the CS starts
+
+## `CS_USER_OUTPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_ringbuf_output_iface` in panthor
+- `CS_EXTRACT` is the ring buffer head
+- `CS_ACTIVE` set when the CS is active (scheduled on hw)
