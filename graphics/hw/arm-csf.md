@@ -207,3 +207,110 @@ ARM Mali CSF
     - bit 35: disallow exec on writable page
     - bit 36: force exec on readable page
   - `FAULTEXTRA` is extra fault info
+
+## `JOB_CONTROL` regs
+
+- `JOB_IRQ_RAWSTAT` (`JOB_INT_RAWSTAT` in panthor)
+  - irq sources that are active
+  - bit 30:0: CSGn
+  - bit 31: GLB
+- `JOB_IRQ_CLEAR` (`JOB_INT_CLEAR` in panthor)
+  - irq sources to clear
+- `JOB_IRQ_MASK` (`JOB_INT_MASK` in panthor)
+  - irq sources to enable
+- `JOB_IRQ_STATUS` (`JOB_INT_STATUS` in panthor)
+  - `JOB_IRQ_RAWSTAT & JOB_IRQ_MASK`
+
+## `DOORBELLS` regs
+
+- `DOORBELLn` (`CSF_DOORBELL` in panthor)
+  - `DOORBELL` write 1 to ring
+
+## `USER` regs
+
+- `LATEST_FLUSH` (`CSF_GPU_LATEST_FLUSH_ID` in panthor)
+  - bit 23:0: flush id, incremented by full gpu cache flush/invalidate
+
+## `GLB_CONTROL_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_global_control_iface` in panthor
+- `GLB_VERSION` major/minor/patch version (e.g., 1.1.0)
+- `GLB_FEATURES`
+- `GLB_INPUT_VA` va of `GLB_INPUT_BLOCK` regs
+- `GLB_OUTPUT_VA` va of `GLB_OUTPUT_BLOCK` regs
+- `GLB_GROUP_NUM` number of `GROUP_CONTROL_BLOCK` instances
+- `GLB_GROUP_STRIDE` stride between `GROUP_CONTROL_BLOCK` instances
+- `GLB_PRFCNT_SIZE`
+- `GLB_INSTR_FEATURES`
+- `GLB_PRFCNT_FEATURES`
+
+## `GLB_INPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_global_input_iface` in panthor
+- `GLB_REQ`
+  - `HALT` halts mcu, in prep for fast reset
+  - `CFG_PROGRESS_TIMER` commits `GLB_PROGRESS_TIMER`
+  - `CFG_ALLOC_EN` commits `GLB_ALLOC_EN`
+  - `CFG_PWROFF_TIMER` commits `GLB_PWROFF_TIMER`
+  - `PROTM_ENTER` enters protected mode
+  - `PRFCNT_ENABLE`
+  - `PRFCNT_SAMPLE`
+  - `COUNTER_ENABLE`
+  - `PING` pings the mcu
+  - `FIRMWARE_CONFIG_UPDATE`
+  - `IDLE_ENABLE` enables/disables idle timer
+  - `ITER_TRACE_ENABLE`
+  - `SLEEP`
+  - `INACTIVE_COMPUTE`
+  - `INACTIVE_FRAGMENT`
+  - `INACTIVE_TILER`
+  - `PROTM_EXIT` exits protected mode
+  - `PRFCNT_THRESHOLD`
+  - `PRFCNT_OVERFLOW`
+  - `IDLE_EVENT` indicates idle timer handled
+- `GLB_ACK_IRQ_MASK`
+  - irq sources to enable
+  - when `GLB_ACK` is updated, if `GLB_ACK & GLB_ACK_IRQ_MASK`, generate an irq
+- `GLB_DB_REQ` rings the doorbell of CSGn
+- `GLB_PROGRESS_TIMER` if a task runs too long, exceeding the specified
+  cycles, generates an irq
+- `GLB_PWROFF_TIMER` automatic PM for tiler and shader cores
+  - bit 30:0: timeout val
+  - bit 31: `GPU_COUNTER` when set, `SYSTEM_TIMESTAMP` when cleared
+  - when non-zero,
+    - it powers on a tile or shader core when there is a task
+    - it powers down a tile or shader core after idling for timeout
+    - it replaces manual `SHADER_PWRON` and `TILER_PWRON` control
+- `GLB_ALLOC_EN` which shader cores are enabled
+- `GLB_PRFCNT_JASID`
+- `GLB_PRFCNT_BASE`
+- `GLB_PRFCNT_EXTRACT`
+- `GLB_PRFCNT_CONFIG`
+- `GLB_PRFCNT_CSG_SELECT`
+- `GLB_PRFCNT_FW_EN`
+- `GLB_PRFCNT_CSG_EN`
+- `GLB_PRFCNT_CSF_EN`
+- `GLB_PRFCNT_SHADER_EN`
+- `GLB_PRFCNT_TILER_EN`
+- `GLB_PRFCNT_MMU_L2_EN`
+- `GLB_IDLE_TIMER` if the gpu is idle for this timeout, genenrate an irq
+  - when there are more groups than CSGs, this is used to rotate groups
+- `GLB_IDLE_TIMER_CONFIG`
+- `GLB_PWROFF_TIMER_CONFIG`
+- `GLB_DEBUG_ARG_INn`
+- `GLB_DEBUG_ACK_IRQ_MASK`
+- `GLB_DEBUG_REQ`
+
+## `GLB_OUTPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_global_output_iface` in panthor
+- `GLB_ACK` see `GLB_REQ`
+- `GLB_DB_ACK` see `GLB_DB_REQ`
+- `GLB_FATAL_STATUS`
+- `GLB_PRFCNT_STATUS`
+- `GLB_PRFCNT_INSERT`
+- `GLB_DEBUG_ARG_OUTn`
+- `GLB_DEBUG_ACK`
