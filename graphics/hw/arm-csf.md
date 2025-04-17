@@ -246,7 +246,6 @@ ARM Mali CSF
 - `GLB_PRFCNT_FEATURES`
 
 ## `GLB_INPUT_BLOCK` regs
-
 - these are virtual regs
   - `panthor_fw_global_input_iface` in panthor
 - `GLB_REQ`
@@ -269,10 +268,11 @@ ARM Mali CSF
   - `PROTM_EXIT` exits protected mode
   - `PRFCNT_THRESHOLD`
   - `PRFCNT_OVERFLOW`
-  - `IDLE_EVENT` indicates idle timer handled
+  - `IDLE_EVENT` acks idle event
 - `GLB_ACK_IRQ_MASK`
   - irq sources to enable
-  - when `GLB_ACK` is updated, if `GLB_ACK & GLB_ACK_IRQ_MASK`, generate an irq
+  - when `GLB_ACK` is updated, and the changed bits are in `GLB_ACK_IRQ_MASK`,
+    generate an irq
 - `GLB_DB_REQ` rings the doorbell of CSGn
 - `GLB_PROGRESS_TIMER` if a task runs too long, exceeding the specified
   cycles, generates an irq
@@ -295,8 +295,8 @@ ARM Mali CSF
 - `GLB_PRFCNT_SHADER_EN`
 - `GLB_PRFCNT_TILER_EN`
 - `GLB_PRFCNT_MMU_L2_EN`
-- `GLB_IDLE_TIMER` if the gpu is idle for this timeout, genenrate an irq
-  - when there are more groups than CSGs, this is used to rotate groups
+- `GLB_IDLE_TIMER` if the gpu is idle for this timeout, set `IDLE_EVENT` in `GLB_ACK`
+  - when there are more groups than CSGs, this can be used to rotate groups
 - `GLB_IDLE_TIMER_CONFIG`
 - `GLB_PWROFF_TIMER_CONFIG`
 - `GLB_DEBUG_ARG_INn`
@@ -314,3 +314,72 @@ ARM Mali CSF
 - `GLB_PRFCNT_INSERT`
 - `GLB_DEBUG_ARG_OUTn`
 - `GLB_DEBUG_ACK`
+
+## `GROUP_CONTROL_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_csg_control_iface` in panthor
+- `GROUP_FEATURES`
+- `GROUP_INPUT_VA` va of `CSG_INPUT_BLOCK`
+- `GROUP_OUTPUT_VA` va of `CSG_OUTPUT_BLOCK`
+- `GROUP_SUSPEND_SIZE` size needed to suspend a CSG
+- `GROUP_PROTM_SUSPEND_SIZE` size needed to suspend a CSG in protected mode
+- `GROUP_STREAM_NUM` number of `STREAM_CONTROL_BLOCK` instances
+- `GROUP_STREAM_STRIDE` stride between `STREAM_CONTROL_BLOCK` instances
+
+## `CSG_INPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_csg_input_iface` in panthor
+- `CSG_REQ`
+  - `STATE` requests to terminate/start/suspend/resume a CSG
+  - `EP_CFG` commits `CSG_EP_REQ` and `CSG_ALLOW_*`
+  - `STATUS_UPDATE` requuests to update
+    - `CSG_STATUS_EP_CURRENT`
+    - `CSG_STATUS_EP_REQ`
+    - `CS_STATUS_CMD_PTR`
+    - `CS_STATUS_WAIT`
+    - `CS_STATUS_WAIT_SYNC_POINTER`
+    - `CS_STATUS_WAIT_SYNC_VALUE`
+    - `CS_STATUS_REQ_RESOURCE`
+  - `SYNC_UPDATE` acks `SYNC_UPDATE`
+    - gpu sets `SYNC_UPDATE` in `CSG_ACK` when the CSG executes certain `SYNC_*`
+      instructions (i guess when the sync scope is system)
+  - `IDLE` acks `IDLE`
+    - gpu sets `IDLE` in `CSG_ACK` when the CSG becomes idle
+  - `PROGRESS_TIMER_EVENT` acks `PROGRESS_TIMER_EVENT`
+- `CSG_ACK_IRQ_MASK`
+  - irq sources to enable
+  - when `CSG_ACK` is updated, and the changed bits are in `CSG_ACK_IRQ_MASK`,
+    generate an irq
+- `CSG_DB_REQ` rings the doorbell of CSn
+- `CSG_IRQ_ACK` acks irq for a CSn
+- `CSG_ALLOW_COMPUTE` enables specified shader cores for compute
+- `CSG_ALLOW_FRAGMENT` enables specified shader cores for frag
+- `CSG_ALLOW_OTHER` enables specified tilers
+- `CSG_EP_REQ`
+  - `COMPUTE_EP` max shader cores for compute
+  - `FRAGMENT_EP` max shader cores for frag
+  - `TILER_EP` max tilers
+  - `EXCLUSIVE_COMPUTE`
+  - `EXCLUSIVE_FRAGMENT`
+  - `PRIORITY` 0..15, with 15 being the highest priority
+- `CSG_SUSPEND_BUF` va of the suspend buf
+- `CSG_PROTM_SUSPEND_BUF` va of the suspend buf in protected mode
+- `CSG_CONFIG`
+  - bit 3:0: ASn
+- `CSG_ITER_TRACE_CONFIG`
+- `CSG_DVS_BUF`
+
+## `CSG_OUTPUT_BLOCK` regs
+
+- these are virtual regs
+  - `panthor_fw_csg_output_iface` in panthor
+- `CSG_ACK` see `CSG_REQ`
+- `CSG_DB_ACK` see `CSG_DB_REQ`
+- `CSG_IRQ_REQ` see `CSG_IRQ_ACK`
+- `CSG_STATUS_EP_CURRENT`
+- `CSG_STATUS_EP_REQ`
+- `CSG_STATUS_STATE`
+  - bit 0 (`CSG_STATUS_STATE_IS_IDLE`): CSG is idle
+- `CSG_RESOURCE_DEP`
