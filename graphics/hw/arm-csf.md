@@ -504,3 +504,21 @@ ARM Mali CSF
   - `panthor_fw_ringbuf_output_iface` in panthor
 - `CS_EXTRACT` is the ring buffer head
 - `CS_ACTIVE` set when the CS is active (scheduled on hw)
+
+## Instructions
+
+- sync / async / deferred
+  - sync instr executes to completion before the next instr
+  - async instr latches states, increments sb entry, and initiates op before
+    the next instr
+    - when it executes to completion, it decrements the sb entry
+  - deferred instr can be sync or async
+    - when async, it latches states and increments sb entry before the next instr
+    - when the waited sb entries become zero, it executes to completion and
+      decrements its sb entry
+- native / emulated
+  - a native instr is executed by CEU
+  - an emulated instr is executed by MCU
+- fast / slow
+  - all emulated instrs are slow
+  - some native instrs (control flow and sb related ones) are slow too
