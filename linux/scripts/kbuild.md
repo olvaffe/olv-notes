@@ -68,25 +68,41 @@ Kernel KBuild
 - configuration targets
   - `alldefconfig` creates a new `.config` using defaults
     - `defconfig` is similar but is based on a arch-specific defconfig
+      (`arch/$(SRCARCH)/configs/$(KBUILD_DEFCONFIG`)
   - `olddefconfig` updates `.config` by using defaults for new options
     - `oldconfig` is similar but prompts for new options
     - `config` is similar but prompts for all options
   - `menuconfig` updates `.config` with a ui
   - `savedefconfig` saves `.config` to `defconfig`, with options having
     default values omitted
-- other generic targets
-  - `all` or no target builds default targets
-    - `vmlinux`, `modules`
-    - if x86, `bzImage`
-    - if arm64, `dtbs`, `Image.gz`
+- build targets
   - `vmlinux` builds `vmlinux`, the kernel in elf format
   - `modules` builds `*.ko`, all kernel modules in elf format
+  - `some/dir/` compiles `*.o` in a subdirectory (but not `*.ko`)
+- devicetree targets
+  - `dtbs` builds `*.dtb`
+  - `dt_binding_check` validates schemas under `Documentation/devicetree/bindings`
+  - `dtbs_check W=1` validates dtbs using schemas
+- install targets
+  - `install` invokes distro-specific `installkernel` to install kernel image
   - `modules_install` installs `*.ko` to
     `$INSTALL_MOD_PATH/lib/modules/$KERNELRELEASE`
     - `$INSTALL_MOD_PATH` defaults to `/`
     - it also invokes `depmod -b $INSTALL_MOD_PATH $KERNELRELEASE` to generate
       `modules.*`
-  - `some/dir/` compiles `*.o` in a subdirectory (but not `*.ko`)
+  - `headers_install` installs uapi to `$INSTALL_HDR_PATH/include`
+    - `$INSTALL_HDR_PATH` defaults to `/usr`
+  - `dtbs_install` installs `*.dtb` to `$INSTALL_DTBS_PATH`
+    - `$INSTALL_DTBS_PATH` defaults to `/boot/dtbs/$KERNELRELEASE`
+- packaging targets
+  - `dir-pkg` generates `tar-install/`
+  - `targz-pkg` generates `linux-$KERNELRELEASE-$ARCH.tar.gz`
+  - `tarzst-pkg` generates `linux-$KERNELRELEASE-$ARCH.tar.zst`
+- other targets
+  - `all` or no target builds default targets
+    - `vmlinux`, `modules`
+    - if x86, `bzImage`
+    - if arm64, `dtbs`, `Image.gz`
   - `modules_prepare` sets up for external modules
   - `tags` generates `tags`
   - `kernelversion` prints `$KERNELVERSION`, such as `6.11.2`
@@ -96,18 +112,8 @@ Kernel KBuild
   - `image_name` prints `$KBUILD_IMAGE`
     - `arch/x86/boot/bzImage` on x86
     - `arch/arm64/boot/Image.gz` on arm64
-  - `headers_install` installs uapi to `$INSTALL_HDR_PATH/include`
-    - `$INSTALL_HDR_PATH` defaults to `/usr`
-- devicetree targets
-  - `dtbs` builds `*.dtb`
-  - `dtbs_install` installs `*.dtb` to `$INSTALL_DTBS_PATH`
-    - `$INSTALL_DTBS_PATH` defaults to `/boot/dtbs/$KERNELRELEASE`
 - userspace tools targets
   - `acpi`, `bpf`, `perf`, etc.
-- kernel packaging
-  - `dir-pkg` generates `tar-install/`
-  - `targz-pkg` generates `linux-$KERNELRELEASE-$ARCH.tar.gz`
-  - `tarzst-pkg` generates `linux-$KERNELRELEASE-$ARCH.tar.zst`
 - x86-specific targets
   - `bzImage` builds `bzImage`
 - arm64-specific targets
@@ -120,3 +126,37 @@ Kernel KBuild
   - `V=1` be verbose
   - `O=dir` uses `dir` as the output director
   - `CHECK_DTBS=1` checks `*.dtb` against schemas
+
+## Build Flow
+
+- steps
+  - `make alldefconfig` or `make olddefconfig`
+    - `alldefconfig` generates `.config` using defaults
+    - `olddefconfig` updates `.config` to sets new options to defaults
+  - `make menuconfig` edits `.config`
+  - `make` builds kernel image, modules, and dtbs
+- cross compile
+  - get cross compiler
+    - `crossbuild-essential-arm64` on Debian-like
+    - `aarch64-linux-gnu-gcc` on Arch-like
+  - set variables
+    - `ARCH=arm64`
+    - `CROSS_COMPILE=aarch64-linux-gnu-`
+- post install (Arch)
+  - initramfs
+    - `mkinitcpio -k $version -g /boot/initramfs.img`
+  - systemd-boot
+    - `/boot/loader/entries/custom.conf`
+      - `title Custom Linux`
+      - `linux /vmlinuz`
+      - `initrd /initramfs.img`
+      - `options root=/dev/sda2 rw`
+  - out-of-tree drivers
+    - `pacman -S broadcom-wl-dkms`
+    - `dkms autoinstall`
+- post install (Raspberry Pi)
+  - copy `arch/arm64/boot/Image` and
+    `arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb`
+  - `config.txt`
+    - `arm_64bit=1`
+    - `kernel=Image`

@@ -1,49 +1,6 @@
 Kernel Config
 =============
 
-## Flow
-
-- `make alldefconfig` generates a new config file and assigns default values
-  to all configs
-  - `make defconfig` is similar, but assigns arch-specific default values,
-    which include common device drivers for the arch
-- `make olddefconfig` updates an existing config file and assigns default
-  values to new configs
-  - the existing config file may be generated and edited previously, or may be
-    downloaded
-- `make menuconfig` edits an existing config file
-- `make` builds kernel image, modules, and dtbs
-- deploy
-  - `make install` installs the kernel image by invoking distro-provided
-    `installkernel`
-  - `make modules_install` installs modules to `INSTALL_MOD_PATH`
-  - `make tarzst-pkg` generates `linux-$KERNELRELEASE-$ARCH.tar.zst`
-- cross compile
-  - get cross compiler
-    - `crossbuild-essential-arm64` on Debian-like
-    - `aarch64-linux-gnu-gcc` on Arch-like
-  - set variables
-    - `ARCH=arm64`
-    - `CROSS_COMPILE=aarch64-linux-gnu-`
-- post install (Arch)
-  - initramfs
-    - `mkinitcpio -k $version -g /boot/initramfs.img`
-  - systemd-boot
-    - `/boot/loader/entries/custom.conf`
-      - `title Custom Linux`
-      - `linux /vmlinuz`
-      - `initrd /initramfs.img`
-      - `options root=/dev/sda2 rw`
-  - out-of-tree drivers
-    - `pacman -S broadcom-wl-dkms`
-    - `dkms autoinstall`
-- post install (Raspberry Pi)
-  - copy `arch/arm64/boot/Image` and
-    `arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb`
-  - `config.txt`
-    - `arm_64bit=1`
-    - `kernel=Image`
-
 ## Tips
 
 - boot issues
@@ -59,6 +16,27 @@ Kernel Config
     - make sure `vc4` is loaded after `raspberrypi-clk`
   - `[drm:vc4_hdmi_bind [vc4]] Failed to get ddc i2c adapter by node`
     - make sure `vc4` is loaded after `i2c-brcmstb`
+- finding drivers
+  - `./scripts/dtc/dt_to_config <dts>`
+  - on a working kernel, for each device under `/sys/devices`, look for
+    - `driver` is the driver of the device
+    - `subsystem` is the bus the device is on
+    - `modalias` is the magic string modprobe uses to load a module
+      - on platform bus, it is formed from
+        - of compatible string,
+        - acpi `_HID` and `_CID`, or
+        - hardcoded name
+    - `of_node` is the corresponding of node
+      - `dtc -I fs /sys/firmware/devicetree/base` to dump the entire of tree
+    - `firmware_node` is the corresponding acpi node
+  - `find /sys/devices -name driver | xargs readlink -e | sort | uniq`
+    - this lists all drivers that are bound to some devices
+    - no unused driver
+    - modules that discover and create the devices but are not themselves
+      drivers are not included
+  - it is easy to find module names from here
+    - some drivers does not have `module` links because they are built-in and
+      they fail to set `device_driver::mod_name`
 
 ## Config: Common
 
@@ -956,25 +934,3 @@ Kernel Config
     - `CONFIG_INPUT_UINPUT=y`
   - mmc requires
     - `CONFIG_MMC_BLOCK_MINORS=16`
-
-## Finding Drivers
-
-- on a working kernel, for each device under `/sys/devices`, look for
-  - `driver` is the driver of the device
-  - `subsystem` is the bus the device is on
-  - `modalias` is the magic string modprobe uses to load a module
-    - on platform bus, it is formed from
-      - of compatible string,
-      - acpi `_HID` and `_CID`, or
-      - hardcoded name
-  - `of_node` is the corresponding of node
-    - `dtc -I fs /sys/firmware/devicetree/base` to dump the entire of tree
-  - `firmware_node` is the corresponding acpi node
-- `find /sys/devices -name driver | xargs readlink -e | sort | uniq`
-  - this lists all drivers that are bound to some devices
-  - no unused driver
-  - modules that discover and create the devices but are not themselves
-    drivers are not included
-- it is easy to find module names from here
-  - some drivers does not have `module` links because they are built-in and
-    they fail to set `device_driver::mod_name`
