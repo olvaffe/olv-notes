@@ -6,15 +6,16 @@ ARM Mali CSF
 - MCU
   - it shares the system memory with cpu for FW, GLB, CSGs, and CSs
   - it executes the FW and exposes GLB/CSGs/CSs to host driver
+  - it supports multiple CSGs and schedules CSs to CSHWIFs
   - it emulates some of the CSF instructions
 - CSHW
-  - it has two or more CSHWIF to execute command streams in parallel
-    - each has its own register file
+  - it has two or more CSHWIFs to execute CSs concurrently
+    - each CSHWIF has its own register file and scoreboard
   - some CSF instrs are executed by CEU
   - some CSF instrs are emulated by MCU
 - hardware iterators
   - they take jobs from CSHW, split jobs into tasks, and dispatch tasks to
-    shader cores
+    endpoints (tiler or shader cores depending on the tasks)
 - registers
   - `GPU_CONTROL` regs for gpu control
   - `JOB_CONTROL` regs for csf-to-host irq control
