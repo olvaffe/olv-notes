@@ -342,3 +342,213 @@ Qualcomm SoC
     - CDSP, compute DSP
     - SDSP, sensor DSP
     - MDSP, modem DSP
+
+## X1E-80-100
+
+- `/dummy-sink`, `arm,coresight-dummy-sink`, `CONFIG_CORESIGHT_DUMMY`
+- `/firmware/scm`, `qcom,scm`, `CONFIG_QCOM_SCM`
+- `/firmware/scmi`, `arm,scmi`, `CONFIG_ARM_SCMI_TRANSPORT_MAILBOX`
+- `/interconnect-0`, `qcom,x1e80100-clk-virt`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/interconnect-1`, `qcom,x1e80100-mc-virt`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/pmu`, `arm,armv8-pmuv3`, `CONFIG_ARM_PMUV3`
+- `/psci`, `arm,psci-1.0`, `CONFIG_ARM_PSCI_CPUIDLE_DOMAIN`
+- `/reserved-memory/aop-cmd-db@81c60000`, `qcom,cmd-db`, `CONFIG_QCOM_COMMAND_DB`
+- `/reserved-memory/smem@ffe00000`, `qcom,smem`, `CONFIG_QCOM_SMEM`
+- `/smp2p-adsp`, `qcom,smp2p`, `CONFIG_QCOM_SMP2P`
+- `/smp2p-cdsp`, `qcom,smp2p`, `CONFIG_QCOM_SMP2P`
+- `/soc@0/clock-controller@100000`, `qcom,x1e80100-gcc`, `CONFIG_CLK_X1E80100_GCC`
+- `/soc@0/mailbox@408000`, `qcom,ipcc`, `CONFIG_QCOM_IPCC`
+- `/soc@0/dma-controller@800000`, `qcom,sm6350-gpi-dma`, `CONFIG_QCOM_GPI_DMA`
+- `/soc@0/geniqup@8c0000`, `qcom,geni-se-qup`, `CONFIG_QCOM_GENI_SE`
+  - `i2c@*`, `qcom,geni-i2c`, `CONFIG_I2C_QCOM_GENI`
+  - `serial@894000`, `qcom,geni-uart`, `CONFIG_SERIAL_QCOM_GENI`
+  - `spi@*`, `qcom,geni-spi`, `CONFIG_SPI_QCOM_GENI`
+- `/soc@0/dma-controller@a00000`, `qcom,sm6350-gpi-dma`, `CONFIG_QCOM_GPI_DMA`
+- `/soc@0/geniqup@ac0000`, `qcom,geni-se-qup`, `CONFIG_QCOM_GENI_SE`
+  - `i2c@*`, `qcom,geni-i2c`, `CONFIG_I2C_QCOM_GENI`
+  - `serial@a98000`, `qcom,geni-uart`, `CONFIG_SERIAL_QCOM_GENI`
+    - `x1-asus-vivobook-s15.dtsi` adds
+      - `bluetooth`, `qcom,wcn7850-bt`, `CONFIG_BT_HCIUART_QCA`
+  - `spi@*`, `qcom,geni-spi`, `CONFIG_SPI_QCOM_GENI`
+- `/soc@0/dma-controller@b00000`, `qcom,sm6350-gpi-dma`, `CONFIG_QCOM_GPI_DMA`
+- `/soc@0/geniqup@bc0000`, `qcom,geni-se-qup`, `CONFIG_QCOM_GENI_SE`
+  - `i2c@*`, `qcom,geni-i2c`, `CONFIG_I2C_QCOM_GENI`
+    - `x1-asus-vivobook-s15.dtsi` adds
+      - `touchpad@15`, `hid-over-i2c`, `CONFIG_I2C_HID_OF`
+      - `typec-mux@8`, `parade,ps8830`, `CONFIG_TYPEC_MUX_PS883X`
+      - `keyboard@3a`, `hid-over-i2c`, `CONFIG_I2C_HID_OF`
+      - `redriver@43`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
+      - `redriver@47`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
+      - `redriver@4f`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
+      - `typec-mux@8`, `parade,ps8830`, `CONFIG_TYPEC_MUX_PS883X`
+  - `serial@b88000`, `qcom,geni-uart`, `CONFIG_SERIAL_QCOM_GENI`
+  - `spi@*`, `qcom,geni-spi`, `CONFIG_SPI_QCOM_GENI`
+- `/soc@0/thermal-sensor@*`, `qcom,tsens-v2`, `CONFIG_QCOM_TSENS`
+- `/soc@0/phy@fd3000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@fd5000`, `qcom,x1e80100-qmp-usb3-dp-phy`, `CONFIG_PHY_QCOM_QMP_COMBO`
+- `/soc@0/phy@fd9000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@fda000`, `qcom,x1e80100-qmp-usb3-dp-phy`, `CONFIG_PHY_QCOM_QMP_COMBO`
+- `/soc@0/phy@fde000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@fdf000`, `qcom,x1e80100-qmp-usb3-dp-phy`, `CONFIG_PHY_QCOM_QMP_COMBO`
+- `/soc@0/interconnect@1500000`, `qcom,x1e80100-cnoc-main`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1600000`, `qcom,x1e80100-cnoc-cfg`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1680000`, `qcom,x1e80100-system-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@16c0000`, `qcom,x1e80100-pcie-south-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@16d0000`, `qcom,x1e80100-pcie-center-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@16e0000`, `qcom,x1e80100-aggre1-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1700000`, `qcom,x1e80100-aggre2-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1740000`, `qcom,x1e80100-pcie-north-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1750000`, `qcom,x1e80100-usb-center-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1760000`, `qcom,x1e80100-usb-north-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1770000`, `qcom,x1e80100-usb-south-anoc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@1780000`, `qcom,x1e80100-mmss-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/pcie@1bd0000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
+- `/soc@0/phy@1be0000`, `qcom,x1e80100-qmp-gen4x8-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
+- `/soc@0/pci@1bf8000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
+- `/soc@0/phy@1bfc000`, `qcom,x1e80100-qmp-gen4x4-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
+- `/soc@0/pci@1c00000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
+- `/soc@0/phy@1c06000`, `qcom,x1e80100-qmp-gen3x2-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
+- `/soc@0/pci@1c08000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
+  - `x1-asus-vivobook-s15.dtsi` adds
+    - `pcie@0/wifi@0`, `pci17cb,1107`, `CONFIG_PCI_PWRCTRL_PWRSEQ`
+- `/soc@0/phy@1c0e000`, `qcom,x1e80100-qmp-gen3x2-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
+- `/soc@0/hwlock@1f40000`, `qcom,tcsr-mutex`, `CONFIG_HWSPINLOCK_QCOM`
+- `/soc@0/clock-controller@1fc0000`, `qcom,x1e80100-tcsr`, `CONFIG_CLK_X1E80100_TCSRCC`
+- `/soc@0/gpu@3d00000`, `qcom,adreno`, `CONFIG_DRM_MSM`
+- `/soc@0/gmu@3d6a000`, `qcom,adreno-gmu`, `CONFIG_DRM_MSM`
+- `/soc@0/clock-controller@3d90000`, `qcom,x1e80100-gpucc`, `CONFIG_CLK_X1E80100_GPUCC`
+- `/soc@0/iommu@3da0000`, `qcom,adreno-smmu`, `CONFIG_ARM_SMMU_QCOM`
+- `/soc@0/interconnect@26400000`, `qcom,x1e80100-gem-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@320c0000`, `qcom,x1e80100-nsp-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/remoteproc@6800000`, `qcom,x1e80100-adsp-pas`, `CONFIG_QCOM_Q6V5_PAS`
+  - `glink-edge/fastrpc`, `qcom,fastrpc`, `CONFIG_QCOM_FASTRPC`
+  - `glink-edge/gpr`, `qcom,gpr`, `CONFIG_QCOM_APR`
+    - `service@1`, `qcom,q6apm`, `CONFIG_SND_SOC_QDSP6_APM`
+      - `bedais`, `qcom,q6apm-lpass-dais`, `CONFIG_SND_SOC_QDSP6_APM_LPASS_DAI`
+      - `dais`, `qcom,q6apm-dais`, `CONFIG_SND_SOC_QDSP6_APM_DAI`
+    - `service@2`, `qcom,q6prm`, `CONFIG_SND_SOC_QDSP6_PRM`
+      - `clock-controller`, `qcom,q6prm-lpass-clocks`, `CONFIG_SND_SOC_QDSP6_PRM_LPASS_CLOCKS`
+- `/soc@0/codec@6aa0000`, `qcom,sm8550-lpass-wsa-macro`, `CONFIG_SND_SOC_LPASS_WSA_MACRO`
+- `/soc@0/soundwire@6ab0000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+- `/soc@0/codec@6ac0000`, `qcom,sm8550-lpass-rx-macro`, `CONFIG_SND_SOC_LPASS_RX_MACRO`
+- `/soc@0/soundwire@6ad0000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+- `/soc@0/codec@6ae0000`, `qcom,sm8550-lpass-tx-macro`, `CONFIG_SND_SOC_LPASS_TX_MACRO`
+- `/soc@0/codec@6b00000`, `qcom,sm8550-lpass-wsa-macro`, `CONFIG_SND_SOC_LPASS_WSA_MACRO`
+- `/soc@0/soundwire@6b10000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+- `/soc@0/clock-controller@6b6c000`, `qcom,sc8280xp-lpassaudiocc`, `CONFIG_SC_LPASSCC_8280XP`
+- `/soc@0/soundwire@6d30000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+- `/soc@0/codec@6d44000`, `qcom,sm8550-lpass-va-macro`, `CONFIG_SND_SOC_LPASS_VA_MACRO`
+- `/soc@0/pinctrl@6e80000`, `qcom,sm8550-lpass-lpi-pinctrl`, `CONFIG_PINCTRL_SM8550_LPASS_LPI`
+- `/soc@0/clock-controller@6ea0000`, `qcom,sc8280xp-lpasscc`, `CONFIG_SC_LPASSCC_8280XP`
+- `/soc@0/interconnect@7e40000`, `qcom,x1e80100-lpass-ag-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@7400000`, `qcom,x1e80100-lpass-lpiaon-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/interconnect@7430000`, `qcom,x1e80100-lpass-lpicx-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
+- `/soc@0/mmc@8804000`, `qcom,sdhci-msm-v5`, `CONFIG_MMC_SDHCI_MSM`
+- `/soc@0/mmc@8844000`, `qcom,sdhci-msm-v5`, `CONFIG_MMC_SDHCI_MSM`
+- `/soc@0/phy@88e0000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@88e1000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@88e2000`, `qcom,sm8550-snps-eusb2-phy`, `CONFIG_PHY_QCOM_SNPS_EUSB2`
+- `/soc@0/phy@88e3000`, `qcom,x1e80100-qmp-usb3-uni-phy`, `CONFIG_PHY_QCOM_QMP_USB`
+- `/soc@0/phy@88e5000`, `qcom,x1e80100-qmp-usb3-uni-phy`, `CONFIG_PHY_QCOM_QMP_USB`
+- `/soc@0/usb@a0f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
+  - `usb@a000000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+- `/soc@0/usb@a2f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
+  - `usb@a200000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+- `/soc@0/usb@a4f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
+  - `usb@a400000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+- `/soc@0/usb@a6f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
+  - `usb@a600000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+- `/soc@0/usb@a8f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
+  - `usb@a800000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+- `/soc@0/display-subsystem@ae00000`, `qcom,x1e80100-mdss`, `CONFIG_DRM_MSM_MDSS`
+  - `display-controller@ae01000`, `qcom,x1e80100-dpu`, `CONFIG_DRM_MSM_DPU`
+  - `displayport-controller@ae90000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
+  - `displayport-controller@ae98000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
+  - `displayport-controller@ae9a000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
+  - `displayport-controller@aea0000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
+    - `x1-asus-vivobook-s15.dtsi` adds
+      - `aux-bus/panel`, `samsung,atna33xc20`, `CONFIG_DRM_PANEL_SAMSUNG_ATNA33XC20`
+- `/soc@0/phy@aec2a00`, `qcom,x1e80100-dp-phy`, `CONFIG_PHY_QCOM_EDP`
+- `/soc@0/phy@aec5a00`, `qcom,x1e80100-dp-phy`, `CONFIG_PHY_QCOM_EDP`
+- `/soc@0/clock-controller@af00000`, `qcom,x1e80100-dispcc`, `CONFIG_CLK_X1E80100_DISPCC`
+- `/soc@0/interrupt-controller@b220000`, `qcom,x1e80100-pdc`, `CONFIG_QCOM_PDC`
+- `/soc@0/power-management@c300000`, `qcom,aoss-qmp`, `CONFIG_QCOM_AOSS_QMP`
+- `/soc@0/sram@c3f0000`, `qcom,rpmh-stats`, `CONFIG_QCOM_STATS`
+- `/soc@0/arbiter@c400000`, `qcom,x1e80100-spmi-pmic-arb`, `CONFIG_SPMI_MSM_PMIC_ARB`
+  - `x1e80100-pmics.dtsi` adds
+    - `spmi@c42d000/pmic@0`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pmk8550-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `nvram@7100`, `qcom,spmi-sdam`, `CONFIG_NVMEM_SPMI_SDAM`
+      - `pon@1300`, `qcom,pmk8350-pon`, `CONFIG_POWER_RESET_QCOM_PON`
+        - `pwrkey`, `qcom,pmk8350-pwrkey`, `CONFIG_INPUT_PM8941_PWRKEY`
+        - `resin`, `qcom,pmk8350-resin`, `CONFIG_INPUT_PM8941_PWRKEY`
+      - `pwm`, `qcom,pmk8550-pwm`, `CONFIG_LEDS_QCOM_LPG`
+      - `rtc@6100`, `qcom,pmk8350-rtc`, `CONFIG_RTC_DRV_PM8XXX`
+   - `spmi@c42d000/pmic@1`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pm8550-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `led-controller@ee00`, `qcom,spmi-flash-led`, `CONFIG_LEDS_QCOM_FLASH`
+      - `pwm`, `qcom,pm8350c-pwm`, `CONFIG_LEDS_QCOM_LPG`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+   - `spmi@c42d000/pmic@2`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pm8550ve-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@3`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pmc8380-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@4`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pmc8380-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@5`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pmc8380-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@6`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pmc8380-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@8`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pm8550ve-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@9`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `gpio@8800`, `qcom,pm8550ve-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
+      - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c42d000/pmic@c`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `temp-alarm@2400`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
+    - `spmi@c432000/pmic@7`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `phy@fd00`, `qcom,smb2360-eusb2-repeater`, `CONFIG_PHY_QCOM_EUSB2_REPEATER`
+    - `spmi@c432000/pmic@a`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `phy@fd00`, `qcom,smb2360-eusb2-repeater`, `CONFIG_PHY_QCOM_EUSB2_REPEATER`
+    - `spmi@c432000/pmic@b`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `phy@fd00`, `qcom,smb2360-eusb2-repeater`, `CONFIG_PHY_QCOM_EUSB2_REPEATER`
+    - `spmi@c432000/pmic@c`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+      - `phy@fd00`, `qcom,smb2360-eusb2-repeater`, `CONFIG_PHY_QCOM_EUSB2_REPEATER`
+- `/soc@0/pinctrl@f100000`, `qcom,x1e80100-tlmm`, `CONFIG_PINCTRL_X1E80100`
+- `/soc@0/iommu@15000000`, `qcom,smmu-500`, `CONFIG_ARM_SMMU_QCOM`
+- `/soc@0/interrupt-controller@17000000`, `arm,gic-v3`, `CONFIG_ARM_GIC_V3`
+  - `msi-controller@17040000`, `arm,gic-v3-its`, `CONFIG_ARM_GIC_V3_ITS`
+- `/soc@0/mailbox@17430000`, `qcom,x1e80100-cpucp-mbox`, `CONFIG_QCOM_CPUCP_MBOX`
+- `/soc@0/rsc@17500000`, `qcom,rpmh-rsc`, `CONFIG_QCOM_RPMH`
+  - `bcm-voter`, `qcom,bcm-voter`, `CONFIG_INTERCONNECT_QCOM_BCM_VOTER`
+  - `clock-controller`, `qcom,x1e80100-rpmh-clk`, `CONFIG_QCOM_CLK_RPMH`
+  - `power-controller`, `qcom,x1e80100-rpmhpd`, `CONFIG_QCOM_RPMHPD`
+  - `x1-asus-vivobook-s15.dtsi` adds
+    - `regulators-*`, `qcom,pm8550-rpmh-regulators`, `CONFIG_REGULATOR_QCOM_RPMH`
+- `/soc@0/timer@17800000`, `arm,armv7-timer-mem`, `CONFIG_ARM_ARCH_TIMER`
+- `/soc@0/sram@18b4e000`, `mmio-sram`, `CONFIG_SRAM`
+  - `scp-sram-section@0`, `arm,scmi-shmem`, `CONFIG_ARM_SCMI_HAVE_SHMEM`
+  - `scp-sram-section@200`, `arm,scmi-shmem`, `CONFIG_ARM_SCMI_HAVE_SHMEM`
+- `/soc@0/watchdog@1c840000`, `arm,sbsa-gwdt`, `CONFIG_ARM_SBSA_WATCHDOG`
+- `/soc@0/pmu@24091000`, `qcom,sc7280-llcc-bwmon`, `CONFIG_QCOM_ICC_BWMON`
+- `/soc@0/pmu@240b3400`, `qcom,sdm845-bwmon`, `CONFIG_QCOM_ICC_BWMON`
+- `/soc@0/pmu@240b5400`, `qcom,sdm845-bwmon`, `CONFIG_QCOM_ICC_BWMON`
+- `/soc@0/pmu@240b6400`, `qcom,sdm845-bwmon`, `CONFIG_QCOM_ICC_BWMON`
+- `/soc@0/system-cache-controller@25000000`, `qcom,x1e80100-llcc`, `CONFIG_QCOM_LLCC`
+- `/soc@0/remoteproc@32300000`, `qcom,x1e80100-cdsp-pas`, `CONFIG_QCOM_Q6V5_PAS`
+  - `glink-edge/fastrpc`, `qcom,fastrpc`, `CONFIG_QCOM_FASTRPC`
+- `/timer`, `arm,armv8-timer`, `CONFIG_ARM_ARCH_TIMER`
+- `x1-asus-vivobook-s15.dtsi` adds
+  - `/audio-codec`, `qcom,wcd9385-codec`, `CONFIG_SND_SOC_WCD938X`
+  - `/gpio-keys`, `gpio-keys`, `CONFIG_KEYBOARD_GPIO`
+  - `/pmic-glink`, `qcom,x1e80100-pmic-glink`, `CONFIG_BATTERY_QCOM_BATTMGR`
+  - `/reserved-memory/linux,cma`, `shared-dma-pool`, `CONFIG_DMA_CMA`
+  - `/regulator-*`, `regulator-fixed`, `CONFIG_REGULATOR_FIXED_VOLTAGE`
+  - `/wcn7850-pmu`, `qcom,wcn7850-pmu`, `CONFIG_POWER_SEQUENCING_QCOM_WCN`
+  - `/sound`, `qcom,x1e80100-sndcard`, `CONFIG_SND_SOC_X1E80100`
