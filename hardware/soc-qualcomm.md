@@ -347,13 +347,18 @@ Qualcomm SoC
 
 - `/dummy-sink`, `arm,coresight-dummy-sink`, `CONFIG_CORESIGHT_DUMMY`
 - `/firmware/scm`, `qcom,scm`, `CONFIG_QCOM_SCM`
+  - this adds subdevices that require
+    - `CONFIG_QCOM_QSEECOM`
+    - `CONFIG_QCOM_QSEECOM_UEFISECAPP`
 - `/firmware/scmi`, `arm,scmi`, `CONFIG_ARM_SCMI_TRANSPORT_MAILBOX`
+  - `protocol@13`, none, `CONFIG_ARM_SCMI_CPUFREQ` and `CONFIG_ARM_SCMI_PERF_DOMAIN`
 - `/interconnect-0`, `qcom,x1e80100-clk-virt`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
 - `/interconnect-1`, `qcom,x1e80100-mc-virt`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
 - `/pmu`, `arm,armv8-pmuv3`, `CONFIG_ARM_PMUV3`
 - `/psci`, `arm,psci-1.0`, `CONFIG_ARM_PSCI_CPUIDLE_DOMAIN`
 - `/reserved-memory/aop-cmd-db@81c60000`, `qcom,cmd-db`, `CONFIG_QCOM_COMMAND_DB`
 - `/reserved-memory/smem@ffe00000`, `qcom,smem`, `CONFIG_QCOM_SMEM`
+  - this adds a subdevice that requires `CONFIG_QCOM_SOCINFO`
 - `/smp2p-adsp`, `qcom,smp2p`, `CONFIG_QCOM_SMP2P`
 - `/smp2p-cdsp`, `qcom,smp2p`, `CONFIG_QCOM_SMP2P`
 - `/soc@0/clock-controller@100000`, `qcom,x1e80100-gcc`, `CONFIG_CLK_X1E80100_GCC`
@@ -375,8 +380,11 @@ Qualcomm SoC
   - `i2c@*`, `qcom,geni-i2c`, `CONFIG_I2C_QCOM_GENI`
     - `x1-asus-vivobook-s15.dtsi` adds
       - `touchpad@15`, `hid-over-i2c`, `CONFIG_I2C_HID_OF`
+        - it adds a subdev that requires `CONFIG_HID_MULTITOUCH`
       - `typec-mux@8`, `parade,ps8830`, `CONFIG_TYPEC_MUX_PS883X`
+        - the mux adds a bridge that requires `CONFIG_DRM_AUX_BRIDGE`
       - `keyboard@3a`, `hid-over-i2c`, `CONFIG_I2C_HID_OF`
+        - it adds a subdev that requires `CONFIG_HID_GENERIC`
       - `redriver@43`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
       - `redriver@47`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
       - `redriver@4f`, `nxp,ptn3222`, `CONFIG_PHY_NXP_PTN3222`
@@ -405,6 +413,12 @@ Qualcomm SoC
 - `/soc@0/pcie@1bd0000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
 - `/soc@0/phy@1be0000`, `qcom,x1e80100-qmp-gen4x8-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
 - `/soc@0/pci@1bf8000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
+  - the bus discovers subdevices that require
+    - `CONFIG_PCIEPORTBUS`
+    - `CONFIG_PCIEAER`
+    - `CONFIG_PCIE_DPC`
+    - `CONFIG_PCIE_PME`
+    - `CONFIG_BLK_DEV_NVME`
 - `/soc@0/phy@1bfc000`, `qcom,x1e80100-qmp-gen4x4-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
 - `/soc@0/pci@1c00000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
 - `/soc@0/phy@1c06000`, `qcom,x1e80100-qmp-gen3x2-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
@@ -417,6 +431,7 @@ Qualcomm SoC
 - `/soc@0/gpu@3d00000`, `qcom,adreno`, `CONFIG_DRM_MSM`
 - `/soc@0/gmu@3d6a000`, `qcom,adreno-gmu`, `CONFIG_DRM_MSM`
 - `/soc@0/clock-controller@3d90000`, `qcom,x1e80100-gpucc`, `CONFIG_CLK_X1E80100_GPUCC`
+  - `x1p42100.dtsi` uses `CONFIG_CLK_X1P42100_GPUCC`
 - `/soc@0/iommu@3da0000`, `qcom,adreno-smmu`, `CONFIG_ARM_SMMU_QCOM`
 - `/soc@0/interconnect@26400000`, `qcom,x1e80100-gem-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
 - `/soc@0/interconnect@320c0000`, `qcom,x1e80100-nsp-noc`, `CONFIG_INTERCONNECT_QCOM_X1E80100`
@@ -452,6 +467,7 @@ Qualcomm SoC
 - `/soc@0/phy@88e5000`, `qcom,x1e80100-qmp-usb3-uni-phy`, `CONFIG_PHY_QCOM_QMP_USB`
 - `/soc@0/usb@a0f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
   - `usb@a000000`, `snps,dwc3`, `CONFIG_USB_DWC3`
+    - this adds a subdevice that requires `CONFIG_USB_XHCI_PLATFORM`
 - `/soc@0/usb@a2f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
   - `usb@a200000`, `snps,dwc3`, `CONFIG_USB_DWC3`
 - `/soc@0/usb@a4f8800`, `qcom,dwc3`, `CONFIG_USB_DWC3_QCOM`
@@ -463,6 +479,7 @@ Qualcomm SoC
 - `/soc@0/display-subsystem@ae00000`, `qcom,x1e80100-mdss`, `CONFIG_DRM_MSM_MDSS`
   - `display-controller@ae01000`, `qcom,x1e80100-dpu`, `CONFIG_DRM_MSM_DPU`
   - `displayport-controller@ae90000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
+    - this adds a subdevice that requires `CONFIG_SND_SOC_HDMI_CODEC`
   - `displayport-controller@ae98000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
   - `displayport-controller@ae9a000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
   - `displayport-controller@aea0000`, `qcom,x1e80100-dp`, `CONFIG_DRM_MSM_DP`
@@ -541,14 +558,21 @@ Qualcomm SoC
 - `/soc@0/pmu@240b5400`, `qcom,sdm845-bwmon`, `CONFIG_QCOM_ICC_BWMON`
 - `/soc@0/pmu@240b6400`, `qcom,sdm845-bwmon`, `CONFIG_QCOM_ICC_BWMON`
 - `/soc@0/system-cache-controller@25000000`, `qcom,x1e80100-llcc`, `CONFIG_QCOM_LLCC`
+  - it adds a subdev that requires `CONFIG_EDAC_QCOM`
 - `/soc@0/remoteproc@32300000`, `qcom,x1e80100-cdsp-pas`, `CONFIG_QCOM_Q6V5_PAS`
   - `glink-edge/fastrpc`, `qcom,fastrpc`, `CONFIG_QCOM_FASTRPC`
 - `/timer`, `arm,armv8-timer`, `CONFIG_ARM_ARCH_TIMER`
 - `x1-asus-vivobook-s15.dtsi` adds
   - `/audio-codec`, `qcom,wcd9385-codec`, `CONFIG_SND_SOC_WCD938X`
   - `/gpio-keys`, `gpio-keys`, `CONFIG_KEYBOARD_GPIO`
-  - `/pmic-glink`, `qcom,x1e80100-pmic-glink`, `CONFIG_BATTERY_QCOM_BATTMGR`
+  - `/pmic-glink`, `qcom,pmic-glink`, `CONFIG_QCOM_PMIC_GLINK`
+    - the bus discovers subdevices that require
+      - `CONFIG_BATTERY_QCOM_BATTMGR`
+      - `CONFIG_DRM_AUX_HPD_BRIDGE`
+      - `CONFIG_UCSI_PMIC_GLINK`
   - `/reserved-memory/linux,cma`, `shared-dma-pool`, `CONFIG_DMA_CMA`
   - `/regulator-*`, `regulator-fixed`, `CONFIG_REGULATOR_FIXED_VOLTAGE`
   - `/wcn7850-pmu`, `qcom,wcn7850-pmu`, `CONFIG_POWER_SEQUENCING_QCOM_WCN`
   - `/sound`, `qcom,x1e80100-sndcard`, `CONFIG_SND_SOC_X1E80100`
+- arm64 arch requires
+  - `CONFIG_HW_RANDOM_ARM_SMCCC_TRNG`
