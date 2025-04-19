@@ -38,7 +38,7 @@ Kernel Config
     - some drivers does not have `module` links because they are built-in and
       they fail to set `device_driver::mod_name`
 
-## Config: Common
+## Config: Pre-Device Drivers
 
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
@@ -95,7 +95,7 @@ Kernel Config
 - select `Boot options` if arm
   - select `Default kernel command string` if desired
     - select `Kernel command line type (Always use the default kernel command string)` if desired
-  - deselect `UEFI runtime support`
+  - deselect `UEFI runtime support` if not uefi
 - select `Mitigations for CPU vulnerabilities` if x86
   - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
 - select `Power management and ACPI options` if x86
@@ -126,8 +126,9 @@ Kernel Config
       - select `Generic DT based cpufreq driver`
       - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mtk
-      - select `QCOM CPUFreq HW driver` if qcom
+      - select `QCOM CPUFreq HW driver` if old qcom
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
+      - select `SCMI based CPUfreq driver` if qcom x1
 - select `Binary Emulations` if 86
   - select `IA32 Emulation`
 - select `Virtualization` if desired
@@ -144,6 +145,7 @@ Kernel Config
 - select `Memory Management options`
   - select `Transparent Hugepage Support`
     - select `Transparent Hugepage Support sysfs defaults (always)`
+  - select `Contiguous Memory Allocator` if needed
   - select `Multi-Gen LRU`
     - select `Enable by default`
 - select `Networking support`
@@ -166,82 +168,7 @@ Kernel Config
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
-  - select `Wireless` if desired
-    - select `cfg80211 - wireless configuration API`
-    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
-  - select `RF switch subsystem support`
-- select `File systems`
-  - select `The Extended 4 (ext4) filesystem`
-    - select `Ext4 POSIX Access Control Lists` (for systemd)
-  - select `Btrfs filesystem support` if desired
-    - select `Btrfs POSIX Access Control Lists`
-  - select `F2FS filesystem support` if desired
-  - deselect `Dnotify support`
-  - select `Filesystem wide access notification`
-  - select `Quota support` if desired
-  - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
-  - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
-  - select `FUSE (Filesystem in Userspace) support` if desired
-  - select `Overlay filesystem support` if desired
-  - select `CD-ROM/DVD Filesystems` if desired
-    - select `ISO 9660 CDROM file system support`
-      - select `Microsoft Joliet CDROM extensions`
-    - select `UDF file system support`
-  - select `DOS/FAT/NT Filesystems`
-    - select `VFAT (Windows-95) fs support` if esp
-    - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
-    - select `exFAT filesystem support` if desired
-  - select `Pseudo filesystems`
-    - select `Tmpfs virtual memory file system support (former shm fs)`
-      - select `Tmpfs POSIX Access Control Lists`
-    - select `EFI Variable filesystem` if uefi, depending on `EFI`
-  - select `Miscellaneous filesystems`
-    - select `SquashFS 4.0 - Squashed file system support` if desired
-    - select `Persistent store support`
-      - select `Log kernel console messages`
-      - select `Log panic/oops to a RAM buffer`
-    - select `EROFS filesystem support` if desired
-  - select `Native language support` if `VFAT_FS`
-    - select `Codepage 437 (United States, Canada)`
-    - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
-    - select `NLS UTF-8`
-- select `Security options`
-  - select `Enable different security models`
-  - select `Landlock support` if pacman
-- select `Cryptographic API` if iwd
-  - select `Block ciphers`
-    - select `AES (Advanced Encryption Standard)`
-    - select `DES and Triple DES EDE`
-  - select `Length-preserving ciphers and modes`
-    - select `CBC (Cipher Block Chaining)`
-    - select `ECB (Electronic Codebook)`
-  - select `Hashes, digests, and MACs`
-    - select `CMAC (Cipher-based MAC)`
-    - select `HMAC (Keyed-Hash MAC)`
-    - select `MD5`
-    - select `SHA-1`
-    - select `SHA-224 and SHA-256`
-    - select `SHA-384 and SHA-512`
-  - select `Userspace interface`
-    - select `Hash algorithms`
-    - select `Symmetric key cipher algorithms`
-    - deselect `Obsolete cryptographic algorithms`
-- select `Kernel hacking`
-  - select `printk and dmesg options`
-    - select `Show timing information on printks`
-  - select `Kernel debugging`
-  - select `Generic Kernel Debugging Instruments`
-    - select `Magic SysRq key`
-    - select `Debug Filesystem`
-  - select `Tracers`
-    - select `Kernel Function Tracer` if desired
-    - select `Trace syscalls`
-
-## Config: Device Drivers
-
-- select `Networking support`
-  - select `Networking options` if qcom
-    - select `Qualcomm IPC Router support`
+    - select `Qualcomm IPC Router support` if qcom modem
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
       - select `TUN device for Qualcomm IPC Router`
   - select `Bluetooth subsystem support` if desired
@@ -252,6 +179,13 @@ Kernel Config
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
       - select `MediaTek HCI SDIO driver` if old mtk
+  - select `Wireless` if desired
+    - select `cfg80211 - wireless configuration API`
+    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
+  - select `RF switch subsystem support`
+
+## Config: Device Drivers
+
 - select `Device Drivers`
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
@@ -262,7 +196,7 @@ Kernel Config
       - select `Broadcom Brcmstb PCIe host controller` if rpi
       - select `MediaTek Gen3 PCIe controller` if mtk
       - select `DesignWare-based PCIe controllers`
-        - select `Qualcomm PCIe controller (host mode)` if newer qcom
+        - select `Qualcomm PCIe controller (host mode)` if qcom
         - select `Rockchip DesignWare PCIe controller (host mode)` if rk
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
@@ -273,17 +207,22 @@ Kernel Config
         - select `Enable compressed firmware support`
           - select `Enable ZSTD-compressed firmware support`
   - select `Firmware Drivers`
-    - select `ARM System Control and Management Interface Protocol` if rk
+    - select `ARM System Control and Management Interface Protocol` if rk/qcom
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `DMI table support in sysfs` if x86 (for dmidecode)
-    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if x86
+    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if uefi
     - select `Google Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
+    - select `EFI (Extensible Firmware Interface) Support` if uefi
+      - deselect `Disable EFI runtime services support by default` if arm
+    - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
+      - select `Qualcomm QSEECOM interface driver`
+        - select `Qualcomm SEE UEFI Secure App client driver`
   - select `Memory Technology Device (MTD) support` if needed (for fw update)
     - select `Caching block device access to MTD devices`
     - select `SPI NOR device support`, depending on `SPI`
@@ -294,7 +233,7 @@ Kernel Config
   - select `NVME Support` if needed
     - select `NVM Express block device`
   - select `Misc devices`
-    - select `Generic on-chip SRAM driver` if rk
+    - select `Generic on-chip SRAM driver` if rk or qcom x1
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
     - if intel,
@@ -304,6 +243,7 @@ Kernel Config
       - select `Intel HDCP2.2 services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
+    - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if needed (for sata or usb mass storage)
     - select `SCSI device support`
@@ -354,13 +294,14 @@ Kernel Config
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
-        - select `GPIO Buttons` if old mtk/rk
+        - select `GPIO Buttons` if old mtk/rk or qcom x1
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
       - select `Touchscreens`
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
       - select `Miscellaneous devices`
+        - select `Qualcomm PM8941 power key support` if qcom x1
         - select `PC Speaker support` if needed
         - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
@@ -404,12 +345,13 @@ Kernel Config
     - select `MediaTek SPI controller` if mtk
     - select `MediaTek SPI NOR controller` if mtk
     - select `PXA2xx SSP SPI master` if intel
-    - select `QTI QSPI controller` if qcom
+    - select `QTI QSPI controller` if old qcom
     - select `Qualcomm GENI based SPI controller` if qcom
     - select `Rockchip SPI controller driver` if rk
     - select `Rockchip Serial Flash Controller (SFC)` if rk
   - select `SPMI support` if arm
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
+    - select `Qualcomm MSM SPMI Controller (PMIC Arbiter)` if qcom
   - select `Pin controllers`
     - select `AMD GPIO pin control` if amd
     - select `Intel pinctrl drivers` if intel
@@ -422,16 +364,23 @@ Kernel Config
       - select `Qualcomm core pin controller driver`
         - select `Qualcomm Technologies Inc SC7180 pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 pin controller driver`
+        - select `Qualcomm Technologies Inc X1E80100 pin controller driver`
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
-        - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`, depending on `PINCTRL_LPASS_LPI`
+        - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`
+        - select `Qualcomm Technologies Inc SM8550 LPASS LPI pin controller driver` if qcom x1
     - if rk
       - select `Pinctrl and GPIO driver for RK805 PMIC`
       - select `Rockchip gpio and pinctrl driver`
   - select `GPIO Support`
     - select `Memory mapped GPIO drivers` if rk
       - select `Rockchip GPIO support`
+  - select `Board level reset or power off` if qcom x1
+    - select `Qualcomm power-on driver`
+  - select `Power Sequencing support` if qcom x1
+    - select `Qualcomm WCN family PMU driver`
   - select `Power supply class support`
+    - select `Qualcomm PMIC GLINK battery manager support` if qcom x1
     - select `SBS Compliant gas gauge` if needed
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
     - select `ChromeOS EC based peripheral charger` if cros, depending on `CROS_EC`
@@ -462,7 +411,8 @@ Kernel Config
     - select `Rockchip thermal driver` if rk, depending on `RESET_CONTROLLER`
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
-    - select `QCOM watchdog` if qcom
+    - select `ARM SBSA Generic Watchdog` if qcom x1
+    - select `QCOM watchdog` if old qcom
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
@@ -501,7 +451,8 @@ Kernel Config
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
-      - select `Enable legacy fbdev support for your modesetting driver` (for vt)
+      - select `Supported DRM clients`, depending on any drm driver
+        - select `Enable legacy fbdev support for your modesetting driver` (for vt)
       - select `AMD GPU` if amd
         - select `Always enable userptr write support` if desired
       - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
@@ -516,6 +467,7 @@ Kernel Config
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
         - it requires `CMA` and `DMA_CMA` to work
       - select `Display Panels` if arm
+        - select `Samsung ATNA33XC20 eDP panel` if needed
         - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
         - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Display Interface Bridges` if arm
@@ -608,6 +560,7 @@ Kernel Config
     - select `Support for Host-side USB`
     - select `xHCI HCD (USB 3.0) support` if needed
       - select `xHCI support for MediaTek SoCs` if mtk
+      - select `Generic xHCI driver for a platform device` if qcom
     - select `EHCI HCD (USB 2.0) support` if needed
       - select `Generic EHCI driver for a platform device` if rk
     - select `OHCI HCD (USB 1.1) support` if needed
@@ -616,14 +569,16 @@ Kernel Config
       - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
-    - select `Onboard USB hub support` if qcom
+    - select `Onboard USB hub support` if old qcom
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk
         - select `Fairchild FUSB302 Type-C chip driver`
       - select `USB Type-C Connector System Software Interface driver`
         - select `UCSI ACPI Interface Driver` if x86
+        - select `UCSI Qualcomm PMIC GLINK Interface Driver` if qcom x1, depending on `QCOM_PMIC_GLINK`
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
         - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
+        - select `Parade PS883x Type-C retimer driver` if qcom x1
     - select `USB Role Switch Support`
   - select `MMC/SD/SDIO card support` if desired
     - select `Secure Digital Host Controller Interface support` if needed
@@ -634,7 +589,7 @@ Kernel Config
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
     - select `Synopsys DesignWare Memory Card Interface` if rk
       - select `Rockchip specific extensions for Synopsys DW Memory Card Interface`
-    - select `Qualcomm SDHCI Controller Support` if qcom
+    - select `Qualcomm SDHCI Controller Support` if qcom, depending on `MMC_SDHCI_PLTFM`
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `Universal Flash Storage Controller` if needed
@@ -644,7 +599,8 @@ Kernel Config
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if arm, depending on `PWM`
-    - select `LED support for Qualcomm LPG` if newer qcom, depending on `LEDS_CLASS_MULTICOLOR`
+    - select `LED support for flash module inside Qualcomm Technologies, Inc. PMIC` if qcom, depending on `LEDS_CLASS_FLASH`
+    - select `LED support for Qualcomm LPG` if qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
   - select `EDAC (Error Detection And Correction) reporting`, depending on `RAS`
@@ -654,10 +610,12 @@ Kernel Config
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
     - select `Haoyu Microelectronics HYM8563` if rk
-    - select `MediaTek PMIC based RTC`, if mtk
+    - select `MediaTek PMIC based RTC` if mtk
+    - select `Qualcomm PMIC8XXX RTC` if qcom x1
   - select `DMA Engine support`
     - select `BCM2835 DMA engine support` if rpi
     - select `DMA API Driver for PL330` if rk
+    - select `Qualcomm Technologies GPI DMA support` if qcom x1
     - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
   - select `DMABUF options` if desired
@@ -700,16 +658,19 @@ Kernel Config
     - select `Clock driver for MediaTek SoC` if mtk
     - select `Clock driver controlled via SCMI interface` if rk
     - select `Support for Qualcomm's clock controllers` if qcom
+      - select `X1*` if qcom x1
       - select `RPMh Clock Driver`
-      - select `SC7180 *`
-      - select `SC7280 *`
+      - select `SC7180 *` if old qcom
+      - select `SC7280 *` if old qcom
+      - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if qcom x1
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
     - select `BCM2835 Mailbox` if rpi
-    - select `Qualcomm APCS IPC driver` if qcom
+    - select `Qualcomm APCS IPC driver` if old qcom
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
+    - select `Qualcomm Technologies, Inc. CPUCP mailbox driver` if qcom x1
     - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `AMD IOMMU support` if amd
@@ -719,12 +680,14 @@ Kernel Config
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
     - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk
     - select `MediaTek IOMMU Support` if mtk
+    - select `Qualcomm IOMMU Support` if qcom
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
-      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if qcom
-      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if qcom
+      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if old qcom
+      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if old qcom
+      - select `Qualcomm Hexagon v5 Peripheral Authentication Service support` if qcom x1
       - select `Qualcomm sysmon driver` if qcom modem
       - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
   - select `Rpmsg drivers` if arm
@@ -747,7 +710,8 @@ Kernel Config
       - select `Qualcomm Command DB`
       - select `QCOM GENI Serial Engine Driver`
       - select `Qualcomm Technologies, Inc. LLCC driver`
-      - select `Qualcomm Remote Filesystem memory driver`
+      - select `Qualcomm PMIC GLINK driver`
+      - select `Qualcomm Remote Filesystem memory driver` if qcom modem
       - select `Qualcomm RPM-Hardened (RPMH) Communication`
       - select `Qualcomm Shared Memory Manager (SMEM)`
       - select `Qualcomm Shared Memory Point to Point support`
@@ -757,6 +721,7 @@ Kernel Config
       - select `QCOM Interconnect Bandwidth Monitor driver`
     - select `Rockchip IO domain support` if old rk
   - select `PM Domains` if arm
+    - select `SCMI performance domain driver` if qcom x1
     - select `Qualcomm PM Domains` if qcom
       - select `Qualcomm RPMh Power domain driver`
     - select `Rockchip generic power domain` if rk
@@ -773,7 +738,7 @@ Kernel Config
       - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
-      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if qcom
+      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if old qcom
       - select `Rockchip SARADC driver` if rk, depending on `RESET_CONTROLLER`
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
@@ -792,8 +757,8 @@ Kernel Config
   - select `IRQ chip support` if qcom
     - select `QCOM PDC`
   - select `Reset Controller Support` if arm
-    - select `Qcom AOSS Reset Driver` if qcom
-    - select `Qualcomm PDC Reset Driver` if qcom
+    - select `Qcom AOSS Reset Driver` if old qcom
+    - select `Qualcomm PDC Reset Driver` if old qcom
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
     - select `TI SYSCON Reset Driver` if mtk
   - select `PHY Subsystem` if arm
@@ -801,10 +766,13 @@ Kernel Config
       - select `MediaTek PCIe-PHY Driver`
       - select `MediaTek T-PHY Driver`
     - if qcom
+      - select `NXP PTN3222 1-port eUSB2 to USB2 redriver` if qcom x1
       - select `Qualcomm eDP PHY driver`
       - select `Qualcomm QMP PHY Driver`
-      - select `Qualcomm QUSB2 PHY Driver`
-      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module`
+      - select `Qualcomm QUSB2 PHY Driver` if old qcom
+      - select `Qualcomm SNPS eUSB2 PHY Driver` if qcom x1
+      - select `Qualcomm SNPS eUSB2 Repeater Driver` if qcom x1
+      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if old qcom
     - if rk
       - select `Rockchip INNO USB2PHY Driver`, depending on `EXTCON`
       - select `Rockchip NANENG COMBO PHY Driver`
@@ -818,16 +786,76 @@ Kernel Config
   - select `NVMEM Support` if arm
     - select `Mediatek SoCs EFUSE support` if mtk
     - select `QCOM QFPROM Support` if qcom
+    - select `SPMI SDAM Support` if qcom x1
     - select `Rockchip OTP controller support` if rk
   - select `Trusted Execution Environment support`
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
   - select `On-Chip Interconnect management support` if qcom
     - select `Qualcomm Network-on-Chip interconnect drivers`
-    - select `Qualcomm OSM L3 interconnect driver`
-    - select `Qualcomm SC7180 interconnect driver`
-    - select `Qualcomm SC7280 interconnect driver`
+    - select `Qualcomm OSM L3 interconnect driver` if old qcom
+    - select `Qualcomm SC7180 interconnect driver` if old qcom
+    - select `Qualcomm SC7280 interconnect driver` if old qcom
+    - select `Qualcomm X1E80100 interconnect driver` if qcom x1
+
+## Config: Post-Device Drivers
+
+- select `File systems`
+  - select `The Extended 4 (ext4) filesystem`
+    - select `Ext4 POSIX Access Control Lists` (for systemd)
+  - select `Btrfs filesystem support` if desired
+    - select `Btrfs POSIX Access Control Lists`
+  - select `F2FS filesystem support` if desired
+  - deselect `Dnotify support`
+  - select `Filesystem wide access notification`
+  - select `Quota support` if desired
+  - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
+  - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
+  - select `FUSE (Filesystem in Userspace) support` if desired
+  - select `Overlay filesystem support` if desired
+  - select `CD-ROM/DVD Filesystems` if desired
+    - select `ISO 9660 CDROM file system support`
+      - select `Microsoft Joliet CDROM extensions`
+    - select `UDF file system support`
+  - select `DOS/FAT/NT Filesystems`
+    - select `VFAT (Windows-95) fs support` if esp
+    - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
+    - select `exFAT filesystem support` if desired
+  - select `Pseudo filesystems`
+    - select `Tmpfs virtual memory file system support (former shm fs)`
+      - select `Tmpfs POSIX Access Control Lists`
+    - select `EFI Variable filesystem` if uefi, depending on `EFI`
+  - select `Miscellaneous filesystems`
+    - select `SquashFS 4.0 - Squashed file system support` if desired
+    - select `Persistent store support`
+      - select `Log kernel console messages`
+      - select `Log panic/oops to a RAM buffer`
+    - select `EROFS filesystem support` if desired
+  - select `Native language support` if `VFAT_FS`
+    - select `Codepage 437 (United States, Canada)`
+    - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
+    - select `NLS UTF-8`
+- select `Security options`
+  - select `Enable different security models`
+  - select `Landlock support` if pacman
 - select `Cryptographic API`
+  - select `Block ciphers` if iwd
+    - select `AES (Advanced Encryption Standard)`
+    - select `DES and Triple DES EDE`
+  - select `Length-preserving ciphers and modes` if iwd
+    - select `CBC (Cipher Block Chaining)`
+    - select `ECB (Electronic Codebook)`
+  - select `Hashes, digests, and MACs` if iwd
+    - select `CMAC (Cipher-based MAC)`
+    - select `HMAC (Keyed-Hash MAC)`
+    - select `MD5`
+    - select `SHA-1`
+    - select `SHA-224 and SHA-256`
+    - select `SHA-384 and SHA-512`
+  - select `Userspace interface` if iwd
+    - select `Hash algorithms`
+    - select `Symmetric key cipher algorithms`
+    - deselect `Obsolete cryptographic algorithms`
   - select `Accelerated Cryptographic Algorithms for CPU (x86)` if x86
     - select `Ciphers: AES, modes: ECB, CBC, CTS, CTR, XTR, XTS, GCM (AES-NI)`
   - select `Hardware crypto devices`
@@ -835,6 +863,18 @@ Kernel Config
       - select `Secure Processor device driver`
         - select `Cryptographic Coprocessor device`
           - deselect `Encryption and hashing offload support` if raven (boot issue)
+- select `Library routines`
+  - select `DMA Contiguous Memory Allocator` if needed
+- select `Kernel hacking`
+  - select `printk and dmesg options`
+    - select `Show timing information on printks`
+  - select `Kernel debugging`
+  - select `Generic Kernel Debugging Instruments`
+    - select `Magic SysRq key`
+    - select `Debug Filesystem`
+  - select `Tracers`
+    - select `Kernel Function Tracer` if desired
+    - select `Trace syscalls`
 
 ## Config: cros
 
