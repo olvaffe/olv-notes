@@ -576,3 +576,17 @@ Qualcomm SoC
   - `/sound`, `qcom,x1e80100-sndcard`, `CONFIG_SND_SOC_X1E80100`
 - arm64 arch requires
   - `CONFIG_HW_RANDOM_ARM_SMCCC_TRNG`
+- common cmdline
+  - `earlycon=efifb` enables efifb earlycon
+  - `cma=128M` overrides the default `CONFIG_CMA_SIZE_MBYTES` (16)
+  - `clk_ignore_unused` tells `clk_disable_unused` to early return, to work
+    around dt bugs
+  - `pd_ignore_unused` tells `genpd_power_off_unused` to early return, to work
+    around dt bugs
+  - `dyndbg=` configs `CONFIG_DYNAMIC_DEBUG`
+  - `crashkernel=` configs `CONFIG_CRASH_DUMP`
+  - `rootdelay=20` delays root mounting (only if no initramfs) by 20s
+  - `efi=noruntime` ignores efi runtime service to work around power off issue
+    due to fw bug (should not be needed anymore)
+  - `arm64.nopauth` disables pointer auth (PAC) to work around firefox crash
+    (should not be needed anymore)
