@@ -152,3 +152,55 @@ Linux DRM Display
   - XGA, 1024x768
   - SXGA, 1280x1024
   - UXGA, 1600x1200
+
+## Panels
+
+- minimum panel driver
+  - `drm_panel_init` inits a `drm_panel` with `drm_panel_funcs`
+    - `drm_panel_funcs` callbacks
+      - `prepare` / `unprepare` inits the panel hw
+      - `enable` / `disable` enables backlight, etc.
+      - `get_*` queries modes, timing, etc.
+  - `drm_panel_add` adds the panel to global `panel_list`
+- minimum panel consumer
+  - `of_drm_find_panel` finds the panel from `panel_list`
+  - more common, `drmm_of_get_bridge` returns a bridge with potential wrapping
+    - `drm_of_find_panel_or_bridge` calls `of_drm_find_panel`, or falls back
+      to `of_drm_find_bridge`
+    - if panel, `drmm_panel_bridge_add` wraps the panel inside a bridge
+- eDP panel driver
+  - DP supports aux channel to communicate with the panel
+  - `dp_aux_dp_driver_register` registers the driver to `dp-aux` bus
+  - `drm_panel_dp_aux_backlight` is the std way to register a backlight device
+
+## Bridges
+
+- minimum bridge driver
+  - fills in `drm_bridge_funcs`
+  - `devm_drm_of_get_bridge` finds the next bridge/panel
+  - `devm_drm_bridge_add` adds the bridge to global `bridge_list`
+- minimum bridge consumer
+  - `drmm_of_get_bridge` returns a bridge, or a panel wrapped in a bridge
+- any-to-eDP bridge driver
+  - `drm_dp_aux_init` inits a DP aux channel, `drm_dp_aux`
+  - `devm_of_dp_aux_populate_bus` adds the eDP downstream device
+    - this expects a `aux-bus` subnode and uses its first child as the device
+      - there is no device discovery
+    - the dev is added to `dp-aux` bus for driver matching
+    - `done_probing` is called after a driver probes successfully
+
+## DRM Drivers
+
+- an eDP controller is similar to an any-to-eDP bridge
+  - `drm_dp_aux_init` inits a DP aux channel
+  - `devm_of_dp_aux_populate_bus` adds the downstream device
+  - after a dp-aux driver binds to the device, `done_probing` is called
+    - `devm_drm_of_get_bridge` finds the device
+    - `devm_drm_bridge_add` adds self as a bridge
+  - when the pixel source driver calls `drm_bridge_attach`, `attach` is called
+    - `drm_dp_aux_register` registers the DP aux channel
+    - `drm_bridge_attach` attaches the downstream device 
+  - when the pixel souce driver calls `drm_bridge_connector_init`, it inits a
+    connector for the entire bridge chain
+  - later, when `drm_atomic_helper_commit_tail` commits,
+    `drm_atomic_bridge_chain_enable` enables all bridges
