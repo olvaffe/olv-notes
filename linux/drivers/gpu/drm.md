@@ -51,6 +51,31 @@ Kernel DRM
   - `drm-msm/msm-fixes` branch is always open for `Y` fixes.  It rebases
     against `drm/drm-next` occasionally.
 
+## Subdirectories
+
+- desktop `DRIVER_MODESET+DRIVER_RENDER` drivers
+  - `amd`, `i915`, `nouveau`, `radeon`, `xe`
+- mobile `DRIVER_MODESET+DRIVER_RENDER` drivers
+  - `exynos`, `loongson`, `msm`, `omapdrm`, `tegra`, `vc4`
+- mobile `DRIVER_RENDER`-only drivers
+  - `etnaviv`, `imagination`, `lima`, `panfrost`, `panthor`, `v3d`
+- common `DRIVER_MODESET`-only drivers
+  - `mediatek`, `rockchip`
+- other `DRIVER_MODESET`-only drivers
+  - `tiny`
+  - `adp`, `arm`, `armada`, `aspeed`, `ast`, `atmel-hlcdc`, `fsl-dcu`,
+    `gma500`, `gud`, `hisilicon`, `imx`, `ingenic`, `kmb`, `logicvc`, `mcde`,
+    `meson`, `mgag200`, `mxsfb`, `pl111`, `renesas`, `solomon`, `sprd`, `sti`,
+    `stm`, `sun4i`, `tidss`, `tilcdc`, `tve200`, `udl`, `xlnx`
+- virtualized drivers
+  - `hyperv`, `qxl`, `vgem`, `vboxvideo`, `virtio`, `vkms`, `vmwgfx`, `xen`
+- display drivers
+  - `bridge`, `panel`
+- helpers
+  - `clients`, `display`, `lib`, `scheduler`, `ttm`
+- infra
+  - `ci`, `tests`
+
 ## Drivers and Features
 
 - summary
