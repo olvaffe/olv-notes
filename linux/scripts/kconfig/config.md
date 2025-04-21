@@ -218,8 +218,6 @@ Kernel Config
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
-    - select `EFI (Extensible Firmware Interface) Support` if uefi
-      - deselect `Disable EFI runtime services support by default` if arm
     - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
