@@ -168,9 +168,9 @@ Kernel Config
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
-    - select `Qualcomm IPC Router support` if qcom modem
+    - select `Qualcomm IPC Router support`
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
-      - select `TUN device for Qualcomm IPC Router`
+      - select `TUN device for Qualcomm IPC Router` if qcom modem
   - select `Bluetooth subsystem support` if desired
     - select `Bluetooth device drivers`
       - select `HCI USB driver` if x86/mtk, depending on `USB`
