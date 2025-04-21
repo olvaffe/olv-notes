@@ -275,23 +275,6 @@ DRM msm
   - turns on the PM
   - calls `msm_gpu_hw_init`
 
-## MDSS
-
-- componentized device
-  - when a subdevice is probed, add it with `component_add`
-  - when the master device is probed, describe the required subdevices and
-    add the master with `component_master_add_with_match`
-    - it will attempt to bind the master device to its driver
-    - the driver init function calls `component_bind_all` to bind the
-      subdevices to their respective drivers
-- `msm_drm_init` is the driver init function for the master device
-  - it initializes MDSS with `dpu_mdss_init` first
-  - it then binds all subdevices
-  - the binding of DPU initializes KMS with `dpu_bind`
-  - it then calls kms's `hw_init`
-  - it starts a `crtc_commit:%d` and a `crtc_event:%d` thread for each crtc
-  - `drm_vblank_init`
-
 ## Memory Management
 
 - ioctls
