@@ -12,6 +12,7 @@ Kernel init
 - The function performs various initializations.  The interesting ones are
   - `pr_notice("%s", linux_banner);` prints the banner
   - `setup_arch` does arch-specific initializations such as
+    - calling `parse_early_param` to parse `early_param` (such as `earlycon`)
     - calling `memblock_add` to add physical memories to memblock
     - calling `free_area_init` to initialize memory zones
   - `setup_command_line` saves away the cmdline
@@ -39,6 +40,10 @@ Kernel init
       - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
   - `console_init` initializes console (for printk)
+    - this calls `console_initcall` initcalls
+    - vt's `con_init` prints `Console: colour dummy device 80x25` and calls
+      `register_console`
+      - unless `keep_bootcon`, this also disables earlycon
   - `acpi_early_init` initializes acpi
   - `late_time_init` is late `time_init`
   - `sched_clock_init` initializes jiffy-based clock
