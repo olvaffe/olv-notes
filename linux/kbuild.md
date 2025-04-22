@@ -1,6 +1,30 @@
 Kernel KBuild
 =============
 
+## `make`
+
+- the default goals are
+  - `__all:` is the default goal
+  - `__all: all` adds `all`
+  - `all: vmlinux` adds `vmlinux`
+  - `all: bzImage` adds `bzImage`
+  - more
+- `make vmlinux`
+  - `vmlinux: vmlinux.o $(KBUILD_LDS) modpost`
+  - `vmlinux.o modules.builtin.modinfo modules.builtin: vmlinux_o`
+  - `vmlinux_o: vmlinux.a $(KBUILD_VMLINUX_LIBS)`
+  - `vmlinux.a: $(KBUILD_VMLINUX_OBJS) scripts/head-object-list.txt FORCE`
+  - `KBUILD_VMLINUX_OBJS := ./built-in.a`
+  - `$(obj)/built-in.a: $(real-obj-y) FORCE`
+  - `real-obj-y := $(call real-search, $(obj-y), .o, -objs -y)`
+- `kbuild-file = $(or $(wildcard $(src)/Kbuild),$(src)/Makefile)`
+  - this is how `Kbuild` is preferred over `Makefile`
+- submakes
+  - `__all: __sub-make`
+  - `__sub-make:` invokes make again from the output dir
+  - `$(build-dir): prepare` invokes make again with a different makefile
+    - `build := -f $(srctree)/scripts/Makefile.build obj`
+
 ## Top-level Makefile
 
 - A top-level `make` will have these processes
