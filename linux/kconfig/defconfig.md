@@ -131,7 +131,7 @@ Kernel defconfig
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `Virtual Socket protocol` if kvm or guest
     - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
-    - select `Qualcomm IPC Router support`
+    - select `Qualcomm IPC Router support` if qcom
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
       - select `TUN device for Qualcomm IPC Router` if qcom modem
   - select `Bluetooth subsystem support` if desired
@@ -641,7 +641,6 @@ Kernel defconfig
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
     - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk
     - select `MediaTek IOMMU Support` if mtk
-    - select `Qualcomm IOMMU Support` if qcom
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
@@ -655,7 +654,7 @@ Kernel defconfig
     - select `MediaTek SCP` if mtk
     - select `Qualcomm SMEM Glink driver` if qcom
     - select `Qualcomm Shared Memory Driver` if qcom modem
-  - select `SoundWire support`
+  - select `SoundWire support` if needed
     - select `AMD SoundWire Manager driver` if amd
     - select `Intel SoundWire Master driver` if intel
     - select `Qualcomm SoundWire Master driver` if qcom
