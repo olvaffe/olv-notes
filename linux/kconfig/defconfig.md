@@ -421,6 +421,9 @@ Kernel defconfig
       - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
         - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
       - select `MSM DRM` if qcom
+        - deselect `Enable MDP4 support in MSM DRM driver`
+        - deselect `Enable MDP5 support in MSM DRM driver`
+        - deselect `Enable HDMI support in MSM DRM driver`
       - select `DRM Support for Rockchip` if rk
         - deselect `Rockchip VOP driver`
         - select `Rockchip VOP2 driver`
@@ -431,8 +434,7 @@ Kernel defconfig
         - it requires `CMA` and `DMA_CMA` to work
       - select `Display Panels` if arm
         - select `Samsung ATNA33XC20 eDP panel` if needed
-        - select `support for simple Embedded DisplayPort panels`, depending on `BACKLIGHT_CLASS_DEVICE`
-        - select `support for simple panels (other than eDP ones)`, depending on `BACKLIGHT_CLASS_DEVICE`
+        - select `support for simple Embedded DisplayPort panels` if needed, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Display Interface Bridges` if arm
         - select `Display connector support`
         - select `ITE IT6505 DisplayPort bridge` if needed
