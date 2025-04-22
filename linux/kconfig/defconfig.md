@@ -175,12 +175,14 @@ Kernel defconfig
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `DMI table support in sysfs` if desired (for dmidecode)
-    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if uefi
+    - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if desired
     - select `Google Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
+    - select `EFI (Extensible Firmware Interface) Support` if uefi and arm
+      - select `Enable the generic EFI decompressor`
     - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
@@ -439,7 +441,7 @@ Kernel defconfig
       - select `DRM Support for Mediatek SoCs` if mtk
         - select `DRM DPTX Support for MediaTek SoCs`
         - select `DRM HDMI Support for Mediatek SoCs`
-      - select `Simple framebuffer driver` if needed
+      - select `Simple framebuffer driver` if desired
       - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if mtk or old rk
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk
     - select `Backlight & LCD device support`
