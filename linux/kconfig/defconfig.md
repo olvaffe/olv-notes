@@ -465,7 +465,7 @@ Kernel defconfig
         - select `AMD Audio Coprocessor - Renoir support` if old amd
           - select `AMD Renoir support for DMIC`
         - select `AMD Audio ACP Common support` if amd
-          - select `AMD SOF Machine Driver Support` if cros
+        - select `AMD SOF Machine Driver Support` if amd and cros
         - deselect `Intel ASoC SST drivers`
         - select `Intel Machine drivers` if intel
           - select `Use more user friendly long card names`
@@ -541,6 +541,7 @@ Kernel defconfig
       - select `USB Type-C Connector System Software Interface driver`
         - select `UCSI ACPI Interface Driver` if x86
         - select `UCSI Qualcomm PMIC GLINK Interface Driver` if qcom x1, depending on `QCOM_PMIC_GLINK`
+        - select `UCSI Driver for ChromeOS EC` if cros
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
         - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
         - select `Parade PS883x Type-C retimer driver` if qcom x1
