@@ -170,7 +170,7 @@ Kernel defconfig
         - select `Enable compressed firmware support`
           - select `Enable ZSTD-compressed firmware support`
   - select `Firmware Drivers`
-    - select `ARM System Control and Management Interface Protocol` if rk/qcom
+    - select `ARM System Control and Management Interface Protocol`
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
@@ -393,9 +393,11 @@ Kernel defconfig
     - select `Fairchild FAN53555 Regulator` if rk
     - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
-    - select `MediaTek MT6315 PMIC` if mtk
-    - select `MediaTek MT6358 PMIC` if mtk
-    - select `MediaTek MT6359 PMIC` if mtk
+    - if mtk
+      - select `MediaTek MT6315 PMIC`
+      - select `MediaTek MT6358 PMIC`
+      - select `MediaTek MT6359 PMIC`
+      - select `MediaTek DVFSRC regulator driver`
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
   - select `Multimedia support` if desired
@@ -622,6 +624,7 @@ Kernel defconfig
     - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
+      - select needed drivers
     - select `Clock driver controlled via SCMI interface` if rk
     - select `Support for Qualcomm's clock controllers` if qcom
       - select `X1*` if qcom x1
@@ -644,7 +647,7 @@ Kernel defconfig
     - select `Support for Interrupt Remapping` if x86
     - select `Rockchip IOMMU Support` if rk
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk/new mtk
     - select `MediaTek IOMMU Support` if mtk
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
@@ -668,6 +671,8 @@ Kernel defconfig
       - select `Raspberry Pi power domain driver`
     - select `MediaTek SoC drivers` if mtk
       - select `MediaTek CMDQ Support`
+      - select `Mediatek Device APC Support`
+      - select `MediaTek DVFSRC Support`
       - select `MediaTek PMIC Wrapper Support`
       - select `MediaTek Smart Voltage Scaling(SVS)`, depending on `NVMEM_MTK_EFUSE`
     - select `Qualcomm SoC drivers` if qcom
@@ -687,6 +692,7 @@ Kernel defconfig
     - select `Rockchip IO domain support` if old rk
   - select `PM Domains` if arm
     - select `SCMI performance domain driver` if qcom x1
+    - select `MediaTek PM Domains` if mtk
     - select `Qualcomm PM Domains` if qcom
       - select `Qualcomm RPMh Power domain driver`
     - select `Rockchip generic power domain` if rk
@@ -725,11 +731,14 @@ Kernel defconfig
     - select `Qcom AOSS Reset Driver` if old qcom
     - select `Qualcomm PDC Reset Driver` if old qcom
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
-    - select `TI SYSCON Reset Driver` if mtk
   - select `PHY Subsystem` if arm
     - if mtk
       - select `MediaTek PCIe-PHY Driver`
       - select `MediaTek T-PHY Driver`
+      - select `MediaTek XS-PHY Driver` if new mtk
+      - select `MediaTek HDMI-PHY Driver`
+      - select `MediaTek MIPI-DSI Driver`
+      - select `MediaTek DP-PHY Driver`
     - if qcom
       - select `NXP PTN3222 1-port eUSB2 to USB2 redriver` if qcom x1
       - select `Qualcomm eDP PHY driver`
@@ -756,12 +765,16 @@ Kernel defconfig
   - select `Trusted Execution Environment support`
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
-  - select `On-Chip Interconnect management support` if qcom
-    - select `Qualcomm Network-on-Chip interconnect drivers`
-    - select `Qualcomm OSM L3 interconnect driver` if old qcom
-    - select `Qualcomm SC7180 interconnect driver` if old qcom
-    - select `Qualcomm SC7280 interconnect driver` if old qcom
-    - select `Qualcomm X1E80100 interconnect driver` if qcom x1
+  - select `On-Chip Interconnect management support` if qcom/mtk
+    - if qcom
+      - select `Qualcomm Network-on-Chip interconnect drivers`
+      - select `Qualcomm OSM L3 interconnect driver` if old qcom
+      - select `Qualcomm SC7180 interconnect driver` if old qcom
+      - select `Qualcomm SC7280 interconnect driver` if old qcom
+      - select `Qualcomm X1E80100 interconnect driver` if qcom x1
+    - if mtk
+      - select `MediaTek interconnect drivers`
+        - select `MediaTek DVFSRC EMI interconnect driver`
 
 ## Config: Post-Device Drivers
 

@@ -48,3 +48,9 @@ Linux DRM Mediatek
   - `mtk_crtc_create` is called for the two pipelines on mt8195
 - `drm_dev_register` registers the single `drm_device`
 - `drm_fbdev_dma_setup` sets up fbdev emulation
+
+## AFBC
+
+- corsola/cherry advertises AFBC support but triggers
+  `mtk-iommu 14016000.iommu: fault type=0x5 iova=0xfec23000 pa=0x0 master=0x51000008(larb=0 port=2) layer=1 read`
+  - `PAN_MESA_DEBUG=noafbc` to work around
