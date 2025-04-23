@@ -10,6 +10,7 @@ Mesa meson
   - `LLVMSPIRVLib`, to translate llvm ir to spirv
   - `libclc`, to link spirv with `spirv64-mesa3d-.spv` (or `spirv-mesa3d-.spv`)
   - `SPIRV-Tools`, to link, parse, specialize, disassemble spirv
+  - `pacman -S clang llvm spirv-llvm-translator libclc glslang`
 - platform wayland depends on
   - `wayland-client`, to talk to server
   - `wayland-protocols`, for various protocols

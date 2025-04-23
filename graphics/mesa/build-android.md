@@ -1,6 +1,34 @@
 Mesa on Android
 ===============
 
+## Build
+
+- <https://docs.mesa3d.org/android.html>
+- compile mesa-clc (if panvk)
+  - `apt install llvm llvm-dev clang libclang-dev libclang-cpp-dev llvm-spirv-19 libclc-19-dev glslang-tools`
+  - `meson setup out-host -Dprefix=/tmp/mesa -Dbuildtype=release -Dgallium-drivers= -Dvulkan-drivers=panfrost -Dplatforms= -Dinstall-mesa-clc=true -Dinstall-precomp-compiler=true`
+- cross-compile drm
+  - `meson setup --cross-file ndk.ini out-ndk -Dprefix=/tmp/mesa -Dbuildtype=release`
+- cross-compile llvm (if llvmpipe)
+  - `cmake -Sllvm -Bout-ndk -GNinja -DCMAKE_INSTALL_PREFIX=/tmp/mesa -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
+  - `-DCMAKE_TOOLCHAIN_FILE=~/android/sdk/ndk/28.0.13004108/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-34`
+  - `-DLLVM_TARGETS_TO_BUILD=AArch64 -DLLVM_INCLUDE_TOOLS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF`
+- compile llvm-config (if llvmpipe)
+  - `cmake -Sllvm -Bout-host -GNinja -DCMAKE_INSTALL_PREFIX=/tmp/mesa -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
+  - `-DLLVM_TARGETS_TO_BUILD=AArch64 -DLLVM_BUILD_TOOLS=OFF -DLLVM_INCLUDE_EXAMPLES=OFF -DLLVM_INCLUDE_TESTS=OFF -DLLVM_ENABLE_ZSTD=OFF -DLLVM_ENABLE_LIBXML2=OFF -DHAVE_LIBRT=OFF`
+  - `ninja -C out-host llvm-config`
+  - `cp out-host/bin/llvm-config /tmp/mesa/bin`
+- common mesa options
+  - `-Dplatforms=android -Dplatform-sdk-version=34 -Dandroid-strict=true -Dandroid-stub=true -Degl-lib-suffix=_mesa -Dgles-lib-suffix=_mesa -Dglx=disabled -Dgbm=disabled`
+- cross-compile panvk
+  - `meson setup --cross-file ndk.ini out-ndk -Dprefix=/tmp/mesa -Dbuildtype=debug -Dgallium-drivers=panfrost -Dvulkan-drivers=panfrost -Dmesa-clc=system -Dprecomp-compiler=system`
+  - plus common mesa options
+- cross-compile llvmpipe
+  - `meson setup --cross-file ndk.ini out-ndk -Dprefix=/tmp/mesa -Dbuildtype=debug -Dgallium-drivers=llvmpipe -Dvulkan-drivers=swrast`
+  - `-Dcpp_rtti=false -Dshared-llvm=disabled`
+  - plus common mesa options
+  - if build error, patch `meson.build` to add `selectiondag` to `llvm_modules`
+
 ## VNDK
 
 - Android framework provides some shared libraries for use by apps and hals
