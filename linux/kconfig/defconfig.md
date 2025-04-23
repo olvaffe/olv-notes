@@ -91,7 +91,7 @@ Kernel defconfig
       - select `MediaTek CPUFreq HW driver` if mtk
       - select `QCOM CPUFreq HW driver` if old qcom
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
-      - select `SCMI based CPUfreq driver` if qcom x1
+      - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Binary Emulations` if 86
   - select `IA32 Emulation`
 - select `Virtualization` if desired
@@ -196,6 +196,7 @@ Kernel defconfig
   - select `NVME Support` if needed
     - select `NVM Express block device`
   - select `Misc devices`
+    - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk or qcom x1
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
@@ -206,7 +207,6 @@ Kernel defconfig
       - select `Intel HDCP2.2 services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
-    - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if needed (for sata or usb mass storage)
     - select `SCSI device support`
@@ -327,7 +327,7 @@ Kernel defconfig
       - select `Qualcomm core pin controller driver`
         - select `Qualcomm Technologies Inc SC7180 pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 pin controller driver`
-        - select `Qualcomm Technologies Inc X1E80100 pin controller driver`
+        - select `Qualcomm Technologies Inc X1E80100 pin controller driver` if qcom x1
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
         - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`
@@ -343,7 +343,7 @@ Kernel defconfig
   - select `Power Sequencing support` if qcom x1
     - select `Qualcomm WCN family PMU driver`
   - select `Power supply class support`
-    - select `Qualcomm PMIC GLINK battery manager support` if qcom x1
+    - select `Qualcomm PMIC GLINK battery manager support` if qcom x1, depending on `QCOM_PMIC_GLINK`
     - select `SBS Compliant gas gauge` if needed
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
     - select `ChromeOS EC based peripheral charger` if cros, depending on `CROS_EC`
