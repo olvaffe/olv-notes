@@ -21,7 +21,7 @@ Mesa on Android
   - `ninja -C out-host llvm-config`
   - `cp out-host/bin/llvm-config /tmp/mesa/bin`
 - common mesa options
-  - `-Dplatforms=android -Dplatform-sdk-version=34 -Dandroid-strict=true -Dandroid-stub=true -Degl-lib-suffix=_mesa -Dgles-lib-suffix=_mesa -Dglx=disabled -Dgbm=disabled`
+  - `-Dplatforms=android -Dplatform-sdk-version=34 -Dandroid-strict=true -Dandroid-stub=true -Dandroid-libbacktrace=false -Degl-lib-suffix=_mesa -Dgles-lib-suffix=_mesa -Dglx=disabled -Dgbm=disabled`
 - cross-compile panvk
   - `meson setup --cross-file ndk.ini out-ndk -Dprefix=/tmp/mesa -Dbuildtype=debug -Dgallium-drivers=panfrost -Dvulkan-drivers=panfrost -Dmesa-clc=system -Dprecomp-compiler=system`
   - plus common mesa options
