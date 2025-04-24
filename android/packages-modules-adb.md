@@ -46,6 +46,21 @@ Android ADB
   - on device, it listens on 5555 port.
   - on host, it connects to 5555 port of `ADBHOST`.
 
+## Remount
+
+- <https://android.googlesource.com/platform/system/core/+/refs/heads/main/fs_mgr/README.overlayfs.md>
+- `adb disable-verity` or `adb remount`
+  - client translates it to `adb shell disable-verity` or `adb shell remount`
+  - cmdline source code at `system/core/fs_mgr`
+- to enable/disable verity,
+  - `AVB_VBMETA_IMAGE_FLAGS_HASHTREE_DISABLED` in vbmeta partition is
+    cleared/set
+  - it requires a reboot, and if `-R`, is specified, it reboots automatically
+    by setting `sys.powerctl` to `reboot,<progname>`
+- to remount,
+  - it disables verity first, and reboot automatically if `-R` is specified
+  - it remounts overlayfs
+
 ## Command Tools
 
 - `setprop` / `getprop`
