@@ -590,3 +590,34 @@ Qualcomm SoC
     due to fw bug (should not be needed anymore)
   - `arm64.nopauth` disables pointer auth (PAC) to work around firefox crash
     (should not be needed anymore)
+
+## X1E-80-100 Tips
+
+- disable bitlocker before disabling secure boot
+  - windows refuses to boot with bitlocker when secure boot is disabled
+- <https://github.com/jglathe/linux_ms_dev_kit/tree/jg/ubuntu-qcom-x1e-6.15rc>
+  - this appears to be the best kernel
+- <https://salsa.debian.org/debian/qcom-firmware-extract>
+  - this extracts fw from windows partition
+  - <https://github.com/Aorimn/dislocker> is used to unlock win partition
+  - <https://github.com/tuxera/ntfs-3g> is used to mount win partition
+  - it finds FW under `Windows/System32/DriverStore/FileRepository`
+    - `qcsubsys_ext_adsp8380` provides
+      - `adsp_dtbs.elf`
+      - `adspr.jsn`
+      - `adsps.jsn`
+      - `adspua.jsn`
+      - `battmgr.jsn`
+      - `qcadsp8380.mbn`
+    - `qcsubsys_ext_cdsp8380` provides
+      - `cdsp_dtbs.elf`
+      - `cdspr.jsn`
+      - `qccdsp8380.mbn`
+    - `qcdx8380` provides
+      - `qcdxkmsuc8380.mbn`
+      - `qcdxkmsucpurwa.mbn` (asus x1p only)
+  - it copies FW to `/lib/modules/<vendor>/<product>`
+  - DT `remoteproc_adsp` picks `qcadsp8380.mbn` and `adsp_dtbs.elf`
+  - DT `remoteproc_cdsp` picks `qccdsp8380.mbn` and `cdsp_dtbs.elf`
+  - DT `gpu` picks `qcdxkmsuc8380.mbn`
+    - asus x1p may pick `qcdxkmsucpurwa.mbn`
