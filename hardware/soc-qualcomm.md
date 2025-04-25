@@ -425,6 +425,7 @@ Qualcomm SoC
 - `/soc@0/pci@1c08000`, `qcom,pcie-x1e80100`, `CONFIG_PCIE_QCOM`
   - `x1-asus-vivobook-s15.dtsi` adds
     - `pcie@0/wifi@0`, `pci17cb,1107`, `CONFIG_PCI_PWRCTRL_PWRSEQ`
+      - it powers on a pci device that requires `CONFIG_ATH12K`
 - `/soc@0/phy@1c0e000`, `qcom,x1e80100-qmp-gen3x2-pcie-phy`, `CONFIG_PHY_QCOM_QMP_PCIE`
 - `/soc@0/hwlock@1f40000`, `qcom,tcsr-mutex`, `CONFIG_HWSPINLOCK_QCOM`
 - `/soc@0/clock-controller@1fc0000`, `qcom,x1e80100-tcsr`, `CONFIG_CLK_X1E80100_TCSRCC`

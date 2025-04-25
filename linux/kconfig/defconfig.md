@@ -153,6 +153,7 @@ Kernel defconfig
   - select `PCI support` if pci
     - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
+    - select `PCI Express Downstream Port Containment support` if needed
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `Support for PCI Hotplug` if needed (for usb4)
     - select `PCI controller drivers` if arm
@@ -242,10 +243,11 @@ Kernel defconfig
     - select `Wireless LAN` if desired
       - deselect all but the needed drivers, such as
       - select `Atheros/Qualcomm devices` if qcom
-        - select `Atheros 802.11ac wireless cards support`
-        - select `Qualcomm ath10k SNOC support`
-        - select `Qualcomm Technologies 802.11ax chipset support`, depending on `CRYPTO_MICHAEL_MIC`
+        - select `Atheros 802.11ac wireless cards support` if old qcom
+        - select `Qualcomm ath10k SNOC support` if old qcom
+        - select `Qualcomm Technologies 802.11ax chipset support` if old qcom
           - select `Atheros ath11k AHB support`, depending on `REMOTEPROC`
+        - select `Qualcomm Technologies Wi-Fi 7 support (ath12k)` if qcom x1
       - select `Broadcom devices` if rpi
         - select `Broadcom FullMAC WLAN driver`
       - select `Intel devices` if intel
@@ -822,6 +824,8 @@ Kernel defconfig
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
 - select `Security options`
+  - select `Enable access key retention support` if iwd
+    - select `Diffie-Hellman operations on retained keys`
   - select `Enable different security models`
   - select `Landlock support` if pacman
 - select `Cryptographic API`
