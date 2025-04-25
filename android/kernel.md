@@ -67,6 +67,26 @@ Android Kernel
     - <https://android.googlesource.com/kernel/manifest/+/refs/heads/android-gs-tegu-6.1-android15-d4/default.xml>
     - `devices/google/foo` is the build rules
     - `google-modules` is the vendor modules
+- <https://source.android.com/docs/core/architecture/kernel/modules>
+  - `tools/bazel run //common:kernel_aarch64_dist`
+    - this builds GKI image and GKI modules that are common to all devices
+    - GKI modules are either protected (mostly) or unprotected (rarely)
+      - they are defined in `modules.bzl`
+        - `_COMMON_UNPROTECTED_MODULES_LIST` lists unprotected modules
+      - protected GKI modules are logically a part of GKI image
+        - they are built as modules only because they are not critical to boot
+        - they can use non-exported symbols from GKI image
+        - they can export symbols
+        - they cannot be overriden by vendor modules
+      - unprotected GKI modules are logically vendor modules
+        - they can only use exported symbols from GKI image and GKI protected
+          modules
+        - they cannot export symbols already exported by GKI image and GKI
+          protected modules
+        - they can be overriden by vendor modules
+    - GKI image exports symbols defined in `gki/aarch64/abi.stg`
+    - protected GKI modules exports symbols defined in
+      `gki/aarch64/protected_exports`
 
 ## Kleaf
 
