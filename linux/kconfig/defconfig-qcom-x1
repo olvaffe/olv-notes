@@ -48,6 +48,7 @@ CONFIG_PCIEAER=y
 CONFIG_PCIE_QCOM=y
 CONFIG_DEVTMPFS=y
 CONFIG_DEVTMPFS_MOUNT=y
+CONFIG_EXTRA_FIRMWARE="rtl_nic/rtl8153a-4.fw qcom/x1e80100/ASUSTeK/vivobook-s15/adsp_dtbs.elf qcom/x1e80100/ASUSTeK/vivobook-s15/cdsp_dtbs.elf qcom/x1e80100/ASUSTeK/vivobook-s15/qcadsp8380.mbn qcom/x1e80100/ASUSTeK/vivobook-s15/qccdsp8380.mbn qcom/x1e80100/ASUSTeK/vivobook-s15/qcdxkmsucpurwa.mbn"
 CONFIG_FW_LOADER_COMPRESS=y
 CONFIG_FW_LOADER_COMPRESS_ZSTD=y
 CONFIG_ARM_SCMI_PROTOCOL=y
