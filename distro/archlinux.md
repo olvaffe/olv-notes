@@ -82,7 +82,7 @@ Arch Linux
     - `base linux linux-firmware intel-ucode`
     - `dosfstools btrfs-progs`
     - `zram-generator`
-      - `echo -e '[zram0]\nzram-size = ram' > /etc/systemd/zram-generator.conf`
+      - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
       - `systemctl daemon-reload`
       - `zramctl`
     - `sudo vim`
@@ -173,7 +173,7 @@ Arch Linux
   - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
   - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
   - `echo usb > /etc/hostname`
-  - `echo -e '[zram0]\nzram-size = ram' > /etc/systemd/zram-generator.conf`
+  - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
 - create a normal user
   - `useradd -m -G wheel olv`
   - `passwd olv`
