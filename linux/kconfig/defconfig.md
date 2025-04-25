@@ -221,6 +221,7 @@ Kernel defconfig
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
       - select `MAC-VLAN support` if container
+      - select `Network console logging support` if desired
       - select `Universal TUN/TAP device driver support` if kvm
       - select `Virtual ethernet pair device` if container
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
@@ -536,6 +537,8 @@ Kernel defconfig
       - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
+    - select `USB Serial Converter support` if needed
+      - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if old qcom
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk
@@ -547,6 +550,8 @@ Kernel defconfig
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
         - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
         - select `Parade PS883x Type-C retimer driver` if qcom x1
+      - select `USB Type-C Alternate Mode drivers`
+        - select `DisplayPort Alternate Mode driver`
     - select `USB Role Switch Support`
   - select `MMC/SD/SDIO card support` if desired
     - select `Secure Digital Host Controller Interface support` if needed
@@ -799,6 +804,8 @@ Kernel defconfig
     - select `VFAT (Windows-95) fs support` if esp
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
+    - select `NTFS Read-Write file system support` if desired
+      - select `activate support of external compressions lzx/xpress`
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
