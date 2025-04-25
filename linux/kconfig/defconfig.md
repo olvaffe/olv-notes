@@ -237,7 +237,7 @@ Kernel defconfig
     - select `PHY Device support and infrastructure` if rk
       - select `Motorcomm PHYs`
     - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
-    - select `USB Network Adapters`, depending on `USB`
+    - select `USB Network Adapters` if needed, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
     - select `Wireless LAN` if desired
       - deselect all but the needed drivers, such as
@@ -538,6 +538,7 @@ Kernel defconfig
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `USB Serial Converter support` if needed
+      - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if old qcom
     - select `USB Type-C Support`
