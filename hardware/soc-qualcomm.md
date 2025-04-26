@@ -448,11 +448,18 @@ Qualcomm SoC
 - `/soc@0/soundwire@6ab0000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
 - `/soc@0/codec@6ac0000`, `qcom,sm8550-lpass-rx-macro`, `CONFIG_SND_SOC_LPASS_RX_MACRO`
 - `/soc@0/soundwire@6ad0000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+  - `x1-asus-vivobook-s15.dtsi` adds
+    - `codec@0,4`, `sdw20217010d00`, `CONFIG_SND_SOC_WCD938X_SDW`
 - `/soc@0/codec@6ae0000`, `qcom,sm8550-lpass-tx-macro`, `CONFIG_SND_SOC_LPASS_TX_MACRO`
 - `/soc@0/codec@6b00000`, `qcom,sm8550-lpass-wsa-macro`, `CONFIG_SND_SOC_LPASS_WSA_MACRO`
 - `/soc@0/soundwire@6b10000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+  - `x1-asus-vivobook-s15.dtsi` adds
+    - `speaker@0,0`, `sdw20217020400`, `CONFIG_SND_SOC_WSA884X`
+    - `speaker@0,1`, `sdw20217020400`, `CONFIG_SND_SOC_WSA884X`
 - `/soc@0/clock-controller@6b6c000`, `qcom,sc8280xp-lpassaudiocc`, `CONFIG_SC_LPASSCC_8280XP`
 - `/soc@0/soundwire@6d30000`, `qcom,soundwire-v2.0.0`, `CONFIG_SOUNDWIRE_QCOM`
+  - `x1-asus-vivobook-s15.dtsi` adds
+    - `codec@0,3`, `sdw20217010d00`, `CONFIG_SND_SOC_WCD938X_SDW`
 - `/soc@0/codec@6d44000`, `qcom,sm8550-lpass-va-macro`, `CONFIG_SND_SOC_LPASS_VA_MACRO`
 - `/soc@0/pinctrl@6e80000`, `qcom,sm8550-lpass-lpi-pinctrl`, `CONFIG_PINCTRL_SM8550_LPASS_LPI`
 - `/soc@0/clock-controller@6ea0000`, `qcom,sc8280xp-lpasscc`, `CONFIG_SC_LPASSCC_8280XP`
