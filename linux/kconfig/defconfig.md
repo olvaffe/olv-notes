@@ -503,6 +503,7 @@ Kernel defconfig
             - select `SOF support for MT8195 audio DSP`
         - select `CODEC drivers` if qcom
           - select `WCD9380/WCD9385 Codec - SDW` if qcom x1
+          - select `WSA884X Codec` if qcom x1
           - select `Qualcomm WSA Macro in LPASS(Low Power Audio SubSystem)` if qcom x1
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
