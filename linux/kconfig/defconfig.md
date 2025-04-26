@@ -483,8 +483,9 @@ Kernel defconfig
         - select `ASoC support for Mediatek MT8195 chip` if mtk
           - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `ASoC support for QCOM platforms` if qcom
-          - select `SoC Machine driver for SC7180 boards`
-          - select `SoC Machine driver for SC7280 boards`, depending on `SOUNDWIRE`
+          - select `SoC Machine driver for SC7180 boards` if old qcom
+          - select `SoC Machine driver for SC7280 boards` if old qcom, depending on `SOUNDWIRE`
+          - select `SoC Machine driver for X1E80100 boards`, depending on `SOUNDWIRE`
         - select `ASoC support for Rockchip` if rk
           - select `Rockchip I2S Device Driver`
           - select `Rockchip I2S/TDM Device Driver`
@@ -501,6 +502,8 @@ Kernel defconfig
             - select `SOF support for MT8186 audio DSP` if old mtk
             - select `SOF support for MT8195 audio DSP`
         - select `CODEC drivers` if qcom
+          - select `WCD9380/WCD9385 Codec - SDW` if qcom x1
+          - select `Qualcomm WSA Macro in LPASS(Low Power Audio SubSystem)` if qcom x1
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
@@ -773,6 +776,7 @@ Kernel defconfig
   - select `Trusted Execution Environment support`
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
+  - select `SLIMbus support` if qcom and `SND`
   - select `On-Chip Interconnect management support` if qcom/mtk
     - if qcom
       - select `Qualcomm Network-on-Chip interconnect drivers`
