@@ -70,19 +70,19 @@ SBC
   - width: 10" (outer), 9.312" (screw hole-to-hole), 8.75" (inner)
   - 1U height: 1.75" (3 screw holes)
 - devices
-  - modem
+  - modem: 13.5x13.5x4.5
     - power: 12V DC
     - wan: coax, ethernet
-  - router
+  - router: 6.5x6.5x3
     - power: 5V3A USBC
     - wan: ethernet
     - lan: ethernet
-  - switch
-    - power: 48V DC
-    - lan: ethernet x4
-  - server
-    - power: 5V4A USBC
-    - lan: ethernet
-    - usb: USBA x2
+  - switch: 10.5x10x3
+    - power (back): 53.5V1.3A DC, 11x6x4
+    - lan (front): ethernet x4
+  - server: 9.5x7x3
+    - power (side): 5V4A USBC
+    - lan (front): ethernet
+    - usb (front): USBA x2
 - allocation
   - 1U: PDU with 3 outlets, USBC adapter
