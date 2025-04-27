@@ -436,7 +436,6 @@ Kernel defconfig
         - select `Rockchip specific extensions for Synopsys DW HDMI QP`
       - select `Virtio GPU driver` if guest
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
-        - it requires `CMA` and `DMA_CMA` to work
       - select `Display Panels` if arm
         - select `Samsung ATNA33XC20 eDP panel` if needed
         - select `support for simple Embedded DisplayPort panels` if needed, depending on `BACKLIGHT_CLASS_DEVICE`
@@ -859,7 +858,7 @@ Kernel defconfig
         - select `Cryptographic Coprocessor device`
           - deselect `Encryption and hashing offload support` if raven (boot issue)
 - select `Library routines`
-  - select `DMA Contiguous Memory Allocator` if needed
+  - select `DMA Contiguous Memory Allocator` if needed, depending on `CMA`
 - select `Kernel hacking`
   - select `printk and dmesg options`
     - select `Show timing information on printks`
