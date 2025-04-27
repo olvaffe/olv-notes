@@ -59,3 +59,30 @@ SBC
   - 5: RK3588
 - Hardkernel ODROID
  - M1S: RK3566
+
+## Mini Rack
+
+- <https://mini-rack.jeffgeerling.com/>
+- standard rack size
+  - width: 19" (outer), 18.312" (screw hole-to-hole), 17.75" (inner)
+  - 1U height: 1.75" (3 screw holes)
+- mini rack size:
+  - width: 10" (outer), 9.312" (screw hole-to-hole), 8.75" (inner)
+  - 1U height: 1.75" (3 screw holes)
+- devices
+  - modem
+    - power: 12V DC
+    - wan: coax, ethernet
+  - router
+    - power: 5V3A USBC
+    - wan: ethernet
+    - lan: ethernet
+  - switch
+    - power: 48V DC
+    - lan: ethernet x4
+  - server
+    - power: 5V4A USBC
+    - lan: ethernet
+    - usb: USBA x2
+- allocation
+  - 1U: PDU with 3 outlets, USBC adapter
