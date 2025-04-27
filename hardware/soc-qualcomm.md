@@ -343,6 +343,17 @@ Qualcomm SoC
     - SDSP, sensor DSP
     - MDSP, modem DSP
 
+## Qualcomm Audio
+
+- <https://docs.qualcomm.com/bundle/publicresource/topics/80-70014-16/overview.html>
+- LPASS, low power audio subsystem
+- WCD, audio codec
+- WSA, speaker amplifier
+- WSA playback (to speakers (L & R)): cpu -> dsp -> wsa macro -swr-> wsa -> speaker
+- WCD playback (to headphone): cpu -> dsp -> rx macro -swr-> wcd -> headphone
+- WCD capture (from mic): mic -> wcd -swr-> tx macro -> dsp -> cpu
+- VA capture (from ??? voice activation?): ? -> va macro -> dsp -> cpu
+
 ## X1E-80-100
 
 - `/dummy-sink`, `arm,coresight-dummy-sink`, `CONFIG_CORESIGHT_DUMMY`
