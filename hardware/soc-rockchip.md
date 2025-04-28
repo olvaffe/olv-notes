@@ -78,27 +78,6 @@ Rockchip SoCs
       `2207:330c`)
       - the board usually has a maskrom button, which forces all other methods
         to fail and forces bootrom to load the bootloader over usb
-- usb recovery bootloader (`rkxx_loader_vx.xx.bin`)
-  - <https://opensource.rock-chips.com/wiki_Rockusb>
-    - bootrom can load the bootloader over usb using rockusb protocol
-    - the bootrom only has a minimal impl and only supports `rkdeveloptool db`
-      (`DownloadBoot`)
-  - <https://github.com/rockchip-linux/rkbin>
-    - `./tools/boot_merger RKBOOT/RK3588MINIALL.ini` to generate
-      `rk3588_spl_loader_v1.16.113.bin`
-    - `rkxx_loader_vx.xx.bin` consists of
-      - `ddr.bin`, which initializes dram
-      - `usbplug.bin`, which provides the full rockusb impl
-      - `miniloader.bin`, not used in recovery
-  - <https://github.com/rockchip-linux/rkdeveloptool.git>
-    - `autoreconf -i && ./configure && make` to build `rkdeveloptool`
-    - `./rkdeveloptool db rk3588_spl_loader_v1.16.113.bin` tells the bootrom
-      to boot the specified bootloader, to `usbplug.bin` to gain full rockusb
-      support
-    - `./rkdeveloptool ef` (`EraseFlash`) tells `usbplug.bin` to erase the spi
-      flash
-      - the normal flow will now find the stage1 from emmc or sd, rather than
-        from flash
 - proprietary bootloader
   - it consists of `ddr.bin` and `miniloader.bin`
     - bootrom loads `ddr.bin` to sram and executes it to initial dram
@@ -120,21 +99,57 @@ Rockchip SoCs
     - U-Boot proper
   - u-boot provides another rockusb implementation
     - `rockusb 0 mmc 0` to enter
-- <https://opensource.rock-chips.com/wiki_Boot_option>
-  - `rkdeveloptool wl 0x40 idbloader.img` to write `idbloader.img` to sector
+
+## Recovery
+
+- BootRom puts the USB controller in device mode when it fails to find any
+  valid SPL bootloader
+  - it looks for the SPL bootloader magic number at sector 0x40 from all block
+    devices in order (NOR/NAND/eMMC/SD) and boots the first valid bootloader
+  - this can also be forced by pressing the maskrom button
+- the host sees `2207:350b Fuzhou Rockchip Electronics Company`
+- BootRom only implements a subset of the rockusb protocol
+  - only enough to download and boot the bootloader
+  - <https://opensource.rock-chips.com/wiki_Rockusb>
+- to gain full rockusb protocol support,
+  - <https://github.com/rockchip-linux/rkbin>
+    - `./tools/boot_merger RKBOOT/RK3588MINIALL.ini` to generate
+      `rk3588_spl_loader_v1.XX.XXX.bin`
+    - the generated bootloader consists of
+      - `bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.XX.bin`, which
+        initirlaizes dram
+      - `bin/rk35/rk3588_usbplug_v1.XX.bin`, which provides the full rockusb
+        impl
+      - `miniloader.bin` payload, which can be flashed to the internal block
+        device
+  - <https://github.com/rockchip-linux/rkdeveloptool.git>
+    - `autoreconf -i && ./configure && make` to build `rkdeveloptool`
+    - `./rkdeveloptool db rk3588_spl_loader_v1.XX.XXX.bin` tells the bootrom
+      to download and boot the specified bootloader
+      - this inits dram and boots `usbplug.bin` to provide full rockusb
+        support
+- there are several options at this point
+  - `./rkdeveloptool ef` (`EraseFlash`) tells `usbplug.bin` to erase the spi
+    nor flash or emmc
+    - on a new device, BootRom typically finds the SPL bootloader from the
+      internal block device flashed in factory
+    - this is useful to force BootRom to find the SPL bootloader from the
+      external block device (SD), when the factory-flashed SPL bootloader is
+      outdated or corrupted
+  - `./rkdeveloptool ul rk3588_spl_loader_v1.XX.XXX.bin` (`UpgradeLoader`)
+    tells `usbplug.bin` to write `miniloader.bin` payload to sector 0x40 of
+    the spi nor flash or emmc
+  - `./rkdeveloptool wl 0x40 idbloader.img` writes `idbloader.img` to sector
     0x40
     - it consists of the idblock header, `u-boot-tpl.bin`, and
       `spl/u-boot-spl.bin`
-    - or, if proprietary, `rkdeveloptool ul rkxx_loader_vx.xx.bin`
-      - it writes `ddr.bin` and `miniloader.bin` to sector 0x40
-  - `rkdeveloptool wl 0x4000 u-boot.itb` to write `u-boot.itb` to sector
+  - `./rkdeveloptool wl 0x4000 u-boot.itb` writes `u-boot.itb` to sector
     0x4000
     - it consists of `u-boot-nodtb.bin` (u-boot proper), `bl31.elf` (tf-a
       bl31), and `u-boot.dtb` (device tree)
-  - `rkdeveloptool wl 0x8000 boot.img` to write `boot.img` to sector 0x8000
-    - it consists of another bootloader (grub2) or the kernel
-      image/dtb/initramfs
-  - `rkdeveloptool wl 0x40000 rootfs.img` to write `rootfs.img` to sector
+  - `./rkdeveloptool wl 0x8000 boot.img` writes `boot.img` to sector 0x8000
+    - it consists of the kernel image/dtb/initramfs
+  - `./rkdeveloptool wl 0x40000 rootfs.img` writes `rootfs.img` to sector
     0x40000
     - it is the root fs
 
