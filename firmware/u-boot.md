@@ -106,7 +106,7 @@ Das U-Boot
 
 - <https://docs.u-boot.org/en/latest/board/rockchip/rockchip.html>
   - build or get tf-a firmware
-    - <https://github.com/ARM-software/arm-trusted-firmware.git>
+    - `git clone https://review.trustedfirmware.org/TF-A/trusted-firmware-a.git`
       - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3588 bl31`
       - `build/rk3588/release/bl31/bl31.elf` is the image
     - <https://github.com/rockchip-linux/rkbin>

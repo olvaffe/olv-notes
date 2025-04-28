@@ -1,0 +1,64 @@
+Kernel TEE
+==========
+
+## OP-TEE
+
+- HW
+  - non-scure
+    - EL0: userspace
+    - EL1: guest kernel (optional)
+    - EL2: host kernel
+    - EL3: does not exist
+  - secure
+    - EL0: trusted apps
+    - EL1: trusted OS (TEE, optional)
+    - EL2: secure partition manager (optional)
+    - EL3: secure monitor (BL31)
+- <https://trustedfirmware-a.readthedocs.io/en/latest/design/firmware-design.html>
+  - Cold boot
+    - BL1: AP Trusted ROM
+      - HW executes BL1 from trusted ROM at secure EL3
+      - determination of boot path
+      - arch init
+      - plat init
+      - load BL2 to trusted SRAM
+      - pass control to BL2 at secure EL1
+    - BL2: Trusted Boot Firmware
+      - BL1 executes BL2 from trusted SRAM at secure EL1
+      - arch init
+      - plat init
+      - image loading
+        - load optional `SCP_BL2` image which is executed by SCP
+        - load BL31 to trusted SRAM
+        - load optional BL32 to secure memory
+        - load BL33 to non-secure memory
+      - pass control back to BL1 by rasing an `SMC` with BL31 entrypoint 
+      - BL1 passes control to BL31 at secure EL3
+    - BL31: EL3 Runtime Software
+      - BL1 executes BL3 from trusted SRAM at secure EL3
+      - arch init
+      - plat init
+      - runtime init
+        - PSCI
+      - call into BL32 optionally
+      - pass control to BL33 at non-secure EL2 or EL1
+    - BL32: Secure-EL1 Payload (optional)
+      - typically, trusted os or op-tee running at secure EL1
+      - can also be Hafnium at secure EL2
+    - BL33: Non-trusted Firmware
+  - EL3 runtime services framework
+    - EL0/EL1/EL2 can raise `SMC` that is handled by secure EL3
+      - the requests follow SMCCC, SMC calling convention
+- `optee_probe` probes `linaro,optee-tz`
+  - `optee_clnt_desc` is for host-to-TEE communicatioin
+    - `tee_device_alloc` allocs a `tee_device`
+    - `tee_device_register` registers a `tee_device`
+    - `teedev_open` returns a `tee_context`
+  - `optee_supp_desc` is for TEE-to-host communicatioin
+  - `optee_enumerate_devices` enumerates devices
+    - `tee_client_open_context` returns a `tee_context` for the matched device
+      - this matches `optee_clnt_desc`
+    - `tee_client_open_session` opens a session
+    - `get_devices` enumerates devices
+    - `optee_register_device` registers devices
+      - this registers `tee_client_device`
