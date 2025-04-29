@@ -131,6 +131,15 @@ Das U-Boot
     - `dd if=u-boot-rockchip.bin of=/dev/mmcblk0 seek=64`
   - flash to spi flash
     - `dd if=u-boot-rockchip-spi.bin of=/dev/mtdblock0`
+- RK3568
+  - tfa
+    - <https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/31265>
+    - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3568 bl31`
+  - u-boot
+    - `make nanopi-r5c-rk3568_defconfig`
+    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3568_ddr_1560MHz_v1.23.bin
+       BL31=../trusted-firmware-a/build/rk3568/release/bl31/bl31.elf
+       CROSS_COMPILE=aarch64-linux-gnu- make`
 - boot sequence
   - bootrom jumps to spi flash sector 0x40
   - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin`
