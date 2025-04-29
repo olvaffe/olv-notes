@@ -542,10 +542,12 @@ Kernel defconfig
       - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
+      - select `DWC3 Mode Selection (Dual Role mode)` if rk, depending on `USB_GADGET`
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if old qcom
+    - select `USB Gadget Support` if needed
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk
         - select `Fairchild FUSB302 Type-C chip driver`
