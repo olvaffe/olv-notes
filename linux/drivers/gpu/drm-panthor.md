@@ -102,7 +102,6 @@ DRM panthor
     `DRM_FILE_PAGE_OFFSET_SIZE`
     - 1TB above 4GB
 - `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE` maps to `panthor_ioctl_tiler_heap_create`
-  - panvk does not use this yet
   - `panthor_vm_get_heap_pool` returns (or creates on demand) the single heap
     pool for the VM
     - `pool->gpu_contexts` is a kernel bo
@@ -111,7 +110,6 @@ DRM panthor
   - I guess this allocates buffers for use by the fw
 - `DRM_IOCTL_PANTHOR_TILER_HEAP_DESTROY` maps to `panthor_ioctl_tiler_heap_destroy`
 - `DRM_IOCTL_PANTHOR_GROUP_CREATE` maps to `panthor_ioctl_group_create`
-  - panvk does not use this yet
   - a `panthor_group` seems to describe the scheduling params to the fw
     - which compute/frag/tiler cores should handle compute/frag/tiler jobs
     - group priority
@@ -247,6 +245,34 @@ DRM panthor
   is a bind job
   - `panthor_vm_bind_job_create`
   - `panthor_vm_bind_job_prepare_resvs`
+
+## `panthor_ioctl_group_create`
+
+- panvk creates a group for the single `VkQueue`
+  - all tiler/fragment/compute are allowed
+  - priority is determined by global priority
+  - vm is the per-device VM
+  - there are 3 queues, for tiler, fragment, and compute respectively
+- a `panthor_group` is initialized
+  - `csg_id` is still -1, until it becomes active
+  - `vm` points to the specified `panthor_vm`
+  - `suspend_buf` and `protm_suspend_buf` are allocated, used by csf to save
+    state when an active group is suspended
+  - `syncobjs` has one `panthor_syncobj_64b` per queue
+    - csf will write seqno to them
+    - not to be confused with `drm_syncobj`
+  - `group_create_queue` creates a `panthor_queue` for each queue
+- the group is added to `sched->groups.idle[group->priority]`
+- for each `panthor_queue`,
+  - `fence_ctx` is the fence context
+  - `ringbuf` is the ring buffer
+  - `iface` is allocated, shared between host and csf for ring head/tail
+  - `profiling` is allocated, for fdinfo
+  - `scheduler` is initialized by `drm_sched_init`
+  - `entity` is initialized by `drm_sched_entity_init`
+    - each entity has its own 2 fence contexts
+    - each job will have two fences, `scheduled` and `finished` from the two
+      contexts
 
 ## `panthor_ioctl_group_submit`
 
