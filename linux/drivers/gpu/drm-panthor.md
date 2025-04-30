@@ -538,6 +538,26 @@ DRM panthor
   - `panthor_job_create` converts each `drm_panthor_queue_submit` to a
     `drm_sched_job`
 
+## `panthor_ioctl_vm_create`
+
+- panvk creates a VM for a `VkDevice`
+  - `user_va_range` is 4GB
+  - panvk manages the address space and uses `[32MB, 4GB)`
+- `panthor_vm_create_check_args`
+  - `full_va_range` is 4TB (`va_bits` is 48)
+  - `user_va_range` is 4GB (determined by panvk)
+  - `kernel_va_range` is thus the top 2TB
+- `panthor_vm_create` creates a `panthor_vm`
+  - `vm->mm` is a `drm_mm` to manage the kernel va range (top 2TB)
+  - `vm->as.id` is -1 until the vm is active
+  - `pgtbl_ops` will alloc/free page tables in `ARM_64_LPAE_S1` format
+  - `sched` is a `drm_gpu_scheduler` for VM ops
+    - they are executed on cpu using `drm_gpuvm`
+  - `entity` is a `drm_sched_entity`
+  - the vm is added to `ptdev->mmu->vm.list`
+  - `gpuvm` is a `drm_gpuvm`
+- each `panthor_file` has a `panthor_vm_pool` to manage its vms
+
 ## `panthor_ioctl_tiler_heap_create`
 
 - panvk creates a tiler heap for the single `VkQueue`
