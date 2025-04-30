@@ -50,87 +50,43 @@ DRM panthor
   - `panthor_sched_resume` resumes `ptdev->scheduler`
   - set `ptdev->pm.state` to `PANTHOR_DEVICE_PM_STATE_ACTIVE`
 
-## File Operations
+## PM domains, Clocks, Regulators, and devfreq
 
-- `panthor_open`
-  - a `panthor_file` is allocated
-  - `panthor_vm_pool_create` inits `pfile->vms`
-  - `panthor_group_pool_create` inits `pfile->groups`
-- `panthor_postclose` frees `pfile`
-- `panthor_mmap` calls `drm_gem_mmap` for bos
-  - it also allows mapping certain regs for direct mmio
-  - `DRM_PANTHOR_USER_FLUSH_ID_MMIO_OFFSET` maps read-only
-    `CSF_GPU_LATEST_FLUSH_ID` reg
-- `DRM_IOCTL_PANTHOR_DEV_QUERY` maps to `panthor_ioctl_dev_query`
-  - `DRM_PANTHOR_DEV_QUERY_GPU_INFO` queries `ptdev->gpu_info`
-  - `DRM_PANTHOR_DEV_QUERY_CSIF_INFO` queries `ptdev->csif_info`
-- `DRM_IOCTL_PANTHOR_VM_CREATE` maps to `panthor_ioctl_vm_create`
-  - panvk creates a vm per-VkDevice
-    - it expects some amount of VA is managed by userspace
-      - first 3GB for 32-bit VA
-      - first half for larger VA
-    - it then reserves up to 4GB for userspace
-  - `panthor_vm_pool_create_vm` creates a VM
-    - the VA is splitted into
-      - userspace region at the bottom
-      - kernel region at the top
-    - `panthor_vm_create` creates the VM to manage the kernel region
-      - a kernel bo may be created with an explicit VA, or with an
-        auto-assigned VA indicated by `PANTHOR_VM_KERNEL_AUTO_VA`
-      - the "auto" range is used for auto-assignment
-- `DRM_IOCTL_PANTHOR_VM_DESTROY` maps to `panthor_ioctl_vm_destroy`
-- `DRM_IOCTL_PANTHOR_VM_BIND` maps to `panthor_ioctl_vm_bind`
-  - panvk
-    - it never sets `DRM_PANTHOR_VM_BIND_ASYNC` atm, which can be used to
-      wait/signal syncobjs before/after an bind op
-  - there is an array of `drm_panthor_vm_bind_op`
-    - each op specifies a bo, an offset, a size, and a VA
-    - `DRM_PANTHOR_VM_BIND_OP_TYPE_MAP` maps the range to the VA
-    - `DRM_PANTHOR_VM_BIND_OP_TYPE_UNMAP` unmaps the range from the VA
-- `DRM_IOCTL_PANTHOR_VM_GET_STATE` maps to `panthor_ioctl_vm_get_state`
-  - this is for use with `DRM_PANTHOR_VM_BIND_ASYNC` to detect vm bind
-    failures
-- `DRM_IOCTL_PANTHOR_BO_CREATE` maps to `panthor_ioctl_bo_create`
-  - this allocates a bo for userspace
-  - `DRM_PANTHOR_BO_NO_MMAP` fails attempts to mmap
-  - `exclusive_vm_id` indicates the bo is exclusive to a vm
-    - it fails attempts to export the bo or bind the bo in another vm, making
-      the bo private to the vm
-- `DRM_IOCTL_PANTHOR_BO_MMAP_OFFSET` maps to `panthor_ioctl_bo_mmap_offset`
-  - this calls the common `drm_gem_create_mmap_offset`
-  - the offset is within `DRM_FILE_PAGE_OFFSET_START` and
-    `DRM_FILE_PAGE_OFFSET_SIZE`
-    - 1TB above 4GB
-- `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE` maps to `panthor_ioctl_tiler_heap_create`
-  - `panthor_vm_get_heap_pool` returns (or creates on demand) the single heap
-    pool for the VM
-    - `pool->gpu_contexts` is a kernel bo
-  - `panthor_heap_create` creates a heap
-    - each chunk is a kernel bo
-  - I guess this allocates buffers for use by the fw
-- `DRM_IOCTL_PANTHOR_TILER_HEAP_DESTROY` maps to `panthor_ioctl_tiler_heap_destroy`
-- `DRM_IOCTL_PANTHOR_GROUP_CREATE` maps to `panthor_ioctl_group_create`
-  - a `panthor_group` seems to describe the scheduling params to the fw
-    - which compute/frag/tiler cores should handle compute/frag/tiler jobs
-    - group priority
-    - an array of `panthor_queue`
-  - a `panthor_queue` describes a queue
-    - queue priority within the group
-    - `queue->ringbuf` is a kernel bo
-    - `queue->scheduler` is a `drm_gpu_scheduler`
-    - `queue->entity` is a `drm_sched_entity`
-- `DRM_IOCTL_PANTHOR_GROUP_DESTROY` maps to `panthor_ioctl_group_destroy`
-- `DRM_IOCTL_PANTHOR_GROUP_GET_STATE` maps to `panthor_ioctl_group_get_state`
-  - this is to detect gpu hangs
-- `DRM_IOCTL_PANTHOR_GROUP_SUBMIT` maps to `panthor_ioctl_group_submit`
-  - `drm_panthor_group_submit` has an array of `drm_panthor_queue_submit`
-  - each `drm_panthor_queue_submit` has
-    - `queue_index` is the queue index in the group
-    - `stream_addr` and `stream_size` are the cmds to execute
-    - `latest_flush`
-    - `syncs` is an array of `drm_panthor_sync_op` to wait/signal syncobjs
-  - `panthor_job_create` converts each `drm_panthor_queue_submit` to a
-    `drm_sched_job`
+- given `gpu: gpu@fb000000`
+  - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
+  - `assigned-clock-rates = <200000000>;`
+  - `power-domains = <&power RK3588_PD_GPU>;`
+  - `clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>, <&cru CLK_GPU_STACKS>;`
+  - `clock-names = "core", "coregroup", "stacks";` - `clocks = <&cru CLK_GPU>;`
+  - `operating-points-v2 = <&gpu_opp_table>;`
+  - `mali-supply = <&vdd_gpu_s0>;`
+- `platform_probe`
+  - `of_clk_set_defaults` parses `assigned-clocks` and `assigned-clock-rates`,
+    and sets the assigned clock to the specified rate
+  - `dev_pm_domain_attach` parses `power-domains`, adds the device to the
+    genpd, and turns the power on
+- `panthor_clk_init`
+  - `devm_clk_get`/`devm_clk_get_optional` parse `clocks` and `clock-names`,
+    and get the clocks
+- `panthor_devfreq_init`
+  - `devm_pm_opp_set_regulators` shallow-parses `operating-points-v2`,
+    allocates an opp table, and gets the regulators
+    - `opp_table->config_regulators = _opp_config_regulator_single`
+  - `devm_pm_opp_of_add_table` deep-parses `operating-points-v2` and populates
+    the opp table
+    - this also calls `_update_opp_table_clk` to get clks
+  - `devfreq_recommended_opp` returns the best opp for the target freq
+  - `dev_pm_opp_set_opp`
+    - `_opp_config_regulator_single` sets the regulator to the opp voltage and
+      enables the regulator
+    - `_opp_config_clk_single` sets the clk to the opp rate
+- `panthor_devfreq_target` is called by devfreq occasionally
+  - `dev_pm_opp_set_rate` sets the target rate
+    - when the target freq supported by the clk falls between two opps, this
+      function sets the voltage according to the higher opp and sets the
+      specified target rate
+    - iow, opps specify the voltages required for different freqs, while the
+      supported freqs are determined by the clk
 
 ## MMU
 
@@ -245,204 +201,6 @@ DRM panthor
   is a bind job
   - `panthor_vm_bind_job_create`
   - `panthor_vm_bind_job_prepare_resvs`
-
-## `panthor_ioctl_group_create`
-
-- panvk creates a group for the single `VkQueue`
-  - all tiler/fragment/compute are allowed
-  - priority is determined by global priority
-  - vm is the per-device VM
-  - there are 3 queues, for tiler, fragment, and compute respectively
-- a `panthor_group` is initialized
-  - `csg_id` is still -1, until it becomes active
-  - `vm` points to the specified `panthor_vm`
-  - `suspend_buf` and `protm_suspend_buf` are allocated, used by csf to save
-    state when an active group is suspended
-  - `syncobjs` has one `panthor_syncobj_64b` per queue
-    - csf will write seqno to them
-    - not to be confused with `drm_syncobj`
-  - `group_create_queue` creates a `panthor_queue` for each queue
-- the group is added to `sched->groups.idle[group->priority]`
-- for each `panthor_queue`,
-  - `fence_ctx` is the fence context
-  - `ringbuf` is the ring buffer
-  - `iface` is allocated, shared between host and csf for ring head/tail
-  - `profiling` is allocated, for fdinfo
-  - `scheduler` is initialized by `drm_sched_init`
-  - `entity` is initialized by `drm_sched_entity_init`
-    - each entity has its own 2 fence contexts
-    - each job will have two fences, `scheduled` and `finished` from the two
-      contexts
-
-## `panthor_ioctl_group_submit`
-
-- for a gfx pipeline with waits and signals, panvk typically submits 6 jobs
-  - there are 2 empty submits for semaphore waits
-    - only `syncs` is set, which is an `drm_panthor_sync_op` array for wait
-      semaphores
-      - `flags` is `DRM_PANTHOR_SYNC_OP_WAIT` plus
-        - `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ` or
-          `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_SYNCOBJ`
-      - `handle` is the semaphore
-      - `timeline_value` is the timeline value or 0
-    - there are 2 submits against tiler and fs subqueues respectively
-  - there are 2 cmd submits
-    - `stream_size` is the cmd size
-    - `stream_addr` is the cmd v
-    - `latest_flush` is the flush id
-    - there are 2 submits against tiler and fs subqueues respectively
-  - there are 2 empty submits for semaphore and fence signals
-    - only `syncs` is set, which is a single `drm_panthor_sync_op`
-      - panvk always signals the same per-queue syncobj
-      - `flags` is `DRM_PANTHOR_SYNC_OP_SIGNAL` plus
-        `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ`
-      - `handle` is the per-queue syncobj
-      - `timeline_value` depends on the subqueues
-    - there are 2 submits against tiler and fs subqueues respectively
-      - `timeline_value` is 1 and 2 respectively
-  - panvk post-processes semaphore and fence signals
-    - `drm_syncobj_transfer_ioctl` copies the dma-fence from the per-queue
-      syncobj to each semaphores and fence signaled
-    - `drm_syncobj_reset_ioctl` resets the per-queue syncobj
-- `panthor_submit_ctx_init` inits `panthor_submit_ctx`
-  - `ctx->jobs` is an array of `panthor_job_ctx`
-  - `ctx->exec` is a `drm_exec`
-- `panthor_job_create` creates a `panthor_job` for each job
-  - it is a sublass of `drm_sched_job`
-  - `drm_sched_job_init` inits the `drm_sched_job`
-  - `job->done_fence` is allocated only if the job is non-empty
-- `panthor_submit_ctx_add_job` adds the job to `ctx->jobs` together with its
-  syncops
-- `panthor_submit_ctx_collect_jobs_signal_ops` loops through `ctx->jobs` to
-  collect signal ops
-  - `panthor_check_sync_op` makes sure a binary syncobj always has 0 as the
-    timeline value
-  - `panthor_submit_ctx_get_sync_signal` makes sure each `(syncobj, point)`
-    pair has a `panthor_sync_signal`
-  - `panthor_submit_ctx_add_sync_signal` allocs a `panthor_sync_signal` for
-    each `(syncobj, point)` pair and adds it to `ctx->signals`
-    - if timeline, `sig_sync->chain` points to a new `dma_fence_chain`
-    - if `(syncobj, point)` already has a dma-fence, `sig_sync->fence` points
-      to the fence
-- `panthor_vm_prepare_mapped_bos_resvs`
-  - `drm_gpuvm_prepare_vm` preps the vm
-  - `drm_gpuvm_prepare_objects` preps the bos
-- `panthor_submit_ctx_add_deps_and_arm_jobs` loops through `ctx->jobs`
-  - `panthor_submit_ctx_add_sync_deps_to_job` finds the dma-fence for each
-    waited `(syncobj, point)` and calls `drm_sched_job_add_dependency` to add
-    the fence as a dependency
-  - `drm_sched_job_arm` arms a `drm_sched_job`
-    - specifically, it inits `job->s_fence`
-  - `panthor_submit_ctx_update_job_sync_signal_fences` updates
-    `sig_sync->fence` to point to `job->s_fence->finished` from the scheduler
-- `panthor_submit_ctx_push_jobs` submits jobs
-  - `drm_sched_entity_push_job` pushes each job to the scheduler
-  - `panthor_submit_ctx_push_fences` updates signaled syncobjs
-    - if timeline, `drm_syncobj_add_point` adds a point
-    - if binary, `drm_syncobj_replace_fence` replaces the fence
-- when all deps are met, `queue_run_job` runs a job
-  - if the job is empty, `job->done_fence` is set to
-    `queue->fence_ctx.last_fence` and the function early returns
-  - otherwise, `job->done_fence` is initialized and
-    `queue->fence_ctx.last_fence` is set to it
-  - depending on if the group is active, it either rings a doorbell or calls
-    `group_schedule_locked` to schedule
-    - `tick_work` will rotate groups if there are more groups than the fw can
-      handle
-- when a job completes, `panthor_job_irq_handler` handles the irq
-  - `CSG_SYNC_UPDATE` indicates job completion
-  - `group_sync_upd_work` checks the seqnos and calls
-    `dma_fence_signal_locked` on `job->done_fence`
-
-## Scheduler
-
-- FW/HW limits
-  - the fw exposes M slots and N queues
-  - it means the fw can schedule up to M active groups, with each group having
-    N queues
-  - when there are less than M active groups in total, the fw can take care of
-    scheduling by itself
-  - otherwise, the driver must rotate the active groups
-- `tick_work` schedules groups
-  - it runs periodically only when there are more groups than the fw can
-    handle, to rotate them
-  - otherwise, it runs after triggered by external events
-    - when a job is submitted and its group is inactive,
-      `group_schedule_locked` is called and schedules a tick
-    - job irq calls `panthor_sched_report_fw_events` for various reasons
-      - e.g., when an active group becomes idle
-- when all dependencies are met, `queue_run_job` is called to submit a job
-  - `job->group` and `job->queue_idx` are the `panthor_group` and
-    `panthor_queue` to submit to
-  - `job->call_info` is the addr of the cmdstream to execute
-  - a short `call_instrs` is appended to `queue->ringbuf`
-    - note how it updates the seqno at `sync_addr`
-    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
-      - they are for 64-bit `addr_reg` and `val_reg`
-  - `group->csg_id` indicates whether the group is active or not
-    - if the group is active, the kernel rings a doorbell
-    - otherwise, `group_schedule_locked` schedules the group
-- when a job completes, `panthor_sched_report_fw_events` is called
-  - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
-  - `group_sync_upd_work` signals `job->done_fence`
-  - `sync_upd_work`
-- in-syncobjs are handled in `panthor_submit_ctx_add_sync_deps_to_job`
-  - `drm_syncobj_find_fence` finds the fence
-  - `drm_sched_job_add_dependency` adds the fence to the job
-  - in case a syncobj is in for one job and out for another,
-    `panthor_submit_ctx_search_sync_signal` is used
-- out-syncobjs are handled in 3 places
-  - `panthor_submit_ctx_collect_jobs_signal_ops` calls
-    `panthor_submit_ctx_get_sync_signal` to allocate a temp
-    `panthor_sync_signal` for each out-syncobj
-  - `panthor_submit_ctx_update_job_sync_signal_fences` sets `sig_sync->fence`
-    to `job->s_fence->finished`
-  - `panthor_submit_ctx_push_fences` calls `drm_syncobj_replace_fence` or
-    `drm_syncobj_add_point` to add `sig_sync->fence` to the out-syncobj
-  - later when the deps are met, `sched->ops->run_job` runs the job on hw and
-    returns a hw fence
-    - when the hw fence signals, `drm_sched_job_done_cb` is called to signal
-      `job->s_fence->finished`
-    - this indirection is necessary because we don't have the hw fence for
-      out-syncobjs by the time the submit ioctl returns
-
-## PM domains, Clocks, Regulators, and devfreq
-
-- given `gpu: gpu@fb000000`
-  - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
-  - `assigned-clock-rates = <200000000>;`
-  - `power-domains = <&power RK3588_PD_GPU>;`
-  - `clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>, <&cru CLK_GPU_STACKS>;`
-  - `clock-names = "core", "coregroup", "stacks";` - `clocks = <&cru CLK_GPU>;`
-  - `operating-points-v2 = <&gpu_opp_table>;`
-  - `mali-supply = <&vdd_gpu_s0>;`
-- `platform_probe`
-  - `of_clk_set_defaults` parses `assigned-clocks` and `assigned-clock-rates`,
-    and sets the assigned clock to the specified rate
-  - `dev_pm_domain_attach` parses `power-domains`, adds the device to the
-    genpd, and turns the power on
-- `panthor_clk_init`
-  - `devm_clk_get`/`devm_clk_get_optional` parse `clocks` and `clock-names`,
-    and get the clocks
-- `panthor_devfreq_init`
-  - `devm_pm_opp_set_regulators` shallow-parses `operating-points-v2`,
-    allocates an opp table, and gets the regulators
-    - `opp_table->config_regulators = _opp_config_regulator_single`
-  - `devm_pm_opp_of_add_table` deep-parses `operating-points-v2` and populates
-    the opp table
-    - this also calls `_update_opp_table_clk` to get clks
-  - `devfreq_recommended_opp` returns the best opp for the target freq
-  - `dev_pm_opp_set_opp`
-    - `_opp_config_regulator_single` sets the regulator to the opp voltage and
-      enables the regulator
-    - `_opp_config_clk_single` sets the clk to the opp rate
-- `panthor_devfreq_target` is called by devfreq occasionally
-  - `dev_pm_opp_set_rate` sets the target rate
-    - when the target freq supported by the clk falls between two opps, this
-      function sets the voltage according to the higher opp and sets the
-      specified target rate
-    - iow, opps specify the voltages required for different freqs, while the
-      supported freqs are determined by the clk
 
 ## CSF Firmware
 
@@ -646,8 +404,148 @@ DRM panthor
     - `heap_vt_start`, `heap_vt_end`, `heap_frag_end`, `heap_address`
       - `group_process_tiler_oom` uses these to grow tiler heap
 
-## Tiler Heap
+## Scheduler
 
+- FW/HW limits
+  - the fw exposes M slots and N queues
+  - it means the fw can schedule up to M active groups, with each group having
+    N queues
+  - when there are less than M active groups in total, the fw can take care of
+    scheduling by itself
+  - otherwise, the driver must rotate the active groups
+- `tick_work` schedules groups
+  - it runs periodically only when there are more groups than the fw can
+    handle, to rotate them
+  - otherwise, it runs after triggered by external events
+    - when a job is submitted and its group is inactive,
+      `group_schedule_locked` is called and schedules a tick
+    - job irq calls `panthor_sched_report_fw_events` for various reasons
+      - e.g., when an active group becomes idle
+- when all dependencies are met, `queue_run_job` is called to submit a job
+  - `job->group` and `job->queue_idx` are the `panthor_group` and
+    `panthor_queue` to submit to
+  - `job->call_info` is the addr of the cmdstream to execute
+  - a short `call_instrs` is appended to `queue->ringbuf`
+    - note how it updates the seqno at `sync_addr`
+    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
+      - they are for 64-bit `addr_reg` and `val_reg`
+  - `group->csg_id` indicates whether the group is active or not
+    - if the group is active, the kernel rings a doorbell
+    - otherwise, `group_schedule_locked` schedules the group
+- when a job completes, `panthor_sched_report_fw_events` is called
+  - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
+  - `group_sync_upd_work` signals `job->done_fence`
+  - `sync_upd_work`
+- in-syncobjs are handled in `panthor_submit_ctx_add_sync_deps_to_job`
+  - `drm_syncobj_find_fence` finds the fence
+  - `drm_sched_job_add_dependency` adds the fence to the job
+  - in case a syncobj is in for one job and out for another,
+    `panthor_submit_ctx_search_sync_signal` is used
+- out-syncobjs are handled in 3 places
+  - `panthor_submit_ctx_collect_jobs_signal_ops` calls
+    `panthor_submit_ctx_get_sync_signal` to allocate a temp
+    `panthor_sync_signal` for each out-syncobj
+  - `panthor_submit_ctx_update_job_sync_signal_fences` sets `sig_sync->fence`
+    to `job->s_fence->finished`
+  - `panthor_submit_ctx_push_fences` calls `drm_syncobj_replace_fence` or
+    `drm_syncobj_add_point` to add `sig_sync->fence` to the out-syncobj
+  - later when the deps are met, `sched->ops->run_job` runs the job on hw and
+    returns a hw fence
+    - when the hw fence signals, `drm_sched_job_done_cb` is called to signal
+      `job->s_fence->finished`
+    - this indirection is necessary because we don't have the hw fence for
+      out-syncobjs by the time the submit ioctl returns
+
+## File Operations
+
+- `panthor_open`
+  - a `panthor_file` is allocated
+  - `panthor_vm_pool_create` inits `pfile->vms`
+  - `panthor_group_pool_create` inits `pfile->groups`
+- `panthor_postclose` frees `pfile`
+- `panthor_mmap` calls `drm_gem_mmap` for bos
+  - it also allows mapping certain regs for direct mmio
+  - `DRM_PANTHOR_USER_FLUSH_ID_MMIO_OFFSET` maps read-only
+    `CSF_GPU_LATEST_FLUSH_ID` reg
+- `DRM_IOCTL_PANTHOR_DEV_QUERY` maps to `panthor_ioctl_dev_query`
+  - `DRM_PANTHOR_DEV_QUERY_GPU_INFO` queries `ptdev->gpu_info`
+  - `DRM_PANTHOR_DEV_QUERY_CSIF_INFO` queries `ptdev->csif_info`
+- `DRM_IOCTL_PANTHOR_VM_CREATE` maps to `panthor_ioctl_vm_create`
+  - panvk creates a vm per-VkDevice
+    - it expects some amount of VA is managed by userspace
+      - first 3GB for 32-bit VA
+      - first half for larger VA
+    - it then reserves up to 4GB for userspace
+  - `panthor_vm_pool_create_vm` creates a VM
+    - the VA is splitted into
+      - userspace region at the bottom
+      - kernel region at the top
+    - `panthor_vm_create` creates the VM to manage the kernel region
+      - a kernel bo may be created with an explicit VA, or with an
+        auto-assigned VA indicated by `PANTHOR_VM_KERNEL_AUTO_VA`
+      - the "auto" range is used for auto-assignment
+- `DRM_IOCTL_PANTHOR_VM_DESTROY` maps to `panthor_ioctl_vm_destroy`
+- `DRM_IOCTL_PANTHOR_VM_BIND` maps to `panthor_ioctl_vm_bind`
+  - panvk
+    - it never sets `DRM_PANTHOR_VM_BIND_ASYNC` atm, which can be used to
+      wait/signal syncobjs before/after an bind op
+  - there is an array of `drm_panthor_vm_bind_op`
+    - each op specifies a bo, an offset, a size, and a VA
+    - `DRM_PANTHOR_VM_BIND_OP_TYPE_MAP` maps the range to the VA
+    - `DRM_PANTHOR_VM_BIND_OP_TYPE_UNMAP` unmaps the range from the VA
+- `DRM_IOCTL_PANTHOR_VM_GET_STATE` maps to `panthor_ioctl_vm_get_state`
+  - this is for use with `DRM_PANTHOR_VM_BIND_ASYNC` to detect vm bind
+    failures
+- `DRM_IOCTL_PANTHOR_BO_CREATE` maps to `panthor_ioctl_bo_create`
+  - this allocates a bo for userspace
+  - `DRM_PANTHOR_BO_NO_MMAP` fails attempts to mmap
+  - `exclusive_vm_id` indicates the bo is exclusive to a vm
+    - it fails attempts to export the bo or bind the bo in another vm, making
+      the bo private to the vm
+- `DRM_IOCTL_PANTHOR_BO_MMAP_OFFSET` maps to `panthor_ioctl_bo_mmap_offset`
+  - this calls the common `drm_gem_create_mmap_offset`
+  - the offset is within `DRM_FILE_PAGE_OFFSET_START` and
+    `DRM_FILE_PAGE_OFFSET_SIZE`
+    - 1TB above 4GB
+- `DRM_IOCTL_PANTHOR_TILER_HEAP_CREATE` maps to `panthor_ioctl_tiler_heap_create`
+  - `panthor_vm_get_heap_pool` returns (or creates on demand) the single heap
+    pool for the VM
+    - `pool->gpu_contexts` is a kernel bo
+  - `panthor_heap_create` creates a heap
+    - each chunk is a kernel bo
+  - I guess this allocates buffers for use by the fw
+- `DRM_IOCTL_PANTHOR_TILER_HEAP_DESTROY` maps to `panthor_ioctl_tiler_heap_destroy`
+- `DRM_IOCTL_PANTHOR_GROUP_CREATE` maps to `panthor_ioctl_group_create`
+  - a `panthor_group` seems to describe the scheduling params to the fw
+    - which compute/frag/tiler cores should handle compute/frag/tiler jobs
+    - group priority
+    - an array of `panthor_queue`
+  - a `panthor_queue` describes a queue
+    - queue priority within the group
+    - `queue->ringbuf` is a kernel bo
+    - `queue->scheduler` is a `drm_gpu_scheduler`
+    - `queue->entity` is a `drm_sched_entity`
+- `DRM_IOCTL_PANTHOR_GROUP_DESTROY` maps to `panthor_ioctl_group_destroy`
+- `DRM_IOCTL_PANTHOR_GROUP_GET_STATE` maps to `panthor_ioctl_group_get_state`
+  - this is to detect gpu hangs
+- `DRM_IOCTL_PANTHOR_GROUP_SUBMIT` maps to `panthor_ioctl_group_submit`
+  - `drm_panthor_group_submit` has an array of `drm_panthor_queue_submit`
+  - each `drm_panthor_queue_submit` has
+    - `queue_index` is the queue index in the group
+    - `stream_addr` and `stream_size` are the cmds to execute
+    - `latest_flush`
+    - `syncs` is an array of `drm_panthor_sync_op` to wait/signal syncobjs
+  - `panthor_job_create` converts each `drm_panthor_queue_submit` to a
+    `drm_sched_job`
+
+## `panthor_ioctl_tiler_heap_create`
+
+- panvk creates a tiler heap for the single `VkQueue`
+  - `vm_id` is the device VM
+  - `chunk_size` is 2MB
+  - `initial_chunk_count` is 5
+  - `max_chunks` is 64
+  - `target_in_flight` is 65535
 - `panthor_vm_get_heap_pool` creates the per-vm heap pool on-demand
   - `pool->gpu_contexts` is the bo for heap contexts
     - each context is `HEAP_CONTEXT_SIZE` (32) bytes, aligned to cacheline
@@ -675,6 +573,114 @@ DRM panthor
       - i guess the fw is in charge of linking now
   - `cs_iface->input` is used to notify the new heap chunk
     - `heap_start` and `heap_end` are set the the same addr?
+
+## `panthor_ioctl_group_create`
+
+- panvk creates a group for the single `VkQueue`
+  - all tiler/fragment/compute are allowed
+  - priority is determined by global priority
+  - vm is the per-device VM
+  - there are 3 queues, for tiler, fragment, and compute respectively
+- a `panthor_group` is initialized
+  - `csg_id` is still -1, until it becomes active
+  - `vm` points to the specified `panthor_vm`
+  - `suspend_buf` and `protm_suspend_buf` are allocated, used by csf to save
+    state when an active group is suspended
+  - `syncobjs` has one `panthor_syncobj_64b` per queue
+    - csf will write seqno to them
+    - not to be confused with `drm_syncobj`
+  - `group_create_queue` creates a `panthor_queue` for each queue
+- the group is added to `sched->groups.idle[group->priority]`
+- for each `panthor_queue`,
+  - `fence_ctx` is the fence context
+  - `ringbuf` is the ring buffer
+  - `iface` is allocated, shared between host and csf for ring head/tail
+  - `profiling` is allocated, for fdinfo
+  - `scheduler` is initialized by `drm_sched_init`
+  - `entity` is initialized by `drm_sched_entity_init`
+    - each entity has its own 2 fence contexts
+    - each job will have two fences, `scheduled` and `finished` from the two
+      contexts
+
+## `panthor_ioctl_group_submit`
+
+- for a gfx pipeline with waits and signals, panvk typically submits 6 jobs
+  - there are 2 empty submits for semaphore waits
+    - only `syncs` is set, which is an `drm_panthor_sync_op` array for wait
+      semaphores
+      - `flags` is `DRM_PANTHOR_SYNC_OP_WAIT` plus
+        - `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ` or
+          `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_SYNCOBJ`
+      - `handle` is the semaphore
+      - `timeline_value` is the timeline value or 0
+    - there are 2 submits against tiler and fs subqueues respectively
+  - there are 2 cmd submits
+    - `stream_size` is the cmd size
+    - `stream_addr` is the cmd v
+    - `latest_flush` is the flush id
+    - there are 2 submits against tiler and fs subqueues respectively
+  - there are 2 empty submits for semaphore and fence signals
+    - only `syncs` is set, which is a single `drm_panthor_sync_op`
+      - panvk always signals the same per-queue syncobj
+      - `flags` is `DRM_PANTHOR_SYNC_OP_SIGNAL` plus
+        `DRM_PANTHOR_SYNC_OP_HANDLE_TYPE_TIMELINE_SYNCOBJ`
+      - `handle` is the per-queue syncobj
+      - `timeline_value` depends on the subqueues
+    - there are 2 submits against tiler and fs subqueues respectively
+      - `timeline_value` is 1 and 2 respectively
+  - panvk post-processes semaphore and fence signals
+    - `drm_syncobj_transfer_ioctl` copies the dma-fence from the per-queue
+      syncobj to each semaphores and fence signaled
+    - `drm_syncobj_reset_ioctl` resets the per-queue syncobj
+- `panthor_submit_ctx_init` inits `panthor_submit_ctx`
+  - `ctx->jobs` is an array of `panthor_job_ctx`
+  - `ctx->exec` is a `drm_exec`
+- `panthor_job_create` creates a `panthor_job` for each job
+  - it is a sublass of `drm_sched_job`
+  - `drm_sched_job_init` inits the `drm_sched_job`
+  - `job->done_fence` is allocated only if the job is non-empty
+- `panthor_submit_ctx_add_job` adds the job to `ctx->jobs` together with its
+  syncops
+- `panthor_submit_ctx_collect_jobs_signal_ops` loops through `ctx->jobs` to
+  collect signal ops
+  - `panthor_check_sync_op` makes sure a binary syncobj always has 0 as the
+    timeline value
+  - `panthor_submit_ctx_get_sync_signal` makes sure each `(syncobj, point)`
+    pair has a `panthor_sync_signal`
+  - `panthor_submit_ctx_add_sync_signal` allocs a `panthor_sync_signal` for
+    each `(syncobj, point)` pair and adds it to `ctx->signals`
+    - if timeline, `sig_sync->chain` points to a new `dma_fence_chain`
+    - if `(syncobj, point)` already has a dma-fence, `sig_sync->fence` points
+      to the fence
+- `panthor_vm_prepare_mapped_bos_resvs`
+  - `drm_gpuvm_prepare_vm` preps the vm
+  - `drm_gpuvm_prepare_objects` preps the bos
+- `panthor_submit_ctx_add_deps_and_arm_jobs` loops through `ctx->jobs`
+  - `panthor_submit_ctx_add_sync_deps_to_job` finds the dma-fence for each
+    waited `(syncobj, point)` and calls `drm_sched_job_add_dependency` to add
+    the fence as a dependency
+  - `drm_sched_job_arm` arms a `drm_sched_job`
+    - specifically, it inits `job->s_fence`
+  - `panthor_submit_ctx_update_job_sync_signal_fences` updates
+    `sig_sync->fence` to point to `job->s_fence->finished` from the scheduler
+- `panthor_submit_ctx_push_jobs` submits jobs
+  - `drm_sched_entity_push_job` pushes each job to the scheduler
+  - `panthor_submit_ctx_push_fences` updates signaled syncobjs
+    - if timeline, `drm_syncobj_add_point` adds a point
+    - if binary, `drm_syncobj_replace_fence` replaces the fence
+- when all deps are met, `queue_run_job` runs a job
+  - if the job is empty, `job->done_fence` is set to
+    `queue->fence_ctx.last_fence` and the function early returns
+  - otherwise, `job->done_fence` is initialized and
+    `queue->fence_ctx.last_fence` is set to it
+  - depending on if the group is active, it either rings a doorbell or calls
+    `group_schedule_locked` to schedule
+    - `tick_work` will rotate groups if there are more groups than the fw can
+      handle
+- when a job completes, `panthor_job_irq_handler` handles the irq
+  - `CSG_SYNC_UPDATE` indicates job completion
+  - `group_sync_upd_work` checks the seqnos and calls
+    `dma_fence_signal_locked` on `job->done_fence`
 
 ## Exceptions
 
