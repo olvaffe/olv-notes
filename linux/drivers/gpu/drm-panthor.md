@@ -648,9 +648,27 @@ DRM panthor
   - `panthor_vm_pool_get_vm` looks up the vm
   - `panthor_vm_bind_exec_sync_op` executes an op synchronously
     - `panthor_vm_bind_prepare_op_ctx`
+      - for mapping, `panthor_vm_prepare_map_op_ctx`
+        - `panthor_vm_op_ctx_prealloc_vmas` pre-allocs vma structs
+        - `drm_gem_shmem_get_pages_sgt` pins pages and returns sgt
+        - `drm_gpuvm_bo_create` and `drm_gpuvm_bo_obtain_prealloc` return a
+          gpuvm bo
+        - `kmem_cache_alloc_bulk` pre-allocs page tables
+        - `drm_gpuvm_bo_extobj_add` adds the gpuvm bo to the gpuvm's extobj
+          list, if the bo is external
+      - for unmapping, `panthor_vm_prepare_unmap_op_ctx`
     - `panthor_vm_exec_op` calls `drm_gpuvm_sm_map` or `drm_gpuvm_sm_unmap`
       - gpuvm calls `panthor_gpuva_sm_step_map` for mapping
+        - `panthor_vma_init` inits a new `panthor_vma`
+        - `panthor_vm_map_pages` calls into `vm->pgtbl_ops` to set up page
+          tables and calls `panthor_vm_flush_range` to flush the mmu
+        - `drm_gpuva_map` adds the vma to gpuvm
+        - `panthor_vma_link` adds the vma to the gpuvm bo
       - gpuvm calls `panthor_gpuva_sm_step_unmap` for unmapping
+        - `panthor_vm_unmap_pages` calls into `vm->pgtbl_ops` to take down the
+          page tables and calls `panthor_vm_flush_range` to flush the mmu
+        - `drm_gpuva_unmap` removes the vma from gpuvm
+        - `panthor_vma_unlink` removes the vma from gpuvm bo
     - `panthor_vm_cleanup_op_ctx`
 
 ## `panthor_ioctl_group_submit`
