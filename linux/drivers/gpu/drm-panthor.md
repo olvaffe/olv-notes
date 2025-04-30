@@ -555,7 +555,7 @@ DRM panthor
     - they are executed on cpu using `drm_gpuvm`
   - `entity` is a `drm_sched_entity`
   - the vm is added to `ptdev->mmu->vm.list`
-  - `gpuvm` is a `drm_gpuvm`
+  - `base` is a `drm_gpuvm`
 - each `panthor_file` has a `panthor_vm_pool` to manage its vms
 
 ## `panthor_ioctl_tiler_heap_create`
@@ -621,6 +621,37 @@ DRM panthor
     - each entity has its own 2 fence contexts
     - each job will have two fences, `scheduled` and `finished` from the two
       contexts
+
+## `panthor_ioctl_bo_create` and `panthor_ioctl_vm_bind`
+
+- when panvk allocates a `VkDeviceMemory`, it allocs bo and binds vm
+  immediately atm
+  - `DRM_IOCTL_PANTHOR_BO_CREATE`
+    - `size` is the mem alloc size
+    - `exclusive_vm_id` is set when the mem is not external
+  - `DRM_IOCTL_PANTHOR_VM_BIND`
+    - `flags` is 0 (synchronous)
+    - `ops`
+      - `flags` is `DRM_PANTHOR_VM_BIND_OP_TYPE_MAP` or
+        `DRM_PANTHOR_VM_BIND_OP_TYPE_UNMAP`
+      - `va` and `size` are managed by panvk
+- `panthor_ioctl_bo_create`
+  - `drm_gem_shmem_create` creates `panthor_gem_object`
+    - `panthor_gem_create_object` allocs the obj struct
+    - `drm_gem_object_init_with_mnt` inits the obj struct and calls
+      `shmem_file_setup` to alloc a shmem
+    - `drm_gem_create_mmap_offset` creates a magic mmap offset for mmap
+  - if exclusive, `bo->resv` uses the vm's `resv`
+  - `drm_gem_handle_create` creates a gem handle
+- `panthor_ioctl_vm_bind`
+  - panvk only does sync bind atm
+  - `panthor_vm_pool_get_vm` looks up the vm
+  - `panthor_vm_bind_exec_sync_op` executes an op synchronously
+    - `panthor_vm_bind_prepare_op_ctx`
+    - `panthor_vm_exec_op` calls `drm_gpuvm_sm_map` or `drm_gpuvm_sm_unmap`
+      - gpuvm calls `panthor_gpuva_sm_step_map` for mapping
+      - gpuvm calls `panthor_gpuva_sm_step_unmap` for unmapping
+    - `panthor_vm_cleanup_op_ctx`
 
 ## `panthor_ioctl_group_submit`
 
