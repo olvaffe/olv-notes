@@ -1,7 +1,7 @@
 Qualcomm SoC
 ============
 
-## History: Discontinued
+## SoC: Discontinued
 
 - Snapdragon S series
   - discontinued
@@ -43,7 +43,7 @@ Qualcomm SoC
     - 28nm
     - Adreno 308
 
-## History: Mobile Series
+## SoC: Mobile Series
 
 - Snapdragon 4 series
   - entry level
@@ -154,6 +154,11 @@ Qualcomm SoC
     - SM6375-AC
     - 6nm
     - Adreno 619
+  - 6 Gen 4
+    - 2025
+    - SM6650
+    - 4nm
+    - Adreno 810
 - Snapdragon 7 series
   - upper mid-range
   - 710, 712
@@ -255,11 +260,12 @@ Qualcomm SoC
     - Adreno {750,735}
   - 8 Elite
     - 2024
-    - SM8750
+    - SM8750, Pakala
     - 3nm
     - Adreno 830
+  - Kaanapali?
 
-## History: Compute Platforms
+## SoC: Compute Platforms
 
 - Snapdragon 7 Compute Platforms
   - 7c
@@ -277,7 +283,7 @@ Qualcomm SoC
     - Adreno 618
   - 7c+ Gen3
     - 2022
-    - SDM7280
+    - SC7280
     - 6nm
     - Adreno 7c+ Gen3 (Adreno 635)
     - idp reference design: `sc7280-idp.dts`
@@ -308,7 +314,7 @@ Qualcomm SoC
 - Snapdragon X Series
   - X Elite/Plus
     - 2024
-    - X1E-{78,80,84}, X1P-{42,46,64,66}
+    - X1E-{78,80,84}, X1P-{42,46,64,66} (internally SC8380)
       - `hamoa`: 10-core and 12-core, with X1-85 gpu
       - `purwa`: 8-core, with X1-45 gpu
     - 4nm
@@ -316,7 +322,7 @@ Qualcomm SoC
     - qualcomm compute platform: `x1e80100-qcp.dts`
     - compute reference design: `x1e80100-crd.dts`
 
-## History: Gaming Platforms
+## SoC: Gaming Platforms
 
 - Snapdragon G series
   - G3x Gen 1
@@ -329,6 +335,11 @@ Qualcomm SoC
     - ?
     - 4nm
     - Adreno A32 (based on Adreno 740)
+  - G3 Gen 3
+    - 2023
+    - ?
+    - 4nm
+    - Adreno A33
 
 ## Qualcomm Modem/WiFi/BT?
 
