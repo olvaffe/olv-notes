@@ -124,8 +124,30 @@ DRM panthor
   - `clk_disable_unprepare` disables and unpreps each clk in `ptdev->clks`
   - set `ptdev->pm.state` to `PANTHOR_DEVICE_PM_STATE_SUSPENDED`
 
+## IRQ
+
+- `PANTHOR_IRQ_HANDLER` defines an irq handler
+  - `panthor_request_foo_irq` allocs an irq line
+  - `panthor_foo_irq_resume` is called on resume
+    - it writes to `FOO_INT_CLEAR` to clear bits in `FOO_INT_RAWSTAT`
+    - it writes to `FOO_INT_MASK` to enable the specified sources
+  - `panthor_foo_irq_raw_handler` handles an irq
+    - it reads `FOO_INT_STAT` to check for spurious irq
+      - `FOO_INT_STAT` is `FOO_INT_RAWSTAT & FOO_INT_MASK`
+    - it writes to `FOO_INT_MASK` to disable all sources
+    - it returns `IRQ_WAKE_THREAD` to wake the threaded handler
+  - `panthor_foo_irq_threaded_handler` continues irq handling
+    - it reads `FOO_INT_RAWSTAT` to get irq sources
+    - it masks out souces that are not enabled
+    - it calls `panthor_foo_irq_handler`, which writes to `FOO_INT_CLEAR` to
+      clear sources
+    - it writes to `FOO_INT_MASK` to re-enable sources
+  - `panthor_foo_irq_suspend` is called on suspend
+    - it writes to `FOO_INT_MASK` to disable all sources
+
 ## MMU
 
+- `panthor_mmu_init` inits `ptdev->mmu`
 - `panthor_vm_create` allocates `vm->pgtbl_ops` of format `ARM_64_LPAE_S1`
   - this returns `io_pgtable_arm_64_lpae_s1_init_fns` as the init funcs
   - `arm_64_lpae_alloc_pgtable_s1` allocates the `io_pgtable`
