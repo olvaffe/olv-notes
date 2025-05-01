@@ -148,11 +148,41 @@ DRM panthor
 ## MMU
 
 - `panthor_mmu_init` inits `ptdev->mmu`
-- `panthor_vm_create` allocates `vm->pgtbl_ops` of format `ARM_64_LPAE_S1`
-  - this returns `io_pgtable_arm_64_lpae_s1_init_fns` as the init funcs
-  - `arm_64_lpae_alloc_pgtable_s1` allocates the `io_pgtable`
-    - `map_pages` is set to `arm_lpae_map_pages`
-    - `unmap_pages` is set to `arm_lpae_unmap_pages`
+  - `mmu->as.lru_list` is for VMs that are active but idle
+    - when an active vm becomes idle, `panthor_vm_idle` adds the vm to the
+      tail of the list withou evicting the vm
+    - when the vm becomes busy again, `panthor_vm_active` removes it from the
+      list and early returns
+    - when another vm becomes active but there is no available slot,
+      `panthor_vm_active` evicts the first vm on the list
+  - `mmu->vm.list` is a list of all VMs
+  - `mmu->vm.wq` is a workqueue shared by all VMs' `vm->sched` for
+    `panthor_vm_bind_run_job`
+- `panthor_mmu_irq_handler` handles an irq
+  - `status` indicates which ASs faulted
+  - for each AS that faulted
+    - `mmu->as.faulty_mask` is set
+    - an error is logged
+    - the fault is acked by writing to `MMU_INT_CLEAR`
+    - the AS is no longer an irq source by updating `mmu->irq.mask`
+    - `vm->unhandled_fault` is set
+    - `panthor_mmu_as_disable` disables the AS
+  - `panthor_sched_report_mmu_fault` reports the fault to sched to force a
+    tick
+- when userspace creates a VM (per-`VkDevice`), `panthor_vm_create` is called
+  to create a `panthor_vm`
+  - `vm->mm` is a `drm_mm` to manage the kernel va range (top 2TB)
+  - `vm->as.id` is -1 until the vm is active
+  - `pgtbl_ops` will alloc/free page tables in `ARM_64_LPAE_S1` format
+    - this returns `io_pgtable_arm_64_lpae_s1_init_fns` as the init funcs
+    - `arm_64_lpae_alloc_pgtable_s1` allocates the `io_pgtable`
+      - `map_pages` is set to `arm_lpae_map_pages`
+      - `unmap_pages` is set to `arm_lpae_unmap_pages`
+  - `sched` is a `drm_gpu_scheduler` for VM ops
+    - they are executed on cpu using `drm_gpuvm`
+  - `entity` is a `drm_sched_entity`
+  - the vm is added to `ptdev->mmu->vm.list`
+  - `base` is a `drm_gpuvm`
 - when gpuvm calls `panthor_gpuva_sm_step_map` to map,
   - `panthor_vm_map_pages` calls `ops->map_pages` to map
   - all the page tables live on system memory
@@ -605,15 +635,6 @@ DRM panthor
   - `full_va_range` is 4TB (`va_bits` is 48)
   - `user_va_range` is 4GB (determined by panvk)
   - `kernel_va_range` is thus the top 2TB
-- `panthor_vm_create` creates a `panthor_vm`
-  - `vm->mm` is a `drm_mm` to manage the kernel va range (top 2TB)
-  - `vm->as.id` is -1 until the vm is active
-  - `pgtbl_ops` will alloc/free page tables in `ARM_64_LPAE_S1` format
-  - `sched` is a `drm_gpu_scheduler` for VM ops
-    - they are executed on cpu using `drm_gpuvm`
-  - `entity` is a `drm_sched_entity`
-  - the vm is added to `ptdev->mmu->vm.list`
-  - `base` is a `drm_gpuvm`
 - each `panthor_file` has a `panthor_vm_pool` to manage its vms
 
 ## `panthor_ioctl_tiler_heap_create`
