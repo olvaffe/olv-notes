@@ -69,6 +69,8 @@ Device Tree
   - 3.3 `/aliases` node
     - each property defines an alias
       - `serial0 = "/simple-bus@fe000000/serial@llc500";`
+    - dtc uses labels to reference nodes during compile time
+    - kernel uses aliases to reference nodes during runtime
   - 3.4 `/memory` node
   - 3.5 `/reserved-memory` Node
   - 3.6 `/chosen` Node
@@ -153,7 +155,21 @@ Device Tree
   - `__unflatten_device_tree` is called and `of_root` is set
     - `unflatten_dt_alloc` returns a `device_node`
     - `of_node_init` calls `fwnode_init`
-  - `of_alias_scan` sets `of_chosen` and `of_aliases`
+  - `of_alias_scan` parses `/chosen` and `/aliases`
+    - `of_chosen` points to `/chosen`
+      - `of_stdout` points to `stdout-path`
+        - serial core calls `of_console_check` to `add_preferred_console` for
+          a port
+        - if `earlycon` is specified on cmdline,
+          `early_init_dt_scan_chosen_stdout` also parses the prop for earlycon
+    - `of_aliases` points to `/aliases`
+      - `of_alias_add` adds each alias to `aliases_lookup`
+        - e.g., `serial2 = &uart3` is parsed as
+          - `stem` is `serial`
+          - `id` is 2
+          - `np` is `uart3`
+      - drivers use `of_alias_get_id` to look up id
+        - e.g., this is useful to assign `ttyS2` to `uart3` deterministically
 - `of_platform_default_populate_init` adds `platform_device`s for dt nodes
   - it creates platform devices for
     - certain `/reserved-memory` nodes
