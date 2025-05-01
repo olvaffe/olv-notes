@@ -4,9 +4,9 @@ DRM panthor
 ## Initialization
 
 - `module_init(panthor_init)`
-  - `panthor_mmu_pt_cache_init` inits page table cache
-  - `panthor_cleanup_wq` is allocated
-  - `panthor_driver` is registered
+  - `panthor_mmu_pt_cache_init` creates `kmem_cache` for page tables
+  - `alloc_workqueue` allocs `panthor_cleanup_wq`
+  - `platform_driver_register` registers `panthor_driver`
 - `static struct platform_driver panthor_driver`
   - `panthor_probe` probes a `platform_device`
     - `devm_drm_dev_alloc` allocates a `panthor_device`
@@ -17,11 +17,25 @@ DRM panthor
     - `panthor_device_suspend`
     - `panthor_device_resume`
 - `panthor_device_init` initializes the device
+  - `ptdev->pm` is initialized
+    - `state` is `PANTHOR_DEVICE_PM_STATE_SUSPENDED`
+  - `ptdev->reset` is initialized
+    - `work` is `panthor_device_reset_work` to reset gpu on errors
+    - `wq` is for reset work as well as fw ping work
+    - `fast` is for fw suspend/resume, unrelated to reset
   - `panthor_clk_init` inits `ptdev->clks`
   - `panthor_devfreq_init` inits `ptdev->devfreq`
   - `ptdev->iomem` is resource 0 `ioremap`ed
     - this is for all mmio access
+    - page 0 is `GPU_CONTROL`
+    - page 1 is `JOB_CONTROL`
+    - page 2 is `MMU_CONTROL`
   - `ptdev->phys_addr` is resource 0 phy addr
+  - `devm_pm_runtime_enable` enables runtime pm
+    - `device_pm_init` sets `dev->power.disable_depth` to 1
+    - this decrements `dev->power.disable_depth` to 0
+  - `pm_runtime_resume_and_get` resumes the device and increments usage count
+    - it calls `panthor_device_resume` to power on the device for mmio access
   - `panthor_gpu_init` inits `ptdev->gpu`
     - `panthor_request_gpu_irq` inits `ptdev->gpu->irq`
       - it is defined by `PANTHOR_IRQ_HANDLER`
@@ -29,7 +43,7 @@ DRM panthor
   - `panthor_mmu_init` inits `ptdev->mmu`
     - `panthor_request_mmu_irq` inits `ptdev->mmu->irq`
       - `panthor_mmu_irq_handler` is the handler
-  - `panthor_fw_init` inits `ptdev->fw`
+  - `panthor_fw_init` inits `ptdev->fw` and part of `ptdev->csif_info`
     - `panthor_request_job_irq` inits `ptdev->fw->irq`
       - `panthor_job_irq_handler` is the handler
     - `panthor_vm_create` creates a VM for MCU
@@ -40,24 +54,22 @@ DRM panthor
         - `GPU_ARCH_MINOR` is 8
       - the fw has multiple entries
       - `panthor_fw_load_entry` loads an entry
-  - `panthor_sched_init` inits `ptdev->scheduler` and `ptdev->csif_info`
-  - autosuspend is enabled with a 50ms delay
-- `panthor_device_resume` resumes the device
-  - `clk_prepare_enable` all `ptdev->clks`
-  - `panthor_devfreq_resume` resumes `ptdev->devfreq`
-  - `panthor_gpu_resume` resumes `ptdev->gpu`
-  - `panthor_fw_resume` resumes `ptdev->fw`
-  - `panthor_sched_resume` resumes `ptdev->scheduler`
-  - set `ptdev->pm.state` to `PANTHOR_DEVICE_PM_STATE_ACTIVE`
+  - `panthor_sched_init` inits `ptdev->scheduler`, `ptdev->fw_info`, and
+    `ptdev->csif_info`
+  - `pm_runtime_use_autosuspend` enables autosuspend
+    - `pm_runtime_set_autosuspend_delay` sets the delay to 50ms
+  - `drm_dev_register` registers the dev
+  - `pm_runtime_put_autosuspend` decrements the usage count and starts the
+    autosuspend timer
 
-## PM domains, Clocks, Regulators, and devfreq
+## PM: PM domains, Clocks, Regulators, and devfreq
 
 - given `gpu: gpu@fb000000`
   - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
   - `assigned-clock-rates = <200000000>;`
   - `power-domains = <&power RK3588_PD_GPU>;`
   - `clocks = <&cru CLK_GPU>, <&cru CLK_GPU_COREGROUP>, <&cru CLK_GPU_STACKS>;`
-  - `clock-names = "core", "coregroup", "stacks";` - `clocks = <&cru CLK_GPU>;`
+  - `clock-names = "core", "coregroup", "stacks";`
   - `operating-points-v2 = <&gpu_opp_table>;`
   - `mali-supply = <&vdd_gpu_s0>;`
 - `platform_probe`
@@ -75,18 +87,42 @@ DRM panthor
   - `devm_pm_opp_of_add_table` deep-parses `operating-points-v2` and populates
     the opp table
     - this also calls `_update_opp_table_clk` to get clks
-  - `devfreq_recommended_opp` returns the best opp for the target freq
-  - `dev_pm_opp_set_opp`
+    - `opp_table->config_clks = _opp_config_clk_single`
+  - `devfreq_recommended_opp` returns the closest opp for the current freq
+  - `dev_pm_opp_set_opp` sets the opp
     - `_opp_config_regulator_single` sets the regulator to the opp voltage and
       enables the regulator
     - `_opp_config_clk_single` sets the clk to the opp rate
-- `panthor_devfreq_target` is called by devfreq occasionally
-  - `dev_pm_opp_set_rate` sets the target rate
-    - when the target freq supported by the clk falls between two opps, this
-      function sets the voltage according to the higher opp and sets the
-      specified target rate
-    - iow, opps specify the voltages required for different freqs, while the
-      supported freqs are determined by the clk
+  - `ptdev->fast_rate` is set to the highest opp freq
+  - `devm_devfreq_add_device` creates devfreq dev
+    - every 50ms, `devfreq_monitor` calls `devfreq_simple_ondemand_func` to
+      determine the next freq and calls `devfreq_set_target` to set the freq
+    - `panthor_devfreq_get_dev_status` is called from `devfreq_update_stats`
+      to update utilization
+    - `panthor_devfreq_target` calls `dev_pm_opp_set_rate` to set the freq
+      - when the target freq supported by the clk falls between two opps, this
+        function sets the voltage according to the higher opp and sets the
+        specified target rate
+      - iow, opps specify the voltages required for different freqs, while the
+        supported freqs are determined by the clk
+  - `devfreq_cooling_em_register` registers the devfreq dev for cooling
+    (thermal throttling)
+- `panthor_device_resume` resumes the device
+  - `clk_prepare_enable` preps and enables each clk in `ptdev->clks`
+  - `panthor_devfreq_resume` resumes `ptdev->devfreq`
+  - `panthor_gpu_resume` resumes `ptdev->gpu`
+  - `panthor_mmu_resume` resumes `ptdev->mmu`
+  - `panthor_fw_resume` resumes `ptdev->fw`
+  - `panthor_sched_resume` resumes `ptdev->scheduler`
+  - set `ptdev->pm.state` to `PANTHOR_DEVICE_PM_STATE_ACTIVE`
+- `panthor_device_suspend` suspends the device
+  - `panthor_sched_suspend` suspends `ptdev->scheduler`
+  - `panthor_fw_suspend` suspends `ptdev->fw`
+  - `panthor_mmu_suspend` suspends `ptdev->mmu`
+  - `panthor_gpu_suspend` suspends `ptdev->gpu`
+  - `panthor_devfreq_suspend` suspends `ptdev->devfreq`
+  - `clk_disable_unprepare` disables and unpreps each clk in `ptdev->clks`
+  - set `ptdev->pm.state` to `PANTHOR_DEVICE_PM_STATE_SUSPENDED`
 
 ## MMU
 
