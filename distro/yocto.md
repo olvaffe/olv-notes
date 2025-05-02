@@ -10,6 +10,19 @@ Yocto Project
 - I guess it is like how cros uses gentoo to create a chroot to create other
   gentoo-based images
 
+## buildroot
+
+- <https://buildroot.org/>
+  - yocto is industry standard yet complex
+  - buildroot is straightforward, for one-off projects
+- build
+  - `make menuconfig` and configure the toolchain
+  - `make -j128 toolchain`
+  - the cross toolchain is at `output/host/bin`
+- internally, it builds these packages, in order
+  - `m4`, `bison`, `gawk`, `binutils`, `gmp`, `mpfr`, `mpc`
+  - `gcc-initial`, `linux-headers`, `glibc`, `gcc-final`
+
 ## BitBake
 
 - <http://olvaffe.blogspot.com/2008/12/bitbake-data-class.html>

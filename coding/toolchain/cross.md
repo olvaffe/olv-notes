@@ -137,16 +137,6 @@ Cross Toolchains
   - gcc `--with-local-prefix` is set to sys-root to specify the local dir
     (default to `/usr/local`)
 
-## buildroot
-
-- build
-  - `make menuconfig` and configure the toolchain
-  - `make -j128 toolchain`
-  - the cross toolchain is at `output/host/bin`
-- internally, it builds these packages, in order
-  - `m4`, `bison`, `gawk`, `binutils`, `gmp`, `mpfr`, `mpc`
-  - `gcc-initial`, `linux-headers`, `glibc`, `gcc-final`
-
 ## overview
 
 - <http://www.gentoo.org/proj/en/base/embedded/handbook/?part=1&chap=4#doc_chap3>
