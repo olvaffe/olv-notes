@@ -217,6 +217,7 @@ Debian
 - `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
 - without marking any package manual, we will end up with a system with only
   `Essential/Important/Protected` packages and their dependencies/recommends
+  - also packages listed in `NeverAutoRemove` of `/etc/apt/apt.conf.d/01autoremove`
 
 ## `debootstrap`
 

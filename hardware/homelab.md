@@ -46,10 +46,14 @@ Homelab
   - RK3568 (A55 x4 @ 2GHz)
   - 4GB RAM
   - 32GB eMMC
+    - `/`: 4GB
+    - `/boot`: 1GB
+    - `/var`: 8GB
+    - rest unused
 - hw usage
   - cpu: idle mostly, 1 core peaks at 60% when filtering/forwarding
   - mem: 10%
-  - storage: 10%
+  - storage: 5%
 - prior routers
   - Google Wifi
     - qcom ipq4019 (A7 x4 @717Mhz), 512MB ram, 4GB emmc
@@ -252,21 +256,30 @@ Homelab
 
 ## Server
 
-- partitioning
-  - `/`: 4GB
-  - `/boot`: 1GB
-  - `/var`: 8GB
-  - `/home`: 32GB
-  - `/srv`: rest
+- Raspberry Pi 4
+  - BCM2711 (A72 x4 @ 1.5GHz)
+  - 4GB RAM
+  - external SDD
+    - `/`: 4GB
+    - `/boot`: 1GB
+    - `/var`: 8GB
+    - `/home`: 32GB
+    - `/srv`: rest
+- hw usage
+  - cpu: idle mostly, but can get really busy
+  - mem: 80%
+  - storage: 20%
 - services
   - wireguard
   - ssh
-  - cups / airsane / avahi
+  - nginx
+  - cups / airsane / ksmbd / avahi
 - pods
   - omada
   - ha
   - jellyfin
   - kavita
+  - prometheus
 - Credentials
   - google app password (gmail)
   - duckdns access token
