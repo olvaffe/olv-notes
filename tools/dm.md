@@ -1,7 +1,7 @@
-GDM
-===
+Display Manager
+===============
 
-## Overview
+## GDM
 
 - <https://gitlab.gnome.org/GNOME/gdm>
 - see `daemon/INTERNALS` for internal working
@@ -75,7 +75,7 @@ GDM
     program.  Then the parent calls `SessionStarted` back.
   - The worker remains alive until the session ends.
 
-## Session
+## GDM Session
 
 - The session is started by `/etc/gdm3/Xsession <name>`
   - it sources `/etc/X11/Xsession.d`

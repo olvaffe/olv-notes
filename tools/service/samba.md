@@ -10,6 +10,14 @@ Samba
     AFP
   - but macs use smb now
 
+## ksmbd
+
+- the in-kernel server has been upstreamed
+  - <https://git.samba.org/?p=ksmbd.git;a=summary>
+- userspace daemon and tools
+  - <https://github.com/cifsd-team/ksmbd-tools>
+- it provides just file server and is not a full replacement for samba
+
 ## Old
 
 - `smbclient -U olv.wu -W azwave //tpfs01/data`
