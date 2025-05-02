@@ -58,13 +58,6 @@ Homelab
       - 300Mbps at 2.4GHz: MCS 7 (64-QAM), 400ns GI, 40MHz ch, 2x2 MIMO
       - 900Mbps at 5GHz: MCS 9 (256-QAM), 400ns GI, 80MHz ch, 2x2 MIMO
     - 1Gb ethernet port x2 (for uplink and downlink)
-  - TP-Link EAP610
-    - qcom ipq6000 (A53 x4 @1.2GHz), 256MB ram, 128MB flash
-    - wifi 6 (802.11ax): qcom qcn5022, qorvo qpf4588, skyworks sky85340-11
-    - 1gb ethernet: realtek RTL8211F
-    - AX1800
-      - 574Mbps at 2.4GHz: MCS 11 (1024-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
-      - 1201Mbps at 5GHz: MCS 11 (1024-QAM), 800ns GI, 80MHz ch, 2x2 MIMO
 - potential routers
   - Netgate 1100
     - Marvell Armada 3720LP, A53 x2@1.2G
@@ -223,6 +216,12 @@ Homelab
 ## AP
 
 - TP-Link EAP610 v2
+  - qcom ipq6000 (A53 x4 @1.2GHz), 256MB ram, 128MB flash
+  - wifi 6 (802.11ax): qcom qcn5022, qorvo qpf4588, skyworks sky85340-11
+  - 1gb ethernet: realtek RTL8211F
+  - AX1800
+    - 574Mbps at 2.4GHz: MCS 11 (1024-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
+    - 1201Mbps at 5GHz: MCS 11 (1024-QAM), 800ns GI, 80MHz ch, 2x2 MIMO
 - TP-Link EAP610 v3
 - tested with a client with with BCM4352
   - 130Mbps at 2.4GHz: MCS 7 (64-QAM), 800ns GI, 20MHz ch, 2x2 MIMO
