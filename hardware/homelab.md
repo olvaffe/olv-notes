@@ -37,6 +37,8 @@ Homelab
   - DOCSIS 3.1
   - 1Gb uplink
   - 1Gb ethernet port x2
+- prior modem
+  - SB6141 DOCSIS 3.0
 
 ## Router
 
@@ -50,8 +52,19 @@ Homelab
   - storage: 10%
 - prior routers
   - Google Wifi
-    - AC1200 (300@2.4GHz, 900@5GHz)
+    - qcom ipq4019 (A7 x4 @717Mhz), 512MB ram, 4GB emmc
+    - wifi 5 (802.11ac)
+    - AC1200
+      - 300Mbps at 2.4GHz: MCS 7 (64-QAM), 400ns GI, 40MHz ch, 2x2 MIMO
+      - 900Mbps at 5GHz: MCS 9 (256-QAM), 400ns GI, 80MHz ch, 2x2 MIMO
     - 1Gb ethernet port x2 (for uplink and downlink)
+  - TP-Link EAP610
+    - qcom ipq6000 (A53 x4 @1.2GHz), 256MB ram, 128MB flash
+    - wifi 6 (802.11ax): qcom qcn5022, qorvo qpf4588, skyworks sky85340-11
+    - 1gb ethernet: realtek RTL8211F
+    - AX1800
+      - 574Mbps at 2.4GHz: MCS 11 (1024-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
+      - 1201Mbps at 5GHz: MCS 11 (1024-QAM), 800ns GI, 80MHz ch, 2x2 MIMO
 - potential routers
   - Netgate 1100
     - Marvell Armada 3720LP, A53 x2@1.2G
@@ -209,8 +222,34 @@ Homelab
 
 ## AP
 
-- TP-Link EAP610 V2
-  - AX1800 (574@2.4GHz, 1201@GHz)
+- TP-Link EAP610 v2
+- TP-Link EAP610 v3
+- tested with a client with with BCM4352
+  - 130Mbps at 2.4GHz: MCS 7 (64-QAM), 800ns GI, 20MHz ch, 2x2 MIMO
+  - 270Mbps at 5GHz: MCS 7 (64-QAM), 800ns GI, 40MHz ch, 2x2 MIMO
+  - looks like,
+    - the ap picks a 20MHz ch at 2.4GHz and a 40MHz ch at 5.GHz (due to
+      inferences)
+    - the client is only capable of MCS 7 and 800ns GI
+- omada wifi6
+  - EAP610: 1201+574Mbps, 1Gbps PoE, 11W
+    - v2: IPQ6018 (A53@1.8G x4), ram 512MB, flash 128MB
+    - v3: MT7621 (MIPS1004Kc@880M x2), ram 256MB, flash 16MB
+    - EAP613: no power adapter
+    - EAP620 HD: more concurrent clients, 14.9W
+      - ram 512MB
+  - EAP650: 2402+574Mbps, 1Gbps PoE, 14.7W
+    - EAP653: no power adapter
+    - EAP653 UR: ultra range, 15.5W
+  - EAP660 HD: 2402+1148Mbps, 2.5Gbps PoE, 22.3W
+  - EAP670: 4804+574Mbps, 2.5Gbps PoE, 22.3W
+    - EAP673: no power adapter
+    - EAP683 UR: ultra range, 23.69W
+- omada wifi7
+  - EAP723: 4324+688Mbps, 2.5Gbps PoE, 19.5W
+  - EAP772: 5760+4320+574Mbps, 2.5Gbps PoE, 25.44W
+    - EAP773: 10Gbps PoE
+  - EAP783: 11520+8640+1376Mbps, 10Gbps PoE++, 39W
 
 ## Server
 

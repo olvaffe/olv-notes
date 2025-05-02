@@ -46,8 +46,3 @@ DOCSIS
   other's traffic
   - it also allows the operator to refuse service to uncertified modems or
     unauthorized customers
-
-## My Modem
-
-- SB6141 DOCSIS 3.0
-- SB8200 DOCSIS 3.1
