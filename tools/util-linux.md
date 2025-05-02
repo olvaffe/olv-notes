@@ -48,6 +48,57 @@ util-linux
     - reads login name
   - `execv`s `login -- <username>`
 
+## login
+
+- `/etc/login.defs` is the config file
+  - it is shared by multiple tools and only a subset of configs are applicable
+    to login
+- `login` is started by agetty and prompts for password
+- `init_tty`
+  - it closes the current stdin/stdout/stderr and calls `vhangup`
+  - it gets the terminal path, `/dev/ttyN`, via `ttyname(STDIN_FILENO)`
+  - it opens the terminal and dups the fd to stdin/stdout/stderr
+- `init_loginpam`
+  - `pam_start("login", username, &conv, &pamh);`
+    - `username` is specified by `agetty`
+    - `conv` is `misc_conv` from `libpam_misc`
+    - this function allocates a `pam_handle_t` and reads both
+      - `/etc/pam.d/<service>`
+        - `<service>` is `login` in this case
+        - these rules are added to `pamh->handlers.conf`
+      - `/etc/pam.d/other`
+        - these rules are added to `pamh->handlers.other`, which is used only
+          when `pamh->handlers.conf` is empty
+    - it `dlopen()` the necessary modules
+  - it passes information for PAM modules
+    - `pam_set_item(pamh, PAM_RHOST, NULL);`
+    - `pam_set_item(pamh, PAM_TTY, tty);`
+      - tty is from `ttyname(0)` so is normally `/dev/ttyN`
+    - `pam_set_item(pamh, PAM_USER_PROMPT, "<hostname> login:");`
+- `loginpam_auth`
+  - auth: `pam_authenticate (pamh, 0);`
+    - it is called up to `LOGIN_MAX_TRIES` (3) times
+    - if it fails for the first time, the user name is cleared with
+      `pam_set_item(pamh, PAM_USER, NULL)` such that pam prompts for a new
+      user name
+    - when modules call `pam_get_user()`, and there is no `PAM_USER`, it
+      starts a `PAM_PROMPT_ECHO_OFF` conversation with the app to get the user
+      name using `PAM_USER_PROMPT` as the prompt.  The result is set to
+      `PAM_USER` for later use.
+    - modules start a `PAM_PROMPT_ECHO_OFF` conversation with the app to get
+      the password as well.  For `pam_unix`, the prompt is localized
+      `Password:`.  The password is set to `PAM_AUTHTOK` for later use.
+    - the auth token for the user is then verified
+- `loginpam_acct`
+  - account: `pam_acct_mgmt (pamh, 0);`
+    - it returns `PAM_SUCCESS` if the account is valid and active
+    - if the account requires to update its password, `PAM_NEW_AUTHTOK_REQD` is
+      returned
+      - the app should call `pam_chauthtok(pamh, PAM_CHANGE_EXPIRED_AUTHTOK);`
+        to update the password
+  - the app retrieves the user name back from `PAM_USER`
+- `xgetpwnam`
+
 ## blkid
 
 - blkid is not user-facing
