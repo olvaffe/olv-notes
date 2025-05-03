@@ -1,6 +1,30 @@
 Kernel btrfs
 ============
 
+## Concepts
+
+- linear logical space
+  - the physical space spans over one or more physical devices
+  - the logical space is linear and consists of chunks
+  - each chunk is typically 1GB
+  - each chunk has a type of data, metadata, or system
+  - chunks are allocated on demand from the physical space
+- block groups
+  - when the filesystem needs to store some data, the allocator picks an
+    existing block group or allocate a new block group
+  - the relation between block groups and chunks are determined by the block
+    group profiles
+    - for `single`, each block group consists of 1 chunk, where the chunk is
+      on any physical device
+    - for `dup`, each block group consists of 2 chunks, where the 2 chunks are
+      on the same physical device
+    - for `raid1`, each block group consists of 2 chunks, where the 2 chunks
+      are on different physical devices
+  - the data is stored in each of the chunk for redundancy
+  - the type of the block group, the data, and the chunk must match
+    - it is one of data, metadata, or system
+- balance runs specified block groups through the allocator again
+
 ## Use
 
 - `mkfs.btrfs`
@@ -34,9 +58,9 @@ Kernel btrfs
   - A subvolume looks like a directory in the filesystem, but can be mounted
     independently and, more importantly, can be snapshotted
   - a possible filesystem layout is
-    - `/' is not mounted
+    - `/` is not mounted
     - `/roots/current` is a subvolume mounted to `/`
-    - `/homes/current is a subvolume mounted to `/home`
+    - `/homes/current` is a subvolume mounted to `/home`
     - to snapshot root,
       - `mount -osubvol=/ <dev> /mnt`
       - `btrfs subvolume snapshot -r / /mnt/roots/<timestamp>`
