@@ -41,3 +41,29 @@ Linux scsi
     - i.e., sda, sdb, etc.
   - when requests are made against the gendisk, sd is responsible for
     translating the requests into scsi commands
+
+## SCSI Drivers
+
+- an `scsi_driver` drives an `scsi_device`
+  - it drives a device, not the controller
+- the main `scsi_driver`s are
+  - `sd_template`, for `TYPE_DISK` and etc.
+  - `sr_template`, for `TYPE_ROM` and `TYPE_WORM`
+  - `st_template`, for `TYPE_TAPE`
+  - `ses_template`, for `TYPE_ENCLOSURE`
+  - `ch_template`, for `TYPE_MEDIUM_CHANGER`
+- drivers translate fops (read/write/ioctl) to scsi cmds
+  - they also support `SG_IO` ioctl to passes through scsi cmds from userspace
+    to devices
+    - it only supports a subset of sg v3
+    - it is used for
+      - device info query
+      - smart
+      - hdparm
+      - etc.
+- there is `scsi_bsg_register_queue` that adds a `bsg_device` to all
+  `scsi_device`
+  - it passes through scsi cmds from userspace to devices
+  - it only supports sg v4 ioctl
+- there is also `sg_interface` that binds to all `scsi_device`
+  - it supports older sg v1, v2, and v3 ioctls
