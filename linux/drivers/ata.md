@@ -9,21 +9,104 @@ Linux ata
 - an HBA can have
   - up to 32 ports, each can connect to a device or a multiplier
   - up to 32 slots, each holds a command
-- an `ata_host` represents an AHCI HBA
-  - allocated with `ata_host_alloc_pinfo`
-  - a `ata_port` is also allocated for each port
-- `ahci_host_activate` activates an AHCI HBA
-  - `ata_host_register` is called
-  - `ata_tport_add` is called for each port to add a "ata%d" device under HBA
-  - `ata_tlink_add` is called for each `port->link` to add a "link%d" device
-    under port
-  - `ata_tdev_add` is called for each `link->device` to add a "dev%d.%d"
-    device under link
-  - `ata_scsi_add_hosts` is called to allocate a `Scsi_Host` for each port
-  - `async_port_probe` is scheduled for each port
-    - `ata_port_probe` is called to detect `ata_device` on the link of the
-      port
-      - this calls `__ata_port_probe` to trigger `ata_std_error_handler`
-      - `ata_std_postreset` prints the link status
-      - `ata_configure_dev` configures and prints the device status
-    - `ata_scsi_scan_host` is called
+- `module_pci_driver(ahci_pci_driver)` registers a pci driver
+- `ahci_init_one` probes a pci device
+  - `ata_print_version_once` prints `version 3.0`
+  - it allocs and inits a `ahci_host_priv`
+  - `ahci_pci_save_initial_config` queries and saves config
+  - `ata_host_alloc_pinfo` allocs an `ata_host`
+    - an `ata_host` represents an AHCI HBA
+    - an `ata_port` is also allocated for each port
+      - the port ops is `ahci_ops`
+  - it sets ops for disabled ports to `ata_dummy_port_ops`
+  - `ahci_pci_print_info` prints hba info, such as
+    - `AHCI vers 0001.0300, 32 command slots, 6 Gbps, SATA mode`
+    - `1/4 ports implemented (port mask 0x8)`
+    - `flags: 64bit ncq stag pm led clo only pio slum part deso sadm sds apst`
+  - `ahci_host_activate` activates an AHCI HBA
+- `ahci_host_activate` with `ahci_sht` as the template
+  - `ata_host_start` starts the host
+  - `ata_host_register` registers the host
+    - `ata_tport_add` is called for each port to add a `ata%d` device under HBA
+      - `ata_tlink_add` is called for each `port->link` to add a `link%d`
+        device under port
+        - `ata_tdev_add` is called for each `link->device` to add a `dev%d.%d`
+          device under link
+    - `ata_scsi_add_hosts` is called to allocate and add a `Scsi_Host` for
+      each port
+      - `scsi_add_host_with_dma` prints `scsi hostN: ahci` because `ahci_sht`
+        has name `ahci`
+    - `ata_port_info` prints port info for each port, such as
+      - `ata1: DUMMY`
+      - `ata2: SATA max UDMA/133 abar m2048@0xf7422000 port 0xf7422280 irq 42 lpm-pol 3`
+  - `async_port_probe` is scheduled to probe each port
+- `async_port_probe`
+  - `ata_port_probe` is called to detect `ata_device` on the link of the port
+    - `ata_port_schedule_eh` has a deep callstack
+      - `ata_std_sched_eh`
+      - `scsi_schedule_eh` wakes up `scsi_error_handler`
+      - `ata_scsi_error`
+      - `ata_scsi_port_error_handler`
+      - `ahci_error_handler`
+      - `ata_std_error_handler`
+      - `ata_do_eh`
+      - `ata_eh_recover`
+   - `ata_eh_recover` calls
+      - `ata_eh_reset`
+        - `ahci_postreset`
+        - `ata_std_postreset`
+          - `sata_print_link_status` prints link status, such as
+            - `SATA link up 6.0 Gbps (SStatus 133 SControl 300)`
+      - `ata_eh_revalidate_and_attach`
+        - `ata_dev_revalidate`
+          - `ata_dev_configure`
+            - `ata_dev_quirks` applies and prints dev quirks
+            - it prints dev info
+              - `revbuf` is `ATA-%d`
+              - `modelbuf` is from `ATA_ID_PROD`
+              - `fwrevbuf` is from `ATA_ID_FW_REV`
+              - `ata_mode_string` is usually `UDMA/133`
+            - `ata_dev_config_lba` configs lba and prints lba info, such as
+              - `500118192 sectors, multi 16: LBA48 NCQ (depth 32), AA`
+            - `ata_dev_print_features` prints features, such as
+              - `Features: Dev-Sleep`
+      - `ata_set_mode` sets speed mode
+        - `ata_do_set_mode` calls `ata_dev_set_mode` to set and print the mode
+          - `configured for UDMA/133`
+  - `ata_scsi_scan_host` calls `__scsi_add_device`
+    - `scsi_alloc_target` allocs an `scsi_target`
+    - `scsi_probe_and_add_lun` probes lun 0 and returns an `scsi_device`
+      - `scsi_alloc_sdev` allocs an `scsi_device`
+      - `scsi_probe_lun` probes the lun
+      - `scsi_add_lun` adds the lun and fully inits the `scsi_device`
+        - it also prints device info, such as
+          - `scsi_device_type` is usually `Direct-Access`
+          - `vendor` is usually `ATA`
+          - `model` is similar to `ATA_ID_PROD`
+          - `rev` is similar to `ATA_ID_FW_REV`
+- modules such as `sd` provides an `scsi_driver`
+  - `init_sd` registers the `scsi_driver`
+  - `sd_probe` probes a `scsi_device`
+    - it allocs an `scsi_disk`
+    - `blk_mq_alloc_disk_for_queue` allocs a `gendisk`
+    - `sd_format_disk_name` formats the `gd->disk_name` to `sdN`
+    - `sd_revalidate_disk` revalidates gd
+      - `sd_print_capacity` prints capacity, such as
+        - `[sda] 500118192 512-byte logical blocks: (256 GB/238 GiB)`
+      - `sd_read_write_protect_flag` prints protect flag, such as
+        - `[sda] Write Protect is off`
+        - `[sda] Mode Sense: 00 3a 00 00`
+      - `sd_read_cache_type` prints cache info, such as
+        - `[sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA`
+      - `sd_validate_min_xfer_size` prints xfer size, such as
+        - `[sda] Preferred minimum I/O size 512 bytes`
+    - `device_add_disk` adds gd
+      - `add_disk_fwnode` calls `disk_scan_partitions` to scan partitions
+        - `bdev_file_open_by_dev`
+        - `bdev_open`
+        - `blkdev_get_whole`
+        - `bdev_disk_changed`
+        - `blk_add_partitions`
+        - `check_partition` parses the partition table and prints it, such as
+          - `sda: sda1 sda2`
+    - it prints `Attached SCSI disk`
