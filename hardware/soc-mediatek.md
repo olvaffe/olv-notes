@@ -280,11 +280,14 @@ MediaTek SoCs
 - `/pmu-blackhawk`, `arm,cortex-x925-pmu`, `CONFIG_ARM_PMUV3`
 - `/reserved-memory`
   - `/adsp-dma-mem-region@90800000`, `shared-dma-pool`, `CONFIG_OF_RESERVED_MEM`
-  - `/gpueb-reserved-memory@a0000000`, `mediatek,gpueb-resv-mem`, `CONFIG_MTK_GPUFREQ`
   - `/snd-dma-mem-region@90600000`, `shared-dma-pool`, `CONFIG_OF_RESERVED_MEM`
+  - `/gpueb-reserved-memory@a0000000`, `mediatek,gpueb-resv-mem`, `CONFIG_MTK_GPUFREQ`
+  - `/secure-region@a3000000`, `mediatek,dynamic-restricted-region`, `CONFIG_DMABUF_HEAPS_RESTRICTED_MTK`
 - `/timer`, `arm,armv8-timer`, `CONFIG_ARM_ARCH_TIMER`
 - `/psci`, `arm,psci-1.0`, `CONFIG_ARM_PSCI_CPUIDLE_DOMAIN`
+- `/protected-memory-allocator`, `arm,protected-memory-allocator`, `CONFIG_MALI_MTK_PROTECTED_MEMORY_ALLOCATOR`
 - `/gpufreq-wrapper`, `mediatek,gpufreq-wrapper`, `CONFIG_MTK_GPUFREQ`
+- `/mgm`, `arm,physical-memory-group-manager`, `CONFIG_MALI_MTK_MEMORY_GROUP_MANAGER`
 - `/soc/therm-intf@114000`, `mediatek,therm_intf`, `CONFIG_MTK_LVTS_THERMAL`
 - `/soc/slbc@117800`, `mediatek,mt8196-slbc`, `CONFIG_MTK_SLBC_MT8196`
 - `/soc/cm-mgr@c100000`, `mediatek,mt8196-cm-mgr`, `CONFIG_MTK_CM_MGR_MT8196`
@@ -370,7 +373,7 @@ MediaTek SoCs
     - `cros-ec-keyboard.dtsi` adds
       - `/ec@0/keyboard-controller`, `google,cros-ec-keyb`, `CONFIG_KEYBOARD_CROS_EC`
     - `mt8196-rauru-navi.dtsi` adds
-      - `/ec@0/keyboard-backlight`, `google,cros-kbd-led-backlight`, no config
+      - `/ec@0/keyboard-backlight`, `google,cros-kbd-led-backlight`, `CONFIG_CROS_KBD_LED_BACKLIGHT`
 - `/soc/spi@16150000`, `mediatek,mt8196-spi`, `CONFIG_SPI_MT65XX`
 - `/soc/spi@16170000`, `mediatek,mt8196-spi`, `CONFIG_SPI_MT65XX`
 - `/soc/spi@16190000`, `mediatek,mt8196-spi`, `CONFIG_SPI_MT65XX`
@@ -410,8 +413,19 @@ MediaTek SoCs
 - `/soc/syscon@169e0000`, `mediatek,mt8196-pextp1cfg_ao`, `CONFIG_COMMON_CLK_MT8196_PEXTPSYS`
   - `/reset-controller`, `ti,syscon-reset`, `CONFIG_RESET_TI_SYSCON`
 - `/soc/devapc@180f3000`, `mediatek,mt8196-devapc`, `CONFIG_MTK_DEVAPC`
+- `/soc/remoteproc@19001000`, `mediatek,mt8196-apusys_rv`, `CONFIG_MTK_APU_RPROC`
+  - `/apu-top-rpmsg`, `mediatek,aputop-rpmsg`, `CONFIG_MTK_APUSYS_SUPPORT`
+  - `/apu-mdw-rpmsg`, `mediatek,apu-mdw-rpmsg-v5`, `CONFIG_MTK_APUSYS_SUPPORT`
+  - `/apu-apummu`, `mediatek,apu-apummu-rpmsg`, `CONFIG_MTK_APUSYS_SUPPORT`
+  - `/apu-apummu-rx`, `mediatek,apu-apummu-rx`, `CONFIG_MTK_APUSYS_SUPPORT`
+  - `/mvpu-tx-rpmsg`, `mediatek,mvpu-tx-rpmsg`, `CONFIG_MTK_APUSYS_SUPPORT`
+  - `/mvpu-rx-rpmsg`, `mediatek,mvpu-rx-rpmsg`, `CONFIG_MTK_APUSYS_SUPPORT`
+- `/soc/power-controller@19020000`, `mt8196,apu-top-3`, `CONFIG_MTK_APUSYS_SUPPORT`
+- `/soc/logger@19024000`, `mediatek,apusys-hw-logger`, `CONFIG_MTK_APU_RPROC`
+- `/soc/adsp@1a000000`, `mediatek,mt8196-dsp`, `CONFIG_SND_SOC_SOF_MT8196`
 - `/soc/devapc@1a019000`, `mediatek,mt8196-devapc`, `CONFIG_MTK_DEVAPC`
 - `/soc/syscon@1a110000`, `mediatek,mt8196-audiosys`, `CONFIG_COMMON_CLK_MT8196_ADSP`
+- `/soc/mt8196-afe-pcm@1a110000`, `mediatek,mt8196-sound`, `CONFIG_SND_SOC_MT8196`
 - `/soc/mailbox@1a350000`, `mediatek,mt8186-adsp-mbox`, `CONFIG_MTK_ADSP_MBOX`
 - `/soc/mailbox@1a360000`, `mediatek,mt8186-adsp-mbox`, `CONFIG_MTK_ADSP_MBOX`
 - `/soc/power-controller@1c004000`, `mediatek,mt8196-scpsys-hwv`, `CONFIG_MTK_SCPSYS`
@@ -467,6 +481,9 @@ MediaTek SoCs
 - `/soc/smi-comm@30a31000`, `mediatek,mt8196-smi-common`, `CONFIG_MTK_SMI`
 - `/soc/smi-comm@30a32000`, `mediatek,mt8196-smi-common`, `CONFIG_MTK_SMI`
 - `/soc/smi-comm@30a33000`, `mediatek,mt8196-smi-common`, `CONFIG_MTK_SMI`
+- `/soc/vcp@31800000`, `mediatek,vcp`, `CONFIG_MTK_VCP_RPROC`
+  - `/vcp@0`, `mediatek,vcp-core`, `CONFIG_MTK_VCP_RPROC`
+  - `/vcp@31000`, `mediatek,mmup-core`, `CONFIG_MTK_VCP_RPROC`
 - `/soc/devapc@31ad5000`, `mediatek,mt8196-devapc`, `CONFIG_MTK_DEVAPC`
 - `/soc/power-controller@31b50000`, `mediatek,mt8196-hfrpsys-hwv`, `CONFIG_MTK_SCPSYS`
 - `/soc/syscon@32000000`, `mediatek,mt8196-dispsys0`, `CONFIG_MTK_MMSYS`
@@ -548,6 +565,9 @@ MediaTek SoCs
 - `/soc/larb@32e70000`, `mediatek,mt8196-smi-larb`, `CONFIG_MTK_SMI`
 - `/soc/larb@32e80000`, `mediatek,mt8196-smi-larb`, `CONFIG_MTK_SMI`
 - `/soc/larb@32e90000`, `mediatek,mt8196-smi-larb`, `CONFIG_MTK_SMI`
+- `/soc/video@36000000`, `mediatek,mt8196-vcodec-dec`, `CONFIG_VIDEO_MEDIATEK_VCODEC`
+  - `/video-codec@10000`, `mediatek,mtk-vcodec-lat`, `CONFIG_VIDEO_MEDIATEK_VCODEC`
+  - `/video-codec@25000`, `mediatek,mtk-vcodec-core`, `CONFIG_VIDEO_MEDIATEK_VCODEC`
 - `/soc/larb@3600d000`, `mediatek,mt8196-smi-larb`, `CONFIG_MTK_SMI`
 - `/soc/larb@3600e000`, `mediatek,mt8196-smi-larb`, `CONFIG_MTK_SMI`
 - `/soc/syscon@3600f000`, `mediatek,mt8196-vdecsys_soc`, `CONFIG_COMMON_CLK_MT8196_VDECSYS`
@@ -591,6 +611,16 @@ MediaTek SoCs
 - `/soc/devapc@4b8b0000`, `mediatek,mt8196-devapc`, `CONFIG_MTK_DEVAPC`
 - `/soc/iommu@4c000000`, `mediatek,mt8196-apu-smmu`, `CONFIG_ARM_SMMU_V3_MEDIATEK`
 - `/soc/mailbox@4c200000`, `mediatek,mt8196-apu-mailbox`, `CONFIG_MTK_APU_MBOX`
+- `/soc/jpeg-decoder`, `mediatek,mt8196-jpgdec`, `CONFIG_VIDEO_MEDIATEK_JPEG`
+  - `/jpeg-decoder@38040000`, `mediatek,mt8196-jpgdec-hw`, `CONFIG_VIDEO_MEDIATEK_JPEG`
+- `/soc/jpeg-encoder`, `mediatek,mt8196-jpgenc`, `CONFIG_VIDEO_MEDIATEK_JPEG`
+  - `/jpeg-encoder@38830000`, `mediatek,mt8196-jpgenc-hw`, `CONFIG_VIDEO_MEDIATEK_JPEG`
+- `/soc/mtk-apu-mem-code`, `mediatek, apu_mem_code`, `CONFIG_MTK_APUSYS_SUPPORT`
+- `/soc/mtk-apu-mem-data`, `mediatek, apu_mem_data`, `CONFIG_MTK_APUSYS_SUPPORT`
+- `/soc/mvpu`, `mediatek, mt8196-mvpu`, `CONFIG_MTK_APUSYS_SUPPORT`
+- `/soc/sound`, `mediatek,mt8196-mt6681-sound`, `CONFIG_SND_SOC_MT8196_MT6681`
+  - `mt8196-rauru-navi.dtsi` adds
+    - `/soc/sound`, `mediatek,mt8196-rt5682s-sound`, `CONFIG_SND_SOC_MT8196_MT6681`
 - `/soc/vdisp-ctrl`, `mediatek,mt8196-vdisp-ctrl`, `CONFIG_MTK_VDISP`
 - `/soc/vmm`, `mediatek,mt8196-vmm`, `CONFIG_MTK_VMM`
 - `mt8196-rauru.dtsi` adds
