@@ -31,3 +31,5 @@ Kernel and component
   - when all devices are probled, the component helper calls the master's bind
     automatically
   - the master's bind calls `component_bind_all` to call components' bind
+- it is also possible that a driver is both a master driver and a component
+  driver (of another master driver)
