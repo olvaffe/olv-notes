@@ -58,6 +58,14 @@ Kernel Driver Core
   - `workqueue` is from `wq_sysfs_init`, a virtual subsys
   - `dma_heap` is from `dma_heap_add`, a class device with no parent
 
+## Device Link
+
+- <https://docs.kernel.org/driver-api/device_link.html>
+- device hierarchy forms a tree
+  - each child depends on its parent
+- device link turns device hierarchy into a DAG
+  - each consumer depends on its producer(s)
+
 ## Device Model
 
 - `/sys/devices` is hierarchical.
