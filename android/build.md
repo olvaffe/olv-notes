@@ -87,6 +87,7 @@ Android Build System
     - `vbmeta.img` is the verified boot meta partition
     - `vendor` and `vendor.img` are the vendor partition
     - `vendor_dlkm` and `vendor_dlkm.img` are the vendor dlkm partition
+- `verbose.log.gz` is the verbose log
 
 ## Soong
 
@@ -289,6 +290,8 @@ Android Build System
       (`kernel`) to `boot.img`
   - p14: `boot_b`, 64M
   - p15: `vbmeta_a`, 4M, `vbmeta.img`
+    - `m vbmetaimage` runs `avbtool make_vbmeta_image` to generate
+      `vbmeta.img`
   - p16: `vbmeta_b`, 4M
   - p17: `metadata`, 16M, generated
   - p18: `init_boot_a`, 32M, `init_boot.img`
