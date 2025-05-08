@@ -91,3 +91,145 @@ DRM AMD Display
   - with hdcp, `hdcp_update_display` queues `event_property_validate` with a
     shallow pointer to the connector
   - it results in UAF if the connector is destroyed before the work
+
+## Hotplug
+
+- on plug, `amdgpu_ih_process` handles several irqs
+  - it calls `amdgpu_irq_dispatch` to dispatch to `amdgpu_dm_irq_handler`
+  - `amdgpu_dm_irq_handler` calls `handle_hpd_irq` and `handle_hpd_rx_irq`
+    depending on the source
+- `handle_hpd_irq`
+  - `dc_link_detect_connection_type` calls `link_detect_connection_type`
+  - `dc_link_detect` calls `link_detect`
+    - `detect_link_and_local_sink`
+      - `wait_for_entering_dp_alt_mode` prints `DP Alt mode state on HPD: 1`
+      - `detect_dp`
+        - `detect_dp_sink_caps`
+          - `dp_retrieve_lttpr_cap` prints `is_lttpr_present = 0`
+          - it prints
+            - `MST_Support: yes` (with mst hub)
+            - `FEC_Sink_Support: no`
+            - `DSC_Basic_Sink_Support: no`
+            - `DSC_Passthrough_Sink_Support: no`
+            - `Rx Caps:`
+      - `dm_helpers_read_local_edid`
+        - `drm_edid_connector_update`
+          - `update_display_info`
+            - it prints `Assigning EDID-1.4 digital sink color depth as 8 bpc.`
+            - `drm_edid_to_eld` prints
+              - `ELD monitor <model>`
+              - `ELD size 28, SAD count 0`
+        - `dm_helpers_parse_edid_caps`
+          - `drm_edid_to_sad` prints `Found 0 Short Audio Descriptors`
+      - it prints
+        - `<model>: [Block 0]`
+        - `manufacturer_id = <id>, product_id = <id>, serial_number = <serial>, manufacture_week = <wk>, manufacture_year = <yr>, display_name = <model>, speaker_flag = 0, audio_mode_count = 0`
+        - `link=2, dc_sink_in=00000000011bd814 is now Connected prev_sink=0000000000000000 edid same=0`
+    - it prints
+      - `link_index=2 is_local_sink_detect_success=1 pre_link_type=0 link_type=3`
+    - `discover_dp_mst_topology` prints
+      - `link=2, mst branch is now Connected`
+      - `dm_helpers_dp_mst_start_top_mgr` prints
+        - `DM_MST: starting TM on aconnector: 0000000093ca14af [id: 107]`
+        - `drm_dp_mst_topology_mgr_set_mst` schedules `drm_dp_mst_link_probe_work`
+        - `DM_MST: DP14, 2-lane link detected`
+- `handle_hpd_rx_irq`
+  - `dc_link_handle_hpd_rx_irq` calls `dp_handle_hpd_rx_irq`
+    - it prints `Got short pulse HPD on link 2`
+  - `schedule_hpd_rx_offload_work` queues `dm_handle_hpd_rx_offload_work`
+    - it prints `queue work to handle hpd_rx offload work`
+    - the work calls `dm_handle_mst_sideband_msg_ready_event`
+      - it prints `ESI 41 10 00` (`DP_DOWN_REP_MSG_RDY`) or `ESI 41 00 00`
+      - when ready, `drm_dp_mst_hpd_irq_handle_event` calls
+        `drm_dp_mst_handle_down_rep`
+- `drm_dp_mst_link_probe_work`
+  - it prints `Clearing payload ID table`
+  - `drm_dp_send_clear_payload_id_table` sends a `DP_CLEAR_PAYLOAD_ID_TABLE`
+  - `drm_dp_check_and_send_link_address`
+    - it sends a `DP_LINK_ADDRESS`
+    - it prints
+      - `link address reply: 3`
+      - `port 0: input 1, pdt: 1, pn: 0, dpcd_rev: 00, mcs: 1, ddps: 1, ldps 0, sdp 0/0`
+      - `port 1: input 0, pdt: 3, pn: 1, dpcd_rev: 11, mcs: 0, ddps: 1, ldps 0, sdp 0/0`
+      - `port 2: input 0, pdt: 0, pn: 2, dpcd_rev: 00, mcs: 0, ddps: 0, ldps 0, sdp 0/0`
+    - `drm_dp_mst_handle_link_address_port`
+      - `drm_dp_mst_add_port` prints `mstb %p (%d)`
+      - `drm_dp_mst_topology_get_port` prints `port %p (%d)`
+      - `drm_dp_send_enum_path_resources` sends a `DP_ENUM_PATH_RESOURCES`
+        - it prints `enum path resources 1: 1280 1280`
+      - `drm_dp_mst_port_add_connector`
+        - `dm_dp_add_mst_connector` prints `Create aconnector 0x000000009e854d12 for port 0x0000000086324483`
+        - `drm_connector_dynamic_register`
+          - `drm_sysfs_connector_add` prints `[CONNECTOR:130:DP-3] adding connector to sysfs`
+          - `drm_dp_mst_connector_late_register` prints `registering DPMST remote bus for card0-DP-3`
+          - `drm_sysfs_connector_hotplug_event` prints `[CONNECTOR:130:DP-3] generating connector hotplug event`
+  - `drm_kms_helper_hotplug_event`
+    - `drm_sysfs_hotplug_event` prints `generating hotplug event`
+    - `drm_client_dev_hotplug` calls `drm_client_hotplug`
+- if vt, `drm_client_hotplug` calls `drm_fbdev_client_hotplug`
+  - `drm_fb_helper_hotplug_event`
+    - `drm_client_modeset_probe`
+      - `connectors[i]->funcs->fill_modes` points to `drm_helper_probe_single_connector_modes`
+        - it prints `[CONNECTOR:130:DP-3]`
+        - it prints `[CONNECTOR:130:DP-3] status updated from unknown to connected`
+        - `drm_helper_probe_get_modes` calls `dm_dp_mst_get_modes`
+          - it prints `DM_MST: add remote sink 0x00000000011bd814, 1 remaining`
+          - `validate_dsc_caps_on_connector` calls `drm_dp_mst_dsc_aux_for_port`
+            - `drm_dp_read_desc` prints `DP branch: OUI XX-XX-XX dev-ID Dp1.4 HW-rev 1.0 SW-rev 130.1 quirks 0x0000`
+        - `__drm_helper_update_and_validate`
+          - `drm_mode_validate_pipeline` calls `amdgpu_dm_connector_mode_valid`
+            - `create_validate_stream_for_sink`
+              - `create_stream_for_sink` calls `update_stream_scaling_settings`
+                - it prints `Destination Rectangle x:0  y:0  width:1280 height:800`
+              - `dm_dp_mst_is_port_support_mode` prints `MST_DSC no dsc required. End-to-end bw sufficient`
+        - `drm_mode_prune_invalid` prints
+          - `Rejected mode: "1920x1200": 60 154000 1920 1968 2000 2080 1200 1203 1209 1235 0x48 0x9 (VIRTUAL_Y)`
+        - it prints `[CONNECTOR:93:eDP-1] probed modes:`
+          - `Probed mode: "1920x1080": 60 148500 1920 2008 2052 2200 1080 1084 1089 1125 0x40 0xa`
+          - etc
+      - `drm_client_connectors_enabled` prints
+        - `[CONNECTOR:130:DP-3] enabled? yes`
+      - `drm_client_firmware_config` prints
+        - `Not using firmware configuration`
+      - `drm_client_target_preferred` prints
+        - `looking for cmdline mode`
+        - `looking for preferred mode, tile 0`
+        - `Found mode 1920x1080`
+      - it prints
+        - `picking CRTCs for 1920x1080 config`
+        - `[CRTC:83:crtc-1] desired mode 1920x1080 set (0,0)`
+    - `drm_fb_helper_set_par` calls `drm_client_modeset_commit_locked`
+      - `drm_atomic_state_alloc` prints
+        - `Allocated atomic state 00000000b6f0fcab`
+      - `drm_atomic_get_plane_state` prints
+        - `Added [PLANE:40:plane-0] 000000002cbd6b32 state to 00000000b6f0fcab`
+      - `__drm_atomic_helper_set_config`
+        - `drm_atomic_get_crtc_state` prints `Added [CRTC:83:crtc-1] 00000000345ea0ac state to 00000000b6f0fcab`
+        - `drm_atomic_get_plane_state` prints
+        - `drm_atomic_set_mode_for_crtc` prints `Set [MODE:1920x1080] for [CRTC:83:crtc-1] state 00000000345ea0ac`
+        - `drm_atomic_set_crtc_for_plane` prints `Link [PLANE:52:plane-2] state 0000000091f47a88 to [CRTC:83:crtc-1]`
+        - `drm_atomic_set_fb_for_plane` prints `Set [FB:100] for [PLANE:52:plane-2] state 0000000091f47a88`
+        - `update_output_state`
+          - `drm_atomic_add_affected_connectors` prints `Adding all current connectors for [CRTC:83:crtc-1] to 00000000b6f0fcab`
+          - `drm_atomic_get_connector_state` prints `Added [CONNECTOR:130:DP-3] 00000000df2f9414 state to 00000000b6f0fcab`
+          - `drm_atomic_set_crtc_for_connector` prints `Link [CONNECTOR:130:DP-3] state 00000000df2f9414 to [CRTC:83:crtc-1]`
+      - `drm_atomic_commit`
+        - `drm_atomic_print_new_state` prints drm atomic state
+        - `drm_atomic_check_only`
+          - it prints `checking 00000000b6f0fcab`
+          - `amdgpu_dm_atomic_check`
+            - `drm_atomic_helper_check_modeset` prints
+              - `drm_atomic_add_affected_connectors` prints
+              - `drm_atomic_add_affected_planes` prints
+              - `drm_atomic_add_encoder_bridges` prints
+              - `mode_fixup`
+                - `dm_encoder_helper_atomic_check`
+                  - `drm_dp_atomic_find_time_slots` prints
+            - `drm_atomic_normalize_zpos` prints
+            - `dm_update_crtc_state` prints
+            - `dm_update_plane_state` prints
+            - `drm_dp_mst_update_slots` prints
+            - `compute_mst_dsc_configs_for_state` prints
+            - `drm_dp_mst_atomic_check` prints
+        - it prints `committing 00000000b6f0fcab`
+        - `drm_atomic_helper_commit`
