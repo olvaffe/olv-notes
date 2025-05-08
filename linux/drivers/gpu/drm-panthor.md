@@ -182,7 +182,14 @@ DRM panthor
     - they are executed on cpu using `drm_gpuvm`
   - `entity` is a `drm_sched_entity`
   - the vm is added to `ptdev->mmu->vm.list`
-  - `base` is a `drm_gpuvm`
+  - `base` is a `drm_gpuvm` with `panthor_gpuvm_ops`
+- when userspace performs a sync vm bind, `panthor_vm_bind_exec_sync_op` is
+  called
+  - it mainly calls the generic `drm_gpuvm_sm_map` to map
+    - if another bo is already mapped at the same range, the generic function
+      takes care of unmapping overlapped range of the existing bo
+  - it mainly calls the generic `drm_gpuvm_sm_unmap` to unmap
+  - `panthor_gpuvm_ops` provides the ops to the generic gpuvm
 - when gpuvm calls `panthor_gpuva_sm_step_map` to map,
   - `panthor_vm_map_pages` calls `ops->map_pages` to map
   - all the page tables live on system memory
@@ -220,6 +227,15 @@ DRM panthor
       - `0x9f9f9f9f9c4c9f4c`
       - bit 4..5: `MIDGARD_INNER`, `CPU_INNER`, `CPU_INNER_SHADER_COH`
       - bit 6..7: SHARED, NC, WB, FAULT
+- when gpuvm calls `panthor_gpuva_sm_step_unmap` to unmap,
+  - `panthor_vm_unmap_pages` tears down the pages from the page table
+    - it calls `arm_lpae_unmap_pages` from `pgtbl_ops`
+      - if a page table has no more mapped pages, it calls `free_pt` to free
+        the page
+  - `drm_gpuva_unmap` removes `drm_gpuva` from `drm_gpuvm`
+  - `drm_gpuva_unlink` removes `drm_gpuva` from `drm_gpuvm_bo`
+  - vmas are added to `returned_vmas` and are freed in
+    `panthor_vm_cleanup_op_ctx`
 - AS regs
   - an AS config is controlled by
     - `AS_TRANSTAB_{LO,HI}(as)`
@@ -283,12 +299,6 @@ DRM panthor
       `drm_gpuvm_bo`, and adds the bo to the gpuvm
     - `panthor_vm_exec_op` calls `drm_gpuvm_sm_map` to map with split-merge
       - this calls into `panthor_gpuvm_ops`
-- `panthor_ioctl_vm_bind_sync`
-  - `panthor_vm_bind_exec_sync_op`
-- `panthor_ioctl_vm_bind_async` is similar to a group submit, except the job
-  is a bind job
-  - `panthor_vm_bind_job_create`
-  - `panthor_vm_bind_job_prepare_resvs`
 
 ## CSF Firmware
 
