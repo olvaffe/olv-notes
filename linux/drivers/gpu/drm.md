@@ -297,6 +297,58 @@ Kernel DRM
 - xlnx `zynqmp_dpsub_drm_driver`
   - `DRIVER_MODESET | DRIVER_GEM | DRIVER_ATOMIC`
 
+## Logging
+
+- log macros
+  - `drm_<level>` defines to `dev_<level>`
+    - it takes a `drm_device` instead of a `device`
+    - it adds a `[drm]` prefix to the format
+  - `drm_dbg_<category>` calls `__drm_dev_dbg`
+    - it takes a `drm_device` instead of a `device`
+    - it inserts a `drm_debug_category`
+  - `drm_dbg` defines to `drm_dbg_driver` as a shorthand
+  - `drm_WARN*` defines to `WARN*`
+    - it adds a `<drv> <dev>: [drm]` prefix to the format
+- `drm_debug_category`
+  - `DRM_UT_CORE` (0x1) is for core
+  - `DRM_UT_DRIVER` (0x2) is for driver
+  - `DRM_UT_KMS` (0x4) is for modesetting
+  - `DRM_UT_PRIME` (0x8) is for prime (import)
+  - `DRM_UT_ATOMIC` (0x10) is for atomic modesetting
+  - `DRM_UT_VBL` (0x20) is for vblank (spammy)
+  - `DRM_UT_STATE` (0x40) is for atomic state (before each commit)
+  - `DRM_UT_LEASE` (0x80) is for leasing
+  - `DRM_UT_DP` (0x100) is for DisplayPort
+  - `DRM_UT_DRMRES` (0x200) is for drmm (managed resources)
+- log functions
+  - `drm_debug_enabled` returns if a debug category is enabled
+  - `__drm_dev_dbg` calls `__drm_dev_vprintk`
+    - it calls `dev_printk`
+    - it adds a `[drm:<func>]` prefix
+- printer functions
+  - all printers can have custom prefix, etc.
+  - `drm_*_printer` inits a printer
+    - `drm_coredump_printer` copies to `drm_print_iterator` (a buffer)
+    - `drm_seq_file_printer` prints with `seq_printf`
+    - `drm_info_printer` prints with `dev_info`
+      - it adds a `[drm]` prefix to the format
+    - `drm_dbg_printer` prints with `__drm_dev_vprintk`
+  - `drm_print_*` prints to a printer
+- deprecated macros
+  - `DRM_<level>` defines to `printk`
+    - it adds a `[drm]` prefix to the format
+  - `DRM_ERROR` defines to `__drm_err`
+  - `DRM_DEBUG_<category>` calls `__drm_dev_dbg`
+    - no `device`
+    - it inserts a `drm_debug_category`
+  - `DRM_DEV_<level>` defines to `drm_dev_printk`
+  - `DRM_DEV_DEBUG_<category>` calls `__drm_dev_dbg`
+    - it takes a `device`
+    - it inserts a `drm_debug_category`
+- deprecated functions
+  - `__drm_err` calls `__drm_dev_vprintk` without a device
+  - `drm_dev_printk` calls `__drm_dev_vprintk` with a device
+
 ## DRM core and /dev and /sys
 
 - sysfs
