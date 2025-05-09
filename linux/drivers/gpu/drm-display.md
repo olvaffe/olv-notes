@@ -153,22 +153,6 @@ Linux DRM Display
   - SXGA, 1280x1024
   - UXGA, 1600x1200
 
-## Bridges
-
-- minimum bridge driver
-  - fills in `drm_bridge_funcs`
-  - `devm_drm_of_get_bridge` finds the next bridge/panel
-  - `devm_drm_bridge_add` adds the bridge to global `bridge_list`
-- minimum bridge consumer
-  - `drmm_of_get_bridge` returns a bridge, or a panel wrapped in a bridge
-- any-to-eDP bridge driver
-  - `drm_dp_aux_init` inits a DP aux channel, `drm_dp_aux`
-  - `devm_of_dp_aux_populate_bus` adds the eDP downstream device
-    - this expects a `aux-bus` subnode and uses its first child as the device
-      - there is no device discovery
-    - the dev is added to `dp-aux` bus for driver matching
-    - `done_probing` is called after a driver probes successfully
-
 ## DRM Drivers
 
 - an eDP controller is similar to an any-to-eDP bridge
