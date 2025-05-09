@@ -39,10 +39,14 @@ DRM Panel
 ## Display Driver
 
 - `of_drm_find_panel` finds the panel from `panel_list`
-- more common, `drmm_of_get_bridge` returns a bridge with potential wrapping
+  - the dt node usually has a child node or a port refering to the panel
+- more commonly, `devm_drm_of_get_bridge` or `drmm_of_get_bridge` returns a
+  bridge with potential wrapping
   - `drm_of_find_panel_or_bridge` calls `of_drm_find_panel`, or falls back
     to `of_drm_find_bridge`
-  - if panel, `drmm_panel_bridge_add` wraps the panel inside a bridge
+  - if panel, `devm_drm_panel_bridge_add` or `drmm_panel_bridge_add` wraps
+    the panel inside a bridge
+  - this allows the display driver to deal with bridge/panel uniformly
 
 ## eDP panel driver
 
