@@ -153,26 +153,6 @@ Linux DRM Display
   - SXGA, 1280x1024
   - UXGA, 1600x1200
 
-## Panels
-
-- minimum panel driver
-  - `drm_panel_init` inits a `drm_panel` with `drm_panel_funcs`
-    - `drm_panel_funcs` callbacks
-      - `prepare` / `unprepare` inits the panel hw
-      - `enable` / `disable` enables backlight, etc.
-      - `get_*` queries modes, timing, etc.
-  - `drm_panel_add` adds the panel to global `panel_list`
-- minimum panel consumer
-  - `of_drm_find_panel` finds the panel from `panel_list`
-  - more common, `drmm_of_get_bridge` returns a bridge with potential wrapping
-    - `drm_of_find_panel_or_bridge` calls `of_drm_find_panel`, or falls back
-      to `of_drm_find_bridge`
-    - if panel, `drmm_panel_bridge_add` wraps the panel inside a bridge
-- eDP panel driver
-  - DP supports aux channel to communicate with the panel
-  - `dp_aux_dp_driver_register` registers the driver to `dp-aux` bus
-  - `drm_panel_dp_aux_backlight` is the std way to register a backlight device
-
 ## Bridges
 
 - minimum bridge driver
