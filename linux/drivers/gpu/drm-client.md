@@ -31,7 +31,7 @@ Kernel DRM Client
     - `drm_mode_create_dumb` allocs the dumb bo
     - `drm_client_buffer_addfb` calls `drm_mode_addfb2` to create an fb
   - `drm_client_buffer_vmap` maps an bo (for sw rendering)
-  - `drm_client_modeset_probe`
+  - `drm_client_modeset_probe` is called on init or on hotplug
     - it collects all connectors, their modes, and their connection states
     - `drm_client_firmware_config` tries to inherit bios settings
     - it then saves the results to `client->modesets`
@@ -40,6 +40,12 @@ Kernel DRM Client
 
 ## fbdev client
 
+- driver requirement
+  - `drm_driver` should provide `fbdev_probe`
+  - it is often provided by one of
+    - `DRM_FBDEV_DMA_DRIVER_OPS`
+    - `DRM_FBDEV_SHMEM_DRIVER_OPS`
+    - `DRM_FBDEV_TTM_DRIVER_OPS`
 - `drm_fbdev_client_setup`
   - it allocs a `drm_fb_helper`
   - `drm_fb_helper_prepare` inits the struct
@@ -51,5 +57,19 @@ Kernel DRM Client
   - on hotplug, there are two cases
     - on first hotplug, `drm_fb_helper_init` inits and
       `drm_fb_helper_initial_config` modesets
-    - on subsequent hotplugs, `drm_fb_helper_hotplug_event` modesets
+    - on first and subsequent hotplugs, `drm_fb_helper_set_par` commits
   - on suspend/resume, `drm_fb_helper_set_suspend_unlocked` informs fbcon
+- `drm_fb_helper_initial_config`
+  - `drm_client_modeset_probe` probes hw and updates `client->modesets`
+  - `drm_fb_helper_single_fb_probe` calls into driver `fbdev_probe`
+    - `drm_client_framebuffer_create` allocs a dumb bo and creates a
+      `drm_framebuffer`
+    - `drm_client_buffer_vmap` maps the dumb bo for sw rast
+    - `drm_fb_helper_alloc_info` allocs a `fb_info` for fbdev
+    - `drm_fb_helper_fill_info` fills in the `fb_info`
+    - `fbops` is often of
+      - `drm_fbdev_dma_fb_ops`
+      - `drm_fbdev_shmem_fb_ops`
+      - `drm_fbdev_ttm_fb_ops`
+  - `drm_setup_crtcs_fb` points `client->modesets` to `drm_framebuffer`
+  - `register_framebuffer` registers the backend to fbdev
