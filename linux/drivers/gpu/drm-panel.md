@@ -48,8 +48,42 @@ DRM Panel
     the panel inside a bridge
   - this allows the display driver to deal with bridge/panel uniformly
 
-## eDP panel driver
+## MIDI DSI
+
+- the display driver calls `mipi_dsi_host_register` to register a host
+  - `mipi_dsi_host_register` scans all dt child nodes and calls
+    `of_mipi_dsi_device_add`
+- the panel driver has `module_mipi_dsi_driver` or calls
+  `mipi_dsi_driver_register`
+  - on probe, driver calls `mipi_dsi_attach` to attach the device to the host
+- the panel driver sends messages to the panel
+  - the message could be standardized DCS (display command set) or
+    non-standard MCS (manufacturer command set)
+  - for dcs, `mipi_dsi_dcs_*` calls `mipi_dsi_dcs_write`
+    - `mipi_dsi_dcs_write_buffer`
+    - `mipi_dsi_device_transfer`
+      - the display driver calls `mipi_dsi_create_packet` to wrap the message
+        in a packet and sends the packet over to the panel
+
+## DP
 
 - DP supports aux channel to communicate with the panel
-- `dp_aux_dp_driver_register` registers the driver to `dp-aux` bus
-- `drm_panel_dp_aux_backlight` is the std way to register a backlight device
+- the display driver
+  - `drm_dp_aux_init` inits an aux channel
+  - `devm_of_dp_aux_populate_bus` adds the device on the aux channel
+    - it finds `aux-bus` child node and uses the first child node of `aux-bus`
+  - `drm_dp_aux_register` registers the aux channel
+    - it also calls `i2c_add_adapter` to add a i2c adapter for ddc, used with
+      `drm_edid_read_ddc` to read edid
+  - the display driver provides a transfer function for communication over the
+    channel
+    - it is used to access DPCD (displayport configuration data)
+    - the i2c adapter simply wraps `i2c_msg` in `drm_dp_aux_msg`
+- the panel driver
+  - `dp_aux_dp_driver_register` registers the driver to `dp-aux` bus
+  - `drm_panel_dp_aux_backlight` is the std way to register a backlight device
+    - `drm_dp_dpcd_read_data(DP_EDP_DPCD_REV)` returns caps
+    - if panel has intrinsic bl support,
+      - `drm_edp_backlight_init` reads more caps
+      - `devm_backlight_device_register` registers the bl dev with
+        `dp_aux_bl_ops`
