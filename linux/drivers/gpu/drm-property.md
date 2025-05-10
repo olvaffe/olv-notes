@@ -1,6 +1,31 @@
 DRM property
 ============
 
+## Property
+
+- a `drm_property` is a `drm_mode_object` of `DRM_MODE_OBJECT_PROPERTY`
+  - it has type, flags, and allowed values
+  - it does not have the current value!
+- `drm_object_attach_property` instantiates a property
+  - the instance has the current value!
+- property types
+  - `DRM_MODE_PROP_RANGE` with `drm_property_create_range`
+  - `DRM_MODE_PROP_SIGNED_RANGE` with `drm_property_create_signed_range`
+  - `DRM_MODE_PROP_ENUM` with `drm_property_create_enum`
+  - `DRM_MODE_PROP_BITMASK` with `drm_property_create_bitmask`
+  - `DRM_MODE_PROP_OBJECT` with `drm_property_create_object`
+  - `DRM_MODE_PROP_BLOB` with `drm_property_create`
+- property flags
+  - `DRM_MODE_PROP_ATOMIC`
+  - `DRM_MODE_PROP_IMMUTABLE`
+- most properties are global
+  - they are in the per-device `drm_mode_config`
+- some properties are per-plane, per-crtc, or per-connector
+  - this is because each property has allowed values
+  - only when two otherwise identical properties have different allowed
+    values, such as when two planes have two different caps, they are made
+    per-object
+
 ## KMS object properties
 
 - `DRM_IOCTL_MODE_OBJ_GETPROPERTIES` can get all properties of a KMS object
@@ -29,4 +54,3 @@ DRM property
   - by comparing the prop value with the enum vals, we can find out the
     current enum name, which should be one of `Primary`, `Overlay`, or
     `Cursor`
-
