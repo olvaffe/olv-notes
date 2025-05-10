@@ -78,6 +78,7 @@ Kernel DRM
 
 ## Drivers and Features
 
+- <https://drmdb.emersion.fr/>
 - summary
   - `DRIVER_GEM` is supported by all drivers
   - `DRIVER_MODESET` is supported by display-capable drivers
