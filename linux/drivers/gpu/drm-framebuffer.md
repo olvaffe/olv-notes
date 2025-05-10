@@ -1,5 +1,13 @@
-DRM Modesetting
+DRM framebuffer
 ===============
+
+## DRM formats
+
+- `DRM_IOCTL_MODE_ADDFB2` takes a format instead of bpp/depth.  It also
+  supports modifiers and planar formats.
+  - internally, `drm_mode_legacy_fb_format` translates bpp/depth to format and
+    `DRM_IOCTL_MODE_ADDFB` can take the same path as addfb2 does
+- modifiers must be explicitly enabled by setting `DRM_MODE_FB_MODIFIERS` flag
 
 ## DRM modifiers
 
@@ -54,42 +62,3 @@ DRM Modesetting
 - EGL supports modifiers
   - when importing a dma-buf, no modifier means implementation-defined
     modifier; `DRM_FORMAT_MOD_INVALID` is not a valid explicit modifier
-
-## DRM formats
-
-- `DRM_IOCTL_MODE_ADDFB2` takes a format instead of bpp/depth.  It also
-  supports modifiers and planar formats.
-  - internally, `drm_mode_legacy_fb_format` translates bpp/depth to format and
-    `DRM_IOCTL_MODE_ADDFB` can take the same path as addfb2 does
-- modifiers must be explicitly enabled by setting `DRM_MODE_FB_MODIFIERS` flag
-
-## Modeset Fences
-
-- explicit in-fencing
-  - userspace sets the in-fence using `IN_FENCE_FD` property
-  - `drm_atomic_plane_set_property` saves the fence at `state->fence`
-  - `drm_gem_plane_helper_prepare_fb` merges `DMA_RESV_USAGE_KERNEL` implicit
-    fences associated with fbs, if any, to `state->fence`
-    - if not doing explicit in-fencing, this merges `DMA_RESV_USAGE_WRITE`
-      implicit fences instead
-  - `drm_atomic_helper_wait_for_fences` waits on `state->fence`
-  - commit!
-- explicit out-fencing
-  - userspace sets the out-fence using `OUT_FENCE_PTR` property
-  - `drm_atomic_crtc_set_property` saves the ptr to
-    `state->crtcs[idx].out_fence_ptr`
-  - `prepare_signaling` calls `drm_crtc_create_fence` to create a new fence
-    and calls `setup_out_fence` to point the out-fence to the new fence
-    - it also calls `create_vblank_event` to be notified on next vsync
-    - there are also writeback fences associated with connectors, which will
-      be signaled by `drm_writeback_signal_completion`
-  - `complete_signaling` returns the out fences as fds
-  - on next vblank, `drm_crtc_send_vblank_event` calls `drm_send_event_helper`
-    indirectly to signal the out-fence
-  - note that when userspace makes a commit, the new fbs will replace the
-    current fbs on next vblank and the out-fence will signal
-    - the current fbs (instead of the new ones) become available when the
-      out-fence signals
-  - there is implicit in-fencing but no implicit out-fencing
-    - the userspace compositor traditionally requests a
-      `DRM_MODE_PAGE_FLIP_EVENT` to get notified
