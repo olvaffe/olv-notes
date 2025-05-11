@@ -60,14 +60,34 @@ DRM connector
 ## `struct drm_connector_helper_funcs`
 
 - `get_modes`
-- `detect_ctx`
+  - during `drm_helper_probe_single_connector_modes`,
+    `drm_helper_probe_get_modes` calls this to update
+    `connector->probed_modes`
+- `detect_ctx` replaces `detect`
 - `mode_valid`
-- `mode_valid_ctx`
+- `mode_valid_ctx` replaces `mode_valid`
+  - after `get_modes`, `drm_connector_mode_valid` calls this to remove
+    invalid modes
 - `best_encoder`
 - `atomic_best_encoder`
+  - during atomic commit, `drm_atomic_helper_check` calls
+    `drm_atomic_helper_check_modeset`, which calls `update_connector_routing`
+    to call this
 - `atomic_check`
+  - after `atomic_best_encoder`, `drm_atomic_helper_check_modeset` calls this
+    to check the atomic state
 - `atomic_commit`
+  - during atomic commit tail, `drm_atomic_helper_commit_writebacks` calls
+    this for writeback
 - `prepare_writeback_job`
+  - during atomic commit, `drm_atomic_helper_prepare_planes` calls
+    `drm_writeback_prepare_job` to call this
 - `cleanup_writeback_job`
+  - after hw writeback completion, `drm_writeback_signal_completion` calls
+    `drm_writeback_cleanup_job` which calls this
 - `enable_hpd`
+  - on init or resume, `drm_kms_helper_poll_enable` calls
+    `drm_kms_helper_enable_hpd` to call this
 - `disable_hpd`
+  - during suspend, `drm_kms_helper_poll_disable` calls
+    `drm_kms_helper_disable_hpd` to call this
