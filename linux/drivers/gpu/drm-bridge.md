@@ -174,3 +174,29 @@ Linux DRM Bridge
     connector for the entire bridge chain
   - later, when `drm_atomic_helper_commit_tail` commits,
     `drm_atomic_bridge_chain_enable` enables all bridges
+
+## `CONFIG_DRM_AUX_HPD_BRIDGE`
+
+- non-drm drivers that support hpd (hotplug detection) can use
+  `CONFIG_DRM_AUX_HPD_BRIDGE` to create a drm bridge
+  - `devm_drm_dp_hpd_bridge_alloc` allocs an `auxiliary_device`
+  - `devm_drm_dp_hpd_bridge_add` adds the `auxiliary_device` to the bus
+  - `drm_dp_hpd_bridge_register` combines alloc and add
+  - `drm_aux_hpd_bridge_notify` notifies detected hotplug
+- when `drm_aux_hpd_bridge_probe` probes the aux dev, it adds a bridge capable
+  of only hpd
+
+## `CONFIG_DRM_AUX_BRIDGE`
+
+- non-drm drivers that support altmode can use `CONFIG_DRM_AUX_BRIDGE` to
+  create a drm bridge
+  - e.g., typec mux drivers
+  - `drm_aux_bridge_register` allocs and adds an `auxiliary_device`
+- when `drm_aux_bridge_probe` probes the aux dev, it adds a bridge that is nop
+  - `devm_drm_of_get_bridge` finds the next bridge, which is typically
+    `CONFIG_DRM_AUX_HPD_BRIDGE`
+  - `drm_aux_bridge_attach` attaches the next bridge
+- in the dt, the data flow is typically
+  - `planes -> pixel pipeline -> dp controller -> usb phy -> usb retimer -> usb connector`
+  - `CONFIG_DRM_AUX_HPD_BRIDGE` adds a hpd-only bridge for usb connector
+  - `CONFIG_DRM_AUX_BRIDGE` adds a nop bridge for usb retimer
