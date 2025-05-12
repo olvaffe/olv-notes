@@ -1,6 +1,98 @@
 Linux DRM Bridge
 ================
 
+## `struct drm_bridge_funcs`
+
+- `attach`
+  - during encoder building, `drm_bridge_attach` calls this
+- `detach`
+  - during encoder cleanup, `drm_encoder_cleanup` calls `drm_bridge_detach` to
+    call this
+- `mode_valid`
+  - during atomic check or connector `get_modes`,
+    `drm_bridge_chain_mode_valid` calls this
+- `mode_fixup` is deprecated by `atomic_check`
+- `disable` is deprecated by `atomic_disable`
+- `post_disable` is deprecated by `atomic_post_disable`
+- `mode_set` is deprecated by `atomic_enable`
+  - during atomic commit tail, `drm_atomic_helper_commit_modeset_disables`
+    calls `drm_bridge_chain_mode_set` to call this
+- `pre_enable` is deprecated by `atomic_pre_enable`
+- `enable` is deprecated by `atomic_enable`
+- `atomic_pre_enable`
+  - during atomic commit tail, `drm_atomic_helper_commit_modeset_enables`
+    calls `drm_atomic_bridge_chain_pre_enable` which calls
+    `drm_atomic_bridge_call_pre_enable` to call this
+- `atomic_enable`
+  - during atomic commit tail, `drm_atomic_helper_commit_modeset_enables`
+    calls `drm_atomic_bridge_chain_enable` to call this
+- `atomic_disable`
+  - during atomic commit tail, `drm_atomic_helper_commit_modeset_disables`
+    calls `drm_atomic_bridge_chain_disable` to call this
+- `atomic_post_disable`
+  - during atomic commit tail, `drm_atomic_helper_commit_modeset_disables`
+    calls `drm_atomic_bridge_chain_post_disable` to call
+    `drm_atomic_bridge_call_post_disable` which calls this
+- `atomic_duplicate_state` is typically
+  `drm_atomic_helper_bridge_duplicate_state`
+  - during encoder building, `drm_bridge_attach` calls
+    `drm_atomic_private_obj_init` with
+    `drm_bridge_atomic_duplicate_priv_state` to call this
+- `atomic_destroy_state`
+  - during encoder building, `drm_bridge_attach` calls
+    `drm_atomic_private_obj_init` with
+    `drm_bridge_atomic_destroy_priv_state` to call this
+- `atomic_get_output_bus_fmts`
+  - during atomic check, `drm_atomic_helper_check_modeset` calls
+    `drm_atomic_bridge_chain_check` which calls
+    `drm_atomic_bridge_chain_select_bus_fmts` to call this
+- `atomic_get_input_bus_fmts`
+  - during atomic check, `drm_atomic_helper_check_modeset` calls
+    `drm_atomic_bridge_chain_check` which calls
+    `drm_atomic_bridge_chain_select_bus_fmts` to call this
+- `atomic_check`
+  - during atomic check, `drm_atomic_helper_check_modeset` calls
+    `drm_atomic_bridge_chain_check` which calls `drm_atomic_bridge_check` to
+    call this
+- `atomic_reset` is typically `drm_atomic_helper_bridge_reset`
+  - during encoder building, `drm_bridge_attach` calls this
+- `detect`
+  - `drm_bridge_connector_detect` calls this
+- `get_modes`
+  - `drm_bridge_connector_get_modes` calls this
+- `edid_read`
+  - `drm_bridge_connector_get_modes` calls `drm_bridge_edid_read` to call this
+- `hpd_notify` is typically NULL
+  - during hpd irq or detect, `drm_bridge_connector_hpd_notify` calls this
+- `hpd_enable`
+  - `drm_bridge_connector_enable_hpd` calls `drm_bridge_hpd_enable` to call
+    this
+- `hpd_disable`
+  - `drm_bridge_connector_disable_hpd` calls `drm_bridge_hpd_disable` to call
+    this
+- `hdmi_clear_infoframe`
+  - `drm_bridge_connector_clear_infoframe` calls this
+- `hdmi_write_infoframe`
+  - `drm_bridge_connector_write_infoframe` calls this
+- `hdmi_audio_startup`
+  - `drm_bridge_connector_audio_startup` calls this
+- `hdmi_audio_prepare`
+  - `drm_bridge_connector_audio_prepare` calls this
+- `hdmi_audio_shutdown`
+  - `drm_bridge_connector_audio_shutdown` calls this
+- `hdmi_audio_mute_stream`
+  - `drm_bridge_connector_audio_mute_stream` calls this
+- `dp_audio_startup`
+  - `drm_bridge_connector_audio_startup` calls this
+- `dp_audio_prepare`
+  - `drm_bridge_connector_audio_prepare` calls this
+- `dp_audio_shutdown`
+  - `drm_bridge_connector_audio_shutdown` calls this
+- `dp_audio_mute_stream`
+  - `drm_bridge_connector_audio_mute_stream` calls this
+- `debugfs_init`
+  - `drm_bridge_connector_debugfs_init` calls this
+
 ## Bridge Driver
 
 - all bridge drivers should
