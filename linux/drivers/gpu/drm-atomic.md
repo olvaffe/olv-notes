@@ -164,3 +164,31 @@ DRM atomic modesetting
   - there is implicit in-fencing but no implicit out-fencing
     - the userspace compositor traditionally requests a
       `DRM_MODE_PAGE_FLIP_EVENT` to get notified
+
+## `struct drm_mode_config_funcs`
+
+- `fb_create` is typically `drm_gem_fb_create`
+  - during fb create, `drm_internal_framebuffer_create` calls this
+- `get_format_info` is typically NULL
+  - during fb create, `drm_get_format_info` calls this or `drm_format_info`
+- `mode_valid` is typically NULL
+  - during connector `fill_modes`, `drm_mode_validate_driver` calls this
+- `atomic_check` is typically `drm_atomic_helper_check`
+  - during atomic check, `drm_atomic_check_only` calls this
+- `atomic_commit` is typically `drm_atomic_helper_commit`
+  - during atomic commit, `drm_atomic_commit` and
+    `drm_atomic_nonblocking_commit` call this
+- `atomic_state_alloc` is typically NULL
+  - during atomic commit or prop set, `drm_atomic_state_alloc` calls this
+- `atomic_state_clear` is typically NULL
+  - on free, `drm_atomic_state_clear` calls this
+- `atomic_state_free` is typically NULL
+  - when refcount reaches 0, `__drm_atomic_state_free` calls this
+
+## `struct drm_mode_config_helper_funcs`
+
+- `atomic_commit_tail` is typically NULL
+  - during atomic commit tail, `commit_tail` calls this or
+    `drm_atomic_helper_commit_tail`
+- `atomic_commit_setup` is typically NULL
+  - during atomic commit, `drm_atomic_helper_setup_commit` calls this
