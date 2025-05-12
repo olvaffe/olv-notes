@@ -153,6 +153,28 @@ DRM Panel
   - 2022
   - SBTM (Source-Based Tone Mapping)
 
+## `struct drm_panel_funcs`
+
+- `prepare`
+  - `panel_bridge_atomic_pre_enable` calls `drm_panel_prepare` to call this
+- `enable`
+  - `panel_bridge_atomic_enable` calls `drm_panel_enable` to call this
+- `disable`
+  - `panel_bridge_atomic_disable` calls `drm_panel_disable` to call this
+- `unprepare`
+  - `panel_bridge_atomic_post_disable` calls `drm_panel_unprepare` to call
+    this
+- `get_modes`
+  - `panel_bridge_get_modes` calls `drm_panel_get_modes` to call this
+  - we assume `DRM_BRIDGE_ATTACH_NO_CONNECTOR` because other paths are
+    deprecated
+- `get_orientation` typically calls `of_drm_get_panel_orientation`
+  - `drm_bridge_connector_init` calls `drm_panel_bridge_set_orientation` which
+    calls `drm_connector_set_orientation_from_panel` to call this
+- `get_timings` is unused
+- `debugfs_init` is typically NULL
+  - `panel_bridge_debugfs_init` calls this
+
 ## Panel Driver
 
 - connector types
