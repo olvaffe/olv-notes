@@ -144,10 +144,45 @@ DRM panthor
     - it writes to `FOO_INT_MASK` to re-enable sources
   - `panthor_foo_irq_suspend` is called on suspend
     - it writes to `FOO_INT_MASK` to disable all sources
+- `PANTHOR_IRQ_HANDLER(gpu, GPU, panthor_gpu_irq_handler)`
+  - sources are gpu faults, gpu cmd completions, etc.
 - `PANTHOR_IRQ_HANDLER(mmu, MMU, panthor_mmu_irq_handler)`
   - sources are which of the 8 address spaces faults or completes `AS_COMMAND_x`
-- `PANTHOR_IRQ_HANDLER(gpu, GPU, panthor_gpu_irq_handler)`
 - `PANTHOR_IRQ_HANDLER(job, JOB, panthor_job_irq_handler)`
+
+## GPU
+
+- `panthor_gpu_init` inits `ptdev->gpu`
+  - `reqs_acked` is waitqueue for `GPU_CMD`
+  - `panthor_request_gpu_irq` requests selected sources
+    - `GPU_IRQ_FAULT`
+    - `GPU_IRQ_PROTM_FAULT`
+    - `GPU_IRQ_RESET_COMPLETED`
+    - `GPU_IRQ_CLEAN_CACHES_COMPLETED`
+- `panthor_gpu_power_on` and `panthor_gpu_power_off`
+  - they power one of the gpu blocks on/off
+    - `L2` for L2
+    - `SHADER` for shader cores
+    - `TILER` for tiler
+  - because of `PWROFF_HYSTERESIS_US`, `SHADER` and `TILER` are managed by CSF
+    automatically
+  - how they work is
+    - wait for in-flight transitions until `PWRTRANS` is cleared
+    - write to `PWRON` or `PWROFF`
+    - wait until `READY` is set (on) or until `PWRTRANS` is cleared (off)
+- `panthor_gpu_irq_handler`
+  - if `GPU_IRQ_FAULT` or `GPU_IRQ_PROTM_FAULT`, it prints an error
+  - otherwise, it clears `ptdev->gpu->pending_reqs` and wakes up waiters
+- `panthor_gpu_flush_caches` flushes/invalidates l2/lsc/other caches
+  - it is called before suspend, to ensure caches are flushed
+  - it sets `ptdev->gpu->pending_reqs`
+  - it writes to `GPU_CMD` for `GPU_FLUSH_CACHES`
+  - it waits until `ptdev->gpu->pending_reqs` is cleared
+- `panthor_gpu_soft_reset` soft-resets the gpu
+  - it is called for gpu recovery, or for a slow path during suspend
+  - it sets `ptdev->gpu->pending_reqs`
+  - it writes to `GPU_CMD` for `GPU_SOFT_RESET`
+  - it waits until `ptdev->gpu->pending_reqs` is cleared
 
 ## MMU
 
@@ -160,6 +195,7 @@ DRM panthor
     - when another vm becomes active but there is no available slot,
       `panthor_vm_active` evicts the first vm on the list
   - `mmu->vm.list` is a list of all VMs
+  - `panthor_request_mmu_irq` requests faults for all address spaces
   - `mmu->vm.wq` is a workqueue shared by all VMs' `vm->sched` for
     `panthor_vm_bind_run_job`
 - `panthor_mmu_irq_handler` handles an irq

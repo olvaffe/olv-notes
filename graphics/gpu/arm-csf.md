@@ -9,7 +9,7 @@ ARM Mali CSF
   - it supports multiple CSGs and schedules CSs to CSHWIFs
   - it emulates some of the CSF instructions
 - CSHW
-  - it has two or more CSHWIFs to execute CSs concurrently
+  - it has two or more CSHWIFs to fetch and execute CSs concurrently
     - each CSHWIF has its own register file and scoreboard
   - some CSF instrs are executed by CEU
   - some CSF instrs are emulated by MCU
@@ -50,10 +50,10 @@ ARM Mali CSF
 - `CSF_ID` (`GPU_CSF_ID` in panthor)
 - `GPU_IRQ_RAWSTAT` (`GPU_INT_RAWSTAT` in panthor)
   - irq sources that are active
-  - bit 0 (`GPU_IRQ_FAULT`)
-  - bit 1 (`GPU_IRQ_PROTM_FAULT`)
-  - bit 8 (`GPU_IRQ_RESET_COMPLETED`)
-  - bit 17 (`GPU_IRQ_CLEAN_CACHES_COMPLETED`)
+  - bit 0 (`GPU_IRQ_FAULT`) for gpu faults
+  - bit 1 (`GPU_IRQ_PROTM_FAULT`) for gpu faults in protected mode
+  - bit 8 (`GPU_IRQ_RESET_COMPLETED`) for reset cmd completion
+  - bit 17 (`GPU_IRQ_CLEAN_CACHES_COMPLETED`) for flush caches cmd completion
 - `GPU_IRQ_CLEAR` (`GPU_INT_CLEAR` in panthor)
   - irq sources to clear
 - `GPU_IRQ_MASK` (`GPU_INT_MASK` in panthor)
@@ -63,6 +63,9 @@ ARM Mali CSF
 - `GPU_COMMAND` (`GPU_CMD` in panthor)
   - `GPU_SOFT_RESET` resets gpu and leaves external bus in defined and idle state
   - `GPU_FLUSH_CACHES` flushes/invalidtes L2/LSC/other caches
+    - L2 is read-write and is used for all memory access
+    - LSC is read-write L1 for shader core load/store
+    - other is read-only L1 for shader core texture
 - `GPU_STATUS`
 - `GPU_FAULTSTATUS` (`GPU_FAULT_STATUS` in panthor)
   - bit 7:0: exception type
@@ -86,10 +89,11 @@ ARM Mali CSF
 - `GPU_FEATURES`
 - `PRFCNT_FEATURES`
 - `TIMESTAMP_OFFSET` (`GPU_TIMESTAMP_OFFSET_LO` in panthor)
+  - modifiable timestamp offset
 - `CYCLE_COUNT` (`GPU_CYCLE_COUNT_LO` in panthor)
 - `TIMESTAMP` (`GPU_TIMESTAMP_LO` in panthor)
-  - returns the current value of the system counter whose frequency can be
-    read from `CNTFRQ_EL0`
+  - returns the current value of the system counter, whose frequency can be
+    read from `CNTFRQ_EL0`, offset by `TIMESTAMP_OFFSET`
 - `THREAD_MAX_THREADS` (`GPU_THREAD_MAX_THREADS` in panthor)
 - `THREAD_MAX_WORKGROUP_SIZE` (`GPU_THREAD_MAX_WORKGROUP_SIZE` in panthor)
 - `THREAD_MAX_BARRIER_SIZE` (`GPU_THREAD_MAX_BARRIER_SIZE` in panthor)
@@ -125,7 +129,8 @@ ARM Mali CSF
 - `TILER_PWRACTIVE`
 - `L2_PWRACTIVE`
   - ok, this works the same way for `SHADER`, `TILER`, and `L2` blocks
-    - but it seems `SHADER` and `TILER` are controlled by CSF
+    - `SHADER` and `TILER` are controlled by CSF when `GLB_PWROFF_TIMER` is
+      non-zero
     - only `L2` is controlled by the host driver
   - `L2_READY` indicates L2 is powered up and ready
   - `L2_PWRON` requests L2 to be powered on
