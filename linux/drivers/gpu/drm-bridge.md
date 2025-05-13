@@ -200,3 +200,28 @@ Linux DRM Bridge
   - `planes -> pixel pipeline -> dp controller -> usb phy -> usb retimer -> usb connector`
   - `CONFIG_DRM_AUX_HPD_BRIDGE` adds a hpd-only bridge for usb connector
   - `CONFIG_DRM_AUX_BRIDGE` adds a nop bridge for usb retimer
+
+## External Displays
+
+- `qcom,x1e80100`
+  - dpu has 4 pixel outputs, `mdss_intfX_out`
+    - `CONFIG_DRM_MSM_DPU`
+  - 4 pixel outputs connect to 4 dp controllers, `mdss_dpX`
+    - `CONFIG_DRM_MSM_DP`
+  - 3 display controllers connect to 3 usb phys, `usb_1_ssX_qmpphy`
+    - `CONFIG_PHY_QCOM_QMP_COMBO`
+    - last display controller connects to built-in display
+  - 3 usb phys connect to 3 usb retimers, `retimer_ssX_ss_in`
+    - `CONFIG_TYPEC_MUX_PS883X`
+    - `CONFIG_DRM_AUX_BRIDGE`
+  - 3 usb retimers connect to 3 usb connectors
+    - `CONFIG_QCOM_PMIC_GLINK`
+    - `CONFIG_DRM_AUX_HPD_BRIDGE`
+- `mediatek,mt8186`
+  - there is 1 dpi controller, `dpi0`
+    - `CONFIG_DRM_MEDIATEK`
+    - there is also 1 dsi controller, `dsi0`, for built-in display
+  - 1 dpi controller connects to 1 bridge, `it6505dptx`
+    - `CONFIG_DRM_ITE_IT6505`
+  - 1 bridge connects to 2 usb connectors, `usb_cX`
+    - `CONFIG_CROS_EC_TYPEC`
