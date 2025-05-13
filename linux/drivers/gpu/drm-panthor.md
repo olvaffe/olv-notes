@@ -374,14 +374,18 @@ DRM panthor
     - `cs_iface->{input,output}` are given by
       `cs_iface->control->{input,output}_va`
     - there are ~128 regs
+- communication with mcu
+  - update the input region
+    - `panthor_fw_update_reqs` and `panthor_fw_toggle_reqs` for reqs
+    - direct writes for values
+  - mcu may read the input region at any time
+    - ringing the doorbell ensures mcu reads it timely
+    - for reqs,
+      - mcu executes `req ^ ack` and sets `ack` to `req`
+      - if `req ^ ack` intersects `ack_irq_mask`, an irq is raised
+  - `panthor_fw_wait_acks` waits on mcu
+    - it requres the bits to be set in `ack_irq_mask`, to get an irq
 - `panthor_fw_init_global_iface`
-  - it communicates with mcu over the global iface
-    - host writes to input region
-    - host writes to `CSF_DOORBELL(CSF_GLB_DOORBELL_ID)` to notify mcu
-  - req/ack
-    - input has `reg` and output has `ack`
-    - when the host rings the door bell, mcu executes `ret ^ ack` and sets
-      `ack` to `ret`
 - `panthor_fw_global_iface`
   - `panthor_fw_global_control_iface`
     - `input_va` is the offset of `panthor_fw_global_input_iface`

@@ -294,7 +294,7 @@ ARM Mali CSF
     generate an irq
 - `GLB_DB_REQ` rings the doorbell of CSGn
 - `GLB_PROGRESS_TIMER` if a task runs too long, exceeding the specified
-  cycles, generates an irq
+  cycles, set `PROGRESS_TIMER_EVENT` in `CSG_ACK`
 - `GLB_PWROFF_TIMER` automatic PM for tiler and shader cores
   - bit 30:0: timeout val
   - bit 31: `GPU_COUNTER` when set, `SYSTEM_TIMESTAMP` when cleared
