@@ -233,15 +233,30 @@ DRM panthor
 
 - `panthor_kernel_bo_create` creates a kernel bo
   - `drm_gem_shmem_create` creates a shmem gem object
+    - this calls `panthor_gem_create_object` to alloc the struct
     - unlike a userspace bo, `drm_gem_handle_create` is not called
   - `panthor_vm_alloc_va` allocs a VA for the bo
     - remember that a VM has a userspace region and a kernel region
     - this allocates the VA from the kernel region, managed by `vm->mm`
   - `panthor_vm_map_bo_range` maps the bo in the vm
-    - `panthor_vm_prepare_map_op_ctx` pins the bo pages, obtains the unique
-      `drm_gpuvm_bo`, and adds the bo to the gpuvm
-    - `panthor_vm_exec_op` calls `drm_gpuvm_sm_map` to map with split-merge
-      - this calls into `panthor_gpuvm_ops`
+    - this uses gpuvm to set up the page tables
+  - the kernel bo is exclusive to the vm
+- `panthor_kernel_bo_vmap` maps kernel bo for cpu access
+- kernel bo users
+  - `panthor_fw_load_section_entry` allocs 1 bo per-section for fw
+  - `panthor_heap_pool_create` allocs 1 bo per-vm for heap contexts
+  - `panthor_alloc_heap_chunk` allocs 1 bo per-chuck for each heap
+  - `panthor_fw_alloc_suspend_buf_mem` allocs 2 bos per-group for group
+    suspension
+  - `panthor_group_create` creates 1 bo per-group for queue seqnos
+  - `group_create_queue` creates 2 bos per-queue for ring buffer and fdinfo
+    stats respectively
+  - `panthor_fw_alloc_queue_iface_mem` allocs 2 pages per-queue for ring
+    buffer head/tail
+- `panthor_gem_create_with_handle` creates a userspace bo
+  - `drm_gem_shmem_create` creates a shmem gem object
+  - the bo may be exclusive (private) to the vm, or shareable
+  - `drm_gem_handle_create` creates the gem handle for userspace
 
 ## CSF Firmware
 
