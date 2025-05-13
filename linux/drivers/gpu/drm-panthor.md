@@ -149,6 +149,7 @@ DRM panthor
 - `PANTHOR_IRQ_HANDLER(mmu, MMU, panthor_mmu_irq_handler)`
   - sources are which of the 8 address spaces faults or completes `AS_COMMAND_x`
 - `PANTHOR_IRQ_HANDLER(job, JOB, panthor_job_irq_handler)`
+  - sources are glb and any of the csg
 
 ## GPU
 
@@ -209,8 +210,15 @@ DRM panthor
     - `panthor_mmu_as_disable` disables the AS
   - `panthor_sched_report_mmu_fault` reports the fault to sched to force a
     tick
-- when userspace creates a VM (per-`VkDevice`), `panthor_vm_create` is called
-  to create a `panthor_vm`
+- when fw or userspace creates a VM (per-`VkDevice`), `panthor_vm_create` is
+  called to create a `panthor_vm`
+  - the vm region is splitted into userspace region and kernel region
+    - userspace region is before `kernel_va_start` and is managed by userspace
+    - kernel region is specified by `kernel_va_start` and `kernel_va_size`,
+      and is managed by kernel
+      - a kernel bo whose va is `PANTHOR_VM_KERNEL_AUTO_VA` gets assigned an
+        va from the "auto" region specified by `auto_kernel_va_start` and
+        `auto_kernel_va_size`
   - `vm->mm` is a `drm_mm` to manage the kernel va range (top 2TB)
   - `vm->as.id` is -1 until the vm is active
   - `pgtbl_ops` will alloc/free page tables in `ARM_64_LPAE_S1` format
@@ -296,35 +304,29 @@ DRM panthor
 
 ## CSF Firmware
 
-- `panthor_fw_init` is the entrypoint
-- `platform_get_irq_byname` gets the irq for `job`
-- `panthor_gpu_l2_power_on` powers on L2
-  - it is a wrapper to `panthor_gpu_power_on`, which supports these gpu blocks
-    - SHADER
-    - TILER
-    - L2
-    - it appears that the fw depends on L2 and can control the rest
-  - it checks `L2_PWRTRANS_{LO,HI}` to make sure there is no ongoing power
-    transition
-  - it writes to `L2_PWRON_{LO,HI}` to power on L2
-  - it checks to `L2_READY_{LO,HI}` to make sure L2 is ready
-  - `panthor_gpu_power_off` works similarly
-- `panthor_vm_create` creates `fw->vm`
-  - `kernel_va_start` and `kernel_va_size`
-    - a vm is usually splitted into userspace region and kernel space region
-    - since this vm is not visible to userspace, we don't really care about
-      userspace region
-    - in this case, it takes up the first 4GB
-  - `auto_kernel_va_start` and `auto_kernel_va_size`
-    - a bo whose va is `PANTHOR_VM_KERNEL_AUTO_VA` gets assigned an va from
-      the "auto" region
-    - in this case, the auto region is `[64MB, 128MB]`
-- `panthor_fw_load` loads the fw
+- `panthor_fw_init` inits `ptdev->fw`
+  - `fw->req_waitqueue` is waitqueue for mcu/glb/csg cmds
+  - `fw->sections` is loaded fw sections
+  - `fw->watchdog` is watchdog for glb
+  - `panthor_request_job_irq` requests no irq sources
+    - `panthor_fw_start` will change the sources
+  - `panthor_gpu_l2_power_on` powers on L2
+  - `panthor_vm_create` creates a vm for the fw
+  - `panthor_fw_load` loads the fw
+  - `panthor_vm_active` enables the vm
+  - `panthor_fw_start` boots the fw
+  - `panthor_fw_init_ifaces` locates the glb/csg/cs interfaces exported by fw
+  - `panthor_fw_init_global_iface` inits the glb interface
+- `panthor_job_irq_handler`
+  - if `JOB_INT_GLOBAL_IF`, it means mcu has booted or glb req completes
+  - if `JOB_INT_CSG_IF(n)`, it means csg N req completes
+- `panthor_fw_load`
   - a fw has multiple entries
   - `panthor_fw_load_entry` loads an entry
     - `ehdr` is the entry header
     - `CSF_FW_BINARY_ENTRY_TYPE(ehdr)` returns the entry type
-      - only `CSF_FW_BINARY_ENTRY_TYPE_IFACE` is supported
+      - `CSF_FW_BINARY_ENTRY_TYPE_IFACE` specifies an interface
+      - `CSF_FW_BINARY_ENTRY_TYPE_BUILD_INFO_METADATA` specifies the metadata
     - `CSF_FW_BINARY_ENTRY_SIZE(ehdr)` returns the entry size
     - `CSF_FW_BINARY_ENTRY_OPTIONAL` returns if the entry is optional
       - if an entry is not supported and is not optional, the loading fails
@@ -341,36 +343,37 @@ DRM panthor
           saved to `fw->shared_section`
       - `data.start` and `data.end` are entry data to be copied into bo
       - it is followed by the entry name, which is usually empty
-- `panthor_fw_start` boots the fw
+- `panthor_fw_start`
+  - `panthor_job_irq_resume` enables all irq sources
+  - it writes `MCU_CONTROL_AUTO` to `MCU_CONTROL`
   - the fw is considered booted after a `JOB_INT_GLOBAL_IF` irq is received
 - `panthor_fw_init_ifaces`
   - each interface consists of control, input, and output regions
     - control is for iface props and is read-only 
     - input is written by host and is read-write
     - output is written by mcu and is read-only
-  - there are 3 types of interfaces
-    - `panthor_fw_global_iface`
-      - there is only one
-      - `glb_iface->control` points to `CSF_MCU_SHARED_REGION_START`
-      - `glb_iface->{input,output}` are given by
-        `glb_iface->control->{input,output}_va`
-    - `panthor_fw_csg_iface`
-      - there are multiple command stream gropus (e.g., 8) given by
-        `glb_iface->control->group_num`
-      - `csg_iface->control` are gvien by
-        `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
-      - `csg_iface->{input,output}` are given by
-        `csg_iface->control->{input,output}_va`
-    - `panthor_fw_cs_iface`
-      - there are multiple command streams per group (e.g., 8) given by
-        `csg_iface->control->stream_num`
-      - `cs_iface->control` are gvien by
-        `CSF_STREAM_CONTROL_OFFSET + csg_iface->control->stream_stride * idx`
-        relative to the csg control
-        `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
-      - `cs_iface->{input,output}` are given by
-        `cs_iface->control->{input,output}_va`
-      - there are ~128 regs
+  - `panthor_fw_global_iface`
+    - there is only one
+    - `glb_iface->control` points to `CSF_MCU_SHARED_REGION_START`
+    - `glb_iface->{input,output}` are given by
+      `glb_iface->control->{input,output}_va`
+  - `panthor_fw_csg_iface`
+    - there are multiple command stream gropus (e.g., 8) given by
+      `glb_iface->control->group_num`
+    - `csg_iface->control` are gvien by
+      `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
+    - `csg_iface->{input,output}` are given by
+      `csg_iface->control->{input,output}_va`
+  - `panthor_fw_cs_iface`
+    - there are multiple command streams per group (e.g., 8) given by
+      `csg_iface->control->stream_num`
+    - `cs_iface->control` are gvien by
+      `CSF_STREAM_CONTROL_OFFSET + csg_iface->control->stream_stride * idx`
+      relative to the csg control
+      `CSF_GROUP_CONTROL_OFFSET + glb_iface->control->group_stride * idx`
+    - `cs_iface->{input,output}` are given by
+      `cs_iface->control->{input,output}_va`
+    - there are ~128 regs
 - `panthor_fw_init_global_iface`
   - it communicates with mcu over the global iface
     - host writes to input region
@@ -840,42 +843,3 @@ DRM panthor
   - `AS_FAULTSTATUS` for mmu faults
   - `GPU_FAULT_STATUS` for gpu faults
   - shmem with CSF firmware for CS faults
-- these are non-faults
-  - `DRM_PANTHOR_EXCEPTION_OK`
-  - `DRM_PANTHOR_EXCEPTION_TERMINATED`
-  - `DRM_PANTHOR_EXCEPTION_KABOOM` (iterator)
-  - `DRM_PANTHOR_EXCEPTION_EUREKA`
-  - `DRM_PANTHOR_EXCEPTION_ACTIVE`
-  - `DRM_PANTHOR_EXCEPTION_MAX_NON_FAULT`
-- these are CS faults
-  - `DRM_PANTHOR_EXCEPTION_CS_RES_TERM`
-  - `DRM_PANTHOR_EXCEPTION_CS_CONFIG_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_CS_UNRECOVERABLE`
-  - `DRM_PANTHOR_EXCEPTION_CS_ENDPOINT_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_CS_BUS_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_CS_INSTR_INVALID`
-  - `DRM_PANTHOR_EXCEPTION_CS_CALL_STACK_OVERFLOW`
-  - `DRM_PANTHOR_EXCEPTION_CS_INHERIT_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_CSF_FW_INTERNAL_ERROR`
-  - `DRM_PANTHOR_EXCEPTION_CSF_RES_EVICTION_TIMEOUT`
-- these are gpu faults
-  - `DRM_PANTHOR_EXCEPTION_INSTR_INVALID_PC` (shader)
-  - `DRM_PANTHOR_EXCEPTION_INSTR_INVALID_ENC` (shader)
-  - `DRM_PANTHOR_EXCEPTION_INSTR_BARRIER_FAULT` (shader)
-  - `DRM_PANTHOR_EXCEPTION_DATA_INVALID_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_TILE_RANGE_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_ADDR_RANGE_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_IMPRECISE_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_OOM`
-  - `DRM_PANTHOR_EXCEPTION_GPU_BUS_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_GPU_SHAREABILITY_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_SYS_SHAREABILITY_FAULT`
-  - `DRM_PANTHOR_EXCEPTION_GPU_CACHEABILITY_FAULT`
-- these are mmu faults
-  - the numeric suffices are page table levels
-  - `DRM_PANTHOR_EXCEPTION_TRANSLATION_FAULT_[0-4]`
-  - `DRM_PANTHOR_EXCEPTION_PERM_FAULT_[0-3]`
-  - `DRM_PANTHOR_EXCEPTION_ACCESS_FLAG_[1-3]`
-  - `DRM_PANTHOR_EXCEPTION_ADDR_SIZE_FAULT_IN`
-  - `DRM_PANTHOR_EXCEPTION_ADDR_SIZE_FAULT_OUT[0-3]`
-  - `DRM_PANTHOR_EXCEPTION_MEM_ATTR_FAULT_[0-3]`

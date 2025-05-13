@@ -229,7 +229,10 @@ ARM Mali CSF
 - `JOB_IRQ_RAWSTAT` (`JOB_INT_RAWSTAT` in panthor)
   - irq sources that are active
   - bit 30:0: CSGn
+    - check `CSG_REQ`/`CSG_ACK` and `CSG_IRQ_REQ`/`CSG_IRQ_ACK` for reasons
   - bit 31: GLB
+    - check `GLB_REQ`/`GLB_ACK` for reasons
+    - this is also set after mcu starts
 - `JOB_IRQ_CLEAR` (`JOB_INT_CLEAR` in panthor)
   - irq sources to clear
 - `JOB_IRQ_MASK` (`JOB_INT_MASK` in panthor)
