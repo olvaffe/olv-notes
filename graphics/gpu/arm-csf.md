@@ -167,20 +167,29 @@ ARM Mali CSF
   - `IRQ_RAWSTAT & IRQ_MASK`
 - `ASn` (`MMU_AS` in panthor)
   - `TRANSTAB` is the addr of the base page table
-  - `MEMATTR` is the memattrs for 8 memory types
+  - `MEMATTR` is the memattrs for 8 memory types, each taking 8 bits
     - bit 0: alloc cacheline for inner cache write
     - bit 1: alloc cacheline for inner cache read
     - bit 3:2: respect bit 0 and 1, or let bus decide
     - bit 5:4: coherency
     - bit 7:6: shared, non-cached, write-back, fault
   - `LOCKADDR` specifies addr/size for command
+    - bit 5:0: size, `log2(size) minus 1`
+    - bit 63:12: addr
   - `COMMAND`
     - `AS_COMMAND_NOP` is nop
     - `AS_COMMAND_UPDATE` commits `TRANSTAB`, `MEMATTR`, and `TRANSCFG` to hw
-    - `AS_COMMAND_LOCK` locks a region for pt update
+      - this is used to change the root page table atomically
+    - `AS_COMMAND_LOCK` locks a region specified by `LOCKADDR`
+      - this invalidates TLB (but not L2) and blocks translations
+      - this is used after updating a page table
     - `AS_COMMAND_UNLOCK` unlocks a region
+      - it unblocks translations
+      - it implies `LOCK` if there is no prior `LOCK`
     - `AS_COMMAND_FLUSH_PT` flushes/invalidates L2 and then unlock
-    - `AS_COMMAND_FLUSH_MEM` flushes/invalidates all caches and then unlock
+      - it can be replaced by `GPU_FLUSH_CACHES`+`AS_COMMAND_UNLOCK`
+    - `AS_COMMAND_FLUSH_MEM` flushes/invalidates L2/LSC caches and then unlock
+      - it can be replaced by `GPU_FLUSH_CACHES`+`AS_COMMAND_UNLOCK`
   - `FAULTSTATUS`
     - bit 7:0: exception type
       - `TRANSLATION_FAULT_n` hits an invalid pt entry at level n
@@ -191,9 +200,10 @@ ARM Mali CSF
       - `MEMORY_ATTRIBUTE_FAULT_n` means `MEMATTR` level n disallows access
     - bit 9:8: access type (r, w, x, atomic)
     - bit 31:16: source id
-  - `FAULTADDRESS`
+  - `FAULTADDRESS` is the faulting address
   - `STATUS`
     - bit 0: an external command is active
+      - it must be checked before emitting another cmd
     - bit 1: an internal command is active
   - `TRANSCFG`
     - bit 3:0: `AS_TRANSCFG_ADRMODE_AARCH64_4K` means 4K page table

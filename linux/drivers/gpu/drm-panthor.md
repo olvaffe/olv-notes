@@ -144,6 +144,10 @@ DRM panthor
     - it writes to `FOO_INT_MASK` to re-enable sources
   - `panthor_foo_irq_suspend` is called on suspend
     - it writes to `FOO_INT_MASK` to disable all sources
+- `PANTHOR_IRQ_HANDLER(mmu, MMU, panthor_mmu_irq_handler)`
+  - sources are which of the 8 address spaces faults or completes `AS_COMMAND_x`
+- `PANTHOR_IRQ_HANDLER(gpu, GPU, panthor_gpu_irq_handler)`
+- `PANTHOR_IRQ_HANDLER(job, JOB, panthor_job_irq_handler)`
 
 ## MMU
 
@@ -178,6 +182,7 @@ DRM panthor
     - `arm_64_lpae_alloc_pgtable_s1` allocates the `io_pgtable`
       - `map_pages` is set to `arm_lpae_map_pages`
       - `unmap_pages` is set to `arm_lpae_unmap_pages`
+    - `alloc_pt` and `free_pt` will alloc/free page tables
   - `sched` is a `drm_gpu_scheduler` for VM ops
     - they are executed on cpu using `drm_gpuvm`
   - `entity` is a `drm_sched_entity`
@@ -185,30 +190,28 @@ DRM panthor
   - `base` is a `drm_gpuvm` with `panthor_gpuvm_ops`
 - when userspace performs a sync vm bind, `panthor_vm_bind_exec_sync_op` is
   called
-  - it mainly calls the generic `drm_gpuvm_sm_map` to map
+  - it mainly calls the generic `drm_gpuvm_sm_map` to map and the generic
+    `drm_gpuvm_sm_unmap` to unmap
     - if another bo is already mapped at the same range, the generic function
       takes care of unmapping overlapped range of the existing bo
-  - it mainly calls the generic `drm_gpuvm_sm_unmap` to unmap
   - `panthor_gpuvm_ops` provides the ops to the generic gpuvm
 - when gpuvm calls `panthor_gpuva_sm_step_map` to map,
   - `panthor_vm_map_pages` calls `ops->map_pages` to map
-  - all the page tables live on system memory
+  - `panthor_vm_flush_range` invalidates TLB and L2
+- when gpuvm calls `panthor_gpuva_sm_step_unmap` to unmap,
+  - `panthor_vm_unmap_pages` tears down the pages from the page table
+    - it calls `arm_lpae_unmap_pages` from `pgtbl_ops`
+      - if a page table has no more mapped pages, it calls `free_pt` to free
+        the page
+  - `drm_gpuva_unmap` removes `drm_gpuva` from `drm_gpuvm`
+  - `drm_gpuva_unlink` removes `drm_gpuva` from `drm_gpuvm_bo`
+  - vmas are added to `returned_vmas` and are freed in
+    `panthor_vm_cleanup_op_ctx`
 - `panthor_vm_active` enables a VM
   - `panthor_mmu_as_enable` sets the regs
   - `transtab` is directly from `cfg->arm_lpae_s1_cfg.ttbr`
     - `virt_to_phys(page_address(vm->root_page_table))`
   - `transcfg` is often `0x420001c6`
-    - bit 0..5: adr mode (e.g., `AS_TRANSCFG_ADRMODE_AARCH64_4K`)
-    - bit 6..13: ina bits (e.g., `55 - 48 = 7`)
-    - bit 14..21: ona bits
-    - bit 22: sl concat
-    - bit 24..27: ptw memattr (e.g., `AS_TRANSCFG_PTW_MEMATTR_WB`)
-    - bit 28..29: ptw sh
-    - bit 30: ptw ra (e.g., `AS_TRANSCFG_PTW_RA`)
-    - bit 33: disable hier ap
-    - bit 34: disable af fault
-    - bit 35: wxn
-    - bit 36: xreadable
   - `memattr` is translated from `cfg->arm_lpae_s1_cfg.mair`
     - `mair` define 8 attrs, each taking 8 bits
       - `arm_64_lpae_alloc_pgtable_s1` always picks `0xf404ff44`
@@ -225,69 +228,9 @@ DRM panthor
         `ARM_LPAE_MAIR_ATTR_INC_OWBRWA` (0xf4, Normal memory, Inner Non-Cacheable, Outer Write-back non-transient)
     - `memattr` define 8 attrs, each taking 8 bits
       - `0x9f9f9f9f9c4c9f4c`
-      - bit 4..5: `MIDGARD_INNER`, `CPU_INNER`, `CPU_INNER_SHADER_COH`
-      - bit 6..7: SHARED, NC, WB, FAULT
-- when gpuvm calls `panthor_gpuva_sm_step_unmap` to unmap,
-  - `panthor_vm_unmap_pages` tears down the pages from the page table
-    - it calls `arm_lpae_unmap_pages` from `pgtbl_ops`
-      - if a page table has no more mapped pages, it calls `free_pt` to free
-        the page
-  - `drm_gpuva_unmap` removes `drm_gpuva` from `drm_gpuvm`
-  - `drm_gpuva_unlink` removes `drm_gpuva` from `drm_gpuvm_bo`
-  - vmas are added to `returned_vmas` and are freed in
-    `panthor_vm_cleanup_op_ctx`
-- AS regs
-  - an AS config is controlled by
-    - `AS_TRANSTAB_{LO,HI}(as)`
-    - `AS_MEMATTR_{LO,HI}(as)`
-    - `AS_TRANSCFG_{LO,HI}(as)`
-  - an AS fault details are available at
-    - `AS_FAULTSTATUS(as)`
-    - `AS_FAULTADDRESS_{LO,HI}(as)`
-    - `AS_FAULTEXTRA_{LO,HI}(as)`
-  - an AS command is emitted by
-    - `AS_STATUS(as)` returns `AS_STATUS_AS_ACTIVE` is there is an ongoing cmd
-      - it must be checked before emitting another cmd
-    - `AS_COMMAND(as)` emits a cmd
-    - `AS_LOCKADDR_{LO,HI}(as)`
-- AS commands
-  - `AS_COMMAND_NOP` is unused
-  - `AS_COMMAND_UPDATE` latches the latest transtab/memattr/transcfg
-  - `AS_COMMAND_LOCK` locks a region
-    - the region is spcified by `AS_LOCKADDR_{LO,HI}(as)`
-    - it must be emitted before `AS_COMMAND_FLUSH_PT` and
-      `AS_COMMAND_FLUSH_MEM`
-    - it sounds like it specifies the region to flush
-  - `AS_COMMAND_UNLOCK` is unused
-  - `AS_COMMAND_FLUSH_PT` flushes L2 for page tables
-    - it must be emitted after page table updates
-  - `AS_COMMAND_FLUSH_MEM` flushes L2 for memory accesses?
-    - it must be emitted before `AS_COMMAND_UPDATE`
-- `panthor_mmu_irq_handler` handles faults
-  - when a fault occurs,
-    - `MMU_INT_STAT` is read to check for spurious irq
-    - `MMU_INT_MASK` is written to disable the irq
-    - `MMU_INT_RAWSTAT` is read for status
-      - it is a bitmask of faulted ASs
-    - `panthor_mmu_irq_handler` is called with status
-    - `MMU_INT_CLEAR` is written to ack the irq
-    - `MMU_INT_MASK` is written to enable the irq
-    - all these are generated by `PANTHOR_IRQ_HANDLER`
-  - `fault_status` is read from `AS_FAULTSTATUS(as)`
-    - bit 0..7: `exception_type`
-    - bit 8..9: `access_type`
-      - `ATOMIC`
-      - `EXECUTE`
-      - `READ`
-      - `WRITE`
-    - bit 10: decoder fault or slave fault
-      - decoder fault means bad page table?
-      - slave fault means unmapped iova?
-    - bit 16..31: `source_id`
-  - `addr` is read from `AS_FAULTADDRESS_LO(as)`
-  - it printks the fault
-  - it masks out the irq
-  - `panthor_mmu_as_disable` disables the VM
+
+## GEM
+
 - `panthor_kernel_bo_create` creates a kernel bo
   - `drm_gem_shmem_create` creates a shmem gem object
     - unlike a userspace bo, `drm_gem_handle_create` is not called
