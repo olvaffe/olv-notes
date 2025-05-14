@@ -358,7 +358,7 @@ ARM Mali CSF
   - `STATUS_UPDATE` requests to update `CSG_STATUS_*` and `CS_STATUS_*`
   - `SYNC_UPDATE` acks `SYNC_UPDATE`
     - gpu sets `SYNC_UPDATE` in `CSG_ACK` when the CSG executes certain `SYNC_*`
-      instructions (i guess when the sync scope is system)
+      instructions (set/add with system scope)
   - `IDLE` acks `IDLE`
     - gpu sets `IDLE` in `CSG_ACK` when the CSG becomes idle
   - `PROGRESS_TIMER_EVENT` acks `PROGRESS_TIMER_EVENT`
@@ -417,7 +417,8 @@ ARM Mali CSF
   - `panthor_fw_cs_input_iface` in panthor
 - `CS_REQ`
   - `STATE` requests to start/stop a CS
-  - `EXTRACT_EVENT`
+  - `EXTRACT_EVENT` reqeusts extract event
+    - gpu copies the bit to `CS_ACK` when the ring buffer is 75% or more empty
   - `IDLE_SYNC_WAIT` consider the CS idle when `SYNC_WAIT` stalls
   - `IDLE_PROTM_PEND`
   - `IDLE_EMPTY` consider the CS idle when when ring buffer is empty

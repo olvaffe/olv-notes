@@ -506,6 +506,19 @@ DRM panthor
   - `group_can_run` makes sure the group is in a good state
   - `dma_fence_init` inits `job->done_fence` using `queue->fence_ctx`
   - `prepare_job_instrs` preps the call instrs on stack
+    - instrs
+      - `FLUSH_CACHE2(all)`
+      - if profiling
+        - `STORE_STATE(cycles)` to `cycles.before`
+        - `STORE_STATE(timer)` to `time.before`
+      - `WAIT(FLUSH_CACHES2)`
+      - `CALL(cmdbuf)`
+      - if profiling
+        - `STORE_STATE(cycles)` to `cycles.after`
+        - `STORE_STATE(timer)` to `time.after`
+      - `WAIT(all)`
+      - `SYNC_ADD64(&group->syncobjs[queue], 1)`
+        - this will trigger csg irq with `CSG_SYNC_UPDATE`
     - note how it updates the seqno at `sync_addr`
     - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
       - they are for 64-bit `addr_reg` and `val_reg`
@@ -576,6 +589,37 @@ DRM panthor
     - `tick_ctx_insert_old_group` adds active groups to `ctx->old_groups`
       - `full_tick` is true if the tick is caused by external events
     - it toggles `CSG_STATUS_UPDATE` for active groups
+  - `tick_ctx_pick_groups_from_list` picks groups and moves them to
+    `ctx->groups`
+  - `tick_ctx_apply`
+    - for `ctx->old_gorups`, it toggles `CSG_STATE_SUSPEND` to suspend them
+      - if they are in a bad state, it toggles `CSG_STATE_TERMINATE` to
+        terminate them
+    - for `ctx->groups`, if already running, it toggles `CSG_ENDPOINT_CONFIG`
+      to change the priority
+    - for `ctx->old_gorups`,
+      - `sched_process_csg_irq_locked` processes (pending) csg irq
+      - `group_unbind_locked` unbinds the group from the csg slot
+    - for `ctx->gorups`,
+      - `group_bind_locked` binds the group to the csg slot
+      - `csg_slot_prog_locked`
+        - for each queue, `cs_slot_prog_locked` inits the input section
+          - the ring buffer is set up
+          - `ack_irq_mask` is enabled for all sources
+          - `req` has
+            - `CS_IDLE_SYNC_WAIT` to treat `SYNC_WAIT` as idle
+            - `CS_IDLE_EMPTY` to treat ring buffer empty as idle
+            - `CS_STATE_START` to start the cs
+            - `CS_EXTRACT_EVENT` is not used?
+        - for csg itself, it inits the input section
+          - `ack_irq_mask` is enabled for all sources
+        - it rings the cs doorbells
+      - it toggles `CSG_STATE_START` or `CSG_STATE_RESUME` to start/resume the
+        csg
+      - it toggles `CSG_ENDPOINT_CONFIG`
+  - `panthor_devfreq_record_idle` or `panthor_devfreq_record_busy` is called,
+    depending on whether any group is busy
+  - it reschedules the next tick
 - when a job completes, `panthor_sched_report_fw_events` is called
   - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
   - `group_sync_upd_work` signals `job->done_fence`
