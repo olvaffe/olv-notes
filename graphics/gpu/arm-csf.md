@@ -503,6 +503,8 @@ ARM Mali CSF
     - `OK`
     - `CS_CONFIG_FAULT`
     - `CS_UNRECOVERABLE`
+      - for other types, the csg containg the cs becomes unusable
+      - for this type, the gpu must be reset
     - `CS_ENDPOINT_FAULT` no available shader cores
     - `CS_BUS_FAULT`
     - `CS_INVALID_INSTRUCTION` illegal CSF instr

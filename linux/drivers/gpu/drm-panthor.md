@@ -448,6 +448,111 @@ DRM panthor
   - when there are less than M active groups in total, the fw can take care of
     scheduling by itself
   - otherwise, the driver must rotate the active groups
+- `panthor_sched_init` inits `ptdev->scheduler`
+  - `last_tick`, `resched_target`, and `tick_period`
+    - `tick_period` is 10ms
+    - `last_tick` is updated by `tick_work`
+    - `resched_target` is `last_tick + tick_period`, or `U64_MAX` to disable
+      ticks
+  - `tick_work` decides which groups are active
+  - `sync_upd_work`
+  - `process_fw_events_work` processes irqs
+  - `groups`
+    - `runnable`
+    - `idle`
+    - `waiting`
+  - `reset`
+    - `stopped_groups`
+  - `heap_alloc_wq` is for `group_tiler_oom_work`
+  - `wq` is for `drm_gpu_scheduler` and all other works
+- `panthor_group_create` creates a group
+  - panvk creates a group for the single `VkQueue`
+    - all tiler/fragment/compute are allowed
+    - priority is determined by global priority
+    - vm is the per-device VM
+    - there are 3 queues, for tiler, fragment, and compute respectively
+  - `state` is `PANTHOR_CS_GROUP_CREATED`
+  - `csg_id` is still -1, until it becomes active
+  - `vm` points to the specified `panthor_vm`
+  - `suspend_buf` and `protm_suspend_buf` are allocated, used by csf to save
+    state when an active group is suspended
+  - `syncobjs` has one `panthor_syncobj_64b` per queue
+    - csf will write seqno to them
+    - not to be confused with `drm_syncobj`
+  - `group_create_queue` creates a `panthor_queue` for each queue
+    - `fence_ctx`
+      - `id` is the fence context
+      - `in_flight_jobs` is a list of in-flight jobs
+    - `ringbuf` is the ring buffer
+    - `iface` is allocated, shared between host and csf for ring head/tail
+    - `profiling` is allocated, for fdinfo
+    - `scheduler` is initialized by `drm_sched_init`
+    - `entity` is initialized by `drm_sched_entity_init`
+      - each entity has its own 2 fence contexts
+      - each job will have two fences, `scheduled` and `finished` from the two
+        contexts
+  - `idle_queues` is a bitmask of idle queues (all queues initially)
+  - the group is added to `sched->groups.idle[group->priority]`
+- `panthor_job_create` creates a job for each submit
+  - `call_info` points to cs instrs
+  - `group` is the group
+  - `queue_idx` is the queue
+  - `done_fence` will be initialized in `queue_run_job` and will signal when
+    the job completes
+  - `profiling` is for fdinfo
+  - `base` is `drm_sched_job`
+- when the scheduler calls `queue_run_job`
+  - `panthor_device_resume_and_get` resumes the device
+  - `group_can_run` makes sure the group is in a good state
+  - `dma_fence_init` inits `job->done_fence` using `queue->fence_ctx`
+  - `prepare_job_instrs` preps the call instrs on stack
+  - `copy_instrs_to_ringbuf` copies the call instrs to ringbuf
+  - `job->ringbuf` saves the start/end positions the the call instrs in the
+    ringbuf
+  - the job is added to `queue->fence_ctx.in_flight_jobs`
+  - the ringbuf tail is updated
+  - if the group is inactive, `group_schedule_locked` queues `tick_work`
+  - if the group is active, it rings cs doorbell
+    - `panthor_devfreq_record_busy` reports busy to devfreq
+  - `queue->fence_ctx.last_fence` is set to `job->done_fence`
+- when the scheduler calls `queue_timedout_job`
+  - `drm_sched_stop` stops the scheduler for the queue
+  - `group->timedout` is set
+  - it queues `tick_work` or `group_term_work`, depending on if the group is
+    active
+  - `drm_sched_start` starts the scheduler again
+- on job irq, `panthor_request_job_irq` calls `panthor_sched_report_fw_events`
+  to queue `process_fw_events_work`
+  - `sched_process_global_irq_locked` processes glb irq
+    - `sched_process_idle_event_locked` processes `GLB_IDLE`
+      - it queues `tick_work`
+  - `sched_process_csg_irq_locked` processes csg irq
+    - it updates `req` and `cs_irq_ack` to ack csg events and cs irqs
+    - `csg_slot_process_idle_event_locked` processes `CSG_IDLE`
+      - it marks `might_have_idle_groups` and queues `tick_work`
+    - `csg_slot_process_progress_timer_event_locked` processes `CSG_PROGRESS_TIMER_EVENT`
+      - it marks `group->timedout` and queues `tick_work`
+    - `cs_slot_process_irq_locked` processes cs irq
+      - `cs_slot_process_fatal_event_locked` processes `CS_FATAL`
+        - it marks `group->fatal_queues`, queues `tick_work` or
+          `panthor_device_reset_work` depending on the error, and logs the
+          error
+      - `cs_slot_process_fault_event_locked` processes `CS_FAULT`
+        - if `DRM_PANTHOR_EXCEPTION_CS_INHERIT_FAULT`, it marks the offending
+          job error and logs the error
+      - `cs_slot_process_tiler_oom_event_locked` processes `CS_TILER_OOM`
+        - it marks `group->tiler_oom` and queues `group_tiler_oom_work`
+    - `csg_slot_sync_update_locked` processes `CSG_SYNC_UPDATE`
+      - it queues `group_sync_upd_work` and `sync_upd_work`
+- suspend/resume
+  - `panthor_sched_suspend`
+  - `panthor_sched_resume`
+- reset
+  - `panthor_sched_pre_reset`
+  - `panthor_sched_post_reset`
+- scheduler works
+  - tick
+  - sync_upd
 - `tick_work` schedules groups
   - it runs periodically only when there are more groups than the fw can
     handle, to rotate them
@@ -593,34 +698,6 @@ DRM panthor
   - `kernel_va_range` is thus the top 2TB
 - each `panthor_file` has a `panthor_vm_pool` to manage its vms
 
-## `panthor_ioctl_group_create`
-
-- panvk creates a group for the single `VkQueue`
-  - all tiler/fragment/compute are allowed
-  - priority is determined by global priority
-  - vm is the per-device VM
-  - there are 3 queues, for tiler, fragment, and compute respectively
-- a `panthor_group` is initialized
-  - `csg_id` is still -1, until it becomes active
-  - `vm` points to the specified `panthor_vm`
-  - `suspend_buf` and `protm_suspend_buf` are allocated, used by csf to save
-    state when an active group is suspended
-  - `syncobjs` has one `panthor_syncobj_64b` per queue
-    - csf will write seqno to them
-    - not to be confused with `drm_syncobj`
-  - `group_create_queue` creates a `panthor_queue` for each queue
-- the group is added to `sched->groups.idle[group->priority]`
-- for each `panthor_queue`,
-  - `fence_ctx` is the fence context
-  - `ringbuf` is the ring buffer
-  - `iface` is allocated, shared between host and csf for ring head/tail
-  - `profiling` is allocated, for fdinfo
-  - `scheduler` is initialized by `drm_sched_init`
-  - `entity` is initialized by `drm_sched_entity_init`
-    - each entity has its own 2 fence contexts
-    - each job will have two fences, `scheduled` and `finished` from the two
-      contexts
-
 ## `panthor_ioctl_bo_create` and `panthor_ioctl_vm_bind`
 
 - when panvk allocates a `VkDeviceMemory`, it allocs bo and binds vm
@@ -749,10 +826,3 @@ DRM panthor
   - `CSG_SYNC_UPDATE` indicates job completion
   - `group_sync_upd_work` checks the seqnos and calls
     `dma_fence_signal_locked` on `job->done_fence`
-
-## Exceptions
-
-- exceptions can be reported via
-  - `AS_FAULTSTATUS` for mmu faults
-  - `GPU_FAULT_STATUS` for gpu faults
-  - shmem with CSF firmware for CS faults
