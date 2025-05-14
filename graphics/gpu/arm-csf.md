@@ -532,14 +532,19 @@ ARM Mali CSF
   - sync instr executes to completion before the next instr
   - async instr latches states, increments sb entry, and initiates op before
     the next instr
-    - when it executes to completion, it decrements the sb entry
+    - after it executes to completion, it decrements the sb entry
   - deferred instr can be sync or async
-    - when async, it latches states and increments sb entry before the next instr
-    - when the waited sb entries become zero, it executes to completion and
-      decrements its sb entry
+    - if async, it latches states and increments sb entry first
+    - it is pushed to a separate fifo for execution
+      - when the condition is met (the waited sb entries become zero), it
+        executes to completion (sync) or initiates op (async) before the next
+        instr in the fifo
+    - if async, after it executes to completion, it decrements the sb entry
 - native / emulated
   - a native instr is executed by CEU
   - an emulated instr is executed by MCU
+    - an emulated instr that is deferred is not pushed to the separate fifo,
+      and the ordering is not guaranteed
 - fast / slow
   - all emulated instrs are slow
   - some native instrs (control flow and sb related ones) are slow too

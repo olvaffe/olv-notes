@@ -107,9 +107,14 @@ USB
   - usb 3.0 has 9 pins on the same side
     - VBUS, D-, D+, GND
     - TX-, TX+, GND, RX-, RX+
+    - <https://www.kernel.org/doc/html/latest/driver-api/usb/usb3-debug-port.html>
+      - usb 3.0 a-to-a debug cable lacks VBUS/D-/D+
+      - the dut can be configured such that its xhci controller functions as a
+        usb device instead of a usb host
   - type-c has 24 pins
     - symmetrical 12 pins on each side, to be flippable
-    - new pins are: CC (for pd), SBU (for altmode)
+    - other than the 9 pins, new pins on each side are: CC (for pd), SBU (for
+      altmode), and second VBUS
   - a type-a connector can internally connect to both 2.0 and 3.0 controllers
     - it can use pin counts to tell between 2.0 and 3.0 cables
   - a type-c connector is similar
