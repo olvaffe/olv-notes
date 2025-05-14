@@ -356,6 +356,7 @@ ARM Mali CSF
   - `STATE` requests to terminate/start/suspend/resume a CSG
   - `EP_CFG` commits `CSG_EP_REQ` and `CSG_ALLOW_*`
   - `STATUS_UPDATE` requests to update `CSG_STATUS_*` and `CS_STATUS_*`
+    - it is implied when `STATE` is requested to suspend
   - `SYNC_UPDATE` acks `SYNC_UPDATE`
     - gpu sets `SYNC_UPDATE` in `CSG_ACK` when the CSG executes certain `SYNC_*`
       instructions (set/add with system scope)

@@ -493,6 +493,14 @@ DRM panthor
         contexts
   - `idle_queues` is a bitmask of idle queues (all queues initially)
   - the group is added to `sched->groups.idle[group->priority]`
+- group and queue lifecycle
+  - a group typically has 3 queues, for vert, frag, comp respectively
+  - queue lifecycle
+    - when the group containing the queue is scheduled, the queue is started
+    - when the group containing the queue is evicted, the queue is stopped
+    - if the ringbuf is empty, the queue is on `group->idle_queues`
+    - if the ringbuf is non-empty, and is blocked by `SYNC_WAIT`, the queue is
+      on `group->blocked_queues`
 - `panthor_job_create` creates a job for each submit
   - `call_info` points to cs instrs
   - `group` is the group
@@ -518,10 +526,11 @@ DRM panthor
         - `STORE_STATE(timer)` to `time.after`
       - `WAIT(all)`
       - `SYNC_ADD64(&group->syncobjs[queue], 1)`
-        - this will trigger csg irq with `CSG_SYNC_UPDATE`
-    - note how it updates the seqno at `sync_addr`
-    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
-      - they are for 64-bit `addr_reg` and `val_reg`
+        - this has system scope and will trigger csg irq with `CSG_SYNC_UPDATE`
+    - the instrs use the top `unpreserved_cs_reg_count` regs
+      - there are `CSF_UNPRESERVED_REG_COUNT` (4) regs
+      - it is exposed to userspace and userspace knows that a submit will
+        trash the top `unpreserved_cs_reg_count` regs
   - `copy_instrs_to_ringbuf` copies the call instrs to ringbuf
   - `job->ringbuf` saves the start/end positions the the call instrs in the
     ringbuf
@@ -560,7 +569,7 @@ DRM panthor
         - it marks `group->tiler_oom` and queues `group_tiler_oom_work`
     - `csg_slot_sync_update_locked` processes `CSG_SYNC_UPDATE`
       - it queues `group_sync_upd_work` and `sync_upd_work`
-- CSG reqs
+- `panthor_csg_slots_upd_ctx`
   - `csgs_upd_ctx_queue_reqs` batches csg reqs
   - `csgs_upd_ctx_apply_locked` commits csg reqs
     - `panthor_fw_update_reqs` updates `csg_iface->input->req`
@@ -572,9 +581,10 @@ DRM panthor
   - `csg_slot_sync_state_locked` processes `CSG_STATE_MASK`
     - it updates `group->state`, after the mcu has changed the csg state
     - depending on the old/new states, they might trigger
-      - `cs_slot_reset_locked`
-      - `csg_slot_sync_queues_state_locked`
-      - `panthor_device_schedule_reset`
+      - `cs_slot_reset_locked`, which toggles `CS_STATE_STOP`
+      - `csg_slot_sync_queues_state_locked`, when `CSG_STATUS_UPDATE` is
+        implied
+      - `panthor_device_schedule_reset`, when things go bad
   - `csg_slot_sync_queues_state_locked` processes `CSG_STATUS_UPDATE`
     - it updates `group->idle_queues`, `group->blocked_queues`,
       `queue->syncwait`, and more
@@ -620,9 +630,14 @@ DRM panthor
   - `panthor_devfreq_record_idle` or `panthor_devfreq_record_busy` is called,
     depending on whether any group is busy
   - it reschedules the next tick
-- when a job completes, `panthor_sched_report_fw_events` is called
-  - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
-  - `group_sync_upd_work` signals `job->done_fence`
+- when a job completes, an irq is generated
+  - this is because `prepare_job_instrs` emits `SYNC_ADD64.system_scope`,
+    which sets `CSG_SYNC_UPDATE`
+  - `csg_slot_sync_update_locked` handles the event and queues two works in
+    order
+  - `group_sync_upd_work`
+    - it signals `job->done_fence` by comparing seqnos
+    - `update_fdinfo_stats` accumulates profiling data
   - `sync_upd_work`
     - `panthor_queue_eval_syncwait` decides if the queue has been unblocked
 - suspend/resume
