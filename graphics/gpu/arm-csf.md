@@ -265,6 +265,7 @@ ARM Mali CSF
 - `GLB_PRFCNT_FEATURES`
 
 ## `GLB_INPUT_BLOCK` regs
+
 - these are virtual regs
   - `panthor_fw_global_input_iface` in panthor
 - `GLB_REQ`
@@ -353,7 +354,7 @@ ARM Mali CSF
 - `CSG_REQ`
   - `STATE` requests to terminate/start/suspend/resume a CSG
   - `EP_CFG` commits `CSG_EP_REQ` and `CSG_ALLOW_*`
-  - `STATUS_UPDATE` requuests to update `CSG_STATUS_*` and `CS_STATUS_*`
+  - `STATUS_UPDATE` requests to update `CSG_STATUS_*` and `CS_STATUS_*`
   - `SYNC_UPDATE` acks `SYNC_UPDATE`
     - gpu sets `SYNC_UPDATE` in `CSG_ACK` when the CSG executes certain `SYNC_*`
       instructions (i guess when the sync scope is system)
