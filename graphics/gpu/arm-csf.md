@@ -440,6 +440,11 @@ ARM Mali CSF
 - `CS_BASE` va of the ring buffer
 - `CS_SIZE` size of the ring buffer
 - `CS_TILER_HEAP_START` va of first extra tiler heap chunks for `TILER_OOM`
+  - each chunk has a 64-byte header (`panthor_heap_chunk_header` in panthor),
+    consisting of
+    - `next_chunk`
+      - bit 11:0: size of the chunk
+      - bit 63:12: va of the next chunk
 - `CS_TILER_HEAP_END` va of last extra tiler heap chunks for `TILER_OOM`
 - `CS_USER_INPUT` va of `CS_USER_INPUT_BLOCK`
 - `CS_USER_OUTPUT` va of `CS_USER_OUTPUT_BLOCK`
@@ -506,9 +511,9 @@ ARM Mali CSF
   - `EXCEPTION_DATA`
 - `CS_FAULT_INFO`
 - `CS_FATAL_INFO`
-- `CS_HEAP_VT_START` number of vertex/tiler ops started on `TILER_OOM`
-- `CS_HEAP_VT_END` number of vertex/tiler ops completed on `TILER_OOM`
-- `CS_HEAP_FRAG_END` number of frag ops completed on `TILER_OOM`
+- `CS_HEAP_VT_START` heap ctx `VT_START` counter on `TILER_OOM`
+- `CS_HEAP_VT_END` heap ctx `VT_END` countered on `TILER_OOM`
+- `CS_HEAP_FRAG_END` heap ctx `FRAG_END` counter on `TILER_OOM`
 - `CS_HEAP_ADDRESS` va of heap ctx that hits OOM on `TILER_OOM`
 
 ## `CS_USER_INPUT_BLOCK` regs
@@ -600,11 +605,17 @@ ARM Mali CSF
   - `STORE_STATE`
 - other
   - `ERROR_BARRIER`
-  - `FINISH_FRAGMENT`
+  - `FINISH_FRAGMENT` returns used heap chunks to heap ctx and increments
+    `FRAG_END` counter
   - `FINISH_TILING`
   - `FLUSH_CACHE2`
-  - `HEAP_OPERATION`
-  - `HEAP_SET`
+  - `HEAP_OPERATION` increments one of the counters in heap ctx
+  - `HEAP_SET` sets the heap ctx
+    - a heap ctx is 32 bytes, consisting of
+      - va of the first free heap chunk
+      - `VT_START` counter
+      - `VT_END` counter
+      - `FRAG_END` counter
   - `NEXT_SB_ENTRY`
   - `PROT_REGION`
   - `REQ_RESOURCE`

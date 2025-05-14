@@ -421,9 +421,8 @@ DRM panthor
   - each heap has an id, which is an index into `pool->gpu_contexts`
   - `chunks` is a list of `panthor_heap_chunk`
     - each chunk is a BO
-    - each BO has a 64-byte header, with the first 2 dwords being the va of
-      the next chunk
-      - the hw knows this is a list of BOs as well
+    - each chunk starts with `panthor_heap_chunk_header`, which hw understands
+      to form a list of chunks
 - when the hw tiler runs out of heap memory, it generates `CS_TILER_OOM` irq
   - `cs_slot_process_irq_locked` schedules `group_tiler_oom_work`
   - `group_process_tiler_oom` grows the heap
