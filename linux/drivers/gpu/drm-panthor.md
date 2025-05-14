@@ -403,27 +403,6 @@ DRM panthor
       - if slow reset, `panthor_reload_fw_sections` reloads fw
     - `panthor_fw_start` starts fw
     - `panthor_fw_init_global_iface` inits gbl
-- `panthor_fw_global_iface`
-  - `panthor_fw_global_input_iface`
-    - `idle_timer` fires `GLB_IDLE` and `CSG_IDLE` after mcu has been idle for
-      the specified period?
-  - `panthor_fw_global_output_iface`
-    - `halt_status` will become `PANTHOR_FW_HALT_OK` some time after
-      `GLB_HALT` req?
-- `panthor_fw_csg_iface`
-  - `panthor_fw_csg_input_iface`
-    - reqs are batched by `csgs_upd_ctx_queue_reqs` and applied by
-      `csgs_upd_ctx_apply_locked`
-- `panthor_fw_cs_iface`
-  - `panthor_fw_cs_output_iface`
-    - `status_*` are used by `cs_slot_sync_queue_state_locked`
-      - `cs_slot_sync_queue_state_locked` is called when there are queue state
-        changes
-      - `status_blocked_reason` is the reason
-      - `status_scoreboards`
-      - `status_wait*` provides the info about syncwait
-        - this allows `panthor_queue_eval_syncwait` to decide if the queue has
-          been unblocked
 
 ## Scheduler
 
@@ -476,6 +455,15 @@ DRM panthor
       `job->s_fence->finished`
     - this indirection is necessary because we don't have the hw fence for
       out-syncobjs by the time the submit ioctl returns
+- csg reqs are batched by `csgs_upd_ctx_queue_reqs` and applied by
+  `csgs_upd_ctx_apply_locked`
+- `cs_slot_sync_queue_state_locked` checks `status_*`
+  - it is called when there are queue state changes
+  - `status_blocked_reason` is the reason
+  - `status_scoreboards`
+  - `status_wait*` provides the info about syncwait
+    - this allows `panthor_queue_eval_syncwait` to decide if the queue has
+      been unblocked
 
 ## File Operations
 

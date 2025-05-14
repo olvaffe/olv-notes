@@ -295,7 +295,7 @@ ARM Mali CSF
     generate an irq
 - `GLB_DB_REQ` rings the doorbell of CSGn
 - `GLB_PROGRESS_TIMER` if a task runs too long, exceeding the specified
-  cycles, set `PROGRESS_TIMER_EVENT` in `CSG_ACK`
+  cycles, toggle `PROGRESS_TIMER_EVENT` in `CSG_ACK`
 - `GLB_PWROFF_TIMER` automatic PM for tiler and shader cores
   - bit 30:0: timeout val
   - bit 31: `GPU_COUNTER` when set, `SYSTEM_TIMESTAMP` when cleared
@@ -315,7 +315,8 @@ ARM Mali CSF
 - `GLB_PRFCNT_SHADER_EN`
 - `GLB_PRFCNT_TILER_EN`
 - `GLB_PRFCNT_MMU_L2_EN`
-- `GLB_IDLE_TIMER` if the gpu is idle for this timeout, set `IDLE_EVENT` in `GLB_ACK`
+- `GLB_IDLE_TIMER` if the gpu is idle for this timeout, toggle `IDLE_EVENT` in
+  `GLB_ACK`
   - when there are more groups than CSGs, this can be used to rotate groups
 - `GLB_IDLE_TIMER_CONFIG`
 - `GLB_PWROFF_TIMER_CONFIG`
@@ -438,8 +439,8 @@ ARM Mali CSF
     generate an irq
 - `CS_BASE` va of the ring buffer
 - `CS_SIZE` size of the ring buffer
-- `CS_TILER_HEAP_START` start of extra tiler heap chunk on `TILER_OOM`
-- `CS_TILER_HEAP_END` end of extra tiler heap chunk on `TILER_OOM`
+- `CS_TILER_HEAP_START` start of extra tiler heap chunk for `TILER_OOM`
+- `CS_TILER_HEAP_END` end of extra tiler heap chunk for `TILER_OOM`
 - `CS_USER_INPUT` va of `CS_USER_INPUT_BLOCK`
 - `CS_USER_OUTPUT` va of `CS_USER_OUTPUT_BLOCK`
 - `CS_INSTR_CONFIG`
@@ -458,8 +459,7 @@ ARM Mali CSF
   - `SB_SOURCE` is one of
     - `NONE`
     - `WAIT` if executing `WAIT` instr
-  - `SYNC_WAIT_CONDITION` is `SYNC_WAIT` cond
-  - `PROGRESS_WAIT` if executing `PROGRESS_WAIT` instr
+  - `SYNC_WAIT_CONDITION` is `SYNC_WAIT` cond (le, gt, ge)
   - `PROTM_PEND` if waiting for protected mode
   - `SYNC_WAIT_SIZE` is 64-bit if set; 32-bit if cleared
   - `SYNC_WAIT` if executing `SYNC_WAIT` instr
@@ -467,10 +467,11 @@ ARM Mali CSF
 - `CS_STATUS_WAIT_SYNC_POINTER` reports va of `SYNC_WAIT`
 - `CS_STATUS_WAIT_SYNC_VALUE` reports val of `SYNC_WAIT`
 - `CS_STATUS_SCOREBOARDS` reports non-zero scoreboard entries
+  - when the ring buffer becomes empty, there might still be async or deferred
+    instrs executing; this must be 0 to be sure that the cs is idle
 - `CS_STATUS_BLOCKED_REASON` reports the block reason
   - `UNBLOCKED` not blocked
   - `SB_WAIT` blocked by `WAIT` instr
-  - `PROGRESS_WAIT` blocked by `PROGRESS_WAIT` instr
   - `SYNC_WAIT` blocked by `SYNC_WAIT` instr
   - `DEFERRED` blocked by deferred instruction
   - `RESOURCE` blocked by `REQ_RESOURCE` instr
@@ -505,10 +506,10 @@ ARM Mali CSF
   - `EXCEPTION_DATA`
 - `CS_FAULT_INFO`
 - `CS_FATAL_INFO`
-- `CS_HEAP_VT_START` number of vertex/tiler ops started
-- `CS_HEAP_VT_END` number of vertex/tiler ops completed
-- `CS_HEAP_FRAG_END` number of frag ops completed
-- `CS_HEAP_ADDRESS` va of heap ctx that hits OOM
+- `CS_HEAP_VT_START` number of vertex/tiler ops started on `TILER_OOM`
+- `CS_HEAP_VT_END` number of vertex/tiler ops completed on `TILER_OOM`
+- `CS_HEAP_FRAG_END` number of frag ops completed on `TILER_OOM`
+- `CS_HEAP_ADDRESS` va of heap ctx that hits OOM on `TILER_OOM`
 
 ## `CS_USER_INPUT_BLOCK` regs
 
