@@ -439,8 +439,8 @@ ARM Mali CSF
     generate an irq
 - `CS_BASE` va of the ring buffer
 - `CS_SIZE` size of the ring buffer
-- `CS_TILER_HEAP_START` start of extra tiler heap chunk for `TILER_OOM`
-- `CS_TILER_HEAP_END` end of extra tiler heap chunk for `TILER_OOM`
+- `CS_TILER_HEAP_START` va of first extra tiler heap chunks for `TILER_OOM`
+- `CS_TILER_HEAP_END` va of last extra tiler heap chunks for `TILER_OOM`
 - `CS_USER_INPUT` va of `CS_USER_INPUT_BLOCK`
 - `CS_USER_OUTPUT` va of `CS_USER_OUTPUT_BLOCK`
 - `CS_INSTR_CONFIG`
