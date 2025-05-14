@@ -501,11 +501,14 @@ DRM panthor
     the job completes
   - `profiling` is for fdinfo
   - `base` is `drm_sched_job`
-- when the scheduler calls `queue_run_job`
+- when the scheduler calls `queue_run_job` after all deps are met,
   - `panthor_device_resume_and_get` resumes the device
   - `group_can_run` makes sure the group is in a good state
   - `dma_fence_init` inits `job->done_fence` using `queue->fence_ctx`
   - `prepare_job_instrs` preps the call instrs on stack
+    - note how it updates the seqno at `sync_addr`
+    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
+      - they are for 64-bit `addr_reg` and `val_reg`
   - `copy_instrs_to_ringbuf` copies the call instrs to ringbuf
   - `job->ringbuf` saves the start/end positions the the call instrs in the
     ringbuf
@@ -544,66 +547,46 @@ DRM panthor
         - it marks `group->tiler_oom` and queues `group_tiler_oom_work`
     - `csg_slot_sync_update_locked` processes `CSG_SYNC_UPDATE`
       - it queues `group_sync_upd_work` and `sync_upd_work`
+- CSG reqs
+  - `csgs_upd_ctx_queue_reqs` batches csg reqs
+  - `csgs_upd_ctx_apply_locked` commits csg reqs
+    - `panthor_fw_update_reqs` updates `csg_iface->input->req`
+    - `panthor_fw_ring_csg_doorbells` rings csg doorbells
+    - `panthor_fw_csg_wait_acks` waits for mcu
+  - `csg_slot_sync_priority_locked` processes `CSG_ENDPOINT_CONFIG`
+    - it updates `csg_slot->priority`, after the mcu has acked the
+      user-specified priority
+  - `csg_slot_sync_state_locked` processes `CSG_STATE_MASK`
+    - it updates `group->state`, after the mcu has changed the csg state
+    - depending on the old/new states, they might trigger
+      - `cs_slot_reset_locked`
+      - `csg_slot_sync_queues_state_locked`
+      - `panthor_device_schedule_reset`
+  - `csg_slot_sync_queues_state_locked` processes `CSG_STATUS_UPDATE`
+    - it updates `group->idle_queues`, `group->blocked_queues`,
+      `queue->syncwait`, and more
+  - `csg_slot_sync_idle_state_locked` processes `CSG_STATUS_UPDATE`
+    - it updates `csg_slot->idle`, based on `CSG_STATUS_STATE_IS_IDLE`
+- `tick_work` schedules groups
+  - it runs periodically (`tick_period`) when there are more groups than the
+    fw can handle, to rotate them
+    - otherwise, it runs after triggered by external events (e.g., submit to
+      an inactive group, irqs)
+  - `tick_ctx_init` inits `panthor_sched_tick_ctx`
+    - `tick_ctx_insert_old_group` adds active groups to `ctx->old_groups`
+      - `full_tick` is true if the tick is caused by external events
+    - it toggles `CSG_STATUS_UPDATE` for active groups
+- when a job completes, `panthor_sched_report_fw_events` is called
+  - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
+  - `group_sync_upd_work` signals `job->done_fence`
+  - `sync_upd_work`
+    - `panthor_queue_eval_syncwait` decides if the queue has been unblocked
 - suspend/resume
   - `panthor_sched_suspend`
   - `panthor_sched_resume`
 - reset
   - `panthor_sched_pre_reset`
   - `panthor_sched_post_reset`
-- scheduler works
-  - tick
-  - sync_upd
-- `tick_work` schedules groups
-  - it runs periodically only when there are more groups than the fw can
-    handle, to rotate them
-  - otherwise, it runs after triggered by external events
-    - when a job is submitted and its group is inactive,
-      `group_schedule_locked` is called and schedules a tick
-    - job irq calls `panthor_sched_report_fw_events` for various reasons
-      - e.g., when an active group becomes idle
-- when all dependencies are met, `queue_run_job` is called to submit a job
-  - `job->group` and `job->queue_idx` are the `panthor_group` and
-    `panthor_queue` to submit to
-  - `job->call_info` is the addr of the cmdstream to execute
-  - a short `call_instrs` is appended to `queue->ringbuf`
-    - note how it updates the seqno at `sync_addr`
-    - `unpreserved_cs_reg_count` is `CSF_UNPRESERVED_REG_COUNT` (4)
-      - they are for 64-bit `addr_reg` and `val_reg`
-  - `group->csg_id` indicates whether the group is active or not
-    - if the group is active, the kernel rings a doorbell
-    - otherwise, `group_schedule_locked` schedules the group
-- when a job completes, `panthor_sched_report_fw_events` is called
-  - `CSG_SYNC_UPDATE` is set for the group which triggers sync upd work
-  - `group_sync_upd_work` signals `job->done_fence`
-  - `sync_upd_work`
-- in-syncobjs are handled in `panthor_submit_ctx_add_sync_deps_to_job`
-  - `drm_syncobj_find_fence` finds the fence
-  - `drm_sched_job_add_dependency` adds the fence to the job
-  - in case a syncobj is in for one job and out for another,
-    `panthor_submit_ctx_search_sync_signal` is used
-- out-syncobjs are handled in 3 places
-  - `panthor_submit_ctx_collect_jobs_signal_ops` calls
-    `panthor_submit_ctx_get_sync_signal` to allocate a temp
-    `panthor_sync_signal` for each out-syncobj
-  - `panthor_submit_ctx_update_job_sync_signal_fences` sets `sig_sync->fence`
-    to `job->s_fence->finished`
-  - `panthor_submit_ctx_push_fences` calls `drm_syncobj_replace_fence` or
-    `drm_syncobj_add_point` to add `sig_sync->fence` to the out-syncobj
-  - later when the deps are met, `sched->ops->run_job` runs the job on hw and
-    returns a hw fence
-    - when the hw fence signals, `drm_sched_job_done_cb` is called to signal
-      `job->s_fence->finished`
-    - this indirection is necessary because we don't have the hw fence for
-      out-syncobjs by the time the submit ioctl returns
-- csg reqs are batched by `csgs_upd_ctx_queue_reqs` and applied by
-  `csgs_upd_ctx_apply_locked`
-- `cs_slot_sync_queue_state_locked` checks `status_*`
-  - it is called when there are queue state changes
-  - `status_blocked_reason` is the reason
-  - `status_scoreboards`
-  - `status_wait*` provides the info about syncwait
-    - this allows `panthor_queue_eval_syncwait` to decide if the queue has
-      been unblocked
 
 ## File Operations
 
@@ -826,3 +809,22 @@ DRM panthor
   - `CSG_SYNC_UPDATE` indicates job completion
   - `group_sync_upd_work` checks the seqnos and calls
     `dma_fence_signal_locked` on `job->done_fence`
+- in-syncobjs are handled in `panthor_submit_ctx_add_sync_deps_to_job`
+  - `drm_syncobj_find_fence` finds the fence
+  - `drm_sched_job_add_dependency` adds the fence to the job
+  - in case a syncobj is in for one job and out for another,
+    `panthor_submit_ctx_search_sync_signal` is used
+- out-syncobjs are handled in 3 places
+  - `panthor_submit_ctx_collect_jobs_signal_ops` calls
+    `panthor_submit_ctx_get_sync_signal` to allocate a temp
+    `panthor_sync_signal` for each out-syncobj
+  - `panthor_submit_ctx_update_job_sync_signal_fences` sets `sig_sync->fence`
+    to `job->s_fence->finished`
+  - `panthor_submit_ctx_push_fences` calls `drm_syncobj_replace_fence` or
+    `drm_syncobj_add_point` to add `sig_sync->fence` to the out-syncobj
+  - later when the deps are met, `sched->ops->run_job` runs the job on hw and
+    returns a hw fence
+    - when the hw fence signals, `drm_sched_job_done_cb` is called to signal
+      `job->s_fence->finished`
+    - this indirection is necessary because we don't have the hw fence for
+      out-syncobjs by the time the submit ioctl returns
