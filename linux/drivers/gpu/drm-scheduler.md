@@ -1,26 +1,81 @@
 DRM Scheduler
 =============
 
+## Overview
+
+- there is a `drm_gpu_scheduler` per-hw-ring to schedule jobs to
+- each `drm_gpu_scheduler` has 1 or more runqueues, `drm_sched_rq`, with
+  different priorities
+- userspace creates `drm_sched_entity`s with different priorities
+- userspace submits `drm_sched_job` to `drm_sched_entity`
+  - this dynamically moves the entity to the runqueue of the best
+    `drm_gpu_scheduler`
+   - e.g., when the hw has multiple compute rings, it picks the least busy one
+- when `drm_gpu_scheduler` schedules a job to hw ring, it picks a job that has
+  the highest priority and has all dependencies resolved
+
+## Initialization
+
+- `drm_sched_init` inits a `drm_gpu_scheduler` per hw ring
+  - params
+    - `ops` is `drm_sched_backend_ops`
+    - `submit_wq` is the submit workqueue
+      - it can be ordered (one work at a time) or not
+    - `num_rqs` is the number of `drm_sched_rq`, from high to low priorities
+    - `credit_limit` is a u32, which is typically ring size
+    - `hang_limit` is deprecated (used by deprecated `drm_sched_resubmit_jobs`)
+    - `timeout` is number of jiffies before a running job is timed out
+    - `timeout_wq` is the timeout workqueue, typically `system_wq`
+    - `score` is the busyness of the scheduler
+      - currently, the number of entities in runqueues
+  - `sched_rq` is an array of `drm_sched_rq`, from high to low priorities
+  - `drm_sched_job_timedout`
+  - `drm_sched_run_job_work`
+  - `drm_sched_free_job_work`
+- `drm_sched_entity_init` inits a `drm_sched_entity` per userspace queue
+  - params
+    - `priority` is the priority
+    - `sched_list` and `num_sched_list` are an array of `drm_gpu_scheduler`
+      - `drm_sched_job_arm` will call `drm_sched_entity_select_rq` to move the
+        entity to the best scheduler dynamically, if there are more than one
+        scheduler
+    - `guilty` will be set to 1 when the entity has a hanging job
+  - `fence_context` has 2 fence contexts, for `scheduled` and `finished`
+
+## Job Submission
+
+- `drm_sched_job_init` initializes a job
+  - params
+    - `entity` is the entity to submit to
+    - `credits` is a u32, which is typically instr count
+    - `owner` is saved in `drm_sched_fence`
+  - `s_fence` is a `drm_sched_fence`
+  - `dependencies` is a `xarray` of `dma_fence`
+- `drm_sched_job_add_dependency` adds an explicit in-fence to
+  `job->dependencies`
+- `drm_sched_job_add_syncobj_dependency` calls `drm_sched_job_add_dependency`
+  on the `dma_fence` fished out from an explicit explicit in-syncobj
+- `drm_sched_job_add_resv_dependencies` calls `drm_sched_job_add_dependency`
+  on `dma_fence`s in a `dma_resv`
+- `drm_sched_job_add_implicit_dependencies` calls
+  `drm_sched_job_add_resv_dependencies` on `obj->resv` to add implicit fences
+- `drm_sched_job_arm` arms a job
+  - `drm_sched_entity_select_rq` selects the best scheduler, if the entity has
+    multiple schedulers
+    - `drm_sched_pick_best` picks the scheduler with the lowest `score`
+    - `drm_sched_rq_remove_entity` removes the entity from the old rq
+    - `entity->rq` is set to the new rq
+  - `drm_sched_fence_init` inits `job->s_fence`
+    - `dma_fence_init` inits `scheduled` and `finished` fences
+    - if the driver needs an out-fence for the submit, it should use
+      `finished`
+      - `run_job` will return the hw out-fence, but it is not called on the
+        spot but until dependencies are resolved
+- `drm_sched_entity_push_job` submits the job to the entity
+
 ## Usage
 
-- data structures
-  - there should be a `struct drm_gpu_scheduler` for each ring
-  - there should be a `struct drm_sched_entity` for each priority for each
-    opened file
-- during device initialization, `drm_sched_init` should be called on each
-  `struct drm_gpu_scheduler` of each ring
-  - this spawns a kthread
-- when a VkDevice is initialized and a VkQueue is created,
-  `drm_sched_entity_init` should be called for each VkQueue
 - on job submission,
-  - `drm_sched_job_init` initializes a job
-  - `drm_sched_job_add_dependency` adds explicit in-fences to the job
-  - `drm_sched_job_add_implicit_dependencies` adds implicit fences to the job
-    - this extracts the implicit fences from the bo
-  - `drm_sched_job_arm` arms a job for execution
-    - this initializes `scheduled` and `finished` fences; they will complete
-      in finite time
-  - `drm_sched_entity_push_job` submits the job to the entity
 - job execution
   - `drm_sched_entity_pop_job` is called by the kthread to pop a job
     - if it returns a job, the job's dependencies have signaled
