@@ -654,10 +654,22 @@ DRM panthor
     - `panthor_queue_eval_syncwait` decides if the queue has been unblocked
 - suspend/resume
   - `panthor_sched_suspend`
+    - it suspends or terminates all csgs
+    - `panthor_gpu_flush_caches` flushes caches
+    - it unbinds all running groups and adds them to `sched->groups.idle`
   - `panthor_sched_resume`
+    - it queues `tick_work`
 - reset
   - `panthor_sched_pre_reset`
+    - it cancels `sync_upd_work` and `tick_work`
+    - `panthor_sched_suspend` suspends all running groups
+    - for idle or runnable groups, `panthor_group_stop` calls `drm_sched_stop`
+      on their queues and moves them to `sched->reset.stopped_groups`
   - `panthor_sched_post_reset`
+    - for groups moved to `sched->reset.stopped_groups`, `panthor_group_start`
+      calls `drm_sched_start` on their queues and moves them back to
+      `sched->groups.idle` or `sched->groups.runnable`
+    - it queues `tick_work` and `sync_upd_work`
 
 ## File Operations
 
