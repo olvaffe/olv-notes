@@ -134,22 +134,41 @@ DRM Scheduler
 - `drm_sched_free_job_work`
   - `drm_sched_get_finished_job` pops the first job on `sched->pending_list`
     if it has signaled
-    - it also starts timeout timer for the next job
+    - it also cancels the current timeout timer, and starts timeout timer for
+      the next job
   - `sched->ops->free_job` frees the job
   - `drm_sched_run_free_queue` queues `drm_sched_free_job_work` again if the
     next job has also signaled
   - `drm_sched_run_job_queue` queues `drm_sched_run_job_work`
 
-## GPU Hang
+## Job Timeout
 
-- `drm_sched_run_job_work` calls `drm_sched_backend_ops::run_job` to queue the
-  job to hw
-  - before queuing, `drm_sched_start_timeout` starts `sched->work_tdr` with a
-    timeout
-- after job completion, `drm_sched_job_done` schedules
-  `drm_sched_free_job_work`
-  - `drm_sched_get_finished_job` cancels `sched->work_tdr`
-- if the job does not complete in time, `drm_sched_job_timedout` is called
-  - it calls `drm_sched_backend_ops::timedout_job` to trigger gpu recovery
+- `drm_sched_run_job_work`
+  - `drm_sched_job_begin` starts timeout timer
+  - `sched->ops->run_job` submits the job to hw ring
+- if the job completes before the timeout timer,
+  - the hw fence calls `drm_sched_job_done_cb` to signal `finished` fence and
+    queues `drm_sched_free_job_work`
+  - `drm_sched_free_job_work` cancels the timeout timer
+- if the job times out, `drm_sched_job_timedout` is called
+  - it pops the first job from `sched->pending_list`
+  - `sched->ops->timedout_job` cancels the job
 - if the driver detects hangs before the timeout, it can call
   `drm_sched_fault` to schedule `drm_sched_job_timedout` immediately
+- a typical `timedout_job` impl
+  - `drm_sched_stop` stops the scheduler
+    - `drm_sched_wqueue_stop` cancels works and sets `pause_submit`
+    - it pushes the job back to `sched->pending_list`
+    - it loops through `sched->pending_list` to either remove fence callbacks
+      (if unsignaled) or to wait for fence callbacks (if signaled)
+    - it cancels timeout timer
+  - cancel the bad job from hw somehow
+    - if supported, remove the bad job directly
+    - otherwise, pause all good jobs, reset gpu, and resume all good jobs
+    - note that all hw fences, including the hw fence for the bad job, must
+      still signal in finite time
+  - `drm_sched_start` starts the scheduler
+    - it loops through `sched->pending_list` to set up `drm_sched_job_done_cb`
+      again
+    - `drm_sched_start_timeout_unlocked` starts timeout timer
+    - `drm_sched_wqueue_start` resets `pause_submit` and queues works
