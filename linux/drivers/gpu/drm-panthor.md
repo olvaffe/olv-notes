@@ -503,9 +503,12 @@ DRM panthor
       on `group->blocked_queues`
   - group lifecycle
     - when a group is evicted,
+      - it is suspended (or terminated if bad) and becomes
+        `PANTHOR_CS_GROUP_SUSPENDED` (or `PANTHOR_CS_GROUP_TERMINATED`)
+      - it is reset from `csg_slot->group`
       - if all queues are on `group->idle_queues` or `group->block_queues`,
-        the group is added to `sched->groups.idle`
-      - otherwise, the group is added to `sched->groups.runnable`
+        it is added to `sched->groups.idle`
+      - otherwise, it is added to `sched->groups.runnable`
     - when a group is scheduled,
       - it is set to `csg_slot->group`
       - it is started/resumed and becomes `PANTHOR_CS_GROUP_ACTIVE`
