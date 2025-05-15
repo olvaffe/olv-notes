@@ -501,6 +501,15 @@ DRM panthor
     - if the ringbuf is empty, the queue is on `group->idle_queues`
     - if the ringbuf is non-empty, and is blocked by `SYNC_WAIT`, the queue is
       on `group->blocked_queues`
+  - group lifecycle
+    - when a group is evicted,
+      - if all queues are on `group->idle_queues` or `group->block_queues`,
+        the group is added to `sched->groups.idle`
+      - otherwise, the group is added to `sched->groups.runnable`
+    - when a group is scheduled,
+      - it is set to `csg_slot->group`
+      - it is started/resumed and becomes `PANTHOR_CS_GROUP_ACTIVE`
+      - it is removed from `sched->groups.idle` or `sched->groups.runnable`
 - `panthor_job_create` creates a job for each submit
   - `call_info` points to cs instrs
   - `group` is the group

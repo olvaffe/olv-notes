@@ -608,11 +608,11 @@ ARM Mali CSF
   - `STORE_MULTIPLE`
   - `STORE_STATE`
 - other
-  - `ERROR_BARRIER`
+  - `ERROR_BARRIER` recovers from error state, if any
   - `FINISH_FRAGMENT` returns used heap chunks to heap ctx and increments
     `FRAG_END` counter
-  - `FINISH_TILING`
-  - `FLUSH_CACHE2`
+  - `FINISH_TILING` waits for outstanding tiler jobs to finish
+  - `FLUSH_CACHE2` flushes l2/lsc/other caches
   - `HEAP_OPERATION` increments one of the counters in heap ctx
   - `HEAP_SET` sets the heap ctx
     - a heap ctx is 32 bytes, consisting of
@@ -622,22 +622,28 @@ ARM Mali CSF
       - `FRAG_END` counter
   - `NEXT_SB_ENTRY`
   - `PROT_REGION`
-  - `REQ_RESOURCE`
-  - `RUN_COMPUTE`
-  - `RUN_COMPUTE_INDIRECT`
-  - `RUN_FRAGMENT`
+  - `REQ_RESOURCE` requests resources for idvs/tiler/fragment/compute
+  - `RUN_COMPUTE` initiates compute job
+  - `RUN_COMPUTE_INDIRECT` initiates indirect compute job
+  - `RUN_FRAGMENT` initiates fragment job
   - `RUN_FULLSCREEN`
-  - `RUN_IDVS2`
-  - `SET_EXCEPTION_HANDLER`
-  - `SET_STATE`
+  - `RUN_IDVS2` initiates idvs job
+  - `SET_EXCEPTION_HANDLER` sets `TILER_OOM` handler
+  - `SET_STATE` selects sb entry for
+    - endpoint, such as `RUN_*` or `FINISH_TILING`
+    - other, such as `LOAD_MULTIPLE` or `STORE_MULTIPLE`
+    - deferred, such as `FLUSH_CACHE2`, `FINISH_FRAGMENT`, `SYNC_*`, etc.
   - `SET_STATE_IMM32`
   - `SHARED_SB_DEC`
   - `SHARED_SB_INC`
-  - `SYNC_ADD32`
-  - `SYNC_ADD64`
-  - `SYNC_SET32`
-  - `SYNC_SET64`
-  - `SYNC_WAIT32`
+  - `SYNC_ADD32` adds u32 to syncobj
+    - optionally propagate error and raise `CS_INHERIT_FAULT`
+    - optionally raise `SYNC_UPDATE`
+  - `SYNC_ADD64` adds u64 to syncobj
+  - `SYNC_SET32` sets u32 to syncobj
+  - `SYNC_SET64` sets u64 to syncobj
+  - `SYNC_WAIT32` waits until syncobj meets the condition
+    - optionally detect error and raise `CS_INHERIT_FAULT`
   - `SYNC_WAIT64`
   - `TRACE_POINT`
-  - `WAIT`
+  - `WAIT` waits for sb entries
