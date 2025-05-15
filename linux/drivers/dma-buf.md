@@ -31,38 +31,78 @@ dma-buf
 ## dma-fence
 
 - `struct dma_fence` has
-  - `rcu` for use with `kfree_rcu`
-  - `cb_list` for a list of callbacks to be invoked when the fence signals
-  - `lock` for a spinlock that must be held to access some parts of the fence
-  - `context/seqno` for the seqno of the fence in the context
-  - `flags` for its internal status (signal enabled, signaled, timestamped)
-  - `timestamp` to indicate when it was signaled
-  - `error` to indicate that the fence is signaled because of errors
-- dma-fence is designed to be RCU-protected.  A writer can `dma_fence_put`
-  without `synchronize_rcu`.  This is because when the last reference is
-  dropped, the fence is freed with `kfree_rcu`
-  - on the other hand, a reader might get a fence with refcount==0.  It must
-    call `dma_fence_get_rcu` to make sure the fence is usable.
-- dma-fence is not signaled timely by default.  To get that behavior, which
-  requires enabling IRQ, one of these should be called
-  - `dma_fence_add_callback`
-  - `->wait`
-  - `dma_fence_enable_sw_signaling`
-- It usually goes like
-  - someone waits for the fence
-    - the fence is locked
-    - if fence is already signaled, return early
-    - otherwise, timely signaling is enabled
-    - a callback is added to wake up this process
-    - the fence is unlocked
-    - the process goes to sleep
-  - HW IRQ
-    - irq handler calls `dma_fence_signal`
-    - callbacks are invoked; usually there is only one which wakes up the
-      waiting process
-- Only these are protected by the spinlock, as far as I can tell
-  - `cb_list`
-  - `->enable_signaling`
+  - `lock` for a spinlock to protect `cb_list`
+    - it is locked to protect `cb_list` in
+      - `dma_fence_add_callback`
+      - `dma_fence_remove_callback`
+      - `dma_fence_signal` and `dma_fence_signal_timestamp`
+    - it is locked in many more functions, but all of them accesses `cb_list`
+      - as a result, it is locked in cbs, in several ops, and is often locked
+        beyond `cb_list` access
+  - `ops` for impl-defined ops
+      - `get_driver_name`, unlocked
+      - `get_timeline_name`, unlocked
+      - `enable_signaling`, locked
+      - `signaled`, unlocked
+      - `wait`, unlocked, deprecated by `dma_fence_default_wait`
+      - `release`, unlocked, default to `dma_fence_free`
+      - `fence_value_str`, locked
+      - `timeline_value_str`, locked
+      - `set_deadline`, unlocked
+  - a union of
+    - `cb_list` for a list of callbacks to be invoked when the fence signals
+      - valid from `dma_fence_init` until `dma_fence_signal`
+    - `timestamp` to indicate when it was signaled
+      - valid from `dma_fence_signal` until `dma_fence_release`
+    - `rcu` for use with `kfree_rcu`
+      - valid after `dma_fence_release`
+      - dma-fence is designed to be RCU-protected
+        - A writer can `dma_fence_put` without `synchronize_rcu`.  This is
+          because when the last reference is dropped, the fence is freed with
+          `kfree_rcu`
+        - on the other hand, a reader might get a fence with `refcount==0`.
+          It must call `dma_fence_get_rcu` to make sure the fence is usable.
+  - `context` for the fence context
+  - `seqno` for the seqno of the fence in the fence context
+  - `flags` for its internal status
+    - `DMA_FENCE_FLAG_SIGNALED_BIT` indicates fence is already signaled
+    - `DMA_FENCE_FLAG_TIMESTAMP_BIT` indicates fence has a valid timestamp
+      - this is needed because there is a small window where `cb_list` is
+        saved away and `timestamp` becomes valid in the union
+    - `DMA_FENCE_FLAG_ENABLE_SIGNAL_BIT` indicates signaling is enabled
+      - dma-fence may not signal timely.  To get that behavior, which may
+        require enabling IRQ, one of these should be called
+        - `dma_fence_add_callback`
+        - `dma_fence_wait*`
+        - `dma_fence_enable_sw_signaling`
+    - more impl-defined flags
+  - `refcount` for refcount
+  - `error` to indicate an error in the associated operation
+    - it must be set before signaling
+- `dma_fence_get_stub` returns a fence that is already signaled
+- `dma_fence_context_alloc` allocs fence contexts (u64 ids)
+- `dma_fence_wait` and `dma_fence_wait_timeout` wait for a fence
+  - `dma_fence_enable_sw_signaling` enables signaling (irq if necessary)
+  - `dma_fence_default_wait`
+    - it early returns in several cases
+      - the fence is already signaled
+      - the wait is interruptible and there is a pending process signal
+      - timeout is 0
+    - otherwise, it adds a `dma_fence_default_wait_cb` to `cb_list` and enters
+      a sleep loop until the fence is signaled or interrupted
+      - `dma_fence_default_wait_cb` is responsible for waking up self
+- `dma_fence_wait_any_timeout` waits for multiple fences
+- when the associated operation completes, driver calls `dma_fence_signal*` to
+  signal the fence
+  - the lock is locked or already locked
+  - it saves `cb_list` on stack
+    - remember that `cb_list` and `timestamp` are in a union
+  - it sets `timestamp` and `DMA_FENCE_FLAG_TIMESTAMP_BIT`
+    - check `dma_fence_timestamp` out to see why the bit is needed
+  - it loops through `cb_list`, reinits the cb nodes, and invokes cbs
+
+## dma-fence Containers
+
 - `dma_fence_array`
   - it is a fence which consists of a fixed-size array of fences
     - the fence may be on a different timeline because the underlying fences
