@@ -163,6 +163,33 @@ dma-buf
   - this function cannot fail because it is called from a point of no failure
     - `dma_resv_reserve_fences` must have been called to ensure storage
 - `dma_resv_replace_fences` replaces all fences in the specified context
+- `dma_resv_copy_fences` replaces all fences in dst by those in src
+- `dma_resv_get_fences` returns all fences matching (or lower than) the usage
+  in dma-resv
+- `dma_resv_get_singleton` returns a fence representing all fences in dma-resv
+  - if dma-resv has more than 1 fence, they are wrapped in `dma_fence_array`
+- `dma_resv_wait_timeout` calls `dma_fence_wait_timeout` on all fences
+  matching (or lower than) the usage
+- reader iterator
+  - `dma_resv_iter_begin` (partially) inits `dma_resv_iter`
+  - `dma_resv_iter_first_unlocked` returns the first fence
+    - `dma_resv_iter_restart_unlocked` inits the rest of `dma_resv_iter`
+    - `dma_resv_iter_walk_unlocked` updates `cursor->fence` to the next fence
+      - only fences of the same usage or lower, and is unsignaled, is returned
+  - `dma_resv_iter_next_unlocked` returns the next fence
+    - it works the same way as `dma_resv_iter_first_unlocked`, except that it
+      calls `dma_resv_iter_restart_unlocked` only if there is a writer racing
+      with us
+  - `dma_resv_iter_end`
+  - `dma_resv_for_each_fence_unlocked` is a convenient macro
+- writer iterator
+  - `dma_resv_iter_begin`
+  - `dma_resv_iter_first` inits the rest of `dma_resv_iter` and calls
+    `dma_resv_iter_next`
+  - `dma_resv_iter_next` returns the next iterator
+    - there is no concern of writer racing because it is locked
+  - `dma_resv_iter_end`
+  - `dma_resv_for_each_fence` is a convenient macro
 
 ## dma-fence Containers
 
