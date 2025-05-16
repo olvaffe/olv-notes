@@ -671,6 +671,78 @@ DRM panthor
       `sched->groups.idle` or `sched->groups.runnable`
     - it queues `tick_work` and `sync_upd_work`
 
+## Error Recovery
+
+- a CS is either enabled or disabled
+  - the CS is initially disabled and does not fetch nor execute instrs
+  - `CS_STATE_START` req enables the CS to start fetching and executing instrs
+  - upon `CS_FAULT` or `CS_FATAL`, the CS is still enabled but stops fetching
+    and executing instrs; the possible operations are
+    - `CS_STATE_STOP` req to disable just the CS
+    - `CSG_STATE_TERMINATE` req to terminate the entire CSG
+    - if `CS_FAULT`, a third option is to ack `CS_FAULT` to enter error recovery
+      - the CS will fetch and execute instrs again, but the error state will
+        be set
+      - `RUN_*` will be nop
+      - `SYNC_*` with `error_propagate` will propagate 1
+      - `ERROR_BARRIER` will clear the error state and return the CS to normal
+        enabled state
+  - `CS_STATE_STOP` req disables the CS
+- a CSG is either enabled or disabled
+  - the CSG is initially disabled; all CS reqs are ignored
+  - `CSG_STATE_START` req enables the CSG; only `CS_STATE_START` req is
+    honored; after the CS is enabled, all CS reqs are honored
+  - `CSG_STATE_TERMINATE` req disables the CSG; it disables all CSs as well
+  - alternatively, `CSG_STATE_SUSPEND` and `CSG_STATE_RESUME` reqs also
+    disable/enable the CSG
+    - the difference is that they also save/restore CS states
+- on mmu fault, an mmu irq is raised
+  - `panthor_mmu_irq_handler` disables the AS, marks `unhandled_fault`, and
+    logs the fault
+  - `panthor_sched_report_mmu_fault` queues `tick_work`
+- on gpu fault, a gpu irq is raised
+  - `panthor_gpu_irq_handler` logs the fault
+- on cs fault or job stall, a job irq is raised
+  - `panthor_job_irq_handler` queues `process_fw_events_work`
+  - `process_fw_events_work` calls `sched_process_csg_irq_locked` on csgs that
+    need attention, which calls `cs_slot_process_irq_locked` on CSs that need
+    attention
+  - `csg_slot_process_progress_timer_event_locked` handles
+    `CSG_PROGRESS_TIMER_EVENT`
+    - it logs an error, marks `group->timedout`, and queues `tick_work`
+  - `cs_slot_process_fatal_event_locked` handles `CS_FATAL`
+    - it marks `group->fatal_queues`, queues `tick_work` other than
+      `DRM_PANTHOR_EXCEPTION_CS_UNRECOVERABLE`, and logs an error
+  - `cs_slot_process_fault_event_locked` handles `CS_FAULT`
+    - it marks the fence error for `DRM_PANTHOR_EXCEPTION_CS_INHERIT_FAULT`,
+      and logs an error
+  - `cs_slot_process_tiler_oom_event_locked` handles `CS_TILER_OOM`
+    - it grows tiler heap and is normally fine
+    - on system oom, it logs an error, marks `group->fatal_queues`, and queues
+      `tick_work`
+- on scheduler timeout, `queue_timedout_job` is called
+  - it logs an error, marks `group->timedout`, and queues `tick_work`
+- on `tick_work`,
+  - if `panthor_vm_has_unhandled_faults(group->vm)`, it marks
+    `group->fatal_queues`
+  - if `!group_can_run(group)`, implied by `group->timedout` or
+    `group->fatal_queues`, it queues `group_term_work`
+    - `tick_ctx_insert_old_group` moves them to `ctx->old_groups`
+    - `tick_ctx_pick_groups_from_list` never moves them to `ctx->groups`
+    - `tick_ctx_apply` sends `CSG_STATE_TERMINATE` reqs to `ctx->old_groups`
+    - `tick_ctx_cleanup` queues `group_term_work` for them
+- on `group_term_work`,
+  - it signals all fences
+- `panthor_device_schedule_reset` is called from several places
+  - from `wait_ready` when mmu `AS_COMMAND` times out
+  - from `panthor_fw_ping_work` when mcu `GLB_PING` times out
+  - from `csgs_upd_ctx_apply_locked` error handling, when any CSG req times
+    out
+  - from `csg_slot_sync_state_locked` when `tick_work` sends `CSG_STATE_MASK`
+    req and gets unexpected states
+  - from `cs_slot_process_fatal_event_locked` when `CS_FATAL` is
+    `DRM_PANTHOR_EXCEPTION_CS_UNRECOVERABLE`
+
 ## File Operations
 
 - `panthor_open`

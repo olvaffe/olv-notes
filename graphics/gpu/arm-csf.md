@@ -69,7 +69,7 @@ ARM Mali CSF
 - `GPU_STATUS`
 - `GPU_FAULTSTATUS` (`GPU_FAULT_STATUS` in panthor)
   - bit 7:0: exception type
-    - `GPU_BUS_FAULT` indicates external bus fault
+    - `GPU_BUS_FAULT` bus (memory access) fault reported by L2
     - `GPU_SHAREABILITY_FAULT` indicates a cache line is accessed as both
       shareable and non-shareable within gpu
     - `SYSTEM_SHAREABILITY_FAULT` indicates a cache line is accessed as both
@@ -354,6 +354,11 @@ ARM Mali CSF
   - `panthor_fw_csg_input_iface` in panthor
 - `CSG_REQ`
   - `STATE` requests to terminate/start/suspend/resume a CSG
+    - `START` enables a CSG without restoring CS states
+    - `TERMINATE` disables a CSG without saving CS states
+    - `RESUME` enables a CSG and restores CS states from `CSG_SUSPEND_BUF`
+    - `SUSPEND` disables a CSG, saves CS states to `CSG_SUSPEND_BUF`, and
+      implies `STATUS_UPDATE`
   - `EP_CFG` commits `CSG_EP_REQ` and `CSG_ALLOW_*`
   - `STATUS_UPDATE` requests to update `CSG_STATUS_*` and `CS_STATUS_*`
     - it is implied when `STATE` is requested to suspend
@@ -488,12 +493,15 @@ ARM Mali CSF
   - `EXCEPTION_TYPE`
     - `OK`
     - `KABOOM` shader core executes `KABOOM`
-    - `CS_RESOURCE_TERMINATED` another job causes iterator to terminate
-    - `CS_BUS_FAULT`
-    - `CS_INHERIT_FAULT` `SYNC_WAIT` fails with an error
+    - `CS_RESOURCE_TERMINATED` another job (from another cs) causes
+      iterator to terminate
+    - `CS_BUS_FAULT` bus (memory access) error when fetching or executing
+      instrs; can be caused by `GPU_BUS_FAULT` too
+    - `CS_INHERIT_FAULT` `SYNC_WAIT` detects an error (propagated from another
+      cs)
     - `INSTR_INVALID_PC` bad shader instr pc
     - `INSTR_INVALID_ENC` bad shader instr encoding
-    - `INSTR_BARRIER_FAULT`
+    - `INSTR_BARRIER_FAULT` bad shader `BARRIER`?
     - `DATA_INVALID_FAULT` invalid input data
     - `TILE_RANGE_FAULT` bad tile
     - `ADDR_RANGE_FAULT` out-of-range access
@@ -503,15 +511,17 @@ ARM Mali CSF
 - `CS_FATAL` unrecoverable error info
   - `EXCEPTION_TYPE`
     - `OK`
-    - `CS_CONFIG_FAULT`
+    - `CS_CONFIG_FAULT` bad `CS_KERNEL_INPUT_BLOCK`
     - `CS_UNRECOVERABLE`
-      - for other types, the csg containg the cs becomes unusable
-      - for this type, the gpu must be reset
-    - `CS_ENDPOINT_FAULT` no available shader cores
-    - `CS_BUS_FAULT`
+      - for this exception, the gpu must be reset
+    - `CS_ENDPOINT_FAULT` no available shader cores (usually a result of
+      missing `REQ_RESOURCE` instr)
+    - `CS_BUS_FAULT` bus (memory access) error when fetching or executing
+      instrs; can be caused by `GPU_BUS_FAULT` too
     - `CS_INVALID_INSTRUCTION` illegal CSF instr
     - `CS_CALL_STACK_OVERFLOW` too deep `CALL` instr
     - `FIRMWARE_INTERNAL_ERROR`
+      - for this exception, the gpu must be reset and the fw must be reloaded
   - `EXCEPTION_DATA`
 - `CS_FAULT_INFO`
 - `CS_FATAL_INFO`
@@ -637,7 +647,8 @@ ARM Mali CSF
   - `SHARED_SB_DEC`
   - `SHARED_SB_INC`
   - `SYNC_ADD32` adds u32 to syncobj
-    - optionally propagate error and raise `CS_INHERIT_FAULT`
+    - optionally propagate error state (whether the CS is in error recovery)
+      and raise `CS_INHERIT_FAULT`
     - optionally raise `SYNC_UPDATE`
   - `SYNC_ADD64` adds u64 to syncobj
   - `SYNC_SET32` sets u32 to syncobj
