@@ -100,6 +100,69 @@ dma-buf
   - it sets `timestamp` and `DMA_FENCE_FLAG_TIMESTAMP_BIT`
     - check `dma_fence_timestamp` out to see why the bit is needed
   - it loops through `cb_list`, reinits the cb nodes, and invokes cbs
+- fence cross-driver contract
+  - fences must complete in a reasonable time
+    - if the associated operation runs forever, there must be a timeout
+  - fence timeout is impl-defined
+    - it could be a fixed timeout, or it could be a mix of forward progress
+      and dynamic timeout
+  - driver should annotate all code leading to `dma_fence_signal` with
+    `dma_fence_begin_signalling` and `dma_fence_end_signalling`
+    - this detects potential deadlock around `dma_fence_wait`
+  - driver is allowed to `dma_fence_wait` while holding `dma_resv_lock`
+    - this means all code leading to `dma_fence_signal` must not
+      `dma_resv_lock`
+  - driver is allowed to `dma_fence_wait` from shrinker
+    - this means all code leading to `dma_fence_signal` must not
+      allocate with `GFP_KERNEL`
+  - driver is allowed to `dma_fence_wait` from their
+    `mmu_interval_notifier_ops` (for userptr)
+    - this means all code leading to `dma_fence_signal` must not
+      allocate with `GFP_NOFS` or `GFP_NOIO`, but only `GFP_ATOMIC`
+
+## dma-resv
+
+- `struct dma_resv` has
+  - `lock` protects `fences`
+    - only for writers; readers are lockfree
+  - `fences`
+    - `rcu`
+    - `num_fences` is array size
+    - `max_fences` is array capacity
+    - `table` is an array of `dma_fence` and usage
+      - usage is stored in lower bits (`DMA_RESV_LIST_MASK`) of the pointer
+        - `DMA_RESV_USAGE_KERNEL` the associated op is for kernel mm
+        - `DMA_RESV_USAGE_WRITE` the associated op is userspace write
+        - `DMA_RESV_USAGE_READ` the associated op is userspace read
+        - `DMA_RESV_USAGE_BOOKKEEP` the associated op is not implicitly fenced
+        - the enums are ordered such that the lower ones "implies" the higher
+          ones
+        - for a driver that does not support implicit fencing,
+          `DMA_RESV_USAGE_BOOKKEEP` is the only usage
+- `dma_resv_init` inits an dma-resv
+  - `ww_mutex_init` inits `obj->lock`
+  - `RCU_INIT_POINTER` inits `obj->fences`
+- `dma_resv_lock` locks the dma-resv
+  - `ww_mutex_lock` locks `obj->lock`
+  - this is a `ww_mutex` because the gpu driver needs to lock dma-resv of all
+    bos for a submit
+  - only writers lcok dma-resv; readers are lockfree
+- `dma_resv_reserve_fences` ensures storage
+  - it early returns if there is enough storage
+  - `dma_resv_list_alloc` allocs new storage
+  - it copies existing fences, if any, from old storage to new storage
+    - it calls `dma_fence_is_signaled`, which can signal the fence, and drops
+      signaled fence
+- `dma_resv_add_fence` adds a fence
+  - the fence should not be `dma_fence_is_container`
+  - it checks if it can replace an existing fence
+    - if the new fence is later in the same fence context than an existing
+      fence, and has a stronger usage, it can replace the existing fence
+    - it also calls `dma_fence_is_signaled`
+  - otherwise, it appends the fence
+  - this function cannot fail because it is called from a point of no failure
+    - `dma_resv_reserve_fences` must have been called to ensure storage
+- `dma_resv_replace_fences` replaces all fences in the specified context
 
 ## dma-fence Containers
 
@@ -163,22 +226,6 @@ dma-buf
   - `timeline_fence_signaled` returns true if the timeline value is greater
     than or equal to the fence seqno
   - `timeline_fence_release` frees the `sync_pt`
-
-## dma-resv
-
-- A `dma_resv` manages fences for a buffer
-  - there is an exclusive fence, `fence_excl`
-    - this is for fence that writes to the buffer
-  - there is also a list of shared fences, `fence`
-    - this is for fences that read from the buffer
-  - when submitting cmdbuf for GPUs, there are usually many read-only buffers
-    and several read-write buffers.  We need to lock all of their resv objs
-    such that we can add the dma-fence for the submission to them.  The most
-    natural lock type is `ww_mutex`
-  - There is also a seqcount.  Together with the mutex for writers, they
-    provide a RW lock to protect `obj->fence_excl` and `obj->fence` for
-    readers.
-  - Each dma-fence is RCU-protected to allow lockfree reads
 
 ## dma-buf
 
