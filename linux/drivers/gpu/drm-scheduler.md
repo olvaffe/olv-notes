@@ -172,3 +172,27 @@ DRM Scheduler
       again
     - `drm_sched_start_timeout_unlocked` starts timeout timer
     - `drm_sched_wqueue_start` resets `pause_submit` and queues works
+
+## Fence Contract
+
+- <https://docs.kernel.org/driver-api/dma-buf.html#dma-fence-cross-driver-contract>
+  - a driver is allowed to call `dma_fence_wait`
+    - while holding `dma_resv_lock`,
+    - from memory shrinker, or
+    - from `mmu_interval_notifier`
+  - the same driver, or another driver, must avoid these on the code path
+    leading to `dma_fence_signal` to avoid deadlock
+    - `dma_resv_lock`
+    - allocation with `GFP_KERNEL`, `GFP_NOFS`, or `GFP_NOIO`
+      - effectively, only `GFP_ATOMIC` is allowed
+- after `drm_sched_run_job_work`, the hw fence must signal in finite time
+  - if the job completes, the hw raises an irq and the driver calls
+    `dma_fence_signal` (directly, or indirectly via `dma_fence_is_signaled`)
+    in its irq handler
+    - the irq handler is the code path leading to `dma_fence_signal`
+  - if the job times out and is canceled by `drm_sched_job_timedout`, the
+    driver still needs to call `dma_fence_signal` one way or another
+    - the `timedout_job` callback is on the path leading to `dma_fence_signal`
+    - if `timedout_job` merely requests the hw to cancel, and a cancel irq
+      handler signals the fence, the irq handler is also on the path leading
+      to `dma_fence_signal`
