@@ -742,6 +742,24 @@ DRM panthor
     req and gets unexpected states
   - from `cs_slot_process_fatal_event_locked` when `CS_FATAL` is
     `DRM_PANTHOR_EXCEPTION_CS_UNRECOVERABLE`
+- devcoredump ideas
+  - on mmu fault, `panthor_mmu_irq_handler` can, instead of marking
+    `vm->unhandled_fault`, collect per-vm `AS_FAULTSTATUS` and
+    `AS_FAULTADDRESS`
+  - on gpu fault, `panthor_gpu_irq_handler` can collect `GPU_FAULT_STATUS` and
+    `GPU_FAULT_ADDR`
+    - it should be cleared with `GPU_CLEAR_FAULT` cmd
+  - on cs fault, `panthor_job_irq_handler` can collect per-CS `CS_FAULT`,
+    `CS_FATAL`, `CS_FAULT_INFO`, `CS_FATAL_INFO`, `CS_EXTRACT`, etc.
+  - general gpu regs
+    - `GPU_ID`
+    - `GPU_STATUS`
+    - `SHADER_READY`
+    - `TILER_READY`
+    - `L2_READY`
+    - `MCU_STATUS`
+  - general mmu regs
+    - `STATUS`
 
 ## File Operations
 
