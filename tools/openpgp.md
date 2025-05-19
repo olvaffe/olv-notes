@@ -115,6 +115,36 @@ PGP
 
 ## Steps
 
+- rationale
+  - a pgp key is a digital identity
+    - it is common for a digital identity to have multiple emails (uids)
+    - if one has multiple digital identities, one should create multiple pgp
+      keys
+  - `C` subkey represents the digital identity
+    - it signs subkeys, uids, expiracy, revocations, etc.
+    - it builds web of trust, and thus cannot afford loss/theft
+    - to avoid loss, it should be backed up
+    - to avoid theft, it should only be stored offline
+      - this is not too inconvenient because `C` subkey is only used
+        occasionally
+  - `S` subkey signs messages
+    - loss is fine
+    - theft results in impersonation
+  - `E` subkey encrypts/decrypts messages
+    - loss results in losing access to encrypted messages forever
+    - theft results in leaks
+  - `A` subkey authenticates the digital identity
+    - loss results in losing access to remote systems temporarily
+    - theft results in hacks
+  - per-identity or per-machine
+    - there is only one `C` subkey, stored offline
+    - there should be one `S` subkey, shared by all machines
+      - otherwise people get confused
+    - there should be one `E` subkey, shared by all machines
+      - otherwise people get confused
+    - there should be one `A` subkey, shared by all machines
+      - otherwise I get confused
+      - this may or may not be a good idea
 - create a new key
   - `pkill gpg-agent; mkdir -m 700 new`
   - `gpg --homedir=new --quick-generate-key "name <email>" default cert`
