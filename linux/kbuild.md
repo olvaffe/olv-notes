@@ -184,3 +184,29 @@ Kernel KBuild
   - `config.txt`
     - `arm_64bit=1`
     - `kernel=Image`
+
+## External (Out-of-Tree) Modules
+
+- <https://docs.kernel.org/kbuild/modules.html>
+- steps
+  - build the kernel first
+    - `make O=TEST`
+  - build the external module
+    - `make -C TEST M=<path-to-ext-module>`
+    - the default target is `modules`
+- `Makefile` and `Kbuild`
+  - the external module typically contains `Makefile` for convenience
+    - it allows users to invoke `make` to build the ext mod
+    - `KDIR ?= /lib/modules/$(uname -r)/build`
+    - `default:`
+    - ` $(MAKE) -C $(KDIR) M=$$PWD`
+  - there is a separate `Kbuild` to build the external module
+    - `obj-m := foo.o`
+    - `foo-y := foo-core.o foo-plat.o`
+  - since 6.13, `Makefile` can instead
+    - `KDIR ?= /lib/modules/$(uname -r)/build`
+    - `export KBUILD_EXTMOD := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))`
+    - `include $(KDIR)/Makefile`
+  - it is possible to merge `Kbuild` into `Makefile`
+    - `$(KERNELRELEASE)` is non-empty when kbuild sources `Makefile`
+    - `ifneq ($(KERNELRELEASE),) ... else ... endif`
