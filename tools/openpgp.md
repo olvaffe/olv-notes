@@ -21,9 +21,10 @@ PGP
   - 2007: RFC 4880, OpenPGP Message Format (v4 key format, deprecated)
   - 2009: RFC 5581, The Camellia Cipher in OpenPGP (deprecated)
   - 2012: RFC 6637, Elliptic Curve Cryptography (ECC) in OpenPGP (deprecated)
-  - 2024: RFC 9580, OpenPGP
-    - new key format instead of the discussed v5 key format
-    - LibrePGP created based on v5 key format
+  - 2024: RFC 9580, OpenPGP (v6 key format)
+    - GnuPG author proposed RFC 4880bis draft, with v5 key format
+    - OpenPGP WG went with v6 key format
+    - GnuPG author created LibrePGP based on v5 key format
 - GnuPG
   - 1997: GnuPG 0.0 by Werner Koch
   - 1999: GnuPG 1.0
@@ -38,79 +39,79 @@ PGP
 
 ## Guides
 
-- <https://www.kernel.org/doc/html/latest/process/maintainer-pgp-guide.html>
-  - a GPG key is usually a collection of subkeys
-    - all subkeys are fully independent from each other
-      - if the private key of a subkey is lost, it is gone forever
-    - each subkey can have one or more capabilities
-    - only one subkey can have `C` capability
-      - this is often called the master key
-  - there are 4 capabilities
-    - `S` for signing
-    - `E` for encryption
-    - `A` for authentication
-    - `C` for certifying other keys
-      - it can add/revoke other subkeys
-      - it can add/change/revoke associated uids
-      - it can add/change expiration on self or other subkeys
-      - it can sign other people's keys
-  - by default,
-    - when gpg generates a key,
-      - it generates a subkey with `SC`
-      - it generates another subkey with `E`
-    - gpg encrypts private subkeys with a passphrase
-      - this is essential as the last line of defense
 - <https://github.com/lfit/itpol/blob/master/protecting-code-integrity.md>
-  - Generating and protecting your certification key
-    - `gpg --quick-generate-key 'Name <name@example.net>' ed25519 cert`
-      - this generates a PGP key for the specified uid
-      - the algorithm is `ed25519`
-      - it contains only a `C` subkey
-      - it is passphrase-protected
-      - this is a digital identity that cannot afford loss/theft
-        - to avoid loss, it must be backed up
-        - to avoid theft, it must be stored offline
-    - `gpg --export-secret-key <fingerprint>` exports the private key for backup
-      - e.g., pipe it through `paperkey`, print to a paper, and store the paper
-        in back vault to avoid loss
-      - we still remove the `C` subkey later to avoid theft
-    - `gpg --quick-add-uid <fingerprint> 'Another <another@example.net>'` adds
-      other uids associated wit this digital identity
-      - it is common to have multiple uids (emails) associated with the same
-        identity
-      - it is also not uncommon for one to have multitiple digital identities;
-        in that case, create multiple PGP keys
-    - `gpg --quick-set-primary-uid <fingerprint> 'Name <name@example.net>'`
-      makes an uid primary (first)
-      - otherwise, each newly added uid becomes the primary (first)
-    - `gpg --list-key` confirms everything looks right
-  - Generating PGP subkeys
-    - `gpg --quick-add-key <fingerprint> ed25519 sign` adds a signing subkey
-    - `gpg --quick-add-key <fingerprint> cv25519 encr` adds an encryption
-      subkey
-    - `gpg --quick-add-key <fingerprint> ed25519 auth` adds a authentication
-      subkey (for ssh)
-    - `gpg --export <fingerprint> | curl -T - https://keys.openpgp.org`
-      uploads the PGP key
-  - Moving your certification key to offline storage
-    - prepare two encrypted usb sticks
-      - it is fine to use the same passphrase
-    - `cp -rp ~/.gnupg /mnt/gnupg` backs up to encrypted usb sticks
-    - `gpg --homedir=/mnt/gnupg-backup --list-key` verifies backups
-    - remove usb sticks and put them to a safe yet convenient place
-      - we will remove `C` subkey from the device to avoid theft, so we will
-        need the usb sticks every now and then
-    - `gpg --list-key --with-keygrip <fingerprint>` lists keys with their
-      "filenames"
-    - `rm ~/.gnupg/private-keys-v1.d/<keygrid>.key` removes the `C` private
-      key
-      - it is the digital identity so it cannot afford theft
-    - `gpg --list-secret-keys` lists private keys
-      - the line for the `C` subkey should go from `sec` to `sec#`, indicating
-        that it is missing
-    - `rm ~/.gnupg/openpgp-revocs.d/<fingerprint>.rev` removes the revocation
-      certificate from the device
-      - it can be used to revoke the PGP key so it cannot afford theft
+  - <https://www.kernel.org/doc/html/latest/process/maintainer-pgp-guide.html>
+- a GPG key is usually a collection of subkeys
+  - all subkeys are fully independent from each other
+    - if the private key of a subkey is lost, it is gone forever
+  - each subkey can have one or more capabilities
+  - only one subkey can have `C` capability
+    - this is often called the master key
+- there are 4 capabilities
+  - `S` for signing
+  - `E` for encryption
+  - `A` for authentication
+  - `C` for certifying other keys
+    - it can add/revoke other subkeys
+    - it can add/change/revoke associated uids
+    - it can add/change expiration on self or other subkeys
+    - it can sign other people's keys
+- by default,
+  - when gpg generates a key,
+    - it generates a subkey with `SC`
+    - it generates another subkey with `E`
+  - gpg encrypts private subkeys with a passphrase
+    - this is essential as the last line of defense
+- Generating and protecting your certification key
+  - `gpg --quick-generate-key 'Name <name@example.net>' ed25519 cert`
+    - this generates a PGP key for the specified uid
+    - the algorithm is `ed25519`
+    - it contains only a `C` subkey
+    - it is passphrase-protected
+    - this is a digital identity that cannot afford loss/theft
+      - to avoid loss, it must be backed up
+      - to avoid theft, it must be stored offline
+  - `gpg --export-secret-key <fingerprint>` exports the private key for backup
+    - e.g., pipe it through `paperkey`, print to a paper, and store the paper
+      in back vault to avoid loss
+    - we still remove the `C` subkey later to avoid theft
+  - `gpg --quick-add-uid <fingerprint> 'Another <another@example.net>'` adds
+    other uids associated wit this digital identity
+    - it is common to have multiple uids (emails) associated with the same
+      identity
+    - it is also not uncommon for one to have multitiple digital identities;
+      in that case, create multiple PGP keys
+  - `gpg --quick-set-primary-uid <fingerprint> 'Name <name@example.net>'`
+    makes an uid primary (first)
+    - otherwise, each newly added uid becomes the primary (first)
+  - `gpg --list-key` confirms everything looks right
+- Generating PGP subkeys
+  - `gpg --quick-add-key <fingerprint> ed25519 sign` adds a signing subkey
+  - `gpg --quick-add-key <fingerprint> cv25519 encr` adds an encryption
+    subkey
+  - `gpg --quick-add-key <fingerprint> ed25519 auth` adds a authentication
+    subkey (for ssh)
+  - `gpg --export <fingerprint> | curl -T - https://keys.openpgp.org`
+    uploads the PGP key
+- Moving your certification key to offline storage
+  - prepare two encrypted usb sticks
+    - it is fine to use the same passphrase
+  - `cp -rp ~/.gnupg /mnt/gnupg` backs up to encrypted usb sticks
+  - `gpg --homedir=/mnt/gnupg-backup --list-key` verifies backups
+  - remove usb sticks and put them to a safe yet convenient place
+    - we will remove `C` subkey from the device to avoid theft, so we will
+      need the usb sticks every now and then
+  - `gpg --list-key --with-keygrip <fingerprint>` lists keys with their
+    "filenames"
+  - `rm ~/.gnupg/private-keys-v1.d/<keygrid>.key` removes the `C` private
+    key
+    - it is the digital identity so it cannot afford theft
+  - `gpg --list-secret-keys` lists private keys
+    - the line for the `C` subkey should go from `sec` to `sec#`, indicating
+      that it is missing
+  - `rm ~/.gnupg/openpgp-revocs.d/<fingerprint>.rev` removes the revocation
+    certificate from the device
+    - it can be used to revoke the PGP key so it cannot afford theft
 
 ## Steps
 
