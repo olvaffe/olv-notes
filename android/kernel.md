@@ -115,3 +115,35 @@ Android Kernel
 - `tools/bazel run //private/devices/google/foo:foo_dist`
   - this copies files to `out/foo/dist/`
 - for cros, the kernel image and the dtbs are packaged to fit image
+- `BUILD.bazel`
+  - `load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")`
+    - <https://github.com/bazelbuild/bazel-skylib/blob/main/rules/common_settings.bzl>
+  - `load("@rules_pkg//pkg:install.bzl", "pkg_install")`
+    - <https://github.com/bazelbuild/rules_pkg/blob/main/pkg/install.bzl>
+  - `load("//build/kernel/kleaf:kernel.bzl", "kernel_build")`
+    - <https://android.googlesource.com/kernel/build/+/refs/heads/main/kleaf/kernel.bzl>
+  - `package(...)`
+    - <https://bazel.build/reference/be/overview>
+  - `filegroup(name = "foo", srcs = ...)`
+  - `kernel_build(...)`
+    - <https://android.googlesource.com/kernel/build/+/refs/heads/main/kleaf/docs/api_reference/kernel.md#kernel_build>
+    - `outs` is a list of non-module outputs, such as dtbs
+    - `build_config` is the kleaf build config file
+    - `module_outs`  is a list of in-tree modules
+    - `arch` is `arm64` or `x86_64`
+    - `base_kernel` is empty, or, e.g., `//common:kernel_aarch64`
+    - `make_goals` overrides build config `MAKE_GOALS`
+      - base kernel should have `MAKE_GOALS="Image modules"`
+      - vendor modules should override to `["modules", "dtbs"]`
+    - `defconfig`, `pre_defconfig_fragments`, and `post_defconfig_fragments`
+      - base kernel should have `defconfig = "arch/arm64/configs/gki_defconfig"`
+    - `strip_modules` strips debug symbols from modules
+  - `kernel_module_group(...)`
+    - <https://android.googlesource.com/kernel/build/+/refs/heads/main/kleaf/docs/api_reference/kernel.md#kernel_module_group>
+    - `src` is a list of of `kernel_module` (external modules) or `ddk_module`
+  - `kernel_modules_install(...)`
+    - <https://android.googlesource.com/kernel/build/+/refs/heads/main/kleaf/docs/api_reference/kernel.md#kernel_modules_install>
+    - `kernel_build` is a `kernel_build`
+    - `kernel_modules` is a list of `kernel_module`s
+  - `system_dlkm_image(...)`
+  - `vendor_dlkm_image(...)`
