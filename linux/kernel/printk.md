@@ -13,16 +13,16 @@ printk
     to consoles or not
 - it also calls `wake_up_klogd` to schedule a wakeup
   - `log_wait` is wait queue head that allows userspace to poll
-  - syslogd incorporates a function called klogd which polls /proc/kmsg
-- syslog(2) syscall
-  - unrelated to syscall(3)
+  - syslogd incorporates a function called klogd which polls `/proc/kmsg`
+- `syslog(2)` syscall
+  - unrelated to `syscall(3)`
   - to read logbuf, clear logbuf, change log level, etc.
-- /proc/sys/kernel/printk (kernel/sysctl.c)
+- `/proc/sys/kernel/printk` (`kernel/printk/sysctl.c`)
   - change log level, etc.
-- /proc/kmsg (fs/proc/kmsg.c)
+- `/proc/kmsg` (`fs/proc/kmsg.c`)
   - read-only
   - equivalent to `syslog(SYSLOG_ACTION_READ)`
-- /dev/kmsg (drivers/char/mem.c)
+- `/dev/kmsg` (`drivers/char/mem.c`)
   - read or inject records
 - subsystems can also register kmsg dumpers which are called on oops
   - this allows saving the logbuf to a persistent storage on crashing
