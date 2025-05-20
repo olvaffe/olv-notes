@@ -147,19 +147,19 @@ PGP
       - this may or may not be a good idea
 - create a new key
   - `pkill gpg-agent; mkdir -m 700 new`
-  - `gpg --homedir=new --quick-generate-key "name <email>" default cert`
-  - `gpg --homedir=new --export-secret-keys --output export-secret-keys.gpg`
+  - `gpg --homedir=new --quick-generate-key "name <email>" ed25519 cert`
+  - `gpg --homedir=new --export-secret-keys --output gpg-export-secret-keys.gpg`
   - `rm -rf new`
 - add subkeys to the key
   - `pkill gpg-agent; mkdir -m 700 work`
-  - `gpg --homedir=work --import export-secret-keys.gpg`
+  - `gpg --homedir=work --import gpg-export-secret-keys.gpg`
   - `gpg --homedir=work --quick-set-ownertrust <fpr> ultimate`
-  - `gpg --homedir=work --quick-add-key <fpr> default sign`
-  - `gpg --homedir=work --quick-add-key <fpr> default encr`
-  - `gpg --homedir=work --quick-add-key <fpr> default auth`
-  - `gpg --homedir=work --export-secret-keys --output export-secret-keys.gpg`
-  - `gpg --homedir=work --export-secret-subkeys --output export-secret-subkeys.gpg`
+  - `gpg --homedir=work --quick-add-key <fpr> ed25519 sign`
+  - `gpg --homedir=work --quick-add-key <fpr> cv25519 encr`
+  - `gpg --homedir=work --quick-add-key <fpr> ed25519 auth`
+  - `gpg --homedir=work --export-secret-keys --output gpg-export-secret-keys.gpg`
+  - `gpg --homedir=work --export-secret-subkeys --output gpg-export-secret-subkeys.gpg`
   - `rm -rf work`
 - import subkeys
-  - `gpg --import export-secret-subkeys.gpg`
+  - `gpg --import gpg-export-secret-subkeys.gpg`
   - `gpg --quick-set-ownertrust <fpr> ultimate`
