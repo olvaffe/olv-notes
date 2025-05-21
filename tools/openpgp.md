@@ -163,3 +163,17 @@ PGP
 - import subkeys
   - `gpg --import gpg-export-secret-subkeys.gpg`
   - `gpg --quick-set-ownertrust <fpr> ultimate`
+
+## SSH
+
+- `gpg --export-ssh-key <fpr>` exports the public key for `authorized_keys`
+- `gpg-connect-agent "KEYATTR <keygrip> Use-for-ssh: true" /bye` allows
+  `gpg-agent` to cache the specified private key
+  - `gpg-agent` only caches keys with `Use-for-ssh` attr or listed in
+    `sshcontrol`
+  - `ssh-add -L` lists cached keys
+  - `ssh-add` adds an external private key
+    - this adds the external private key to `private-keys-v1.d` and updates
+      `sshcontrol`
+- `gpg-connect-agent UPDATESTARTUPTTY /bye` updates startup env that
+  `gpg-agent` uses for `pinentry`
