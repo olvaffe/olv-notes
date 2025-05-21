@@ -175,5 +175,52 @@ PGP
   - `ssh-add` adds an external private key
     - this adds the external private key to `private-keys-v1.d` and updates
       `sshcontrol`
-- `gpg-connect-agent UPDATESTARTUPTTY /bye` updates startup env that
-  `gpg-agent` uses for `pinentry`
+- `gpg-connect-agent UPDATESTARTUPTTY /bye` updates startup env of `gpg-agent`
+  - when `gpg-agent` starts, it inits `opt.startup_env` from its env
+  - most tools connect to `gpg-agent` using assuan protocol
+    - each connection has `ctrl->session_env` from the tool's env
+    - `UPDATESTARTUPTTY` copies `ctrl->session_env` to `opt.startup_env`
+  - `ssh` however connects to `gpg-agent` using `ssh-agent` protocol
+    - the connection has `ctrl->session_env` copied from `opt.startup_env`
+  - when any tool requests a pin, `gpg-agent` invokes `pinentry` using
+    `ctrl->session_env`
+
+## Tools
+
+- `gpgconf`
+  - `--list-components` (default) calls `gc_component_list_components`
+    - it lists components in the global `gc_component` array
+    - `gnupg_module_name` returns the executable path
+      - e.g., `GNUPG_MODULE_NAME_AGENT` is `gpupg_bindir() + "gpg-agent"`
+  - `--list-dirs` calls `list_dirs`
+    - it lists dirs on `list` array
+    - `sysconfdir` calls `gnupg_sysconfdir` which returns `GNUPG_SYSCONFDIR`
+    - `bindir` calls `gnupg_bindir` which returns `GNUPG_BINDIR`
+    - `socketdir` calls `gnupg_socketdir` which returns `/run/user/<uid>/gnupg`
+    - `agent-ssh-socket` is `gnupg_socketdir` plus `GPG_AGENT_SSH_SOCK_NAME`
+    - more
+- `gpg-connect-agent`
+  - `start_agent` starts `gpg-agent` on demand
+    - `session_env_new` creates an empty session env
+    - `start_new_gpg_agent` starts `gpg-agent`
+      - `send_pinentry_environment` sends pinentry env
+        - `GPG_TTY` becomes `OPTION ttyname=<GPG_TTY>`
+        - `TERM` becomes `OPTION ttytype=<TERM>`
+        - `DISPLAY` becomes `OPTION display=<DISPLAY>`
+        - `WAYLAND_DISPLAY` becomes `OPTION putenv:WAYLAND_DISPLAY=<WAYLAND_DISPLAY>`
+        - more
+  - control cmds start with `/` and are handled by `gpg-connect-agent`
+    - `/help` to list all control cmds
+  - other cmds are sent to `gpg-agent`
+    - `help` to list all cmds
+    - `register_commands` registers cmds
+    - `UPDATESTARTUPTTY` is handled by `cmd_updatestartuptty`
+      - each `gpg-connect-agent` (or other) invocation calls
+        `send_pinentry_environment` to update `ctrl->session_env`
+      - this cmd copies `ctrl->session_env` to `opt.startup_env`
+    - `GETINFO` is handled by `cmd_getinfo`
+      - `std_session_env` dumps `ctrl->session_env`
+      - `std_startup_env` dumps `opt.startup_env`
+- `pinentry`
+  - `gpg-agent` calls `start_pinentry` to invoke `pinentry`
+    - if `ctrl->session_env` has `DISPLAY`, it is passed as `--display <DISPLAY>`
