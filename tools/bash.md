@@ -1,28 +1,57 @@
 Bash
 ====
 
+## Options
+
+- `-c`: commands are from the first non-option arg
+  - `-c "a b c"` is similar to `echo "a b c" | bash`
+  - `-c a b c` is similar to `echo a | bash -s b c`
+- `-i`: forces interactive shell
+- `-l`: forces login shell
+- `-s`: assigns non-option args to positional params
+  - `-s b c` assigns `b` to `$0` and `c` to `$1`
+
+## Arguments
+
+- if there is any non-option arg, by default,
+  - the first is a script file from which commands are read and executed
+  - the rest are assigned to positional params (`$1`, `$2`, etc.)
+  - this is how shebang works
+
 ## Invocation
 
-- login shell
-  - one started with `--login/-l` or `argv[0][0] == '-'`
-  - `login` starts bash with `argv[0][0] == '-'`
-- interactive shell
-  - non-interactive: has any non-option argument or `-c`
-  - otherwise, it is interactive
-  - can also be forced with `-i` or `-s`
-- when bash is invoked as a login shell, interactive or not,
+- scenarios
+  - login: `-bash`
+  - ssh: `-bash`
+  - ssh cmd args: `bash -c "<cmd> <args>"`
+  - new terminal: `/bin/bash`
+  - script args: `<shebang> <script> <args>`
+- a login shell is a shell started `argv[0][0] == '-'`
+  - `-l` forces a login shell
+- an interactive shell is a shell reading inputs from stdin (no non-option
+  args) and stdin is a tty (determined by `isatty`)
+  - `-i` forces an interactive shell
+- when bash is invoked as an interactive login shell,
   - it reads `/etc/profile` first
   - it then reads the first existing file of the following files in order
     - `~/.bash_profile`
     - `~/.bash_login`
     - `~/.profile`
   - when it exits, it read `~/.bash_logout`
-- when bash is invoked as a non-login interactive shell,
-  - it reads `/etc/bash.bashrc` and `~/.bashrc`
-- when bash is invoked as `sh`
-  - if a login shell, interactive or not, it reads `/etc/profile` and
-    `~/.profile`
-  - if a interactive non-login shell, it reads nothing
+- when bash is invoked as an interactive non-login shell,
+  - it reads `/etc/bash.bashrc` first
+  - it then reads `~/.bashrc`
+- when bash is invoked as `sh`, and as an interactive login shell,
+  - it reads `/etc/profile` first
+  - it then reads `~/.profile`
+  - it reads nothing if invoked as an interactive non-login shell
+- special cases
+  - when `-l` forces a login shell, profile files are sourced even non-interactive
+  - when `sshd` invokes a non-login bash, rc files are sourced even
+    non-interactive
+    - the idea is that `ssh remote cmd args...` is `bash -c 'cmd args...'` on
+      the remote machine, but we want it to mimic `cmd args...` on the remote
+      machine instead
 
 ## Shell Grammar
 
