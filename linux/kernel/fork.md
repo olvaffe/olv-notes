@@ -13,6 +13,7 @@ Kernel fork
   - `dup_task_struct` duplicates `struct task_struct`
     - `alloc_thread_stack_node` allocs `tsk->stack`
       - this is the kernel stack whose size is `THREAD_SIZE`
+    - `set_task_stack_end_magic` sets `end_of_stack` to `STACK_END_MAGIC`
   - `sched_fork` re-initializes the fields used by the scheduler
   - `copy_files` dups `struct files_struct`, for opened files
   - `copy_fs` dups `struct fs_struct`
@@ -50,7 +51,55 @@ Kernel fork
 
 ## Kernel Stack
 
-- each task has a kernel stack, `task->stack`, whose size is `THREAD_SIZE`
-- `task_stack_page` retruns `task->stack`
 - modern archs have `CONFIG_THREAD_INFO_IN_TASK`
-  - `task_thread_info` returns `task->thread_info` instead of `task->stack`
+- each task has a kernel stack, `task->stack`, whose size is `THREAD_SIZE`
+- `linux/sched/task_stack.h`
+  - `task_stack_page` retruns `task->stack`
+  - `setup_thread_stack` is nop
+  - `end_of_stack` also returns `task->stack`
+  - `task_stack_end_corrupted` tests if `end_of_stack` contains
+    `STACK_END_MAGIC`
+  - `object_is_on_stack` returns true if the obj is in kernel stack
+- `linux/thread_info.h`
+  - `current_thread_info` returns `current`, because the first member of
+    `task_struct` is `thread_info`
+  - `thread_info` is arch-specific and has at least
+    - `flags`, for use with - `*_ti_thread_flag`
+    - `cpu`, for `set_task_cpu` and `task_cpu`
+- x86
+  - kernel stack layout, from top to bottom
+    - `TOP_OF_KERNEL_STACK_PADDING`
+    - `pt_regs`
+    - stack frames, initially empty
+    - `inactive_task_frame`
+  - accessors
+    - `task_top_of_stack` returns addr of `TOP_OF_KERNEL_STACK_PADDING`
+    - `task_pt_regs` returns addr of `pt_regs`
+  - `copy_thread` inits kernel stack
+    - `inactive_task_frame`
+      - `ret_addr` is `ret_from_fork_asm`
+    - `p->thread.sp` points to `inactive_task_frame`
+    - `pt_regs` is copied from `current`
+      - `*childregs = *current_pt_regs();`
+      - `childregs->ax = 0;`
+        - because `fork` returns 0 for child
+  - `switch_to` defines to `__switch_to_asm`
+    - it pushes `inactive_task_frame` onto `prev` stack
+      - the caller has pushed `ret_addr`
+    - it switches stacks
+      - it copies `rsp` to `prev->thread.sp`
+      - it copies `next->thread.sp` to `rsp`
+    - it pops `inactive_task_frame` from `next` stack
+      - except for `ret_addr`
+    - it jumps to `__switch_to`
+      - `current_task` points to `next_p`
+      - `cpu_current_top_of_stack` points to `task_top_of_stack(next_p)`
+      - return pops `ret_addr` and jumps to it
+  - when scheduler `switch_to` to a new task with the new kernel stack, it
+    returns to `ret_addr` which points to `ret_from_fork_asm`
+    - it jumps to `swapgs_restore_regs_and_return_to_usermode` and follows the
+      same return path as `common_interrupt_return`
+    - `POP_REGS` restores regs saved by `PUSH_AND_CLEAR_REGS`, which are part
+      of `pt_regs`
+    - it skips `orig_ax`
+    - `iretq` pops the rest of `pt_regs` automatically
