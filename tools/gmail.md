@@ -1,6 +1,22 @@
 Gmail
 =====
 
+## SMTP
+
+- Port 25
+  - RFC 788: SIMPLE MAIL TRANSFER PROTOCOL, 1981
+  - RFC 821: SIMPLE MAIL TRANSFER PROTOCOL, 1982
+  - RFC 2821: Simple Mail Transfer Protocol, 2001
+  - RFC 5321: Simple Mail Transfer Protocol, 2008
+- Port 587
+  - RFC 2476, Message Submission, 1998
+  - RFC 4409, Message Submission for Mail, 2006
+  - RFC 6409, Message Submission for Mail, 2011
+  - require explicit `STARTTLS` for TLS
+- Port 465
+  - RFC 8341, Cleartext Considered Obsolete, 2018
+  - all connections are TLS
+
 ## Message Header and Envelope
 
 - message header is a part of the message
