@@ -465,6 +465,20 @@ wlroots
   - we want to avoid that as explained in
     <https://gitlab.freedesktop.org/wayland/weston/-/merge_requests/486>
 
+## Sway Tools
+
+- swaybar is a part of sway
+  - it is a wayland client that displays a status bar on all outputs
+  - <https://github.com/i3/i3status>
+    - it collects system stats and prints to stdout periodically
+    - swaybar has a status area that shows the last line
+- <https://github.com/swaywm/swaybg/>
+  - it is a wayland client that displays a background image on all outputs
+- <https://github.com/swaywm/swayidle>
+  - it is a wayland client that listens to idle notifications
+- <https://github.com/swaywm/swaylock>
+  - it is a wayland client that locks an entire session
+
 ## running sway from ssh session
 
 - `WLR_LIBINPUT_NO_DEVICES=1 WLR_SESSION=noop sway -d`
