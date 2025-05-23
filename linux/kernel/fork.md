@@ -11,7 +11,8 @@ Kernel fork
 - `copy_process` deep-copies `current`
   - it copies A LOT; some interesting ones are...
   - `dup_task_struct` duplicates `struct task_struct`
-    - this allocates the stack for the new task as well
+    - `alloc_thread_stack_node` allocs `tsk->stack`
+      - this is the kernel stack whose size is `THREAD_SIZE`
   - `sched_fork` re-initializes the fields used by the scheduler
   - `copy_files` dups `struct files_struct`, for opened files
   - `copy_fs` dups `struct fs_struct`
@@ -46,3 +47,10 @@ Kernel fork
   - `mm_alloc_pgd` calls `pgd_alloc` to allocate `pgd_t` array
 - `__bprm_mm_init` inserts the first vma, the stack, to the mm with
   `vm_area_alloc` and `insert_vm_struct`
+
+## Kernel Stack
+
+- each task has a kernel stack, `task->stack`, whose size is `THREAD_SIZE`
+- `task_stack_page` retruns `task->stack`
+- modern archs have `CONFIG_THREAD_INFO_IN_TASK`
+  - `task_thread_info` returns `task->thread_info` instead of `task->stack`
