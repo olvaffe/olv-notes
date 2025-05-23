@@ -9,6 +9,7 @@ ARM Assembly
   - <https://developer.arm.com/documentation/ddi0487/latest>
   - <https://developer.arm.com/documentation/ddi0601/latest>
   - <https://developer.arm.com/documentation/ddi0602/latest>
+- `mov x0, #0x3` moves `0x3` to `x0`
 
 ## Registers
 
