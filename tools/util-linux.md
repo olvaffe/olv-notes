@@ -20,33 +20,41 @@ util-linux
 ## agetty
 
 - agetty is started by logind
-- agetty initializes tty and prompts for user name
-  - runs as root
-  - `open_tty`
-    - opens `/dev/ttyN`
-    - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
-      controlling terminal
-    - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
-    - calls `tcsetpgrp` to make itself foreground
-    - dups `STDIN_FILENO` twice, for stdout and stderr
-    - if vt, sets `F_VCONSOLE` flag
-    - sets `TERM` to
-      - explicitly specified val, or
-      - if `F_VCONSOLE`, `linux`, or
-      - otherwise, `vt102`
-  - `termio_init`
-    - if `F_VCONSOLE`,
-      - calls `setlocale` to set `LC_CTYPE` to `POSIX`
-      - clears the terminal
-    - else,
-      - `cfsetispeed`
-      - `cfsetospeed`
-      - `TIOCSWINSZ` to set the window size
-        - default to 80x24
-  - `get_logname`
-    - `do_prompt` prompts `<hostname> login: `
-    - reads login name
-  - `execv`s `login -- <username>`
+  - it runs as root
+  - its goal is to init tty line and get user name interactively
+- `update_utmp` updates utmp
+  - `utmpdump /var/run/utmp` to see the entry
+- `open_tty`
+  - opens `/dev/ttyN`
+  - calls `isatty` to sanity check
+  - calls `tcgetsid` and `TIOCSCTTY` to make sure `/dev/ttyN` is the
+    controlling terminal
+  - closes `STDIN_FILENO` and reopens `/dev/ttyN` to make sure it is stdin
+  - calls `tcsetpgrp` to make itself foreground
+  - closes `STDOUT_FILENO` and `STDERR_FILENO`, and then dups `STDIN_FILENO`
+    twice for stdout and stderr
+  - if vt, sets `F_VCONSOLE` flag
+  - sets `TERM` to
+    - explicitly specified val, or
+    - if `F_VCONSOLE`, `linux`, or
+    - otherwise, `vt102`
+- `termio_init`
+  - if `F_VCONSOLE`,
+    - calls `setlocale` to set `LC_CTYPE` to `POSIX`
+    - calls `tcsetattr` to set the line
+    - clears the terminal
+  - else,
+    - calls `cfsetispeed` and `cfsetospeed` to set the speed
+    - `TIOCSWINSZ` to set the window size, defaulting to 80x24
+    - calls `tcsetattr` to set the line
+- `get_logname` reads login name from stdin
+  - `eval_issue_file` parses `/etc/issue`
+  - `do_prompt` prompts for login name
+    - `print_issue_file` prints `/etc/issue`
+    - it prints `<hostname> login: `
+  - reads login name
+- calls `tcsetattr` to set the line for `login`
+- `execv`s `login -- <username>`
 
 ## login
 
