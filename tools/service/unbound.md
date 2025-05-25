@@ -50,3 +50,15 @@ unbound
   - `lan.`
   - redhat uses `localdomain.`
   - openwrt uses `lan.`
+
+## Config
+
+- `interface: 0.0.0.0` listens on all ipv4
+- `access-control: 192.168.86.0/24 allow` allows a subset
+- `private-address: 192.168.86.0/24` filters out all answers in the subnet...
+- `private-domain: "internal."` ...unless the domain is also private
+- `local-zone: "internal." static` defines a local zone
+  - `local-data:` defines a record
+- `local-zone: "86.168.192.in-addr.arpa." static`
+  - `local-data-ptr:` defines a PTR record
+- `local-zone: "bad" always_null` blocks a bad domain

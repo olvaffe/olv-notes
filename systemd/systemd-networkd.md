@@ -52,8 +52,10 @@ systemd-networkd
       Address=192.168.0.1/24 
       Gateway=192.168.0.254
       DNS=8.8.8.8
-      # dynamic
+      # dynamic ipv4
       DHCP=yes
+      # dynamic ipv6
+      IPv6AcceptRA=yes
       # add to brdige
       Bridge=br0
 - a network is configured only after the matching link is ready

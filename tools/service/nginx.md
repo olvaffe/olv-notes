@@ -7,6 +7,30 @@ nginx
   - `apt install nginx`
   - `ls -l /etc/nginx/sites-enabled/default`
 
+## Config
+
+- `location [modifier] [URI] { ... }`
+  - without modifier, it performs prefix matchinig
+  - `=` performs exact matching
+  - `~` performs case-sensitive regex matching
+  - `~*` performs case-insensitive regex matching
+  - `^~` performs prefix matchinig (see below)
+- given a request uri, nginx picks the matching block by
+  - if a `=` block matches, use the block
+  - if a prefeix matching block matches,
+    - if `^~`, use the block
+    - otherwise, remember the block but keeps searching
+  - if a regex matching block matches, use the block
+  - otherwise, use the remembered block
+
+## PHP
+
+- `apt install php-fpm`
+  - make sure the service is enabled and the daemon is running
+- `location ~ \.php$`
+  - `include snippets/fastcgi-php.conf;`
+  - `fastcgi_pass unix:/run/php/php-fpm.sock;`
+
 ## HTTPS
 
 - certificates

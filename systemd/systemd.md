@@ -122,7 +122,7 @@ systemd
   - `systemd-logind` manage system logins
     - it provides `org.freedesktop.login1`
   - `systemd-machined` manages vms and containers
-  - `systemd-makefs`, inf enabled in `/etc/fstab`, creates a fs on demand
+  - `systemd-makefs`, if enabled in `/etc/fstab`, creates a fs on demand
   - `systemd-measure` is invoked by `ukify` for kernel signing
   - `systemd-modules-load` loads modules during boot
     - it is based on `libkmod`.

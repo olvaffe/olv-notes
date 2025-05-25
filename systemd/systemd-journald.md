@@ -73,3 +73,29 @@ systemd-journald
         - that is, rsyslog continues to write to `/var/log/messages.1` after
           rotation and the signal tells rsyslog to close and open
           `/var/log/message`
+
+## Remote Logging
+
+- the local machine should
+  - `systemctl edit systemd-journal-remote`
+    - `[Service]`
+    - `ExecStart=`
+    - `ExecStart=/usr/lib/systemd/systemd-journal-remote --listen-http=-3`
+  - `systemctl enable --now systemd-journal-remote`
+    - `--output` defaults to `/var/log/journal/remote`
+    - `--listen-http=-3` starts a http server listening on fd 3
+      - see `sd_listen_fds`
+- the remote machine should
+  - `/etc/systemd/journald.conf`
+    - `Storage=volatile`
+    - `RuntimeMaxUse=64M`
+  - `/etc/systemd/journal-upload.conf`
+    - `[Upload]`
+    - `URL=http://192.168.86.10`
+  - `systemctl enable --now systemd-journal-upload`
+    - `--follow` is the default and it polls `sd_journal_get_fd` for new
+      entries to upload
+    - the service specifies `--save-state` to save the cursor at
+      `/var/lib/systemd/journal-upload/state`
+      - it will only upload entries after the cursor
+      - it will update the cursor after upload

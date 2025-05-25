@@ -37,3 +37,11 @@ Kea
   - 67, bootfile name
   - 255, end
   - many more
+
+## Config
+
+- `interfaces-config`
+  - `service-sockets-require-all` makes sockets required
+- `option-data`
+  - `domain-name-servers` specifies dns servers
+  - `domain-name` specifies domain name
