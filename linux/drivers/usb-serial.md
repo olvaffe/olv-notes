@@ -1,5 +1,5 @@
-TTY
-===
+Kernel USB Serial
+=================
 
 ## USB Serial
 
