@@ -43,27 +43,6 @@ Kernel sys
     userspace anymore
   - `setdomainname` updates `domainname` and is not used by userspace anymore
 
-## IDs of a process
-
-- Example
-
-    olvaffe@m500:~$ tail -f /var/log/messages | grep aaa &
-    [1] 11977
-    olvaffe@m500:~$ ps -o tty,comm,uid,gid,sess,pgid,pid,ppid
-    TT       COMMAND           UID   GID  SESS  PGID   PID  PPID
-    pts/4    bash             1000  1000 11971 11971 11971  4628
-    pts/4    tail             1000  1000 11971 11976 11976 11971
-    pts/4    grep             1000  1000 11971 11976 11977 11971
-    pts/4    ps               1000  1000 11971 11988 11988 11971
-
-- This new shell is in a new session, 11971
-- A session can have a controlling terminal (or not), pts/4 in this case
-- There are several process groups, one for each command line execution
-- At any time, at most one of the process groups in the session can be the
-  foreground process group.
-- The foreground process groups receives inputs and signals from the controlling
-  terminal.
-
 ## System calls for process control
 
 - After a process is `fork()`ed, it is in the same session and process group as
@@ -98,7 +77,6 @@ Kernel sys
 
 ## System calls for process control (kernel)
 
-- see `kernel/sys.c`
 - "pid", "tid", and "task" are used interchangeably and refer to a
   `struct task_struct` in kernel
   - That is, a thread as known in the user space
@@ -107,26 +85,29 @@ Kernel sys
   - That is, a process as known in the user space
 - A `struct pid` is a process identifier referring to tasks, process groups, and
   sessions.
-  - it is also namespaced (for virtualization?)
+  - it is also namespaced
   - a `pid` knows the tasks, process groups, and sessions using it
-- The pid of a task is `task->pids[PIDTYPE_PID].pid`.  The tgid of a task is
-  thus `task->group_leader->pids[PIDTYPE_PID].pid`
-  - and the pgid and sid are `task->group_leader->pids[PIDTYPE_PGID].pid` and
+- The pid of a task is `task->thread_pid`.
+- The tgid/pgid/sid of a task are
+  - `task->signal->pids[PIDTYPE_TGID]`
+  - `task->signal->pids[PIDTYPE_PGID]`
+  - `task->signal->pids[PIDTYPE_SID]`
     `task->group_leader->pids[PIDTYPE_SID].pid`
-  - just remember that the group leader of a task is the main thread of a
-    process in the user space
-- A thread is a thread group leader if `task->group_leader == task`
+- Just remember that the group leader of a task is the main thread of a
+  process in the user space
+- A thread is a thread group leader (main thread) if
+  - `task->group_leader == task`
 - `task->real_parent` is who forks the task
 - A task is a process group leader if there is a process group with the same
   PGID as the thread group leader's pid
   - that is, `pid_task(task->group_leader, PIDTYPE_PGID)` returns something
 - A session leader is a task with `task->group_leader->signal->leader` set to 1
 - The controlling tty of a task is `task->signal->tty`
-- The controlled session of a tty is `tty->session`
+- The controlled session of a tty is `tty->ctrl.session`
   - Given a task and its controlling tty, we have
-    `task_session(task) == tty->session` and
+    `task_session(task) == tty->ctrl.session` and
     `task->group_leader->signal->tty == tty`
-- The foreground process group of a tty is `tty->pgrp`
+- The foreground process group of a tty is `tty->ctrl.pgrp`
 
 ## Shell
 
