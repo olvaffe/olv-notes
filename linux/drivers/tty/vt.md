@@ -29,6 +29,31 @@ Kernel VT
   - `do_remove_conflicting_framebuffers` unregisters efifb first
   - inteldrmfb takes over
 
+## Input
+
+- VT is a terminal emulator
+  - `vty_init` calls `tty_register_driver` to provide tty lines to userspace
+    - when userspace opens a tty line, `tty_init_dev` creates a `tty_struct`
+      and `con_install` creates a `vc_data`
+  - `kbd_init` calls `input_register_handler` to get input events from the
+    input subsys
+  - fbdev calls `do_take_over_console` to provide `consw` for output
+- when an input event occurs, `kbd_event` calls `kbd_keycode`
+  - `keysym = key_map[keycode]` maps `keycode` to `keysym`
+  - `type` is `KT_LATIN` (`KT_LETTER` is also forced to `KT_LATIN`)
+  - `k_handler[type]` is `k_self`
+    - `conv_8bit_to_uni` converts keysym to unicode
+    - `conv_uni_to_8bit` converts unicode back to keysym
+    - `put_queue` adds the keysym to `vc->port`
+      - `tty_insert_flip_char` adds a char to `port->buf`
+      - `tty_flip_buffer_push` queues `flush_to_ldisc`
+- `flush_to_ldisc` pushes `port->buf` to `tty->disc_data`
+  - `flush_to_ldisc` calls `tty_port_default_receive_buf`
+  - `n_tty_receive_buf` calls `n_tty_receive_char` to add the data to
+    `tty->disc_data`
+- when userspace reads from the tty line, `tty_read` calls `n_tty_read`
+  - `copy_from_read_buf` copies data out of `tty->disc_data`
+
 ## Ctrl-C and others
 
 - ctrl has keycode `KEY_LEFTCTRL` (29)
