@@ -64,6 +64,32 @@ Kernel pid
   - the children call `tcsetpgrp(tty, first-child)`
     - the process group is foreground
 - `setsid` calls `ksys_setsid`
-- `TIOCSCTTY` is `tiocsctty`
+  - `group_leader->signal->leader = 1` marks the thread group leader (that is,
+    the process) the session leader
+  - `set_special_pids` calls `change_pid` to update
+    - `task->signal->pids[PIDTYPE_SID]`
+    - `task->signal->pids[PIDTYPE_PGID]`
+  - `proc_clear_tty` clears `p->signal->tty`
+  - upon tty hangup, such as hw removal or simulated by `vhangup`,
+    `tty_vhangup` calls `tty_signal_session_leader`
+    - it sends `SIGHUP` and `SIGCONT` to `tty->ctrl.session`
+- `TIOCSCTTY` is handled by `tiocsctty`
+  - it makes the specified tty the controlling terminal
+  - `proc_set_tty` updates all of
+    - `tty->ctrl.pgrp`
+    - `tty->ctrl.session`
+    - `current->signal->tty`
 - `setpgid`
-- `tcsetpgrp` is `tiocspgrp`
+  - `change_pid` updates `PIDTYPE_PGID`
+    - that is, `task->signal->pids[PIDTYPE_PGID]`
+- `tcsetpgrp` is `TIOCSPGRP` and is handled by `tiocspgrp`
+  - it makes the specified process group foreground by updating
+    `real_tty->ctrl.pgrp`
+  - upon ctrl-c, `n_tty_receive_char_special` calls
+    `n_tty_receive_signal_char` to `kill_pgrp` the foreground group
+  - upon normal key press, `n_tty_receive_char` calls `put_tty_queue` to add
+    key to `tty->disc_data`
+    - when the foreground group reads from the tty line, `tty_read` calls
+      `n_tty_read` to read data from `tty->disc_data`
+      - `job_control` calls `__tty_check_change` to check if
+        `task_pgrp(current) == tty->ctrl.pgrp`
