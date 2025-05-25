@@ -94,17 +94,17 @@ Terminal
     - reorganized in 1928 to ASA (American Standards Association)
     - reorganized in 1966 to USASI (United States of America Standards Institute)
     - reorganized in 1969 to ANSI (American National Standards Institute)
+  - every 16 positions is called a stick, e.g., `0x30..0x3f` is stick 3
   - character groups
-    - 0x00..0x1f: 32 control codes
+    - 0x00..0x1f: 32 control codes (stick 0 and 1)
       - some remain but most are unused
+      - `\r`, `\t`, `\n`, backspace, escape, etc.
+      - usually take control+key combinations to generate on keyboards
     - 0x20..0x7e: 95 printable characters
-      - symbols
-      - digits (0 is 0x30)
-      - symbols
-      - uppercase letters (A is 0x41)
-      - symbols
-      - lowercase letters (a is 0x61)
-      - symbols
+      - stick 2: symbols
+      - stick 3: digits (0 is 0x30) and more symbols
+      - stick 4&5: uppercase letters (A is 0x41) and more symbols
+      - stick 6&7: lowercase letters (a is 0x61) and more symbols
     - 0x7f: DEL control code
 - ISO/IEC 646
   - <https://en.wikipedia.org/wiki/ISO/IEC_646>

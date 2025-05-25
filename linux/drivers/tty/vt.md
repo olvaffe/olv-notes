@@ -1,6 +1,18 @@
 Kernel VT
 =========
 
+## Overview
+
+- VT is a terminal emulator
+- `vty_init` calls `tty_register_driver` to provide tty lines to userspace
+  - `vcs_init` provides `/dev/vcsX` for screendump
+  - when userspace opens a tty line, `tty_init_dev` creates a `tty_struct`
+    and `con_install` inits a `vc_data` on `vc_cons` array
+    - each `vc_data` has a `tty_port`
+- `kbd_init` calls `input_register_handler` to get input events from the
+  input subsys
+- fbdev calls `do_take_over_console` to provide `consw` for output
+
 ## `struct consw` and `struct console`
 
 - `struct console` is used with `register_console` to register a console to
@@ -31,13 +43,6 @@ Kernel VT
 
 ## Input
 
-- VT is a terminal emulator
-  - `vty_init` calls `tty_register_driver` to provide tty lines to userspace
-    - when userspace opens a tty line, `tty_init_dev` creates a `tty_struct`
-      and `con_install` creates a `vc_data`
-  - `kbd_init` calls `input_register_handler` to get input events from the
-    input subsys
-  - fbdev calls `do_take_over_console` to provide `consw` for output
 - when an input event occurs, `kbd_event` calls `kbd_keycode`
   - `keysym = key_map[keycode]` maps `keycode` to `keysym`
   - `type` is `KT_LATIN` (`KT_LETTER` is also forced to `KT_LATIN`)
@@ -64,74 +69,6 @@ Kernel VT
 - on the receiving end, `n_tty_receive_signal_char` is called to send `SIGINT`
 - other key combinations are handled similarly
   - Ctrl-S / Ctrl-Q sends 0x13 / 0x11 to stop / start tty
-
-## for display, I guess
-
-- there is a system-wide console driver for all VTs
-- a VT draws its content using its console driver
-- we can let another console driver take over VT
-  - fbcon replacing the system-wide vgacon
-  - more features such as hi-res, fonts, penguin logo, etc.
-- we can also ask VT not to draw its content
-  - userspace draws to the display
-
-## (old) Overview:
-
-- See also tty.md
-- /dev/tty == tty of current process
-- /dev/console == first console that is also a tty
-- /dev/tty0 == foreground virtual console of vt
-- video/console/vgacon.c: provide struct consw
-- serial/8250.c: provide struct console
-- char/vt.c: (optionally) provide struct console
-- consoles are registered to printk, they are `_consoles_`.
-- consws (drivers) are registered to vt, they are used to implement vt console.
-- consw specifies the the VTs it wants to support.  could be changed by take_over_console.
-- conswitchp is the default driver. (set in the arch init phase)
-- virtual terminals (struct vc) provide by vt are accessible through vc_cons.
-
-  console_init -> console_initcalls -> (vt) con_init ->
-
-- init has /dev/console as stdio/stdout/stderr:
-  open /dev/console -> first console supporting tty_driver is used -> in case of vt, usually it means fgconsole
-
-## data structures
-
-- struct console: printk console (does not need tty)
-- struct consw: vt driver
-- struct vc: VT console (vc_cons)
-- struct tty_struct: /dev/ttyX device
-- struct tty_driver: driver of tty device (global console_driver of vt.c)
-
-## Boot time
-
-- conswitchp points to vga_con, the default driver of VT.
-- console_init is called early in init/main.c.  N_TTY is registered and console_initcall are called.
-- consoles, especially VT is (partly) initialized
-- VT is a console, which allows multiple virtual consoles.  There are MAX_NR_CONSOLES virtual consoles (vc_cons), served by MAX_NR_CON_DRIVER drivers.
-- con_driver_map maps virtual console number to driver
-- 1 (the first) virtual console is initialized by visual_init and vc_init.  This virtual console is used as early printk console and does not need tty.
-- register_console is called to register VT as printk console (struct console)
-
-## Initcalls
-
-- tty_io.c has module_init(tty_init), so tty_init is called in initcalls
-- special devices /dev/tty and /dev/console are created
-- vt.c:vty_init is called to really init VT
-- /dev/tty0 is created
-- vc_screen.c:vcs_init called to provide /dev/vcsX for screendump
-- global console_driver initialized by alloc_tty_driver.
-- console_driver has termios tty_std_termios and operations (vt.c's) con_ops, and then register with tty by tty_register_driver.
-- after register, /dev/tty[1-63] is created, with op (tty_io.c) tty_fops
-- kbd_init and console_map_init
-
-## Userspace
-
-? getty opens /dev/ttyX, which is represented by struct tty_struct
-- when opened, if first time, tty_init_dev is called to allocate struct tty_struct
-- which calls vt.c's con_ops->open, and then vc_cons[X] is allocated by vc_allocate
-- vc_allocate calls visual_init, con_set_default_unimap, allocate vc_screenbuf, and vc_init.
-- then tty->driver_data points to vc, and vc->vc_tty points to tty.
 
 ## Input from keyboard:
 
@@ -203,28 +140,6 @@ press 'A' -> scan code of A -> keycode KEY_A -> keysym 0x61, type letter
 - conv_uni_to_pc converts ucs to glyph index
 - con_set_default_unimap uses the default unimap, consolemap_deftbl.c.
 
-## SUMMARY:
-
-- TTY is sitting in the center
-  - it takes input from keyboard
-  - it outputs to vt
-  - it provides /dev/ttyX for userspace interfacing
-  - it is one kind of line discipline (N_TTY)
-- meanwhile, vt is also a printk console
-- printk console has no keyboard input, does not need line discipline
-- thus vt is partly initialized early
-
-
-
-Screen   -> Video Driver  \
-                           > VT -> Line Discipline -> TTY -> userspace
-Input    -> Input Driver  /
-
-
-
-userspace=cu -l /dev/ttyACM0 -> TTY -> Line Discipline -> Serial Core -> UART driver -> UART
-		 -> UART driver -> Serial Core -> Line Discipline -> TTY -> userspace
-
 ## Encodings
 
 - Kernel
@@ -243,41 +158,3 @@ userspace=cu -l /dev/ttyACM0 -> TTY -> Line Discipline -> Serial Core -> UART dr
     - keycode sequences are further mapped to keysyms by the terminal
       emulators
     - use `KDSKBENT`, or `loadkeys`, to change the keycode-to-keysym mapping
-- ASCII, American Standard Code for Information Interchange, character encoding
-  - 7-bit encoding
-  - every 16 positions is called a stick
-  - stick 0 and stick 1 are control characters
-    - \r, \t, \n, backspace, escape, etc.
-    - usually take control+key combinations to generate on keyboards
-  - 0x7f is Delete, also a control character
-  - stick 2 to stick 7 are printable characters
-    - stick 2 are symbols, such as space, dollar, plus, etc.
-    - stick 3 are numbers and more symbols
-    - stick 4 and 5 are uppercases and more symbols
-    - stick 6 and 7 are lowercases and more symbols
-  - terminals look for "escape sequences" and interpret them as commands
-    - `ESC + [` is the Control Sequence Introducer 
-- terminfo
-  - describe the capabilities of a terminal emulator
-  - `infocmp` to decompile a terminfo
-
-## fbdev
-
-- In kernel, a fbdev is a VT driver.  That is how VT draws characters on screen.
-- The first thing to do is to switch to a new VT and ask the VT not to draw to
-  the screen
-  - `ioctl(fd, VT_ACTIVATE, vtno)`
-  - `ioctl(fd, KDSETMODE, KD_GRAPHICS)`
-- Then we can open the fbdev device and draw at will
-- Xorg
-  - observed via `ps -ax -o sid,comm,tpgid,pid,tty` and the source
-  - The server is in its own session.
-  - It has the new VT as the controlling terminal
-    - to set the new VT to graphics mode
-    - to avoid other processes stealing the VT
-  - It is also the foreground process of the new VT
-  - Input events are received from evdev
-    - the new VT is constantly flushed to keep its buffer clean
-    - the new VT is made raw to avoid signals and others
-  - It is also the foreground process of the old VT
-    - it can receive Ctrl-C from the old VT

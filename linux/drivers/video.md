@@ -62,3 +62,24 @@ Kernel Video
     - `do_fbcon_takeover` calls `do_take_over_console` from vt to enable the
       vt console
       - `fb_con` is the vt console ops
+
+## fbdev
+
+- In kernel, a fbdev is a VT driver.  That is how VT draws characters on screen.
+- The first thing to do is to switch to a new VT and ask the VT not to draw to
+  the screen
+  - `ioctl(fd, VT_ACTIVATE, vtno)`
+  - `ioctl(fd, KDSETMODE, KD_GRAPHICS)`
+- Then we can open the fbdev device and draw at will
+- Xorg
+  - observed via `ps -ax -o sid,comm,tpgid,pid,tty` and the source
+  - The server is in its own session.
+  - It has the new VT as the controlling terminal
+    - to set the new VT to graphics mode
+    - to avoid other processes stealing the VT
+  - It is also the foreground process of the new VT
+  - Input events are received from evdev
+    - the new VT is constantly flushed to keep its buffer clean
+    - the new VT is made raw to avoid signals and others
+  - It is also the foreground process of the old VT
+    - it can receive Ctrl-C from the old VT
