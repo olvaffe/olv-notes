@@ -1,6 +1,34 @@
 unbound
 =======
 
+## DNS
+
+- authoritative name servers
+  - an authoritative name server is authoritative for its zone
+  - `named.root` has `NS` and `A` records for authoritative name servers of `.`
+    - <https://www.internic.net/domain/named.root>
+    - they are also known as root name servers
+  - root name servers have `NS` and `A` records for the authoritative name
+    servers of `<tld>.`
+  - authoritative name servers of `<tld>.` have `NS` and `A` records for
+    authoritative name servers of `<domain>.<tld>.`
+  - and so on
+- recursive name servers
+  - they are also known as recursive DNS resolvers
+  - they answer queries for `<subdomain>.<domain>.<tld>.` by
+    - consult `named.root` for the ip of root name servers
+    - consult root name servers for ip of authoritative name servers of
+      `<tld>.`
+    - consult authoritative name servers of `<tld>.` for ip of authoritative
+      name servers of `<domain>.<tld>.`
+    - consult authoritative name servers of `<domain>.tld>.` for ip of
+      `<subdomain>.<domain>.<tld>.`
+- after buying `<domain>.<tld>.` from a registrar and specifying authoritative
+  name servers of the zone, the registrar updates the `NS` and `A` records of
+  `<domain>.<tld>.` from authoritative name servers of `<tld>.`
+- `unbound` implements a recursive name server
+  - in contrast, `bind` or `nsd` implements an authoritative name server
+
 ## TLDs
 
 - <https://en.wikipedia.org/wiki/Top-level_domain>
