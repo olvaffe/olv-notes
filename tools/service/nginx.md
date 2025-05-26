@@ -35,24 +35,24 @@ nginx
 
 - certificates
   - `curl https://get.acme.sh | sh -s email=my@example.com`
-    - this installs `acme.sh` to `~/.acme.sh`
-    - creates a shell alias, `acme.sh`
-    - creates a cron task, `crontab -l`
-  - issue a certificate
-    - `acme.sh --issue -d my.example.com -w /var/www/html`
-    - this is the webroot mode
-  - install a certificate
-    - `acme.sh --install-cert -d my.example.com
-         --key-file /etc/nginx/certs/my.example.com/key.pem
-         --fullchain-file /etc/nginx/certs/my.example.com/cert.pem
+    - this installs `acme.sh` to `~/.acme.sh` and registers an account with CA
+  - edit `~/.acme.sh/account.conf` to add `DuckDNS_Token='<token>'`
+    - this adds the duckdns api key
+  - `acme.sh --issue -d mydomain.duckdns.org --dns dns_duckdns`
+    - this issues a cert using DNS-01 mode
+  - `mkdir -m 700 /etc/nginx/certs`
+  - `acme.sh --install-cert -d mydomain.duckdns.org \
+         --key-file /etc/nginx/certs/mydomain.duckdns.org.key \
+         --fullchain-file /etc/nginx/certs/mydomain.duckdns.org.cer \
          --reloadcmd "systemctl reload nginx"`
+    - this installs cert/privkey and reloads nginx
 - configure nginx
   - edit `/etc/nginx/sites-enabled/default`
   - add
     - `listen 443 ssl default_server;`
     - `listen [::]:443 ssl default_server;`
-    - `ssl_certificate /etc/nginx/certs/my.example.com/cert.pem;`
-    - `ssl_certificate_key /etc/nginx/certs/my.example.com/key.pem;`
+    - `ssl_certificate /etc/nginx/certs/mydomain.duckdns.org.cer;`
+    - `ssl_certificate_key /etc/nginx/certs/mydomain.duckdns.org.key`
   - `systemctl reload nginx`
 
 ## ACME
@@ -97,9 +97,10 @@ nginx
     - `--config-home`, defaults to `--home`, specifies the data (configs,
       certs, and keys) dir
     - `--cert-home`, defaults to `--config-home`, specifies the certs dir
-    - `--accountemail` specifies the email used for CA account registration
-    - `--accountkey` specifies the private key used for CA account
-    - `--nocron` disables cronjob
+    - `--email` specifies the email used for CA account registration
+    - `--no-cron` disables cronjob
+- `acme.sh --register-account -m my@example.com` registers an account with CA
+  - account credential is at `~/.acme.sh/ca/<server>`
 - `acme.sh --issue` issues certificates
   - the CA may issue these files
     - `chain.pem` is the intermediate CA certificate
@@ -125,6 +126,15 @@ nginx
                                  -d *.mydomain.duckdns.org --dns dns_duckdns`
     - the script tells the dns provider to update `TXT` record for the
       challenge
+    - `DuckDNS_Token="<token>"` is saved to `~/.acme.sh/account.conf`, for
+      cron renewal
+    - certs are saved to `~/.acme.sh/<domain>_ecc`
+      - `<domain>.conf` is the config, for cron renewal
+      - `<domain>.csr` is the request
+      - `ca.cer` is the CA certs (root CA and intermediate CAs)
+      - `<domain>.cer` is the domain cert
+      - `<domain>.key` is the private key
+      - `fullchain.cer` is CA certs plus domain cert
   - dns manual mode: `DNS-01` manually, mainly for testing
   - dns alias mode: `DNS-01`, without giving the script the dns api token
   - apache mode: `HTTP-01` using apache
@@ -137,13 +147,14 @@ nginx
   - `acme.sh --install-cert -d <domain> --key-file <dst-path-1> \
              --fullchain-file <dst-path-2> \
              --reloadcmd 'sudo systemcl reload nginx'`
+  - `~/.acme.sh/<domain>_ecc/<domain>.conf` is updated for cron renewal
 - more args
   - `acme.sh --upgrade` performs self-upgrade
   - `acme.sh --renew --domain <domain> --force` forces renewal
   - `acme.sh --list` lists certs managed by `acme.sh`
     - `~/.acme.sh/<domain>/<domain>.conf`
   - `acme.sh --info` shows `~/.acme.sh/account.conf`
-  - `acme.sh --info --domain <doman>` shows `~/.acme.sh/<domain./<domain>.conf`
+  - `acme.sh --info --domain <doman>` shows `~/.acme.sh/<domain>_ecc/<domain>.conf`
   - `acme.sh --install-cronjob` installs a crontab job
     - `crontab -l` to confirm
   - `acme.sh --uninstall-cronjob` uninstalls a crontab job
@@ -151,4 +162,23 @@ nginx
     - it invokes `acme.sh --renew-all` which invokes `acme --renew` on each
       domain
     - renew performs `--issue` and `--install-cert`, using the args saved in
-      `~/.acme.sh/<domain./<domain>.conf`
+      `~/.acme.sh/<domain>_ecc/<domain>.conf`
+- <https://github.com/acmesh-official/acme.sh/wiki/Using-systemd-units-instead-of-cron>
+  - create `/etc/systemd/system/acme.sh.service`
+    - `[Unit]`
+    - `Description=Renew certificates using acme.sh`
+    - `After=network-online.target nss-lookup.target`
+    - `[Service]`
+    - `Type=oneshot`
+    - `SyslogIdentifier=acme.sh`
+    - `ExecStart=/usr/bin/acme.sh --home /etc/acme.sh --cron`
+  - create `/etc/systemd/system/acme.sh.timer`
+    - `[Unit]`
+    - `Description=Daily check for acme.sh`
+    - `[Timer]`
+    - `OnCalendar=daily`
+    - `RandomizedDelaySec=1h`
+    - `[Install]`
+    - `WantedBy=timers.target`
+  - `systemctl daemon-reload`
+  - `systemctl enable --now acme.sh.timer`
