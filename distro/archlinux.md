@@ -75,24 +75,24 @@ Arch Linux
     - `/etc/modules-load.d`
     - `/etc/modprobe.d/blacklist.conf`
 - login as user
-  - `git clone https://github.com/olvaffe/olv-etc.git`
+  - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
   - `./olv-etc/create-links`
 - packages
   - base
     - `base linux linux-firmware intel-ucode`
     - `dosfstools btrfs-progs`
+    - `sudo vim`
     - `zram-generator`
       - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
       - `systemctl daemon-reload`
       - `zramctl`
-    - `sudo vim`
-    - `openssh wireguard-tools`
   - network
+    - `openssh wireguard-tools`
     - `iwd` or `wpa_supplicant`
     - `networkmanager`
     - `linux-headers broadcom-wl-dkms`
   - tools
-    - `bc imagemagick unzip zip wget`
+    - `bc unzip zip wget`
     - `dmidecode usbutils`
     - `htop iw lsof`
     - `man-db man-pages`
@@ -113,14 +113,14 @@ Arch Linux
     - `qemu-user-static qemu-user-static-binfmt`
   - gui
     - `sway polkit i3status swayidle swaylock mako`
-    - `mesa mesa-utils vulkan-intel vulkan-radeon vulkan-tools`
+    - `mesa mesa-utils vulkan-tools vulkan-intel vulkan-radeon`
     - `noto-fonts noto-fonts-cjk`
     - `alacritty google-chrome gtk4`
     - `brightnessctl wl-clipboard wayland-utils`
-    - `xorg-xwayland`
     - `fcitx5-chewing fcitx5-configtool fcitx5-gtk`
-    - `imv grim slurp`
+    - `swayimg grim slurp`
     - `mpv intel-media-driver`
+    - `xorg-xwayland`
   - legacy x11
     - `xorg xorg-xinit i3 xterm`
   - audio
@@ -135,7 +135,22 @@ Arch Linux
   - 32-bit
     - `lib32-{mesa,libdrm,libunwind,libx11}`
 
-## Installation on USB drive
+## Bootstrap
+
+- the bootstrap tarball, `archlinux-bootstrap-XXX.tar.gz`, is for chroot from
+  a running system to pacstrap
+  - the tarball is ~170M
+  - untaring gives ~600M
+- for size comparison,
+  - `pacstrap` just the `base` package results in ~760M
+    - ~630M after `pacman -Scc`
+  - `pacstrap` just the `pacman` package results in ~560M
+    - ~460M after `pacman -Scc`
+- manually
+  - use `pacstrap` from `arch-install-scripts`
+    - <https://github.com/archlinux/arch-install-scripts>
+
+## Disk Image
 
 - <https://wiki.archlinux.org/title/Install_Arch_Linux_on_a_removable_medium>
 - bootstrap a disk image
@@ -179,11 +194,6 @@ Arch Linux
   - `passwd olv`
   - `visudo`
     - allow wheel to sudo
-  - `su - olv`
-  - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
-  - `rm .bashrc .bash_profile`
-  - `./olv-etc/create-links`
-  - `exit`
 - install bootloader
   - `bootctl install`
   - `echo 'default arch.conf' >> /boot/loader/loader.conf`
@@ -191,43 +201,13 @@ Arch Linux
 - update
   - `pacman -Syu`
   - `pacman -Scc`
-- boot with nspawn
-  - THIS DOES NOT WORK
-    - the more common way is to bind-mount wayland/x11/pipewire sockets
-  - `sudo systemd-nspawn -i arch.img --private-users=identity -b --bind /dev/dri --bind /dev/input --bind /dev/snd`
-    - man `systemd.resource-control`
-      - `systemctl set-property machine-arch.img.scope DeviceAllow='char-drm rw'`
-      - also `char-alsa` and `char-input`
-    - fix up `/etc/groups` in the chroot
-    - `--network-veth`
-    - <https://systemd.io/CONTAINER_INTERFACE/>
-    - sway, libinput, pipewire rely on udev for device discovery
-    - systemd-udev is not running
-
-## Installation in crosvm
-
-- prepare iso, kernel and initramfs
-  - download iso
-  - extract kernel and initramfs under `arch/boot/x86_64` in iso
-    - use loop mount or 7z
-- start crosvm
-  - `--rwdisk arch.img --disk <path-to-iso> -p archisodevice=/dev/vdb`
-  - `--host_ip 192.168.0.1 --netmask 255.255.255.0 --mac 12:34:56:78:9a:bc`
-  - `--disable-sandbox`
-- installation
-  - for network,
-    - `ip addr add 192.168.0.2/24 dev enp0s5`
-    - `ip route add default via 192.168.0.1`
-  - `arch.img` is `/dev/vda`
-    - `/boot`, `linux`, `linux-firmware`, and bootloader not needed
-    - but can still partition, format, and bootstrap normally for qemu
 
 ## Tidy Up an Existing Installation
 
 - `pacman -Qeq` to get explicitly packages
 - `pacman -D --asdeps` to mark them deps
 - `pacman -D --asexplicit` to mark desired packages explicit
-- `pacman -Qtdq` to get packages to remove
+- `pacman -Qttdq` to get packages to remove
 - to find orphaned files,
   - `pacman -Ql $(pacman -Qq) | cut -d' ' -f2- | sort | uniq > pacman.list`
   - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
@@ -262,72 +242,37 @@ Arch Linux
 - to estimate total installation size
   - `pacman -Qi | grep 'Installed Size' | grep MiB | awk '{s+=$4} END {print s}'`
 
-## Bootstrap
-
-- the bootstrap tarball, `archlinux-bootstrap-XXX.tar.gz`, is for chroot from
-  a running system to pacstrap
-  - the tarball is ~170M
-  - untaring gives ~600M
-- for size comparison,
-  - `pacstrap` just the `base` package results in ~760M
-    - ~630M after `pacman -Scc`
-  - `pacstrap` just the `pacman` package results in ~560M
-    - ~460M after `pacman -Scc`
-- manually
-  - use `pacstrap` from `arch-install-scripts`
-    - <https://github.com/archlinux/arch-install-scripts>
-
 ## `base` package
 
 - archlinux-keyring
 - bash
 - bzip2
-- coreutils
-  - ls, mv cp, sync, cat, chmod, chown, basename, cut, date, df, du, echo,
-    env, chroot, etc.
+- coreutils (`ls`, `mv`, `echo`, `env`, etc.)
 - file
 - filesystem
   - directory strucutre (e.g., /root, /usr/bin)
   - basic links (e.g., /bin to /usr/bin)
   - some files in /etc (e.g., passwd, group, mtod)
-- findutils
-  - find, xargs
+- findutils (`find`, `xargs`, etc.)
 - gawk
-- gcc-libs
-  - gcc runtime libraries (`libgcc_s.so`, `libstdc++.so`, `libatomic.so`,
-    `libasan.so`)
+- gcc-libs (`libgcc_s.so`, `libstdc++.so`, `libatomic.so`, etc.)
 - gettext
-- glibc
-  - headers
-  - libraries (ld-linux-x86-64, libc, libdl, libm, libresolv, crt\*.o, etc)
-  - tools (ldconfig, ldd, locale, locale-gen, iconv, etc)
+- glibc (C headers and runtime, loader, `ldconfig`, `ldd`, `locale-gen`, etc.)
 - grep
 - gzip
-- iproute2
-  - ip, ss, bridge
-- iputils
-  - ping, tftpd, etc.
+- iproute2 (`ip`, `ss`, etc.)
+- iputils (`ping`, etc.)
 - licenses
 - pacman
-- pciutils
-  - lspci
-- procps-ng
-  - ps, top, free, pidof, pkill
-- psmisc
-  - fuser, killall, pstree, etc.
+- pciutils (`lspci`, etc.)
+- procps-ng (`ps`, `top`, `uptime`, `free`, `kill`, etc.)
+- psmisc (`killall`, `pstree`, `fuser`, etc.)
 - sed
-- shadow
-  - grouadd, passwd, useradd, lastlog, newgidmap, newuidmap, etc.
-- systemd
-  - systemd, systemctl, timedatectl, networkctl, resolvect, loginctl,
-    localectl, udevadm, etc.
-- systemd-sysvcompat
-  - init (symlink to systemd), reboot, shutdown, poweroff, halt (symlinks to
-    systemctl)
+- shadow (`useradd`, `groupadd`, `passwd`, etc.)
+- systemd (`systemctl`, `networkctl`, `udevadm`, etc.)
+- systemd-sysvcompat (`init`, `reboot`, `shutdown`, etc.; all symlinks)
 - tar
-- util-linux
-  - agetty, blkid, dmesg, fdisk, kill, login, fsck, mkfs, mount, mountpoint,
-    findmnt, rfkill, su, switch_root, nsenter, unshare, lsns, etc.
+- util-linux (`agetty`, `login`, `dmesg`, `mkfs`, `mount`, etc.)
 - xz
 
 ## Big Picture Mode

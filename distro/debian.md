@@ -32,11 +32,11 @@ Debian
   - 10, buster, 4.19
   - 11, bullseye, 5.10
   - 12, bookworm, 6.1
-  - 13, trixie, 6.??
-- bookworm
-  - `deb http://deb.debian.org/debian bookworm main non-free-firmware`
-  - `deb http://deb.debian.org/debian-security/ bookworm-security main non-free-firmware`
-  - `deb http://deb.debian.org/debian bookworm-updates main non-free-firmware`
+  - 13, trixie, 6.12
+- trixie
+  - `deb http://deb.debian.org/debian trixie main non-free-firmware`
+  - `deb http://deb.debian.org/debian-security/ trixie-security main non-free-firmware`
+  - `deb http://deb.debian.org/debian trixie-updates main non-free-firmware`
 
 ## Freeze Policy
 
@@ -90,7 +90,7 @@ Debian
   - `visudo`
   - `useradd -m olv`
 
-## dpkg and apt
+## dpkg and apt internals
 
 - dpkg works with the local package database
   - `/var/lib/dpkg` is the database
@@ -142,6 +142,12 @@ Debian
     - `Provides`
     - `Replaces`
     - `Enhances`
+- a .deb file is an ar-archive
+  - `ar t <pkg>.deb` shows 3 files
+    - `debian-binary` specifies the package format version (2.0)
+    - `control.tar.xz` contains package metadata and install scripts
+    - `data.tar.xz` contains files
+  - `ar x <pkg>.deb` to extracts them
 
 ## APT
 
@@ -195,16 +201,7 @@ Debian
   - `-l` lists installed packages
   - `-S` lists packages who own `<path>`
 
-## deb
-
-- a .deb file is an ar-archive
-- `ar t <pkg>.deb` shows 3 files
-  - `debian-binary` specifies the package format version (2.0)
-  - `control.tar.xz` contains package metadata and install scripts
-  - `data.tar.xz` contains files
-- `ar x <pkg>.deb` to extracts them
-
-## Minimize Packages
+## Tidy Up Packages
 
 - `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
 - `apt autoremove --dry-run -o APT::Autoremove::SuggestsImportant=0` to
@@ -338,7 +335,7 @@ Debian
     - `gcc-13-multilib` is the older way and conflicts with all other
       cross-compilers
 
-## Minimum Package
+## Create dpkg Package
 
 - minimum packaging files
   - `debian/changelog`

@@ -91,3 +91,17 @@ systemd-nspawn
   - `losetup -fP <image>` to attach
   - mount normally
   - `losetup -D` to detach
+
+## Resource Control
+
+- THIS DOES NOT WORK
+  - sway, libinput, pipewire rely on udev for device discovery
+  - systemd-udev is not running
+  - the more common way is to bind-mount wayland/x11/pipewire sockets
+- man `systemd.resource-control`
+  - `systemctl set-property machine-arch.img.scope DeviceAllow='char-drm rw'`
+  - also `char-alsa` and `char-input`
+- `sudo systemd-nspawn -i arch.img --private-users=identity -b --bind /dev/dri --bind /dev/input --bind /dev/snd`
+  - fix up `/etc/groups` in the chroot
+  - `--network-veth`
+  - <https://systemd.io/CONTAINER_INTERFACE/>
