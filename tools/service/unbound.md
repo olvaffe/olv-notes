@@ -134,3 +134,35 @@ unbound
       - `local-zone: "test." static`
       - `local-zone: "invalid." static`
       - more
+
+## Zone File
+
+- `com.` zone file
+  - `example.com NS ns.foo.net`
+    - this is delegation record, specifying authoritative name server of
+      `example.com`
+  - `ns.foo.net A ...`
+    - this is glue record, sepcifying the ip of the authoritative name server
+      of `example.com`
+  - registrar gets the info from the domain owner and provides it to tld name
+    servers
+- `example.com.` zone file
+  - `example.com. 86400 IN SOA ns.foo.net. contact.bar.org. 1 21600 3600 604800 86400`
+    - this provides administrative info about the zone
+    - first `86400` is TTL
+    - `ns.foo.net.` is MNAME, the primary authoritative name server
+    - `contact.bar.org.` is RNAME, the contact email address
+    - `1` is SERIAL; when incremented, secondary authoritative name servers
+      should sync their zone files from the primary authoritative name server
+    - `21600` is REFRESH, the period secondary authoritative name servers
+      should use to check the SOA record
+    - `3600` is RETRY, the period secondary authoritative name servers should
+      wait before checking the SOA record again on errors
+    - `604800` is EXPIRE, how long secondary authoritative name servers should
+      wait before expiring the synced zone files after the last successful
+      sync
+    - second `86400` MINIMUM, to cap TTL for negative response
+  - `example.com. 86400 IN NS ns.foo.net.`
+    - this specifies authoritative name servers of the zone
+    - this is the authoritative answer, if it ever disagrees with `com.` zone
+      file
