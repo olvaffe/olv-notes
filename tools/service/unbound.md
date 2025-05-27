@@ -90,3 +90,47 @@ unbound
 - `local-zone: "86.168.192.in-addr.arpa." static`
   - `local-data-ptr:` defines a PTR record
 - `local-zone: "bad" always_null` blocks a bad domain
+- zones
+  - `forward-zone:` defines a zone where all queries are forwarded to another
+    name server
+    - unbound becomes a stub resolver for the zone
+  - `auth-zone:` defines a zone for which unbound is authoritative
+    - when unbound receives a query for the zone, in this order,
+      - it consults the zone locally if `for-downstream: yes`
+      - it consults the cache
+      - it consults the zone locally if `for-upstream: yes`
+      - it consults the zone's real authoritative name servers
+  - `stub-zone:` defines a zone with private authoritative name servers
+    - unbound uses the specified authoritative name servers for the zone
+      directly, rather than finding them with recursive queries
+    - this is used for private zones with designated authoritative name
+      servers
+  - `local-zone: <zone> <type>` defines a local zone for which unbound is
+    authoritative
+    - `local-data` defines a record for the zone
+      - each record has a name (e.g., `www.example.com`) and a type (e.g.,
+        `A`)
+      - a `local-data` that is not in any `local-zone` is assumed to be in a
+        `transparent` local zone
+    - `type` specifies the policy when no `local-data` matches a query
+      - `deny` drops the query silently
+      - `refuse` responds `REFUSED`
+      - `static` responds `NXDOMAIN` (no matching name) or `NODATA` (has
+        matching name but different record type)
+      - `transparent` continues with the regular recursive query if no
+        matching name
+      - `typetransparent` continues with the regular recursive query if no
+        matching name and record type
+      - `redirect` always responds the single `local-data` of the local zone
+    - unless overriden by explicit `local-zone`, unbound defines these local
+      zones implicitly
+      - `local-zone: "localhost." redirect`
+      - `local-zone: "127.in-addr.arpa." static`
+      - `local-zone: "1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa." static`
+      - `local-zone: "home.arpa." static`
+      - `local-zone: "resolver.arpa." static`
+      - `local-zone: "service.arpa." static`
+      - `local-zone: "onion." static`
+      - `local-zone: "test." static`
+      - `local-zone: "invalid." static`
+      - more
