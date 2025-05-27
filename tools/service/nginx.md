@@ -7,22 +7,6 @@ nginx
   - `apt install nginx`
   - `ls -l /etc/nginx/sites-enabled/default`
 
-## Config
-
-- `location [modifier] [URI] { ... }`
-  - without modifier, it performs prefix matchinig
-  - `=` performs exact matching
-  - `~` performs case-sensitive regex matching
-  - `~*` performs case-insensitive regex matching
-  - `^~` performs prefix matchinig (see below)
-- given a request uri, nginx picks the matching block by
-  - if a `=` block matches, use the block
-  - if a prefeix matching block matches,
-    - if `^~`, use the block
-    - otherwise, remember the block but keeps searching
-  - if a regex matching block matches, use the block
-  - otherwise, use the remembered block
-
 ## PHP
 
 - `apt install php-fpm`
@@ -54,6 +38,67 @@ nginx
     - `ssl_certificate /etc/nginx/certs/mydomain.duckdns.org.cer;`
     - `ssl_certificate_key /etc/nginx/certs/mydomain.duckdns.org.key`
   - `systemctl reload nginx`
+
+## Config
+
+- `main` context
+  - `error_log /var/log/nginx/error.log;` sets log file location
+  - `events { ... }` specifies connection directives
+  - `http { ... }` specifies http server directives
+  - `include /path/*.conf` includes config files
+  - `mail { ... }` specifies mail server directives
+  - `pid /run/nginx.pid;` sets pid file location
+  - `user www-data;` sets the user of the worker processes
+    - the main processes runs as root
+  - `worker_cpu_affinity auto;` picks optimal cpu affinity for workers
+  - `worker_processes auto;` spawns optimal number of workers
+- `events` context
+  - `worker_connections 768` specifies the max number of connections
+    per-worker
+- `http` context
+  - `access_log /var/log/nginx/access.log;` specifies access log location
+  - `default_type application/octet-stream` defines default mime type
+  - `gzip on;` enables compression
+  - `index index.html` specifies the index
+  - `root /path` specifies root dir for requests
+  - `sendfile on;` enables `sendfile()`
+  - `server { ... }` specifies virtual server directives
+  - `server_tokens off;` hides version from response header `Server`
+  - `ssl_certificate /etc/ssl/certs/foo.crt;` specifies the cert in PEM format
+  - `ssl_certificate_key /etc/ssl/private/foo.key;` specifies the privkey in
+    PEM format
+  - `ssl_prefer_server_ciphers off;` prefers client ciphers over server's
+  - `ssl_protocols TLSv1.2 TLSv1.3;` enables only tls 1.2/1.3
+  - `tcp_nopush on;` enables `TCP_CORK`
+  - `types { ... }` defines mappings from file extentions to mime types
+  - `types_hash_max_size 2048;` sets max size of types hash table
+- `server` context
+  - `listen 443 ssl default_server;` listens on port 443
+    - `ssl` requires ssl
+    - `default_server` means the default server for the addr/port
+      - nginx picks a `server` to process a request based on the addr/port and
+        the request header `Host`
+      - if no server matches `Host`, the default server for the addr/port
+        processes the request
+  - `location { ... }` specifies location directives
+  - `server_name example.com` specifies a list of globs/regexes to match
+    against the request header `Host`
+- `location` context
+  - `location [modifier] [URI] { ... }`
+    - without modifier, it performs prefix matchinig
+    - `=` performs exact matching
+    - `~` performs case-sensitive regex matching
+    - `~*` performs case-insensitive regex matching
+    - `^~` performs prefix matchinig (see below)
+  - given a request uri, nginx picks the matching block by
+    - if a `=` block matches, use the block
+    - if a prefeix matching block matches,
+      - if `^~`, use the block
+      - otherwise, remember the block but keeps searching
+    - if a regex matching block matches, use the block
+    - otherwise, use the remembered block
+  - `proxy_pass http://localhost:5000;` proxies another http server
+  - `try_files $uri $uri/ =404;` tries as file, as dir, or returns 404
 
 ## ACME
 
