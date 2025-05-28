@@ -138,3 +138,24 @@ Web Scraping
 - <https://pypi.org/project/beautifulsoup4/> for html parsing
   - `bs4.BeautifulSoup` parses html
   - `soup.css.select` selects a tag using a css selector
+
+## Rust
+
+- TLS
+  - sync
+    - <https://github.com/sfackler/rust-native-tls> provides `TlsConnector`
+      that wraps `TcpStream`
+    - <https://github.com/rustls/rustls> provides `Stream` that wraps
+      `TcpStream`
+  - async
+    - <https://github.com/tokio-rs/tls> provides async `TlsConnector` that
+      wraps sync `TlsConnector`
+    - <https://github.com/rustls/tokio-rustls> provides async `TlsStream` that
+      wraps sync `Stream`
+  - hyper
+    - <https://github.com/hyperium/hyper-tls.git> provides `HttpsConnector`
+      that implements legacy `HttpConnector`
+    - <https://github.com/rustls/hyper-rustls.git> provides
+      `HttpsConnector` that implements legacy `HttpConnector`
+- ACME
+  - <https://github.com/djc/instant-acme> uses `hyper-rustls`
