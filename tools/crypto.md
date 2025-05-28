@@ -1,29 +1,50 @@
 Cryptography
 ============
 
-## Cryptography
+## Overview
 
-- <https://en.wikipedia.org/wiki/Cryptography>
-- cryptography
-  - symmetric-key cryptography
-  - public-key (asymmetric) cryptography
-- hash function
-  - non-cryptographic
-  - cryptographic
-- common encryption algorithms
-  - symmetric
-    - DES, 1977
-    - Blowfish, 1993
-    - AES, 2001
-    - ChaCha20, 2008
-  - asymmetric
-    - RSA, 1977
-    - DSA, 1994
-    - ECDSA, 2000
-    - EdDSA, 2011 (ED25519)
-  - authenticated (which combines symmetric with mac)
-    - AES-GCM
-    - ChaCha20-Poly1305
+- non-cryptographic hash functions
+  - they should be fast, uniform, and a small change in input should result in
+    drastic change in output
+    - a main application is hash table
+  - CRC-32
+  - FNV-1a
+  - SipHash, 2012
+  - MurmurHash3, 2012
+  - xxHash3, 2019
+- cryptographic hash functions
+  - they should be infeasible to find a collision, usually at the cost of
+    speed
+  - MD5, 1992
+  - SHA-1, 1995
+  - SHA-2, 2001 (SHA-256, SHA-512, etc.)
+  - Poly1305, 2005
+  - SHA-3, 2016
+  - BLAKE3, 2020
+- key exchange algorithms
+  - they allow two parties to share a secret over an insecure connection
+  - DH, 1976 (Diffie–Hellman)
+    - A and B publicly agree `x` and `p`
+    - A picks `a` privately
+    - B picks `b` privately
+    - A sends the result of `x^a mod p` to B
+    - B sends the result of `x^b mod p` to A
+    - both A and B use the result of `x^(ab) mod p` as the secret key
+  - ECDH (Elliptic-curve Diffie–Hellman)
+    - A generates a elliptic curve key pair `Apub` and `Apriv`
+    - B generates a elliptic curve key pair `Bpub` and `Bpriv`
+    - A and B exchange their public keys
+    - A computes `Apriv*Bpub`, B computes `Apub*Bpriv`, and they reach the
+      same answer which is used as the secret key
+- message authentication codes (MAC)
+  - the purpose is to validate message authenticity and integrity
+  - HMAC: `hash(message + shared secret)`
+- symmetric-key cryptography
+  - they should be strong and fast
+  - DES, 1977
+  - Blowfish, 1993
+  - AES, 2001
+  - ChaCha20, 2008
   - modes of operation (of block ciphers)
     - a block cipher is a symmetric-key encryption that operates on
       fixed-length blocks
@@ -33,23 +54,18 @@ Cryptography
     - CBC, each block is XORed with the prior encrypted block first
     - CTR, each block is XORed with the encrypted counter
     - XTS
-- key exchange algorithms
-  - DH, 1976 (Diffie–Hellman)
-    - A and B publicly agree `x` and `p`
-    - A picks `a` privately
-    - B picks `b` privately
-    - A sends the result of `x^a mod p` to B
-    - B sends the result of `x^b mod p` to A
-    - both A and B use the result of `x^(ab) mod p` as the secret key
-  - ECDH (Elliptic-curve Diffie–Hellman)
-- e.g.,
-  - two parties use key exchange to generate a shared secret key over an
-    inscure connection
-  - two parties use the shared secret key and symmetric-key encryption to
-    create a secure connection
-  - one party authenticates the other using asymmetric-key encryption, by
-    encrypting a challenge using the other's public key
-- key derivation function (KDF)
+- Authenticated encryption with associated data (AEAD)
+  - they combine symmetric-key crypto with mac
+  - AES-GCM
+  - ChaCha20-Poly1305, 2013
+- asymmetric-key (public-key) cryptography
+  - they support both encryption and signature, but they are slower than
+    symmetric crypto
+  - RSA, 1977
+  - DSA, 1994
+  - ECDSA, 2000
+  - EdDSA, 2011 (ED25519)
+- key derivation functions (KDF)
   - it is used to make passphrase stronger against brute-force attack
     - it is also used for passphrase hashing
   - `DK = KDF(key, salt, iterations)`
@@ -62,27 +78,41 @@ Cryptography
   - bcrypt, 1999
   - PBKDF2, 2000
   - scrypt, 2009
+  - HKDF (HMAC-based KDF), 2010
   - Argon2, 2015
 
+## Secure Connection
 
-## Hash Functions
-
-- common hash functions
-  - non-cryptographic
-    - CRC-32
-    - FNV-1a
-    - SipHash, 2012
-    - MurmurHash3, 2012
-    - xxHash3, 2019
-  - cryptographic
-    - MD5, 1992
-    - SHA-1, 1995
-    - SHA-2, 2001 (SHA-256, SHA-512, etc.)
-    - SHA-3, 2016
-    - BLAKE3, 2020
-- MAC
-  - the purpose is to check message authenticity and integrity
-  - HMAC: `hash(message + shared secret)`
+- two parties want to establish a secure connection on top of open connection
+- authentication with asymetric-key cryptography
+  - one party verifies the signed cert of another party
+  - or, one party encrypts a challenge using another party's public key
+- secret key exchange
+  - two parties use key exchange to generate a shared secret key
+  - or, one party shares the secret key encrypted by another party's public
+    key
+- session key derivation
+  - two parties independently derive the same session key
+- message encryption
+  - two parties use the same session key to encrypt future messages
+- TLS 1.3
+  - establish secure connection for authentication
+    - client generates an elliptic curve key pair for ECDH
+    - clients sends its pub key to server
+    - server generates an elliptic curve key pair for ECDH
+    - server sends its pub key to client
+    - both compute the same value using ECHD
+    - both derive the same key using HKDF
+    - all messages are encrypted from this point on
+  - authentication
+    - server signs the cert and generates a signature
+    - server sends the cert and the signature to client
+    - client verifies the cert and the signature
+      - the cert is signed by CA so it cannot be forged
+      - the signature proves that the server has the private key
+  - update the encryption key
+    - both derive a new key using HKDF
+    - all messages are encrypted using the new key from this point on
 
 ## Key File Formats
 
