@@ -49,6 +49,21 @@ Cryptography
     create a secure connection
   - one party authenticates the other using asymmetric-key encryption, by
     encrypting a challenge using the other's public key
+- key derivation function (KDF)
+  - it is used to make passphrase stronger against brute-force attack
+    - it is also used for passphrase hashing
+  - `DK = KDF(key, salt, iterations)`
+    - `DK` is the derived key
+    - `KDF` is the function
+    - `key` is the original key, such as a passphrase
+    - `salt` is a random number
+    - `iterations` is the number of iterations
+      - it makes brute-force attack more expensive
+  - bcrypt, 1999
+  - PBKDF2, 2000
+  - scrypt, 2009
+  - Argon2, 2015
+
 
 ## Hash Functions
 
@@ -65,6 +80,9 @@ Cryptography
     - SHA-2, 2001 (SHA-256, SHA-512, etc.)
     - SHA-3, 2016
     - BLAKE3, 2020
+- MAC
+  - the purpose is to check message authenticity and integrity
+  - HMAC: `hash(message + shared secret)`
 
 ## Key File Formats
 
@@ -122,3 +140,40 @@ Cryptography
     - content
     - iow, it is content plus metadata
   - it can thus be encoded as DER or PEM
+
+## OpenSSL
+
+- CLI
+  - symmetric encryption
+    - `openssl enc` encrypts/decrypts a file
+      - `-aes256` uses AES-256-CBC
+      - `-d` decrypts instead of encrypts
+  - asymmetric encryption
+    - `openssl genpkey` generates a private key
+      - this is preferred over `genrsa` or `gendsa`
+      - `-algorithm RSA` uses RSA
+      - `-algorithm EC` uses ECDSA (and requires params)
+      - `-algorithm ED25519` uses EdDSA (ED25519)
+    - `openssl pkey` processes a private key
+      - this is preferred over `rsa`, `dsa`, or `ec`
+      - `-in <pkey> -noout -text` shows the key in text form
+    - `openssl pkeyparam` processes key params
+      - this is preferred over `dsaparam`, `dhparam`, and `ecparam`
+      - `-in <param> -noout -text` shows the params in text form
+    - `openssl pkeyutl` uses a private key
+      - this is preferred over `rsautl`
+  - hash
+    - `openssl dgst` hashes a file
+      - `-sha256` is the default
+  - kdf
+    - `openssl kdf` derives a key
+  - mac
+    - `openssl mac` calculates MAC for a message
+  - PKCS
+    - `openssl pkcs7`
+    - `openssl pkcs8`
+    - `openssl pkcs12`
+  - cert
+    - `openssl req` generates a PKCS #10 cert request
+    - `openssl verify` verifies a cert
+    - `openssl x509` processes a cert
