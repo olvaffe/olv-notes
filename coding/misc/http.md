@@ -157,5 +157,18 @@ Web Scraping
       that implements legacy `HttpConnector`
     - <https://github.com/rustls/hyper-rustls.git> provides
       `HttpsConnector` that implements legacy `HttpConnector`
+- Certs
+  - <https://github.com/rustls/rustls-native-certs> loads certs on linux
+    - <https://github.com/alexcrichton/openssl-probe> returns the
+      distro-specific paths
+      - on debian, it returns `/usr/lib/ssl/certs` for the dir (which is
+        symlink to `/etc/ssl/certs`) and `/usr/lib/ssl/cert.pem` for the
+        consolidated file (which is symlink to
+        `/etc/ssl/certs/ca-certificates.crt`)
+    - `rustls_native_certs::load_native_certs` loads all PEM files and
+      converts them to DER
+  - <https://github.com/rustls/rustls-platform-verifier> is cross-platform
+    cert verifier
+    - <https://github.com/rustls/webpki> is the verifier on linux
 - ACME
   - <https://github.com/djc/instant-acme> uses `hyper-rustls`

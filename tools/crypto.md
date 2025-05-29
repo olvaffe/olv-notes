@@ -207,3 +207,38 @@ Cryptography
     - `openssl req` generates a PKCS #10 cert request
     - `openssl verify` verifies a cert
     - `openssl x509` processes a cert
+
+## CA Certificates
+
+- `pk11-kit`
+  - `p11-kit list-modules` lists modules and tokens
+    - a module is a `.so`
+    - each module discovers zero or more tokens from a difference source
+  - `p11-kit list-objects <token>` lists objects in a token
+    - each object is a cert, pubkey, etc.
+  - `p11-kit import-object --file=<pem> <token>` imports a PEM into a token
+  - `p11-kit export-object --file=<pem> <object>` exports an object as PEM
+- `trust`
+  - `trust list` lists trust policy store
+    - this seems to be objects that are certs?
+  - `trust extract` exports items from the store
+  - `trust extract-compat` invokes distro-specific
+    `/usr/libexec/p11-kit/trust-extract-compat`
+    - debian has no such executable
+    - arch symlinks to `update-ca-trust`
+- `p11-kit-trust.so` module
+  - it uses filesystem as the storage
+    - debian uses `/etc/ssl/certs/ca-certificates.crt`
+    - arch uses `/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source`
+- on arch, when `trust extract-compat` extracts certs from pk11-kit and
+  saves them to traditional locations, `update-ca-trust` is invoked
+  - it saves them to `/etc/ca-certificates/extracted`
+    - it also creates `*ca-bundle.trust.crt` as the consolidated files
+  - `/etc/ssl/cert.pem` is a symlink to the consolidated file
+  - `/etc/ssl/certs` has symlinks to individual certs, for openssl
+  - `/etc/ssl/certs/ca-bundle.crt` is a symblink to the consolidated file,
+    for fedora
+  - `/etc/ssl/certs/ca-certificates.crt` is a symlink to the consolidated
+    file, for debian
+  - `/etc/ssl/certs/java/cacerts` is a symlink to the consolidated file, for
+    java
