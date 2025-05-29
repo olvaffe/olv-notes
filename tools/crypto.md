@@ -62,6 +62,16 @@ Cryptography
   - they support both encryption and signature, but they are slower than
     symmetric crypto
   - RSA, 1977
+    - key generation
+      - pick large prime numbers `p` and `q`
+      - the public key consists of `n = p*q` and `e = ...`
+        - `log2(n)` is the key length
+      - the private key consists of `d = ...`
+    - encyrption: treat the message as a large number `m` and compute
+      `c = m^e (mod n)`
+    - decryption: compute `c^d = m^e^d = m (mod n)` to get `m` from `c`
+    - sign: hash the mssage to `h` and compute `s = h^d`
+      - the receiver computes `s^e = h^d^e = h (mod n)` to get `h` from `s`
   - DSA, 1994
   - ECDSA, 2000
   - EdDSA, 2011 (ED25519)
@@ -127,24 +137,25 @@ Cryptography
 - X.509
   - <https://datatracker.ietf.org/doc/html/rfc5280>
   - the data structure is described in ASN.1 and consists of
-    - Certificate
+    - `tbsCertificate` (tbs stands for to be signed)
       - Version Number
       - Serial Number
-      - Signature Algorithm ID
-      - Issuer Name
+      - Signature Algorithm ID: same as `signatureAlgorithm`
+      - Issuer Name: the name of the CA
       - Validity period
         - Not Before
         - Not After
-      - Subject name
-      - Subject Public Key Info
+      - Subject name: the subject of this cert
+      - Subject Public Key Info: the pubkey of the subject
         - Public Key Algorithm
         - Subject Public Key
       - Issuer Unique Identifier (optional)
       - Subject Unique Identifier (optional)
       - Extensions (optional)
         - ...
-    - Certificate Signature Algorithm
-    - Certificate Signature
+    - `signatureAlgorithm`: algorithm used to sign `tbsCertificate`
+      - `OID(1.2.840.113549.1.1.11)` is `sha256WithRSAEncryption`
+    - `signatureValue`: signature bit string
   - it can thus be encoded as DER or PEM
 - PKCS #8
   - <https://datatracker.ietf.org/doc/html/rfc5208>
