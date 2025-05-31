@@ -219,31 +219,41 @@ Cryptography
     - `openssl verify` verifies a cert
     - `openssl x509` processes a cert
 
-## CA Certificates
+## Certificates
 
-- `pk11-kit`
-  - `p11-kit list-modules` lists modules and tokens
-    - a module is a `.so`
-    - each module discovers zero or more tokens from a difference source
-  - `p11-kit list-objects <token>` lists objects in a token
-    - each object is a cert, pubkey, etc.
-  - `p11-kit import-object --file=<pem> <token>` imports a PEM into a token
-  - `p11-kit export-object --file=<pem> <object>` exports an object as PEM
-- `trust`
-  - `trust list` lists trust policy store
-    - this seems to be objects that are certs?
-  - `trust extract` exports items from the store
-  - `trust extract-compat` invokes distro-specific
-    `/usr/libexec/p11-kit/trust-extract-compat`
-    - debian has no such executable
-    - arch symlinks to `update-ca-trust`
-- `p11-kit-trust.so` module
-  - it uses filesystem as the storage
-    - debian uses `/etc/ssl/certs/ca-certificates.crt`
-    - arch uses `/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source`
-- on arch, when `trust extract-compat` extracts certs from pk11-kit and
-  saves them to traditional locations, `update-ca-trust` is invoked
-  - it saves them to `/etc/ca-certificates/extracted`
+- <https://p11-glue.github.io/p11-glue/>
+  - different apps or libs manage/access certs and keys differently
+  - PKCS#11 defines a standard way to manage/access certs and keys
+  - `pk11-kit` CLI
+    - `p11-kit list-modules` lists modules and tokens
+      - a module is a `.so`
+      - each module discovers zero or more tokens from a difference source
+    - `p11-kit list-objects <token>` lists objects in a token
+      - each object is a cert, pubkey, etc.
+    - `p11-kit import-object --file=<pem> <token>` imports a PEM into a token
+    - `p11-kit export-object --file=<pem> <object>` exports an object as PEM
+  - `p11-kit-trust.so` module
+    - it provides read-only access to trusted root CA certs
+    - it uses compile-time configured filesystem paths as the storage
+      - debian uses `/etc/ssl/certs/ca-certificates.crt`
+      - arch uses `/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source`
+  - `trust` CLI
+    - most apps or libs have NOT migrated to PKCS#11
+    - they discover root CA certs from various traditional locations
+    - `trust` is a CLI that extracts root CA certs managed by
+      `p11-kit-trust.so` module and saves them to various traditional
+      locations
+    - `trust list` lists trust policy store
+      - this seems to be objects that are root CA certs?
+    - `trust extract` exports items from the store
+    - `trust extract-compat` invokes distro-specific
+      `/usr/libexec/p11-kit/trust-extract-compat`
+      - debian has no such executable
+      - arch symlinks to `update-ca-trust`
+- on arch, `p11-kit-trust.so` manages root CA certs and `trust extract-compat`
+  invokes `update-ca-trust` to provide compatibility with existing apps/libs
+  - `update-ca-trust` can also be invoked directly
+  - it copies root CA certs to `/etc/ca-certificates/extracted`
     - it also creates `*ca-bundle.trust.crt` as the consolidated files
   - `/etc/ssl/cert.pem` is a symlink to the consolidated file
   - `/etc/ssl/certs` has symlinks to individual certs, for openssl
