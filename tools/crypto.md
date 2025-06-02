@@ -134,6 +134,14 @@ Cryptography
   - header: `-----BEGIN foo-----`
   - data: base64-encoded DER binary data
   - footer: `-----END foo-----`
+  - <https://datatracker.ietf.org/doc/html/rfc7468>
+    - `X509 CRL` for X.509 CRL
+    - `CERTIFICATE REQUEST` for PKCS #10 CSR
+    - `CMS` for CMS
+    - `PRIVATE KEY` for PKCS #8
+    - `ENCRYPTED PRIVATE KEY` for PKCS #8
+    - `ATTRIBUTE CERTIFICATE`
+    - `PUBLIC KEY` for X.509 public key
 - X.509
   - <https://datatracker.ietf.org/doc/html/rfc5280>
   - the data structure is described in ASN.1 and consists of
@@ -157,14 +165,34 @@ Cryptography
       - `OID(1.2.840.113549.1.1.11)` is `sha256WithRSAEncryption`
     - `signatureValue`: signature bit string
   - it can thus be encoded as DER or PEM
-- PKCS #8
-  - <https://datatracker.ietf.org/doc/html/rfc5208>
+- PKCS #7 (legacy) / CMS
+  - <https://datatracker.ietf.org/doc/html/rfc2315> is legacy
+  - <https://datatracker.ietf.org/doc/html/rfc5652>
+  - the data structure is described in ASN.1 and consists of
+    - contentType
+    - content
+    - iow, it is content plus metadata
+- PKCS #8 / Asymmetric Key Packages
+  - <https://datatracker.ietf.org/doc/html/rfc5208> is obsoleted
+  - <https://datatracker.ietf.org/doc/html/rfc5958>
   - the data structure is described in ASN.1 and consists of
     - version
     - privateKeyAlgorithm
     - privateKey
     - attributes
-  - it can thus be encoded as DER or PEM
+- PKCS #10
+  - <https://datatracker.ietf.org/doc/html/rfc2986>
+  - the data structure is described in ASN.1 and consists of
+    - `certificationRequestInfo`
+      - `version`
+      - `subject`
+      - `subjectPKInfo`
+      - `attributes`
+    - `signatureAlgorithm`
+    - `signature`
+- PKCS #11
+  - <https://docs.oasis-open.org/pkcs11/pkcs11-spec/v3.1/pkcs11-spec-v3.1.html>
+  - a C API to create/manipulate cryptographic tokens
 - PKCS #12
   - <https://datatracker.ietf.org/doc/html/rfc7292>
   - the data structure is described in ASN.1 and consists of
@@ -173,14 +201,6 @@ Cryptography
       x509 cert and a pkcs8 privkey
       - an alternative is to concatenate an x509 cert and a pkcs8 privkey in
         PEM format
-  - it can thus be encoded as DER or PEM
-- PKCS #7
-  - <https://datatracker.ietf.org/doc/html/rfc2315>
-  - the data structure is described in ASN.1 and consists of
-    - contentType
-    - content
-    - iow, it is content plus metadata
-  - it can thus be encoded as DER or PEM
 
 ## OpenSSL
 
