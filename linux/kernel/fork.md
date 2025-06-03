@@ -149,3 +149,41 @@ Kernel fork
       of `pt_regs`
     - it skips `orig_ax`
     - `iretq` pops the rest of `pt_regs` automatically
+
+## `unshare`
+
+- `strace unshare`
+  - `unshare(0)`
+  - `execve("/bin/bash", ...)`
+- use strace to see what the various options do
+- man 2 unshare
+  - unshare parts of the execution context of the calling process (with it
+    sparent)
+  - in other words, the calling process enters new namespaces
+- man 1 unshare
+  - `-U`, or `CLONE_NEWUSER`
+    - the caller obtains a full set of capabilities in the new namespace
+    - almost always want `-U` (unless already sudo)
+      - `unshare -p`: Operation not permitted
+      - `unshare -Up`: ok
+  - `-r` is even better than `-U`
+    - it modifies `/proc/self/uid_map` such that the uid becomes 0 in the
+      namespace
+  - `-p`, or `CLONE_NEWPID`
+    - The calling process is not moved into the new namespace.  The first
+      child created by the calling process will have the process ID 1 and will
+      assume the role of init(1) in the new namespace
+    - use with `-f` to fork pid 1
+    - use with `--mount-proc` to fix up /proc
+  - `-m`, or `CLONE_NEWNS`
+    - The mount point list of the new namespace is a copy of the mount point
+      list in the caller's previous mount namespace.
+    - `-m` also remounts root with `MS_REC|MS_PRIVATE` to make all inherited
+      mount points private
+    - it enables mouting of bind mounts, tmpfs, proc, sysfs, etc.
+    - implied by `--mount-proc`
+  - `-n`, or `CLONE_NEWNET`
+- tips
+  - `unshare -rm` cannot mount proc or sysfs
+    - `unshare -rmpf` to mount proc
+    - `unshare -rmn` to mount sysfs

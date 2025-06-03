@@ -256,14 +256,48 @@ Podman
   - `unmount` undoes `mount`
   - `untag` undoes `untag`
 
-## systemd service
+## `podman compose`
 
-- create a system user with subuid/subgid for rootless containers
-  - `useradd -r -F -m <name>`
+- `podman compose` invokes either `docker-compose` or `podman-compose`
+  - both scripts are written in python
+- as root,
+  - `podman compose systemd -a create-unit` generates
+    `/etc/systemd/user/podman-compose@.service`
+  - if using `/var` for pod users, `useradd -r -b /var/lib -m -F -s /bin/bash
+    <pod-user>` creates the pod user
+  - `loginctl enable-linger <pod-user>` makes the pod user linger
+- as pod user,
+  - create `podman-composer.yml` for the pod
+  - `podman compose systemd -a register` generates
+    `~/.config/containers/compose`, pointing to `podman-composer.yml` in the
+    current directory
+  - `systemctl --user enable --now podman-compose@<pod-user>.service` enables and
+    starts the user service
+
+## Quadlet systemd integration
+
+- create a user for each rootless container
+  - `useradd -m -s /bin/bash pod-foo`
+  - optionally `-b /var/lib`
 - start the user systemd instance on boot
-  - `loginctl enable-linger <user>`
+  - `loginctl enable-linger pod-foo`
 - pull the image beforehand
   - `podman pull <IMAGE>`
+- create `~/.config/containers/systemd/foo.container`
+  - `[Container]`
+  - `Image=bar`
+  - `Timezone=local`
+  - `Volume=/source:/dest`
+  - `PublishPort=8080:8080`
+  - `StopTimeout=60`
+  - `[Service]`
+  - `TimeoutSec=70`
+  - `[Install]`
+  - `WantedBy=default.target`
+- test
+  - `/usr/lib/systemd/system-generators/podman-system-generator --user --dryrun`
+  - `systemctl --user daemon-reload` to generate and reload
+    `$XDG_RUNTIME_DIR/systemd/generator/foo.service`
 - before podman 4.4,
   - `podman container create --name foo <IMAGE> <COMMAND>`
   - `podman generate systemd --name foo --new --restart-policy always \
@@ -271,55 +305,3 @@ Podman
        ~/.config/systemd/user/container-foo.service` to generate the unit
   - `systemctl --user daemon-reload`
   - `systemctl --user enable --now container-foo`
-- after podman 4.4,
-  - edit `~/.config/containers/systemd/foo.container`
-    - `[Unit]`
-    - `Description=foo`
-    - `[Container]`
-    - `Image=bar`
-    - `Pull=never`
-    - `Ulimit=nofile=4096:8192`
-    - `Timezone=local`
-    - `Volume=/source:/dest`
-    - `PublishPort=8080:8080`
-    - `Environment=abc=xyz`
-    - `[Service]`
-    - `Restart=always`
-    - `TimeoutStartSec=60`
-    - `TimeoutStopSec=60`
-    - `[Install]`
-    - `WantedBy=default.target`
-  - `/usr/lib/systemd/system-generators/podman-system-generator --user --dryrun`
-  - `systemctl --user daemon-reload` to generate and reload
-    `$XDG_RUNTIME_DIR/systemd/generator/foo.service`
-
-## Dockerfile
-
-- <https://github.com/mbentley/docker-omada-controller/blob/master/Dockerfile.v5.x>
-  - uses ubuntu 20.04 as the base image
-  - `install.sh` downloads the software controller tarball, installs
-    dependencies, unpacks the tarball
-    - the dependencies are `ca-certificates`, `unzip`, `wget`, `gosu`,
-      `net-tools`, `tzdata`, `mongodb-server-core`, and
-      `openjdk-17-jre-headless`
-    - it untars and copies selected files to to `/opt/tplink/EAPController`
-  - `log4j_patch.sh` is nop for 5.x
-  - `healthcheck.sh` is run every 5 minutes to make sure the controller is
-    still alive
-  - the container runs `ENTRYPOINT CMD`
-    - `ENTRYPOINT` is `/bin/sh -c` by default and is overridden to
-      `entrypoint.sh` in this case
-    - `CMD` runs `java -server com.tplink.smb.omada.starter.OmadaLinuxMain`
-  - <https://www.tp-link.com/us/support/faq/3281/>
-    - app connects to controller tcp 8843 (`PORTAL_HTTPS_PORT`) for auth and
-      tcp 8043 (`MANAGE_HTTPS_PORT`) for management
-      - or to controller tcp 8088 (`PORTAL_HTTP_PORT` and `MANAGE_HTTP_PORT`)
-        for both
-    - eap connects to controller tcp 29814 (`PORT_MANAGER_V2`), tcp 29815
-      (`PORT_TRANSFER_V2`), and tcp 29816 (`PORT_RTTY`)
-      - eap on older firmware connect to tcp 29811, 29812, and 29813
-    - eap powers on and broadcasts to udp 29810 (`PORT_DISCOVERY`) to announce
-      itself
-    - app initializes and broadcasts to udp 27001 (`PORT_APP_DISCOVERY`) to
-      discover controller
-    - controller connects to tcp 27217 for mongodb
