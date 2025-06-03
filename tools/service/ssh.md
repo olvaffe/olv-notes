@@ -38,7 +38,7 @@ SSH
   - `PasswordAuthentication` to enable/disable password auth
   - `PermitEmptyPasswords` to allow/disallow empty password
 
-## Config
+## Client Config
 
 - for each parameter, the first obtained value from the following sources is
   used

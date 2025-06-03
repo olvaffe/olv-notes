@@ -1,7 +1,44 @@
-Cryptography
-============
+OpenSSL
+=======
 
-## Overview
+## OpenSSL
+
+- CLI
+  - symmetric encryption
+    - `openssl enc` encrypts/decrypts a file
+      - `-aes256` uses AES-256-CBC
+      - `-d` decrypts instead of encrypts
+  - asymmetric encryption
+    - `openssl genpkey` generates a private key
+      - this is preferred over `genrsa` or `gendsa`
+      - `-algorithm RSA` uses RSA
+      - `-algorithm EC` uses ECDSA (and requires params)
+      - `-algorithm ED25519` uses EdDSA (ED25519)
+    - `openssl pkey` processes a private key
+      - this is preferred over `rsa`, `dsa`, or `ec`
+      - `-in <pkey> -noout -text` shows the key in text form
+    - `openssl pkeyparam` processes key params
+      - this is preferred over `dsaparam`, `dhparam`, and `ecparam`
+      - `-in <param> -noout -text` shows the params in text form
+    - `openssl pkeyutl` uses a private key
+      - this is preferred over `rsautl`
+  - hash
+    - `openssl dgst` hashes a file
+      - `-sha256` is the default
+  - kdf
+    - `openssl kdf` derives a key
+  - mac
+    - `openssl mac` calculates MAC for a message
+  - PKCS
+    - `openssl pkcs7`
+    - `openssl pkcs8`
+    - `openssl pkcs12`
+  - cert
+    - `openssl req` generates a PKCS #10 cert request
+    - `openssl verify` verifies a cert
+    - `openssl x509` processes a cert
+
+## Cryptography
 
 - non-cryptographic hash functions
   - they should be fast, uniform, and a small change in input should result in
@@ -201,43 +238,6 @@ Cryptography
       x509 cert and a pkcs8 privkey
       - an alternative is to concatenate an x509 cert and a pkcs8 privkey in
         PEM format
-
-## OpenSSL
-
-- CLI
-  - symmetric encryption
-    - `openssl enc` encrypts/decrypts a file
-      - `-aes256` uses AES-256-CBC
-      - `-d` decrypts instead of encrypts
-  - asymmetric encryption
-    - `openssl genpkey` generates a private key
-      - this is preferred over `genrsa` or `gendsa`
-      - `-algorithm RSA` uses RSA
-      - `-algorithm EC` uses ECDSA (and requires params)
-      - `-algorithm ED25519` uses EdDSA (ED25519)
-    - `openssl pkey` processes a private key
-      - this is preferred over `rsa`, `dsa`, or `ec`
-      - `-in <pkey> -noout -text` shows the key in text form
-    - `openssl pkeyparam` processes key params
-      - this is preferred over `dsaparam`, `dhparam`, and `ecparam`
-      - `-in <param> -noout -text` shows the params in text form
-    - `openssl pkeyutl` uses a private key
-      - this is preferred over `rsautl`
-  - hash
-    - `openssl dgst` hashes a file
-      - `-sha256` is the default
-  - kdf
-    - `openssl kdf` derives a key
-  - mac
-    - `openssl mac` calculates MAC for a message
-  - PKCS
-    - `openssl pkcs7`
-    - `openssl pkcs8`
-    - `openssl pkcs12`
-  - cert
-    - `openssl req` generates a PKCS #10 cert request
-    - `openssl verify` verifies a cert
-    - `openssl x509` processes a cert
 
 ## Certificates
 

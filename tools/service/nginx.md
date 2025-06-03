@@ -15,30 +15,6 @@ nginx
   - `include snippets/fastcgi-php.conf;`
   - `fastcgi_pass unix:/run/php/php-fpm.sock;`
 
-## HTTPS
-
-- certificates
-  - `curl https://get.acme.sh | sh -s email=my@example.com`
-    - this installs `acme.sh` to `~/.acme.sh` and registers an account with CA
-  - edit `~/.acme.sh/account.conf` to add `DuckDNS_Token='<token>'`
-    - this adds the duckdns api key
-  - `acme.sh --issue -d mydomain.duckdns.org --dns dns_duckdns`
-    - this issues a cert using DNS-01 mode
-  - `mkdir -m 700 /etc/nginx/certs`
-  - `acme.sh --install-cert -d mydomain.duckdns.org \
-         --key-file /etc/nginx/certs/mydomain.duckdns.org.key \
-         --fullchain-file /etc/nginx/certs/mydomain.duckdns.org.cer \
-         --reloadcmd "systemctl reload nginx"`
-    - this installs cert/privkey and reloads nginx
-- configure nginx
-  - edit `/etc/nginx/sites-enabled/default`
-  - add
-    - `listen 443 ssl default_server;`
-    - `listen [::]:443 ssl default_server;`
-    - `ssl_certificate /etc/nginx/certs/mydomain.duckdns.org.cer;`
-    - `ssl_certificate_key /etc/nginx/certs/mydomain.duckdns.org.key`
-  - `systemctl reload nginx`
-
 ## Config
 
 - `main` context
@@ -99,6 +75,30 @@ nginx
     - otherwise, use the remembered block
   - `proxy_pass http://localhost:5000;` proxies another http server
   - `try_files $uri $uri/ =404;` tries as file, as dir, or returns 404
+
+## HTTPS
+
+- certificates
+  - `curl https://get.acme.sh | sh -s email=my@example.com`
+    - this installs `acme.sh` to `~/.acme.sh` and registers an account with CA
+  - edit `~/.acme.sh/account.conf` to add `DuckDNS_Token='<token>'`
+    - this adds the duckdns api key
+  - `acme.sh --issue -d mydomain.duckdns.org --dns dns_duckdns`
+    - this issues a cert using DNS-01 mode
+  - `mkdir -m 700 /etc/nginx/certs`
+  - `acme.sh --install-cert -d mydomain.duckdns.org \
+         --key-file /etc/nginx/certs/mydomain.duckdns.org.key \
+         --fullchain-file /etc/nginx/certs/mydomain.duckdns.org.cer \
+         --reloadcmd "systemctl reload nginx"`
+    - this installs cert/privkey and reloads nginx
+- configure nginx
+  - edit `/etc/nginx/sites-enabled/default`
+  - add
+    - `listen 443 ssl default_server;`
+    - `listen [::]:443 ssl default_server;`
+    - `ssl_certificate /etc/nginx/certs/mydomain.duckdns.org.cer;`
+    - `ssl_certificate_key /etc/nginx/certs/mydomain.duckdns.org.key`
+  - `systemctl reload nginx`
 
 ## ACME
 

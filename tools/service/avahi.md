@@ -1,8 +1,9 @@
-Zero-Configuration Networking
-=============================
+Avahi
+=====
 
-## Core Protocols
+## Zeroconf
 
+- <http://www.zeroconf.org/>
 - Address Autoconfiguration
   - ipv4 uses `169.254.0.0/16` for link-local addressing
     - the host selects a random address in the range

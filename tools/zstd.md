@@ -1,5 +1,5 @@
-Compression
-===========
+Zstandard
+=========
 
 ## Algorithms and Formats
 
