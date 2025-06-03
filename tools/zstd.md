@@ -49,34 +49,28 @@ Zstandard
 
 ## Comparisons
 
+- compressor defaults
+  - `bzip2` defaults to `-9`
+  - `gzip` defaults to `-6`
+  - `lzo` defaults to `LZO1X-1`
+  - `lz4` defaults to `-1`
+  - `xz` defaults to `-6`
+  - `zstd` defaults to `-3`
 - <https://github.com/inikep/lzbench>
-- traditionally, best ratio, balanced, and best speed compressors are
 
-    | Compressor name         | Compress.  |Decompress. | Compr. size | Ratio |
-    | ---------------         | -----------| -----------| ----------- | ----- |
-    | bzip2 1.0.8 -9          |    15 MB/s |    41 MB/s |    54572811 | 25.75 |
-    | zlib 1.2.11 -6          |    35 MB/s |   407 MB/s |    68228431 | 32.19 |
-    | lzo1x 2.10 -11          |   735 MB/s |   893 MB/s |   106604629 | 50.30 |
-
-- but things have changed
-- best ratio
-
-    | xz 5.2.4 -9             |  2.62 MB/s |    88 MB/s |    48745306 | 23.00 |
-    | xz 5.2.4 -6             |  2.95 MB/s |    89 MB/s |    49195929 | 23.21 |
-    | zstd 1.4.3 -22          |  2.28 MB/s |   865 MB/s |    52738312 | 24.88 |
-    | zstd 1.4.3 -18          |  3.58 MB/s |   912 MB/s |    53690572 | 25.33 |
-    | bzip2 1.0.8 -9          |    15 MB/s |    41 MB/s |    54572811 | 25.75 |
-
-- balanced
-
-    | zstd 1.4.3 -5           |   104 MB/s |   932 MB/s |    63993747 | 30.19 |
-    | zstd 1.4.3 -2           |   356 MB/s |  1067 MB/s |    69594511 | 32.84 |
-    | zlib 1.2.11 -6          |    35 MB/s |   407 MB/s |    68228431 | 32.19 |
-
-- best speed
-
-    | lz4 1.9.2               |   737 MB/s |  4448 MB/s |   100880800 | 47.60 |
-    | lzo1x 2.10 -11          |   735 MB/s |   893 MB/s |   106604629 | 50.30 |
+    | Compressor name       | Compression | Decompress. | Compr. size | Ratio |
+    | ---------------       | ----------- | ----------- | ----------- | ----- |
+    | xz 5.6.3 -6           | 2.97 MB/s   | 127 MB/s    | 49195929    | 23.21 |
+    | zstd 1.5.6 -18        | 3.79 MB/s   | 1169 MB/s   | 53329873    | 25.16 |
+    | bzip2 1.0.8 -9        | 13.1 MB/s   | 37.5 MB/s   | 54572811    | 25.75 |
+    | zstd 1.5.6 -15        | 8.36 MB/s   | 1369 MB/s   | 57168834    | 26.97 |
+    | zstd 1.5.6 -5         | 125 MB/s    | 1197 MB/s   | 63040310    | 29.74 |
+    | zlib 1.3.1 -6         | 25.3 MB/s   | 344 MB/s    | 68228431    | 32.19 |
+    | zlib-ng 2.2.3 -6      | 62.1 MB/s   | 509 MB/s    | 68861129    | 32.49 |
+    | zstd 1.5.6 -2         | 344 MB/s    | 1246 MB/s   | 69503444    | 32.79 |
+    | zstd_fast 1.5.6 --1   | 459 MB/s    | 1717 MB/s   | 86984009    | 41.04 |
+    | lzo1x 2.10 -1         | 513 MB/s    | 696 MB/s    | 100572537   | 47.45 |
+    | lz4 1.10.0            | 577 MB/s    | 3716 MB/s   | 100880800   | 47.60 |
 
 ## tar
 
