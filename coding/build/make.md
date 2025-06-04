@@ -41,6 +41,9 @@ GNU Make
 
 ## Chapter 5. Writing Recipes in Rules
 
+- 5.7 Recursive Use of make
+  - `export <variable>` exports a variable to submake
+
 ## Chapter 6. How to Use Variables
 
 ## Chapter 7. Conditional Parts of Makefiles

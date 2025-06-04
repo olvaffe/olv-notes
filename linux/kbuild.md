@@ -1,6 +1,29 @@
 Kernel KBuild
 =============
 
+## Overview
+
+- `scripts/Makefile.build` is the main kbuild makefile
+  - it is used to build the kernel
+  - top-level `Makefile` is not a part of kbuild, but provides various goals
+    where some of them use kbuild to build tke kernel
+- upon `make`,
+  - `__sub-make:` invokes a submake with
+    `make -C $(abs_output) -f $(abs_srctree)/Makefile`
+  - `$(build-dir): prepare` invokes another submake with
+    `make -f ../scripts/Makefile.build obj=.`
+    - `$(build)=$@` expands to `-f ../scripts/Makefile.build obj=.`
+    - this tells kbuild to build `.`, and because kbuild prioritizes `Kbuild`
+      over `Makefile`, and it will use top-level `Kbuild` rather than
+      `Makefile`
+    - top-level `Kbuild` sets `obj-y` to various top dirs such as `init/`,
+      `usr/`, `arch/$(SRCARCH)/`, etc.
+    - `scripts/Makefile.lib` extracts subdirs from `obj-y` to `subdir-ym`
+  - `$(subdir-ym):` invokes yet another submake with
+    `make -f ../scripts/Makefile.build obj=<foo>`
+    - this visits all subdirs in `obj-y` recursively
+    - each subdir is built independent from each other with a submake
+
 ## `make`
 
 - the default goals are

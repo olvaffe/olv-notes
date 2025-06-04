@@ -38,6 +38,11 @@ OpenSSL
     - `openssl verify` verifies a cert
     - `openssl x509` processes a cert
 
+## GnuTLS
+
+- GnuTLS was created for GNU projects because OpenSSL had an incompatible
+  license
+
 ## Cryptography
 
 - non-cryptographic hash functions
