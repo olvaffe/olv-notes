@@ -23,6 +23,20 @@ Kernel KBuild
     `make -f ../scripts/Makefile.build obj=<foo>`
     - this visits all subdirs in `obj-y` recursively
     - each subdir is built independent from each other with a submake
+- variables
+  - `$(CURDIR)` is the output dir
+    - it is from make and is by definition the abs path of the current dir,
+      which is always the output dir
+  - `$(objtree)` is the output dir
+    - it may be abs, or rel to the current dir (thus just `.`)
+  - `$(obj)` is the output subdir
+    - kbuild expand `$(build)=$@` to `-f $(srctree)/scripts/Makefile.build obj=$@`,
+      where `$@` is a subdir listed in `obj-y` or `obj-m`
+    - it is thus always rel to the output dir
+  - `$(srctree)` is the top-level `Makefile` dir
+    - it may be abs, or rel to the current dir
+  - `$(srcroot)` is `$(srctree)`, or the top-level external module dir
+  - `$(src)` is `$(srcroot)/$(obj)`
 
 ## `make`
 
