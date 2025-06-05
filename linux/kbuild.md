@@ -247,3 +247,19 @@ Kernel KBuild
   - it is possible to merge `Kbuild` into `Makefile`
     - `$(KERNELRELEASE)` is non-empty when kbuild sources `Makefile`
     - `ifneq ($(KERNELRELEASE),) ... else ... endif`
+- symbol check
+  - `modules: modpost`
+  - `modpost:` invokes `$(MAKE) -f $(srctree)/scripts/Makefile.modpost`
+  - `$(output-symdump):` generates `Module.symvers`
+    - this runs `$(objtree)/scripts/mod/modpost` with
+      - `-M` checks `EXPORT_SYMBOL`
+      - `-o Module.symvers` outputs `Module.symvers`
+        - each line is an exported symbol of a module
+      - `-T modules.order`
+        - `modules.order` is a list of all `.o`
+        - this parses `.o` and checks symbols
+    - if external module, also
+      - `-i $(objtree)/Module.symvers`
+        - this gets exported symbols from the kernel build
+        - `KBUILD_EXTRA_SYMBOLS` specifies additional `Module.symvers`
+      - `-e` specifies an external module
