@@ -28,43 +28,6 @@ Systemd Unit Configuration
 - `man systemd.target` documents the `[Target]` section
   - there is no target-specific options
 - `man systemd.timer` documents the `[Timer]` section
-- service units control daemons or command to be invoked
-  - such as udevd or `udevadm trigger` (oneshot)
-  - if `foo.service.wants/` exists, units in the directory are added as
-    `Wanted=` dependency of the service unit
-  - services needs to be activated by other units
-- socket units activate services when a socket/fifi/netlink/etc has incoming
-  traffic
-  - e.g, `/run/udev/control`
-  - it activates the server of the same name
-- target units are used to group units, which can be used as synchronization
-  points
-  - `halt.service` is after `shutdown.target`, `umount.target`, and
-    `final.target`
-  - if `foo.target.wants/` exists, units in the directory are added as
-    `Wanted=` dependency of the target unit
-- device units encodes information about devices
-  - they are dynamically generated for all udev devices tagged with
-    `systemd`
-  - if an udev device also has `SYSTEMD_WANTS` property, the device unit
-    will depend on the wanted units
-  - e.g., sound devices are tagged and want `sound.target`
-- mount units describe mount points to be managed by systemd
-  - `tmp.mount` can mount tmpfs on `/tmp`
-- automount units describe mount points to be automounted
-  - they must have mount units of the same name
-- snapshot units are states of systemd at a point
-  - there is not unit configuration files
-  - snapshot units are created via `systemctl snapshot`
-  - to return to a snapshot, run `systemctl isolate`
-- timer units can be used for timer-based activation
-  - for a timer unit, a matching unit file of another type must exist
-  - `systemd-tmpfiles-clean.timer` runs `systemd-tmpfiles` every day (as
-    well as 15 minutes after boot)
-- swap units encode information about swap devices or files
-  - they must be named after the devices they control
-- path units define pathes to be monitored, enabling path-based activation
-  - a matching service unit file must exist
 
 ## `[Unit]` Section
 
@@ -199,80 +162,173 @@ Systemd Unit Configuration
   instance
 - `%u` and `%U` are user name and uid of the systemd instance
 
-## Scopes and Slices
+## Slice Units
+
+- `man systemd.slice`
+- slices manage resources for processes (that is, scopes and services)
+  hierarchically
+- `[Slice]`
+- `systemctl status -- -.slice` is the root slice and has
+  - `init.scope` for pid1
+  - `machine.slice` for vms/containers
+  - `system.slice` for service units
+  - `user.slice` for per-user slices
+- `systemctl status machine.slice` is the machine slice
+  - a podman container creates two scopes in the machine slice, one for
+    `conmon` that manages the container and one for the processes in the
+    container
+- `systemctl status system.slice` is the system slice and consists of
+  service units
+- `systemctl status user.slice` consists of per-user slices
+  (`user-$UID.slice`)
+  - `systemctl status user-$UID.slice` has
+    - `session-c1.scope`
+    - `user@$UID.service`
+- the systemd user instance is similar but different
+  - `systemctl --user status -- -.slice` is actually
+    `/user.slice/user-$UID.slice/user@$UID.service` and has
+    - `init.scope` for the systemd user instance
+    - `app.slice` is the defaut slice for service units
+    - `session.slice` should be used for essential service units such as
+      dbus
+
+## Scope Units
 
 - `man systemd.scope`
-  - scopes manage externally-created processes
-    - contrary to processes created by service units 
-  - `systemctl status init.scope` has pid1, which is externally-created
-  - `systemctl --user status init.scope` has the systemd user instance, which
-    is externally-created
-  - `systemctl status session-c1.scope` has `login` and processes forked from
-    it, which are externally-created
-- `man systemd.slice`
-  - slices manage resources for processes (that is, scopes and services)
-    hierarchically
-  - `systemctl status -- -.slice` is the root slice and has
-    - `init.scope` for pid1
-    - `machine.slice` for vms/containers
-    - `system.slice` for service units
-    - `user.slice` for per-user slices
-  - `systemctl status machine.slice` is the machine slice
-    - a podman container creates two scopes in the machine slice, one for
-      `conmon` that manages the container and one for the processes in the
-      container
-  - `systemctl status system.slice` is the system slice and consists of
-    service units
-  - `systemctl status user.slice` consists of per-user slices
-    (`user-$UID.slice`)
-    - `systemctl status user-$UID.slice` has
-      - `session-c1.scope`
-      - `user@$UID.service`
-  - the systemd user instance is similar but different
-    - `systemctl --user status -- -.slice` is actually
-      `/user.slice/user-$UID.slice/user@$UID.service` and has
-      - `init.scope` for the systemd user instance
-      - `app.slice` is the defaut slice for service units
-      - `session.slice` should be used for essential service units such as
-        dbus
+- scopes manage externally-created processes
+  - contrary to processes created by service units 
+- `systemctl status init.scope` has pid1, which is externally-created
+- `[Scope]`
+  - `OOMPolicy=` specifies the oom policy
+- `systemctl --user status init.scope` has the systemd user instance, which
+  is externally-created
+- `systemctl status session-c1.scope` has `login` and processes forked from
+  it, which are externally-created
 
 ## Service Units
 
 - `man systemd.service`
-- `Type=` specifies when the manager considers the service ready
-  - to start a service, the manager process calls `fork` to create a process
-    which calls `execve` to execute the service binary
-    - the forked process is considered the main process except for `forking`
-  - `simple` means after the manager process calls `fork`
-    - use `exec` instead
-  - `exec` means after the forked process calls `execve`
-  - `forking` means after the forked process terminates
-    - the forked process is expected to fork again (i.e., call `daemon`)
-    - the main process should be specified by `PIDFile=`, otherwise it is
-      whatever process forked by the forked process
-  - `oneshot` means after the forked process terminates
-    - the main process is the forked process and has terminated
-    - `RemainAfterExit=yes` should usually be set
-  - `dbus` means after the dbus name is acquired
-    - `BusName=` must be specified
-  - `notify` means after `sd_notify("READY=1")` is received
-  - `notify-reload` is similar to `notify`, except the service also supports
-    reloading using signals
-- `ExecStart=` is the command(s) to execute when starting the service
-  - `ExecCondition=` and `ExecStartPre=` are optional and are executed before
-    `ExecStart=`
-  - `ExecStartPost=` is optional and is executed after `ExecStart=`
-- `ExecStop=` is the command(s) to execute when stopping the service
-  - this is optional and all remaining processes are always killed
-  - `ExecStopPost=` is optional and is executed after `ExecStop=`
-    - it can be executed without `ExecStop=` when service startup failed
-- `RestartSec=` specifies restart delay, default to 100ms
-- `Restart=` specifies restart policy, default to no
-  - `on-failure` restarts on failure
+- service units control daemons or command to be invoked
+  - such as udevd or `udevadm trigger` (oneshot)
+  - if `foo.service.wants/` exists, units in the directory are added as
+    `Wanted=` dependency of the service unit
+  - services needs to be activated by other units
+- `[Service]`
+  - `Type=` specifies when the manager considers the service ready
+    - to start a service, the manager process calls `fork` to create a process
+      which calls `execve` to execute the service binary
+      - the forked process is considered the main process except for `forking`
+    - `simple` means after the manager process calls `fork`
+      - use `exec` instead
+    - `exec` means after the forked process calls `execve`
+    - `forking` means after the forked process terminates
+      - the forked process is expected to fork again (i.e., call `daemon`)
+      - the main process should be specified by `PIDFile=`, otherwise it is
+        whatever process forked by the forked process
+    - `oneshot` means after the forked process terminates
+      - the main process is the forked process and has terminated
+      - `RemainAfterExit=yes` should usually be set
+    - `dbus` means after the dbus name is acquired
+      - `BusName=` must be specified
+    - `notify` means after `sd_notify("READY=1")` is received
+    - `notify-reload` is similar to `notify`, except the service also supports
+      reloading using signals
+  - `ExecStart=` is the command(s) to execute when starting the service
+    - `ExecCondition=` and `ExecStartPre=` are optional and are executed before
+      `ExecStart=`
+    - `ExecStartPost=` is optional and is executed after `ExecStart=`
+  - `ExecStop=` is the command(s) to execute when stopping the service
+    - this is optional and all remaining processes are always killed
+    - `ExecStopPost=` is optional and is executed after `ExecStop=`
+      - it can be executed without `ExecStop=` when service startup failed
+  - `RestartSec=` specifies restart delay, default to 100ms
+  - `Restart=` specifies restart policy, default to no
+    - `on-failure` restarts on failure
+
+## Target Units
+
+- `man systemd.target`
+- target units are used to group units, which can be used as synchronization
+  points
+  - `halt.service` is after `shutdown.target`, `umount.target`, and
+    `final.target`
+  - if `foo.target.wants/` exists, units in the directory are added as
+    `Wanted=` dependency of the target unit
+- no `[Target]`
+
+## Device Units
+
+- `man systemd.device`
+- device units encodes information about devices
+  - they are mainly used to describe dependencies between device units and
+    other units
+  - they are dynamically generated for all udev devices tagged with
+    `systemd`
+  - if an udev device also has `SYSTEMD_WANTS` property, the device unit
+    will depend on the wanted units
+  - e.g., sound devices are tagged and want `sound.target`
+- no `[Device]`
+
+## Mount Units
+
+- `man systemd.mount`
+- mount units describe mount points to be managed by systemd
+  - `tmp.mount` can mount tmpfs on `/tmp`
+- `systemd-fstab-generator` parses `/etc/fstab` to generate mount units
+- `[Mount]`
+  - `What=` specifies the src path
+  - `Where=` specifies the dst path
+  - `Type=` is `mount --types <type>`
+  - `Options=` is `mount --options <type>`
+
+## Automount Units
+
+- `man systemd.automount`
+- automount units describe mount points to be automounted
+  - they must be named after the dir to mount
+  - they must have matching mount units
+- `systemd-fstab-generator` parses `/etc/fstab` to generate automount units
+- `[Automount]`
+  - `Where=` specifies the path to automount to
+
+## Swap Units
+
+- `man systemd.swap`
+- swap units encode information about swap devices or files
+  - they must be named after the devices they control
+- `systemd-fstab-generator` parses `/etc/fstab` to generate swap units
+- `[Swap]`
+  - `What=` specifies the swap device or swapfile
+  - `Priority=` is `swapon --priority <priority>`
+  - `Option=` is `swapon --options <option>`
+
+## Path Units
+
+- `man systemd.path`
+- path units define pathes to be monitored, enabling path-based activation
+  - a matching service unit file must exist
+- `[Path]`
+  - `PathExists=` watches the existence of the path
+  - `Unit=` specifies the unit to activate explicitly
+
+## Socket Units
+
+- `man systemd.socket`
+- socket units activate services when a socket/fifi/netlink/etc has incoming
+  traffic
+  - e.g, `/run/udev/control`
+  - it activates the sevice of the same name
+- `[Socket]`
+  - `ListenStream=` is the `SOCK_STREAM` to listen
+  - `ListenNetlink=` is the `AF_NETLINK` to listen
 
 ## Timer Units
 
 - `man systemd.timer`
+- timer units can be used for timer-based activation
+  - for a timer unit, a matching unit file of another type must exist
+  - `systemd-tmpfiles-clean.timer` runs `systemd-tmpfiles` every day (as
+    well as 15 minutes after boot)
 - `[Timer]` section defines when does the timer activate and which unit to
   activate
 - there was `at`
