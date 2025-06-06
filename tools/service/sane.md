@@ -46,3 +46,8 @@ SANE
     - `/etc/airsane/access.conf` is the allowed subnets
     - `/etc/airsane/ignore.conf` is the sane backend to ignore
     - `/etc/airsane/options.conf` is the sane backend options
+    - build
+      - `apt install libsane-dev libjpeg-dev libpng-dev libavahi-client-dev libusb-1.0-0-dev`
+      - `cmake -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=aarch64.cmake`
+      - `DESTDIR=$PWD/AirSane ninja -C out install`
+      - `tar -zcf AirSane.tar.gz AirSane`

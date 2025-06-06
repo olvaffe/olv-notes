@@ -194,10 +194,11 @@ CUPS
     - `/usr/share/caepcm`
     - `/usr/share/cups`
   - re-package deb
-    - `dpkg-deb -R cnrdrvcups-ufr2-us_6.00-1.02_amd64.deb repack`
+    - `dpkg-deb -R cnrdrvcups-ufr2-us_6.10-1.00_arm64.deb repack`
     - edit `repack/DEBIAN/control` to remove `cups-bsd` and `libgtk-3-0`
     - remove `repack/DEBIAN/post*`
     - `dpkg-deb -b --root-owner-group repack repack.deb`
+    - `sudo dpkg -i repack.deb`
 - cnijfilter2, currently v6.80
   - mixed open/proprietary driver
     - IJ stands for inkjet
