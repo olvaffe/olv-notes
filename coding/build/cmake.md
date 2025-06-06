@@ -14,7 +14,7 @@ CMake
     - `make -Cout VERBOSE=1`
   - debug
     - `cmake -Bout --trace`
-- `cmake-commands`
+- <https://cmake.org/cmake/help/latest/manual/cmake-commands.7.html>
   - these are more global and should be used with care
     - `add_compile_definitions`
     - `add_compile_options`
@@ -39,22 +39,12 @@ CMake
     - `find_package`
     - `find_path`
     - `find_program`
-- `cmake-variables` for user customizations
+- <https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html>
   - `CMAKE_BUILD_TYPE`
   - `CMAKE_<LANG>_COMPILER`
   - `CMAKE_<LANG>_FLAGS`
   - `CMAKE_<LANG>_COMPILER_LAUNCHER`
     - e.g., ccache
-- `cmake-env-variables` for user customizations
-  - `DESTDIR`
-  - `LDFLAGS`
-  - `VERBOSE`
-  - `CC`
-  - `CFLAGS`
-  - `CXX`
-  - `CXXFLAGS`
-- `cmake-toolchains`
-  - `--toolchain <path>` or `-DCMAKE_TOOLCHAIN_FILE=<path>`
   - `CMAKE_SYSTEM_NAME`
     - `Linux` or `Android`
     - `uname -s`
@@ -62,12 +52,19 @@ CMake
     - `x86_64` or `i386` or `aarch64` or `arm`
     - `uname -m`
   - `CMAKE_SYSROOT`
-  - `CMAKE_C_COMPILER`
-  - `CMAKE_CXX_COMPILER`
-  - `CMAKE_CXX_COMPILER`
   - `CMAKE_FIND_ROOT_PATH_MODE_*`
     - cmake finds under `CMAKE_SYSROOT`, `CMAKE_FIND_ROOT_PATH`, and host
       system root
+- <https://cmake.org/cmake/help/latest/manual/cmake-env-variables.7.html>
+  - `DESTDIR`
+  - `LDFLAGS`
+  - `VERBOSE`
+  - `CC`
+  - `CFLAGS`
+  - `CXX`
+  - `CXXFLAGS`
+- <https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html>
+  - `--toolchain <path>` or `-DCMAKE_TOOLCHAIN_FILE=<path>`
 
 ## cross-compile
 
