@@ -3,8 +3,13 @@ Kernel exec
 
 ## `kernel_execve`
 
-- at the end of boot, pid 1 calls `kernel_execve` from `kernel_init` to exec
-  `/init` or `/sbin/init`
+- boot
+  - pid 0 calls `user_mode_thread` from `rest_init` to fork pid 1
+    - on x86, `copy_thread` sets the return addr to `ret_from_fork_asm`
+      - pid 1 `ret_from_fork_asm` calls `ret_from_fork`, which calls
+        `kernel_init` before returning
+  - pid 1 calls `kernel_execve` from `kernel_init` to exec `/init` or
+    `/sbin/init`
 - `getname_kernel` allocs `filename` and copies `/init` or `/sbin/init` to it
 - `alloc_bprm` allocs a `linux_binprm`
   - `do_open_execat` opens the file for exec
@@ -38,6 +43,8 @@ Kernel exec
   - `setup_arg_pages`
   - `finalize_exec`
   - `START_THREAD` calls `start_thread` to update regs, including ip and sp
+    - this way, when `ret_from_fork_asm` returns to userspace, it returns to
+      the elf file entry point
 
 ## `execve()`
 
