@@ -253,6 +253,8 @@ Kernel init
     - the cpio archive is embedded in the kernel image
   - `INIT_RAM_FS` defines `__initramfs_start` and includes `.init.ramfs` section
     to help find the embedded archive
+  - the kernel initramfs unpacker checks if the cpio starts with "070701",
+    that is, the new portable format
 - cmdline
   - `initrd=` requests the bootloader to load an external cpio archive
     - `initrd_start` and `initrd_end` are set to the address of the loaded
@@ -267,33 +269,21 @@ Kernel init
   - it then unpacks the external initramfs at `initrd_start`
     - when initrd= is given, the bootloader loads an external initramfs and
       updates `initrd_start` and `initrd_end`
-    - an external initiramfs can be unpacked using
-      `$ gunzip -c initramfs.img | cpio -idv`
   - if unpack of `initrd_start` failed and `CONFIG_BLK_DEV_RAM` is set, it
     assumes `initrd_start` points to a ramdisk image instead
 - without `CONFIG_BLK_DEV_INITRD`, `default_rootfs` instead of
   `populate_rootfs` is called to populate a minimal rootfs
-- pid 1
-  - `kernel_init` kthread has pid 1 and runs `kernel_init`.  At the end, it
-    `do_execve` init and become the userspace pid 1.  Before that...
-  - `console_on_rootfs` opens `/dev/console` and dups to fd 0, 1, and 2
-  - if initramfs contains `/init`,  `ramdisk_execute_command` is set to `/init`
-    - otherwise, `prepare_namespace` sets `ROOT_DEV` according to `root=` and
-      mounts the real rootfs
-  - `run_init_process` calls `do_execve`
-- initramfs `/init` is executed.  It parses the kernel cmdline and does many
-  other things.  Among them,
-  - it mounts the root
-  - execs `/sbin/init` of the root device with the help of `switch_root`
-  - add break=premount or break=postmount to spawn a shell
+- pid 1 execs initramfs `/init` at the end of `kernel_init`
+  - `argv = { "init", NULL }`
+  - `envp = { "HOME=/", "TERM=linux", NULL }`
+  - `/init` typically parses the kernel cmdline and does many things.  Among
+    them,
+    - it mounts the root
+    - execs `/sbin/init` of the root device with the help of `switch_root`
+    - add `break=premount` or `break=postmount` to spawn a shell
 
 ## packing/unpacking initramfs
 
-- the kernel initramfs unpacker checks if the cpio starts with "070701", that
-  is, the new portable format
-- kernel thread of pid 1 `execve`s initramfs's `/init` (or `rdinit=`) with
-  - `argv = { "init", NULL }`
-  - `envp = { "HOME=/", "TERM=linux", NULL }`
 - a minimal busybox-based initramfs can do these in `/init` to get a shell
   - `#!/bin/busybox sh`
   - `mkdir /proc; mount -t proc none /proc`
