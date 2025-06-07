@@ -43,8 +43,8 @@ Kernel exec
   - `setup_arg_pages`
   - `finalize_exec`
   - `START_THREAD` calls `start_thread` to update regs, including ip and sp
-    - this way, when `ret_from_fork_asm` returns to userspace, it returns to
-      the elf file entry point
+    - on x86, when `ret_from_fork_asm` (pid 1) or `entry_SYSCALL_64` (others)
+      returns to userspace, it returns to the elf file entry point
 
 ## `execve()`
 
