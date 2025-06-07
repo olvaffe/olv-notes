@@ -137,6 +137,21 @@ Kernel init
   - `console_on_rootfs` opens `/dev/console` and makes it fd 0, 1, 2
   - if there is no `/init` (no initramfs), `prepare_namespace` mounts the root
     device to `/`, overriding rootfs
+- pid 1 in userspace
+  - pid 1 checks `/init`.  If the unpacked cpio has it, pid 1 `execve`s and
+    hands control to userspace
+  - if there is no `/init`, kernel calls `prepare_namespace` to mount `root=`
+    - `name_to_dev_t` parses `root=` to get root device major:minor and save
+      it to `ROOT_DEV`
+    - `mount_root` creates `/dev/root` pointing to `ROOT_DEV` and calls
+      `mount_block_root` to mount it to `/root` and `chdir` to it
+      - on success, dmesg prints `VFS: Mounted root (xxx filesystem) readonly on device xxx:xxx.`
+      - on failure, dmesg prints some info and `VFS: Unable to mount root fs on xxx`
+    - `devtmpfs_mount` mounts devtmpfs to `/root/dev`
+    - `init_mount` move-mounts `/root` to `/`
+    - `init_chroot` chroots
+  - pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in
+    initramfs)
 
 ## command line
 
@@ -209,25 +224,6 @@ Kernel init
       default initramfs created from `usr/default_cpio_list` at build time
   - otherwise, `default_rootfs` is called to create `/dev`, `/dev/console`,
     and `/root` in `rootfs`
-
-## init
-
-- pid 1 calls `console_on_rootfs` to open `/dev/console` and dup it to fd 0,
-  1, and 2
-  - when initramfs cpio does not have the node, this is skipped
-- pid 1 checks `/init`.  If the unpacked cpio has it, pid 1 `execve`s and
-  handles control to userspace
-- if there is no `/init`, kernel calls `prepare_namespace` to mount `root=`
-  - `name_to_dev_t` parses `root=` to get root device major:minor and save it
-    to `ROOT_DEV`
-  - `mount_root` creates `/dev/root` pointing to `ROOT_DEV` and calls
-    `mount_block_root` to mount it to `/root` and `chdir` to it
-    - on success, dmesg prints `VFS: Mounted root (xxx filesystem) readonly on device xxx:xxx.`
-    - on failure, dmesg prints some info and `VFS: Unable to mount root fs on xxx`
-  - `devtmpfs_mount` mounts devtmpfs to `/root/dev`
-  - `init_mount` move-mounts `/root` to `/`
-  - `init_chroot` chroots
-- pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in initramfs)
 - `rootfs` is never unmounted
   - without initramfs, we mount the real root over at `/`
   - with initramfs, `Documentation/filesystems/ramfs-rootfs-initramfs.rst`
