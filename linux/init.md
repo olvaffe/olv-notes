@@ -137,21 +137,20 @@ Kernel init
   - `console_on_rootfs` opens `/dev/console` and makes it fd 0, 1, 2
   - if there is no `/init` (no initramfs), `prepare_namespace` mounts the root
     device to `/`, overriding rootfs
-- pid 1 in userspace
-  - pid 1 checks `/init`.  If the unpacked cpio has it, pid 1 `execve`s and
-    hands control to userspace
-  - if there is no `/init`, kernel calls `prepare_namespace` to mount `root=`
-    - `name_to_dev_t` parses `root=` to get root device major:minor and save
-      it to `ROOT_DEV`
-    - `mount_root` creates `/dev/root` pointing to `ROOT_DEV` and calls
-      `mount_block_root` to mount it to `/root` and `chdir` to it
-      - on success, dmesg prints `VFS: Mounted root (xxx filesystem) readonly on device xxx:xxx.`
-      - on failure, dmesg prints some info and `VFS: Unable to mount root fs on xxx`
-    - `devtmpfs_mount` mounts devtmpfs to `/root/dev`
-    - `init_mount` move-mounts `/root` to `/`
-    - `init_chroot` chroots
-  - pid 1 finally `execve`s `/sbin/init` (when there is no `/init` in
-    initramfs)
+- pid 1 execs `/init` or `/sbin/init` at the end of `kernel_init`
+  - it attemps to exec `ramdisk_execute_command` (`/init`)
+    - with initramfs, the cpio archive provides `/init`
+  - otherwise, it attemps `/sbin/init`
+    - without initramfs, `prepare_namespace` has mounted the real root
+  - `run_init_process` calls `kernel_execve`
+    - `argv_init = { "/init", NULL }`
+    - `envp_init = { "HOME=/", "TERM=linux", NULL }`
+  - initramfs `/init` typically parses the kernel cmdline and does many
+    things.  Among them,
+    - it mounts the real root
+    - execs `/sbin/init` of the real root with the help of `switch_root`
+    - the script may understand `break=premount` or `break=postmount` to spawn
+      a debug shell
 
 ## command line
 
@@ -266,14 +265,33 @@ Kernel init
   - `set_fs_root` to chroot to the root inode of `rootfs`
 - pid 1 calls `populate_rootfs` or `default_rootfs` to populate rootfs
   - `kernel_init_freeable -> do_basic_setup -> do_initcalls`
+  - `CONFIG_BLK_DEV_INITRD` enables initramfs/initrd support
   - if `CONFIG_BLK_DEV_INITRD` is defined, `populate_rootfs` unpacks initramfs
     to `rootfs`
-    - when no initramfs is supplied at build time or by bootloader, there is a
-      default initramfs created from `usr/default_cpio_list` at build time
+    - it unpacks the built-in initramfs at `__initramfs_start`
+      - when no custom initramfs is supplied at build time by
+        `CONFIG_INITRAMFS_SOURCE`, there is a default initramfs created from
+        `usr/default_cpio_list` at build time
+    - it then unpacks the external initramfs at `initrd_start`
+      - when initrd= is given, the bootloader loads an external initramfs and
+        updates `initrd_start` and `initrd_end`
+    - if unpack of `initrd_start` failed and `CONFIG_BLK_DEV_RAM` is set, it
+      assumes `initrd_start` points to a ramdisk image instead
   - otherwise, `default_rootfs` is called to create `/dev`, `/dev/console`,
     and `/root` in `rootfs`
 - `rootfs` is never unmounted
-  - without initramfs, we mount the real root over at `/`
+  - without initramfs, `prepare_namespace` mounts the real root to override
+    rootfs
+    - `parse_root_device` parses `root=` to get root device major:minor and
+      save it to `ROOT_DEV`
+    - `mount_root` mounts `ROOT_DEV` to `/root`
+      - it creates `/dev/root` pointing to `ROOT_DEV`
+      - `mount_root_generic` mounts `/dev/root` to `/root` and `chdir` to it
+        - on success, dmesg prints `VFS: Mounted root (%s filesystem)%s on device %u:%u.\n`
+        - on failure, dmesg prints some info and `VFS: Unable to mount root fs on %s`
+    - `devtmpfs_mount` mounts devtmpfs to `dev` (relative to `/root`)
+    - `init_mount` moves the mount from `.` to `/`
+    - `init_chroot` chroots to `.`
   - with initramfs, `Documentation/filesystems/ramfs-rootfs-initramfs.rst`
     says
 
@@ -288,11 +306,7 @@ Kernel init
   - <https://git.busybox.net/busybox/tree/util-linux/switch_root.c>
   - we can't see `rootfs` in `/proc/mounts` because it is outside of chroot
     (the real root) and `show_vfsmnt` returns `SEQ_SKIP` for it
-
-## initramfs
-
-- `CONFIG_BLK_DEV_INITRD` enables initramfs/initrd support
-- cpio archive
+- built-in cpio archive
   - `usr/initramfs_data.S` defines `__initramfs_size` in `.init.ramfs` section
     - when `CONFIG_INITRAMFS_SOURCE` is specified, it includes the specified
       cpio archive
@@ -301,8 +315,6 @@ Kernel init
     - the cpio archive is embedded in the kernel image
   - `INIT_RAM_FS` defines `__initramfs_start` and includes `.init.ramfs` section
     to help find the embedded archive
-  - the kernel initramfs unpacker checks if the cpio starts with "070701",
-    that is, the new portable format
 - cmdline
   - `initrd=` requests the bootloader to load an external cpio archive
     - `initrd_start` and `initrd_end` are set to the address of the loaded
@@ -312,23 +324,6 @@ Kernel init
   - `rdinit=` is handled by `rdinit_setup` and updates `ramdisk_execute_command`
     - default to `/init`
   - `root=` is handled by `root_dev_setup` and updates `saved_root_name`
-- `populate_rootfs` is called by `do_initcalls`
-  - it unpacks the built-in initramfs at `__initramfs_start`
-  - it then unpacks the external initramfs at `initrd_start`
-    - when initrd= is given, the bootloader loads an external initramfs and
-      updates `initrd_start` and `initrd_end`
-  - if unpack of `initrd_start` failed and `CONFIG_BLK_DEV_RAM` is set, it
-    assumes `initrd_start` points to a ramdisk image instead
-- without `CONFIG_BLK_DEV_INITRD`, `default_rootfs` instead of
-  `populate_rootfs` is called to populate a minimal rootfs
-- pid 1 execs initramfs `/init` at the end of `kernel_init`
-  - `argv = { "init", NULL }`
-  - `envp = { "HOME=/", "TERM=linux", NULL }`
-  - `/init` typically parses the kernel cmdline and does many things.  Among
-    them,
-    - it mounts the root
-    - execs `/sbin/init` of the root device with the help of `switch_root`
-    - add `break=premount` or `break=postmount` to spawn a shell
 
 ## packing/unpacking initramfs
 
@@ -342,8 +337,10 @@ Kernel init
   - if busybox relies on symlinks or `$PATH` to find its applets, prepend
     - `/bin/busybox --install -s /bin`
     - `export PATH=/bin`
-- and to create the cpio archive
+- to create the cpio archive
   - `find . | cpio -o -H newc -R root:root > ../initramfs.cpio`
+  - the kernel initramfs unpacker checks if the cpio starts with "070701",
+    that is, the new portable format
 - to unpack the cpio archive
   - `cpio -idmv < ../initramfs.cpio`
 - unpack system initramfs
