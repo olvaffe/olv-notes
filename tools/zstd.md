@@ -72,6 +72,37 @@ Zstandard
     | lzo1x 2.10 -1         | 513 MB/s    | 696 MB/s    | 100572537   | 47.45 |
     | lz4 1.10.0            | 577 MB/s    | 3716 MB/s   | 100880800   | 47.60 |
 
+## cpio
+
+- `cpio --format` supports
+  - `bin`, defualt but obsoleted, magic `070707` (octal)
+  - `odc`, old POSIX, magic `070707` (string)
+  - `newc`, cur POSIX, magic `070701` (string)
+  - `crc`, cur POSIX with crc, magic `070702` (string)
+  - tar
+  - other obsoleted formats
+- `newc`/`crc` format
+  - each file is
+    - offset 0: magic
+    - offset 6: `st_ino`
+    - offset 14: `st_mode`
+    - offset 22: `st_uid`
+    - offset 30: `st_gid`
+    - offset 38: `st_nlink`
+    - offset 46: `st_mtim`
+    - offset 54: `st_size`
+    - offset 62: `major(st_dev)`
+    - offset 70: `minor(st_dev)`
+    - offset 78: `major(st_rdev)`
+    - offset 86: `minor(st_rdev)`
+    - offset 94: path size
+    - offset 102: checksum or 0
+    - offset 110: `\0`-terminated path
+    - pad to 32-bit with `\0`
+    - data
+    - pad to 32-bit with `\0`
+  - a final entry with path `TRAILER!!!`
+
 ## tar
 
 - `tar --format` supports
