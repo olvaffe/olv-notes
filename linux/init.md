@@ -1,8 +1,25 @@
 Kernel init
 ===========
 
-## `start_kernel`
+## PID 0: `start_kernel`
 
+- `init_task` has PID 0 and is statically-defined in `init/init_task.c`
+  - `stack` is `init_stack`, which is in the data section (`INIT_TASK_DATA`)
+  - `active_mm` is `init_mm`
+  - `cred` and `real_cred` is `init_cred`
+  - `comm` is `INIT_TASK_COMM`, which is `swapper`
+  - `fs` is `init_fs`
+  - `files` is `init_files`
+  - `signal` is `init_signals`
+  - `sighand` is `init_sighand`
+  - `nsproxy` is `init_nsproxy`
+  - `thread_pid` is `init_struct_pid` w/ pid 0
+- arch ensures `get_current` returns `init_task` initially
+  - x86 `get_current` calls `this_cpu_read_stable(current_task)`, where
+    `current_task` is initialized in
+    `DEFINE_PER_CPU_CACHE_HOT(struct task_struct *, current_task) = &init_task;`
+  - arm64 `get_current` reads `sp_el0` reg, where `__primary_switched` calls
+    `init_cpu_task` to init to `init_task`
 - `start_kernel` is the entry point of the comomn kernel code
   - only the boot cpu is up at this point
   - on x86-64, after some early assembly code, the boot cpu jumps to
@@ -10,52 +27,116 @@ Kernel init
   - on arm64, after some early assembly code, the boot cpu jumps to
     `start_kernel`
 - The function performs various initializations.  The interesting ones are
+  - `local_irq_disable()` disables irq during early boot
+  - `boot_cpu_init` marks the boot cpu ready
   - `pr_notice("%s", linux_banner);` prints the banner
-  - `setup_arch` does arch-specific initializations such as
-    - calling `parse_early_param` to parse `early_param` (such as `earlycon`)
-    - calling `memblock_add` to add physical memories to memblock
-    - calling `free_area_init` to initialize memory zones
-  - `setup_command_line` saves away the cmdline
-  - `setup_per_cpu_areas` initializes per-cpu areas
-  - `trap_init` initializes cpu trap table
-  - `mm_init` initializes memory allocators
-    - `mem_init` is expected to call `memblock_free_all` to hand pages over to
-      buddy allocator
-    - `kmem_cache_init` initializes the slab allocator
+  - `setup_arch` performs arch-specific inits and returns cmdline
+    - `parse_early_param` parses `early_param` such as `earlycon`
+    - `memblock_add` adds physical memories to memblock
+    - `free_area_init` inits memory zones
+    - many more
+  - `setup_command_line` saves cmdline to `saved_command_line`
+  - `setup_per_cpu_areas` inits per-cpu areas
+  - `boot_cpu_hotplug_init` marks the boot cpu online
+  - `pr_notice("Kernel command line: %s\n", saved_command_line)` prints the
+    cmdline
+  - `parse_early_param` parses `early_param` again
+    - it is nop because `setup_arch` already calls it
+  - `parse_args` parses all cmdline args
+  - `setup_log_buf` allocs printk buf
+  - `trap_init` inits cpu trap table
+  - `mm_core_init` inits memory allocators
+    - `memblock_free_all` hands pages over to buddy allocator
+    - `kmem_cache_init` inits the slab allocator
     - `vmalloc_init` prepares for vmalloc/ioremap
-  - `sched_init` initializes the scheduler
+  - `ftrace_init` inits ftrace
+  - `sched_init` inits the scheduler
   - `workqueue_init_early` performs first stage of workqueue init
-  - `rcu_init` initializes rcu
-  - `early_irq_init` initializes the irq subsystem and calls
+  - `rcu_init` inits rcu
+  - `trace_init` inits tracing
+  - `early_irq_init` inits the irq subsystem and calls
     `arch_early_irq_init`
-  - `init_IRQ` initializes all hw irqs
-  - `tick_init` initializes periodic kernel ticks
-  - `init_timers` initializes timers
-  - `hrtimers_init` initializes high-resolution timers
-  - `softirq_init` initializes softirq subsystem
-  - `timekeeping_init` initializes timekeeping (for `ktime_get*`)
+  - `init_IRQ` inits all hw irqs
+  - `tick_init` inits periodic kernel ticks
+  - `init_timers` inits timers
+  - `hrtimers_init` inits high-resolution timers
+  - `softirq_init` inits softirq subsystem
+  - `timekeeping_init` inits timekeeping (for `ktime_get*`)
   - `time_init` is arch-specific
-    - `of_clk_init` to initialize `clock_provider`
+    - `of_clk_init` to init `clock_provider`
     - `timer_probe` to scan devices and match drivers
       - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
-  - `console_init` initializes console (for printk)
+  - `console_init` inits console (for printk)
     - this calls `console_initcall` initcalls
     - vt's `con_init` prints `Console: colour dummy device 80x25` and calls
       `register_console`
       - unless `keep_bootcon`, this also disables earlycon
-  - `acpi_early_init` initializes acpi
-  - `late_time_init` is late `time_init`
-  - `sched_clock_init` initializes jiffy-based clock
-  - `pid_idr_init` initializes pid allocator
-  - `anon_vma_init` initializes anon vma allocator
-  - `fork_init` initializes task allocator
-  - `vfs_caches_init` initializes various vfs caches as well as rootfs
+  - `acpi_early_init` inits acpi
+  - `late_time_init` is deferred `time_init`
+    - on x86, it points to `x86_late_time_init`
+  - `sched_clock_init` inits jiffy-based clock
+  - `calibrate_delay` computes BogoMIPS
+  - `arch_cpu_finalize_init` late-inits the boot cpu
+  - `pid_idr_init` inits pid allocator
+  - `anon_vma_init` inits anon vma allocator
+  - `efi_enter_virtual_mode` tells efi to enter virtual mode
+  - `fork_init` inits task allocator
+  - `security_init` inits lsm
+  - `net_ns_init` inits net
+  - `vfs_caches_init` inits various vfs caches as well as rootfs
     - `mnt_init` mounts `rootfs` to `/`
-  - `pagecache_init` initializes pagecache
-  - `signals_init` initializes signal subsystem
-  - `proc_root_init` initializes procfs
-  - `arch_call_rest_init` performs the rest initializations
+  - `pagecache_init` inits pagecache
+  - `signals_init` inits signal subsystem
+  - `proc_root_init` inits procfs
+  - `cpuset_init` inits cpuset
+  - `cgroup_init` inits cgroup
+  - `acpi_subsystem_init` inits acpi again
+  - `rest_init` forks off two tasks and enters idle loop
+    - pid 1 runs `kernel_init`, which ultimately execs `/sbin/init`
+    - pid 2 runs `kthreadd`, which forks off kthreads in response to
+      `kthread_create`
+    - `cpu_startup_entry(CPUHP_ONLINE)` enters `do_idle` loop
+- `do_idle` loop
+  - the boot cpu runs `init_task` and is in an infinite loop calling `do_idle`
+  - if there is no other task, the boot cpu enters idle states
+  - if there is another task (e.g., pid 1 during boot), `schedule_idle`
+    switches to the task
+    - this changes the stack, and when the boot cpu returns from
+      `schedule_idle`, it jumps to the prior frame of the new stack (e.g.,
+      `kernel_init` of pid 1 during boot)
+  - when the other task switches back to `init_task` and returns, the boot cpu
+    jumps back to `do_idle` right after `schedule_idle`
+
+## PID 1: `kernel_init`
+
+- pid 1 runs `kernel_init`
+  - it calls `kernel_init_freeable` to intialize more subsystems
+  - it then `execve("/init")` or `execve("/sbin/init")` depending on whether
+    there is initramfs
+- `kernel_init_freeable` inits more subsystems
+  - these init functions are marked `__init` and will be freed
+  - `smp_prepare_cpus` prepares non-boot cpus
+    - x86 calls `native_smp_prepare_cpus`
+  - `workqueue_init` inits workqueue
+  - `do_pre_smp_initcalls` runs `early_initcall` calls
+  - `smp_init` brings up non-boot cpus
+    - `idle_threads_init` forks off per-cpu idle tasks as threads of PID 0
+    - `cpuhp_threads_init` forks off per-cpu hotplug tasks
+    - `bringup_nonboot_cpus` brings up non-boot cpus
+      - on x86, `secondary_startup_64` is the entry point
+        - at the end, it calls `initial_code` which points to
+          `start_secondary`
+  - `sched_init_smp` inits scheduler for SMP
+  - `page_alloc_init_late` does late-init for the buddy allocator
+  - `do_basic_setup` does basic setup
+    - `driver_init` inits driver subsystems
+    - `init_irq_proc` creates `/proc/irq`
+    - `do_initcalls` runs all initcalls
+      - this includes `rootfs_initcall` which populates rootfs
+  - `console_on_rootfs` opens `/dev/console` and makes it fd 0, 1, 2
+  - if there is no `/init` (no initramfs), `prepare_namespace` mounts the root
+    device to `/`, overriding rootfs
 
 ## command line
 
@@ -108,54 +189,6 @@ Kernel init
     - printk logs to all `console=`
     - `/dev/console` is the last `console=`
     - when none specified, printk picks the first capabie device as the console
-
-## `arch_call_rest_init`
-
-- `arch_call_rest_init` calls `rest_init` in the common kernel code
-- `rest_init` forks off two tasks
-  - pid 1 runs `kernel_init`
-  - pid 2 runs `kthreadd`, which forks off kthreads in response to
-    `kthread_create`
-- it then calls `cpu_startup_entry` and enters `do_idle` loop
-  - and the scheduler switches to pid 1 task
-
-## `init_task`
-
-- note that so far we run as pid 0 whose `task_struct` is statically-defined
-  in `init/init_task.c`
-  - `get_current` is arch-specific and archs set things up so that
-    `get_current` returns `init_task` to this point
-- `init_task`
-  - `stack` is `init_stack`, which is in the data section (`INIT_TASK_DATA`)
-  - `active_mm` is `init_mm`
-  - `cred` and `real_cred` is `init_cred`
-  - `comm` is `INIT_TASK_COMM`, which is `swapper`
-  - `fs` is `init_fs`
-  - `files` is `init_files`
-  - `signal` is `init_signals`
-  - `sighand` is `init_sighand`
-  - `nsproxy` is `init_nsproxy`
-  - `thread_pid` is `init_struct_pid` w/ pid 0
-
-## `kernel_init`
-
-- pid 1 runs `kernel_init`
-  - it calls `kernel_init_freeable` to intialize more subsystems
-  - it then `execve("/init")` or `execve("/sbin/init")` depending on whether
-    there is initramfs
-- `kernel_init_freeable` initializes more subsystems
-  - these init functions are marked `__init` and will be freed
-  - `smp_prepare_cpus` prepares non-boot cpus
-  - `workqueue_init` initializes workqueue
-  - `do_pre_smp_initcalls` runs `early_initcall` calls
-  - `smp_init` brings up non-boot cpus
-  - `page_alloc_init_late` does late-init for the buddy allocator
-  - `do_basic_setup` does basic setup
-    - `driver_init` initializes driver subsystems
-    - `do_initcalls` runs all initcalls
-  - `console_on_rootfs` opens `/dev/console` and makes it fd 0, 1, 2
-  - if there is no initramfs, `prepare_namespace` mounts the root device to
-    `/`, overriding `rootfs`
 
 ## rootfs
 
