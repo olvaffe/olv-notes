@@ -205,6 +205,54 @@ Kernel init
     - `/dev/console` is the last `console=`
     - when none specified, printk picks the first capabie device as the console
 
+## initcall
+
+- macros
+  - `___define_initcall` defines a `initcall_t` in section `<sec>.init`
+  - `console_initcall` uses section `.con_initcall.init`
+  - `early_initcall` uses section `.initcallearly.init`
+  - `pure_initcall` uses section `.initcall0.init`
+  - `core_initcall` uses section `.initcall1.init`
+  - `core_initcall_sync` uses section `.initcall1s.init`
+  - `postcore_initcall` uses section `.initcall2.init`
+  - `postcore_initcall_sync` uses section `.initcall2s.init`
+  - `arch_initcall` uses section `.initcall3.init`
+  - `arch_initcall_sync` uses section `.initcall3s.init`
+  - `subsys_initcall` uses section `.initcall4.init`
+  - `subsys_initcall_sync` uses section `.initcall4s.init`
+  - `fs_initcall` uses section `.initcall5.init`
+  - `fs_initcall_sync` uses section `.initcall5s.init`
+  - `rootfs_initcall` uses section `.initcallrootfs.init`
+  - `device_initcall` uses section `.initcall6.init`
+    - `__initcall` is a shorthand for `device_initcall`
+  - `device_initcall_sync` uses section `.initcall6s.init`
+  - `late_initcall` uses section `.initcall7.init`
+  - `late_initcall_sync` uses section `.initcall7s.init`
+- `vmlinux.lds.h`
+  - `CON_INITCALL` defines `__con_initcall_{start,end}` for
+    `.con_initcall.init`
+  - `INIT_CALLS` defines `__initcall_{start,end}` for `.initcall*.init`
+    - also these symbols for each level in order
+      - `__initcall0_start`
+      - `__initcall1_start`
+      - `__initcall2_start`
+      - `__initcall3_start`
+      - `__initcall4_start`
+      - `__initcall5_start`
+      - `__initcallrootfs_start`
+      - `__initcall6_start`
+      - `__initcall7_start`
+    - within each level, sync initcalls are arranged after normal initcalls
+      - the idea is that a user can use the normal initcall to queue a work
+        and use the sync variant to wait for it
+- `console_init` calls all `console_initcall`
+  - it is called early from `start_kernel` by pid 0
+  - they call `register_console` to register consoles
+- `do_pre_smp_initcalls` calls all `early_initcall`
+  - it is called from `kernel_init_freeable` by pid 1 before `smp_init`
+- `do_initcalls` calls the rest
+  - it is called from `kernel_init_freeable` by pid 1 almost last
+
 ## rootfs
 
 - during `start_kernel`, a `mnt_namespace` is created and a tmpfs is mounted
