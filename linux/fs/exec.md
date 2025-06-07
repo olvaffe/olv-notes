@@ -1,6 +1,44 @@
 Kernel exec
 ===========
 
+## `kernel_execve`
+
+- at the end of boot, pid 1 calls `kernel_execve` from `kernel_init` to exec
+  `/init` or `/sbin/init`
+- `getname_kernel` allocs `filename` and copies `/init` or `/sbin/init` to it
+- `alloc_bprm` allocs a `linux_binprm`
+  - `do_open_execat` opens the file for exec
+  - `bprm_mm_init` allocs a `mm_struct`
+    - `bprm->rlim_stack` is copied from `current->signal->rlim[RLIMIT_STACK]`
+    - `bprm->vma` is the initial stack
+      - `vma_end` is `STACK_TOP_MAX` (top of the addr space)
+      - `vma_start` is one page below
+      - flags has `VM_STACK_FLAGS` which includes `VM_GROWSDOWN`
+    - `bprm->p` points to `vma->vm_end - sizeof(void *)`
+- `count_strings_kernel` inits `bprm->argc` and `bprm->envc`
+- `bprm_stack_limits` calculates stack size limit
+  - `limit` is typically 6MB
+    - `_STK_LIM` is 8MB
+    - `bprm->rlim_stack.rlim_cur` is typically 8MB
+  - `bprm->argmin` is `bprm->p - limit`, which caps how much the stack can
+    grow
+    - `bprm_hit_stack_limit` returns true when `bprm->p` is below
+      `bprm->argmin`
+- `copy_string_kernel` copies filename to stack
+- `copy_strings_kernel` copies `envp` and `argv` to stack
+- `bprm_execve`
+  - `prepare_bprm_creds` creates `bprm->cred`, inheriting from `current`
+  - `sched_exec` picks the cpu?
+  - `exec_binprm` loads the file and updates regs
+    - `search_binary_handler` invokes binfmt `load_binary`
+- `load_elf_binary` for elf
+  - it loads and parses the elf file
+  - `begin_new_exec` is the point of no return
+  - `setup_new_exec`
+  - `setup_arg_pages`
+  - `finalize_exec`
+  - `START_THREAD` calls `start_thread` to update regs, including ip and sp
+
 ## `execve()`
 
 - could run an elf executable or script (#!)
