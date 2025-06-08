@@ -162,6 +162,100 @@ Systemd Unit Configuration
   instance
 - `%u` and `%U` are user name and uid of the systemd instance
 
+## Common Process Options
+
+- unit types that have processes
+  - service units
+  - socket units, `Exec{Start,Stop}{Pre,Post}` processes
+  - mount units, `mount` process
+  - swap units, `swapon` process
+  - scope units, external processes
+  - slice units, cgroup control
+- `man systemd.exec`
+  - these are execution environment options
+  - they are applicable to unit types that start processes
+    - service, socket, mount, swap
+    - no scope nor slice
+  - path
+    - `WorkingDirectory=` is the working dir
+    - `RootDirectory=` is for chroot
+    - `BindPaths=` and `BindReadOnlyPaths=` create bind mounts
+  - user/group identity
+    - `User=` and `Group=` specify the user/group
+    - `DynamicUser=` uses a transient user/group
+    - `SupplementaryGroups=` is a space-separated list of supp groups
+  - caps
+    - `CapabilityBoundingSet=` drops caps not listed
+    - `AmbientCapabilities=` adds caps listed
+  - security
+    - `NoNewPrivileges=` ensures no new privileges
+  - mac
+    - `SELinuxContext=`
+  - process props
+    - `Limit*=` adjusts ulimit
+    - `UMask=` sets umask
+  - scheduling
+    - `Nice=` adjusts nice
+    - `CPUSchedulingPolicy=` adjusts sched policy
+    - `CPUAffinity=` sets affinity
+  - sandboxing
+    - `ProtectSystem=` protects various system dirs
+    - `ProtectHome=` protects home dirs
+    - `RuntimeDirectory=` creates transient `/run/<name>`
+    - `StateDirectory=` creates transient `/var/lib/<name>`
+    - `CacheDirectory=` creates transient `/var/cache/<name>`
+    - `PrivateTmp=` uses private `/tmp`
+    - `PrivateDevices=` uses private `/dev`
+    - `PrivateNetwork=` uses private network
+    - `PrivateUsers=` uses private users
+    - `PrivateMounts=` uses private mounts
+  - syscall filtering
+    - seccomp
+  - environment
+    - `Environment=` sets up env
+    - the default environment has
+      - `PATH`, `LANG`, `USER`, etc.
+      - `XDG_RUNTIME_DIR`
+      - `LISTEN_FDS`, `LISTEN_PID`, `LISTEN_FDNAMES` for `sd_listen_fds`
+      - `NOTIFY_SOCKET` for `sd_notify`
+      - more
+  - logging and stdio
+    - `StandardInput=` defaults to `null`
+    - `StandardOutput=` defaults to `journal`
+    - `StandardError=` defaults to `inherit` (from stdout)
+    - `Syslog*=` configures syslog
+    - `TTY*=` configures tty for stdio
+  - creds
+  - sysv compat
+- `man systemd.kill`
+  - these are process killing options
+  - they are applicable to unit types that have processes
+    - service, socket, mount, swap, scope
+    - no slice
+  - `KillMode=`
+    - `control-group` sends `SIGTERM` followed by `SIGKILL` to all (default)
+    - `mixed` sends `SIGTERM` to main, followed by `SIGKILL` to all
+    - `process` sends `SIGTERM` followed by `SIGKILL` to main (obsoleted)
+    - `none` sends no signal (obsoleted)
+- `man systemd.resource-control`
+  - these are cgroup options
+  - they are applicable to unit types that have processes
+    - all of service, socket, mount, swap, scope, slice
+  - cpu control
+  - mem control
+  - process control
+  - io control
+  - net control
+  - bpf
+  - device access
+    - `DevicePolicy=` defaults to `auto`, to allow all devices unless explicit
+      `DeviceAllow=`
+    - `DeviceAllow=` explicits allows the specified devices
+  - cgroup
+    - `Slice=` defaults to `system.slice`
+  - mem pressure control
+  - coredump control
+
 ## Slice Units
 
 - `man systemd.slice`
