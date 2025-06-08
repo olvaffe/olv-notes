@@ -89,14 +89,17 @@ Kernel exec
 
 ## `ld-linux.so`
 
-- <http://www.acsu.buffalo.edu/~charngda/elf.html>
-- entry point: `_start` in `glibc/elf/rtld.c`, which calls `_dl_start`
-  `_dl_start` returns with program entry point address and `_dl_start_user` jumps to it
-  see `sysdeps/i386/dl-machine.h:RTLD_START`
-- `_dl_start` -> `_dl_start_final` -> `_dl_sysdep_start` (argc, argv, envp, auxp are popped)
-- `_dl_start_user` jumps to the entry point of the program, which is usually
-  the beginning of .text section, which is the `_start` function
-- see `toolchain`
+- glibc `elf/` contains the source code
+- `RTLD_START` expands to the entrypoint of `ld-linux.so`
+  - `_dl_start` loads the executable, resolves symbols, and returns its
+    entrypoint
+    - `arg` is `%esp`
+    - `_dl_sysdep_start(arg, &dl_main)`
+      - `_dl_sysdep_parse_arguments` parses the stack
+        - from bottom to top, `argv`, `argv`, and `envp`
+      - `dl_main` does the loading
+  - `_dl_init` calls the executable static initializers
+  - it then jumps to the executable entrypoint
 
 ## Android `linker`
 
