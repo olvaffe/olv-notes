@@ -1,45 +1,6 @@
 systemd
 =======
 
-## Booting
-
-- `man bootup`
-  - systemd will activate `default.target` on boot
-    - it is usually a symlink to `graphical.target` or `multi-user.target`
-  - systemd will activate `poweroff.target` or `reboot.target` on shutdown
-    - fwiw, `halt.target` halts the system, making it safe to cut the power
-      but does not cut the power
-- `systemctl list-dependencies graphical.target`
-  - it depends on `multi-user.target` and a few other services
-  - `display-manager.service` is one of the services, which is usually a
-    symlink to `gdm.service`
-    - `gdm.service` has `Alias=display-manager.service` to create the symlink
-    - some distros remove the line and manage the symlink in their package
-      managers instead
-- `systemctl list-dependencies multi-user.target`
-  - it depends on several targets and many services
-  - targets are `basic.target`, `getty.target`, `machines.target`, and
-    `remote-fs.target`
-  - services include `dbus.service`, `ssh.service`, `systemd-logind.service`,
-    `systemd-user-sessions.service`, etc.
-- `systemctl list-dependencies basic.target`
-  - it depends on several targets and others
-  - targets are `paths.target`, `slices.target`, `sockets.target`,
-    `sysinit.target`, and `timers.target`
-- `systemctl list-dependencies sysinit.target`
-  - it depends on several targets and many services
-  - targets are `cryptsetup.target`, `integritysetup.target`,
-    `local-fs.target`, `swap.target`, and `veritysetup.target`
-  - services include `systemd-journald.service`, `systemd-timesyncd.service`,
-    `systemd-udevd.service`, etc.
-- shutdown is a bit different
-  - `poweroff.target` depends on `systemd-poweroff.service`
-  - `systemd-poweroff.service` depends on `final.target`, `shutdown.target`,
-    and `umount.target`
-  - by default, a service unit has `DefaultDependencies=yes` which implies
-    `Requires=sysinit.target` and `Conflicts=shutdown.target`
-    - this means a service is stopped by default before `shutdown.target`
-
 ## Old SysVinit (`/sbin/init`)
 
 - PID 1
