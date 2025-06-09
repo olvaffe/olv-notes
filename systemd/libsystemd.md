@@ -6,7 +6,9 @@ libsystemd
 - `sd-daemon.h` provides apis to write a modern-style daemon
   - `sd_booted`
   - `sd_notify*` and `sd_pid_notify*`
+    - this sends message to `NOTIFY_SOCKET`
   - `sd_listen_fds*`
+    - this listens to `LISTEN_FDS`
   - `sd_watchdog_enabled`
   - `sd_is_*`
 - `sd-journal.h` provides apis to talk to `systemd-journald`
