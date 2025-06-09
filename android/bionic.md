@@ -89,3 +89,43 @@ Android Bionic
   thread-local data is returned.
 - `tls[0]` is temporarily used as a mutex until just before `pthread_create`
   returns.  It is used so that the child does not run until the parent unlocks.
+
+## Android `linker`
+
+- `Android.mk` makes `.text` to be at `0xB0001000`.  When the linker is
+  linked, `ld` finds `_start` (changeable with `-Wl,-entry=<sym>`) and make it
+  the entry point.
+  - it is built with `-nostdlib` since it has its own `begin.S`
+  - it statically links a version of `libc` that has no `malloc`
+  - `objcopy --prefix-symbols` is called to rename all symbols to avoid
+    collisions with the programs at runtime
+- After the control is switched back to the userspace, it starts from `_start`
+  - `__linker_init` is called.  It has access to `argc`, `argv`, and `envp`.
+    - `LD_*` variables are used to change the behavior of the linker
+    - the program is loaded, recursively because of dynamic linking.  The
+      entry point of the program is determined and the linker jumps to it.
+    - The program may define `.preinit_array`, `.init`, and `.init_array`
+      sections.  They are run before jumping to the entry point of the program
+- The linker also implements `dl*` API.  While the programes are linked with
+  `libdl.so`, it has only stub functions (to help `ld`).  The implementation
+  is inside the linker.
+- The linker defines `rtld_db_dlactivity` and `_r_debug`, which can be used
+  to help `gdb`
+
+## Android `bionic`
+
+- All executables are built with `-nostdlib` and bionic's `crt*`
+- `crtbegin_dynamic.S` calls `__libc_init` to initialize bionic and 
+  call program's `main`
+  - it also defines `.preinit_array` and `.init_array` to be called by the
+    linker.  Specifically, `__libc_preinit` will be called
+- after program's `main` returns, `exit` is called wit the return value.
+  - it calls all functions registered with `atexit()`
+  - it terminates the process by calling `_exit()`
+- `__libc_preinit`
+  - it prepares the stack and for the threads
+  - it initializes the TLS area
+  - it calls `__system_properties_init` to initialize properties
+    - `/init` prepares the storage for `__system_property_area__` and set
+      `ANDROID_PROPERTY_WORKSPACE`.  All processes spawned by `/init` will use
+      the same storage by mapping `ANDROID_PROPERTY_WORKSPACE`.

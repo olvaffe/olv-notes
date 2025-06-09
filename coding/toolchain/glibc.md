@@ -42,6 +42,20 @@ glibc
     `DT_RPATH`/`DT_RUNPATH` should be ignored
     - for the main executable itself, use an empty string
 
+## `ld-linux.so`
+
+- glibc `elf/` contains the source code
+- `RTLD_START` expands to the entrypoint of `ld-linux.so`
+  - `_dl_start` loads the executable, resolves symbols, and returns its
+    entrypoint
+    - `arg` is `%esp`
+    - `_dl_sysdep_start(arg, &dl_main)`
+      - `_dl_sysdep_parse_arguments` parses the stack
+        - from bottom to top, `argc`, `argv`, `envp`, and `auxv`
+      - `dl_main` does the loading
+  - `_dl_init` calls the executable static initializers
+  - it then jumps to the executable entrypoint
+
 ## life cycle
 
 - the elf executable has `ld-linux-<arch>.so` as the interpreter and has

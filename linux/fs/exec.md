@@ -37,11 +37,22 @@ Kernel exec
   - `exec_binprm` loads the file and updates regs
     - `search_binary_handler` invokes binfmt `load_binary`
 - `load_elf_binary` for elf
-  - it loads and parses the elf file
+  - it loops through the executable program headers for `PT_INTERP`
+    - if dynamically linked, `interpreter` is the opened file for the dynamic
+      loader
   - `begin_new_exec` is the point of no return
+    - `de_thread` sends `SIGKILL` to all but the main thread
+    - `exec_mmap` transfers `bprm->mm` to `current->mm`
+    - `__set_task_comm` sets `tsk->comm` to `bprm->filename`
   - `setup_new_exec`
-  - `setup_arg_pages`
-  - `finalize_exec`
+  - `setup_arg_pages` relocates and grows the user stack
+  - it loops through the executable program headers for `PT_LOAD`
+    - `elf_load` maps a range
+  - `load_elf_interp` loops through the interpreter program headers for
+    `PT_LOAD`
+    - `elf_load` maps a range
+  - `create_elf_tables` inits the user stack
+  - `finalize_exec` updates stack size rlimit
   - `START_THREAD` calls `start_thread` to update `pt_regs`
     - on x86, `pt_regs` is at the top of the kernel stack
     - when `ret_from_fork_asm` (pid 1) or `entry_SYSCALL_64` (others) returns
@@ -77,16 +88,8 @@ Kernel exec
     - `bprm->envc` pointers to `bprm->envp` string pool
     - 0 to delimit envp
     - auxv
-
-## `execve()`
-
-- could run an elf executable or script (#!)
-- setuid
-- If  the  executable  is  a  dynamically linked ELF executable, the
-  interpreter named in the `PT_INTERP` segment is used to load the needed shared
-  libraries.  This interpreter is typically `/lib/ld-linux.so.1` for binaries
-  linked with the Linux libc 5, or `/lib/ld-linux.so.2` for binaries linked with
-  the glibc 2.
+  - on x86, the abi is documented in `System V Application Binary Interface`
+    - `3.4 Process Initialization`
 
 ## `sys_execve`
 
@@ -118,57 +121,3 @@ Kernel exec
 - `load_elf_interp` to load dynamic loader and decide new entry point
   /lib/ld.so specifies 0x0 as its virtual address, which makes itself
   be mapped at around 0xb8000000
-
-## `ld-linux.so`
-
-- glibc `elf/` contains the source code
-- `RTLD_START` expands to the entrypoint of `ld-linux.so`
-  - `_dl_start` loads the executable, resolves symbols, and returns its
-    entrypoint
-    - `arg` is `%esp`
-    - `_dl_sysdep_start(arg, &dl_main)`
-      - `_dl_sysdep_parse_arguments` parses the stack
-        - from bottom to top, `argv`, `argv`, and `envp`
-      - `dl_main` does the loading
-  - `_dl_init` calls the executable static initializers
-  - it then jumps to the executable entrypoint
-
-## Android `linker`
-
-- `Android.mk` makes `.text` to be at `0xB0001000`.  When the linker is
-  linked, `ld` finds `_start` (changeable with `-Wl,-entry=<sym>`) and make it
-  the entry point.
-  - it is built with `-nostdlib` since it has its own `begin.S`
-  - it statically links a version of `libc` that has no `malloc`
-  - `objcopy --prefix-symbols` is called to rename all symbols to avoid
-    collisions with the programs at runtime
-- After the control is switched back to the userspace, it starts from `_start`
-  - `__linker_init` is called.  It has access to `argc`, `argv`, and `envp`.
-    - `LD_*` variables are used to change the behavior of the linker
-    - the program is loaded, recursively because of dynamic linking.  The
-      entry point of the program is determined and the linker jumps to it.
-    - The program may define `.preinit_array`, `.init`, and `.init_array`
-      sections.  They are run before jumping to the entry point of the program
-- The linker also implements `dl*` API.  While the programes are linked with
-  `libdl.so`, it has only stub functions (to help `ld`).  The implementation
-  is inside the linker.
-- The linker defines `rtld_db_dlactivity` and `_r_debug`, which can be used
-  to help `gdb`
-
-## Android `bionic`
-
-- All executables are built with `-nostdlib` and bionic's `crt*`
-- `crtbegin_dynamic.S` calls `__libc_init` to initialize bionic and 
-  call program's `main`
-  - it also defines `.preinit_array` and `.init_array` to be called by the
-    linker.  Specifically, `__libc_preinit` will be called
-- after program's `main` returns, `exit` is called wit the return value.
-  - it calls all functions registered with `atexit()`
-  - it terminates the process by calling `_exit()`
-- `__libc_preinit`
-  - it prepares the stack and for the threads
-  - it initializes the TLS area
-  - it calls `__system_properties_init` to initialize properties
-    - `/init` prepares the storage for `__system_property_area__` and set
-      `ANDROID_PROPERTY_WORKSPACE`.  All processes spawned by `/init` will use
-      the same storage by mapping `ANDROID_PROPERTY_WORKSPACE`.
