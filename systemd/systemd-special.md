@@ -30,37 +30,30 @@ systemd special
       - `getty.target`, meson symlink in `multi-user.target.wants/`
       - `machines.target`, `WantedBy=multi-user.target`
       - `remote-fs.target`, `WantedBy=multi-user.target`
-
-
-  - it depends on `multi-user.target` and a few other services
-  - `display-manager.service` is one of the services, which is usually a
-    symlink to `gdm.service`
-    - `gdm.service` has `Alias=display-manager.service` to create the symlink
-    - some distros remove the line and manage the symlink in their package
-      managers instead
-- `systemctl list-dependencies multi-user.target`
-  - it depends on several targets and many services
-  - targets are `basic.target`, `getty.target`, `machines.target`, and
-    `remote-fs.target`
-  - services include `dbus.service`, `ssh.service`, `systemd-logind.service`,
-    `systemd-user-sessions.service`, etc.
-- `systemctl list-dependencies basic.target`
-  - it depends on several targets and others
-  - targets are `paths.target`, `slices.target`, `sockets.target`,
-    `sysinit.target`, and `timers.target`
-- `systemctl list-dependencies sysinit.target`
-  - it depends on several targets and many services
-  - targets are `cryptsetup.target`, `integritysetup.target`,
-    `local-fs.target`, `swap.target`, and `veritysetup.target`
-  - services include `systemd-journald.service`, `systemd-timesyncd.service`,
-    `systemd-udevd.service`, etc.
-- shutdown is a bit different
-  - `poweroff.target` depends on `systemd-poweroff.service`
-  - `systemd-poweroff.service` depends on `final.target`, `shutdown.target`,
-    and `umount.target`
-  - by default, a service unit has `DefaultDependencies=yes` which implies
-    `Requires=sysinit.target` and `Conflicts=shutdown.target`
-    - this means a service is stopped by default before `shutdown.target`
+- `systemctl list-dependencies graphical.target`, focusing on service units
+  - `graphical.target`
+    - `display-manager.service`
+      - e.g., `gdm.service` has `Alias=display-manager.service` to create the
+        symlink
+      - some distros remove the line and manage the symlink in their package
+        managers instead
+    - `multi-user.target`
+      - most services
+      - `basic.target`
+        - `sysinit.target`
+          - boot-related services
+- `systemctl list-dependencies poweroff.target`
+  - `poweroff.target`, `Requires=systemd-poweroff.service`
+    - `systemd-poweroff.service`, `Requires=shutdown.target umount.target final.target`
+      - `shutdown.target`
+      - `umount.target`
+      - `final.target`
+  - how this works is
+    - all service units by default has `Conflicts=shutdown.target`, causing
+      them to be stopped
+    - all mount units by default has `Conflicts=umount.target`, causing them
+      to be umounted
+    - `final.target` does not appear to be used
 
 ## Built-in Units
 
@@ -170,6 +163,19 @@ systemd special
 ## Special Units
 
 - `man systemd.special`
+- active and passive target units
+  - they are optional and must be pulled in by their producers (passive) or
+    consumers (active)
+  - `network-online.target` is an active target unit
+    - producers have `WantedBy=network-online.target` and `Before=network-online.target`
+    - consumers have `Wants=network-online.target` and `After=network-online.target`
+    - when a consumer is enabled, it wants producers and is blocked by
+      producers
+  - `network.target` is a passive target unit
+    - producers have `Wants=network.target` and `Before=network.target`
+    - consumers have `After=network.target`
+    - when a producer is enabled, it blocks consumers
+      - otherwise consumers proceed without the producer
 - targets
   - `basic.target`
   - `bluetooth.target`
