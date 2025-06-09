@@ -98,7 +98,115 @@ systemd special
   - `var-lib-machines.mount` under `machines.target.wants/`
   - `veritysetup.target` under `sysinit.target.wants/`
 
-## Booting
+## Special Units
+
+- `man systemd.special`
+- targets
+  - `basic.target`
+  - `bluetooth.target`
+  - `cryptsetup-pre.target`
+  - `veritysetup.target`
+  - `ctrl-alt-del.target`
+  - `boot-complete.target`
+  - `default.target`
+  - `emergency.target`
+  - `exit.target`
+  - `factory-reset.target`
+  - `factory-reset-now.target`
+  - `final.target`
+  - `getty.target`
+  - `graphical.target`
+  - `halt.target`
+  - `hibernate.target`
+  - `hybrid-sleep.target`
+  - `suspend-then-hibernate.target`
+  - `initrd.target`
+  - `initrd-fs.target`
+  - `initrd-root-device.target`
+  - `initrd-root-fs.target`
+  - `initrd-usr-fs.target`
+  - `integritysetup-pre.target`
+  - `integritysetup.target`
+  - `kbrequest.target`
+  - `kexec.target`
+  - `local-fs.target`
+  - `machines.target`
+  - `multi-user.target`
+  - `network-online.target`
+  - `paths.target`
+  - `poweroff.target`
+  - `printer.target`
+  - `reboot.target`
+  - `remote-cryptsetup.target`
+  - `remote-integritysetup.target`
+  - `remote-veritysetup.target`
+  - `remote-fs.target`
+  - `rescue.target`
+  - `runlevel2.target`
+  - `runlevel3.target`
+  - `runlevel4.target`
+  - `runlevel5.target`
+  - `shutdown.target`
+  - `sigpwr.target`
+  - `sleep.target`
+  - `slices.target`
+  - `smartcard.target`
+  - `sockets.target`
+  - `soft-reboot.target`
+  - `sound.target`
+  - `storage-target-mode.target`
+  - `suspend.target`
+  - `swap.target`
+  - `sysinit.target`
+  - `system-update.target`
+  - `system-update-pre.target`
+  - `timers.target`
+  - `tpm2.target`
+  - `umount.target`
+  - `usb-gadget.target`
+- special passive target units
+  - `blockdev@.target`
+  - `cryptsetup.target`
+  - `veritysetup-pre.target`
+  - `first-boot-complete.target`
+    - e.g., `systemd-firstboot.service` pulls it in
+    - consumers can have `After=first-boot-complete.target`
+  - `getty-pre.target`
+  - `local-fs-pre.target`
+  - `network.target`
+    - e.g., `systemd-networkd.service` pulls it in
+    - consumers can have `After=network.target`
+  - `network-pre.target`
+  - `nss-lookup.target`
+    - e.g., `systemd-resolved.service` pulls it in
+    - consumers can have `After=nss-lookup.target`
+  - `nss-user-lookup.target`
+  - `remote-fs-pre.target`
+  - `rpcbind.target`
+  - `ssh-access.target`
+  - `time-set.target`
+    - e.g., `systemd-timesyncd.service` pulls it in
+    - consumers can have `After=time-set.target`
+  - `time-sync.target`
+    - e.g., `systemd-time-wait-sync.service` pulls it in
+    - consumers can have `After=time-sync.target`
+- special slice units
+  - `-.slice`
+  - `machine.slice`
+  - `capsule.slice`
+  - `system.slice`
+  - `user.slice`
+- rest
+  - `-.mount`
+  - `dbus.service`
+  - `dbus.socket`
+  - `display-manager.service`
+    - e.g., `gdm.service` has `Alias=display-manager.service`
+  - `init.scope`
+  - `syslog.socket`
+  - `system-update-cleanup.service`
+
+## Bootup
 
 - `man bootup`
   - systemd will activate `default.target` on boot
