@@ -1,10 +1,79 @@
 systemd special
 ===============
 
+## Bootup
+
+- `man bootup`
+- `systemctl start default.target`
+  - this is the default on boot, unless overriden by `systemd.unit=`
+  - `systemctl set-default <unit>.target` sets the default unit
+    - it is `graphical.target` by default
+    - the other choice is `multi-user.target`
+- `systemctl start <poweroff|reboot>.target`
+  - this powers off or reboots the machine
+  - fwiw, `halt.target` halts the system, making it safe to cut the power but
+    does not cut the power
+- `systemctl list-dependencies graphical.target`, focusing on target units
+  - `graphical.target`, `Requires=multi-user.target`
+    - `multi-user.target`, `Requires=basic.target`
+      - `basic.target`, `Requires=sysinit.target`, `Wants=sockets.target timers.target paths.target slices.target`
+        - `paths.target`
+        - `slices.target`
+        - `sockets.target`
+        - `sysinit.target`, `Wants=local-fs.target swap.target`
+          - `cryptsetup.target`, meson symlink in `sysinit.target.wants/`
+          - `integritysetup.target`, meson symlink in `sysinit.target.wants/`
+          - `local-fs.target`
+          - `swap.target`
+          - `veritysetup.target`, meson symlink in `sysinit.target.wants/`
+        - `timers.target`
+      - `getty.target`, meson symlink in `multi-user.target.wants/`
+      - `machines.target`, `WantedBy=multi-user.target`
+      - `remote-fs.target`, `WantedBy=multi-user.target`
+
+
+  - it depends on `multi-user.target` and a few other services
+  - `display-manager.service` is one of the services, which is usually a
+    symlink to `gdm.service`
+    - `gdm.service` has `Alias=display-manager.service` to create the symlink
+    - some distros remove the line and manage the symlink in their package
+      managers instead
+- `systemctl list-dependencies multi-user.target`
+  - it depends on several targets and many services
+  - targets are `basic.target`, `getty.target`, `machines.target`, and
+    `remote-fs.target`
+  - services include `dbus.service`, `ssh.service`, `systemd-logind.service`,
+    `systemd-user-sessions.service`, etc.
+- `systemctl list-dependencies basic.target`
+  - it depends on several targets and others
+  - targets are `paths.target`, `slices.target`, `sockets.target`,
+    `sysinit.target`, and `timers.target`
+- `systemctl list-dependencies sysinit.target`
+  - it depends on several targets and many services
+  - targets are `cryptsetup.target`, `integritysetup.target`,
+    `local-fs.target`, `swap.target`, and `veritysetup.target`
+  - services include `systemd-journald.service`, `systemd-timesyncd.service`,
+    `systemd-udevd.service`, etc.
+- shutdown is a bit different
+  - `poweroff.target` depends on `systemd-poweroff.service`
+  - `systemd-poweroff.service` depends on `final.target`, `shutdown.target`,
+    and `umount.target`
+  - by default, a service unit has `DefaultDependencies=yes` which implies
+    `Requires=sysinit.target` and `Conflicts=shutdown.target`
+    - this means a service is stopped by default before `shutdown.target`
+
 ## Built-in Units
 
 - systemd comes with a lot of built-in units
   - they are under `units/` in the source tree
+- `presets/90-systemd.preset` specifies preset
+  - on first boot, `manager_preset_all` applies `UNIT_FILE_PRESET_ENABLE_ONLY`
+    automatically
+  - these targets are enabled
+    - `machines.target`, `WantedBy=multi-user.target`
+    - `reboot.target`, `Alias=ctrl-alt-del.target`
+    - `remote-cryptsetup.target`, `WantedBy=multi-user.target`
+    - `remote-fs.target`, `WantedBy=multi-user.target`
 - `units/meson.build` also creates symlinks for the built-in units
   - `cryptsetup.target` under `sysinit.target.wants/`
   - `dev-hugepages.mount` under `sysinit.target.wants/`
@@ -205,43 +274,3 @@ systemd special
   - `init.scope`
   - `syslog.socket`
   - `system-update-cleanup.service`
-
-## Bootup
-
-- `man bootup`
-  - systemd will activate `default.target` on boot
-    - it is usually a symlink to `graphical.target` or `multi-user.target`
-  - systemd will activate `poweroff.target` or `reboot.target` on shutdown
-    - fwiw, `halt.target` halts the system, making it safe to cut the power
-      but does not cut the power
-- `systemctl list-dependencies graphical.target`
-  - it depends on `multi-user.target` and a few other services
-  - `display-manager.service` is one of the services, which is usually a
-    symlink to `gdm.service`
-    - `gdm.service` has `Alias=display-manager.service` to create the symlink
-    - some distros remove the line and manage the symlink in their package
-      managers instead
-- `systemctl list-dependencies multi-user.target`
-  - it depends on several targets and many services
-  - targets are `basic.target`, `getty.target`, `machines.target`, and
-    `remote-fs.target`
-  - services include `dbus.service`, `ssh.service`, `systemd-logind.service`,
-    `systemd-user-sessions.service`, etc.
-- `systemctl list-dependencies basic.target`
-  - it depends on several targets and others
-  - targets are `paths.target`, `slices.target`, `sockets.target`,
-    `sysinit.target`, and `timers.target`
-- `systemctl list-dependencies sysinit.target`
-  - it depends on several targets and many services
-  - targets are `cryptsetup.target`, `integritysetup.target`,
-    `local-fs.target`, `swap.target`, and `veritysetup.target`
-  - services include `systemd-journald.service`, `systemd-timesyncd.service`,
-    `systemd-udevd.service`, etc.
-- shutdown is a bit different
-  - `poweroff.target` depends on `systemd-poweroff.service`
-  - `systemd-poweroff.service` depends on `final.target`, `shutdown.target`,
-    and `umount.target`
-  - by default, a service unit has `DefaultDependencies=yes` which implies
-    `Requires=sysinit.target` and `Conflicts=shutdown.target`
-    - this means a service is stopped by default before `shutdown.target`
-
