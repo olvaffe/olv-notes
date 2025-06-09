@@ -22,7 +22,7 @@ Kernel exec
     - `bprm->p` points to `vma->vm_end - sizeof(void *)`
 - `count_strings_kernel` inits `bprm->argc` and `bprm->envc`
 - `bprm_stack_limits` calculates stack size limit
-  - `limit` is typically 6MB
+  - `limit` is typically 2MB
     - `_STK_LIM` is 8MB
     - `bprm->rlim_stack.rlim_cur` is typically 8MB
   - `bprm->argmin` is `bprm->p - limit`, which caps how much the stack can
@@ -42,9 +42,41 @@ Kernel exec
   - `setup_new_exec`
   - `setup_arg_pages`
   - `finalize_exec`
-  - `START_THREAD` calls `start_thread` to update regs, including ip and sp
-    - on x86, when `ret_from_fork_asm` (pid 1) or `entry_SYSCALL_64` (others)
-      returns to userspace, it returns to the elf file entry point
+  - `START_THREAD` calls `start_thread` to update `pt_regs`
+    - on x86, `pt_regs` is at the top of the kernel stack
+    - when `ret_from_fork_asm` (pid 1) or `entry_SYSCALL_64` (others) returns
+      to userspace,
+      - `POP_REGS` pops first part of `pt_regs` to restore userspace regs
+      - `iretq` pops second part of `pt_regs` to restore rip, rsp, etc.
+      - the cpu returns to elf entrypoint with user stack
+
+## Process User Stack
+
+- `bprm_mm_init` mmaps user stack
+  - `bprm->mm` is the task `mm_struct`
+  - `bprm->vma` is the stack vma
+    - `vm_end` is `STACK_TOP_MAX` (`0x7ffffffff000` on x86)
+    - `vm_start` is 1 page below (`0x7fffffffe000` on x86)
+    - flags contains `VM_GROWSDOWN`
+  - `bprm->p` points to `vma->vm_end - sizeof(void *)`
+- `bprm_stack_limits` sets string pool limit
+  - `limit` is typically capped by `bprm->rlim_stack.rlim_cur / 4` (2MB)
+  - there will also be `bprm->argc` plus `bprm->envc` pointers
+  - `bprm->argmin = bprm->p - limit`
+- first `copy_string_kernel` copies `bprm->filename` to the stack
+  - this copies to top of stack
+  - `bprm->p` is decremented
+- first `copy_strings` copies `bprm->envp` to the stack
+- second `copy_strings` copies `bprm->argv` to the stack
+- `setup_arg_pages`
+- `create_elf_tables`
+  - it reserves space from the stack and add values from bottom to top
+    - `bprm->argc` for argc
+    - `bprm->argc` pointers to `bprm->argv` string pool
+    - 0 to delimit argv
+    - `bprm->envc` pointers to `bprm->envp` string pool
+    - 0 to delimit envp
+    - auxv
 
 ## `execve()`
 
