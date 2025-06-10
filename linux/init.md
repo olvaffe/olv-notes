@@ -52,20 +52,23 @@ Kernel init
   - `ftrace_init` inits ftrace
   - `sched_init` inits the scheduler
   - `workqueue_init_early` performs first stage of workqueue init
+    - works can be queued but there is no worker yet
   - `rcu_init` inits rcu
   - `trace_init` inits tracing
-  - `early_irq_init` inits the irq subsystem and calls
-    `arch_early_irq_init`
+  - `early_irq_init` inits the irq subsystem, allocs some `irq_desc`, and
+    calls `arch_early_irq_init`
   - `init_IRQ` inits all hw irqs
-  - `tick_init` inits periodic kernel ticks
-  - `init_timers` inits timers
-  - `hrtimers_init` inits high-resolution timers
+  - `tick_init` inits periodic kernel tick subsys
+  - `timers_init` inits timer subsys
+  - `hrtimers_init` inits high-resolution timer subsys
   - `softirq_init` inits softirq subsystem
   - `timekeeping_init` inits timekeeping (for `ktime_get*`)
-  - `time_init` is arch-specific
-    - `of_clk_init` to init `clock_provider`
-    - `timer_probe` to scan devices and match drivers
-      - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
+  - `time_init` registers clock sources
+    - on x86, it regs hpet and tsc
+    - on arm,
+      - `of_clk_init` to init `clock_provider`
+      - `timer_probe` to scan devices and match drivers
+        - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
   - `console_init` inits console (for printk)
     - this calls `console_initcall` initcalls
@@ -118,7 +121,7 @@ Kernel init
   - these init functions are marked `__init` and will be freed
   - `smp_prepare_cpus` prepares non-boot cpus
     - x86 calls `native_smp_prepare_cpus`
-  - `workqueue_init` inits workqueue
+  - `workqueue_init` creates workers to run works
   - `do_pre_smp_initcalls` runs `early_initcall` calls
   - `smp_init` brings up non-boot cpus
     - `idle_threads_init` forks off per-cpu idle tasks as threads of PID 0
@@ -128,6 +131,7 @@ Kernel init
         - at the end, it calls `initial_code` which points to
           `start_secondary`
   - `sched_init_smp` inits scheduler for SMP
+  - `workqueue_init_topology` inits unbound cpu pods after smp
   - `page_alloc_init_late` does late-init for the buddy allocator
   - `do_basic_setup` does basic setup
     - `driver_init` inits driver subsystems
