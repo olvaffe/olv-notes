@@ -77,7 +77,7 @@ Kernel init
   - `acpi_early_init` inits acpi
   - `late_time_init` is deferred `time_init`
     - on x86, it points to `x86_late_time_init`
-  - `sched_clock_init` inits jiffy-based clock
+  - `sched_clock_init` inits for `sched_clock`
   - `calibrate_delay` computes BogoMIPS
   - `arch_cpu_finalize_init` late-inits the boot cpu
   - `pid_idr_init` inits pid allocator

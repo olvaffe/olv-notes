@@ -16,6 +16,17 @@ Kernel Time
   - `__clocksource_update_freq_scale` initializes `mult` and `shift` from
     `scale` and `freq`
 
+## `sched_clock`
+
+- `sched_clock` is a function that returns nanoseconds since boot
+  - it is used by scheduler, printk timestamp, etc.
+  - it is like `clocksource`, but is cheaper at the cost of accuracy
+- on x86, the arch provides `sched_clock` using tsc
+- on arm, `CONFIG_GENERIC_SCHED_CLOCK` provides `sched_clock`
+  - `sched_clock_register` registers a read callback for `sched_clock`
+  - if no better read callback is registered, it defaults to the jiffy-based
+    `jiffy_sched_clock_read`
+
 ## `clock_event_device`
 
 - a `clock_event_device` is a device that can deliver an interrupt in the
