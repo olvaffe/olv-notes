@@ -4,6 +4,9 @@ Kernel Time
 ## `clocksource`
 
 - a `clocksource` is a counter that increments at a constant rate
+- the main consumer is `timekeeping.c`
+  - `tk_clock_read` reads the clock cycles
+  - `timekeeping_cycles_to_ns` converts cycles to ns
 - examples of `clocksource` on x86 in boot order
   - `refined_jiffies`, rating 2
   - `clocksource_hpet`, rating 250
@@ -11,6 +14,7 @@ Kernel Time
   - `clocksource_jiffies`, rating 1
   - `clocksource_acpi_pm`, rating 200
   - `clocksource_tsc`, rating 300, `CLOCK_SOURCE_VALID_FOR_HRES`
+- on arm, `clocksource` is mostly provided by `drivers/clocksource`
 - `clocksource_register_khz` registers a khz clocksource
   - `scale * freq` is the frequency of counter increments per second
   - `__clocksource_update_freq_scale` initializes `mult` and `shift` from
@@ -31,6 +35,7 @@ Kernel Time
 
 - a `clock_event_device` is a device that can deliver an interrupt in the
   specified future periodically or one-shot
+- the main consumer is the tick subsystem
 - x86 Hardware
   - CMOS Clock.  Could be programmed to alarm.  IRQ 8.
   - TSC: Time Stamp Counter, starting Pentium.  Same freq as the CPU.
@@ -106,6 +111,7 @@ Kernel Time
     - `update_process_times` charges 1 tick to the current process
       - `run_local_timers` raises `TIMER_SOFTIRQ` and others
       - `scheduler_tick` adds the tick to the scheduler
+      - `run_posix_cpu_timers` checks if any userspace posix timer fires
   - `clockevents_program_event` arms the clockevent dev again if it is in
     `CLOCK_EVT_STATE_ONESHOT`
 - there are 3 tick modes
@@ -133,15 +139,14 @@ Kernel Time
     - on x86, wall time is from `mach_get_cmos_time` and boot time is from
       `native_sched_clock` which uses tsc
     - on arm64, wall time is dummy and boot time is from generic `sched_clock`
-      which uses jiffies
     - boot time is zeroed if it is greater than wall time
       - at this point, `wall_time + wall_to_mono = boot_offset`
   - `ntp_init` mainly provides `__do_adjtimex` which implements ntp time
     adjustment algorithm
   - `clocksource_default_clock` returns `clocksource_jiffies`
   - `tk_setup_internals` sets up the clocksource
-  - `tk_set_xtime`, `tk_set_wall_to_mono` and `timekeeping_update` update for
-    the first time since boot
+  - `tk_set_xtime`, `tk_set_wall_to_mono` and `timekeeping_update_from_shadow`
+    update for the first time since boot
 - `update_wall_time` is called on ticks
   - `timekeeping_advance` reads the clocksource with `tk_clock_read`,
     calculates the delta since `cycle_last`, and applies the delta with
@@ -151,8 +156,8 @@ Kernel Time
       - `tk->tkr_mono.xtime_nsec`: nanoseconds part of wall time
       - `tk->xtime_sec`: seconds part of wall time
       - and others
-  - `timekeeping_update` calls `tk_update_ktime_data` to update fields used by
-    ktime
+  - `timekeeping_update_from_shadow` calls `tk_update_ktime_data` to update
+    fields used by ktime
     - `tk->tkr_mono.base`: current base monotonic ktime in nanoseconds
     - `tk->ktime_sec`: current monotonic ktime in seconds
     - and others
@@ -172,6 +177,76 @@ Kernel Time
 - `clock_gettime(CLOCK_REALTIME)` calls `posix_get_realtime_timespec` which
   calls `ktime_get_real_ts64`
   - this is similar to `ktime_get_ts64` but without `tk->wall_to_monotonic`
+
+## hrtimer
+
+- the functionality is always compiled
+- time-related posix syscalls make use of hrtimer
+  - `timer_create -> common_timer_create -> hrtimer_setup`
+  - `timer_gettime -> common_timer_get -> common_hrtimer_remaining`
+  - `timer_settime -> common_timer_set -> common_hrtimer_arm`
+  - `clock_nanosleep -> common_nsleep_timens -> hrtimer_nanosleep`
+- `clock_event_device` irq handler
+  - `tick_handle_periodic` is the initial handler
+    - `-> tick_periodic -> update_process_times -> run_local_timers`
+  - if nohz, `tick_nohz_switch_to_nohz` switches to `tick_nohz_lowres_handler`
+    - `-> tick_nohz_handler -> tick_sched_handle -> update_process_times ...`
+  - if `CONFIG_HIGH_RES_TIMERS`, `hrtimer_switch_to_hres` switches
+    `hrtimer_interrupt`
+    - `-> __hrtimer_run_queues -> __run_hrtimer -> tick_nohz_handler ...`
+- <https://www.kernel.org/doc/html/latest/timers/highres.html>
+  - `Hrtimers and Beyond`
+  - Abstraction
+    - Clock Source Management
+      - abstract read-only clock sources
+      - each clock souce expresses the time as a monotonically increasing value
+      - helper functions exist to convert clock source's value into nanosecond
+      - possible to list or choose from available sources
+    - Clock Synchronization
+      - reference time source (if available) is used to correct the
+        monotonically increasing value
+      - the value is read-only and thus the correction is a offset to it
+    - Time-of-day Representation
+    - Clock Event Management
+      - currently, events defined to be periodic, with fixed period defined at
+        compile time
+      - which event sources to use is hardwired arch-specific
+      - should abstract clock event sources
+    - Removing Tick Dependencies
+      - current timers assumed a fixed-period periodic event source
+  - GTOD
+    - Clock Source Management
+    - Clock Synchronization
+    - Time-of-day Representation
+  - Clock Event Management
+    - foundation for high resolution timers and dynamic tick
+    - clock event source describes its properties, per-cpu or global
+    - framework decides which function(s) are provided by which clock event
+      source
+    - periodic or oneshot modes.  And emulated periodic mode
+    - event is distributed to periodic tick, process acct., profiling, and
+      next event interrupt (e.g. hi-res timers and dyn tick)
+- `hrtimer_switch_to_hres`
+  - it is called to switch to high resolution mode when `hrtimer_run_queues`
+    is called the first time
+  - it calls `tick_init_highres`, `tick_setup_sched_timer`, and `retrigger_next_event`
+  - if hres is disabled, `tick_check_oneshot_change` calls
+    `tick_nohz_switch_to_nohz`
+    - invokes `tick_switch_to_oneshot` with `event_handler`
+      `tick_nohz_handler`
+    - sets `nohz_mode` to `NOHZ_MODE_LOWRES`
+    - initializes `sched_timer` without activating (it is used to record
+      expiracy)
+- `tick_init_highres`
+  - turns current cpu's `tick_device` to oneshot mode with `event_handler`
+    `hrtimer_interrupt`
+  - invokes `tick_broadcast_switch_to_oneshot` to turn broadcast event device
+    to oneshot mode, with handler `tick_handle_oneshot_broadcast`
+  - The next_event is set to `tick_next_period`
+- `tick_setup_sched_timer`
+  - install a hrtimer to emulate ticks
+  - in its callback, `tick_sched_timer`, `tick_sched_do_timer` and
+    `tick_sched_handle` are called and `HRTIMER_RESTART` is returned
 
 ## Boot (x86)
 
@@ -238,53 +313,11 @@ Kernel Time
   - hrtimer unit is nanosecond
   - timers are kept in a time-sorted, per-cpu, rb-tree
   - not super high resolution due to softirq
-- <https://www.kernel.org/doc/html/latest/timers/highres.html>
-  - `Hrtimers and Beyond`
-  - Abstraction
-    - Clock Source Management
-      - abstract read-only clock sources
-      - each clock souce expresses the time as a monotonically increasing value
-      - helper functions exist to convert clock source's value into nanosecond
-      - possible to list or choose from available sources
-    - Clock Synchronization
-      - reference time source (if available) is used to correct the
-        monotonically increasing value
-      - the value is read-only and thus the correction is a offset to it
-    - Time-of-day Representation
-    - Clock Event Management
-      - currently, events defined to be periodic, with fixed period defined at
-        compile time
-      - which event sources to use is hardwired arch-specific
-      - should abstract clock event sources
-    - Removing Tick Dependencies
-      - current timers assumed a fixed-period periodic event source
-  - GTOD
-    - Clock Source Management
-    - Clock Synchronization
-    - Time-of-day Representation
-  - Clock Event Management
-    - foundation for high resolution timers and dynamic tick
-    - clock event source describes its properties, per-cpu or global
-    - framework decides which function(s) are provided by which clock event
-      source
-    - periodic or oneshot modes.  And emulated periodic mode
-    - event is distributed to periodic tick, process acct., profiling, and
-      next event interrupt (e.g. hi-res timers and dyn tick)
 - Implementation
   - during boot time (until `device_initcall`), the clocksource used is always
     jiffies.
   - after then (after `clocksource_done_booting`), `clocksource_select` checks
     for a new timesource and switch to it
-- `hrtimer_switch_to_hres`
-  - it is called to switch to high resolution mode when `hrtimer_run_queues` is called the first time
-  - it calls `tick_init_highres`, `tick_setup_sched_timer`, and `retrigger_next_event`
-  - if hres is disabled, `tick_check_oneshot_change` calls
-    `tick_nohz_switch_to_nohz`
-    - invokes `tick_switch_to_oneshot` with `event_handler`
-      `tick_nohz_handler`
-    - sets `nohz_mode` to `NOHZ_MODE_LOWRES`
-    - initializes `sched_timer` without activating (it is used to record
-      expiracy)
 - `tick_nohz_stop_sched_tick`
   - invoked when cpu enters idle or `irq_exit`
   - invokes `tick_nohz_start_idle` to update the status of `tick_sched`
@@ -297,16 +330,6 @@ Kernel Time
     seconds.  timer may fire prematurely.
 - `tick_nohz_idle_restart_tick`
   - invoked when cpu leaves idle
-- `tick_init_highres`
-  - turns current cpu's `tick_device` to oneshot mode with `event_handler`
-    `hrtimer_interrupt`
-  - invokes `tick_broadcast_switch_to_oneshot` to turn broadcast event device
-    to oneshot mode, with handler `tick_handle_oneshot_broadcast`
-  - The next_event is set to `tick_next_period`
-- `tick_setup_sched_timer`
-  - install a hrtimer to emulate ticks
-  - in its callback, `tick_sched_timer`, `tick_sched_do_timer` and
-    `tick_sched_handle` are called and `HRTIMER_RESTART` is returned
 - `tick_handle_oneshot_broadcast`
   - `tick_do_broadcast` is called on cpus with expired `next_event`.  If it is
     cpu-of-execution, its `tick_device->evtdev->event_handler` is called for the
