@@ -47,6 +47,11 @@ Kernel clk
   - this allocs a `of_clk_provider` and adds it to `of_clk_providers`
   - this allows a consumer to call `of_clk_get_by_name` later to look up a
     clock from the controller
+- if early init is needed, `CLK_OF_DECLARE_DRIVER` declares an early driver
+  - `vmlinux.lds.h` has `CLK_OF_TABLES` to collect them to `__clk_of_table`
+    array
+    - the last element is `__clk_of_table_sentinel`
+  - `of_clk_init` uses `__clk_of_table` to probe clks
 
 ## Consumers
 

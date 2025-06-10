@@ -65,10 +65,9 @@ Kernel init
   - `timekeeping_init` inits timekeeping (for `ktime_get*`)
   - `time_init` registers clock sources
     - on x86, it regs hpet and tsc
-    - on arm,
-      - `of_clk_init` to init `clock_provider`
-      - `timer_probe` to scan devices and match drivers
-        - drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
+    - on arm, `of_clk_init` regs clks and `timer_probe` regs clock sources
+      - clk drivers use `CLK_OF_DECLARE`
+      - clock source drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
   - `console_init` inits console (for printk)
     - this calls `console_initcall` initcalls
