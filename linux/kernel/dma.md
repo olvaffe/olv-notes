@@ -28,39 +28,6 @@ Kernel and DMA
       address is not from the linear map.  Instead, a UC or WC vmap is set up.
     - because it uses FLATMEM memory model,j:
 
-## DMA Engine
-
-- some systems have devices that share an external dma engine
-  - some devices have their own built-in dma engines insteadd
-  - external dma engines are under `drivers/dma`
-  - not to be confused with dma mapping, which is under `kernel/dma`
-    - a page must be dma-mapped to be dma-able by built-in or external engines
-- a (external) dma engine has several channels and several request lines
-  - a request line is a pysical connection from a device to the engine
-  - a channel is what does the transfers
-- A dma engine is represented by a `dma_device` and is registered with
-  `dma_async_device_register`
-  - `dma_cap_set` sets what the engine is capable of
-    - `DMA_MEMCPY`, memory-to-memory copies
-    - `DMA_SLAVE`, device-to-memory copies
-- Using a dma engine
-  - allocate a dma slave channel
-    - `dma_request_chan`
-  - config the channel
-    - `dmaengine_slave_config`
-  - get the descriptor for a transaction
-    - `dmaengine_prep_slave_sg` transfers sg list to/from device
-    - `dmaengine_prep_dma_cyclic` transfers ring buffer to/from device
-    - direction, `dma_transfer_direction`, is indicated
-      - `DMA_MEM_TO_MEM`
-      - `DMA_MEM_TO_DEV`
-      - `DMA_DEV_TO_MEM`
-      - `DMA_DEV_TO_DEV`
-  - submit the transaction to the pending queue
-    - `dmaengine_submit`
-  - issue transfers
-    - `dma_async_issue_pending`
-
 ## DMA Mapping
 
 - It is an API a platform could implement, or not.
