@@ -52,7 +52,7 @@ Kernel vmscan
   - `LRU_INACTIVE_FILE`
   - `LRU_ACTIVE_FILE`
   - `LRU_UNEVICTABLE`
-- `add_page_to_lru_list` adds a page to one of the lists
+- `lruvec_add_folio` adds a page to one of the lists
   - it actually adds the folio containing the page to the list
 
 ## kswapd
