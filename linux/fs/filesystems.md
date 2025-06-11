@@ -79,17 +79,6 @@ VFS
   - it is placed in the process's file descriptor table
   - two fds might point to the same file (e.g., dup)
 
-## Initialization
-
-- `mnt_init` creates `fs_kobj`, `/sys/fs`
-  - `/sys/fs/bpf` is from `bpf_init`
-  - `/sys/fs/cgroup` is from `cgroup_init`
-  - `/sys/fs/ext4` is from `ext4_init_sysfs`
-  - `/sys/fs/fuse` is from `fuse_sysfs_init`
-  - `/sys/fs/pstore` is from `pstore_init_fs`
-  - `/sys/fs/resctrl` is from `rdtgroup_init`
-  - `/sys/fs/virtiofs` is from `virtio_fs_sysfs_init`
-
 ## Registering and Mounting a fs
 
 - A fs is registered with `register_filesystem(struct file_system_type *);`
@@ -148,18 +137,3 @@ VFS
   - it calls `alloc_file_pseudo`, which
     - calls `d_alloc_pseudo` to create a dentry with the given name
     - calls `alloc_file` to create a file and install the given fops
-
-## Extended Attributes
-
-- tools
-  - `setfacl` calls `setxattr` with `system.posix_acl_access`
-  - `setcap` calls `setxattr` with `security.capability`
-  - `setfattr` calls `setxattr` with the specified name
-- `setxattr` syscall
-  - if the name is `system.posix_acl_access`, `do_set_acl` calls `vfs_set_acl`
-    which calls `inode->i_op->set_acl`
-  - otherwise, `vfs_setxattr` calls `xattr_resolve_name` to resolve the name
-    to a handler
-- ext4
-  - `CONFIG_EXT4_FS_POSIX_ACL` enables `ext4_set_acl` callback
-  - `CONFIG_EXT4_FS_SECURITY` enables `ext4_xattr_security_handler` handler

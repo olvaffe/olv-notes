@@ -1,6 +1,17 @@
 VFS Mount
 =========
 
+## Initialization
+
+- `mnt_init` creates `fs_kobj`, `/sys/fs`
+  - `/sys/fs/bpf` is from `bpf_init`
+  - `/sys/fs/cgroup` is from `cgroup_init`
+  - `/sys/fs/ext4` is from `ext4_init_sysfs`
+  - `/sys/fs/fuse` is from `fuse_sysfs_init`
+  - `/sys/fs/pstore` is from `pstore_init_fs`
+  - `/sys/fs/resctrl` is from `rdtgroup_init`
+  - `/sys/fs/virtiofs` is from `virtio_fs_sysfs_init`
+
 ## `mount`
 
 - the `mount` syscall takes
