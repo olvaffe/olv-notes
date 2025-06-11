@@ -195,7 +195,7 @@ Meson
     [constants]
     toolchain_prefix = '/usr/bin/aarch64-linux-gnu-'
     sysroot = '...'
-    common_flags = ['--sysroot', sysroot]
+    common_flags = ['--sysroot=' + sysroot]
 
     [binaries]
     ar = toolchain_prefix + 'ar'
@@ -247,10 +247,11 @@ Meson
     cpu = 'i686'
     endian = 'little'
 - target 32-bit arm
+
     [constants]
     toolchain_prefix = '/usr/bin/arm-linux-gnueabihf-'
     sysroot = '...'
-    common_flags = ['--sysroot', sysroot]
+    common_flags = ['--sysroot=' + sysroot]
 
     [binaries]
     ar = toolchain_prefix + 'ar'
@@ -276,5 +277,3 @@ Meson
     endian = 'little'
 - x86-64
   - both `cpu_family` and `cpu` are `x86_64`
-- there seems to be cases where `SYSROOT=<sysroot>` env var works better than
-  `--sysroot` flag

@@ -21,6 +21,7 @@ GNU Make
     - recipe lines start with a tab
     - they determine how to update `targets`
   - long lines can be splitted by a backslash followed by a newline
+  - `targets : prerequisites ; recipe` is also supported
 - 4.3 Types of Prerequisites
   - `targets : normal-prerequisites | order-only-prerequisites`
   - normal prerequisites
@@ -34,17 +35,39 @@ GNU Make
 - 4.6 Phony Targets
   - `.PHONY: foo`
   - `foo` is always considered out of date
+- 4.10 Multiple Targets in a Rule
+  - `target1 target2: prerequisite`
 - 4.11 Multiple Rules for One Target
+  - `target: prerequisite1`
+  - `target: prerequisite2`
   - the rules are merged into one
 - 4.12 Static Pattern Rules
-  - `targets: target-pattern: prereq-pattern`
+  - `targets ...: target-pattern: prereq-patterns ...`
+    - e.g., `foo.o bar.o: %.o: %.c`
+  - allow multiple targets in a rule to have analogous, but not identical
+    prerequisites
+- 4.13 Double-Colon Rules
 
 ## Chapter 5. Writing Recipes in Rules
 
+- 5.1 Recipe Syntax
+  - most lines are in make syntax
+  - except those begin with a tab, which are in shell syntax
+  - rule-context: after a rule is defined, and before another rule or variable
+    definition
+- 5.2 Recipe Echoing
+  - `@` silences a command
+- 5.5 Errors in Recipes
+  - `-` makes a failue non-fatal
 - 5.7 Recursive Use of make
   - `export <variable>` exports a variable to submake
 
 ## Chapter 6. How to Use Variables
+
+- 6.3 Advanced Features for Reference to Variables
+  - `$(var:.c=.o)` is equivalent to `$(patsubst %.c,%.o,$(var))`
+- 6.11 Target-specific Variable Values
+  - `target: VAR := 3`
 
 ## Chapter 7. Conditional Parts of Makefiles
 
@@ -53,6 +76,17 @@ GNU Make
 ## Chapter 9. How to Run make
 
 ## Chapter 10. Using Implicit Rules
+
+- 10.5 Defining and Redefining Pattern Rules
+  - implicit rule is defined by a pattern rule
+    - has exactly one `%` in its target
+  - automatic variables
+    - `$@` is the target
+    - `$<` is the first prerequisite
+    - `$^` is all prerequisites
+    - `$*` matches the stem of a (static) pattern rule
+- 10.7 Old-Fashioned Suffix Rules
+  - `.c.o:` is equivalent to `%.o: %.c`
 
 ## Chapter 11. Using make to Update Archive Files
 
@@ -65,34 +99,3 @@ GNU Make
 ## Chapter 15. Incompatibilities and Missing Features
 
 ## Chapter 16. Makefile Conventions
-
-- keywords
-
-    target: VAR := 3
-    target: A B | C D ; echo $(VAR)
-    	echo $(VAR)
-    
-    keywords: target-specific variable, order-only prerequisite, first command
-- most lines are in make syntax
-- except those begin with a tab, which are in shell syntax
-- rule-context: after a rule is defined, and before another rule or variable definition
-- `$(var:.c=.o)` is equivalent to `$(patsubst %.c,%.o,$(var))`
-  - keyword: `Substitution References`
-- `@` silences a command; `-` makes a failue non-fatal.
-  - keywords: `command echoing`, `errors in commands`
-- Types of rules
-  - ordinary rule
-    - can have multiple targets in a rule
-    - can have multiple rules for one target
-  - static pattern rule
-    - allow multiple targets in a rule to have analogous, but not identical
-      prerequisites.
-    - `targets ...: target-pattern: prereq-patterns ...`
-  - double-colon rule
-  - implicit rule
-    - is defined by a pattern rule
-    - has exactly one `%` in its target.
-    - `.c.o` is equivalent to `%.o: %.c`
-      - the former is called suffix rule
-- `$@`, `$<`, `$^`, and `$*`
-  - `$*` matches the stem of a (static) pattern rule
