@@ -742,6 +742,32 @@ DRM panthor
     req and gets unexpected states
   - from `cs_slot_process_fatal_event_locked` when `CS_FATAL` is
     `DRM_PANTHOR_EXCEPTION_CS_UNRECOVERABLE`
+
+## Experiments with Error Recovery
+
+- when a shader has a infinite loop, it hits `PROGRESS_TIMEOUT_CYCLES`,
+  `JOB_TIMEOUT_MS`, or both
+  - if `PROGRESS_TIMEOUT_CYCLES`, we get a job irq
+    - `process_fw_events_work` is the bottom half
+    - `csg_slot_process_progress_timer_event_locked` handles
+      `CSG_PROGRESS_TIMER_EVENT`
+      - it prints `CSG slot %d progress timeout`
+      - it marks `group->timedout`
+      - it queues `tick_work`
+    - `tick_work` terminates the group
+      - because `group_can_run` will return false for the group, the group is
+        on `ctx->old_groups`
+      - `tick_ctx_apply` will `CSG_STATE_TERMINATE` the group
+      - `tick_ctx_cleanup` will queue `group_term_work`
+    - `group_term_work` post-processes the terminated group
+      - all fences are signaled with `-ETIMEDOUT`
+    - umd queries `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`, sees `group->timedout`,
+      and reports device lost
+  - if `JOB_TIMEOUT_MS`, `queue_timedout_job` is called
+    - it prints `job timeout`
+    - it marks `group->timedout`
+    - it queues `tick_work`
+    - the rest is the same
 - devcoredump ideas
   - on mmu fault, `panthor_mmu_irq_handler` can, instead of marking
     `vm->unhandled_fault`, collect per-vm `AS_FAULTSTATUS` and
