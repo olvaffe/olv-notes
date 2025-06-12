@@ -770,7 +770,44 @@ DRM panthor
     - it queues `tick_work`
     - the rest is the same
 - when a bo is freed prematurely,
-  -
+  - we get an mmu irq, handled by `panthor_mmu_irq_handler`
+    - it prints `Unhandled Page fault in AS%d at VA 0x%016llX`
+    - it mask out the AS for further irqs
+    - it marks `vm->unhandled_fault`
+    - `panthor_mmu_as_disable` disables the vm
+      - cs appears blocked by mmu for the memory access
+      - by disabling the vm, the fault is propgated and cs gets a fatal
+        `CS_BUS_FAULT`
+      - otherwise, we have to wait until cs times out
+    - `panthor_sched_report_mmu_fault` queues `tick_work`
+  - we also get a job irq, handled by `panthor_job_irq_handler`
+    - this only because `panthor_mmu_as_disable` disables mmu
+      - the offending cs gets fatal `CS_BUS_FAULT`
+      - the remaining cs gets faulty `CS_RES_TERM`
+      - some cs get both
+    - `process_fw_events_work` is the bottom half
+    - `sched_process_csg_irq_locked` handles the offending csg
+    - `cs_slot_process_irq_locked` handles each cs
+    - `cs_slot_process_fatal_event_locked` handles `CS_FATAL`
+      - it marks `group->fatal_queues`
+      - it queues `tick_work` or `panthor_device_reset_work` depending on the
+        exception type
+      - it prints `CSG slot %d CS slot: %d ... CS_FATAL...`
+    - `cs_slot_process_fault_event_locked` handles `CS_FAULT`
+      - it marks some fences error on `CS_INHERIT_FAULT`
+        - `CS_INHERIT_FAULT` means the cs is executing `SYNC_WAIT` and
+          receives a propagated error
+        - marking a fence error does not signal the fence, and is mostly
+          useless?
+      - it prints `CSG slot %d CS slot: %d ... CS_FAULT...`
+  - `tick_work`
+    - it checks `panthor_vm_has_unhandled_faults` and calls
+      `sched_process_csg_irq_locked` too
+      - if `tick_work` races with `process_fw_events_work`, it makes sure
+        `group->fatal_queues` is set for this tick
+    - `group_can_run` returns false if `group->fatal_queues`
+    - similarly to job timeout, `tick_ctx_apply` terminates the group and
+      `group_term_work` signals all fences with `-EINVAL` or `-ECANCELED`
 - devcoredump ideas
   - on mmu fault, `panthor_mmu_irq_handler` can, instead of marking
     `vm->unhandled_fault`, collect per-vm `AS_FAULTSTATUS` and
