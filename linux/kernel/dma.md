@@ -1,6 +1,65 @@
 Kernel and DMA
 ==============
 
+## Configs
+
+- every source file is optional
+  - `obj-$(CONFIG_HAS_DMA)                   += mapping.o direct.o`
+    - arm and x86
+  - `obj-$(CONFIG_DMA_OPS_HELPERS)           += ops_helpers.o`
+    - arm and x86
+  - `obj-$(CONFIG_ARCH_HAS_DMA_OPS)          += dummy.o`
+    - neither arm nor x86 by default
+  - `obj-$(CONFIG_DMA_CMA)                   += contiguous.o`
+    - optional
+  - `obj-$(CONFIG_DMA_DECLARE_COHERENT)      += coherent.o`
+    - arm but not x86
+    - `CONFIG_OF_RESERVED_MEM`
+  - `obj-$(CONFIG_SWIOTLB)                   += swiotlb.o`
+    - arm and x86
+  - `obj-$(CONFIG_DMA_COHERENT_POOL)         += pool.o`
+    - arm but not x86
+  - `obj-$(CONFIG_MMU)                       += remap.o`
+    - arm and x86
+    - used by `CONFIG_IOMMU_DMA` to translate dma-api to iommu-api
+
+## `CONFIG_OF_RESERVED_MEM`
+
+- device tree
+  - `/reserved_memory` has a child node for each reserved regions
+  - device nodes have `memory-region` to refer to the reserved regions
+- `RESERVEDMEM_OF_DECLARE` declares an init func for a dt node
+  - `CONFIG_DMA_RESTRICTED_POOL` calls `rmem_swiotlb_setup` for
+    `restricted-dma-pool`
+  - `CONFIG_DMA_DECLARE_COHERENT` calls `rmem_dma_setup` for `shared-dma-pool`
+  - `CONFIG_DMA_CMA` calls `rmem_cma_setup` for `shared-dma-pool`
+  - they are added to `__reservedmem_of_table` array
+- `fdt_scan_reserved_mem_reg_nodes` parses `/reserved-memory`
+  - for each child node, it finds the matching init function from
+    `__reservedmem_of_table` array to init the region
+- when a device driver probes a device node, and the device node has
+  `memory-region` to refer to reserved regions, the driver calls
+  `of_reserved_mem_device_init`
+- `rmem_dma_setup` requires the rmem to have no `reusable`
+  - when `rmem_dma_device_init` is called,
+    - `dma_init_coherent_memory` wraps the rmem in a `dma_coherent_mem`
+    - `dma_assign_coherent_memory` assigns the mem to `dev->dma_mem`
+- `rmem_cma_setup` requires the rmem to have `reusable`
+  - `cma_init_reserved_mem` wraps the rmem in a `cma` and adds the cma to
+    `cma_areas` array
+  -  when `rmem_cma_device_init` is called, `dev->cma_area` is set to the cma
+     area
+
+## `CONFIG_IOMMU_DMA`
+
+- it translates dma-api to iommu-api
+- the iommu subsys calls `iommu_probe_device` on devices behind iommu
+  - e.g., for platform devices, `platform_dma_configure` calls
+    `of_dma_configure` which calls `of_iommu_configure`
+- `iommu_setup_dma_ops`
+  - `dev->dma_iommu` is set if the iommu domain has `IOMMU_DOMAIN_DMA` or
+    `IOMMU_DOMAIN_DMA_FQ`
+
 ## Arch
 
 - before a device is to be probed by a driver, the bus system calls the
@@ -10,16 +69,15 @@ Kernel and DMA
     - `platform_bus_type` and `platform_dma_configure`
   - at the end of the op, `arch_setup_dma_ops` is called to set up device dma
     ops
-    - x86: no-op
-    - arm64: when the device is behind an iommu, use `iommu_dma_ops` which can
-      translate DMA-API to IOMMU-API
+    - x86: NULL
+    - arm64: NULL
     - arm: picks when the device is behind an iommu, pick `iommu_coherent_ops`
       or `iommu_ops`; otherwise, pick `arm_coherent_dma_ops` or `arm_dma_ops`
 - when `dma_map_sg` is called, `get_dma_ops` returns the device's dma ops or
   a global one returned by `get_arch_dma_ops`
-  - x86: normally NULL but can be `intel_dma_ops`, etc.
-  - arm: `arm_dma_ops` or NULL
+  - x86: NULL
   - arm64: NULL
+  - arm: `arm_dma_ops` or NULL
 - Classic ARM with MMU/IOMMU
   - when device is coherent, `dma_alloc_coherent` allocates with `alloc_pages`
     - the virtual address from the linear map is returned for CPU
@@ -124,13 +182,6 @@ Kernel and DMA
   - it can also be persistently mapped; then explicit flush/invalidate with
     `dma_sync_sg_for_device`/`dma_sync_sg_for_cpu` is required
 
-## IOMMU
-
-- when a device is connected to IOMMU on a arch, IOMMU is properly and
-  transparently set up through the dma ops returned by `get_arch_dma_ops`
-- there is a generic DMA-API to IOMMU-API glue layer,
-  `drivers/iommu/dma-iommu.c`, to simplify the implementation of the dma ops
-
 ## swiotlb
 
 - 64-bit kernels with >4GB RAM normally require swiotlb
@@ -156,19 +207,32 @@ Kernel and DMA
   - if `CONFIG_ARCH_HAS_DMA_OPS`, `get_dma_ops` returns `dev->dma_ops` or
     `get_arch_dma_ops`
     - `set_dma_ops` is barely called
-    - `get_arch_dma_ops` usually returns null
+    - `get_arch_dma_ops` typically returns null
     - this almost always returns null
   - if `CONFIG_IOMMU_DMA`, `use_dma_iommu` returns `dev->dma_iommu`
     - `iommu_probe_device` calls `iommu_setup_dma_ops` if there is iommu
     - because `iommu_def_domain_type` is usually `IOMMU_DOMAIN_DMA`,
       `dev->dma_iommu` is true
-    - `dma_alloc_direct` usually returns false as a result
+    - `dma_alloc_direct` usually returns false as a result when the device is
+      behind an iommu
   - `dma_set_mask` sets `dev->dma_mask`
   - `dma_set_coherent_mask` sets `dev->coherent_dma_mask`
 - alloc wrappers
   - `dma_alloc_coherent` calls `dma_alloc_attrs`
   - `dma_alloc_wc` calls `dma_alloc_attrs`
   - `dma_alloc_noncoherent` calls `dma_alloc_pages`
+- `dma_alloc_wc` calls `dma_alloc_attrs` with `DMA_ATTR_WRITE_COMBINE`
+  - `get_dma_ops` returns `NULL` on modern archs, because they don't have
+    `CONFIG_ARCH_HAS_DMA_OPS`
+  - `dma_alloc_from_dev_coherent` suballocates from `dev->dma_mem`, if any
+    - that is a reserved region in `/reserved_memory`
+  - `dma_alloc_direct` and `use_dma_iommu`
+    - they pick `dma_direct_alloc` or `iommu_dma_alloc` depending on whether
+      `dev->dma_iommu` is true
+  - `dma_direct_alloc`
+    - it seems to allocate contiguous pages
+  - `iommu_dma_alloc` allocs through `CONFIG_IOMMU_DMA`
+    - it seems to allocate non-contiguous pages
 - when using dma iommu,
   - `dma_alloc_pages` calls `dma_common_alloc_pages`
     - it tries `dma_alloc_contiguous` to alloc from cma first
