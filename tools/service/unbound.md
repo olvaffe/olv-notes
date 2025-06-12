@@ -44,6 +44,23 @@ unbound
   - it needs a signed cert
   - it needs the privkey
 
+## DNSSEC
+
+- new record types
+  - `RRSIG` holds the signature for a record set
+  - `DNSKEY` holds the pubkey of the signature
+  - `DS` holds the digest (hash value) of the pubkey
+    - `DS` together with `NS` records are added to the parent authoritative
+      name server
+- when a recursive name server looks up `<domain>.<tld>.`,
+  - it gets `NS`/`DS` for `<tld>.`, together with `RRSIG` and `DNSKEY`, from `.`
+    - it validates `RRSIG` using `DNSKEY`
+    - it authenticates `DNSKEY` using root zone trust anchors
+      - <https://www.iana.org/dnssec/files>
+  - it gets `NS`/`DS` for `<domain>.<tld>.`, together with `RRSIG` and `DNSKEY`, from `<tld>.`
+    - it validates `RRSIG` using `DNSKEY`
+    - it authenticates `DNSKEY` using `DS` for `<tld>.`
+
 ## TLDs
 
 - <https://en.wikipedia.org/wiki/Top-level_domain>
