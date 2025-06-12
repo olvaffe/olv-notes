@@ -29,6 +29,21 @@ unbound
 - `unbound` implements a recursive name server
   - in contrast, `bind` or `nsd` implements an authoritative name server
 
+## DNS over TLS/HTTPS
+
+- DoT or DoH encrypts the traffic between the stub resolver and the recursive
+  name server
+  - there is also ADoT (Authoritative DoT) that encrypts the traffic between
+    the recursive name server and the authoritative name servers
+- the stub resolver connects to the recursive name server with TLS or HTTPS
+  - it needs the ip of the recursive name server to connect to it
+  - it needs the domain name of the recursive name server to validate against
+    the cert
+  - it needs a list of trusted CAs
+- the recursive name server needs
+  - it needs a signed cert
+  - it needs the privkey
+
 ## TLDs
 
 - <https://en.wikipedia.org/wiki/Top-level_domain>
