@@ -761,13 +761,16 @@ DRM panthor
       - `tick_ctx_cleanup` will queue `group_term_work`
     - `group_term_work` post-processes the terminated group
       - all fences are signaled with `-ETIMEDOUT`
-    - umd queries `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`, sees `group->timedout`,
-      and reports device lost
+    - umd reports device lost
+      - if it `DRM_IOCTL_PANTHOR_GROUP_GET_STATE`, it sees `group->timedout`
+      - if it `DRM_IOCTL_PANTHOR_GROUP_SUBMIT`, it gets rejected
   - if `JOB_TIMEOUT_MS`, `queue_timedout_job` is called
     - it prints `job timeout`
     - it marks `group->timedout`
     - it queues `tick_work`
     - the rest is the same
+- when a bo is freed prematurely,
+  -
 - devcoredump ideas
   - on mmu fault, `panthor_mmu_irq_handler` can, instead of marking
     `vm->unhandled_fault`, collect per-vm `AS_FAULTSTATUS` and
