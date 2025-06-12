@@ -1,0 +1,79 @@
+IGT GPU Tools
+=============
+
+## Build
+
+- build
+  - `meson setup out -Dbuildtype=debug -Dlibdrm_drivers= -Dxe_driver=disabled`
+- artifacts
+  - `tools`
+    - `executable('gputop')`
+    - `executable('lsgpu')`
+    - `executable('igt_*')`
+    - `executable('dpcd_reg')`
+    - `executable('intel_*')`
+    - `executable('i915-perf-*')`
+    - `executable('xe-perf-*')`
+    - `executable('amd_hdmi_compliance')`
+    - `executable('msm_dp_compliance')`
+  - `tests`
+    - `executable('api_intel_*', 'libexecdir')`
+    - `executable('core_*', 'libexecdir')`
+      - `core_hotunplug` unbinds/rebinds driver using sysfs
+    - `executable('device_reset', 'libexecdir')`
+      - this tests device reset using sysfs
+    - `executable('dmabuf*', 'libexecdir')`
+      - `dmabuf_sync_file` tests dmabuf ioctls, and exports sync-file
+    - `executable('drm_*', 'libexecdir')`
+      - `drm_read` tests reading from drm fd
+    - `executable('dumb_buffer', 'libexecdir')`
+      - it tests dumb bo
+    - `executable('fbdev', 'libexecdir')`
+      - it tests legacy `/dev/fb0`
+    - `executable('gem_*', 'libexecdir')`
+      - despite the name, these require i915
+    - `executable('gen[379]*', 'libexecdir')`
+    - `executable('i915_*', 'libexecdir')`
+    - `executable('intel_*', 'libexecdir')`
+    - `executable('kms_*', 'libexecdir')`
+      - 40% of them require i915
+    - `executable('meta_test', 'libexecdir')`
+      - it tests the ci system itself
+    - `executable('perf*', 'libexecdir')`
+      - despite the name, these require i915
+    - `executable('prime_*', 'libexecdir')`
+      - despite the name, these require i915
+    - `executable('sriov_basic', 'libexecdir')`
+    - `executable('sw_sync', 'libexecdir')`
+      - this tests `sw_sync` ioctl
+    - `executable('syncobj_*', 'libexecdir')`
+      - this tests syncobj ioctl
+    - `executable('sysfs_*', 'libexecdir')`
+      - despite the name, these require i915
+    - `executable('template', 'libexecdir')`
+      - it tests the ci system itself
+    - `executable('testdisplay', 'libexecdir')`
+      - it tests kms
+    - `executable('tools_test', 'libexecdir')`
+      - it requires i915 and tests intel tools under `tools/`
+    - `executable('vgem_*', 'libexecdir')`
+    - `executable('msm_*', 'libexecdir/msm')`
+    - `executable('panfrost_*', 'libexecdir/panfrost')`
+    - `executable('v3d_*', 'libexecdir/v3d')`
+    - `executable('vc4_*', 'libexecdir/vc4')`
+    - `executable('vmw_*', 'libexecdir/vmwgfx')`
+  - `benchmarks`
+    - `executable('gem_*', 'libexecdir/benchmarks')`
+      - despite the name, these require i915
+    - `executable('intel_*', 'libexecdir/benchmarks')`
+    - `executable('kms_*', 'libexecdir/benchmarks')`
+    - `executable('prime_*', 'libexecdir/benchmarks')`
+      - despite the name, these require i915
+    - `executable('vgem_*', 'libexecdir/benchmarks')`
+    - `executable('xe_*', 'libexecdir/benchmarks')`
+  - `scripts`
+    - `executable('code_cov_*')`
+  - `lib`
+    - `shared_library('igt')`
+    - `shared_library('i915_perf')`
+    - `shared_library('xe_oa')`
