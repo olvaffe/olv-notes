@@ -55,6 +55,7 @@ Kernel clk
 
 ## Consumers
 
+- <https://github.com/devicetree-org/dt-schema/blob/main/dtschema/schemas/clock/clock.yaml>
 - dt node, `gpu: gpu@fb000000`
   - `assigned-clocks = <&scmi_clk SCMI_CLK_GPU>;`
   - `assigned-clock-rates = <200000000>;`
@@ -70,3 +71,29 @@ Kernel clk
     - `of_parse_clkspec` parses `clocks` and `clock-names`
     - `of_clk_get_hw_from_clkspec` looks up the clock from the provider
   - `clk_hw_create_clk` allocs a `struct clk` for the `clk_hw`
+
+## SCMI
+
+- SCMI, System Control and Management Interface, is similar to ACPI
+- <https://www.trustedfirmware.org/projects/tf-a>
+  - tfa implements scmi interface (and many more)
+  - `plat/rockchip/rk3588/drivers/scmi/rk3588_clk.c` provides ~40 scmi clocks
+- `CONFIG_COMMON_CLK_SCMI` enables a `scmi_driver`
+  - it talks to SCMI over `SCMI_PROTOCOL_CLOCK`
+  - `clk_proto_ops` provides generic ops for `SCMI_PROTOCOL_CLOCK`
+  - `scmi_clocks_probe`
+    - for each scmi clk,
+      - an `scmi_clk` is allocated
+      - `scmi_clk_ops_select` calls `scmi_clk_ops_alloc` to alloc a `clk_ops`
+        depending on the features
+      - `scmi_clk_ops_init` calls `devm_clk_hw_register` to register a
+        `clk_hw`
+    - `devm_of_clk_add_hw_provider` registers a provider
+- DT
+  - `firmware`
+    - `scmi: scmi`
+      - `scmi_clk: protocol@14`
+        - `reg = <0x14>`
+        - `#clock-cells = <1>`
+        - 0x14 is `SCMI_PROTOCOL_CLOCK` and is driven by
+          `CONFIG_COMMON_CLK_SCMI`
