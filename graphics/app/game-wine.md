@@ -53,6 +53,18 @@ Wine
   - 2022
   - most modules are converted to `.dll`
   - new WoW64 architecture
+- Wine 8.0
+  - 2023
+  - all modules are converted to `.dll`
+  - most modules use NT syscall to transition from PE to UNIX
+- Wine 9.0
+  - 2024
+  - all modules use NT syscall to transition from PE to UNIX, completing new
+    WoW64 support which allows 32-bit PE code running in 64-bit Unix process
+- Wine 10.0
+  - 2025
+  - full ARM64(EC) support
+  - wayland support
 
 ## Initialization Process
 
