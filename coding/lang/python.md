@@ -5,12 +5,23 @@ Python
 
 - install python
   - `pacman -S python`
-- install pip through python
-  - `pacman -S python-pip`, or
-  - `python -m ensurepip`
-  - `pip3 install --upgrade pip`
-- install packages through pip
-  - `pip3 install <package>`
+- create per-user venv
+  - `python -m venv ~/.pip`
+  - `export PATH="$HOME/.pip/bin:$PATH"`
+  - to upgrade venv, `/usr/bin/python -m venv --upgrade ~/.pip`
+
+## pip
+
+- `pip list` lists installed packages
+  - `pip list --outdated` lists outdated packages
+- `pip install` installs specified packages
+  - `pip install --upgrade pip`
+  - meson requires `packaging` for version detection
+
+## Tooling
+
+- <https://github.com/astral-sh/uv>
+- <https://github.com/astral-sh/ruff>
 
 ## Top GitHub Repos
 
