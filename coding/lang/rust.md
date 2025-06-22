@@ -1,6 +1,40 @@
 Rust
 ====
 
+## Installation
+
+- `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+  - this downloads and runs `rustup-init.sh`, which downloads and runs
+    <https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init>
+- `rustup-init`
+  - copies itself as `rustup` to `~/.cargo/bin`, or `$CARGO_HOME/bin`
+    - yes, `rustup-init` is installed as `rustup` itself
+  - creates hardlinks such as `cargo`, `rustc`, etc under `$CARGO_HOME/bin`
+    - yes, toolchain binaries are hardlinks to `rustup`
+    - when executed, they find the binary of the same name under
+      `$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/bin` and execve
+  - runs `rustup` to install these components to `~/.rustup`, or `$RUSTUP_HOME`
+    - cargo
+    - clippy
+    - rust-docs
+    - rust-std
+    - rustc
+    - rustfmt
+  - edit `.profile` to source `$CARGO_HOME/env`
+    - `$CARGO_HOME/env` adds `$CARGO_HOME/bin` to `$PATH`
+- <https://github.com/rust-lang/rustup>
+  - when invoked as `rustup`, it is in rustup mode to manage toolchains under
+    `$RUSTUP_HOME` (`~/.rustup`)
+  - when invoked as `rustup-init`, it is in setup mode to install itself to
+    `$CARGO_HOME/bin` (`~/.cargo/bin`)
+  - when invoked as `foo`, it is in proxy mode to execute
+    `$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/bin/foo`
+- if using distro package,
+  - `rustup default stable` to install the default toolchain
+  - unlike `rustup-init`, `~/.cargo` is not created
+    - it is created by `cargo`
+    - but `rustup-init` abuses `$CARGO_HOME/bin` and `$CARGO_HOME/env`
+
 ## Resources
 
 - <https://github.com/rust-lang>
@@ -81,28 +115,6 @@ Rust
 - <https://github.com/leptos-rs/leptos>, (client-side) web framework
 - <https://github.com/hyperium/hyper>, http request
 - <https://github.com/clap-rs/clap>, arg parser
-
-## Installation
-
-- `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-  - this downloads and runs `rustup-init.sh`, which downloads and runs
-    <https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init>
-- `rustup-init`
-  - copies itself as `rustup` to `~/.cargo/bin`, or `$CARGO_HOME/bin`
-    - yes, `rustup-init` is installed as `rustup` itself
-  - creates hardlinks such as `cargo`, `rustc`, etc under `$CARGO_HOME/bin`
-    - yes, toolchain binaries are hardlinks to `rustup`
-    - when executed, they find the binary of the same name under
-      `$RUSTUP_HOME/toolchains/stable-x86_64-unknown-linux-gnu/bin` and execve
-  - runs `rustup` to install these components to `~/.rustup`, or `$RUSTUP_HOME`
-    - cargo
-    - clippy
-    - rust-docs
-    - rust-std
-    - rustc
-    - rustfmt
-  - edit `.profile` to source `$CARGO_HOME/env`
-    - `$CARGO_HOME/env` adds `$CARGO_HOME/bin` to `$PATH`
 
 ## Cross-Compiler
 
