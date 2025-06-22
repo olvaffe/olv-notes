@@ -75,15 +75,18 @@ PCI
   - usb 3.0
 - the connector has 75 positions, up to 67 pins
   - key A: pcie x1, usb 2.0, etc.
+    - typically pcie for wifi/bt card, less common than key E
   - key B: pcie x2, usb 3.0, sata, etc.
-    - typically for sata, used by m2 sata ssd
+    - typically sata for m2 sata ssd
   - key E: pcie x1, usb 2.0, etc.
-    - typically for pcie, used by wifi/bt card
+    - typically pcie for wifi/bt card
   - key M: pcie x4, sata, etc.
-    - typically for pcie, used by m2 nvme ssd
-  - a socket supports only a certain key type
-  - a module can support multiple key types
-    - a key B+M module fits both B-key and M-key sockets
+    - typically pcie for m2 nvme ssd
+  - a connector supports only a certain key type
+    - each key type has different notched pins
+  - a module, on the other hand, can support multiple key types
+    - a wifi/bt module often supports key A+E
+    - a sata ssd module often supports key B+M
 
 ## PCI Architecture
 
