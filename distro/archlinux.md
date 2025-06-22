@@ -10,11 +10,10 @@ Arch Linux
       - `ip link set <iface> up`
       - `ip addr add 192.168.0.1/24 dev <iface>`
       - `ip route add default via 192.168.0.254`
-    - dynamic: `dhcpcd <iface>`
     - wireless: `iwctl station <iface> connect <ssid>`
       - no easy way if the wireless adapter is not supported by the live image
-  - system clock
-    - `timedatectl set-ntp true`
+  - wait until system clock synced
+    - `timedatectl`
   - partition disk with fdisk
     - 1M for BIOS boot partition (type 4), if bios
     - 1G for EFI system partition (type 1), esp
@@ -23,7 +22,7 @@ Arch Linux
       - `mkfs.ext4 <part>`
   - mount partitions to `/mnt` and `/mnt/boot`
 - Bootstrap
-  - update `/etc/pacman.d/mirrorlist`
+  - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
     - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
   - `pacstrap -K /mnt base`
@@ -33,7 +32,10 @@ Arch Linux
   - `hwclock --systohc`
     - this updates `/etc/adjtime` so should be done in chroot
   - install more packages
-    - `pacman -S linux linux-firmware dosfstools sudo vim`
+    - `pacman -S linux linux-firmware intel-ucode dosfstools btrfs-progs`
+    - `pacman -S sudo vim`
+    - `pacman -S zram-generator`
+      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
     - `pacman -S grub`, if using BIOS
     - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
@@ -47,16 +49,13 @@ Arch Linux
     - `useradd -m -G wheel <user>`
     - `passwd <user>`
     - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
-  - traditionally, also
-    - `echo -e '127.0.0.1\tlocalhost\n::1\t\tlocalhost' >> /etc/hosts`
-      - replaced by `libnss_myhostname`
   - install bootloader
     - `bootctl install` for EFI
     - create `/boot/loader/entries/arch.conf`
       - `title	Arch Linux`
       - `linux	/vmlinuz-linux`
       - `initrd	/initramfs-linux.img`
-      - `options root=...`
+      - `options root=... loglevel=7`
     - or, on a BIOS system,
       - `grub-install <dev>`
       - `grub-mkconfig -o /boot/grub/grub.cfg`
@@ -74,6 +73,7 @@ Arch Linux
     - `dkms autoinstall`
     - `/etc/modules-load.d`
     - `/etc/modprobe.d/blacklist.conf`
+  - `timedatectl set-ntp true`
 - login as user
   - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
   - `./olv-etc/create-links`
@@ -83,25 +83,23 @@ Arch Linux
     - `dosfstools btrfs-progs`
     - `sudo vim`
     - `zram-generator`
-      - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
-      - `systemctl daemon-reload`
-      - `systemctl start systemd-zram-setup@zram0`
-      - `zramctl`
   - network
     - `openssh wireguard-tools`
     - `iwd` or `wpa_supplicant`
     - `networkmanager`
     - `linux-headers broadcom-wl-dkms`
   - tools
-    - `bc unzip zip wget`
-    - `dmidecode usbutils`
-    - `htop iw lsof`
+    - `bc unzip zip`
+    - `dmidecode usbutils hdparm iw`
+    - `lsof htop iotop`
+    - `rsync wget`
     - `man-db man-pages`
     - `picocom`
   - devel
     - `base-devel ccache ctags gdb git meson cmake`
     - `perf trace-cmd strace debuginfod`
     - `llvm clang`
+    - `rustup`
   - mesa devel
     - `wayland-protocols libxrandr`
     - `llvm glslang libclc spirv-llvm-translator`
@@ -114,10 +112,11 @@ Arch Linux
   - gui
     - `sway polkit i3status swayidle swaylock mako`
     - `mesa mesa-utils vulkan-tools vulkan-intel vulkan-radeon`
-    - `noto-fonts noto-fonts-cjk`
-    - `alacritty google-chrome gtk4`
+    - `noto-fonts noto-fonts-cjk noto-fonts-emoji`
     - `brightnessctl wl-clipboard wayland-utils`
     - `fcitx5-chewing fcitx5-configtool fcitx5-gtk`
+    - `xdg-desktop-portal-gtk xdg-desktop-portal-wlr`
+    - `alacritty google-chrome gtk4`
     - `swayimg grim slurp`
     - `mpv intel-media-driver`
     - `xorg-xwayland`
