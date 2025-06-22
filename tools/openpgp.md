@@ -163,6 +163,7 @@ PGP
 - import subkeys
   - `gpg --import gpg-export-secret-subkeys.gpg`
   - `gpg --quick-set-ownertrust <fpr> ultimate`
+  - `gpg-connect-agent "KEYATTR <keygrip> Use-for-ssh: true" /bye`
 
 ## SSH
 
