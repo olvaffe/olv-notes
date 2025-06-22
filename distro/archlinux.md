@@ -18,7 +18,7 @@ Arch Linux
   - partition disk with fdisk
     - 1M for BIOS boot partition (type 4), if bios
     - 1G for EFI system partition (type 1), esp
-      - `mkfs.vfat -F32 <part>`
+      - `mkfs.fat -F32 <part>`
     - remainder for root partition
       - `mkfs.ext4 <part>`
   - mount partitions to `/mnt` and `/mnt/boot`
@@ -26,7 +26,7 @@ Arch Linux
   - update `/etc/pacman.d/mirrorlist`
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
     - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
-  - `pacstrap /mnt base`
+  - `pacstrap -K /mnt base`
   - `genfstab -U /mnt >> /mnt/etc/fstab` and double-check
 - Enter chroot
   - `arch-chroot /mnt`
@@ -57,7 +57,6 @@ Arch Linux
       - `linux	/vmlinuz-linux`
       - `initrd	/initramfs-linux.img`
       - `options root=...`
-    - `echo 'default arch.conf' >> /boot/loader/loader.conf`
     - or, on a BIOS system,
       - `grub-install <dev>`
       - `grub-mkconfig -o /boot/grub/grub.cfg`
@@ -67,7 +66,8 @@ Arch Linux
 
 - network
   - for quick connection, see `Installation`
-  - `echo -e '[Match]\nName=*\n[Network]\nDHCP=yes' > /etc/systemd/network/all.network`
+  - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/wlan.network`
+  - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
   - `systemctl enable --now iwd systemd-networkd systemd-resolved`
   - `iwctl station <iface> connect <ssid>`
   - for wireless adapter that requiers out-of-tree driver,
@@ -85,6 +85,7 @@ Arch Linux
     - `zram-generator`
       - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
       - `systemctl daemon-reload`
+      - `systemctl start systemd-zram-setup@zram0`
       - `zramctl`
   - network
     - `openssh wireguard-tools`
@@ -101,14 +102,13 @@ Arch Linux
     - `base-devel ccache ctags gdb git meson cmake`
     - `perf trace-cmd strace debuginfod`
     - `llvm clang`
-    - `python-pip ruff`
   - mesa devel
-    - `python-mako python-yaml wayland-protocols libxrandr`
+    - `wayland-protocols libxrandr`
     - `llvm glslang libclc spirv-llvm-translator`
     - `vulkan-validation-layers vulkan-extra-layers`
+    - `python -m venv ~/.pip`
+      - `pip install packaging mako pyyaml`
   - cross-compile
-    - `multilib-devel`
-      - uncomment the `[multilib]` section in `/etc/pacman.conf`
     - `aarch64-linux-gnu-gcc`
     - `qemu-user-static qemu-user-static-binfmt`
   - gui
@@ -133,6 +133,7 @@ Arch Linux
     - `cups`
     - `cnrdrvcups-lb samsung-unified-driver-printer`
   - 32-bit
+    - uncomment the `[multilib]` section in `/etc/pacman.conf`
     - `lib32-{mesa,libdrm,libunwind,libx11}`
 
 ## Bootstrap
