@@ -26,41 +26,54 @@ UEFI
     - key exchange key, KEK
     - signature database, db
   - machine owner generates PK
-    - PK is self-signed x509 cert
-    - PK is only used to sign KEKs
+    - PK is x509 cert
+    - PK is only used to sign KEK updates
       - it is used rarely and can be stored offline for highest security
     - there is only one PK
-  - machine owner signs and adds KEKs
-    - KEK is PK-signed x509 cert
-    - KEK is only used to sign db keys
+  - machine owner updates KEKs
+    - KEK is x509 cert
+    - KEK is only used to sign db updates
       - it is used rarely and can be stored offline for highest security
     - there can be multiple KEKs, one for each trusted OS vendor
-  - OS vendors sign and add db keys
-    - db key is KEK-signed x509 cert
+  - OS vendors updates db keys
+    - db key is x509 cert
     - db key is used to sign executables
       - it is used frequently and is stored online for convenience
     - there can be multiple db keys
-      - each trusted OS vendor signs and adds its db key
+      - each trusted OS vendor updates db with its db key
         - used to sign its bootloaders and/or kernels
-      - if an OS allows uefi firmware update signed by machine OEM, it signs
-        and adds machine OEM db key
-      - if an OS allows 3rd party executables signed by MS, it signs and adds
-        MS db key
-        - this is often needed for dgpu, whose driver is a 3rd party
-          executable
+      - if an OS allows uefi firmware update signed by machine OEM, it updates
+        db with machine OEM db key
+      - if an OS allows uefi executables signed by MS, it updates db with MS
+        db keys
+        - there are 5 MS db keys according to sbctl
+        - this is often needed for dgpu, whose option rom is an executable
         - this is a secure concern for some though
+- <https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-secure-boot-key-creation-and-management-guidance?view=windows-11>
+  - PK: OEM
+  - KEK
+    - OEM
+    - Microsoft Corporation KEK 2K CA 2023
+      - previously Microsoft Corporation KEK CA 2011
+  - db
+    - OEM, for firware update
+    - Windows UEFI CA 2023, to boot windows
+      - previouly Microsoft Windows Production PCA 2011
+    - Microsoft UEFI CA 2023, for third-party executables
+      - previously Microsoft Corporation UEFI CA 2011
+    - Microsoft Option ROM UEFI CA 2023, for third-party option roms
 - bios settings
   - secure boot can be enabled/disabled
   - PK/KEK/db can be reset to factory default
     - OEM PK
-    - OEM and MS KEK
-    - OEM and MS db key
+    - OEM and MS KEKs
+    - OEM and MS db keys
   - PK/KEK/db can be cleared
     - this puts the machine in setup mode, where a new PK key can be set
 - personal machine
   - personal PK
   - personal KEK
-  - personal, OEM, and MS db key
+  - personal, OEM, and MS db keys
 
 ## shim
 
