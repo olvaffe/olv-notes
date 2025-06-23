@@ -25,12 +25,46 @@ UEFI
     - platform key, PK
     - key exchange key, KEK
     - signature database, db
-  - OEM sets PK
-  - OEM trusts some OS vendors and adds their keys to KEK
-  - OS vendors whose keys are in KEK can update db
-  - in practice, OEM usually allows users to replace PK
-    - with PK replaced, users can update KEK themselves
-- linux shim
+  - machine owner generates PK
+    - PK is self-signed x509 cert
+    - PK is only used to sign KEKs
+      - it is used rarely and can be stored offline for highest security
+    - there is only one PK
+  - machine owner signs and adds KEKs
+    - KEK is PK-signed x509 cert
+    - KEK is only used to sign db keys
+      - it is used rarely and can be stored offline for highest security
+    - there can be multiple KEKs, one for each trusted OS vendor
+  - OS vendors sign and add db keys
+    - db key is KEK-signed x509 cert
+    - db key is used to sign executables
+      - it is used frequently and is stored online for convenience
+    - there can be multiple db keys
+      - each trusted OS vendor signs and adds its db key
+        - used to sign its bootloaders and/or kernels
+      - if an OS allows uefi firmware update signed by machine OEM, it signs
+        and adds machine OEM db key
+      - if an OS allows 3rd party executables signed by MS, it signs and adds
+        MS db key
+        - this is often needed for dgpu, whose driver is a 3rd party
+          executable
+        - this is a secure concern for some though
+- bios settings
+  - secure boot can be enabled/disabled
+  - PK/KEK/db can be reset to factory default
+    - OEM PK
+    - OEM and MS KEK
+    - OEM and MS db key
+  - PK/KEK/db can be cleared
+    - this puts the machine in setup mode, where a new PK key can be set
+- personal machine
+  - personal PK
+  - personal KEK
+  - personal, OEM, and MS db key
+
+## shim
+
+- <https://github.com/rhboot/shim>
   - shim is a small bootloader signed by Microsoft using their Third Party key
   - OEM usually adds Microsoft and Microsoft Third Party keys to KEK
   - together, shim can be verified and booted
@@ -46,10 +80,6 @@ UEFI
   - IOW, the signed shim is bootable on any machine with ms 3rd party key in
     KEK, and it only loads executables signed by debian uefi ca (indirectly)
     - this includes official debian grub2, linux, and fwupd
-
-## shim
-
-- <https://github.com/rhboot/shim>
 - first stage loader
   - `efi_main` of `shim.c` is the entrypoint
   - `shim_init` picks the compile-time `DEFAULT_LOADER` as the second stage
