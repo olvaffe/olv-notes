@@ -79,7 +79,7 @@ UEFI
 
 - <https://github.com/rhboot/shim>
   - shim is a small bootloader signed by Microsoft using their Third Party key
-  - OEM usually adds Microsoft and Microsoft Third Party keys to KEK
+  - OEM usually adds Microsoft and Microsoft Third Party keys to db
   - together, shim can be verified and booted
   - shim then implements its own chain of trust
     - it contains a distro key that is used to verify that the real bootloader
@@ -91,7 +91,7 @@ UEFI
   - the unsigned shim embeds a cert for debian uefi ca
   - the signed shim is signed by MS 3rd party key
   - IOW, the signed shim is bootable on any machine with ms 3rd party key in
-    KEK, and it only loads executables signed by debian uefi ca (indirectly)
+    db, and it only loads executables signed by debian uefi ca (indirectly)
     - this includes official debian grub2, linux, and fwupd
 - first stage loader
   - `efi_main` of `shim.c` is the entrypoint
@@ -102,22 +102,23 @@ UEFI
     - if the second stage loader is trusted, the first try succeeds
     - otherwise, `init_grub` calls `start_image` to start the compile-time
       `MOK_MANAGER` and then tries again
-      - `MOK_MANAGER` is `mmx86.efi`
+      - `MOK_MANAGER` is `mmx64.efi`
 - mok (machine owner key) manager
-  - it has a ui to enroll keys or hashes
-  - hashes
-    - use the ui to enroll the hashes of the second stage bootloader and the
-      kernel image
-  - keys
-    - use the ui to enrol the mok key used to sign the second stage bootloader
-      and the kernel image
+  - it is an uefi app with ui to enroll keys or hashes
+    - to disallow enrollment, do not copy `mmx64.efi` to esp
+  - enroll custom keys
+    - need to create custom key once
+    - need up sign bootloader and kernel image on every update
+  - enroll hashes
+    - need to re-enroll bootloader and kernel image on every update
+- there is also `mokutil` to stage keys or hashes for enrollment from userspace
+- image signing
   - to generates a mok key,
-    - `openssl req -newkey rsa:4096 -nodes -keyout mok.key -new -x509 -sha256 -days 3650 -subj "/CN=my mok" -out mok.crt`
+    - `openssl req -newkey rsa:2048 -noenc -keyout mok.key -new -x509 -sha256 -days 3650 -subj "/CN=my mok" -out mok.crt`
     - this generates `mok.key` and `mok.crt`
     - `mok.crt` needs to be copied to esp for enrollment
   - to sign a second stage bootloader or a kernel image,
-    - `sbsign --key mok.key --cert mok.crt --output <dst> <src>`
-  - there is also `mokutil` to enroll keys or hashes from userspace
+    - `/usr/lib/systemd/systemd-sbsign sign --private-key mok.key --certificate mok.crt --output <dst> <src>`
 - in arch linux,
   - the official iso is unsigned
   - the official `shim` package is unsigned
