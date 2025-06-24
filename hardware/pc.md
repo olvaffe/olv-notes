@@ -715,3 +715,29 @@ PC
   - dell precision
   - asus proart
   - acer conceptd
+
+## Devices
+
+- me
+  - Dell XPS 13 (9343)
+    - i5-5200U (x2), 4GB LPDDR3, 128GB M.2 SATA
+  - Raspberry 4 Model B Rev 1.2
+    - BCM2711 (A72 x4), 4GB LPDDR4, no storage
+  - FriendlyElec NanoPi R5C
+    - RK3568B2 (A55 x4), 4GB LPDDR4X, 32GB eMMC
+- spouse
+  - Minisforum UM690
+  - Lenovo IdeaPad
+- kids
+  - HP Chromebook x360 14c
+    - i3-1125G4 (x4), 8GB LPDDR4X, 128GB NVMe
+  - Acer Chromebook
+- work
+  - ThinkPad X1 Carbon Gen 9
+    - i7-1185G7 (x4), 32GB LPDDR4X, 256GB NVMe
+  - HP Elite Dragonfly 13.5 Chromebook
+    - i7-1265U (2+8), 32GB LPDDR4X, 512GB NVMe
+  - ASUS Vivobook S 15 (Q5507)
+    - X1P-42-100 (x8), 16GB LPDDR5X, 512GB NVMe
+  - Xunlong Orange Pi 5
+    - RK3588S (A76 x4, A55 x4), 16GB, no eMMC
