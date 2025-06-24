@@ -6,7 +6,7 @@ Python
 - install python
   - `pacman -S python`
 - create per-user venv
-  - `python -m venv ~/.pip`
+  - `python -m venv --system-site-packages ~/.pip`
   - `export PATH="$HOME/.pip/bin:$PATH"`
   - to upgrade venv, `/usr/bin/python -m venv --upgrade ~/.pip`
 
