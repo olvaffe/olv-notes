@@ -166,49 +166,114 @@ Kernel TPM
       - `mssim` talks to the sw simulator
       - `none` disables connection to tpm
     - `config` is `name`-specific
+  - `activatecredential`
+  - `certify`
+  - `certifycreation`
+  - `certifyX509certutil`
+  - `changeauth`
+  - `changeeps`
+  - `changepps`
+  - `checkquote`
+  - `clear`
+  - `clearcontrol`
+  - `clockrateadjust`
+  - `commit`
+  - `create`
+  - `createak`
+  - `createek`
+  - `createpolicy`
+  - `createprimary`
+  - `dictionarylockout`
+  - `duplicate`
+  - `ecdhkeygen`
+  - `ecdhzgen`
+  - `ecephemeral` creates ephemeral key pair for key exchange protocol
+  - `encodeobject`
+  - `encryptdecrypt`
+  - `eventlog`
+  - `evictcontrol`
+  - `flushcontext`
   - `getcap` queries tpm caps
     - `-l` to list cap groups
+  - `getcommandauditdigest`
+  - `geteccparameters` retrieves the params of an ECC curve
   - `getekcertificate` retrieves endorsement key (EK) certs
     - certs are X.509 certs in DER format
     - `-o` to output to files
     - `openssl x509 -in <file> -text` to decode
+  - `getpolicydigest`
   - `getrandom` generates random bytes
-  - `readclock` reads the current time
+  - `getsessionauditdigest`
+  - `gettestresult`
   - `gettime` generates signed current time
   - `hash` hashes data
     - `-g` to specify the algorithm
+  - `hierarchycontrol`
   - `hmac` performs hmac
     - `-c` to specify the key
   - `import` imports an external key into tpm as a managed key object
+  - `incrementalselftest`
   - `load`
   - `loadexternal`
   - `makecredential`
+  - `nvcertify`
   - `nvdefine`
   - `nvextend`
   - `nvincrement`
-  - `nvreadpublic`
   - `nvread`
   - `nvreadlock`
+  - `nvreadpublic`
+  - `nvsetbits`
   - `nvundefine`
   - `nvwrite`
   - `nvwritelock`
-  - `nvsetbits`
   - `pcrallocate`
   - `pcrevent`
   - `pcrextend`
   - `pcrread`
   - `pcrreset`
+  - `policyauthorize`
+  - `policyauthorizenv`
+  - `policyauthvalue`
+  - `policycommandcode`
+  - `policycountertimer`
+  - `policycphash`
+  - `policyduplicationselect`
+  - `policylocality`
+  - `policynamehash`
+  - `policynv`
+  - `policynvwritten`
+  - `policyor`
+  - `policypassword`
+  - `policypcr`
+  - `policyrestart`
+  - `policysecret`
+  - `policysigned`
+  - `policytemplate`
+  - `policyticket`
+  - `print`
   - `quote`
+  - `rc_decode`
+  - `readclock` reads the current time
   - `readpublic`
   - `rsadecrypt`
   - `rsaencrypt`
+  - `selftest`
+  - `send`
+  - `sessionconfig`
+  - `setclock`
+  - `setcommandauditstatus`
+  - `setprimarypolicy`
+  - `shutdown`
   - `sign`
-  - `certifycreation`
-  - `nvcertify`
+  - `startauthsession`
+  - `startup`
+  - `stirrandom`
+  - `testparms`
+  - `tr_encode`
   - `unseal`
   - `verifysignature` verifies a signature
-  - `geteccparameters` retrieves the params of an ECC curve
-  - `ecephemeral` creates ephemeral key pair for key exchange protocol
+  - `zgen2phase`
 
 ## Kernel Configs
 
