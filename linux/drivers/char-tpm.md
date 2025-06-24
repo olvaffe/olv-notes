@@ -29,7 +29,42 @@ Kernel TPM
 
 ## TPM
 
-- each TPM has 3 secret seeds that are burned in
+- TPM chip hw components
+  - secure processor
+    - for dTPMs (discrete TPMs), it is typically an ARM core
+    - for fTPMs (firmware TPMs), it is typically a secure coprocessor (amd) or
+      TEE of the main processor (intel)
+  - NVRAM for persistent storage
+    - internal state and config
+    - hierarchy seeds (random values) for endorcement, platform, and owner
+      hierarchies
+    - user data (NV indices)
+  - volatile RAM for temporary stoage
+  - crypto engines for accelerated crypto ops
+  - io to communicate with the host
+- `tpm2 getcap handles-transient` lists object handles in volatile memory
+- `tpm2 getcap handles-persistent` lists object handles in nvmem
+  - 0x810000XX: storage primary keys
+  - 0x810100XX: endorsement primary keys
+  - 0x818000XX: platform keys
+- `tpm2 getcap handles-permanent` lists object handles in nvmem ro region
+  - 0x40000001: `TPM_RH_OWNER`, primary hierarchy
+  - 0x40000007: `TPM_RH_NULL`, null hierarchy
+  - 0x40000009: `TPM_RS_PW`, password
+  - 0x4000000A: `TPM_RH_LOCKOUT`
+  - 0x4000000B: `TPM_RH_ENDORSEMENT`, endorsement hierarchy
+  - 0x4000000C: `TPM_RH_PLATFORM`, platform hierarchy
+  - 0x4000000D: `TPM_RH_PLATFORM_NV`
+- `tpm2 getcap handles-pcr` lists PCR handles
+- `tpm2 getcap handles-nv-index` lists NV index handles
+  - 0x01C00002: RSA 2048 EK Certificate
+    - this is x509 cert of RSA EK, signed by root CA, as root of trust
+  - 0x01C0000A: ECC NIST P256 EK Certificate
+    - this is x509 cert of ECC EK, signed by root CA, as root of trust
+  - 0x01C1XXXX: defined by component oem
+  - 0x01C2XXXX: defined by tpm oem
+  - 0x01C3XXXX: defined by platform oem
+- each TPM has 3 secret seeds that are burned in nvmem ro region
   - the first seed is used for the endorsement hierarchy
     - it is used with a fixed template (algorithm, etc.) to deterministically
       generate the endorsement key (EK)
@@ -39,6 +74,7 @@ Kernel TPM
   - the third seed is used for the owner hierarchy
     - it is used to generate the owner key
     - it is deterministically as long as the template is unchanged
+  - seeds are cheaper to store than keys
   - there is usually an endorsement cert stored in NVRAM
     - the cert is signed by manufacturer and is used to verify the tpm
       itself
@@ -49,21 +85,28 @@ Kernel TPM
   - if there is an endorsement cert, signed by the manufacturer which in turn
     signed by a CA that we can trust, we can trust EK
     - otherwse, we have to trust EK
-  - the platform, owner, and null keys are signed by EK so we can trust them
+  - by trusting EK, we trust the TPM chip as a whole
 - to create the endorsement/platform/owner/null keys,
   - `tpm2 createprimary -C <hierarchy> -o prim.pub -c prim.ctx`
     - `hierarchy` is `e`/`p`/`o`/`n`
-  - in more general tpm terms, this creates an tpm object on tpm
-    - each object has a private part and a public part
+  - in more general tpm terms, this creates a tpm object on tpm
+    - the object is a key which has a private part and a public part
     - `-o` saves the public part to filesystem
     - `-c` saves the "handle" to filesystem
-      - the handle is used to refer to the object
+      - the handle is used to refer to the private part
 - to create a child object,
-  - `tpm2 create -C prim.ctx -u key.pub -r key.priv -c key.ctx`
+  - `tpm2 create -C prim.ctx -u key.pub -r key.priv -c key.ctx` creates a key
     - this time, both the public and private parts are saved to filesystem
     - the private part is encrypted by the parent object
-  - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx`
-    - this saves a small amount of user data to tpm instead
+    - the context file appears to be a serialization of the loaded key
+      - `tpm2 load -C prim.ctx -u key.pub -r key.priv -c key.ctx` loads the
+        key and serializes it to the context file again
+    - to sign a message with the key,
+      - `tpm2 sign -c key.ctx -o msg.sig msg.dat` signs the message
+      - `tpm2 verifysignature -c key.ctx -s msg.sig -m msg.dat` verifies the
+        signature
+  - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx` creates a sealing object
+    - this saves a small amount of user data to tpm
     - to read back, `tpm2 unseal -c blob.ctx`
 - PCRs
   - Platform Configuration Registers
