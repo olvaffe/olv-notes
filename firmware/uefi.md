@@ -75,6 +75,19 @@ UEFI
   - personal KEK
   - personal, OEM, and MS db keys
 
+## ukify
+
+- setup
+  - `cp /usr/lib/kernel/uki.conf /etc/kernel` and edit
+  - `ukify genkey --config /etc/kernel/uki.conf` to generate privkey and cert
+  - `/usr/lib/systemd/systemd-sbsign sign ...` to sign the bootloader
+  - `bootctl install --secure-boot-auto-enroll yes ..` to install signed
+    bootloader and stage keys for enrollment
+    - THE KEYS MAY BRICK THE MACHINE ESPECIALLY ON THINKPAD ONCE ENROLLED
+    - `man loader.conf` has examples to generate working keys
+  - `echo "secure-boot-enroll manual" >> /boot/loader/loader.conf` to enroll
+    keys on next boot
+
 ## shim
 
 - <https://github.com/rhboot/shim>
