@@ -7,17 +7,17 @@ Kernel defconfig
   - deselect `Automatically append version information to the version string` if desired
   - select `System V IPC` if desired
   - select `POSIX Message Queues` if desired, depending on `NET`
-  - select `Auditing support` if desired
+  - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
   - select `BPF subsystem`
     - select `Enable bpf() system call`
-    - select `Enable BPF Just In Time compiler`, depending on `MODULES`
+    - select `Enable BPF Just In Time compiler`
       - select `Permanently enable BPF JIT and remove BPF interpreter`
   - select `Preemption Model (Voluntary Kernel Preemption (Desktop))`
   - select `CPU/Task time and stats accounting`
-    - select `Export task/process statistics through netlink` (for htop, iotop)
+    - select `Export task/process statistics through netlink`, depending on `NET` (for htop, iotop)
       - select `Enable per-task delay accounting`
       - select `Enable extended accounting over taskstats`
         - select `Enable per-task storage I/O accounting`
