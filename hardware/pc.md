@@ -727,11 +727,14 @@ PC
     - RK3568B2 (A55 x4), 4GB LPDDR4X, 32GB eMMC
 - spouse
   - Minisforum UM690
+    - 6900HX (x8), 32GB LPDDR5, 1TB NVMe
   - Lenovo IdeaPad
+    - 6900HS (x8), 32GB LPDDR5, 1TB NVMe
 - kids
-  - HP Chromebook x360 14c
-    - i3-1125G4 (x4), 8GB LPDDR4X, 128GB NVMe
-  - Acer Chromebook
+  - HP Chromebook x360 14c-cc0
+    - i3-1115G4 (x2), 8GB LPDDR4X, 128GB NVMe
+  - ASUS Chromebook Flip C434
+    - m3-8100Y (x2), 8GB LPDDR3, 128GB eMMC
 - work
   - ThinkPad X1 Carbon Gen 9
     - i7-1185G7 (x4), 32GB LPDDR4X, 256GB NVMe
