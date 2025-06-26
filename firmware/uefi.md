@@ -88,6 +88,15 @@ UEFI
     - `-o <out>` to output to a separate file instead
     - `-s` to remember the file in `/var/lib/sbctl/files.json`
   - `sbctl sign-all` signs all remembered files
+- `/usr/share/libalpm/hooks/zz-sbctl.hook`
+  - it invokes `sbctl sign-all -g` when there are package changes to
+    - `boot/*` (e.g., intel-ucode)
+    - `usr/lib/modules/*/vmlinuz` (e.g., linux)
+    - `usr/lib/**/efi/*.efi*` (e.g., systemd)
+- `/usr/lib/initcpio/post/sbctl`
+  - it invokes `sbctl sign` on vmlinuz/uki created by `mkinitcpio`
+- `/usr/lib/kernel/install.d/91-sbctl.install`
+  - it invokes `sbctl sign` on vmlinuz/uki created by `kernel-install`
 
 ## ukify
 
