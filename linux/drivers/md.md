@@ -32,7 +32,22 @@ Kernel and MD
   - `dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress`
   - `cryptsetup close to_be_wiped`
 - format the partition to LUKS
-  - `cryptsetup -y -v luksFormat <part>`
+  - `cryptsetup luksFormat <part>`
+  - the default values are
+    - `--type luks2` uses luks2
+    - `--cipher aes-xts-plain64`
+      - use aes for block encryption
+      - use xts mode to encrypt multiple blocks
+      - use plain64 for IV (initial value, a salt)
+    - `--hash sha256` uses sha256 for pbkdf2 and af (anti-forensic) splitter
+    - `--iter-time 2000` requires 2000ms for pbkdf2
+      - this is to slow down brute-force attack
+    - `--key-size 256` uses AES-256
+      - note that xts doubles the key size
+    - `--pbkdf argon2id` uses argon2id for pbkdf
+    - `--use-urandom` uses `/dev/urandom` to generate the volume key
+      - volume key, aka master key, is used to encrypt the data
+      - it is not stored in plain text, but is stored encrypted in key slots
 - open/close the partition
   - `cryptsetup open <part> cryptroot`
   - `mkfs.btrfs /dev/mapper/cryptroot`
