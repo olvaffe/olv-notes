@@ -16,6 +16,39 @@ UEFI
       released it as UDK
     - UDK{2008,2010,2014,2015,2017,2018}
 
+## Variables
+
+- variables are namespaced by guids
+  - `/sys/firmware/efi/efivars/<name>-<guid>`
+- `EFI_GLOBAL_VARIABLE` (8be4df61-93ca-11d2-aa0d-00e098032b8c)
+  - `Boot####` are boot entries containing descriptive names and paths to
+    bootloaders
+  - `BootCurrent` is a u16 for current `Boot####`
+  - `BootOrder` is a list of u16 for ordered `Boot####`
+  - `KEK` is an array of `EFI_SIGNATURE_LIST` for KEK
+    - a `EFI_SIGNATURE_LIST` is a cert
+    - because the variable has
+      `EFI_VARIABLE_TIME_BASED_AUTHENTICATED_WRITE_ACCESS` flag, writing to
+      the variable requires preceding `EFI_SIGNATURE_LIST` array by
+      `EFI_VARIABLE_AUTHENTICATION_2`
+  - `Key####` is hotkey for `Boot####`
+  - `OsIndications` is for os to configure the next boot
+    - `EFI_OS_INDICATIONS_BOOT_TO_FW_UI` requests booting to bios
+  - `PK` is an array of `EFI_SIGNATURE_LIST` for PK
+  - `PlatformLang` is the lang code such as `en-US`
+  - `SecureBoot` is 1 if enabled
+  - `SetupMode` is 1 if `PK` is missing
+  - `SignatureSupport` is an array of guids for supported certs (x509, etc.)
+  - `Timeout` is the timeout before booting `Boot####`
+  - `VendorKeys` is 1 if factory keys are used
+- `EFI_IMAGE_SECURITY_DATABASE_GUID` (d719b2cb-3d3a-4596-a3bc-dad00e67656f)
+  - `db` is an array of `EFI_SIGNATURE_LIST` for db
+  - `dbx` is an array of `EFI_SIGNATURE_LIST` for dbx
+- 4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+  - <https://systemd.io/BOOT_LOADER_INTERFACE/>
+- `SHIM_LOCK_GUID` (605dab50-e046-4300-abb6-3dd810dd8b23)
+  - <https://github.com/rhboot/shim>
+
 ## Secure Boot
 
 - there should be a security module acting as root-of-trust to verify the uefi
