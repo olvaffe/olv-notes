@@ -75,6 +75,20 @@ UEFI
   - personal KEK
   - personal, OEM, and MS db keys
 
+## sbctl
+
+- setup
+  - `sbctl export-enrolled-keys --dir backup --disable-landlock` backs up
+    existing keys
+  - `sbctl create-keys` creates new keys under `/var/lib/sbctl`
+  - `sbctl enroll-keys` enrolls new keys
+    - `-f` to also enroll fw-defined keys
+    - `-m` to also enroll microsoft keys
+  - `sbctl sign <file>` signs a file in-place
+    - `-o <out>` to output to a separate file instead
+    - `-s` to remember the file in `/var/lib/sbctl/files.json`
+  - `sbctl sign-all` signs all remembered files
+
 ## ukify
 
 - setup
