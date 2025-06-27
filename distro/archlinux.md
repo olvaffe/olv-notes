@@ -330,11 +330,12 @@ Arch Linux
   - `-p <present>` creates an initramfs according to
     `/etc/mkinitcpio.d/<present>.preset`
 - `/etc/mkinitcpio.conf` by default enables these hooks in order
-  - `base` adds `busybox`, `kmod`, `/init`, and others
+  - `base` adds `busybox`, `kmod`, `blkid`, `mount`, `/init`, and others
   - `udev` adds `systemd-udevd`, `udevadm`, and others
   - `autodetect` scans `/sys` for `modalias`s and invokes `modprobe -R` to map
     them to module names cached in `_autodetect_cache` variable; hooks after
     `autodetect` only consider modules in `_autodetect_cache`
+  - `microcode` adds cpu ucode
   - `modconf` adds `modprobe` configuration files
   - `kms` adds modules related to drm as well as their dependencies/firmwares
   - `keyboard` adds modules related to input
