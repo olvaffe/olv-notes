@@ -60,17 +60,17 @@ UEFI
     - signature database, db
   - machine owner generates PK
     - PK is x509 cert
-    - PK is only used to sign KEK updates
+    - PK privkey is only used to sign PK and KEK updates
       - it is used rarely and can be stored offline for highest security
     - there is only one PK
   - machine owner updates KEKs
     - KEK is x509 cert
-    - KEK is only used to sign db updates
+    - KEK privkey is only used to sign db updates
       - it is used rarely and can be stored offline for highest security
     - there can be multiple KEKs, one for each trusted OS vendor
   - OS vendors updates db keys
     - db key is x509 cert
-    - db key is used to sign executables
+    - db key privkey is used to sign executables
       - it is used frequently and is stored online for convenience
     - there can be multiple db keys
       - each trusted OS vendor updates db with its db key
@@ -121,6 +121,8 @@ UEFI
     - `-c` to also enroll custom keys from `/var/lib/sbctl/keys/custom`
       - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`,
         and rename `/var/lib/sbctl/keys/custom/DB` to `/var/lib/sbctl/keys/custom/db`
+    - `--export auth` to export rather than to enroll; the exported keys can
+      be copied to esp and enrolled using uefi apps
   - `sbctl sign <file>` signs a file in-place
     - `-o <out>` to output to a separate file instead
     - `-s` to remember the file in `/var/lib/sbctl/files.json`

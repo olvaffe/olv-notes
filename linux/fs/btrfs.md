@@ -28,15 +28,17 @@ Kernel btrfs
 ## Use
 
 - `mkfs.btrfs`
-  - `mkdir homes`
-    - `btrfs subvolume create homes/current`
-  - `mkdir roots`
-    - `btrfs subvolume create roots/current`
-      - `mkdir roots/current/{boot,home}`
-    - `btrfs subvolume set-default roots/current`
-- mount the fs to `/`, which uses `subvol=roots/current` by default
-  - mount `subvol=homes/current` to `/home`
+  - `btrfs subvolume create @`
+    - `btrfs subvolume set-default @`
+    - `mkdir -p @/{boot,home,srv,var/log}`
+  - `btrfs subvolume create @home`
+  - `btrfs subvolume create @srv`
+  - `btrfs subvolume create @var-log`
+- mount the fs to `/`, which uses `subvol=@` by default
   - mount esp to `/boot`
+  - mount `subvol=@home` to `/home`
+  - mount `subvol=@srv` to `/srv`
+  - mount `subvol=@var-log` to `/var/log`
 
 ## btrfs userspace
 
