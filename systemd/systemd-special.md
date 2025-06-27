@@ -54,6 +54,24 @@ systemd special
     - all mount units by default has `Conflicts=umount.target`, causing them
       to be umounted
     - `final.target` does not appear to be used
+- initrd
+  - when there is `/etc/initrd-release` (e.g., in initramfs), the default
+    target is `initrd.target`
+  - `sysinit.target` is reached after journal, udev, vconsole, etc.
+  - `basic.target`
+  - `initrd-root-device.target` is reached after root device appears
+    - `systemd-fstab-generator` parses `root=` to generate root `.device`
+  - `initrd-root-fs.target` is reached after root mounted
+    - `systemd-fstab-generator` parses `root=` to generate `sysroot.mount`
+  - `initrd-fs.target` is reached after all fs mounted
+    - `initrd-parse-etc.service` parses `/sysroot/etc/fstab` to generate
+      `.mount`
+    - it also starts `initrd-cleanup.service` to isolate to
+      `initrd-switch-root.target`
+  - `initrd.target`
+  - `initrd-switch-root.target`
+    - it starts `initrd-switch-root.service` to `systemctl switch-root`
+  - many units have `OnFailure=emergency.target` to drop to emergency sulogin
 
 ## Built-in Units
 
@@ -185,6 +203,9 @@ systemd special
   - `boot-complete.target`
   - `default.target`
   - `emergency.target`
+    - only `init` and `sulogin`
+    - `local-fs.target` has `OnFailure=emergency.target` to enter emergency
+      target on any mount failure
   - `exit.target`
   - `factory-reset.target`
   - `factory-reset-now.target`
@@ -217,6 +238,10 @@ systemd special
   - `remote-veritysetup.target`
   - `remote-fs.target`
   - `rescue.target`
+    - this is single-user target
+    - comparing to `multi-user.target`,
+      - it requires `sysinit.target` but not `basic.target`
+      - most services are `WantedBy=multi-user.target` and are not started
   - `runlevel2.target`
   - `runlevel3.target`
   - `runlevel4.target`

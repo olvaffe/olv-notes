@@ -17,16 +17,24 @@ Kernel and MD
   - there are also `dm-crypt`, `dm-verity`, etc. for device-level encryption /
     verification
 
-## LVM
+## DM
 
-- LVM depends on `CONFIG_BLK_DEV_DM` and is otherwise purely in userspace
-- `lvm pvscan` lists physical volumes
-- `lvm vgscan` lists volume groups
-- `lvm lvscan` lists logical volumes
+- DM stands for Device Mapper
+- `/dev/mapper/control` is used to configure dm
+- `dmsetup targets` lists supported targets
+  - `linear` maps a linear range from one block device to another
+  - `striped` stripes the data across physical devices
+  - `error` simulates io errors (for testing)
+  - `crypt` provides data encryption
+    - uses kernel crypto api to encrypt and descrypt data
+- `dmsetup ls --tree` lists devices and their dependencies as a tree
 
 ## LUKS
 
 - LUKS depends on `CONFIG_DM_CRYPT` and is otherwise purely in userspace
+  - using plain `dm-crypt` is not recommended
+  - LUKS defines a standardized header, key-slot area, and a bulk data area
+    that is at the start of the block device
 - wipe partition
   - `cryptsetup open --type plain -d /dev/urandom <part> to_be_wiped`
   - `dd if=/dev/zero of=/dev/mapper/to_be_wiped status=progress`
@@ -52,38 +60,20 @@ Kernel and MD
   - `cryptsetup open <part> cryptroot`
   - `mkfs.btrfs /dev/mapper/cryptroot`
   - `cryptsetup close cryptroot`
-- initramfs
-  - distro specific
-  - on arch,
-    - make sure keyboard and encrypt hooks are enabled
-    - `cryptdevice=UUID=<part-uuid>:cryptroot root=/dev/mapper/cryptroot`
+
+## LVM
+
+- LVM depends on `CONFIG_BLK_DEV_DM` and is otherwise purely in userspace
+  - using plain `dm-linear` is not recommended
+  - LVM stores metadata on the physical device for more features
+- `lvm pvscan` lists physical volumes
+- `lvm vgscan` lists volume groups
+- `lvm lvscan` lists logical volumes
 - LVM on LUKS
   - `pvcreate /dev/mapper/cryptroot`
   - `vgcreate foo /dev/mapper/cryptroot`
   - `lvcreate -L 100%ORIGIN foo -n bar`
   - `mkfs.btrfs /dev/foo/bar`
-  - for arch, make sure lvm2 hook is enabled in initramfs
-
-## Device Mapper
-
-- `/dev/mapper/control` is used to configure dm
-- `dmsetup targets` lists supported targets
-  - `linear` maps a linear range from one block device to another
-  - `striped` stripes the data across physical devices
-  - `error` simulates io errors (for testing)
-  - `crypt` provides data encryption
-    - uses kernel crypto api to encrypt and descrypt data
-- `dmsetup ls --tree` lists devices and their dependencies as a tree
-- LUKS
-  - using plain `dm-crypt` is not recommended
-  - LUKS defines a standardized header, key-slot area, and a bulk data area
-    that is at the start of the block device
-  - `cryptsetup luksFormat /dev/sda1` formats a partition as a LUKS partition
-  - `cryptsetup open --type luks /dev/sda1 blah` creates a device `blah`
-    backed by the physical device
-- LVM
-  - using plain `dm-linear` is not recommended?
-  - LVM stores some metadata on the physical device just like LUKS does
 
 ## dm-verity
 
