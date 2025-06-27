@@ -116,7 +116,11 @@ UEFI
   - `sbctl create-keys` creates new keys under `/var/lib/sbctl`
   - `sbctl enroll-keys` enrolls new keys
     - `-f` to also enroll fw-defined keys
+      - this uses `{PK,KEK,db}Default` variables and might not work
     - `-m` to also enroll microsoft keys
+    - `-c` to also enroll custom keys from `/var/lib/sbctl/keys/custom`
+      - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`,
+        and rename `/var/lib/sbctl/keys/custom/DB` to `/var/lib/sbctl/keys/custom/db`
   - `sbctl sign <file>` signs a file in-place
     - `-o <out>` to output to a separate file instead
     - `-s` to remember the file in `/var/lib/sbctl/files.json`
