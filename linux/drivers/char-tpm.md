@@ -148,6 +148,23 @@ Kernel TPM
   - pcr-7 is for Secure Boot Policy
     - e.g., the firwware measures secure boot related variables (SecureBoot,
       PK, KEK, DB, DBX, etc.) to pcr-7
+- <https://uapi-group.org/specifications/specs/linux_tpm_pcr_registry/>
+  - pcr-8 is used by grub for cmdline
+  - pcr-9 is used by grub for all files read
+  - pcr-10 is used by kernel or ima
+  - pcr-11 is used by systemd-stub for uki and by systemd-pcrphase
+  - pcr-12
+  - pcr-13
+  - pcr-14
+  - pcr-15
+- policies
+  - `TPM2_PolicyPCR` creates a policy based on fixed PCR values, to unseal
+    secret only when PCRs have the fixed values
+  - `TPM2_PolicyAuthorize` creates a policy based on a public key
+    - what it does is that, if another policy is signed by the corresponding
+      private key, use the policy to unreal secret
+    - it enables unsealing based on dynamic PCR values when used with
+      `TPM2_PolicyPCR`
 
 ## `tpm2-tools`
 
