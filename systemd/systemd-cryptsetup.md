@@ -19,3 +19,17 @@ systemd-cryptsetup
   - make sure systemd, keyboard and sd-encrypt hooks are enabled
     - lvm2 as well if lvm-over-luks
   - make sure cmdline has `rd.luks.name=device-UUID=root root=/dev/mapper/root`
+- `--tpm2-pcrs` and `--tpm2-public-key-pcrs`
+  - `--tpm2-pcrs` creates a pcr policy which unseals the volume key only when
+    pcrs have specific values (taken from current values)
+    - the values are a part of the policy and are fixed
+  - `--tpm2-public-key-pcrs` creates an authorize policy which unseals the
+    volume key only when a future pcr policy allows it
+    - `--tpm2-public-key` is a part of the policy and is fixed
+    - the future pcr policy must have a signature verified by the public key
+- uki `.pcrsig` and `.pcrpkey` sections
+  - `.pcrsig` cotains the expected pcr 11 value and is signed
+  - `.pcrpkey` contains the public key to verify the signature
+  - together, they can create a pcr policy for use with
+    `--tpm2-public-key-pcrs`
+- <https://0pointer.net/blog/brave-new-trusted-boot-world.html>
