@@ -15,12 +15,27 @@ Arch Linux
   - wait until system clock synced
     - `timedatectl`
   - partition disk with fdisk
-    - 1M for BIOS boot partition (type 4), if bios
     - 1G for EFI system partition (type 1), esp
       - `mkfs.fat -F32 <part>`
     - remainder for root partition
       - `mkfs.ext4 <part>`
+    - if luks,
+      - `cryptsetup luksFormat <part>`
+      - `systemd-cryptenroll --tpm2-device=auto <part>`
+      - `systemd-cryptsetup attach root <part>`
+    - if btrfs,
+      - `mkfs.btrfs <part>`
+      - `mount <part> /mnt`
+      - `btrfs subvolume create /mnt/@`
+      - `btrfs subvolume create /mnt/@home`
+      - `btrfs subvolume set-default /mnt/@`
+      - `umount /mnt`
   - mount partitions to `/mnt` and `/mnt/boot`
+    - if btrfs,
+      - `mount -o compress=zstd <part> /mnt`
+      - `mkdir /mnt/{boot,home}`
+      - `mount <esp> /mnt/boot`
+      - `mount -o compress=zstd,subvol=@home <part> /mnt/home`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
@@ -32,12 +47,9 @@ Arch Linux
   - `hwclock --systohc`
     - this updates `/etc/adjtime` so should be done in chroot
   - install more packages
-    - `pacman -S linux linux-firmware intel-ucode dosfstools btrfs-progs`
+    - `pacman -S linux linux-firmware intel-ucode dosfstools btrfs-progs systemd-ukify`
     - `pacman -S sudo vim`
-    - `pacman -S zram-generator`
-      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
-    - `pacman -S grub`, if using BIOS
     - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
   - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
   - `systemd-firstboot --prompt`, or
@@ -49,16 +61,20 @@ Arch Linux
     - `useradd -m -G wheel <user>`
     - `passwd <user>`
     - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
+  - generate uki
+    - create `/etc/kernel/cmdline`
+      - `root=<part> loglevel=7`
+      - if luks, `rd.luks.name=<LUKS_UUID>=root root=/dev/mapper/root`
+    - edit `/etc/mkinitcpio.d/linux.preset`
+      - remove `fallback` from `PRESETS`
+      - comment out `default_image`
+      - `default_uki=/boot/EFI/Linux/arch-linux.efi`
+    - if luks, edit `/etc/mkinitcpio.conf`
+      - replace `udev` by `systemd` and `keymap consolefont` by
+        `sd-vconsole sd-encrypt` in `HOOKS`
+    - `mkinitcpio -p linux`
   - install bootloader
-    - `bootctl install` for EFI
-    - create `/boot/loader/entries/arch.conf`
-      - `title	Arch Linux`
-      - `linux	/vmlinuz-linux`
-      - `initrd	/initramfs-linux.img`
-      - `options root=... loglevel=7`
-    - or, on a BIOS system,
-      - `grub-install <dev>`
-      - `grub-mkconfig -o /boot/grub/grub.cfg`
+    - `bootctl install`
 - Reboot
 
 ## Post-Installation
@@ -66,14 +82,14 @@ Arch Linux
 - network
   - for quick connection, see `Installation`
   - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/wlan.network`
-  - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
   - `systemctl enable --now iwd systemd-networkd systemd-resolved`
   - `iwctl station <iface> connect <ssid>`
   - for wireless adapter that requiers out-of-tree driver,
     - `dkms autoinstall`
     - `/etc/modules-load.d`
     - `/etc/modprobe.d/blacklist.conf`
-  - `timedatectl set-ntp true`
+  - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
+  - `timedatectl set-ntp yes`
 - login as user
   - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
   - `./olv-etc/create-links`
@@ -83,6 +99,7 @@ Arch Linux
     - `dosfstools btrfs-progs`
     - `sudo vim`
     - `zram-generator`
+      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
   - network
     - `openssh wireguard-tools`
     - `iwd` or `wpa_supplicant`
