@@ -12,16 +12,15 @@ Arch Linux
       - `ip route add default via 192.168.0.254`
     - wireless: `iwctl station <iface> connect <ssid>`
       - no easy way if the wireless adapter is not supported by the live image
-  - wait until system clock synced
-    - `timedatectl`
-  - partition disk with fdisk
-    - 1G for EFI system partition (type 1), esp
-      - `mkfs.fat -F32 <part>`
-    - remainder for root partition
-      - `mkfs.ext4 <part>`
+  - `timedatectl` and wait until system clock synced
+  - partition and format disk
+    - `fdisk <dev>`
+      - 1GB for EFI system partition (ESP)
+      - remainder for root partition
+    - `mkfs.fat -F32 <part>`
+    - `mkfs.ext4 <part>`
     - if luks,
       - `cryptsetup luksFormat <part>`
-      - `systemd-cryptenroll --tpm2-device=auto <part>`
       - `systemd-cryptsetup attach root <part>`
     - if btrfs,
       - `mkfs.btrfs <part>`
@@ -35,14 +34,15 @@ Arch Linux
       - `mount -o compress=zstd <part> /mnt`
       - `mkdir /mnt/{boot,home}`
       - `mount <esp> /mnt/boot`
-      - `mount -o compress=zstd,subvol=@home <part> /mnt/home`
+      - `mount -o subvol=@home <part> /mnt/home`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
     - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
   - `pacstrap -K /mnt base`
-  - `genfstab -U /mnt >> /mnt/etc/fstab` and double-check
-- Enter chroot
+  - `genfstab -U /mnt >> /mnt/etc/fstab` and edit
+    - replace expanded default options by `defaults`
+- Configure
   - `arch-chroot /mnt`
   - `hwclock --systohc`
     - this updates `/etc/adjtime` so should be done in chroot
@@ -51,16 +51,19 @@ Arch Linux
     - `pacman -S sudo vim`
     - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
     - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
-  - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen` and run `locale-gen`
-  - `systemd-firstboot --prompt`, or
-    - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
+  - generate locale
+    - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen`
+    - `locale-gen`
+  - `systemd-firstboot --prompt --force`, or
     - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
+    - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
     - `echo <host-name> > /etc/hostname`
     - `passwd` to set a password for root
   - create user
     - `useradd -m -G wheel <user>`
     - `passwd <user>`
     - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
+  - `bootctl install`
   - generate uki
     - create `/etc/kernel/cmdline`
       - `root=<part> loglevel=7`
@@ -69,12 +72,11 @@ Arch Linux
       - remove `fallback` from `PRESETS`
       - comment out `default_image`
       - `default_uki=/boot/EFI/Linux/arch-linux.efi`
-    - if luks, edit `/etc/mkinitcpio.conf`
-      - replace `udev` by `systemd` and `keymap consolefont` by
-        `sd-vconsole sd-encrypt` in `HOOKS`
+    - edit `/etc/mkinitcpio.conf`
+      - replace `udev` by `systemd` and `keymap consolefont` by `sd-vconsole`
+        in `HOOKS`
+        - if luks, add `sd-encrypt` after `sd-vconsole`
     - `mkinitcpio -p linux`
-  - install bootloader
-    - `bootctl install`
 - Reboot
 
 ## Post-Installation
@@ -90,6 +92,28 @@ Arch Linux
     - `/etc/modprobe.d/blacklist.conf`
   - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
   - `timedatectl set-ntp yes`
+- secure boot
+  - `pacman -S sbctl`
+  - `sbctl create-keys`
+  - if preserving oem keys,
+    - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`
+    - `mv /var/lib/sbctl/keys/custom/{DB,db}`
+  - reboot and clear oem keys to enter setup mode
+  - `sbctl enroll-keys`
+    - `-c` if preserving oem keys
+  - `sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI`
+  - `sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi`
+  - `sbctl sign -s /boot/EFI/Linux/arch-linux.efi`
+- luks
+  - create `/etc/kernel/uki.conf`
+    - `[PCRSignature:initrd]`
+    - `Phases=enter-initrd`
+    - `PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key.pem`
+    - `PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem`
+  - `ukify genkey -c /etc/kernel/uki.conf` generates the key to sign pcr
+    policies
+  - `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --tpm2-public-key-pcrs=11 --tpm2-public-key=/etc/systemd/tpm2-pcr-public-key.pem <part>`
+  - `mkinitcpio -p linux`
 - login as user
   - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
   - `./olv-etc/create-links`
@@ -100,6 +124,7 @@ Arch Linux
     - `sudo vim`
     - `zram-generator`
       - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
+    - `systemd-ukify sbctl`
   - network
     - `openssh wireguard-tools`
     - `iwd` or `wpa_supplicant`
@@ -121,7 +146,7 @@ Arch Linux
     - `wayland-protocols libxrandr`
     - `llvm glslang libclc spirv-llvm-translator`
     - `vulkan-validation-layers vulkan-extra-layers`
-    - `python -m venv ~/.pip`
+    - `python -m venv --system-site-packages ~/.pip`
       - `pip install packaging mako pyyaml`
   - cross-compile
     - `aarch64-linux-gnu-gcc`
