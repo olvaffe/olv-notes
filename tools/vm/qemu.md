@@ -47,10 +47,11 @@ QEMU
 - `ninja` builds qemu proper
 - `make` builds qemu proper and firmwares
 - meson options
-  - `opengl` requires epoxy and enables `-display sdl,gl=on`
+  - `opengl` requires epoxy and, together with `sdl`, enables `-display sdl,gl=on`
   - `sdl` (or `gtk`) requires sdl and eanbles `-display sdl`
   - `slirp` enables userspace network emulation
-  - `virglrenderer` requires virglrenderer and enables `-vga virtio`
+  - `virglrenderer` requires virglrenderer and, together with `opengl`,
+    enables `-vga virtio`
 
 ## Example: GPT Disk Image
 
@@ -347,7 +348,7 @@ QEMU
         - `-device virtio-gpu-pci`, no vga, no virgl
         - `-device virtio-gpu-gl-pci`, no vga, with virgl
 
-## Starup
+## Startup
 
 - most things in qemu are modules
 - modules are registered before `main()` using `register_module_init`
@@ -377,6 +378,80 @@ QEMU
   `machine_run_board_init` to initialize
   - this calls `pc_q35_init` for q35 machine
   - it adds a bunch more essential devices (each of a QOM type) to the machine
+
+## Machine
+
+- `DEFINE_Q35_MACHINE_AS_LATEST(10, 1)` defines `q35` machine
+  - `pc_q35_machine_10_1_init` calls `pc_q35_init`
+  - `pc_q35_machine_10_1_class_init`
+    - `pc_q35_machine_10_1_options`
+      - `m->default_machine_opts = "firmware=bios-256k.bin"`
+      - `m->default_display = "std"`
+      - more
+    - `mc->init = pc_q35_machine_10_1_init`
+    - `mc->is_default = false`
+    - `mc->alias = "q35"`
+  - `pc_q35_machine_10_1_info`
+    - `.name = "pc-q35-10.1-machine"`
+    - `.parent = TYPE_PC_MACHINE`
+    - `.class_init = pc_q35_machine_10_1_class_init`
+  - `pc_q35_machine_10_1_register`
+    - `type_register_static(&pc_q35_machine_10_1_info)`
+  - `type_init(pc_q35_machine_10_1_register)` expands to a ctor that calls
+    `register_module_init`
+- `qemu_init`
+  - `qemu_init_subsystems` inits various modules
+    - this includes `pc_q35_machine_10_1_register` which calls
+      `type_register_static` to register `pc_q35_machine_10_1_info`
+  - `qemu_create_machine` creates the machine
+    - `qdict` is parsed from `-machine ...`
+    - with `-machine q35`, `select_machine` selects q35
+      - `object_class_get_list` calls `type_initialize` on all `TYPE_MACHINE`
+        - `pc_q35_machine_10_1_class_init` inits the machine class
+      - `find_machine` returns the machine class
+    - `object_new_with_class` creates a `PCMachineState`
+  - if `-nodefaults`, `qemu_disable_default_devices` disables default devices
+  - `qemu_setup_display` sets up display
+  - `qemu_create_default_devices` creates default devices
+  - `qemu_apply_machine_options` calls `object_set_properties_from_keyval` to
+    add `-machine ...` as properties
+  - `qmp_x_exit_preconfig`
+    - `qemu_init_board`
+      - `machine_run_board_init` calls `pc_q35_machine_10_1_init`
+        - `pcms->pcibus` is pci host bus, with this inheritance
+          - `TYPE_Q35_HOST_DEVICE`
+          - `TYPE_PCIE_HOST_BRIDGE`
+          - `TYPE_PCI_HOST_BRIDGE`
+          - `TYPE_SYS_BUS_DEVICE`
+          - `TYPE_DEVICE`
+          - `TYPE_OBJECT`
+        - `lpc` is a pci device that provides isa bus
+          - it is a `TYPE_ICH9_LPC_DEVICE`
+          - it has a `TYPE_MC146818_RTC`
+        - `x86ms->rtc` is rtc on isa bus
+        - `pc_i8259_create` creates `TYPE_KVM_I8259` on isa bus
+        - `pc_basic_device_init`
+          - hpet is `TYPE_HPET`
+          - `kvm_pit_init` creates `TYPE_KVM_I8254` timer
+          - pcspk
+          - `pc_superio_init` creates `TYPE_I8042`, vmmouse, etc.
+        - ich9 sata controller `TYPE_ICH9_AHCI`
+        - smbus `TYPE_ICH9_SMB_DEVICE`
+        - `pc_vga_init` creates vga
+          - if `-vga virtio`, `TYPE_VIRTIO_VGA`
+          - if `-nodefaults`, none
+        - `pc_nic_init` creates nic
+          - if `-nodefaults`, none
+    - `qemu_create_cli_devices` calls `device_init_func` for each `-device`
+      - `qdev_device_add_from_qdict` adds the device
+      - for `-device virtio-net`,
+        - `qdev_get_device_class` uses `qdev_alias_table` to map `virtio-net`
+          to `virtio-net-pci`
+        - `virtio_net_pci_instance_init` inits the dev
+        - `virtio_net_pci_realize` realizes
+      - for `-device virtio-vga-gl`,
+        - `virtio_vga_gl_inst_initfn` inits the dev
+        - `virtio_gpu_gl_device_realize` realizes
 
 ## Display
 
