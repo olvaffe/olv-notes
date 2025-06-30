@@ -34,7 +34,7 @@ QEMU
 ## Build
 
 - `mkdir out; cd out`
-- `../configure --target-list=x86_64-softmmu --enable-{opengl,sdl,slirp,virglrenderer}`
+- `../configure --target-list=x86_64-softmmu --enable-{debug,opengl,sdl,slirp,virglrenderer}`
   - it creates python venv under `pyvenv`
   - it ensures certain python modules are installed according to
     `pythondeps.toml`
@@ -56,7 +56,7 @@ QEMU
 ## Example: GPT Disk Image
 
 - `fallocate -l 4G test.img`
-- `echo -e 'label:gpt\nsize=260M,type=uefi\ntype=linux' | sfdisk test.img`
+- `echo -e 'label:gpt\nsize=1G,type=uefi\ntype=linux' | sfdisk test.img`
 - `losetup -P /dev/loop0 test.img`
 - `mkfs.fat -F32 /dev/loop0p1`
 - `mkfs.ext4 /dev/loop0p2`
@@ -348,6 +348,81 @@ QEMU
         - `-device virtio-gpu-pci`, no vga, no virgl
         - `-device virtio-gpu-gl-pci`, no vga, with virgl
 
+## Console
+
+- `-serial mon:stdio` uses stdio as guest serial console, with muxed monitor
+- `ctrl-a h` for help
+  - `ctrl-a x` to exit
+  - `ctrl-a c` to toggle between guest console and muxed monitor
+- upon monitor cmd, `monitor_read` reads the cmd and `handle_hmp_command`
+  handles it
+- `info` is handled by `hmp_info_help`
+- `info qtree -b` is handled by `hmp_info_qtree`
+  - `qbus_print` prints `sysbus_get_default` bus recursively
+- `info qom-tree` is handled by `hmp_info_qom_tree`
+  - `print_qom_composition` prints `qdev_get_machine` machine recursively
+
+## QOM
+
+- example: `kvmclock`
+  - `type_init(kvmclock_register_types)` registers the type before `main`
+    - `type_register_static` adds `kvmclock_info` to the type table
+  - `kvmclock_create` creates a device during `pc_q35_init`
+    - `qdev_new(name)` calls `object_new` to create a `TYPE_KVM_CLOCK`
+      - `type_get_or_load_by_name` looks up the registered type
+      - `object_new_with_type` creates the object
+        - `type_initialize` inits the class (and base classes) on demand
+          - `kvmclock_class_init`
+          - `sysbus_device_class_init`
+          - `device_class_init`
+          - `object_class_init`
+        - obj is allocated
+        - `object_initialize_with_type` inits the obj
+          - `device_initfn`
+    - `qdev_realize_and_unref` realizes the qdev
+      - `qdev_set_parent_bus` adds the qdev to the bus
+      - `object_property_set_bool` sets `realized` to true
+        - `device_set_realized` handles the change
+          - `kvmclock_realize`
+- `QObject` is a generic value
+  - `QBool` has a `bool`
+  - `QNum` has a discriminated i64/u64/double
+  - `QString` has a c-string
+  - `QList` has a list of `QObject`
+  - `QDict` has a dict of `QObject`
+- `object_class_property_add` adds a class prop
+  - it allocs a `ObjectProperty` and adds it to `klass->properties`
+  - `prop->set` sets the prop value
+    - the prop value is wrapped in a `QObject`
+    - the `QObject` is wrapped in a `qobject_input_visitor_new`
+    - the set function extracts the underlying value from the visitor and
+      updates the object
+  - `prop->get` returns the prop value
+    - the get function gets the underlying value from the object and wraps it
+      in a `QObject`
+    - the `QObject` is wrapped in a `qobject_output_visitor_new`
+- `object_property_add` adds an object prop
+  - it allocs a `ObjectProperty` and adds it to `obj->properties`
+- `object_property_find` finds an `ObjectProperty`
+  - `object_class_property_find` finds the class prop first, including in the
+    base classes
+  - it finds in `obj->properties` if there is no class prop
+- convenience helpers
+  - the prop set/get callbacks work with `Visitor`
+  - `object_property_set_qobject` and `object_property_get_qobject` work with
+    `QObject`
+  - `object_property_set_str` and `object_property_get_str` work with string
+    directly
+  - same for other primitive types
+- `object_property_add_alias` adds an object prop that aliases another object
+  prop
+- `object_property_add_child` adds an object prop and sets the value to
+  another object
+  - the other object is a child object and is stored directly in
+    `prop->opaque`
+  - `object_resolve_path_component` returns the child object directly
+  - get returns `object_get_canonical_path` of the child object
+
 ## Startup
 
 - most things in qemu are modules
@@ -497,4 +572,3 @@ QEMU
       (250) ms
     - `gui_update` wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` or
       `GUI_REFRESH_INTERVAL_IDLE` ms (to process input)
-  -
