@@ -51,7 +51,7 @@ QEMU
   - `sdl` (or `gtk`) requires sdl and eanbles `-display sdl`
   - `slirp` enables userspace network emulation
   - `virglrenderer` requires virglrenderer and, together with `opengl`,
-    enables `-vga virtio`
+    enables `-device virtio-vga-gl`
 
 ## Example: GPT Disk Image
 
@@ -87,10 +87,10 @@ QEMU
 
 ## Example: Power Up
 
-- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G`
+- `qemu-system-x86_64 -machine q35 -accel kvm -cpu host -m 2G`
   - this powers on the machine with default devices
   - to escape mouse grab, `ctrl-alt-g`
-- `qemu-system-x86_64 -machine q35,accel=kvm -cpu host -m 2G -nodefaults -nographic -serial mon:stdio`
+- `qemu-system-x86_64 -machine q35 -accel kvm -cpu host -m 2G -nodefaults -nographic -serial mon:stdio`
   - this is without default devices and is headless
 - `-nodefaults` disables default devices
   - this includes audio, serial, parallel, monitor, floppy, cdrom, vga, and net
@@ -176,11 +176,11 @@ QEMU
   - qcow2 was used when filesystems did not support sparse files
 - `MACHINE_OPTS="-machine q35 -cpu host -accel kvm -smp 2 -m 4G -nodefaults"`
 - `DISPLAY_OPTS="-display sdl,gl=core -device virtio-vga-gl"`
-- `BLOCK_OPTS="-hda arch.img"`
+- `BLOCK_OPTS="-drive file=arch.img,format=raw"`
 - `NETWORK_OPTS="-nic user,hostfwd=tcp::2222-:22,model=virtio"`
 - `./qemu-system-x86_64 \
    $MACHINE_OPTS $DISPLAY_OPTS $BLOCK_OPTS $NETWORK_OPTS \
-   -cdrom <cd>.iso -boot d`
+   -drive file=archlinux-x86_64.iso,media=cdrom`
 - common issues
   - `-smp 2`, otherwise arch iso refuses to boot to kernel
   - `ssh -p 2222 localhost` to ssh into the guest
