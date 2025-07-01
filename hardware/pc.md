@@ -719,6 +719,8 @@ PC
 ## Devices
 
 - me
+  - Lenovo ThinkPad T580
+    - i7-8650U (x4), 16GB DDR4, 256GB SATA SSD
   - Dell XPS 13 (9343)
     - i5-5200U (x2), 4GB LPDDR3, 128GB M.2 SATA
   - Raspberry 4 Model B Rev 1.2
@@ -728,7 +730,7 @@ PC
 - spouse
   - Minisforum UM690
     - 6900HX (x8), 32GB LPDDR5, 1TB NVMe
-  - Lenovo IdeaPad
+  - Lenovo Slim 7 Pro X
     - 6900HS (x8), 32GB LPDDR5, 1TB NVMe
 - kids
   - HP Chromebook x360 14c-cc0
