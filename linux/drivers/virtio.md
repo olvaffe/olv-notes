@@ -3,6 +3,8 @@ virtio
 
 ## Spec
 
+- <https://github.com/oasis-tcs/virtio-spec>
+- <https://docs.oasis-open.org/virtio/virtio/v1.3/virtio-v1.3.html>
 - 2 Basic Facilities of a Virtio Device
   - 2.1 Device Status Field
     - mainly set by guest to report initialization stages
