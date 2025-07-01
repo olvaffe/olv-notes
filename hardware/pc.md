@@ -722,7 +722,7 @@ PC
   - Lenovo ThinkPad T580
     - i7-8650U (x4), 16GB DDR4, 256GB SATA SSD
   - Dell XPS 13 (9343)
-    - i5-5200U (x2), 4GB LPDDR3, 128GB M.2 SATA
+    - i5-5200U (x2), 4GB DDR3L, 128GB M.2 SATA
   - Raspberry 4 Model B Rev 1.2
     - BCM2711 (A72 x4), 4GB LPDDR4, no storage
   - FriendlyElec NanoPi R5C
@@ -734,7 +734,7 @@ PC
     - 6900HS (x8), 32GB LPDDR5, 1TB NVMe
 - kids
   - HP Chromebook x360 14c-cc0
-    - i3-1115G4 (x2), 8GB LPDDR4X, 128GB NVMe
+    - i3-1115G4 (x2), 8GB DDR4, 128GB NVMe
   - ASUS Chromebook Flip C434
     - m3-8100Y (x2), 8GB LPDDR3, 128GB eMMC
 - work
@@ -745,4 +745,18 @@ PC
   - ASUS Vivobook S 15 (Q5507)
     - X1P-42-100 (x8), 16GB LPDDR5X, 512GB NVMe
   - Xunlong Orange Pi 5
-    - RK3588S (A76 x4, A55 x4), 16GB, no eMMC
+    - RK3588S (A76 x4, A55 x4), 16GB LPDDR4X, no eMMC
+- geekbench single-core scores
+  - intel
+    - i7-12xx: 2300
+    - i7-11xx: 2000
+    - i3-11xx: 1800
+    - i7-8xxx: 1300
+    - m3-8xxx: 1000
+    - i5-5xxx: 800
+  - amd
+    - 69xx: 2000
+  - arm
+    - X1P: 2300
+    - A7x: 800
+    - A5x: 200
