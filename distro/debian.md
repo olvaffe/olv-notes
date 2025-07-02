@@ -10,14 +10,14 @@ Debian
     for 1 year
 - suites/repos
   - a release uses `stable` repo
-    - use codenames such as `bookworm` instead to avoid unexpected upgrade to
+    - use codenames such as `trixie` instead to avoid unexpected upgrade to
       a new release
   - updates are staged and tested in `stable-proposed-updates` until a point
     release is made
     - at which point, the updates are reflected in `stable`
   - updates that are security-releated are also added to `stable-security`
-  - updates that are time-sensitive (e.g., timezone data) are also added to
-    `stable-updates`
+  - updates that are time-sensitive (e.g., `tzdata` and `ca-certificates`) are
+    also added to `stable-updates`
   - backports from `testing` are in `stable-backports`
     - it consists of selected packages from `testing` which are re-compiled
       for `stable`
@@ -33,10 +33,19 @@ Debian
   - 11, bullseye, 5.10
   - 12, bookworm, 6.1
   - 13, trixie, 6.12
-- trixie
-  - `deb http://deb.debian.org/debian trixie main non-free-firmware`
-  - `deb http://deb.debian.org/debian-security/ trixie-security main non-free-firmware`
-  - `deb http://deb.debian.org/debian trixie-updates main non-free-firmware`
+- `/etc/apt/sources.list.d/debian.sources`
+
+    Types: deb
+    URIs: https://deb.debian.org/debian/
+    Suites: trixie
+    Components: main non-free-firmware
+    Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+
+    Types: deb
+    URIs: https://security.debian.org/debian-security/
+    Suites: trixie
+    Components: main non-free-firmware
+    Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
 
 ## Freeze Policy
 
@@ -51,7 +60,26 @@ Debian
   - only release-critical changes
 - month N+5: release
 
-## Initial Setup
+## Debian Installer
+
+- `tasksel` is used to install packages
+  - <https://salsa.debian.org/installer-team/tasksel>
+  - `tasks/standard` has `Packages: standard`
+    - `tasksel.pl` selects packages with priority required, important, or
+      standard
+    - `apt list '?priority(required)'` has ~30 packages
+      - apt, dpkg, and various unix utils expected by install scripts
+      - many of the packages also have `Essential: yes`
+    - `apt list '?priority(important)'` has ~30 packages
+      - init, udev, disk, networks, and admin tools
+    - `apt list '?priority(standard)'` has ~40 packages
+      - more admin tools such as dbus, file, lsof, man, etc.
+  - `tasks/ssh-server` has `Key: task-ssh-server`
+    - `tasksel.pl` selects `task-ssh-server`
+  - `debian/control` defines various task packages
+    - `task-ssh-server` depends on `openssh-server` and recommends `openssh-client`
+
+## Post-Install Setup
 
 - packages
   - `apt-mark` packages appropriately
@@ -135,8 +163,8 @@ Debian
   - inter-relationship fields
     - `Depends`
     - `Pre-Depends`
-    - `Recommends`
-    - `Suggests`
+    - `Recommends`: A recommends B when A is pointless without B for most users
+    - `Suggests`: A suggests B when A is enhanced by B
     - `Breaks`
     - `Conflicts`
     - `Provides`
@@ -208,9 +236,7 @@ Debian
   selectively mark packages manual
   - it ignores packages that are on `Recommends` or `Suggests` by default
   - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
-    - A recommends B when A is pointless without B for most users
   - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
-    - A suggests B when A is enhanced by B
 - `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
 - without marking any package manual, we will end up with a system with only
   `Essential/Important/Protected` packages and their dependencies/recommends
@@ -230,7 +256,7 @@ Debian
 - `debootstrap --print-debs stable tmp` prints installed packages
   - the list is from `work_out_debs` in
     `/usr/share/debootstrap/scripts/debian-common`
-  - it includes packages with `Priority: required` and `Essential: yes`
+  - it includes packages with `Priority: required` and `Priority: important`
 
 ## cross-`debootstrap`
 
