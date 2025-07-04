@@ -243,6 +243,7 @@ Arch Linux
 - update
   - `pacman -Syu`
   - `pacman -Scc`
+- if chroot or loop0 is busy, see if pacman's `gpg-agent` is still alive
 
 ## Tidy Up an Existing Installation
 

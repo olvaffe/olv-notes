@@ -245,6 +245,54 @@ Chrome OS Kernel
 - boot the new kernel once
   - `sudo cgpt add -i 4 -S 0 -T 1 -P15 /dev/mmcblk1`
 
+## Linux Distro: Userspace
+
+- prepare disk image
+  - `fallocate -l 3GiB my.img`
+  - `fdisk my.img`
+    - two 64MB partitions of type `ChromeOS kernel`
+    - 1 partition of type `Linux filesystem`
+  - `cgpt add -i 1 -S 1 -T 2 -P 10 my.img`
+  - `cgpt add -i 2 -S 1 -T 2 -P 5 my.img`
+  - `sudo losetup -f -P my.img`
+- prepare root
+  - `mkfs.f2fs /dev/loop0p3`
+  - `mount /dev/loop0p3 /mnt`
+  - `bsdtar -xpf ArchLinuxARM-aarch64-latest.tar.gz -C /mnt`
+    - untar archlinux bootstrap tarball if x86
+  - `mount -t proc none /mnt/proc`
+  - `chroot /mnt`
+  - `rm /etc/resolv.conf`
+  - `echo "nameserver 8.8.8.8" > /etc/resolv.conf`
+  - `pacman-key --init`
+  - `pacman-key --populate archlinuxarm`
+    - `pacman-key --populate archlinux` if x86
+  - `pacman -R linux-aarch64`
+  - `pacman -Syu`
+  - `pacman -S vim vboot-utils f2fs-tools linux-firmware-qcom networkmanager rmtfs-git`
+  - `pacman -Scc`
+  - `systemctl enable NetworkManager rmtfs`
+  - `userdel -r alarm`
+    - or keep it and the password is `alarm`
+  - `passwd -d root`
+    - or keep it and the password is `root`
+- prepare kernel
+  - build kernel normally
+  - pack the kernel with `vbutil_kernel`
+  - `cp Image.vboot /dev/loop0p1`
+  - `make INSTALL_MOD_PATH=/mnt modules_install`
+    - in the chroot, `depmod -a <version`
+- clean up and flash
+  - `umount /mnt/proc`
+  - `umount /mnt`
+  - `losetup -D`
+  - `cp my.img /dev/sda`
+  - `sync`
+- installation
+  - boot dut from the usb
+  - partition the dut disk similar to partitioning the disk image
+  - `cp /dev/sda1 /dev/mmcblk0p1`
+
 ## Drivers
 
 - `CONFIG_GOOGLE_FIRMWARE`
