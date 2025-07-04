@@ -4,7 +4,7 @@ Perfetto
 ## Use
 
 - <https://perfetto.dev/docs/contributing/build-instructions>
-  - `git clone https://android.googlesource.com/platform/external/perfetto`
+  - `git clone https://github.com/google/perfetto.git`
   - `tools/install-build-deps [--linux-arm]` to pull dependencies
     - `BUILD_DEPS_TOOLCHAIN_HOST`
       - `gn`

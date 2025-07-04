@@ -116,7 +116,7 @@ Web Scraping
 - an empty line
 - optional response body
 
-## Modules
+## Python
 
 - <https://pypi.org/project/requests/> for synchronous http requests
   - `requests.request` sends a request synchronously
