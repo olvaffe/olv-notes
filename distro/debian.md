@@ -43,7 +43,7 @@ Debian
 
     Types: deb
     URIs: https://security.debian.org/debian-security/
-    Suites: trixie
+    Suites: trixie-security
     Components: main non-free-firmware
     Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
 
