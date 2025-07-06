@@ -193,6 +193,37 @@ C
   - `wchar.h`	Extended multibyte and wide character utilities
   - `wctype.h`	Functions to determine the type contained in wide character data
 
+## Locale
+
+- `setlocale` sets/gets the current locale
+  - `C` is the only locale defined by C standards
+    - POSIX defines `POSIX` to be equivalent to `C`
+  - `setlocale(NULL)` gets the current locale
+    - it returns `C` on program startup
+  - `setlocale("")` picks platform-defined default locale
+    - glibc tries `LC_ALL`, `LC_*`, and then `LANG` in order
+- glibc
+  - naming: `ll_CC.SSS`
+    - `ll` is the lang, such as `en`
+    - `CC` is the country, such as `US`
+    - `SSS` is the encoding, such as `UTF-8`
+  - `locale-gen`
+    - inputs
+      - `/etc/locale.gen`
+      - `/usr/share/i18n/locales/ll_CC`
+      - `/usr/share/i18n/charmaps/SSS`
+    - outputs
+      - `/usr/lib/locale/locale-archive`
+  - `/usr/lib/locale/C.utf8`
+    - glib 2.35+ optionally supports `C.UTF-8`
+    - `C` has an unspecified encoding
+    - `C.UTF-8` uses utf8
+- `gettext(msg)` returns the translated string
+  - if locale is `C`, it returns `msg`
+  - otherwise, it looks up in `/usr/share/locale/ll_CC/LC_MESSAGES/domain.mo`
+    - `domain` is set via `textdomain`, which is typically the app name
+- systemd uses `/etc/locale.conf` for its services/users
+
 ## Integer Promotion
 
 - Every integer type has an integer conversion rank defined as follows:

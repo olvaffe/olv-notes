@@ -138,6 +138,12 @@ PAM
     - check `/var/spool/mail/<user>` for new mails
   - `session optional   pam_umask.so`
     - apply umask using `/etc/login.defs`
+    - if `usergroups`, which is default on debian, owner bits are set to group
+      bits (`022` becomes `002`)
+      - on systems where users share their primary groups, `022` ensures only
+        users can modify their files by defaults
+      - but when each user has their own primary group (aka user groups or
+        user private groups), `002` is equally safe and is more convenient
   - `-session optional  pam_systemd.so`
     - register the user session to `systemd-logind` and thus the cgroup
       hierarchy
