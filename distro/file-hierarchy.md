@@ -30,98 +30,60 @@ Filesystem Hierarchy
   when they are running)
 - `/srv` is for data that can be retrieved by others over network
 
-## `/`
+## FHS
 
-- these subdirectories or symbolic links are required
-  - `bin`: Essential command binaries
-    - commands desirable for single-user/maintenance mode
-  - `boot`: Static files of the boot loader
-    - everything required to boot the kernel
-  - `dev`: Device files
-  - `etc`: Host-specific system configuration
-  - `lib`: Essential shared libraries and kernel modules
-    - libraries needed by `bin` or `sbin`
-    - kernel modules
-  - `media`: Mount point for removable media
-    - with subdirectories as mountpoints for removable media
-    - accessible by all users
-  - `mnt`: Mount point for mounting a filesystem temporarily
-  - `opt`: Add-on application software packages
-    - apps not managed by system package manager
-    - each app should be in its subdirectory
-  - `run`: Data relevant to running processes
-    - must be empty on boot
-    - system apps are recommended to use subdirectories
-  - `sbin`: Essential system binaries
-    - admin commands desirable for single-user/maintenance mode
-  - `srv`: Data for services provided by this system
-    - `www` if the system is a www server
-    - `git` if the system is a git server
-  - `tmp`: Temporary files
-    - may or may not be persistent
-    - visible by all users, unless chmod is used
-  - `usr`: Secondary hierarchy
-  - `var`: Variable data
-- these subdirectories or symbolic links are optional
-  - `home`: User home directories (optional)
-  - `lib<qual>`: Alternate format essential shared libraries (optional)
-    - e.g., `lib64` and `lib32`, with `lib` being a symbolc link to one of
-      them
-  - `root`: Home directory for the root user (optional)
-
-## `/usr`
-
-- shareable: multiple systems can share the same `/usr`
-- read-only: only static data/binaries
-  - can be mounted read-only other than when performing system update
-- these subdirectories or symbolic links are required
-  - `bin`: Most user commands
-  - `lib`: Libraries
-  - `local`: Local hierarchy (empty after main installation)
-    - manually installed packages
-    - separated out from `/usr` to avoid overwritten by system update
-  - `sbin`: Non-vital system binaries
-  - `share`: Architecture-independent data
-- these subdirectories or symbolic links are optional
-  - `games`: Games and educational binaries (optional)
-  - `include`: Header files included by C programs
-  - `libexec`: Binaries run by other programs (optional)
-    - internal commands of other commands/libraries
-    - not intended for direct invocation
-  - `lib<qual>`: Alternate Format Libraries (optional)
-  - `src`: Source code (optional)
-    - for reference only, not for building
-
-## `/var`
-
-- variable data files
-  - packages are installed to /usr and are static
-  - persistent data created by packages goes to /var
-    - e.g., logs, spools, package manager database, databases
-- these subdirectories or symbolic links are required
-  - `cache`: Application cache data
-    - persistent, but apps must be able to regenerate the data in this
-      directory when it is cleared
-  - `lib`: Variable state information
-    - apps must use `/var/lib/<name>` subdirectory or `/var/lib/misc`
-  - `local`: Variable data for /usr/local
-  - `lock`: Lock files
-  - `log`: Log files and directories
-  - `opt`: Variable data for /opt
-    - opt apps must use `/var/opt/<name>` for their variable data
-  - `run`: Data relevant to running processes
-    - use `/run` instead
-  - `spool`: Application spool data
-    - data awaiting processing
-  - `tmp`: Temporary files preserved between system reboots
-- these subdirectories or symbolic links are optional
-  - `account`: Process accounting logs (optional)
-  - `crash`: System crash dumps (optional)
-  - `games`: Variable game data (optional)
-  - `mail`: User mailbox files (optional)
-  - `yp`: Network Information Service (NIS) database files (optional)
-
-## Linux-specific
-
-- `/proc`
-- `/sys`
+- <https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html>
+  - but we describe what modern linux distros do
+- `/`
+  - split `/` and `/usr` is undesirable
+    - it allowed small `/` to mount `/usr`, but the role is taken by initrd
+  - `/bin` is symlink to `usr/bin`
+  - `/boot` is esp/xbootldr mountpoint
+  - `/dev` is devtmpfs mountpoint
+  - `/etc` contains configuration files
+  - `/home` contains user home dirs (optional)
+  - `/lib` is symlink to `usr/lib`
+  - `/lib<qual>` is symlink to `usr/lib<qual>` (optional)
+  - `/media` contains mountpoints for removable media
+  - `/mnt` is temp mountpoint
+  - `/opt` contains self-contained apps
+    - `/opt/<app>` or `/opt/<vendor>/<app>`
+  - `/root` is root home dir (optional)
+  - `/run` is tmpfs mountpoint
+  - `/sbin` is symlink to `usr/sbin`, or to `usr/bin` if merged bin/sbin
+  - `/srv` contains data served by services
+  - `/tmp` is tmpfs mountpoint
+- `/usr`
+  - `/usr/bin` contains user executables
+  - `/usr/games` contains self-contained games (optional)
+  - `/usr/include` contains C include files (optional)
+  - `/usr/lib` contains libraries
+  - `/usr/libexec` contains helper executables (optional)
+    - some distros use `/usr/lib`
+  - `/usr/lib<qual>` contains libraries for alternate archs (optional)
+  - `/usr/local` contains locally-installed apps
+    - it mirrors `/usr` hierarchy mostly, but it also has `/usr/local/etc`
+  - `/usr/sbin` contains system executables, or symlink to `bin`
+  - `/usr/share` contains arch-independent data
+  - `/usr/src` contains C source files (optional)
+- `/var`
+  - by keeping variable data in `/var`, `/usr` can be read-only
+  - `/var/account` is no longer used (optional)
+  - `/var/cache` contains app cache
+  - `/var/crash` is no longer used (optional)
+  - `/var/games` contains game data (optional)
+  - `/var/lib` contains app data
+    - `/var/lib/<app>` or `/var/lib/misc/<app>`
+  - `/var/local` contains locally-installed app data
+  - `/var/lock` is symlink to `/run/lock`
+  - `/var/log` contains logs
+  - `/var/mail` contains user mailboxes, or symlink to `spool/mail` (optional)
+  - `/var/opt` contains self-contained app data
+  - `/var/run` is symlink to `/run`
+  - `/var/spool` contains data to be processed
+  - `/var/tmp` is temp data
+    - it is cleaned occasionally between boots
+  - `/var/yp` is no longer used (optional)
+- linux-specific
+  - `/proc` is proc
+  - `/sys` is sysfs
