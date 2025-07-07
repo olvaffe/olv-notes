@@ -131,3 +131,34 @@ SMTP
     - `aspf=r` is the default
       - it means `MAIL FROM:<foo@domain>` and `From: foo@<domain>` must have
         aligned domain
+
+## Owned Domain
+
+- set up sending
+  - add SPF record for the subdomain that the outgoing smtp relay uses in
+    `MAIL FROM`
+    - e.g., CNAME or TXT record for `bounce.example.org`
+  - add DKIM record for the subdomain that the outgoing smtp relay uses in
+    `DKIM-Signature:`
+    - e.g., CNAME or TXT record for `default._domainkey.example.org`
+  - add DMARC record for the domain
+    - e.g., TXT record for `_dmarc.example.org`
+  - configure local MTA to use the outgoing smtp relay
+- set up receiving (forwarding)
+  - add MX record for the domain
+    - e.g., MX record for `example.org` to the forwarding smtp relay
+  - add SPF record for the subdomain that the forwarding smtp relay uses in
+    `MAIL FROM`
+    - e.g., TXT record for `example.org`
+    - assuming the message is from `from.org` to `example.org`, and is
+      forwarded by the forwarding smtp relay to `real.org`
+      - the forwarding smtp relay receives
+        - `MAIL FROM:<...@from.org>`
+        - `RCPT TO:<...@example.org>`
+      - the forwarding smtp relay sends
+        - `MAIL FROM:<...@example.org>`
+          - this rewrite is done because the fowarding smtp relay is typically
+            not on the SPF record of `from.org`, and it also necessitates the
+            SPF record of `example.org`
+          - <https://en.wikipedia.org/wiki/Sender_Rewriting_Scheme>
+        - `RCPT TO:<...@real.org>`
