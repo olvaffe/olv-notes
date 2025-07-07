@@ -24,11 +24,12 @@ Gmail
     - e.g., `To:`, `Cc:`, `Subject:`, etc.
   - MUA can add more header fields automatically
     - e.g., `From:`, `Date:`, `Content-Type:`, etc.
-  - MTA and mail servers can add even more header fields automatically
+  - MTAs can add even more header fields automatically
     - e.g., `Message-ID:`, `Received:`, `Delivered-To:`, etc.
 - envelope is used by MTA
   - `MAIL FROM:<bob@example.org>` tells the MTA the return address in case the
     message cannot be delivered
+    - the recipient MTA adds `Return-Path: <bob@example.org>` based on this
   - `RCPT TO:<bob@example.org>` tells the MTA the destination address(es)
   - `DATA` tells the MTA the message
   - the local MTA can generate the envelope from the message header, or be
@@ -38,44 +39,98 @@ Gmail
 ## Modern SMTP Flow
 
 - sender composes email using MUA
-  - email consists of envelope, message header, and message body
+  - email consists of message header and message body
+  - message header consists of fields explicitly added by sender or
+    automatically added by MUA
 - sender sends email to local MTA (e.g., msmtp)
-- local MTA routes email to the configured sender MTA
-  - this talks to the configured sender MTA over SMTP with TLS
-  - sender MTA might require authentication and might reject based on
-    `MAIL FROM` and `RCPT TO`
-- sender MTA routes email to receiver MTA
-  - sender MTA looks up MX records for the recipients
-  - sender MTA talks to receiver MTA over SMTP with TLS
-  - receiver MTA might reject based on
-    - IP-based blacklist
+- local MTA relays email to its configured relay MTA
+  - this talks to the configured relay MTA over SMTP with TLS
+  - `AUTH PLAIN <base64-encoded-username-and-password>` authenticates
+  - `MAIL FROM:<sender>` is the envelope-from addr
+  - `RCPT TO:<recipient>` is the envelope-to addr
+  - `DATA` is followed by email data
+  - relay MTA might reject based on any of above
+- relay MTA relays email to recipient MTA
+  - relay MTA looks up MX records for the recipients
+  - relay MTA talks to recipient MTA over SMTP with TLS
+  - recipient MTA might reject based on
+    - IP-based blacklist of relay MTAs
+    - `MAIL FROM` / `RCPT TO`
     - SPF / DKIM / DMARC
 - Sender Policy Framework (SPF)
-  - domain owner configures an SPF record
-  - e.g., `v=spf1 include:spf.thirdparty.com ~all`
+  - SPF prevents forged `MAIL FROM` (but not forged `From:`)
+    - e.g., `bob@example.org` uses `smtp.example.org` as the relay MTA which
+      rewrites the sender to `MALI FROM:<bob@bounce.example.org>`
+    - recipient MTA looks up SPF record for `bounce.example.org`, which
+      specifies `smtp.example.org` as the valid relay MTA
+    - recipient accepts the email only if it passes SPF
+      - if a bad actor uses a different relay MTA but the same `MALI FROM`,
+        the email fails SPF
+    - IOW, the domain owner of `example.org` adds a SPF record to specify
+      valid relay MTAs for the domain
+  - third-party relay MTA
+    - e.g., `bob@example.org` uses `smtp.thirdparty.com` as the relay MTA
+      which rewrites the sender to `MALI FROM:<bob@bounce.example.org>`
+    - the third party requires the domain owner of `example.org` to add a
+      record, `CNAME bounce.example.org bounce.thirdparty.com`
+    - this way, recipient MTA will look up the SPF record for
+      `bounce.thirdparty.com`, which is controlled by third party
+  - SPF record
+    - e.g., `v=spf1 include:spf.thirdparty.com ~all`
     - `v=spf1` means spf version 1
     - `include:spf.thirdparty.com` means use the spf record for
       `spf.thirdparty.com`
     - `~all` means all other MTAs should be soft-rejected
-  - when a receiver MTA receives an email, it checks the SPF record
-    - this ensures that only sender MTAs listed in `spf.thirdparty.com` can
-      send emails on behalf of the domain
 - DomainKeys Identified Mail (DKIM)
-  - domain owner configures a DKIM record
-  - e.g., `v=DKIM1; k=rsa; p=<pubkey>`
+  - DKIM prevents forged email
+    - e.g., `bob@example.org` uses `smtp.example.org` as the relay MTA which
+      adds `DKIM-Signature:` field as the signature of the email
+    - recipient MTA looks up DKIM record for `default._domainkey.example.org`,
+      which specifies the pubkey for signature verification
+    - recipient accepts the email only if it passes DKIM
+      - if a bad actor uses a different relay MTA, the email fails DKIM
+    - IOW, the domain owner of `example.org`
+      - configures its relay MTAs to sign emails
+      - adds a DKIM record to specify the pubkey
+  - third-party relay MTA
+    - e.g., `bob@example.org` uses `smtp.thirdparty.com` as the relay MTA
+    - the third party requires the domain owner of `example.org` to add a
+      record, `CNAME default._domainkey.example.org dkim.thirdparty.com`
+    - this way, recipient MTA will look up the DKIM record for
+      `dkim.thirdparty.com`, which is controlled by third party
+  - `DKIM-Signature:`
+    - `v=1` is DKIM v1
+    - `a=rsa-sha256` is the signing algorithm
+    - `d=example.org; s=default` is the signing domain and selector
+      - recipient MTA will look up the DKIM record for `<s>._domainkey.<d>`
+    - `h=from : subject : to : message-id : date` is an ordered list of fields
+      that are hashed
+    - `bh=<hash>` is the message body hash
+    - `b=<signature>` is the signature
+  - DKIM record
+    - e.g., `v=DKIM1; k=rsa; p=<pubkey>`
     - `v=DKIM1` is DKIM v1
     - `k=rsa` is rsa key
     - `p=...` is pubkey
-  - sender MTA signs the email by adding `DKIM-Signature:` header
-  - receiver MTA checks the DKIM record to validate the email
 - Domain-based Message Authentication, Reporting, and Conformance (DMARC)
-  - domain owner configures a DMARC record
-  - e.g., `v=DMARC1; p=quarantine; rua=mailto:example@mxtoolbox.dmarc-report.com; ruf=mailto:example@forensics.dmarc-report.com; fo=1`
+  - DMARC defines the SPF/DKIM policy
+    - e.g., `bob@example.org` uses `smtp.example.org` as the relay MTA
+    - recipient MTA looks up DMARC record for `_dmarc.example.org`, which
+      specifies the policy
+    - recipient accepts the email only if it passes DMARC
+  - DMARC record
+    - e.g., `v=DMARC1; p=quarantine; rua=mailto:example@mxtoolbox.dmarc-report.com; ruf=mailto:example@forensics.dmarc-report.com; fo=1`
     - `v=DMARC1` is DMARC v1
     - `p=quarantine` means to treat the email as spam if it fails SPF/DKIM
     - `rua=` and `ruf` means to send aggregate and failure reports to the
       specified addresses
     - `fo=1` means to report when either SPF or DKIM fails
+    - `adkim=r` is the default
+      - it means `DKIM-Signature: d=<domain>; ...` and `From: foo@<domain>`
+        must have aligned domain
+    - `aspf=r` is the default
+      - it means `MAIL FROM:<foo@domain>` and `From: foo@<domain>` must have
+        aligned domain
 
 ## Search Operators
 
