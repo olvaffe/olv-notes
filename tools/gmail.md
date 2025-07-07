@@ -35,6 +35,48 @@ Gmail
     instructed to use a specific envelope
     - e.g., `RCPT TO:` and `To:` can be unrelated
 
+## Modern SMTP Flow
+
+- sender composes email using MUA
+  - email consists of envelope, message header, and message body
+- sender sends email to local MTA (e.g., msmtp)
+- local MTA routes email to the configured sender MTA
+  - this talks to the configured sender MTA over SMTP with TLS
+  - sender MTA might require authentication and might reject based on
+    `MAIL FROM` and `RCPT TO`
+- sender MTA routes email to receiver MTA
+  - sender MTA looks up MX records for the recipients
+  - sender MTA talks to receiver MTA over SMTP with TLS
+  - receiver MTA might reject based on
+    - IP-based blacklist
+    - SPF / DKIM / DMARC
+- Sender Policy Framework (SPF)
+  - domain owner configures an SPF record
+  - e.g., `v=spf1 include:spf.thirdparty.com ~all`
+    - `v=spf1` means spf version 1
+    - `include:spf.thirdparty.com` means use the spf record for
+      `spf.thirdparty.com`
+    - `~all` means all other MTAs should be soft-rejected
+  - when a receiver MTA receives an email, it checks the SPF record
+    - this ensures that only sender MTAs listed in `spf.thirdparty.com` can
+      send emails on behalf of the domain
+- DomainKeys Identified Mail (DKIM)
+  - domain owner configures a DKIM record
+  - e.g., `v=DKIM1; k=rsa; p=<pubkey>`
+    - `v=DKIM1` is DKIM v1
+    - `k=rsa` is rsa key
+    - `p=...` is pubkey
+  - sender MTA signs the email by adding `DKIM-Signature:` header
+  - receiver MTA checks the DKIM record to validate the email
+- Domain-based Message Authentication, Reporting, and Conformance (DMARC)
+  - domain owner configures a DMARC record
+  - e.g., `v=DMARC1; p=quarantine; rua=mailto:example@mxtoolbox.dmarc-report.com; ruf=mailto:example@forensics.dmarc-report.com; fo=1`
+    - `v=DMARC1` is DMARC v1
+    - `p=quarantine` means to treat the email as spam if it fails SPF/DKIM
+    - `rua=` and `ruf` means to send aggregate and failure reports to the
+      specified addresses
+    - `fo=1` means to report when either SPF or DKIM fails
+
 ## Search Operators
 
 - search by header fields
