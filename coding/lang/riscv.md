@@ -1,5 +1,17 @@
-RISV-V
+RISC-V
 ======
+
+## Overview
+
+- <https://github.com/riscv/riscv-isa-manual>
+  - `RV32I` is for 32-bit microcontrollers
+    - `RV32E` is a reduced subset
+  - `RV64I` is for 64-bit application processors
+    - `RV64E` is a reduced subset
+- <https://github.com/riscv/riscv-profiles>
+  - `RVM` is for 32-bit microcontrollers
+  - `RVA` is for 64-bit application processors
+    - `RVB` is a reduced subset
 
 ## `RV32I`
 
