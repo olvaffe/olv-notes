@@ -162,7 +162,7 @@ Intel CPUs
     - HDA controller
     - USB controller
     - super io (keyboard, mouse, serial ports)
-- Then there were CPU and PCH
+- There are only CPU and PCH now
   - northbridge is integrated into CPU die and is called uncore or system
     agent
   - southbridge is replaced by PCH
@@ -173,10 +173,10 @@ Intel CPUs
     - thunderbolt controller
   - PCH is connected to CPU via DMI and has
     - everything that southbridge has
-- there is only CPU now
+- Some mobile CPUs have integrated PCH dies
   - system-in-package design
-  - CPU die contains CPU core and system agent
-  - PCH is integrated into the CPU package as a PCH die
+  - CPU die still contains CPU core and system agent
+  - PCH chipset is integrated into the CPU package as PCH die
   - PCH die is connected to the CPU die via OPI
   - FWIW, wafers are "diced" into many "die"
 - Chiplets
@@ -191,6 +191,17 @@ Intel CPUs
     - in EMIB, tiles are side-by-side with interconnects below the tiles
       (2.5D stacking)
     - in Faveros, tiles are face-to-face (3D stacking)
+- example
+  - Core Ultra 9 285K IOs
+    - PCIe 5.0 x20, typically x16 for gpu and x4 for nvme
+    - PCIE 4.0 x4, typically for second nvme
+    - Thunderbolt 4
+    - DMI 4.0 x8, for chipset
+  - Intel Z890 Chipset IOs
+    - total bandwidth is capped by DMI 4.0 x8 (16GB/s)
+    - PCIe 4.0 x24, for peripherals (LAN, WLAN, etc.)
+    - USB, 14-port
+    - SATA, 6-port
 
 ## DMI
 
@@ -198,11 +209,11 @@ Intel CPUs
   - the link between the CPU and the chipset (PCH) on intel
   - replaces FSB, front side bus
   - essentially pcie
-- DMI 1.0, 2004, 1GB/s
-- DMI 2.0, 2011, 2GB/s
-- DMI 3.0, 2015, 4GB/s
-- DMI 4.0, 2021, 4GB/s
-- not to be confused with DMI, Direct Media Interface
+  - not to be confused with DMI, Desktop Management Interface
+- DMI 1.0, 2004, essentially PCIe 1.0 x4 (1GB/s)
+- DMI 2.0, 2011, essentially PCIe 2.0 x4 (2GB/s)
+- DMI 3.0, 2015, essentially PCIe 3.0 x4 (4GB/s)
+- DMI 4.0, 2021, essentially PCIe 4.0 x4 (8GB/s) or x8
 
 ## PCI devices
 

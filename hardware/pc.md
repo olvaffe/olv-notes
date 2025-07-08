@@ -51,7 +51,6 @@ PC
     - PS/2 port
     - VGA video
 
-
 ## CPUs
 
 - Intel Core
@@ -716,6 +715,43 @@ PC
   - asus proart
   - acer conceptd
 
+## SBCs
+
+- <https://hackerboards.com/>
+- FriendlyElec NanoPi
+  - R3S: RK3566, 5V2A
+  - R5C: RK3568B2, 5V?A
+  - R5S: RK3568B2, PD
+  - R6C: RK3588S, PD
+  - R6S: RK3588S, PD
+- Raspberry Pi
+  - 4: BCM2711, 5V3A
+  - 5: BCM2712, 5V5A
+- Raxda Rock
+  - 3A: RK3568, PD
+  - 3C: RK3566, 5V?A
+  - 5A: RK3588S, PD
+  - 5B: RK3588, PD
+  - 5C: RK3588S, 5V?A
+- Sinovoip Banana Pi
+  - BPI-R3: MT7986
+  - BPI-R4: MT7988A
+  - BPI-M7: RK3588
+- Xunlong Orange Pi
+  - 3B: RK3566, 5V3A
+  - 5: RK3588S, 5V4A
+  - 5 Pro: RK3588S, 5V5A
+  - 5 Plus: RK3588, 5V4A
+  - 5 Ultra/Max: RK3588, 5V5A
+- <https://www.cpubenchmark.net/> single thread results
+  - 14900K: 4791
+  - N100: 1966
+  - N4500: 1394
+  - A76 @ 2.4GHz: 1047
+  - A72 @ 2.4GHz: 830
+  - A55 @ 1.8GHz: 286
+  - A53 @ 1.8GHz: 236
+
 ## Devices
 
 - me
@@ -752,6 +788,7 @@ PC
     - i7-11xx: 2000
     - i3-11xx: 1800
     - i7-8xxx: 1300
+    - N100: 1100
     - m3-8xxx: 1000
     - i5-5xxx: 800
   - amd
