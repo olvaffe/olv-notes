@@ -113,7 +113,7 @@ Das U-Boot
   - get tpl firmware
     - also at <https://github.com/rockchip-linux/rkbin>
   - build uboot
-    - `apt install swig python3-pyelftools`
+    - `apt install libgnutls28-dev swig python3-pyelftools`
     - `make orangepi-5-rk3588s_defconfig`
     - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin
        BL31=../trusted-firmware-a/build/rk3588/release/bl31/bl31.elf
