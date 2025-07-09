@@ -52,6 +52,31 @@ udev
   - `udevd` updates current event in `/dev/.udev/queue.bin`.
   - `udevadm settle` can make use of it.
 
+## `udevadm info`
+
+- prefixes
+  - `P` Device path in /sys/
+    - e.g., `/devices/pci0000:00/0000:00:14.3/net/wlp0s20f3`
+  - `M` Device name in /sys/
+    - basename of `P`
+  - `R` Device number in /sys/
+    - numeric suffix of `P`
+  - `J` Device ID
+  - `U` Kernel subsystem
+    - e.g., `net`
+  - `B` Driver subsystem
+  - `T` Kernel device type within subsystem
+    - e.g., `wlan`
+  - `D` Kernel device node major/minor
+  - `I` Network interface index
+    - e.g., `3`
+  - `N` Kernel device node name
+  - `L` Device node symlink priority
+  - `S` Device node symlink
+  - `Q` Block device sequence number (DISKSEQ)
+  - `V` Attached driver
+  - `E` Device property
+
 ## `udevadm settle`
 
 - A `struct udev_queue` is created.

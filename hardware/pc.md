@@ -758,7 +758,7 @@ PC
   - Lenovo ThinkPad T580
     - i7-8650U (x4), 16GB DDR4, 256GB SATA SSD
   - Dell XPS 13 (9343)
-    - i5-5200U (x2), 4GB DDR3L, 128GB M.2 SATA
+    - i5-5200U (x2), 4GB DDR3L, 256GB M.2 SATA
   - Raspberry 4 Model B Rev 1.2
     - BCM2711 (A72 x4), 4GB LPDDR4, no storage
   - FriendlyElec NanoPi R5C

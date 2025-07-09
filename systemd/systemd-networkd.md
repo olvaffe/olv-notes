@@ -1,41 +1,58 @@
 systemd-networkd
 ================
 
-## overview
+## Overview
 
 - systemd-networkd manages links and networks
 - a link is managed by systemd-networkd only when there is a `.network` file
-  under `/etc/systemd/network` (and other places)
-  - the `.network` has lines such as these to match a link
-    - `[Match]`
-    - `Type=ether`
-    - `[Network]`
-    - `DHCP=yes`
-    - `MulticastDNS=yes`
-    - `LLMNR=no`
-    - `[DHCPv4]`
-    - `UseDomains=yes`
+  under `/etc/systemd/network` (and other places) that matches the link
 - after a link is ready, a network is configured according to the `.network` file
   - for wired, the link is ready when it is connected
   - for wireless, the link is ready when `wpa_supplicant` or `iwd` sets it up
 - `networkctl` lists all links and their states
-
-## ifup / ifdown
-
-- ifup / ifdown uses `/etc/network/interfaces`
 - systemd-networkd replaces ifup / ifdown
-
-## NetworkManager
-
-- NetworkManager competes with systemd-networkd and is more suitable for
-  laptops where the network environment changes dynamically
-- see <NetworkManager.md>
+  - ifup / ifdown uses `/etc/network/interfaces`
+- systemd-networkd competes with NetworkManager
+  - unlike systemd-networkd, NetworkManager is dynamic and is suitable for
+    laptops where the network environment changes dynamically
+  - see <../tools/networks/NetworkManager.md>
 
 ## `systemd.link`
 
 - a `.link` file can be added to `/etc/systemd/network` to manage a link
   - this is used by `systemd-udevd` rather than `systemd-networkd`
-- it can match by mac address and configure the iface name, mtu size, etc.
+  - it can match by mac address and configure the iface name, mtu size, etc.
+- `.link` files from all dirs are sorted alphanumerically
+  - if a link is matched by a `.link` file, all later matches are ignored
+- `[Match]`
+  - `MACAddress=` and `PermanentMACAddress=` match mac addr
+  - `Path=` matches udev `ID_PATH`
+    - e.g., `ID_PATH=pci-0000:00:14.3`
+  - `Type=` is `wlan`, `ether`, etc.
+- `[Link]`
+  - `Alias=` is a descriptive alias
+    - same as `ip link set dev <netdev> alias <string>`
+  - `MACAddress=` is a custom mac addr
+    - same as `ip link set dev <netdev> address <mac-addr>`
+  - `Name=` is a custom name
+    - same as `ip link set dev <netdev> name <string>`
+  - `NamePolicy=` generates a custom name
+    - some policies are
+      - `onboard` uses `ID_NET_NAME_ONBOARD`
+      - `slot` uses `ID_NET_NAME_SLOT`
+      - `path` uses `ID_NET_NAME_PATH`
+      - `mac` uses `ID_NET_NAME_MAC`
+    - `/usr/lib/systemd/network/99-default.link` matches all ifaces and has
+      `NamePolicy=`
+  - more many
+- `man systemd.net-naming-scheme`
+  - prefixes
+    - `en` for ethernet
+    - `wl` for wlan
+  - `ID_NET_NAME_ONBOARD` is `PREFIX+o+IDX` (pci) or `PREFIX+d+IDX` (dt)
+  - `ID_NET_NAME_SLOT`
+  - `ID_NET_NAME_PATH` is `PREFIX+p+BUS+s+SLOT+f+FUNC` (pci)
+  - `ID_NET_NAME_MAC` is `PREFIX+x+mac`
 
 ## `systemd.network`
 
