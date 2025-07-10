@@ -251,12 +251,14 @@ Debian
     - this requires root
   - run the installation and configuration scripts from the packages
     - this forbids bootstrapping another architecture
-- `sudo debootstrap stable stable-chroot`
+- `sudo debootstrap --variant minbase stable stable-chroot`
   - or replace `sudo` by `fakechroot fakeroot`
 - `debootstrap --print-debs stable tmp` prints installed packages
   - the list is from `work_out_debs` in
     `/usr/share/debootstrap/scripts/debian-common`
   - it includes packages with `Priority: required` and `Priority: important`
+    by default
+    - `-variant minbase` omits `Priority: important`
 
 ## cross-`debootstrap`
 
@@ -264,7 +266,7 @@ Debian
   - if you mess up somewhat, re-enable binfmts
     - `sudo update-binfmts --disable`
     - `sudo update-binfmts --enable`
-- `debootstrap --arch arm64 stable stable-arm64-chroot`
+- `debootstrap --arch arm64 --variant minbase stable stable-arm64-chroot`
 - `chroot stable-arm64-chroot /bin/bash -i`
   - or, to run it as a container,
     - `chown -R 65536.65536 stable-arm64-chroot`

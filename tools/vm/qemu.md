@@ -66,7 +66,7 @@ QEMU
     - `pacman --root /mnt -Sy base`
     - `vi /mnt/etc/pacman.d/mirrorlist`
   - debian
-    - `debootstrap testing /mnt`
+    - `debootstrap --variant minbase testing /mnt`
 - `umount /mnt`
 - `losetup -D`
 - `systemd-nspawn -i test.img`

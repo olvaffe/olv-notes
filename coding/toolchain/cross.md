@@ -26,7 +26,7 @@ Cross Toolchains
   - `cargo build --target aarch64-unknown-linux-gnu`
 - sysroot
   - `sudo apt install debootstrap qemu-user-static`
-  - `sudo debootstrap --arch arm64 testing my-sysroot`
+  - `sudo debootstrap --arch arm64 --variant minbase testing my-sysroot`
   - `sudo chroot my-sysroot`
   - note that if the sysroot uses a newer glibc than the host cross toolchains
     does, libraries in the sysroot may reference symbols that the host cross
