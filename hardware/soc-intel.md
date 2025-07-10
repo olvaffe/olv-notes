@@ -92,6 +92,18 @@ Intel CPUs
   - Panther Lake
   - Nova Lake
 
+## TDP
+
+- Processor Base Power / TDP
+  - sustainable power draw
+  - all cores busy at base frequency
+- Minimum Assured Power / cTDP Down
+  - when a device has worse heat dissipation, oem can configure down such that
+    base freq and tdp are lower
+- Maximum Assured Power / cTDP Up
+  - when a device has better heat dissipation, oem can configure up such that
+    base freq and tdp are higher
+
 ## Product Lines
 
 - Intel Core Numbering System
@@ -117,13 +129,14 @@ Intel CPUs
   - X/XE, Highest performance, unlocked
 - Mobile Suffices
   - HX, Highest performance, all SKUs unlocked
+    - TDP 55W
   - HK, High performance, unlocked
   - H, High performance
-    - TDP >=45W
+    - TDP 45W/35W/28W
   - P, Performance for thin & light
-    - TDP <=28W
+    - TDP 28W
   - U, Power efficient
-    - TDP <=15W
+    - TDP 15W/25W/28W/9W
   - Y, Extremely low-power efficient
   - G1-G7, Graphics level (processors with newer integrated graphics technology)
 - Embedded Suffices
