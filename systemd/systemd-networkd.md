@@ -42,8 +42,6 @@ systemd-networkd
       - `slot` uses `ID_NET_NAME_SLOT`
       - `path` uses `ID_NET_NAME_PATH`
       - `mac` uses `ID_NET_NAME_MAC`
-    - `/usr/lib/systemd/network/99-default.link` matches all ifaces and has
-      `NamePolicy=`
   - more many
 - `man systemd.net-naming-scheme`
   - prefixes
@@ -53,6 +51,9 @@ systemd-networkd
   - `ID_NET_NAME_SLOT`
   - `ID_NET_NAME_PATH` is `PREFIX+p+BUS+s+SLOT+f+FUNC` (pci)
   - `ID_NET_NAME_MAC` is `PREFIX+x+mac`
+- `/usr/lib/systemd/network/99-default.link` matches all ifaces and has
+  `NamePolicy=` for persistent naming
+  - `/usr/lib/systemd/network/80-iwd.link` disables persistent naming for wlan
 
 ## `systemd.network`
 
