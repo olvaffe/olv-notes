@@ -88,3 +88,16 @@ NetworkManager
 - when `--indicator` is specified, or when on wayland since nm-applet 1.32.0,
   it switches to `app_indicator_new`
   - it internally uses `StatusNotifierItem` protocol
+
+## dnsmasq
+
+- when a connection has `ipv4.method=auto`, it is configured automatically
+  using DHCPv4
+  - NM starts dnsmasq with `--conf-dir=/etc/NetworkManager/dnsmasq.d`, which
+    acts as DNS cache
+- when a connection has `ipv4.method=shared`, it is configured as a gateway to
+  downstream devices
+  - NM starts dnsmasq with `--conf-dir=/etc/NetworkManager/dnsmasq-shared.d`,
+    which acts as DNS cache and DHCP server for the downstream devices
+- dnsmasq parses all files under `--conf-dir`
+  - `dhcp-host=aa:bb:cc:dd:ee:ff,hostname,192.168.0.2` assigns a fixed ip
