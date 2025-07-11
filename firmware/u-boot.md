@@ -187,6 +187,15 @@ Das U-Boot
       - `show_board_info` prints `Model: ...` again
       - `initr_net` prints `Net: ...`
       - `run_main_loop` runs `main_loop` forever
+- rk3588 does not store env
+  - `CONFIG_ENV_IS_DEFAULT` and `CONFIG_ENV_IS_NOWHERE` are set
+  - some vars are fixed
+    - they are defined in `include/configs/rk3588_common.h`
+  - some vars are derived from cpuid
+    - `rockchip_cpuid_from_efuse` reads cpuid from efuse
+    - `rockchip_cpuid_set` sets `cpuid#` and `serial#`
+    - `rockchip_setup_macaddr` sets `ethaddr` and `eth1addr`
+      - the mac addr is hashed from cpuid and never changes
 
 ## Modern Config
 
