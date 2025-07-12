@@ -45,3 +45,21 @@ Kernel Kconfig
   - it is easy to find module names from here
     - some drivers does not have `module` links because they are built-in and
       they fail to set `device_driver::mod_name`
+
+## Test Macros
+
+- `include/generated/autoconf.h` is generated from `.config`
+  - `CONFIG_FOO=y` becomes `#defone CONFIG_FOO 1`
+  - `CONFIG_FOO=m` becomes `#defone CONFIG_FOO_MODULE 1`
+- `include/linux/kconfig.h` defines test macros
+  - `IS_BUILTIN(CONFIG_FOO)` returns 1 or 0, depending on if `CONFIG_FOO` is 1
+    or not
+  - `IS_MODULE(CONFIG_FOO)` returns 1 or 0, depending on if
+    `CONFIG_FOO_MODULE` is 1 or not
+  - `IS_ENABLED(CONFIG_FOO)` is `__or(IS_BUILTIN(option), IS_MODULE(option))`
+  - `IS_REACHABLE(CONFIG_FOO)` is `__or(IS_BUILTIN(option), __and(IS_MODULE(option), __is_defined(MODULE)))`
+    - when a source file is a module, gcc is invoked with `-DMODULE`
+      - this is equilvalent to `#define MODULE 1`
+    - IOW, it returns 1 when
+      - `CONFIG_FOO` is built-in, or
+      - `CONFIG_FOO` and the source file are both modules
