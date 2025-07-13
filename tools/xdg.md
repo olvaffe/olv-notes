@@ -3,7 +3,7 @@ XDG Specs
 
 ## XDG Base Directory Specification
 
-- <https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html>
+- <https://specifications.freedesktop.org/basedir-spec/latest/>
   - freedesktop.org was formerly known as X Desktop Group, XDG
 - user-specific
   - `$XDG_CONFIG_HOME`, default to `$HOME/.config`
@@ -29,7 +29,7 @@ XDG Specs
 
 ## Desktop Entry Specification
 
-- <https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html>
+- <https://specifications.freedesktop.org/desktop-entry-spec/latest/>
 - desktop entry dirs are `$XDG_DATA_DIRS/applications`
 - `XDG_CURRENT_DESKTOP`
   - If `$XDG_CURRENT_DESKTOP` is set then it contains a colon-separated list
@@ -42,7 +42,7 @@ XDG Specs
 
 ## Desktop Menu Specification
 
-- <https://specifications.freedesktop.org/menu-spec/menu-spec-latest.html>
+- <https://specifications.freedesktop.org/menu-spec/latest/>
 - `$XDG_CONFIG_DIRS/menus/${XDG_MENU_PREFIX}applications.menu`
 - `$XDG_CONFIG_DIRS/menus/applications-merged/`
 - `$XDG_DATA_DIRS/applications/`
@@ -50,13 +50,13 @@ XDG Specs
 
 ## Desktop Application Autostart Specification
 
-- <https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html>
+- <https://specifications.freedesktop.org/autostart-spec/latest/>
 - autostart dirs are `$XDG_CONFIG_DIRS/autostart`
   - that means `~/.config/autostart` and `/etc/xdg/autostart` by default
 
 ## Shared MIME-info Database
 
-- <https://specifications.freedesktop.org/shared-mime-info-spec/shared-mime-info-spec-latest.html>
+- <https://specifications.freedesktop.org/shared-mime-info-spec/latest/>
 - mime db dirs are `$XDG_DATA_DIRS/mime`
 - `update-mime-database` scans `$XDG_DATA_DIRS/mime/packages` and generates
   - `aliases`
@@ -69,10 +69,12 @@ XDG Specs
   - `subclasses`
   - `XMLnamespaces`
   - `<media>/<subtype>.xml`
+- `xdg-mime query filetype <file>` returns the mime of `<file>`
+  - it invokes `mimetype <file>` internally which uses `/usr/share/mime`
 
 ## MIME Types and Applications
 
-- <https://specifications.freedesktop.org/mime-apps-spec/mime-apps-spec-latest.html>
+- <https://specifications.freedesktop.org/mime-apps-spec/latest/>
 - the lookup order is
   - `$XDG_CONFIG_HOME/$desktop-mimeapps.list`
   - `$XDG_CONFIG_HOME/mimeapps.list`
@@ -82,10 +84,12 @@ XDG Specs
   - `$XDG_DATA_HOME/applications/mimeapps.list` (for compat)
   - `$XDG_DATA_DIRS/applications/$desktop-mimeapps.list`
   - `$XDG_DATA_DIRS/applications/mimeapps.list`
+- `xdg-mime query default <mime>` returns the default app for `<mime>`
+  - it greps inside `mimeapps.list` and `mimeinfo.cache` internally
 
 ## Icon Theme Specification
 
-- <https://specifications.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html>
+- <https://specifications.freedesktop.org/icon-theme-spec/latest/>
 - icon theme dirs are, in order,
   - `$HOME/.icons` (for backwards compatibility)
   - `$XDG_DATA_DIRS/icons`, and
@@ -93,12 +97,12 @@ XDG Specs
 
 ## Thumbnail Managing Standard
 
-- <https://specifications.freedesktop.org/thumbnail-spec/thumbnail-spec-latest.html>
+- <https://specifications.freedesktop.org/thumbnail-spec/latest/>
 - the thumbnail dir is `$XDG_CACHE_HOME/thumbnails`
 
 ## Trash Specification
 
-- <https://specifications.freedesktop.org/trash-spec/trashspec-latest.html>
+- <https://specifications.freedesktop.org/trash-spec/latest/>
 - home trash dir is `$XDG_DATA_HOME/Trash`
 - top dirs, if supported, are `$topdir/.Trash/$uid` or `$topdir/.Trash-$uid`
   - a `$topdir` is the mountpoint of a partition
@@ -119,7 +123,7 @@ XDG Specs
 - <https://gitlab.freedesktop.org/xdg/desktop-file-utils>
   - `update-desktop-database` scans `*.desktop` and generates
     `$XDG_DATA_DIRS/applications/mimeinfo.cache`
-- <https://cgit.freedesktop.org/xdg/xdg-user-dirs/>
+- <https://gitlab.freedesktop.org/xdg/xdg-user-dirs>
   - `$XDG_CONFIG_DIRS/user-dirs.conf` is the config file
     - `enabled=`
     - `filename_encoding=`

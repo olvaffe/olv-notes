@@ -43,6 +43,12 @@ Kernel sys
     userspace anymore
   - `setdomainname` updates `domainname` and is not used by userspace anymore
 
+## `prctl`
+
+- `PR_SET_NAME` sets the thread name
+  - `set_task_comm` copies the name to `task->comm[TASK_COMM_LEN]`
+  - `TASK_COMM_LEN` is 16
+
 ## System calls for process control
 
 - After a process is `fork()`ed, it is in the same session and process group as
