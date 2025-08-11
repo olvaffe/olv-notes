@@ -66,9 +66,11 @@ Android Docs
   - baseline profiles reflect the common denominator of vulkan impls
     - `VP_ANDROID_baseline_2021`
     - `VP_ANDROID_baseline_2022`
+    - aka ABP, android baseline profile
   - minimums profiles reflect the direction of vulkan impls
     - `VP_ANDROID_15_minimums`
     - `VP_ANDROID_16_minimums`
+    - aka VPA, vulkan profile for android
 - Android Q+ requires Vulkan 1.1
   - <https://android-developers.googleblog.com/2019/05/whats-new-in-android-q-beta-3-more.html>
   - that's probably required by GTS/VTS for new 64-bit devices
@@ -85,6 +87,20 @@ Android Docs
 - Android 15 CDD
   - <https://source.android.com/docs/compatibility/15/android-15-cdd>
   - no change
+- Android 16 CDD
+  - <https://source.android.com/docs/compatibility/16/android-16-cdd>
+  - must support Android Baseline 2021 profile
+  - must support Vulkan 1.1
+  - strongly recommend Vulkan 1.3
+  - strongly recommend Android Baseline 2022 profile
+  - strongly recommend `protectedMemory` and `VK_EXT_global_priority`
+  - strongly recommend `SkiaVk` with hwui
+- VSR
+  - strongly recommend becomes must?
+  - vulkan 1.3
+  - ABP 2021, 2022, etc.
+  - VPA 15, 16, etc.
+  - `SkiaVk` for hwui and re
 
 ## Development
 
