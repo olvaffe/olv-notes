@@ -4,8 +4,17 @@ Android fastboot
 ## Overview
 
 - <https://source.android.com/devices/bootloader>
-- the only open-source bootloader is a fork of lk
-  - <https://source.codeaurora.org/quic/la/kernel/lk/>
+- depthcharge is a bootloader with fastboot support
+  - <https://chromium.googlesource.com/chromiumos/platform/depthcharge/+/refs/heads/main/src/fastboot/>
+- `adb reboot bootloader` reboots to bootloader
+  - bootloader supports fastboot protocol, but does not understand dynamic
+    partitions
+- `adb reboot fastboot` reboots to fastbootd if `ro.boot.dynamic_partitions`,
+  or falls back to bootloader otherwise
+  - fastbootd supports fastboot protocol, and understands dynamic partitions
+- bootloader also supports magic key combo to force fastboot handling than
+  booting the kernel
+  - depthcharge supports `Ctrl-F`
 
 ## Lock / Unlock
 
@@ -42,7 +51,7 @@ Android fastboot
 - <https://developers.google.com/android/images>
   - steps
     - enable `OEM unlocking`
-    - boot into the bootloader, `adb reboot bootloader
+    - boot into the bootloader, `adb reboot bootloader`
     - unlock the bootloader, `fastboot flashing unlock`
     - unzip and run `flash-all.sh`
   - `flash-all.sh`
@@ -52,3 +61,19 @@ Android fastboot
     - `fastboot -w update <update.zip>`
       - a bunch of Android boot images (created with `mkbootimg`) and sparse
         images (created with `img2simg`)
+
+## Commands
+
+- `fastboot flash` sends `flash:<part>`
+- `fastboot getvar foo` sends `getvar:foo`
+  - depthcharge has
+    - `current-slot:_a`
+    - `partition-size:<part>:<size>`
+    - `partition-type:<part>:<type>`
+    - `has-slot:<part>:<yes-or-no>`
+    - many more
+- `fastboot reboot` sends `reboot`
+  - this manipulates BCB (Bootloader Control Block) in the misc partition
+- `fastboot flashing lock|unlock`
+- `fastboot set_active` sends `set_active:<slot>`
+- `fastboot oem` sends `oem args`

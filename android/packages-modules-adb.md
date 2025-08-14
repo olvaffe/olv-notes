@@ -46,6 +46,21 @@ Android ADB
   - on device, it listens on 5555 port.
   - on host, it connects to 5555 port of `ADBHOST`.
 
+## Adb Commands
+
+- `adb push/pull/sync` creates a `SyncConnection` for file xfer
+- `adb install/uninstall` runs `adb shell cmd package ...`
+- `adb bugreport` runs `adb shell bugreportz -p` and saves the output to a
+  local file
+- `adb logcat` runs `adb shell logcat`
+- `adb disable-verity/remount` runs `adb shell ...`
+- `adb reboot fastboot` runs `reboot:fastboot` service
+  - `reboot_device` runs `/system/bin/reboot fastboot`, which sets
+    `ANDROID_RB_PROPERTY` (`sys.powerctl`) to `reboot,fastboot`
+  - init `HandlePowerctlMessage` handles the property change
+- `adb root` runs `root:` service
+  - `restart_root_service` sets `service.adb.root` to 1
+
 ## Remount
 
 - <https://android.googlesource.com/platform/system/core/+/refs/heads/main/fs_mgr/README.overlayfs.md>
@@ -104,3 +119,7 @@ Android ADB
   - `instrument -w -e <name> <value> <TEST_PACKAGE>/<RUNNER_CLASS>`
     - class's `onCreate` calls `bundle.getString(name)` to access name/value arguments
 - `dumpsys`
+
+## Tips
+
+- `adb shell am start -a com.android.setupwizard.FOUR_CORNER_EXIT` skips OOBE
