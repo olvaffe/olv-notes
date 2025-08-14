@@ -147,3 +147,20 @@ Android Kernel
     - `kernel_modules` is a list of `kernel_module`s
   - `system_dlkm_image(...)`
   - `vendor_dlkm_image(...)`
+
+## Iterative Development
+
+- `bazel run --config=fast ...`
+- copy kernel and modules to prebuilt
+- `m bootimage system_dlkmimage vendorbootimage vendor_dlkmimage`
+  - `bootimage` packs gki kernel to `boot.img`
+  - `system_dlkmimage` packs gki modules to `system_dlkm.img`
+  - `vendorbootimage` packs cmdline (`BOARD_KERNEL_CMDLINE`) and vendor
+    ramdisk (including `BOARD_VENDOR_RAMDISK_KERNEL_MODULES`) to
+    `vendor_boot.img`
+  - `vendor_dlkmimage` packs vendor modules to `vendor_dlkm.img`
+- `fastboot flash <part> <image>`
+  - `part` is `boot`, `system_dlkm`, `vendor_boot`, and `vendor_dlkm`
+    respectively
+  - note that with dynamic partitions (`super.img`), dlkm can also be flashed
+    through fastbootd

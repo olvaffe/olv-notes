@@ -8,10 +8,13 @@ Android fastboot
   - <https://chromium.googlesource.com/chromiumos/platform/depthcharge/+/refs/heads/main/src/fastboot/>
 - `adb reboot bootloader` reboots to bootloader
   - bootloader supports fastboot protocol, but does not understand dynamic
-    partitions
+    partitions (`super.img`)
 - `adb reboot fastboot` reboots to fastbootd if `ro.boot.dynamic_partitions`,
   or falls back to bootloader otherwise
   - fastbootd supports fastboot protocol, and understands dynamic partitions
+  - fastbootd is a regular userspace service
+    - that is, the system reboots and init starts fastbootd service
+  - this is also known as the recovery mode?
 - bootloader also supports magic key combo to force fastboot handling than
   booting the kernel
   - depthcharge supports `Ctrl-F`
