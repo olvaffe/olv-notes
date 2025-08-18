@@ -46,6 +46,16 @@ Android ADB
   - on device, it listens on 5555 port.
   - on host, it connects to 5555 port of `ADBHOST`.
 
+## Transports
+
+- USB
+  - we want the dut to be in device mode rather than host mode
+    - DRD can switch between modes
+    - OTG is in device mode by default (and can switch to host mode)
+    - host-to-host bridge cable allows a host to treat the other as a device
+    - DbC requires a debug cable to advertise a device in device mode
+      - <https://android.googlesource.com/platform/packages/modules/adb/+/d0db47dcdf941673f405e1095e6ffb5e565902e5>
+
 ## Adb Commands
 
 - `adb push/pull/sync` creates a `SyncConnection` for file xfer

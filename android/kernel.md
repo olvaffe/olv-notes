@@ -20,6 +20,7 @@ Android Kernel
     - it branches off whenever a release is declared an lts
   - each branch is named `android<ANDROID_RELEASE>-<KERNEL_VERSION>`
     - each branch promises a stable abi (KMI) for modules
+  - Android 16 (2025, B) launches with 6.12 to 6.6
   - Android 15 (2024, V) launches with 6.6 to 6.1
   - Android 14 (2023, U) launches with 6.1 to 5.10
   - Android 13 (2022, T) launches with 5.15 to 5.4
@@ -28,6 +29,10 @@ Android Kernel
   - for upgrades, the kernel version might not need change
     - a device launched with android 11 and upgraded to android 15 can stay at
       4.19 kernel
+  - ACK KMI branch lifecycle
+    - year N-1, Dec: upstream LTS
+    - year N, Mar: feature freeze
+    - year N, Jun: KMI freeze
 - <https://source.android.com/docs/core/architecture/kernel/generic-kernel-image>
   - devices launching with android 11 / kernel 5.4, or later, must support GKI
   - devices launching with android 12 / kernel 5.10, or later, must use GKI

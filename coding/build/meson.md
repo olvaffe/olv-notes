@@ -1,6 +1,132 @@
 Meson
 =====
 
+## Website
+
+- Manual
+- Reference manual
+  - Elementary types
+  - Functions
+  - Builtin objects
+  - Returned objects
+- Reference tables
+  - Compiler ids: `clang`, `gcc`, `rustc`
+  - Linker ids: `ld.bfd`, `ld.lld`, `ld.mold`
+  - Script environment variables
+  - CPU families: `aarch64`, `x86_64`
+  - Operating system names: `android`, `linux`
+  - Kernel names: `linux`
+  - Subsystem names
+  - Language arguments parameter names
+    - `c_args`, `c_link_args`
+    - `cpp_args`, `cpp_link_args`
+    - `rust_args`, `rust_link_args`
+  - Compiler and linker flag environment variables
+    - `CFLAGS`, `CXXFLAGS`, `RUSTFLAGS`, `LDFLAGS`
+  - Function Attributes
+  - Dependency lookup methods: `auto`, `pkg-config`, `cmake`, `config-tool`
+  - Compiler and Linker selection variables
+    - `CC`, `CC_LD`, `CXX`, `CXX_LD`, `RUSTC`, `RUSTC_LD`
+  - Environment variables per machine
+- Style recommendations
+  - two-space indentation
+- FAQ
+- How do I do X in Meson?
+  - use a native file to customize compiler/linker/flags
+    - env vars work as well but are not idiomatic
+  - stdc deps
+    - `thread_dep = dependency('threads')`
+    - `m_dep = cc.find_library('m', required : false)`
+  - cmake
+    - `cm_dep = dependency('CmakeOnlyDep', cmake_module_path : 'cmake')`
+  - default not-found dep
+    - `null_dep = dependency('', required : false)`
+- Meson WrapDB packages
+  - wrapdb is a collection of wrap files
+- Wrap dependency system manual
+  - `subprojects/<subproject>.wrap`
+    - `[wrap-file]` downloads and unpacks a subproject tarball
+    - `[wrap-git]` clones a subproject repo
+- Release notes
+
+## Manual
+
+- Command-line commands
+- Built-in options
+  - `-Doption=value`
+  - Universal options
+    - `prefix`
+    - `buildtype`
+    - `debug`
+    - `cmake_prefix_path`
+    - `strip`
+  - Base options
+    - `b_asneeded`
+    - `b_lundef`
+    - `b_ndebug`
+    - `b_sanitize`
+  - Compiler options
+    - `c_args`, `c_link_args`, `c_std`
+    - `cpp_args`, `cpp_link_args`, `cpp_std`, `cpp_eh`, `cpp_rtti`
+  - Module options
+- Syntax
+- Cross and Native File reference
+  - Data Types
+    - strings, arrays, booleans, integers
+  - `[constants]` defines variables
+  - `[binaries]` affects `find_program` and meson internals
+    - `c`, `c_ld`, `cpp`, `cpp_ld`
+    - `strip`
+    - `cmake`, `pkg-config`, `llvm-config`
+  - `[paths]` is deprecated by `[built-in options]`
+  - `[properties]`
+  - `[cmake]`
+  - `[project options]`
+  - `[built-in options]` sets built-in options
+- Persistent native environments
+  - `--native-file my-native.ini` finds the file under, in order,
+    - local dir
+    - `$XDG_DATA_HOME/meson/native`
+    - `$XDG_DATA_DIRS/meson/native`
+- Build targets
+- Include directories
+- Installing
+- Adding arguments
+- Configuration
+- Compiler properties
+- Dependencies
+- Threads
+- Feature autodetection
+- Generating sources
+- Unit tests
+- Cross compilation
+  - terms
+    - build machine is the machine that compiles binaries
+    - host machine is the machine that runs binaries
+    - target machine is the machine that targeted by the binaries
+  - `[binaries]`
+    - `exe_wrapper`
+  - `[properties]`
+    - `sys_root` affects `PKG_CONFIG_SYSROOT_DIR`
+    - `pkg_config_libdir` affects `PKG_CONFIG_LIBDIR`
+  - `[host_machine]` defines the host machine
+    - `system`
+    - `subsystem`
+    - `kernel`
+    - `cpu_family`
+    - `cpu`
+    - `endian`
+  - `--cross-file my-cross.ini` finds the file under, in order,
+    - local dir
+    - `$XDG_DATA_HOME/meson/cross`
+    - `$XDG_DATA_DIRS/meson/cross`
+- Build options
+- Subprojects
+- Modules
+- Rust
+- Custom build targets
+- Configuring a build directory
+
 ## Usage
 
 - `meson out; meson compile -C out`
