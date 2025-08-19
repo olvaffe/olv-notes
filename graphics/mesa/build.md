@@ -75,6 +75,8 @@ Mesa meson
 
 ## Options
 
+- `allow-fallback-for` allows specified deps (e.g., `libdrm` and `perfetto`)
+  to use wraps
 - `allow-kcmp` defines `-DALLOW_KCMP`
   - this is desirable because of seccomp
   - this provides `os_same_file_description` impl
@@ -84,11 +86,14 @@ Mesa meson
 - `android-libbacktrace` defines `-DWITH_LIBBACKTRACE`
   - it also builds `backtrace` stub
   - this provides `u_debug_stack.h` impl on android
+- `android-libperfetto` defines `ANDROID_LIBPERFETTO` to use android's system
+  perfetto rather than sdk
 - `android-strict` defines `-DANDROID_STRICT`
   - this caps vk versions/extensions for android
 - `android-stub` builds various stub shared libraries for android
   - this enables an android build without android deps
 - `build-aco-tests` builds `aco_tests` unit tests
+- `build-radv-tests` builds `radv_tests` unit tests
 - `build-tests` builds various unit tests
 - `custom-shader-replacement` defines `-DCUSTOM_SHADER_REPLACEMENT` for custom
   shader replacement for mesa main
@@ -99,6 +104,7 @@ Mesa meson
   - it is a driver loaded by wine nine
 - `datasources` enables various perfetto datasources
   - they are supported drivers of `pps-producer`
+- `display-info` uses `libdisplay-info` for `VK_KHR_display` hdr
 - `draw-use-llvm` enables llvm for draw module (all stages before
   rastreization), required by llvmpipe
 - `dri-drivers-path` is the install path of `*_dri.so`
@@ -128,14 +134,10 @@ Mesa meson
   - `zink` and `d3d12` are layered drivers on top of vk/d3d12
   - `svga` and `virgl` are virtualized drivers for vmware/virtio-gpu
   - `llvmpipe` and `software` are sw drivers
-    - legacy `swrast` selects both
   - `kmsro` is for when the drm fd lacks a rendernode
 - `gallium-extra-hud` defines `-DHAVE_GALLIUM_EXTRA_HUD=1`
   - it provides `hud_create` used by gallium fronts to provide HUD info
-- `gallium-nine` enables gallium d3d9 frontend/target
-  - it is a driver loaded by wine nine
-- `gallium-opencl` enables deprecated gallium opencl frontend/target
-  - do not use
+- `gallium-mediafoundation` enables gallium mediafoundation frontend
 - `gallium-rusticl` enables gallium opencl frontend/target
   - similar to vk, this builds an opencl icd loaded by `OpenCL-ICD-Loader`
 - `gallium-rusticl-enable-drivers` lists enabled drivers
@@ -145,9 +147,6 @@ Mesa meson
 - `gallium-wgl-dll-name` is the name of wgl dll
   - default to `libgallium_wgl.dll`
   - it provides sw gl on windows
-- `gallium-xa` enables gallium xa frontend/target
-  - `libxatracker.so` is a library designed to provide xorg accel
-  - used by vmware?
 - `gbm` builds GBM
 - `gbm-backends-path` defines `-DDEFAULT_BACKENDS_PATH=`
   - defaults to `$libdir/gbm`
@@ -180,27 +179,26 @@ Mesa meson
   - default to `$datadir/doc/mesa`
 - `imagination-srv` defines `-DPVR_SUPPORT_SERVICES_DRIVER`
   - it enables downstream `pvr` kmd support
-- `install-intel-clc` installs the offline `intel_clc` compiler
 - `install-intel-gpu-tests` installs `intel_FOO_mi_builder_test` unit tests
 - `install-mesa-clc` installs `mesa_clc`
-- `install-precomp-compiler` installs `asahi_clc`, `intel_clc`, and
-  `panfrost_compile`
-- `intel-bvh-grl` uses GRL (intel graphics library for ray-tracing) for BVH
-- `intel-clc` is obsoleted by `precomp-compiler`
+- `install-precomp-compiler` installs `asahi_clc` and `panfrost_compile`
 - `intel-elk` enables intel gen8- compiler support
 - `intel-rt` enables raytracing in intel anv driver
-- `legacy-x11` enables dri2proto support for egl/glx
+- `legacy-wayland` enables `EGL_WL_bind_wayland_display` support for egl
+- `libgbm-external` links against system libgbm
 - `libunwind` defines `-DHAVE_LIBUNWIND`
   - this provides `u_debug_stack.h` impl on linux
 - `llvm` explicitly enables/disables llvm support
   - llvm is required by llvmpipe, rusticl, clc, etc.
 - `llvm-orcjit` uses ORCJIT instead of MCJIT for llvmpipe
 - `lmsensors` enables sensors support for gallium hud
+- `mediafoundation-codecs` selects enabled codecs for gallium mediafoundation
 - `mesa-clc` builds `mesa_clc` and `vtn_bindgen2`
   - `mesa_clc` translates CLC to SPIRV
   - `vtn_bindgen2` translates SPIRV to NIR, and generates a C function to
     build the NIR
   - `system` uses pre-built `mesa_clc` and `vtn_bindgen2`
+- `mesa-clc-bundle-headers` bundles `opencl-c.h` into `mesa_clc`
 - `microsoft-clc` builds `clon12compiler.dll`
   - it translates CL to SPIRV to NIR to DXIL
 - `min-windows-version` specifies win ver
@@ -209,20 +207,18 @@ Mesa meson
   - it is used by zink
 - `opengl` defines `-DHAVE_OPENGL=1`
   - it enables gl support in egl and mesa main
-- `osmesa` enables gallium osmesa frontend/target
-  - it provides a GL-like api using softpipe/llvmpipe
 - `perfetto` defines `-DHAVE_PERFETTO`
   - it enables perfetto tracing and `pps-producer`
 - `platforms` specifies supported window systems
   - user can specify `x11`, `wayland`, `haiku`, `android`, `windows`, `macos`
   - `xcb` is automatically added when `x11` is selected
   - egl adds `surfaceless`, and if gbm is enabled, `drm`
-- `platform-sdk-version` specifies the android sdk version
+- `platform-sdk-version` specifies the android sdk version, defaults to 34
 - `power8` enables power8 optimizations
-- `precomp-compiler` builds `asahi_clc`, `intel_clc`, and
-  `panfrost_compile`
+- `precomp-compiler` builds `asahi_clc` and `panfrost_compile`
   - they translate SPIRV to NIR to hw-specific binary, and generate a C
     variable to embed the binary
+- `radeonsi-build-id` defines `-DRADEONSI_BUILD_ID_OVERRIDE=`
 - `radv-build-id` defines `-DRADV_BUILD_ID_OVERRIDE=`
   - it is used to avoid shader cache rebuild when two radv versions are known
     to generate compat shader binaries
@@ -239,6 +235,7 @@ Mesa meson
 - `shared-glapi` builds `libglapi.so`
   - it provides current ctx and dispatch table shared by gl, gles1, and gles2
   - it might not be needed with `glvnd`?
+  - deprecated and always enabled
 - `shared-llvm` defines `-DLLVM_IS_SHARED=`
   - it links llvm statically/dynamically
 - `spirv-to-dxil` enables spirv to dxil translation
@@ -251,6 +248,7 @@ Mesa meson
 - `static-libclc` embeds libclc spirv statically
   - otherwise, it is read dynamically from
     `/usr/lib/clc/{spirv,spirv64}-mesa3d-.spv`
+- `sysprof` enables sysprof-backend for utrace
 - `teflon` enables gallium tensorflow lite frontend/target
 - `tools` enables various tools
   - generic: `drm-shim`, `glsl`, `nir`, `dlclose-skip`
@@ -268,6 +266,7 @@ Mesa meson
   - `{vc1,h264,h265,av1,vp9}{dec,enc}`, or simply `all` or `all_free`
   - it affects anv, radv, gallium-on-d3d12, and `vl_codec_supported` used by
     vaapi/vdpau
+- `virtgpu_kumquat` enables kumquat ffi for gfxstream
 - `vmware-mks-stats` defines `-DVMX86_STATS=1` for vmware
 - `vulkan-beta` defines `-DVK_ENABLE_BETA_EXTENSIONS`
   - it enables beta extensions
@@ -279,6 +278,7 @@ Mesa meson
 - `vulkan-icd-dir` specifies the install path for vk icd jsons
   - default to `$datadir/vulkan/icd.d`
 - `vulkan-layers` specifies vk layers to build
+  - `anti-lag` supports `VK_AMD_anti_lag`
   - `device-select` makes the best device the first
   - `intel-nullhw` disables draw and compute at hw level
   - `overlay` draws hud using imgui
