@@ -95,6 +95,10 @@ dEQP
   - `pie-cts-dev` is based on `vulkan-cts-1.1.0`
   - `android11-tests-dev` is based on `vulkan-cts-1.2.1`
   - `android13-tests-dev` is based on `vulkan-cts-1.3.1`
+- CLI
+  - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+       -DDEQP_TARGET=android -DDEQP_ANDROID_EXE=ON -DDEQP_TARGET_TOOLCHAIN=ndk-modern \
+       -DANDROID_NDK_PATH=~/android/sdk/ndk/28.0.13004108 -DANDROID_ABI=arm64-v8a -DDE_ANDROID_API=34`
 
 ## `TestResults.qpa`
 

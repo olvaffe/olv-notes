@@ -55,9 +55,46 @@ Android ADB
     - host-to-host bridge cable allows a host to treat the other as a device
     - DbC requires a debug cable to advertise a device in device mode
       - <https://android.googlesource.com/platform/packages/modules/adb/+/d0db47dcdf941673f405e1095e6ffb5e565902e5>
+  - local adb server runs `adb_server_main`
+  - `usb_init` from `usb_linux.c` spawns a thread to scan `/dev/bus/usb`
+  - it only considers usb devices with
+    - device descriptor
+      - `bLength                18`
+      - `bDescriptorType         1`
+    - config descriptor
+      - `bLength                 9`
+      - `bDescriptorType         2`
+    - interface descriptor
+      - `bLength                 9`
+      - `bDescriptorType         4`
+      - `bNumEndpoints           2`
+      - `bInterfaceClass       255` (`ADB_CLASS`)
+      - `bInterfaceSubClass     66` (`ADB_SUBCLASS`)
+      - `bInterfaceProtocol      1` (`ADB_PROTOCOL`)
+      - new adb also supports `ADB_DBC_CLASS` and `ADB_DBC_SUBCLASS`
+    - endpoint descriptor
+      - `bLength                 7`
+      - `bDescriptorType         5`
+      - `bmAttributes            2`
+  - `register_device` registers a usb device
+    - serial is from `serial` attr of the sysfs node
+    - `register_usb_transport` calls `register_transport`
+      - `send_connect` sends a connect packet to the device
+        - after handshake, the device calls `send_connect` to send a connect back
+      - `atransport::HandleRead` handles received packets
+        - `handle_new_connection` handles connect packet
+          - `parse_banner` changes the state from `offline` to `device`
 
 ## Adb Commands
 
+- `adb devices`
+  - this sends `devices` cmd to local adb server
+  - `handle_host_request` calls `list_transports` to return `transport_list`
+  - `register_transport` adds a transport to `transport_list`
+- `adb connect`
+  - this sends `connect` cmd to local adb server
+  - `host_service_to_socket` creates a thread to run `connect_device`
+  - `register_socket_transport` calls `register_transport`
 - `adb push/pull/sync` creates a `SyncConnection` for file xfer
 - `adb install/uninstall` runs `adb shell cmd package ...`
 - `adb bugreport` runs `adb shell bugreportz -p` and saves the output to a
