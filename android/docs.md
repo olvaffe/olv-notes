@@ -147,3 +147,42 @@ Android Docs
 - <https://source.android.com/docs/security/features/selinux>
 - `file_contexts` labels files
   - `/vendor/lib(64)?/hw/vulkan\.intel\.so u:object_r:same_process_hal_file:s0`
+- e.g., graphics composer
+  - `system/sepolicy/public`
+    - `hal_attribute(graphics_composer);` expands to
+      - `attribute hal_graphics_composer;`
+      - `attribute hal_graphics_composer_client;`
+      - `attribute hal_graphics_composer_server;`
+    - `attribute hal_graphics_composer_client_tmpfs;`
+    - `type hal_graphics_composer_server_tmpfs, file_type;`
+    - `type hal_graphics_composer_hwservice, hwservice_manager_type, protected_hwservice;`
+    - `type hal_graphics_composer_service, protected_service, hal_service_type, service_manager_type;`
+  - `system/sepolicy/vendor`
+    - `type hal_graphics_composer_default, domain;`
+    - `hal_server_domain(hal_graphics_composer_default, hal_graphics_composer)` expands to
+      - `typeattribute hal_graphics_composer_default halserverdomain;`
+      - `typeattribute hal_graphics_composer_default hal_graphics_composer_server;`
+      - `typeattribute hal_graphics_composer_default hal_graphics_composer;`
+    - `type hal_graphics_composer_default_exec, exec_type, vendor_file_type, file_type;`
+    - `init_daemon_domain(hal_graphics_composer_default)` expands to
+      - rules to allow doman transition
+      - `type_transition init hal_graphics_composer_default_exec:process hal_graphics_composer_default;`
+        - when init starts `hal_graphics_composer_default_exec`, transition to
+          `hal_graphics_composer_default` automatically
+    - `type_transition hal_graphics_composer_default tmpfs:file hal_graphics_composer_server_tmpfs;`
+    - `allow hal_graphics_composer_default hal_graphics_composer_server_tmpfs:file { getattr map read write relabelfrom };`
+  - `device/<vendor>/<device>-sepolicy`
+    - `/vendor/bin/hw/android\.hardware\.composer\.hwc3-service\.drm u:object_r:hal_graphics_composer_default_exec:s0`
+  - `system/sepolicy/private`
+    - `binder_call(hal_graphics_composer_client, hal_graphics_composer_server)`
+      - client can call to server
+    - `binder_call(hal_graphics_composer_server, hal_graphics_composer_client)`
+      - server can call back to client
+    - `hal_attribute_hwservice(hal_graphics_composer, hal_graphics_composer_hwservice)`
+      - rules for hwservice manager registry and discovery
+    - `binder_call(hal_graphics_composer_client, servicemanager)`
+      - client can call to service manager
+    - `binder_call(hal_graphics_composer_server, servicemanager)`
+      - server can call to service manager
+    - `hal_attribute_service(hal_graphics_composer, hal_graphics_composer_service)`
+      - rules for service manager registry and discovery
