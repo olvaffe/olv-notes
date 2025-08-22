@@ -141,3 +141,9 @@ Android Docs
   - current minor release plus fixes: `gingerbread-mr4-release`
   - possible next minor release: `gingerbread`
   - bleeding edge: `master`
+
+## SELinux
+
+- <https://source.android.com/docs/security/features/selinux>
+- `file_contexts` labels files
+  - `/vendor/lib(64)?/hw/vulkan\.intel\.so u:object_r:same_process_hal_file:s0`
