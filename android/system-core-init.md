@@ -54,69 +54,78 @@ Android System Overview
 
 ## Init RC
 
-- `early-init`
-  - `ueventd`
-- `init`
-  - `logd`
-  - `lmkd` (low memory killer)
-  - `servicemanager`
-  - `hwservicemanager`
-  - `vndservicemanager` (if any)
+- `SecondStageMain` triggers `early-init`, `init`, and `late-init`
+- `on early-init`
+  - `start ueventd`
+- `on init`
+  - `start logd`
+  - `start lmkd` (low memory killer)
+  - `start servicemanager`
+  - `start hwservicemanager`
+  - `start vndservicemanager` (if any)
   - `trusty_security_vm_launcher`
-- `late-init`
-  - `early-fs`
-    - `vold`
-  - `fs`
-  - `post-fs`
-  - `late-fs`
-    - `early_hal`
-      - `android.system.suspend-service`
-      - `keystore2`
-      - `android.hardware.boot-service`
-      - `android.hardware.security.keymint-service`
-  - `post-fs-data`
-    - `tombstoned`
-  - `load-bpf-programs`
-  - `bpf-progs-loaded`
-  - `zygote-start`
-    - `statsd`
-    - `zygote`
-      - `system_server`
-      - `com.android.systemui`
-      - more
-    - `zygote_secondary`
-  - `firmware_mounts_complete`
-  - `early-boot`
-  - `boot`
-    - `hal`
-      - `android.hardware.gatekeeper-service`
-      - `android.hardware.power-service`
-      - `android.hardware.graphics.allocator-service`
-      - `android.hardware.composer.hwc3-service`
-      - `android.hardware.camera.provider@2.7-service`
-      - more
-    - `core`
-      - `aconfigd-system`
-      - `aconfigd-mainline`
-      - `audioserver`
-      - `gpuservice`
-      - `surfaceflinger`
-- `main`
-  - `netd`
-  - `mdnsd`
-  - `cameraserver`
-  - `incidentd`
-  - `installd`
-  - `mediaserver`
-  - `storaged`
-  - `wificond`
-- `late_start`
-  - `traced`
-  - `traced_probes`
-  - `perfetto_persistent_sysui_tracing_for_bugreport`
-  - `gatekeeperd`
-  - `update_engine`
-  - `logcatd`
+- `on late-init`
+  - `trigger early-fs`
+  - `trigger fs`
+  - `trigger post-fs`
+  - `trigger late-fs`
+  - `trigger post-fs-data`
+  - `trigger load-bpf-programs`
+  - `trigger bpf-progs-loaded`
+  - `trigger zygote-start`
+  - `trigger firmware_mounts_complete`
+  - `trigger early-boot`
+  - `trigger boot`
+- `on early-fs`
+  - `start vold`
+- `on late-fs`
+  - `class_start early_hal`
+    - `android.system.suspend-service`
+    - `keystore2`
+    - `android.hardware.boot-service`
+    - `android.hardware.security.keymint-service`
+  - device-specific rc typically has `mount_all --late`
+    - init mounts according to fstabs and triggers `nonencrypted`
+- `on nonencrypted`
+  - `class_start main`
+    - `netd`
+    - `mdnsd`
+    - `cameraserver`
+    - `incidentd`
+    - `installd`
+    - `mediaserver`
+    - `storaged`
+    - `wificond`
+  - `class_start late_start`
+    - `traced`
+    - `traced_probes`
+    - `perfetto_persistent_sysui_tracing_for_bugreport`
+    - `gatekeeperd`
+    - `update_engine`
+    - `logcatd`
+- `on post-fs-data`
+  - `start tombstoned`
+- `on zygote-start`
+  - `start statsd`
+  - `start zygote`
+    - `system_server`
+    - `com.android.systemui`
+    - more
+  - `start zygote_secondary`
+- `on boot`
+  - `class_start hal`
+    - `android.hardware.gatekeeper-service`
+    - `android.hardware.power-service`
+    - `android.hardware.graphics.allocator-service`
+    - `android.hardware.composer.hwc3-service`
+    - `android.hardware.camera.provider@2.7-service`
+    - more
+  - `class_start core`
+    - `aconfigd-system`
+    - `aconfigd-mainline`
+    - `audioserver`
+    - `gpuservice`
+    - `surfaceflinger`
 - `start` and `stop` are provided by `system/core/toolbox`
   - they assume `netd`, `surfaceflinger`, `audioserver`, and `zygote` by
     default
