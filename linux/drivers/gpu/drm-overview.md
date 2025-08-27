@@ -4,39 +4,35 @@ Kernel DRM
 ## Repos
 
 - <https://drm.pages.freedesktop.org/maintainer-tools/>
-- pull flow
-  - <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/>
-    - this is the upstream repo
-  - <https://cgit.freedesktop.org/drm/drm>
-    - Dave Airlie sends out the main pull request, `[git pull] drm for X.Y-rc1`,
-      to Linus Torvalds to pull from
-      `git://anongit.freedesktop.org/drm/drm tags/drm-next-YYYY-MM-DD`
-    - Smaller fixes, `[git pull] drm fixes for X.Y-rcZ`, follow to
-      pull from `git://anongit.freedesktop.org/drm/drm tags/drm-fixes-YYYY-MM-DD`
-  - <https://cgit.freedesktop.org/drm/drm-intel>
-    - Intel sends out the main pull request, `[PULL] drm-intel-next`,
-      to Dave Airlie to pull from
-      <git://anongit.freedesktop.org/drm/drm-intel tags/drm-intel-next-YYYY-MM-DD>
-    - Smaller fixes, `[PULL] drm-intel-next-fixes`, follow to pull from
-      `git://anongit.freedesktop.org/drm/drm-intel tags/drm-intel-next-fixes-YYYY-MM-DD`
-  - <https://gitlab.freedesktop.org/agd5f/linux>
-    - Alex Deucher sends out the main pull request, `[pull] amdgpu, amdkfd drm-next-X.Y`,
-      to Dave Airlie to pull from
-      `https://gitlab.freedesktop.org/agd5f/linux.git tags/amd-drm-next-X.Y-YYYY-MM-DD`
-    - Smaller fixes, `[pull] amdgpu drm-fixes-X.Y`, follow to pull from
-      `https://gitlab.freedesktop.org/agd5f/linux.git tags/amd-drm-fixes-X.Y-YYYY-MM-DD`
-  - <https://gitlab.freedesktop.org/drm/msm>
-    - Rob Clark sends out the main pull request, `[pull] drm/msm: drm-msm-next-YYYY-MM-DD for vX.Y`
-      to Dave Airlie to pull from
-      <https://gitlab.freedesktop.org/drm/msm.git tags/drm-msm-next-2023-04-10>
-    - Smaller fixes, `[pull] drm/msm: drm-msm-fixes-YYYY-MM-DD for vX.Y-rcZ`, follow to pull from
-      `https://gitlab.freedesktop.org/drm/msm.git tags/drm-msm-fixes-2023-05-17`
-  - <https://cgit.freedesktop.org/drm/drm-misc>
-    - Maarten Lankhorst sends out the main pull request, `[PULL] drm-misc-next`,
-      to Dave Airlie to pull from
-      `git://anongit.freedesktop.org/drm/drm-misc tags/drm-misc-next-YYYY-MM-DD`
-    - Smaller fixes, `[PULL] drm-misc-next-fixes`, follow to pull from
-      `git://anongit.freedesktop.org/drm/drm-misc tags/drm-misc-next-fixes-YYYY-MM-DD`
+- <https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/>
+  - this is the upstream repo
+  - after a release, there is a merge window of 2 weeks before rc1 is cut
+- <https://gitlab.freedesktop.org/drm/kernel>
+  - after `vX.(Y-1)-rc2` is cut, `drm-next` is reset and is open for dev
+  - during the merge window, Dave Airlie closes `drm-next`, cuts
+    `tags/drm-next-YYYY-MM-DD` from `drm-next`, and sends out the main pull
+    request, `[git pull] drm for X.Y-rc1`
+  - after each `vX.Y-rcZ`, `drm-fixes` is reset and is open for fixes
+  - Dave Airlie cuts `tags/drm-fixes-YYYY-MM-DD` from `drm-fixes` and sends
+    out `[git pull] drm fixes for X.Y-rc(Z+1)`
+- <https://gitlab.freedesktop.org/drm/xe/kernel>
+  - Intel sends out the main pull request, `[PULL] drm-xe-next`, to Dave
+    Airlie
+  - Smaller fixes, `[PULL] drm-xe-next-fixes`, follow
+- <https://gitlab.freedesktop.org/drm/i915/kernel>
+  - i915 is similar to xe
+- <https://gitlab.freedesktop.org/agd5f/linux>
+  - Alex Deucher sends out the main pull request, `[pull] amdgpu, amdkfd drm-next-X.Y`,
+    to Dave Airlie to pull from
+  - Smaller fixes, `[pull] amdgpu drm-fixes-X.Y`, follow
+- <https://gitlab.freedesktop.org/drm/msm>
+  - Rob Clark sends out the main pull request, `[pull] drm/msm: drm-msm-next-YYYY-MM-DD for vX.Y`
+    to Dave Airlie
+  - Smaller fixes, `[pull] drm/msm: drm-msm-fixes-YYYY-MM-DD for vX.Y-rcZ`, follow
+- <https://gitlab.freedesktop.org/drm/misc/kernel>
+  - Maxime Ripard sends out the main pull request, `[PULL] drm-misc-next`,
+    to Dave Airlie
+  - Smaller fixes, `[PULL] drm-misc-next-fixes`, follow
 - drm
   - `drm/drm-next` branch is reset to `vX.Y-rc2` tag once the tag is created.
     The branch is then open for `Y+1` pull requests.
@@ -50,6 +46,12 @@ Kernel DRM
     against `drm/drm-next` occasionally.
   - `drm-msm/msm-fixes` branch is always open for `Y` fixes.  It rebases
     against `drm/drm-next` occasionally.
+- drm-misc
+  - `drm-misc/drm-misc-next` branch never resets/rebases, but merges in
+    `vX.Y-rc1` to open for `Y+1` changes.  It occasionally merges in
+    `vX.Y-rcZ` to resolve critical issues.
+  - `drm-misc/drm-misc-fixes` branch resets to `vX.Y`, merges in
+    `vX.(Y+1)-rc1`, and opens for `Y+1` fixes.
 
 ## Subdirectories
 
