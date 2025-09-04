@@ -42,6 +42,24 @@ DRM Scheduler
         scheduler
     - `guilty` will be set to 1 when the entity has a hanging job
   - `fence_context` has 2 fence contexts, for `scheduled` and `finished`
+    - when driver submits a job for userspace, it often needs to return an
+      out-fence
+      - but when the job depends on other jobs, the job is not submitted to hw
+        immediately and there is no hw fence to return
+      - `finished` fence context solves the issue
+      - `drm_sched_job_arm` always inits a `finished` fence that can be
+        returned as out-fence
+      - `finished` fence signals only after `run_job` is called and the
+        returned hw fence signals
+    - `scheduled` fence context is to improve scheduling
+      - see `drm_sched_entity_add_dependency_cb`
+      - assume job B depends on job A
+      - if A and B are submitted to the same entity in order, B can be
+        submitted to hw without extra wait
+      - if A and B are submitted to different schedulers, B can be submitted
+        to hw after A's `finished` fence signals
+      - if A and B are submitted to different entities of the same scheduler,
+        B can be submitted to hw after A's `scheduled` fence signals
 
 ## Job Submission
 
