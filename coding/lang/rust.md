@@ -449,6 +449,20 @@ Rust
     - c strings: `CStr`, `CString`
       - `CStr` and `CString` store any non-`\0` value and are `\0`-terminated
       - conversions between rust strings can fail in both directions
+      - compare `[u8]`, `str`, and `CStr`
+        - `[u8]` is a slice of `u8` whose values have no restriction
+        - `str` is `[u8]` whose values must be valid UTF-8
+        - `CStr` is `[u8]` whose values must be a null-terminated
+        - `[u8]` can be converted to `CStr` only when
+          - all but the last value are non-zero
+          - the last value is zero
+        - `[u8]` can be converted to `str` only when
+          - the values are valid UTF-8
+        - between `CStr` and `str`,
+          - a `CStr` can be converted to `str` when it is valid utf8
+            - the last byte is omitted
+          - an `str` can be converted to `CStr` when the all but the last
+            value is non-zero and the last value is zero
   - `fmt` provides string formatting traits and utils
     - `{}` formats with `Display` trait
     - `{:?}` formats with `Debug` trait

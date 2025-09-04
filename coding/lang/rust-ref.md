@@ -476,6 +476,8 @@ The Rust Reference
       - boolean: `bool`
       - numeric: `{u,i}{8,16,32,64,128}` and `f{32,64}`
       - textual: `char` and `str`
+        - `char` is `u32`, with valid UTF-32 values excluding surrogates
+        - `str` is `[u8]`, with valid UTF-8 values
       - never: `!`
         - can only be used as the return type (of a noreturn func)
     - sequence types

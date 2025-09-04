@@ -96,7 +96,7 @@ Terminal
     - reorganized in 1969 to ANSI (American National Standards Institute)
   - every 16 positions is called a stick, e.g., `0x30..0x3f` is stick 3
   - character groups
-    - 0x00..0x1f: 32 control codes (stick 0 and 1)
+    - 0x00..0x1f: 32 control codes (C0 control codes)
       - some remain but most are unused
       - `\r`, `\t`, `\n`, backspace, escape, etc.
       - usually take control+key combinations to generate on keyboards
@@ -119,10 +119,11 @@ Terminal
   - there are 16 parts (variants)
   - ISO/IEC 8859-1
     - this is part 1 and is the most common one
-    - 0x00..0x1f: 32 undefined codes
+    - 0x00..0x1f: 32 undefined codes (C0 control codes in other stds)
     - 0x20..0x7e: 95 printable characters
       - identical to ASCII
-    - 0x7f..0x9f: 33 undefined codes
+    - 0x7f: 1 undefined code
+    - 0x80..0x9f: 32 undefined codes (C1 control codes in other stds)
     - 0xa0..0xff: 96 printable characters
       - symbols and other latin letters
 - ISO/IEC 10646
@@ -136,20 +137,30 @@ Terminal
     - 8-bit plane
     - 8-bit row
     - 8-bit cell
+    - because C0 and C1 control codes are forbidden in each byte, there are
+      `96*192^3` usable code points
+    - because of UTF-16, it is capped to 17 planes
   - BMP, Basic Multilingual Plane, has group 0 and plane 0
   - ISO 8859-1 has group 0, plane 0, and row 0
   - UTF-32 (UCS-4) encoding
     - each code point takes 4 bytes
     - big endian with group at the top and cell at the bottom
+    - can encode all UCS 32-bit code points
   - UTF-16 (UCS-2) encoding
     - each code point takes 2 bytes
     - there is a BOM character to indicate the endianness
     - direct mapping for code points in BMP
-    - surrogate characters are needed for other planes
+    - surrogate pairs are needed for other planes
+      - high surrogate can encode 10 bits, `0xd800 | 10-bit`
+      - low surrogate can encode 10 bits, `0xdc00 | 10-bit`
+      - it can encode 20 bits, up to `0xfffff` plus implied `0x10000`
+        (`0xfffff + 0x10000 = 0x10ffff`)
+    - it can thus encode BMP plus 16 other planes
   - UTF-8 encoding
     - variable length
       - 1 byte can encode 7 bits
       - N bytes can encode `(8 - N - 1) + 6 * (N - 1)` bits, when N > 1
+      - can encode all UCS 32-bit code points with 6 bytes
     - 1 byte to cover ASCII
     - 2 bytes to cover ISO 8859-1
     - 3 bytes to cover BMP
