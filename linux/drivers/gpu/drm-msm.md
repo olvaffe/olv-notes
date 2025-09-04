@@ -406,6 +406,43 @@ DRM msm
   - `MSM_SUBMITQUEUE_CLOSE`
     - destroy a `msm_submitqueue`
   - `MSM_WAIT_FENCE` is legacy path and calls `msm_wait_fence` to wait for a specified seqno
+- latency
+  - when `msm_ioctl_gem_submit` submits a job,
+    - `drm_sched_job_arm` inits the fence
+      - `trace_dma_fence_init` marks the start of the fence
+    - `drm_sched_entity_push_job` pushes the job to sched
+      - `trace_drm_sched_job_queue` marks the queuing of the job
+      - `drm_sched_wakeup` schedules `drm_sched_run_job_work` to
+        `sched->submit_wq`, which decides the run latency
+  - when `drm_sched_run_job_work` runs a job,
+    - `drm_sched_entity_pop_job` returns a job whose deps are met or NULL
+    - `trace_drm_sched_job_run` marks the running of the job
+    - `sched->ops->run_job` runs the job and returns the hw fence
+    - `drm_sched_fence_scheduled`
+      - saves the hw fence to `s_fence->parent`
+      - signals `scheduled` fence
+    - `dma_fence_add_callback` adds `drm_sched_job_done_cb` as a cb of the hw
+      fence, which decides the signal latency
+  - when hw fence signals and calls `drm_sched_job_done_cb`,
+    - `trace_drm_sched_job_done` marks the completion of the job
+    - `drm_sched_fence_finished` signals `finished` fence
+  - latency breakdown
+    - `drm_sched_wakeup` is called on job submission or when a job dep signals
+      - the latency depends on `sched->submit_wq`, which has regular priority
+        by default
+    - hw fence signaling
+      - `devm_request_irq` requests an irq
+      - on irq,
+        - `irq_handler` calls `a6xx_irq`
+        - `msm_gpu_retire`
+          - `msm_update_fence` updates `fctx->completed_fence`
+          - `kthread_queue_work` queues `retire_worker`
+            - `msm_gpu_init` calls `sched_set_fifo_low` to make the kthread
+              fifo
+      - on `retire_worker`,
+        - `dma_fence_is_signaled` calls `msm_fence_signaled` to determine if a
+          fence is completed and calls `dma_fence_signal` to signal it
+      - the latency is the sum of irq latency and fifo kthread scheduling
 
 ## debugfs
 
