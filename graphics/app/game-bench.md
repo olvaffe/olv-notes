@@ -149,6 +149,16 @@ GPU Benchmarks
   - `function` draws a 32x32 grid whose vs/fs has a function
   - `loop` draws a 32x32 grid whose vs/fs has a loop
 
+## vkmark
+
+- <https://github.com/vkmark/vkmark>
+- build
+  - `pacman -S glm assimp wayland-protocols vulkan-headers`
+  - `meson setup out -Dbuildtype=release -Dwayland=true`
+- run
+  - `./out/vkmark --winsys-dir out/src --data-dir data`
+    - `--winsys wayland` or `--winsys headless`
+
 ## glbench
 
 - <https://chromium.googlesource.com/chromiumos/platform/glbench>
