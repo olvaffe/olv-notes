@@ -1,6 +1,28 @@
 Kernel and IRQ
 ==============
 
+## Flow
+
+- when a device needs to be serviced, it assert an interrupt line
+- upon line assertion, irq controller raises a cpu exception
+- some cpu core handles the exception
+  - it enters irq context with irq disabled locally
+  - it asks the controller to mask out the line, such that exception is no
+    more raised
+    - this unblocks other cores before this core services the device?
+  - it performs minimal service for the device such that the device no longer
+    asserts the line
+    - this usually involves reading and acking device reqs, but real handling
+      of device reqs happen in bottom half
+  - it asks the controller to unmask the line
+    - if the line is asserted, this raises another exception
+  - it exits irq context with irq enabled locally
+- the cpu core performs minimal work for exception handling for several reasons
+  - it wants to get back to normal operation asap
+    - there may be other exceptions to handle, or processes to run
+  - it wants to unmask the line asap
+    - other devices may share the same line
+
 ## Initialization
 
 - modern archs define `CONFIG_SPARSE_IRQ`
