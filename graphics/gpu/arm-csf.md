@@ -184,17 +184,39 @@ ARM Mali CSF
   - `COMMAND`
     - `AS_COMMAND_NOP` is nop
     - `AS_COMMAND_UPDATE` commits `TRANSTAB`, `MEMATTR`, and `TRANSCFG` to hw
-      - this is used to change the root page table atomically
+      - this changes the root page table atomically after tlb invalidate and
+        all prior transactions have completed
     - `AS_COMMAND_LOCK` locks a region specified by `LOCKADDR`
-      - this invalidates TLB (but not L2) and blocks translations
+      - this blocks future transactions after tlb invalidate and all prior
+        transactions have completed
       - this is used after updating a page table
     - `AS_COMMAND_UNLOCK` unlocks a region
       - it unblocks translations
       - it implies `LOCK` if there is no prior `LOCK`
+        - this invalidates tlb implied by `LOCK`
     - `AS_COMMAND_FLUSH_PT` flushes/invalidates L2 and then unlock
-      - it can be replaced by `GPU_FLUSH_CACHES`+`AS_COMMAND_UNLOCK`
+      - it is equivalent to `GPU_FLUSH_CACHES(l2)`+`AS_COMMAND_UNLOCK`
     - `AS_COMMAND_FLUSH_MEM` flushes/invalidates L2/LSC caches and then unlock
-      - it can be replaced by `GPU_FLUSH_CACHES`+`AS_COMMAND_UNLOCK`
+      - it is equivalent to `GPU_FLUSH_CACHES(l2+lsc)`+`AS_COMMAND_UNLOCK`
+    - usage
+      - hw blocks
+        - l2 sits in front of external memory for all blocks including mmu
+        - mmu has a tlb cache
+        - shader core has l1 cache (lsc)
+      - when cpu modifies page tables,
+        - if gpu never modifies page tables,
+          - only tlb and l2 need invalidation
+          - assuming AS is idle (achieved by dma-fences), cpu modify, `LOCK`,
+            `GPU_FLUSH_CACHES`, and `UNLOCK` in order suffices
+            - `LOCK` seems unnecessary
+        - if gpu can mofiy page tables as well,
+          - all tlb, l2, and lsc need flush and invalidation
+        - but this is not quite what panthor does
+      - when cpu swaps a root page table,
+        - both tlb and l2 need invalidation
+        - assuming AS is idle (achieved by dma-fences), modify, `LOCK`,
+          `GPU_FLUSH_CACHES`, and `UNLOCK` in order suffices
+          - `LOCK` seems unnecessary
   - `FAULTSTATUS`
     - bit 7:0: exception type
       - `TRANSLATION_FAULT_n` hits an invalid pt entry at level n
