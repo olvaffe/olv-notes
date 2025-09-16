@@ -144,6 +144,15 @@ DRM panthor
     - it writes to `FOO_INT_MASK` to re-enable sources
   - `panthor_foo_irq_suspend` is called on suspend
     - it writes to `FOO_INT_MASK` to disable all sources
+- IOW, upon irq,
+  - raw handler
+    - reads `FOO_INT_STAT` to detect spurious irqs
+    - writes 0 to `FOO_INT_MASK` to disable sources from asserting lines
+    - returns `IRQ_WAKE_THREAD`
+  - threaded handler
+    - reads `FOO_INT_RAWSTAT` for sources
+    - loops until all sources are handled
+    - writes to `FOO_INT_MASK` to re-enable sources to assert lines
 - `PANTHOR_IRQ_HANDLER(gpu, GPU, panthor_gpu_irq_handler)`
   - sources are gpu faults, gpu cmd completions, etc.
 - `PANTHOR_IRQ_HANDLER(mmu, MMU, panthor_mmu_irq_handler)`
