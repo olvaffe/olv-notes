@@ -59,6 +59,35 @@ Kernel and IRQ
     - `irq_domain_insert_irq` is called on each virq to set up hwirq-to-virq
       mapping
 
+## `request_irq`
+
+- all variants call `request_threaded_irq`
+  - `request_irq`
+  - `devm_request_irq`
+  - `devm_request_threaded_irq`
+- `request_threaded_irq`
+  - `irq_to_desc` looks up `irq_desc` from virq
+  - an `irqaction` is allocated to save `handler`, `thread_fn`, `irqflags`,
+    `devname`, and `dev_id`
+    - if there is no handler, it defaults to `irq_default_primary_handler`
+      which is often used with `IRQF_ONESHOT`
+  - `irq_chip_pm_get` enables pm
+  - `__setup_irq` sets up irq
+- `__setup_irq`
+  - `setup_irq_thread` creates a kthread `irq/%d-%s`, if there is `thread_fn`
+    - the kthread executes `irq_thread`
+    - it calls `sched_set_fifo` to use `SCHED_FIFO` with `sched_priority` of
+      50
+  - if `IRQF_SHARED` is set, `desc->action` can have a chain of actions
+  - if this is the first action of `desc->action`,
+    - `irq_activate` calls `irq_domain_activate_irq` to activate the line
+      recursively from the root
+      - on x86, `x86_vector_activate` sets `vector_irq[hwirq]` to the `irq_desc`
+  - the `irqaction` is added to `irq_desc`
+  - `irq_pm_install_action` updates pm state
+  - `register_irq_proc` creates `/proc/irq/<irq>`
+  - `register_handler_proc` creates `/proc/irq/<irq>/<action-name>`
+
 ## HW Interrupt
 
 - some archs have a root irq handler that is set with `set_handle_irq`
@@ -82,8 +111,7 @@ Kernel and IRQ
     - more
   - taking `handle_level_irq` as an example
     - `irq_mask` masks the irq, such that the line does not trigger exception
-    - `irq_ack` acks the irq, such that the line is no longer asserted
-      - the line can be asserted again at any time
+    - `irq_ack` acks the irq, such that the chip can handle other lines
     - `handle_irq_event`
       - `__handle_irq_event_percpu` calls `action->handler` for all actions
         - if a `action->handler` returns `IRQ_WAKE_THREAD`,
@@ -92,30 +120,14 @@ Kernel and IRQ
 - if an action has a `thread_fn`, it spawns a kthread running `irq_thread`
   - it sleeps until woken up by `__irq_wake_thread`
   - `irq_thread_fn` invokes `action->thread_fn`
-
-## `request_irq`
-
-- all variants call `request_threaded_irq`
-  - `request_irq`
-  - `devm_request_irq`
-  - `devm_request_threaded_irq`
-- `request_threaded_irq`
-  - `irq_to_desc` looks up `irq_desc` from virq
-  - an `irqaction` is allocated to save `handler`, `thread_fn`, `irqflags`,
-    `devname`, and `dev_id`
-  - `irq_chip_pm_get` enables pm
-  - `__setup_irq` sets up irq
-- `__setup_irq`
-  - `setup_irq_thread` creates a kthread `irq/%d-%s`, if there is `thread_fn`
-    - the kthread executes `irq_thread`
-    - it calls `sched_set_fifo` to use `SCHED_FIFO` with `sched_priority` of
-      50
-  - if `IRQF_SHARED` is set, `desc->action` can have a chain of actions
-  - if this is the first action of `desc->action`,
-    - `irq_activate` calls `irq_domain_activate_irq` to activate the line
-      recursively from the root
-      - on x86, `x86_vector_activate` sets `vector_irq[hwirq]` to the `irq_desc`
-  - the `irqaction` is added to `irq_desc`
-  - `irq_pm_install_action` updates pm state
-  - `register_irq_proc` creates `/proc/irq/<irq>`
-  - `register_handler_proc` creates `/proc/irq/<irq>/<action-name>`
+- `IRQF_ONESHOT` keeps the line masked until the threaded handler returns
+  - during `__setup_irq`, the bit causes
+    - `new->thread_mask = 1UL << ffz(thread_mask);`
+    - `desc->istate |= IRQS_ONESHOT`
+  - during `handle_irq_event`, each handler is called, and if
+    `IRQ_WAKE_THREAD` is returned, `__irq_wake_thread` sets
+    - `desc->threads_oneshot |= action->thread_mask;`
+  - during `irq_thread_fn`, the thread fn is called, and
+    `irq_finalize_oneshot` sets
+    - `desc->threads_oneshot &= ~action->thread_mask;`
+    - `unmask_threaded_irq` unmasks the line
