@@ -166,11 +166,20 @@ DRM GEM
     - `drm_gem_shmem_mmap`
     - `drm_gem_shmem_pin_locked`
     - `drm_gem_shmem_unpin_locked`
-    - `drm_gem_shmem_madvise_locked`
-    - `drm_gem_shmem_is_purgeable`
-    - `drm_gem_shmem_purge_locked`
-    - `drm_gem_shmem_get_sg_table`
-    - `drm_gem_shmem_get_pages_sgt`
+    - `drm_gem_shmem_madvise_locked` sets `shmem->madv`
+    - `drm_gem_shmem_is_purgeable` returns if the obj can be purged
+    - `drm_gem_shmem_purge_locked` drops `shmem->sgt` and `shmem->pages`
+      - it is for shrinker
+    - `drm_gem_shmem_get_sg_table` allocs sgt for already pinned `shmem->pages`
+      - the only external use should be for dma-buf, where `dma_buf_attach` is
+        called before `dma_buf_map_attachment` to pin the pages
+    - `drm_gem_shmem_get_pages_sgt` inits and returns `shmem->sgt`
+      - for imported gem obj, `shmem->sgt` is already initialized from the
+        dma-buf on import
+      - for allocated gem obj,
+        - `drm_gem_shmem_get_pages_locked` inits `shmem->pages` by pinning the
+          pages
+        - `drm_gem_shmem_get_sg_table` allocs sgt and saves to `shmem->sgt`
     - `drm_gem_shmem_print_info`
     - `drm_gem_shmem_object_free` is for `drm_gem_object_funcs::free`
       - `drm_gem_object_put -> drm_gem_object_free` calls this
