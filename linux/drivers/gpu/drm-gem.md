@@ -153,19 +153,39 @@ DRM GEM
     - `drm_gem_shmem_vm_ops` is for `drm_gem_object_funcs` init
       - it is set to `vma->vm_ops` upon mmap
   - functions
-    - `drm_gem_shmem_init`
-    - `drm_gem_shmem_create`
-    - `drm_gem_shmem_create_with_mnt`
-    - `drm_gem_shmem_release`
-    - `drm_gem_shmem_free`
-    - `drm_gem_shmem_put_pages_locked`
-    - `drm_gem_shmem_pin`
-    - `drm_gem_shmem_unpin`
+    - `drm_gem_shmem_init` inits an allocated gem obj
+      - rust calls this
+    - `drm_gem_shmem_create` allocs and inits gem obj
+      - drivers call this on alloc
+    - `drm_gem_shmem_create_with_mnt` allocs and inits gem obj
+      - one driver calls this on alloc
+    - `drm_gem_shmem_release` releases underlying resources
+      - for imported gem obj, `drm_prime_gem_destroy` unmaps and detaches the
+        dma-buf
+      - for allocated gem obj, `shmem->sgt` and `shmem->pages` are teared down
+      - `drm_gem_object_release` releases the base `drm_gem_object`
+    - `drm_gem_shmem_free` releases and frees the gem obj
+      - drivers call this from their `drm_gem_object_funcs::free`, which is
+        `drm_gem_shmem_object_free` by default
+    - `drm_gem_shmem_put_pages_locked` decrements `shmem->pages_use_count` and
+      tears down `shmem->pages`
+      - there is internal `drm_gem_shmem_get_pages_locked` that inits
+        `shmem->pages` and increments `shmem->pages_use_count`
+    - `drm_gem_shmem_pin` gets pages and increments `shmem->pages_pin_count`
+      - pinned pages cannot be purged
+    - `drm_gem_shmem_unpin` decrements `shmem->pages_pin_count` and puts pages
     - `drm_gem_shmem_vmap_locked`
+      - for imported gem obj, `dma_buf_vmap` maps the dma-buf for kernel cpu
+        access
+      - for allocated gem obj, `drm_gem_shmem_pin_locked` pins pages and
+        `vmap` maps the pages to `shmem->vaddr`
     - `drm_gem_shmem_vunmap_locked`
+      - for imported gem obj, `dma_buf_vunmap` unmaps the dma-buf
+      - for allocated gem obj, `vunmap` unmaps the pages and
+        `drm_gem_shmem_unpin_locked` unpins pages
     - `drm_gem_shmem_mmap`
-    - `drm_gem_shmem_pin_locked`
-    - `drm_gem_shmem_unpin_locked`
+      - for imported gem obj, `dma_buf_mmap` mmaps the dma-buf
+      - for allocated gem obj, `drm_gem_shmem_get_pages_locked` gets pages
     - `drm_gem_shmem_madvise_locked` sets `shmem->madv`
     - `drm_gem_shmem_is_purgeable` returns if the obj can be purged
     - `drm_gem_shmem_purge_locked` drops `shmem->sgt` and `shmem->pages`
@@ -177,27 +197,34 @@ DRM GEM
       - for imported gem obj, `shmem->sgt` is already initialized from the
         dma-buf on import
       - for allocated gem obj,
-        - `drm_gem_shmem_get_pages_locked` inits `shmem->pages` by pinning the
-          pages
+        - `drm_gem_shmem_get_pages_locked` inits `shmem->pages`
         - `drm_gem_shmem_get_sg_table` allocs sgt and saves to `shmem->sgt`
     - `drm_gem_shmem_print_info`
     - `drm_gem_shmem_object_free` is for `drm_gem_object_funcs::free`
       - `drm_gem_object_put -> drm_gem_object_free` calls this
+      - this calls `drm_gem_shmem_free`
     - `drm_gem_shmem_object_print_info` is for `drm_gem_object_funcs::print_info`
       - `drm_framebuffer_print_info -> drm_gem_print_info` calls this
+      - this calls `drm_gem_shmem_print_info`
     - `drm_gem_shmem_object_pin` is for `drm_gem_object_funcs::pin`
       - `dma_buf_attach -> drm_gem_map_attach` calls this
+      - this calls `drm_gem_shmem_pin_locked`
     - `drm_gem_shmem_object_unpin` is for `drm_gem_object_funcs::unpin`
       - `dma_buf_detach -> drm_gem_map_detach` calls this
+      - this calls `drm_gem_shmem_unpin_locked`
     - `drm_gem_shmem_object_get_sg_table` is for `drm_gem_object_funcs::get_sg_table`
       - `dma_buf_map_attachment -> drm_gem_map_dma_buf` calls this
+      - this calls `drm_gem_shmem_get_sg_table`
     - `drm_gem_shmem_object_vmap` is for `drm_gem_object_funcs::vmap`
       - `drm_gem_vmap` calls this to map for kernel cpu access
+      - this calls `drm_gem_shmem_vmap_locked`
     - `drm_gem_shmem_object_vunmap` is for `drm_gem_object_funcs::vunmap`
       - `drm_gem_vunmap` calls this to unmap for kernel cpu access
+      - this calls `drm_gem_shmem_vunmap_locked`
     - `drm_gem_shmem_object_mmap` is for `drm_gem_object_funcs::mmap`
       - `mmap -> drm_gem_mmap -> drm_gem_mmap_obj` calls this
       - `dma_buf_mmap -> drm_gem_dmabuf_mmap -> drm_gem_prime_mmap` calls this
+      - this calls `drm_gem_shmem_mmap`
     - `drm_gem_shmem_prime_import_sg_table` is for
       `drm_driver::gem_prime_import_sg_table`
       - `drm_prime_fd_to_handle_ioctl -> drm_gem_prime_fd_to_handle -> drm_gem_prime_import`
