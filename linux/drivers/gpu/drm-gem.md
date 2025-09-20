@@ -136,3 +136,68 @@ DRM GEM
   - kernel: standard `ttm_bo_mmap`
     - `ttm_bo_vm_fault` pins and faults in pages while adjusting prot per-page
   - dma-buf: standard `ttm_bo_mmap`
+
+## `drm_gem_shmem`
+
+- public interface
+  - macros
+    - `to_drm_gem_shmem_obj` casts `drm_gem_object` to `drm_gem_shmem_object`
+    - `DRM_GEM_SHMEM_DRIVER_OPS` is for `drm_driver` init
+      - `drm_gem_shmem_dumb_create` for `drm_driver::dumb_create`, for
+        `MODE_CREATE_DUMB` ioctl
+      - `drm_gem_shmem_prime_import_no_map` for
+        `drm_driver::gem_prime_import`, for `PRIME_FD_TO_HANDLE` ioctl
+  - structs
+    - `drm_gem_shmem_object` is a subclass of `drm_gem_object`
+  - variables
+    - `drm_gem_shmem_vm_ops` is for `drm_gem_object_funcs` init
+      - it is set to `vma->vm_ops` upon mmap
+  - functions
+    - `drm_gem_shmem_init`
+    - `drm_gem_shmem_create`
+    - `drm_gem_shmem_create_with_mnt`
+    - `drm_gem_shmem_release`
+    - `drm_gem_shmem_free`
+    - `drm_gem_shmem_put_pages_locked`
+    - `drm_gem_shmem_pin`
+    - `drm_gem_shmem_unpin`
+    - `drm_gem_shmem_vmap_locked`
+    - `drm_gem_shmem_vunmap_locked`
+    - `drm_gem_shmem_mmap`
+    - `drm_gem_shmem_pin_locked`
+    - `drm_gem_shmem_unpin_locked`
+    - `drm_gem_shmem_madvise_locked`
+    - `drm_gem_shmem_is_purgeable`
+    - `drm_gem_shmem_purge_locked`
+    - `drm_gem_shmem_get_sg_table`
+    - `drm_gem_shmem_get_pages_sgt`
+    - `drm_gem_shmem_print_info`
+    - `drm_gem_shmem_object_free` is for `drm_gem_object_funcs::free`
+      - `drm_gem_object_put -> drm_gem_object_free` calls this
+    - `drm_gem_shmem_object_print_info` is for `drm_gem_object_funcs::print_info`
+      - `drm_framebuffer_print_info -> drm_gem_print_info` calls this
+    - `drm_gem_shmem_object_pin` is for `drm_gem_object_funcs::pin`
+      - `dma_buf_attach -> drm_gem_map_attach` calls this
+    - `drm_gem_shmem_object_unpin` is for `drm_gem_object_funcs::unpin`
+      - `dma_buf_detach -> drm_gem_map_detach` calls this
+    - `drm_gem_shmem_object_get_sg_table` is for `drm_gem_object_funcs::get_sg_table`
+      - `dma_buf_map_attachment -> drm_gem_map_dma_buf` calls this
+    - `drm_gem_shmem_object_vmap` is for `drm_gem_object_funcs::vmap`
+      - `drm_gem_vmap` calls this to map for kernel cpu access
+    - `drm_gem_shmem_object_vunmap` is for `drm_gem_object_funcs::vunmap`
+      - `drm_gem_vunmap` calls this to unmap for kernel cpu access
+    - `drm_gem_shmem_object_mmap` is for `drm_gem_object_funcs::mmap`
+      - `mmap -> drm_gem_mmap -> drm_gem_mmap_obj` calls this
+      - `dma_buf_mmap -> drm_gem_dmabuf_mmap -> drm_gem_prime_mmap` calls this
+    - `drm_gem_shmem_prime_import_sg_table` is for
+      `drm_driver::gem_prime_import_sg_table`
+      - `drm_prime_fd_to_handle_ioctl -> drm_gem_prime_fd_to_handle -> drm_gem_prime_import`
+        calls this
+    - `drm_gem_shmem_dumb_create` is for `drm_driver::dumb_create`
+      - `drm_mode_create_dumb_ioctl -> drm_mode_create_dumb` calls this
+      - `drm_client_buffer_create -> drm_mode_create_dumb` calls this
+    - `drm_gem_shmem_prime_import_no_map` is for
+      `drm_driver::gem_prime_import`
+      - `drm_prime_fd_to_handle_ioctl -> drm_gem_prime_fd_to_handle` calls this
+      - "no map" means not calling `dma_buf_map_attachment` to get sgt for hw
+        access, which is not typically used
