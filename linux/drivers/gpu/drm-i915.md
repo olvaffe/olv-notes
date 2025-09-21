@@ -156,6 +156,20 @@ DRM i915
   `drm_crtc_helper_set_mode` and `drm_helper_disable_unused_functions` is
   called.
 
+## dma-buf
+
+- `i915_gem_prime_import` imports a dma-buf
+  - `dma_buf_attach`
+  - `i915_gem_object_init` inits the obj with
+    - `i915_gem_object_dmabuf_ops`
+    - `I915_BO_ALLOC_USER`
+- `i915_gem_mmap_offset_ioctl` fails to return a fake mmap offset
+  - `__assign_mmap_offset` returns `-ENODEV` because
+    `i915_gem_object_has_struct_page` returns false
+- when `i915_gem_object_pin_pages` pins pages (for hw access), 
+  - `i915_gem_object_get_pages_dmabuf` calls `dma_buf_map_attachment` to get
+    sgt
+
 ## `i915_gem_execbuffer2_ioctl`
 
 - `drm_i915_gem_execbuffer2`
