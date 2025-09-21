@@ -361,6 +361,10 @@ Arch Linux
       `/usr/share/mkinitcpio/hook.preset` if missing
     - copies `/usr/lib/modules/<version>/vmlinuz` to `/boot/vmlinuz-linux`
     - runs `mkinitcpio -p linux`
+- custom uki image
+  - `mkinitcpio -k <version> --kernelimage <bzImage> -U /boot/EFI/Linux/custom.efi`
+    - ignore errors on missing modules if they are unnecessary or built-in
+    - the kernel image must have efi stub
 
 ## mkinitcpio
 

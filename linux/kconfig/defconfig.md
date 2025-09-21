@@ -40,7 +40,8 @@ Kernel defconfig
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
-  - select `EFI runtime service support` if uefi
+  - select `EFI runtime service support`
+    - select `EFI stub support` if uki
   - select `Timer frequency (1000 HZ)` if desired
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
@@ -107,7 +108,6 @@ Kernel defconfig
   - select `Kernel support for MISC binaries`
 - select `Memory Management options`
   - select `Transparent Hugepage Support`
-    - select `Transparent Hugepage Support sysfs defaults (always)`
   - select `Contiguous Memory Allocator` if needed
   - select `Multi-Gen LRU`
     - select `Enable by default`
@@ -218,6 +218,7 @@ Kernel defconfig
     - deselect `ATA SFF support (for legacy IDE and PATA)`
   - select `Multiple devices driver support (RAID and LVM)` if desired
     - select `Device mapper support`
+      - select `Crypt target support` if luks
   - select `Network device support`
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
@@ -287,7 +288,7 @@ Kernel defconfig
     - select `Virtio console` if guest
     - select `Hardware Random Number Generator Core support`
       - deselect all but the needed drivers
-    - select `TPM Hardware Support`
+    - select `TPM Hardware Support` (for luks, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
         - select `Cr50 SPI Interface` if cros
