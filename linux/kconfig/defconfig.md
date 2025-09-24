@@ -90,7 +90,7 @@ Kernel defconfig
       - select `Generic DT based cpufreq driver`
       - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mtk
-      - select `QCOM CPUFreq HW driver` if old qcom
+      - select `QCOM CPUFreq HW driver` if qcom sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Binary Emulations` if 86
@@ -150,10 +150,10 @@ Kernel defconfig
 ## Config: Device Drivers
 
 - select `Device Drivers`
-  - select `PCI support` if pci
+  - select `PCI support` if needed
     - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
-    - select `PCI Express Downstream Port Containment support` if needed
+    - select `PCI Express Downstream Port Containment support` if qcom x1
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `Support for PCI Hotplug` if needed (for usb4)
     - select `PCI controller drivers` if arm
@@ -244,10 +244,8 @@ Kernel defconfig
     - select `Wireless LAN` if desired
       - deselect all but the needed drivers, such as
       - select `Atheros/Qualcomm devices` if qcom
-        - select `Atheros 802.11ac wireless cards support` if old qcom
-        - select `Qualcomm ath10k SNOC support` if old qcom
-        - select `Qualcomm Technologies 802.11ax chipset support` if old qcom
-          - select `Atheros ath11k AHB support`, depending on `REMOTEPROC`
+        - select `Atheros 802.11ac wireless cards support` if qcom sc7180
+        - select `Qualcomm ath10k SNOC support` if qcom sc7180
         - select `Qualcomm Technologies Wi-Fi 7 support (ath12k)` if qcom x1
       - select `Broadcom devices` if rpi
         - select `Broadcom FullMAC WLAN driver`
@@ -312,7 +310,7 @@ Kernel defconfig
     - select `MediaTek SPI controller` if mtk
     - select `MediaTek SPI NOR controller` if mtk
     - select `PXA2xx SSP SPI master` if intel
-    - select `QTI QSPI controller` if old qcom
+    - select `QTI QSPI controller` if qcom sc7180
     - select `Qualcomm GENI based SPI controller` if qcom
     - select `Rockchip SPI controller driver` if rk
     - select `Rockchip Serial Flash Controller (SFC)` if rk
@@ -330,11 +328,9 @@ Kernel defconfig
     - if qcom
       - select `Qualcomm core pin controller driver`
         - select `Qualcomm Technologies Inc SC7180 pin controller driver`
-        - select `Qualcomm Technologies Inc SC7280 pin controller driver`
         - select `Qualcomm Technologies Inc X1E80100 pin controller driver` if qcom x1
       - select `Qualcomm SPMI PMIC pin controller driver`
       - select `Qualcomm Technologies Inc LPASS LPI pin controller driver`
-        - select `Qualcomm Technologies Inc SC7280 LPASS LPI pin controller driver`
         - select `Qualcomm Technologies Inc SM8550 LPASS LPI pin controller driver` if qcom x1
     - if rk
       - select `Pinctrl and GPIO driver for RK805 PMIC`
@@ -379,7 +375,7 @@ Kernel defconfig
   - select `Watchdog Timer Support`
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `ARM SBSA Generic Watchdog` if qcom x1
-    - select `QCOM watchdog` if old qcom
+    - select `QCOM watchdog` if qcom sc7180
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
@@ -483,9 +479,8 @@ Kernel defconfig
         - select `ASoC support for Mediatek MT8195 chip` if mtk
           - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `ASoC support for QCOM platforms` if qcom
-          - select `SoC Machine driver for SC7180 boards` if old qcom
-          - select `SoC Machine driver for SC7280 boards` if old qcom, depending on `SOUNDWIRE`
-          - select `SoC Machine driver for X1E80100 boards`, depending on `SOUNDWIRE`
+          - select `SoC Machine driver for SC7180 boards` if qcom sc7180
+          - select `SoC Machine driver for X1E80100 boards` if qcom x1, depending on `SOUNDWIRE`
         - select `ASoC support for Rockchip` if rk
           - select `Rockchip I2S Device Driver`
           - select `Rockchip I2S/TDM Device Driver`
@@ -547,7 +542,7 @@ Kernel defconfig
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
-    - select `Onboard USB hub support` if old qcom
+    - select `Onboard USB hub support` if qcom sc7180
     - select `USB Gadget Support` if needed
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk
@@ -643,14 +638,13 @@ Kernel defconfig
     - select `Support for Qualcomm's clock controllers` if qcom
       - select `X1*` if qcom x1
       - select `RPMh Clock Driver`
-      - select `SC7180 *` if old qcom
-      - select `SC7280 *` if old qcom
+      - select `SC7180 *` if qcom sc7180
       - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if qcom x1
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if arm
     - select `BCM2835 Mailbox` if rpi
-    - select `Qualcomm APCS IPC driver` if old qcom
+    - select `Qualcomm APCS IPC driver` if qcom sc7180
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
     - select `Qualcomm Technologies, Inc. CPUCP mailbox driver` if qcom x1
@@ -667,8 +661,7 @@ Kernel defconfig
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
-      - select `Qualcomm Technology Inc ADSP Peripheral Image Loader` if old qcom
-      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if old qcom
+      - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if qcom sc7180
       - select `Qualcomm Hexagon v5 Peripheral Authentication Service support` if qcom x1
       - select `Qualcomm sysmon driver` if qcom modem
       - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
@@ -723,7 +716,7 @@ Kernel defconfig
       - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s)
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
-      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if old qcom
+      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if qcom sc7180
       - select `Rockchip SARADC driver` if rk, depending on `RESET_CONTROLLER`
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
@@ -742,8 +735,8 @@ Kernel defconfig
   - select `IRQ chip support` if qcom
     - select `QCOM PDC`
   - select `Reset Controller Support` if arm
-    - select `Qcom AOSS Reset Driver` if old qcom
-    - select `Qualcomm PDC Reset Driver` if old qcom
+    - select `Qcom AOSS Reset Driver` if qcom sc7180
+    - select `Qualcomm PDC Reset Driver` if qcom sc7180
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
   - select `PHY Subsystem` if arm
     - if mtk
@@ -754,13 +747,12 @@ Kernel defconfig
       - select `MediaTek MIPI-DSI Driver`
       - select `MediaTek DP-PHY Driver`
     - if qcom
+      - select `SNPS eUSB2 PHY Driver` if qcom x1
       - select `NXP PTN3222 1-port eUSB2 to USB2 redriver` if qcom x1
       - select `Qualcomm eDP PHY driver`
       - select `Qualcomm QMP PHY Driver`
-      - select `Qualcomm QUSB2 PHY Driver` if old qcom
-      - select `Qualcomm SNPS eUSB2 PHY Driver` if qcom x1
+      - select `Qualcomm QUSB2 PHY Driver` if qcom sc7180
       - select `Qualcomm SNPS eUSB2 Repeater Driver` if qcom x1
-      - select `Qualcomm SNPS FEMTO USB HS PHY V2 module` if old qcom
     - if rk
       - select `Rockchip INNO USB2PHY Driver`, depending on `EXTCON`
       - select `Rockchip NANENG COMBO PHY Driver`
@@ -783,9 +775,8 @@ Kernel defconfig
   - select `On-Chip Interconnect management support` if qcom/mtk
     - if qcom
       - select `Qualcomm Network-on-Chip interconnect drivers`
-      - select `Qualcomm OSM L3 interconnect driver` if old qcom
-      - select `Qualcomm SC7180 interconnect driver` if old qcom
-      - select `Qualcomm SC7280 interconnect driver` if old qcom
+      - select `Qualcomm OSM L3 interconnect driver` if qcom sc7180
+      - select `Qualcomm SC7180 interconnect driver` if qcom sc7180
       - select `Qualcomm X1E80100 interconnect driver` if qcom x1
     - if mtk
       - select `MediaTek interconnect drivers`
@@ -796,6 +787,7 @@ Kernel defconfig
 - select `File systems`
   - select `The Extended 4 (ext4) filesystem`
     - select `Ext4 POSIX Access Control Lists` (for systemd)
+    - select `Ext4 Security Labels` (for pacman)
   - select `Btrfs filesystem support` if desired
     - select `Btrfs POSIX Access Control Lists`
   - select `F2FS filesystem support` if desired
@@ -834,7 +826,7 @@ Kernel defconfig
   - select `Enable access key retention support` if iwd
     - select `Diffie-Hellman operations on retained keys`
   - select `Enable different security models`
-  - select `Landlock support` if pacman
+  - select `Landlock support` (for pacman)
 - select `Cryptographic API`
   - select `Block ciphers` if iwd
     - select `AES (Advanced Encryption Standard)`
