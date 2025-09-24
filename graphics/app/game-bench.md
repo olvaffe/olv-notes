@@ -614,3 +614,9 @@ GPU Benchmarks
     - it computes `a*b+c` with `get_local_id` for 1024 times and writes the
       result
   - `globalSize` is scaled by `numCUs` and `maxWGSize`
+
+## Unity Boat Attack
+
+- adb
+  - `adb shell am start -n com.UnityTechnologies.BoatAttack/com.unity3d.player.UnityPlayerActivity`
+  - `adb shell am force-stop com.UnityTechnologies.BoatAttack`
