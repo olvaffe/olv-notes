@@ -1,6 +1,12 @@
 Kernel PM Domain
 ================
 
+## Core
+
+- `late_initcall_sync(genpd_power_off_unused)` queues `genpd_power_off` to
+  power off unused pm domains
+  - `pd_ignore_unused` disables the behavior
+
 ## Controllers
 
 - the pmdomain subsystem was renamed from genpd, Generic PM Domain

@@ -1,6 +1,11 @@
 Kernel clk
 ==========
 
+## Core
+
+- `late_initcall_sync(clk_disable_unused)` disables unused clks
+  - `clk_ignore_unused` disables the behavior
+
 ## Controllers
 
 - an soc typically has several clock controllers, for different ip blocks

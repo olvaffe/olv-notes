@@ -1,6 +1,13 @@
 Kernel Regulator
 ================
 
+## Core
+
+- `late_initcall_sync(regulator_init_complete)` queues
+  `regulator_init_complete_work_function` which calls `regulator_late_cleanup`
+  to disable unused regulators
+  - `regulator_ignore_unused` disables the behavior
+
 ## Regulators
 
 - <https://docs.kernel.org/power/regulator/overview.html>
