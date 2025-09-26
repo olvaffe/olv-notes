@@ -88,8 +88,8 @@ Kernel defconfig
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `Generic DT based cpufreq driver`
-      - select `CPU Frequency scaling support for MediaTek SoCs` if mtk, depending on `REGULATOR`
-      - select `MediaTek CPUFreq HW driver` if mtk
+      - select `CPU Frequency scaling support for MediaTek SoCs` if mtk mt8186, depending on `REGULATOR`
+      - select `MediaTek CPUFreq HW driver` if mtk mt8195
       - select `QCOM CPUFreq HW driver` if qcom sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
@@ -141,7 +141,7 @@ Kernel defconfig
       - select `HCI UART driver` if qcom/rpi
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
-      - select `MediaTek HCI SDIO driver` if old mtk
+      - select `MediaTek HCI SDIO driver` if mtk mt8186
   - select `Wireless` if desired
     - select `cfg80211 - wireless configuration API`
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
@@ -259,7 +259,7 @@ Kernel defconfig
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
-        - select `GPIO Buttons` if old mtk/rk or qcom x1
+        - select `GPIO Buttons` if old rk, mtk mt8186, or qcom x1
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -474,9 +474,9 @@ Kernel defconfig
           - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
           - select `SOF with nau8825 codec in I2S Mode` if needed
           - select `SoundWire generic machine driver` if needed
-        - select `ASoC support for Mediatek MT8186 chip` if old mtk
+        - select `ASoC support for Mediatek MT8186 chip` if mtk mt8186
           - select `ASoC Audio driver for MT8186 with MT6366 and I2S codecs`, depending on `MTK_PMIC_WRAP`
-        - select `ASoC support for Mediatek MT8195 chip` if mtk
+        - select `ASoC support for Mediatek MT8195 chip` if mtk mt8195
           - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `ASoC support for QCOM platforms` if qcom
           - select `SoC Machine driver for SC7180 boards` if qcom sc7180
@@ -494,8 +494,8 @@ Kernel defconfig
             - select `SOF support for HDA Links(HDA/HDMI)`
               - select `SOF support for HDAudio codecs`
           - select `SOF support for MTK audio DSPs` if mtk
-            - select `SOF support for MT8186 audio DSP` if old mtk
-            - select `SOF support for MT8195 audio DSP`
+            - select `SOF support for MT8186 audio DSP` if mtk mt8186
+            - select `SOF support for MT8195 audio DSP` if mtk mt8195
         - select `CODEC drivers` if qcom
           - select `WCD9380/WCD9385 Codec - SDW` if qcom x1
           - select `WSA884X Codec` if qcom x1
@@ -571,7 +571,7 @@ Kernel defconfig
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `Universal Flash Storage Controller` if needed
     - select `Platform bus based UFS Controller support`
-      - select `Mediatek specific hooks to UFS controller platform driver` if new mtk
+      - select `Mediatek specific hooks to UFS controller platform driver` if mtk mt8195
   - select `LED Support`
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
@@ -655,8 +655,8 @@ Kernel defconfig
     - select `Support for Interrupt Remapping` if x86
     - select `Rockchip IOMMU Support` if rk
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk/new mtk
-    - select `MediaTek IOMMU Support` if mtk
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk or mtk mt8196
+    - select `MediaTek IOMMU Support` if mtk mt8186/mt8195
     - select `Virtio IOMMU driver` if guest
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
@@ -706,7 +706,7 @@ Kernel defconfig
   - select `Generic Dynamic Voltage and Frequency Scaling (DVFS) support` if arm
     - select `Simple Ondemand`
     - select `Performance`
-    - select `MEDIATEK CCI DEVFREQ Driver` if old mtk
+    - select `MEDIATEK CCI DEVFREQ Driver` if mtk mt8186
     - select `DEVFREQ-Event device Support`
       - select `ROCKCHIP DFI DEVFREQ event Driver` if rk
   - select `External Connector Class (extcon) support` if arm
@@ -742,7 +742,7 @@ Kernel defconfig
     - if mtk
       - select `MediaTek PCIe-PHY Driver`
       - select `MediaTek T-PHY Driver`
-      - select `MediaTek XS-PHY Driver` if new mtk
+      - select `MediaTek XS-PHY Driver` if mtk mt8196
       - select `MediaTek HDMI-PHY Driver`
       - select `MediaTek MIPI-DSI Driver`
       - select `MediaTek DP-PHY Driver`
