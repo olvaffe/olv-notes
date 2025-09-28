@@ -83,7 +83,7 @@ Arch Linux
 
 - network
   - for quick connection, see `Installation`
-  - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/wlan.network`
+  - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/60-wlan.network`
   - `systemctl enable --now iwd systemd-networkd systemd-resolved`
   - `iwctl station <iface> connect <ssid>`
   - for wireless adapter that requiers out-of-tree driver,

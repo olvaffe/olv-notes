@@ -81,6 +81,14 @@ systemd-networkd
   - manual for wireless
 - there are also `DHCPServer` and `IPMasquerade` that can automate NAT setup
   - for manual setup, see <dnsmasq.md> and <nftables.md>
+  - `/etc/systemd/network/10-test.network`
+    - `[Match]`
+    - `Name=enp0s31f6`
+    - `[Network]`
+    - `Address=192.168.0.1/24`
+    - `DHCPServer=yes`
+    - `IPMasquerade=ipv4`
+  - leases are in `/var/lib/systemd/network/dhcp-server-lease`
 - `[DHCPv4]` configures the DHCPv4 client, if enabled with `DHCP=`
   - `SendHostname=` and `Hostname=` set the hostname sent to the DHCPv4 server
     - on google wifi, which provides both DHCPv4 and DNS, the hostname is used
