@@ -34,6 +34,8 @@ Kernel IOMMU
   - this adds the iommu to `iommu_device_list`
   - this also calls `bus_iommu_probe` on all known busses, to probe consumer
     devices
+    - this is done because the iommu controller may be probed after other
+      devices
 
 ## Consumers
 
@@ -51,14 +53,30 @@ Kernel IOMMU
     - `of_iommu_configure`
       - looks for `iommus` or `iommu-map` OF props in the consumer device
       - calls `iommu_fwspec_init` on the consumer device
+        - `dev_iommu_get` allocs `dev->iommu` on demand
+        - `dev_iommu_fwspec_set` sets `dev->iommu->fwspec`
       - calls `iommu_ops_from_fwnode` to get ops from the controller
       - calls `ops->of_xlate` on the consumer device
+        - the controller driver calls `dev_iommu_priv_set` to set
+          `dev->iommu->priv`
       - calls `iommu_probe_device`
-  - `iommu_probe_device` uses these iommu ops
-    - `ops->probe_device`
-    - `ops->device_group`
+- `iommu_probe_device`
+  - `iommu_init_device`
+    - it calls `dev->bus->dma_configure` if necessary, which happens when
+      `bus_iommu_probe` probes the consumer first
+    - `ops->probe_device` lets the controller driver probe the consumer and
+      return `iommu_device` for `dev->iommu->iommu_dev`
+    - `ops->device_group` lets the controller driver return the `iommu_group`
+      the consumer belongs to for `dev->iommu_group`
     - `ops->is_attach_deferred`
-    - `ops->probe_finalize`
+  - if this is the first consumer belonging to the `iommu_group`,
+    - `group->default_domain` and `group->domain` are null
+    - `iommu_setup_default_domain` sets up both
+      - if the controller does not specify any default type,
+        `iommu_def_domain_type` is used which is usually `IOMMU_DOMAIN_DMA_FQ`
+  - `iommu_setup_dma_ops`
+    - `dev->dma_iommu` is set to `iommu_is_dma_domain`
+  - `ops->probe_finalize`
 - `iommu_domain_alloc` allocates a `iommu_domain`
   - this loops through all devices on the bus and expects all devices share
     the same iommu controller

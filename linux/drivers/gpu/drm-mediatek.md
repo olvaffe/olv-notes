@@ -54,3 +54,57 @@ Linux DRM Mediatek
 - corsola/cherry advertises AFBC support but triggers
   `mtk-iommu 14016000.iommu: fault type=0x5 iova=0xfec23000 pa=0x0 master=0x51000008(larb=0 port=2) layer=1 read`
   - `PAN_MESA_DEBUG=noafbc` to work around
+
+## IOMMU
+
+- device node
+  - no `memory-region`
+    - otherwise, the driver would call `of_reserved_mem_device_init` to parse
+      `memory-region`
+    - it would call `rmem->ops->device_init`, which is usually
+      - `rmem_dma_device_init` provided by `CONFIG_DMA_DECLARE_COHERENT`
+        - `dma_assign_coherent_memory` assigns `dev->dma_mem`
+      - `rmem_cma_device_init` provided by `CONFIG_DMA_CMA`
+        - it assigns `dev->cma_area`
+  - has `iommus`
+- platform device
+  - `of_platform_default_populate` creates platform devices from dt devices
+    - `setup_pdev_dma_masks` sets `pdev->dev.coherent_dma_mask` and
+      `pdev->dev.dma_mask ` to 32 bits
+    - `of_platform_device_create_pdata` overrides `dev->dev.coherent_dma_mask`
+      to the same 32 bits
+- pre-probe
+  - `really_probe` calls `platform_dma_configure`
+    - this calls down to `iommu_probe_device` which inits `dev->iommu`,
+      `dev->iommu_group`, `dev->dma_iommu`, etc.
+    - it is also possible that `bus_iommu_probe` calls `iommu_probe_device` on
+      all devices when the controller driver probes
+- `dma_alloc_attrs`
+  - `get_dma_ops` returns NULL
+    - it is always null on x86 and arm64
+  - `dev->coherent_dma_mask` is 32-bit unless the driver calls
+    `dma_set_coherent_mask` or `dma_set_mask_and_coherent`
+  - `dma_alloc_from_dev_coherent` attemps to allocate from `dev->dma_mem`,
+    which is null
+  - `dma_alloc_direct` returns false because there is `dev->dma_iommu`
+    - otherwise, `dma_direct_alloc` would allocate contiguous pages,
+      potentially from `dev->cma_area`
+  - `iommu_dma_alloc` allocates pages and sets up iommu
+    - `__iommu_dma_alloc_noncontiguous`
+      - `__iommu_dma_alloc_pages` allocs non-contiguous pages
+      - `iommu_dma_alloc_iova` allocs a contiguous iova region
+        - this can fail due to the 32-bit limit
+      - `sg_alloc_table_from_pages` allocs sgt
+      - `iommu_map_sg` maps the non-contiguous pages to the contiguous iova
+        region
+- `drm_prime_fd_to_handle_ioctl` from `system` dma-heap
+  - `drm_gem_prime_fd_to_handle` calls `mtk_gem_prime_import` which calls
+    `drm_gem_prime_import_dev`
+  - `dma_buf_attach` calls `system_heap_attach` and returns
+    `dma_buf_attachment`
+  - `dma_buf_map_attachment` calls `system_heap_map_dma_buf` and returns
+    `sg_table`
+    - `dma_map_sgtable` calls `iommu_dma_map_sg`
+      - `iommu_dma_alloc_iova` allocs a contiguous iova region
+        - this can fail due to the 32-bit limit
+  - `mtk_gem_prime_import_sg_table` creates gem obj from the sgt
