@@ -1,6 +1,48 @@
 Kernel and DMA
 ==============
 
+## `dma_alloc_attrs`
+
+- the goal is to allocate a coherent buffer for a device
+  - it must be addressable to the device, determined by `dev->coherent_dma_mask`
+  - it must be contiguous to the device, either physically or mapped by iommu
+  - it must be coherent between device and cpu, either WB, WC, or UC
+    - WB only if device and cpu are coherent
+      - x86: always true
+      - arm: `dev->dma_coherent` specified by deivce node `dma-coherent`
+- `dma_alloc_attrs` allocates a coherent buffer for a device
+  - if `dev->dma_mem`, `dma_alloc_from_dev_coherent` suballocates from
+    `dev->dma_mem`
+    - this happens when the device node has `memory-region` that refers to
+      `/reserved_memory`
+  - if `dev->dma_iommu`, `iommu_dma_alloc` allocates via the iommu subsystem
+    - this happens when the device node has `iommus` that refers to iommus
+  - otherwise, `dma_direct_alloc` allocates directly
+- `dma_direct_alloc`
+  - `__dma_direct_alloc_pages` allocates physically contiguous pages
+    - if cma, `dma_alloc_contiguous` allocates from a cma area
+      - a cma area is defined by a `/reserved_memory` in dt
+      - it can be system global specified by `linux,cma-default`, or
+        device-specific specified by device `memory-region`
+    - otherwise, `alloc_pages_node` allocates directly from buddy
+  - as for kernel cpu mapping,
+    - if not needed, done
+    - if there is cpu/dev coherency, WB suffices and the kernel linear mapping
+      is used
+    - otherwise, `dma_pgprot` picks WC or UC, and
+      `dma_common_contiguous_remap` vmaps
+- `iommu_dma_alloc` typically calls down to `iommu_dma_alloc_remap`
+  - `dma_pgprot` picks WC or UC for vmap
+  - `__iommu_dma_alloc_noncontiguous` allocs non-contiguous pages and sets up
+    iommu to appear contiguous
+    - `__iommu_dma_alloc_pages` allocs individual pages
+    - `iommu_dma_alloc_iova` allocs iova
+      - if system is 64-bit with >4GB memory, and `dev->coherent_dma_mask` is
+        4GB, this can fail
+    - `sg_alloc_table_from_pages` inits sgt for the pages
+    - `iommu_map_sg` maps the pages in iommu
+  - `dma_common_pages_remap` vmaps the pages
+
 ## Configs
 
 - every source file is optional
