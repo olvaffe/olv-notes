@@ -43,6 +43,63 @@ Kernel and DMA
     - `iommu_map_sg` maps the pages in iommu
   - `dma_common_pages_remap` vmaps the pages
 
+## `dma_alloc_*`
+
+- `dma_alloc_attrs` sees above
+- `dma_alloc_coherent` calls `dma_alloc_attr` for a coherent buffer (often UC)
+- `dma_alloc_wc` calls `dma_alloc_attr` for a coherent buffer (often WC)
+- `dma_alloc_pages` allocates a physically-contiguous non-coherent buffer
+  - it allocates physically-contiguous pages, sets up iommu if necessary
+- `dma_alloc_noncoherent` calls `dma_alloc_pages`
+- `dma_alloc_noncontiguous` allocates a non-coherent buffer
+  - if iommu, `iommu_dma_alloc_noncontiguous` allocates non-contiguous pages
+    and sets up iommu to appear contiguous
+  - otherwise, `alloc_single_sgt` allocates contiguos pages
+
+## `dma_map_*` and `dma_unmap_*`
+
+- `dma_map_page_attrs` maps externally allocated, physically-contiguous,
+  non-coherent pages for device dma access
+  - if iommu, `iommu_dma_map_page`
+    - `arch_sync_dma_for_device` flushes cpu caches if necessary
+    - `__iommu_dma_map`
+      - `iommu_dma_alloc_iova` allocs iova
+      - `iommu_map` maps region in iommu
+  - otherwise, `dma_direct_map_page`
+    - `dma_capable` validates the pages against `dev->dma_mask`
+    - `arch_sync_dma_for_device` flushes cpu caches if necessary
+- `dma_unmap_page_attrs` undoes `dma_map_page_attrs`
+  - `arch_sync_dma_for_cpu` invalidates cpu caches if necessary
+- `dma_map_sg_attrs` maps externally allocated, non-contiguous, non-coherent
+  pages for device dma access
+  - if iommu, `iommu_dma_map_sg`
+    - it works similar to `iommu_dma_map_page`
+  - otherwise, `dma_direct_map_sg`
+    - `dma_direct_map_page` maps each contigous segments independently
+    - the device must access each segment independently
+- `dma_map_sgtable` maps sgt for device dma access
+  - it works the same way as `dma_map_sg_attrs`
+- `dma_map_resource` maps physical addrs for device dma access
+  - this is used when the physical addrs are not backed by pages
+  - this assumes coherency
+  - if iommu, `iommu_dma_map_resource`
+    - `iommu_dma_alloc_iova` allocs iova
+    - `iommu_map` maps region in iommu
+  - otherwise, `dma_direct_map_resource` validates the addrs
+- `dma_map_single_attrs` calls `dma_map_page_attrs`
+- `dma_map_single` calls `dma_map_single_attrs`
+- `dma_map_sg` calls `dma_map_sg_attrs`
+- `dma_map_page` calls `dma_map_page_attrs`
+
+## `dma_sync_*`
+
+- `dma_alloc_*` allocates buffers that are always mapped for both cpu and
+  device, but have variants that are incoherent
+- `dma_map_*` maps externally-allocated buffers for device and assumes no
+  coherency
+- when a buffer is mapped for both cpu and device and is incoherent,
+  `dma_sync_*` must be called before cpu and device access
+
 ## Configs
 
 - every source file is optional
