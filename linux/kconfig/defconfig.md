@@ -93,7 +93,7 @@ Kernel defconfig
       - select `QCOM CPUFreq HW driver` if qcom sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
-- select `Binary Emulations` if 86
+- select `Binary Emulations` if x86
   - select `IA32 Emulation`
 - select `Virtualization` if desired
   - select `Kernel-based Virtual Machine (KVM) support`
@@ -857,11 +857,14 @@ Kernel defconfig
 - select `Kernel hacking`
   - select `printk and dmesg options`
     - select `Show timing information on printks`
+    - select `Show caller information on printks` if desired
+    - select `Enable dynamic printk() support` if desired
   - select `Kernel debugging`
   - select `Generic Kernel Debugging Instruments`
     - select `Magic SysRq key`
     - select `Debug Filesystem`
   - select `Tracers`
+    - deselect `Automount tracefs on debugfs`
     - select `Kernel Function Tracer` if desired
     - select `Trace syscalls`
 
