@@ -540,3 +540,36 @@ DRM msm
     - `CP_UCODE_DBG_DATA`
     - `CP_ROQ`
     - `CP_MEMPOOL`
+
+## `msm_ioctl_vm_bind`
+
+- `msm_ioctl_vm_bind` pushes a `msm_vm_bind_job` to the scheduler
+  - `msm_context` is the per-file context
+  - `msm_gem_vm` is the per-context private vm
+  - `msm_gpu_submitqueue` is an app-created submitqueue for the per-vm
+    scheduler
+- `vm_bind_job_lookup_ops` looks up all gem objs
+- `vm_bind_job_lock_objects` locks all gem objs (their resvs)
+- `vm_bind_job_pin_objects` pins all gem objs
+  - `msm_gem_get_pages_locked` allocs `obj->pages` and `obj->sgt`
+  - `msm_gem_pin_obj_locked` increments `obj->pin_count`
+- `vm_bind_job_prepare` converts gpuvm ops to msm vm ops
+  - gpuvm splits and merges gpuvm ops
+  - `msm_gem_vm_sm_step_map` creates a vma and a msm vm op for each gpuvm op
+    - the vma is inserted into gpuva
+    - the vm op is added to `job->vm_ops`
+- `drm_sched_entity_push_job` pushes the job to the scheduler
+- when `msm_vma_job_run` runs,
+  - `vm_map_op` calls `msm_iommu_pagetable_map` to update page tables
+  - `vm_unmap_op` calls `msm_iommu_pagetable_unmap` to update page tables
+  - `msm_gem_unpin_locked` decrements `obj->pin_count`
+- when `msm_gem_evict` evicts a bo under memory pressure,
+  - `put_iova_spaces`
+    - `msm_gem_vma_unmap` unmaps a vma (takes down iommu page table)
+  - `drm_vma_node_unmap` takes down cpu page table
+  - `put_pages` marks the bo evicted and takes down `obj->pages` and
+    `obj->sgt`
+- when userspace calls `msm_ioctl_gem_submit`,
+  - userspace no longer tracks bos and the bo list is empty
+  - instead, `drm_gpuvm_validate` calls `msm_gem_vm_bo_validate` to page in
+    evicted bos
