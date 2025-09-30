@@ -171,7 +171,7 @@ Kernel defconfig
         - select `Enable compressed firmware support`
           - select `Enable ZSTD-compressed firmware support`
   - select `Firmware Drivers`
-    - select `ARM System Control and Management Interface Protocol`
+    - select `ARM System Control and Management Interface Protocol` if arm
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
@@ -201,8 +201,7 @@ Kernel defconfig
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
-    - if intel,
-      - select `Intel Management Engine Interface`
+    - select `Intel Management Engine Interface` if intel
       - select `ME Enabled Intel Chipsets`
       - select `Intel MEI GSC embedded device`
       - select `Intel HDCP2.2 services of ME Interface` if protected, depending on `DRM_I915`
@@ -420,8 +419,10 @@ Kernel defconfig
         - select `Enable legacy fbdev support for your modesetting driver` (for vt)
       - select `AMD GPU` if amd
         - select `Always enable userptr write support` if desired
-      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel
-        - select `Force probe i915 for selected Intel hardware IDs` (to `*`) if needed
+      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel and before lnl
+        - select `Force probe i915 for selected Intel hardware IDs` (to `!*`) if needed
+      - select `Intel Xe2 Graphics` if intel and since lnl
+        - select `Force probe xe for selected Intel hardware IDs` (to `*`) if needed
       - select `MSM DRM` if qcom
         - deselect `Enable MDP4 support in MSM DRM driver`
         - deselect `Enable MDP5 support in MSM DRM driver`
@@ -628,6 +629,7 @@ Kernel defconfig
     - select `Intel PMC Core driver` if intel
     - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
     - select `Intel HID Event` if intel
+    - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Intel SCU platform driver` if intel
   - select `Common Clock Framework`
     - select `Broadcom BCM2835 clock support` if rpi
