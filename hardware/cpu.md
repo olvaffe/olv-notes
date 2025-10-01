@@ -1,6 +1,14 @@
 CPU
 ===
 
+## Worst Designs
+
+- <https://lore.kernel.org/lkml/CAHk-=wji-hEV1U1x92TLsrPbpSPqDD7Cgv2YwzeL-mMbM7iaRA@mail.gmail.com/>
+- big endian
+- virtually tagged cache
+- only aligned memory access
+- require highmem
+
 ## Parallel Computer Architecture and Programming, CMU
 
 - Lecture 1
