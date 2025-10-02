@@ -5,7 +5,7 @@ Kernel defconfig
 
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
-  - select `System V IPC` if desired
+  - select `System V IPC` if desired (for fakeroot)
   - select `POSIX Message Queues` if desired, depending on `NET`
   - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
@@ -72,8 +72,7 @@ Kernel defconfig
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `AMD Processor P-State driver` if amd
-        - select `AMD Processor P-State default mode` if cros
-          - guybrush requires 2
+        - select `AMD Processor P-State default mode` if cros (guybrush requires 2)
       - select `ACPI Processor P-States driver` if amd
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Power management options` if arm
