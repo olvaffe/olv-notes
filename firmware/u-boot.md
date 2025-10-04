@@ -20,6 +20,8 @@ Das U-Boot
 ## Build
 
 - <https://docs.u-boot.org/en/latest/build/gcc.html>
+  - `apt install libgnutls28-dev`
+  - `pip install pyelftools setuptools swig`
   - `make nanopi-r5c-rk3568_defconfig`
   - `make menuconfig`
   - `make CROSS_COMPILE=aarch64-linux-gnu-`
@@ -113,9 +115,8 @@ Das U-Boot
   - get tpl firmware
     - also at <https://github.com/rockchip-linux/rkbin>
   - build uboot
-    - `apt install libgnutls28-dev swig python3-pyelftools`
     - `make orangepi-5-rk3588s_defconfig`
-    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin
+    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.19.bin
        BL31=../trusted-firmware-a/build/rk3588/release/bl31/bl31.elf
        CROSS_COMPILE=aarch64-linux-gnu- make`
     - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
