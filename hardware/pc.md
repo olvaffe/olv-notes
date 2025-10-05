@@ -715,6 +715,22 @@ PC
   - asus proart
   - acer conceptd
 
+## Gaming
+
+- console vs desktop gpus
+  - XBOX S,     RDNA2, 52 CUs, 1.82GHz, 210W (system)
+  - RX 6700 XT, RDNA2, 40 CUs, 2.32GHz, 230W
+  - PS5,        RDNA2, 36 CUs, 2.23GHz, 215W (system)
+  - RX 6700,    RDNA2, 36 CUs, 1.94GHz, 175W
+- handheld vs mobile gpus
+  - RTX 2050,         Ampere,  16 SMs, 1.15GHz, 30-45W
+  - Ryzen Z2 Extreme, RDNA3.5, 16 CUs, 2.90GHz, 15-35W
+  - Ryzen Z1 Extreme, RDNA3,   12 CUs, 2.90GHz, 28W
+  - Ryzen Z2,         RDNA3,   12 CUs, 2.70GHz, 15-30W
+  - Switch 2,         Ampere,  12 SMs, 1.00GHz, 20W (whole system)
+  - Steam Deck,       RDNA2,   8 CUs,  1.60GHz, 25W (whole system)
+  - Ryzen Z1,         RDNA3,   4 CUs,  2.80GHz, 25W
+
 ## SBCs
 
 - <https://hackerboards.com/>
