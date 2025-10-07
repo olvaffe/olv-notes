@@ -717,32 +717,35 @@ PC
 
 ## Gaming
 
-- console vs desktop gpus
-  - XBOX S,     RDNA2, 52 CUs, 1.82GHz, 210W (system)
-  - RX 6700 XT, RDNA2, 40 CUs, 2.32GHz, 230W
-  - PS5,        RDNA2, 36 CUs, 2.23GHz, 215W (system)
-  - RX 6700,    RDNA2, 36 CUs, 1.94GHz, 175W
-- handheld vs mobile gpus
-  - RTX 2050 Laptop,  Ampere,  16 SMs, 1.15GHz, 30-45W
-  - Ryzen Z2 Extreme, RDNA3.5, 16 CUs, 2.90GHz, 15-35W
-  - Ryzen Z1 Extreme, RDNA3,   12 CUs, 2.90GHz, 28W
-  - Ryzen Z2,         RDNA3,   12 CUs, 2.70GHz, 15-30W
-  - Switch 2,         Ampere,  12 SMs, 1.00GHz, 20W (whole system)
-  - Steam Deck,       RDNA2,   8 CUs,  1.60GHz, 25W (whole system)
-  - Ryzen Z1,         RDNA3,   4 CUs,  2.80GHz, 25W
+- consoles (against desktop dgpus)
+  - XBOX S,         RDNA2,     52 CUs, 1.82GHz, 210W (system)
+  - RX 6700 XT,     RDNA2,     40 CUs, 2.32GHz, 230W
+  - PS5,            RDNA2,     36 CUs, 2.23GHz, 215W (system)
+  - RX 6700,        RDNA2,     36 CUs, 1.94GHz, 175W
+- handhelds (against mobile igpus)
+  - HX 370,         RDNA3.5,   16 CUs, 2.90GHz, 15-30W
+  - Z2 Extreme,     RDNA3.5,   16 CUs, 2.90GHz, 15-35W
+  - 7840U,          RDNA3,     12 CUs, 2.70GHz, 15-30W
+  - Z1 Extreme,     RDNA3,     12 CUs, 2.90GHz, 28W
+  - Z2,             RDNA3,     12 CUs, 2.70GHz, 15-30W
+  - Switch 2,       Ampere,    12 SMs, 1.00GHz, 20W (system)
+  - Steam Deck,     RDNA2,     8 CUs,  1.60GHz, 25W (system)
+  - Z1,             RDNA3,     4 CUs,  2.80GHz, 25W
+- desktop/mobile igpus (against desktop dpus)
+  - GTX 1650,       Turing,    14 SMs, 1.48GHz, 75W
+  - 8700G,          RDNA3,     12 CUs, 2.90GHz, 65W (soc)
+  - 7840U,          RDNA3,     12 CUs, 2.70GHz, 15-30W (soc)
+  - 8600G,          RDNA3,     8 CUs,  2.80GHz, 65W (soc)
+- mobile dgpus (against desktop dpus)
+  - RTX 4070 Ti,    Ada,       60 SMs, 2.31GHz, 285W
+  - RTX 4080 M,     Ada,       58 SMs, 1.29GHz, 110W
+  - RTX 4070,       Ada,       46 SMs, 1.92GHz, 200W
 - sub-75W desktop gpus
-  - RX 7400,          RDNA3,     28 CUs, 1.10GHz, 55W
-  - GTX 3050,         Ampere,    18 SMs, 1.04GHz, 70W
-  - RX 6400,          RDNA2,     12 CUs, 1.92GHz, 53W
-  - RX 6300,          RDNA2,     12 CUs, 1.00GHz, 32W
-  - GTX 1650,         Turing,    14 SMs, 1.48GHz, 75W
-  - GTX 1630,         Turing,    8 SMs,  1.74GHz, 75W
-  - GTX 1050 Ti,      Pascal,    6 SMs,  1.29GHz, 75W
-  - GTX 1050,         Pascal,    5 SMs,  1.39GHz, 75W
-- sub-75W mobile gpus
-  - RTX 5050 Laptop,  Blackwell, 20 SMs, 2.23GHz, 50-100W
-  - RTX 4050 Laptop,  Ada,       20 SMs, 1.45GHz, 35-115W
-  - RX 7600S,         RDNA3,     28 CUs, 1.50GHz, 75W
+  - <https://microsounds.github.io/notes/low-profile-gpus-for-sff-pcs.htm>
+  - RX 7400,        RDNA3,     28 CUs, 1.10GHz, 55W
+  - GTX 3050,       Ampere,    18 SMs, 1.04GHz, 70W
+  - RX 6400,        RDNA2,     12 CUs, 1.92GHz, 53W
+  - GTX 1650,       Turing,    14 SMs, 1.48GHz, 75W
 
 ## SBCs
 
