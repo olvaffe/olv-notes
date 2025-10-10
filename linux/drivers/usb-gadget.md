@@ -55,3 +55,33 @@ USB Gadget
   - `rmdir strings/0x409`
   - `cd ..`
   - `rmdir g1`
+
+## RK3588
+
+- the soc has
+  - xHCI 3.0 controllers x2
+    - `usb_host0_xhci: usb@fc000000`
+    - `usb_host2_xhci: usb@fcd00000`
+  - EHCI 2.0 controllers x2
+    - `usb_host0_ehci: usb@fc800000`
+    - `usb_host1_ehci: usb@fc880000`
+  - OHCI 1.0 controllers x2
+    - `usb_host0_ohci: usb@fc840000`
+    - `usb_host1_ohci: usb@fc8c0000`
+- the device has
+  - USB-A 2.0 ports x2
+    - `u2phy2_host: host-port`
+    - `u2phy3_host: host-port`
+    - EHCI 2.0 and OHCI 1.0 controllers are connected to the phys
+      - which controller to use depends on whether the connected device is 1.0
+        or 2.0
+  - USB-A 3.0 ports x1
+    - `combphy2_psu: phy@fee20000`
+    - `usb_host2_xhci: usb@fcd00000` controller is connected to the phy
+  - USB-C ports x2
+    - one of them is power-only and is not described by dt
+    - `usb_con: connector` is the type-c connector
+    - `usbc0: usb-typec@22` is the type-c controller connected to the connector
+    - `usbdp_phy0` is DP altmode phy connected to the type-c controller
+    - `u2phy0_otg: otg-port` is USB phy connected to the type-c controller
+    - `usb_host0_xhci: usb@fc000000` is the xhci controller connected to the USB phy
