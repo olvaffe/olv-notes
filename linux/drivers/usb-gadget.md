@@ -82,6 +82,30 @@ USB Gadget
     - one of them is power-only and is not described by dt
     - `usb_con: connector` is the type-c connector
     - `usbc0: usb-typec@22` is the type-c controller connected to the connector
-    - `usbdp_phy0` is DP altmode phy connected to the type-c controller
-    - `u2phy0_otg: otg-port` is USB phy connected to the type-c controller
-    - `usb_host0_xhci: usb@fc000000` is the xhci controller connected to the USB phy
+    - `usbdp_phy0: phy@fed80000` is USB3 phy connected to the type-c controller
+    - `u2phy0_otg: otg-port` is USB2 phy connected to the type-c controller
+    - `usb_host0_xhci: usb@fc000000` is the xhci controller connected to the
+      both USB2 and USB3 phys
+- `usb_con: connector` has
+  - `data-role = "dual";`
+  - `power-role = "dual";`
+  - `typec_get_fw_cap` parses them to
+    - `TYPEC_PORT_DRD`
+    - `TYPEC_PORT_DRP`
+  - `/sys/class/typec/port0` has
+    - `data_role` can be `host` or `device`
+    - `port_type` can be `dual`, `source`, or `sink`
+    - `power_role` can be `source` or `sink`
+- `usbdp_phy0: phy@fed80000` has
+  - `mode-switch;`
+    - `rk_udphy_setup_typec_mux` calls `typec_mux_register`
+    - this is how the phy supports altmode
+  - `orientation-switch;`
+    - `rk_udphy_setup_orien_switch` calls `typec_switch_register`
+    - this is how the phy supports both orientations
+- `usb_host0_xhci: usb@fc000000` has
+  - `dr_mode = "otg";`
+    - `dwc3_get_properties` calls `usb_get_dr_mode` to parse `otg` to
+      `USB_DR_MODE_OTG`
+  - `usb-role-switch;`
+    - `dwc3_setup_role_switch` calls `usb_role_switch_register`
