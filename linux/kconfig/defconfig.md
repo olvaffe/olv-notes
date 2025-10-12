@@ -200,6 +200,7 @@ Kernel defconfig
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
+      - select `SPD EEPROMs on DDR4 memory modules` if desired (for ddr4)
     - select `Intel Management Engine Interface` if intel
       - select `ME Enabled Intel Chipsets`
       - select `Intel MEI GSC embedded device`
@@ -351,6 +352,7 @@ Kernel defconfig
     - select `Intel Core/Core2/Atom temperature sensor` if intel
     - select `PWM fan` if rk3588
     - select `Raspberry Pi voltage monitor` if rpi
+    - select `SPD5118 Compliant Temperature Sensors` if desired (for ddr5)
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
     - select `Generic device cooling support` if arm, depending on `PM_DEVFREQ`
