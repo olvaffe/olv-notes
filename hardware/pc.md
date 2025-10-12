@@ -650,29 +650,19 @@ PC
 
 ## Example
 
-- CPU: Ryzen 9 7900
-  - $430
-- MB: GIGABYTE B650I AORUS ULTRA
-  - $260
-- RAM: G.SKILL Ripjaws S5 6000 CL30 32GB
-  - $120
-- Storage: Samsung 990 PRO 1TB
-  - $100
-- Case: AKLLA A1 5.6L
-  - $110
-- CPU Cooler: Thermalright AXP120-X67
-  - $50
-- PSU: SilverStone FX600
-  - $170
-- Total
-  - `$430+$260+$120+$100+$110+$50+$170 = $1240`
-- no apu unless downgrade to am4
-  - am5 cost `$430+$260+$120 = $810`
-    - or Ryzen 5 7600 to save $200
-  - am4 cost `$140+$200+$90 = $430`
-    - Ryzen 5 5600G: $140
-    - GIGABYTE B550I AORUS PRO AX: $200
-    - CORSAIR Vengeance LPX 32GB: $90
+- media center compartment
+  - 56x41x16, opening height is 11.5
+- <https://pcpartpicker.com/list/LrR7Qd>
+  - CPU: Ryzen 5 9600X, $200
+  - Cooler: Noctua NH-L12S, $75
+  - MB: Asus ROG STRIX B650E-I, $200
+  - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $140
+  - M2:
+  - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
+  - Case: Fractal Design Ridge PCIe 4.0, $145
+  - PSU: Corsair SF750 750W, $160
+  - Top Fans: Noctua NF-A8, $18 x2
+  - Bottom Fans: Noctua NF-A4x20, $16 x2
 
 ## Laptops
 
