@@ -83,56 +83,18 @@ PC
     - under the same design and process, the difference of the best sku and
       the worst sku can just be manufacturing variances
 - what is a good deal?
-  - 7600
-    - 6C@3.8GHz - 384KB/6MB/32MB - 65W
-      - perf base
-    - $230
-      - price base
-  - 7600X
-    - 6C@4.7GHz - 384KB/6MB/32MB - 105W
-      - x1.23
-    - $240
-      - x1.04
-  - 7700
-    - 8C@3.8GHz - 512KB/6MB/32MB - 65W
-      - x1.33
-    - $330
-      - x1.43
-  - 7700X
-    - 8C@4.5GHz - 512KB/6MB/32MB - 105W
-      - x1.57
-    - $350
-      - x1.52
-  - 7800X3D
-    - 8C@4.2GHz - 512KB/6MB/96MB - 120W
-      - x1.47 plus 64MB L3
-    - $400
-      - x1.73
-  - 7900
-    - 12C@3.7GHz - 768KB/12MB/64MB - 65W
-      - x1.94 plus bigger L1/L2/L3
-    - $430
-      - x1.86
-  - 7900X
-    - 12C@4.7GHz - 768KB/12MB/64MB - 170W
-      - x2.47 plus bigger L1/L2/L3
-    - $450
-      - x1.95
-  - 7900X3D
-    - 12C@4.4GHz - 768KB/12MB/128MB - 120W
-      - x2.31 plus bigger L1/L2/L3 plus 64MB L3
-    - $510
-      - x2.21
-  - 7950X
-    - 16C@4.5GHz - 1MB/16MB/64MB - 170W
-      - x3.15 plus bigger L1/L2/L3
-    - $580
-      - x2.52
-  - 7950X3D
-    - 16C@4.2GHz - 1MB/16MB/128MB - 120W
-      - x2.94 plus bigger L1/L2/L3 plus 64MB L3
-    - $690
-      - x3.00
+  - 9600X
+    - 6C@3.9GHz - 480KB/6MB/32MB - 65W - x1.00 (perf base)
+    - $200 - x1.00 (price base)
+  - 9700X
+    - 8C@3.8GHz - 640KB/6MB/32MB - 65W, x1.30 plus bigger L1
+    - $270, x1.35
+  - 9900X
+    - 12C@4.4GHz - 640KB/12MB/64MB - 120W, x2.25 plus bigger L1/L2/L3
+    - $380, x1.90
+  - 9950X
+    - 16C@4.3GHz - 1280KB/16MB/64MB - 170W, x2.94 plus bigger L1/L2/L3
+    - $550, x2.75
 - Ryzen 7 9700X
   - <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9700x.html>
   - General
@@ -162,6 +124,28 @@ PC
       - typically, mobo allocates x8 lanes for dgpu and 2 x4 lanes for m2
     - RAM: DDR5-5200 with expo overclocking
   - GPU: RDNA3, 12CU, 2900MHz
+- <https://edc.intel.com/content/www/us/en/design/products/platforms/details/arrow-lake-s/core-ultra-200s-series-processors-datasheet-volume-1-of-2/package-power-control/>
+  - Package Power Control
+  - PL1 is the average power threshold
+    - power can sustain at PL1 forever
+    - it is recommended to set to tdp and must not exceed cooling limit
+  - PL2 is the burst power threshold
+    - cpu power limiting kicks in whenever there are spikes above PL2
+  - PL4 is the max power threshold
+    - cpu power limiting preemptively prevents spikes above PL4
+  - Tau is the moving window to calculate weighted average power for PL1
+    - it is typically ~60s
+  - `/sys/class/powercap/intel-rapl`
+    - PL1 is constraint 0
+    - PL2 is constraint 1
+    - PL4 is constraint 2
+- AMD PBO
+  - PPT, Package Power Tracking, is the max power consumption in watts
+    - this is like PL4?
+  - TDC, Thermal Design Current, is the sustainable power draw in amps
+    - this is like PL1 but in amps
+  - EDC, Electrical Design Current, is the burst power draw in amps
+    - this is like PL2 but in amps
 - Core i5-5200U
   - <https://www.intel.com/content/www/us/en/products/sku/85212/intel-core-i55200u-processor-3m-cache-up-to-2-70-ghz/specifications.html>
   - Core: Broadwell, 14nm, x2, 2.2GHz boosted to 2.7GHz
