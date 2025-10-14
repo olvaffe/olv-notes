@@ -71,13 +71,28 @@ Android Docs
     - `VP_ANDROID_15_minimums`
     - `VP_ANDROID_16_minimums`
     - aka VPA, vulkan profile for android
-- Android Q+ requires Vulkan 1.1
+- Android 10 CDD
+  - <https://source.android.com/docs/compatibility/10/android-10-cdd>
+  - strongly recommend Vulkan 1.1
   - <https://android-developers.googleblog.com/2019/05/whats-new-in-android-q-beta-3-more.html>
-  - that's probably required by GTS/VTS for new 64-bit devices
+    - that's probably required by GTS/VTS for new 64-bit devices
+- Android 11 CDD
+  - <https://source.android.com/docs/compatibility/11/android-11-cdd>
+  - `graphics.gpu.profiler.support`
+    - `GpuCounterEvent`
+    - `GpuRenderStageEvent`
+    - `GpuFrequencyFtraceEvent`
+      - `(gpu, freq)`
+    - no mention of `GpuMemTotalFtraceEvent`
+      - `(gpu, pid, total mem)`
+- Android 12 CDD
+  - <https://source.android.com/docs/compatibility/12/android-12-cdd>
 - Android 13 CDD
   - <https://source.android.com/docs/compatibility/13/android-13-cdd>
   - strongly recommend Vulkan 1.3
   - strongly recommend Android Baseline 2021 profile
+  - `GpuWorkPeriodFtraceEvent`
+    - `(gpu, uid, start, end, active)`
 - Android 14 CDD
   - <https://source.android.com/docs/compatibility/14/android-14-cdd>
   - must support Android Baseline 2021 profile
