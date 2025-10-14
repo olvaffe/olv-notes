@@ -1097,3 +1097,26 @@ ARM64
   - `kvm_arch_vcpu_ioctl_run` 
     - `kvm_arm_vcpu_enter_exit` calls `__kvm_vcpu_run`
       - two variants depending on whether VHE or nVHE/hVHE
+
+## pKVM
+
+- <https://source.android.com/docs/core/virtualization/architecture>
+- KVM VHE mode (since ARMv8.1)
+  - EL0: guest usrespace
+  - EL1: guest kernel
+  - EL2: hypervisor (host kernel)
+- KVM nVHE mode (before ARMv8.1)
+  - EL0: guest userspace
+  - EL1: guest kernel and host kernel w/o KVM
+  - EL2: host kernel with only KVM
+- pKVM
+  - EL0: guest userspace
+  - EL1: guest kernel and host kernel w/o KVM and stage-2 mmu
+  - EL2: host kernel with only KVM and stage-2 mmu
+- <https://android.googlesource.com/kernel/common/+/68468ba8cd5192d948eaac7759c74e940497e995> and
+  <https://android.googlesource.com/kernel/common/+/812696a58736b969e7137b7fa07c78f5f2292e36>
+  - host kernel boots with `kvm-arm.mode=protected` in EL2
+  - it splits out pKVM code remaining in EL2 and deprivileges the rest to EL1
+  - host kernel (in EL1) and its userspace is known as host VM
+  - `KVM_CREATE_VM` creates a normal guest VM
+  - `KVM_CREATE_VM(KVM_VM_TYPE_ARM_PROTECTED)` creates a protected guest VM
