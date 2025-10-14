@@ -60,6 +60,8 @@ PC
   - 5: $200 ~ $300
   - 7: $300 ~ $400
 - TDP
+  - mid-range: 65W
+  - high-end: 120W+
   - OEMs design the cooler to handle TDP watts
     - this is the sustainable watts that cpu can draw
   - cpu draws peak watts when all cores run at boost freq
@@ -401,6 +403,7 @@ PC
     - `264x190x145 = 7.2L`
 - SFF Case and Parts List
   - <https://docs.google.com/spreadsheets/d/1AddRvGWJ_f4B6UC7_IftDiVudVc8CJ8sxLUqlxVsCz4/edit>
+  - <https://caseend.com/>
   - sub-2L (mini pc-like)
     - deskmini x300: 1.92L, 46mm cpu cooler
   - sub-5L (igpu only)
@@ -494,12 +497,14 @@ PC
     - NH-L12S: 88W, 70mm, NF-A12x15
     - NH-L9x65: 67W, 69mm, NF-A9x14
     - NH-L9i: 59W, 37mm, NF-A9x14
+  - for 65W CPU, pick NH-L12S or better
+  - for 120W CPU, pick NH-D12L or better
 
 ## PSUs
 
 - 750W
   - $100 ~ $180
-- <https://cultists.network/140/psu-tier-list/>
+- <https://docs.google.com/spreadsheets/d/1akCHL7Vhzk_EhrpIGkz8zTEvYfLDcaSpZRB6Xt6JWkc>
 - form factors
   - ATX: 150x86mm, depth is 140mm but can vary
   - SFX: about 125x64mm, depth is 100mm
@@ -619,18 +624,55 @@ PC
     - height: 120mm
     - low-profile: 79.2mm
 - gaming gpus tend to be larger
-  - high end example,
-    - length: 304mm
-    - height: 137mm
-    - take up 3 slots to accommodate for the heat sink
-  - mid end example,
-    - length: 172mm
-    - height: 125mm
-    - take up 2 slots (43mm)
-  - low-profile example,
-    - length: 149.9mm
-    - height: 68.9mm
-    - thick: 14.7mm
+  - high-end examples
+    - GIGABYTE RTX 5080 GAMING OC 16G, 340x140x70 (3-slot, tri-fan)
+  - mid-range examples
+    - GIGABYTE RX 9060 XT GAMING OC 16 GB, 281x118x40 (2-slot, tri-fan)
+    - Sapphire PULSE RX 9060 XT OC 16GB, 240x124x46.1 (2.3-slot, dual-fan)
+  - low-end examples
+    - GeForce RTX 3050 WINDFORCE OC 6G, 191x111x36 (2-slot, dual-fan)
+    - Yeston RTX 3050 6GB, 160x68x20 (1-slot)
+- consoles (against desktop dgpus)
+  - XBOX X,           RDNA2,      52 CUs, 210W (system)
+  - RX 6700 XT,       RDNA2,      40 CUs, 230W
+  - PS5,              RDNA2,      36 CUs, 215W (system)
+  - RX 6700,          RDNA2,      36 CUs, 175W
+- handhelds (against mobile igpus)
+  - HX 370,           RDNA3.5,    16 CUs, 28W
+  - Z2 Extreme,       RDNA3.5,    16 CUs, 28W
+  - 7840U,            RDNA3,      12 CUs, 28W
+  - Z1 Extreme,       RDNA3,      12 CUs, 28W
+  - Z2,               RDNA3,      12 CUs, 28W
+  - Switch 2,         Ampere,     12 SMs, 20W (system)
+  - Steam Deck,       RDNA2,      8 CUs,  25W (system)
+  - Z1,               RDNA3,      4 CUs,  28W
+- desktop/mobile igpus (against desktop dpus)
+  - GTX 1650,         Turing,     14 SMs, 75W
+  - RX 6400,          RDNA2,      12 CUs, 53W
+  - 8700G,            RDNA3,      12 CUs, 65W (soc)
+  - 7840U,            RDNA3,      12 CUs, 28W (soc)
+  - 8600G,            RDNA3,      8 CUs,  65W (soc)
+- mobile dgpus (against desktop dpus)
+  - RTX 4060 Ti,      Ada,        34 SMs, 160W
+  - RTX 4060 M,       Ada,        24 SMs, 115W
+  - RTX 4060,         Ada,        24 SMs, 115W
+- sub-75W desktop gpus
+  - <https://microsounds.github.io/notes/low-profile-gpus-for-sff-pcs.htm>
+  - RX 7400,          RDNA3,      28 CUs, 55W
+  - RTX 3050 6GB,     Ampere,     18 SMs, 70W
+  - GTX 1650,         Turing,     14 SMs, 75W
+  - RX 6400,          RDNA2,      12 CUs, 53W
+- sub-200W desktop gpus
+  - <https://gpuprices.ai/comparison>
+  - RTX 4070,         Ada,        46 SMs, 200W
+  - RTX 5060 Ti,      Blackwell,  36 SMs, 180W
+  - RX 9060 XT,       RDNA4,      32 CUs, 160W
+  - RTX 4060 Ti,      Ada,        34 SMs, 160W
+  - RTX 5060,         Blackwell,  30 SMs, 145W
+  - RTX 5050,         Blackwell,  20 SMs, 130W
+  - RTX 4060,         Ada,        24 SMs, 115W
+  - RX 7600 XT,       RDNA3,      32 CUs, 190W
+  - RX 7600,          RDNA3,      32 CUs, 165W
 
 ## Example
 
@@ -688,50 +730,6 @@ PC
   - dell precision
   - asus proart
   - acer conceptd
-
-## Gaming
-
-- consoles (against desktop dgpus)
-  - XBOX X,           RDNA2,      52 CUs, 210W (system)
-  - RX 6700 XT,       RDNA2,      40 CUs, 230W
-  - PS5,              RDNA2,      36 CUs, 215W (system)
-  - RX 6700,          RDNA2,      36 CUs, 175W
-- handhelds (against mobile igpus)
-  - HX 370,           RDNA3.5,    16 CUs, 28W
-  - Z2 Extreme,       RDNA3.5,    16 CUs, 28W
-  - 7840U,            RDNA3,      12 CUs, 28W
-  - Z1 Extreme,       RDNA3,      12 CUs, 28W
-  - Z2,               RDNA3,      12 CUs, 28W
-  - Switch 2,         Ampere,     12 SMs, 20W (system)
-  - Steam Deck,       RDNA2,      8 CUs,  25W (system)
-  - Z1,               RDNA3,      4 CUs,  28W
-- desktop/mobile igpus (against desktop dpus)
-  - GTX 1650,         Turing,     14 SMs, 75W
-  - RX 6400,          RDNA2,      12 CUs, 53W
-  - 8700G,            RDNA3,      12 CUs, 65W (soc)
-  - 7840U,            RDNA3,      12 CUs, 28W (soc)
-  - 8600G,            RDNA3,      8 CUs,  65W (soc)
-- mobile dgpus (against desktop dpus)
-  - RTX 4060 Ti,      Ada,        34 SMs, 160W
-  - RTX 4060 M,       Ada,        24 SMs, 115W
-  - RTX 4060,         Ada,        24 SMs, 115W
-- sub-75W desktop gpus
-  - <https://microsounds.github.io/notes/low-profile-gpus-for-sff-pcs.htm>
-  - RX 7400,          RDNA3,      28 CUs, 55W
-  - RTX 3050 6GB,     Ampere,     18 SMs, 70W
-  - GTX 1650,         Turing,     14 SMs, 75W
-  - RX 6400,          RDNA2,      12 CUs, 53W
-- sub-200W desktop gpus
-  - <https://gpuprices.ai/comparison>
-  - RTX 4070,         Ada,        46 SMs, 200W
-  - RTX 5060 Ti,      Blackwell,  36 SMs, 180W
-  - RX 9060 XT,       RDNA4,      32 CUs, 160W
-  - RTX 4060 Ti,      Ada,        34 SMs, 160W
-  - RTX 5060,         Blackwell,  30 SMs, 145W
-  - RTX 5050,         Blackwell,  20 SMs, 130W
-  - RTX 4060,         Ada,        24 SMs, 115W
-  - RX 7600 XT,       RDNA3,      32 CUs, 190W
-  - RX 7600,          RDNA3,      32 CUs, 165W
 
 ## SBCs
 
