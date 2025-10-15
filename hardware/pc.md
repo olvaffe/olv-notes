@@ -691,17 +691,18 @@ PC
 
 - media center compartment
   - 56x41x16, opening height is 11.5
-- <https://pcpartpicker.com/list/LrR7Qd>
+- <https://pcpartpicker.com/list/DcdFRV>
   - CPU: Ryzen 5 9600X, $200
   - Cooler: Noctua NH-L12S, $75
   - MB: Asus ROG STRIX B650E-I, $200
   - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $140
-  - M2:
+  - M2: Samsung 990 Pro 2TB, $160
   - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
+    - comparing to 6600 XT, 60%+ rast, 90%+ rt
   - Case: Fractal Design Ridge PCIe 4.0, $145
   - PSU: Corsair SF750 750W, $160
   - Top Fans: Noctua NF-A8, $18 x2
-  - Bottom Fans: Noctua NF-A4x20, $16 x2
+  - Bottom Fans: Noctua NF-A6x25, $17 x2
 
 ## Laptops
 
