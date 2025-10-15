@@ -638,7 +638,7 @@ PC
     - low-profile: 79.2mm
 - gaming gpus tend to be larger
   - high-end examples
-    - GIGABYTE RTX 5080 GAMING OC 16G, 340x140x70 (3-slot, tri-fan)
+    - GIGABYTE RTX 5080 GAMING OC 16G, 340x140x70 (3.5-slot, tri-fan)
   - mid-range examples
     - GIGABYTE RX 9060 XT GAMING OC 16 GB, 281x118x40 (2-slot, tri-fan)
     - Sapphire PULSE RX 9060 XT OC 16GB, 240x124x46.1 (2.3-slot, dual-fan)
