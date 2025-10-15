@@ -344,37 +344,42 @@ PC
     - TBW
       - terabytes written
       - endurance rating
+- <https://www.techpowerup.com/ssd-specs/>
 - Samsung
-  - 960 EVO vs PRO
+  - 2016: 960 EVO vs PRO
     - controller: polaris, pcie 3.0 x4, nvme 1.2
     - dram: 1GB LPDDR3 / TB
-    - nand: tlc
+    - nand: tlc vs mlc
     - TBW: 400 vs 800
     - warranty: 3yr vs 5yr
-  - 970 EVO vs PRO
+  - 2018: 970 EVO vs PRO
     - controller: phoenix, pcie 3.0 x4, nvme 1.3
     - cache: 1GB LPDDR4 / TB
     - nand: tlc vs mlc
     - TBW: 600 vs 1200
     - warranty: 5 years
-  - 980
-    - controller: in-house, pcie 3.0 x4, nvme 1.4
-    - cache: HMB (uses system ram)
-    - nand: tlc
-    - TBW: 600
-    - warranty: 5 years
-  - 980 PRO
-    - controller: elpis, pcie 4.0 x4, nvme 1.3c
-    - cache: 1GB LPDDR4 / TB
+  - 2020: 980 vs 980 PRO
+    - controller: pablo vs elpis, pcie 3.0 x4 vs 4.0 x4, nvme 1.4 vs 1.3c
+    - cache: HMB (uses system ram) vs 1GB LPDDR4 / TB
     - nand: v6 tlc
     - TBW: 600
     - warranty: 5 years
-  - 990 PRO
+  - 2022/2023: 990 PRO
     - controller: pascal, pcie 4.0 x4, nvme 2.0
     - cache: 1GB LPDDR4 / TB
-    - nand: v7 tlc
+    - nand: v7/v8 tlc
     - TBW: 600
     - warranty: 5 years
+  - 2025: 9100 PRO
+    - controller: presto, pcie 5.0 x4, nvme 2.0
+    - cache: 1GB LPDDR4X / TB
+    - nand: v8 tlc
+    - TBW: 600
+    - warranty: 5 years
+- WD
+  - 2019-2020: SN550, SN750, SN850
+  - 2021-2022: SN570, SN770, SN850X
+  - 2024-2025: SN5100, SN7100, SN8100
 
 ## Cases
 
