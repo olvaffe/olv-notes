@@ -515,6 +515,14 @@ PC
     - comparing to flex, usually wider, deeper, noisier, and more powerful
   - gan: 55x25mm, depth is 170mm
   - pico: requires external ac-dc adapter
+- Corsair SF750 connectors
+  - atx: 10+18-pin for mb, providing 3.3v (rarely used), 5v (usb), 12v (pcie,
+    fans)
+    - vrm converts 12v to 3.3v for dram
+  - eps: 4+4-pin for cpu, providing 12v
+    - vrm converts 12v to 1.0v-1.5v for cpu
+  - pcie: 6+2-pin for pcie, providing 12v
+  - sata: 6-pin, providing 3.3v (rarely used), 5v (for sdd), 12v (for hdd)
 - considerations
   - noise level
     - psus need big heatsinks and big fans which take up space
