@@ -378,6 +378,8 @@ Mesa PanVK
       wait on the `drm_panthor_sync_op` array above
   - for each cmdbufs
     - sets up a `drm_panthor_queue_submit` for each used subqueue
+    - if perfetto, another submit to copy timestamp for each used subqueue
+      unless `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
   - if there are semaphore signals
     - for each used subqueue, sets up a `drm_panthor_sync_op` with
       `DRM_PANTHOR_SYNC_OP_SIGNAL` and sets up an empty
@@ -385,6 +387,11 @@ Mesa PanVK
     - they all signal `queue->syncobj_handle`
     - the fence is then copied to user semaphores using `drmSyncobjTransfer`
     - `queue->syncobj_handle` is reset
+  - iow, because all 3 subqueues are typically used, submitting N cmdbufs requires
+    - `3*N` qsumits
+    - if perfetto, add `3*N` unless `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
+    - if wait, prepend 3
+    - if signal append 3
 - flush id
   - `CSF_GPU_LATEST_FLUSH_ID` reg
     - if unmapped, kernel `panthor_mmio_vm_fault` maps the reg or a dummy page
