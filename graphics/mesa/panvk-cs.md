@@ -1065,6 +1065,17 @@ Mesa PanVK Command Stream
   - `r37`: `Job size X`
   - `r38`: `Job size Y`
   - `r39`: `Job size Z`
+- `panvk_per_arch(calculate_task_axis_and_increment)`
+  - we want to split the compute job into hw tasks
+    - axis X and inc 4 means each task covers 4 groups
+    - axis Y and inc 4 means each task covers `4*W` of groups
+    - axis Z and inc 4 means each task covers `4*W*H` groups
+  - `threads_per_wg` is group size
+  - `max_thread_cnt`
+    - `max_threads_per_wg` is `THREAD_MAX_WORKGROUP_SIZE` reg and is 1024 on v10
+    - `max_threads_per_core` is `THREAD_MAX_THREADS` reg and is 2048 on v10
+    - `num_registers_per_core` is from `THREAD_FEATURES` reg and is 65536 on
+      v10
 
 ## Synchronization
 
