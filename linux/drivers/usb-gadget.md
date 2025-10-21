@@ -58,34 +58,35 @@ USB Gadget
 
 ## RK3588
 
+page 5,9,11,14
 - the soc has
   - xHCI 3.0 controllers x2
-    - `usb_host0_xhci: usb@fc000000`
-    - `usb_host2_xhci: usb@fcd00000`
+    - `usb_host0_xhci: usb@fc000000` paired with `u2phy0_otg: otg-port` and `usbdp_phy0: phy@fed80000`
+    - `usb_host2_xhci: usb@fcd00000` paired with `combphy2_psu: phy@fee20000`
   - EHCI 2.0 controllers x2
-    - `usb_host0_ehci: usb@fc800000`
-    - `usb_host1_ehci: usb@fc880000`
+    - `usb_host0_ehci: usb@fc800000` paired with `u2phy2_host: host-port`
+    - `usb_host1_ehci: usb@fc880000` paired with `u2phy3_host: host-port`
   - OHCI 1.0 controllers x2
-    - `usb_host0_ohci: usb@fc840000`
-    - `usb_host1_ohci: usb@fc8c0000`
-- the device has
-  - USB-A 2.0 ports x2
-    - `u2phy2_host: host-port`
-    - `u2phy3_host: host-port`
-    - EHCI 2.0 and OHCI 1.0 controllers are connected to the phys
-      - which controller to use depends on whether the connected device is 1.0
-        or 2.0
-  - USB-A 3.0 ports x1
-    - `combphy2_psu: phy@fee20000`
-    - `usb_host2_xhci: usb@fcd00000` controller is connected to the phy
-  - USB-C ports x2
-    - one of them is power-only and is not described by dt
-    - `usb_con: connector` is the type-c connector
+    - `usb_host0_ohci: usb@fc840000` paired with `u2phy2_host: host-port`
+    - `usb_host1_ohci: usb@fc8c0000` paired with `u2phy3_host: host-port`
+- orange pi 5 has
+  - USB-A 3.0 port
+    - `usb_host2_xhci: usb@fcd00000` and `combphy2_psu: phy@fee20000` if usb3
+    - `usb_host1_ehci: usb@fc880000` and `u2phy3_host: host-port` if usb2
+    - `usb_host1_ohci: usb@fc8c0000` and `u2phy3_host: host-port` if usb1
+  - USB-A 2.0 port (below USB-A 3.0 port)
+    - `usb_host0_ehci: usb@fc800000` and `u2phy2_host: host-port` if usb2
+    - `usb_host0_ohci: usb@fc840000` and `u2phy2_host: host-port` if usb1
+  - USB-A 2.0 port (OTG default to device mode)
+    - `usb_host0_xhci: usb@fc000000` and `u2phy0_otg: otg-port` for usb2/1
+  - USB-C port (power only)
+    - not described by dt
+  - USB-C port
+    - `usb_host0_xhci: usb@fc000000` and `usbdp_phy0: phy@fed80000` if usb3
+    - `usb_host0_xhci: usb@fc000000` and `u2phy0_otg: otg-port` if usb2/1
+      - shared with USB-A 2.0 port OTG
     - `usbc0: usb-typec@22` is the type-c controller connected to the connector
-    - `usbdp_phy0: phy@fed80000` is USB3 phy connected to the type-c controller
-    - `u2phy0_otg: otg-port` is USB2 phy connected to the type-c controller
-    - `usb_host0_xhci: usb@fc000000` is the xhci controller connected to the
-      both USB2 and USB3 phys
+      - `usb_con: connector` is the type-c connector
 - `usb_con: connector` has
   - `data-role = "dual";`
   - `power-role = "dual";`
@@ -109,3 +110,6 @@ USB Gadget
       `USB_DR_MODE_OTG`
   - `usb-role-switch;`
     - `dwc3_setup_role_switch` calls `usb_role_switch_register`
+    - because it does not set `allow_userspace_control`, the role cannot be
+      switched from userspace
+      - have to use `/sys/kernel/debug/usb/fc000000.usb/mode` instead
