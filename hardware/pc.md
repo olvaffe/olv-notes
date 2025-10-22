@@ -288,9 +288,9 @@ PC
     - those dies on the same side are called a rank
     - the module is thus referred to as 1Rx8 (1 rank, 8 dies)
     - avoid 8GB ddr5 modules
-      - they are 1Rx8
+      - they are 1Rx4
       - the memory controller accesses an entire rank at a time, and it is a
-        waste when a rank only has 8 dies
+        waste when a rank only has 4 dies
   - a 32GB ddr5 module typically is 2Rx8 (2 ranks, 8 dies each)
     - the memory controller can do rank interleaving and is slightly faster
     - but only if the freq is not reduced due to having to access both ranks
@@ -308,6 +308,13 @@ PC
     - possible column widths are x4, x8, or x16
     - that is, each column in a memory array has 4-bit, 8-bit, or 16-bit
     - aka DQ
+- ddr5 module
+  - a 16GB module is typically 1Rx8
+    - there are x8 16Gb die on one side of the module
+  - ddr5 bus width is 32x2-bit
+    - there are two 32-bit subchannels that work independently
+  - default burst length is 16, aka BL16
+    - each burst transfers `32*16/8=64` bytes for each subchannel
 
 ## Storage
 
