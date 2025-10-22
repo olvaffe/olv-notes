@@ -277,6 +277,9 @@ PC
     - the bandwidth is thus `5600 * 128 / 8 / 1024 = 87.5 GB/s` if dual-channel
   - DDR4-3200 means 3200 MT/s
     - the bandwidth is `3200 * 128 / 8 / 1024 = 50.0 GB/s` if dual-channel
+  - LPDDR4X-4267 means 4267 MT/s
+    - the bus is 32-bit wide and dual-channel means 64-bit per transaction
+    - the bandwidth is `4267 * 64 / 8 / 1024 = 33.3 GB/s` if dual-channel
 - in practice
   - the memory controller typically supports 2 channels
   - a mobo typically has 2 dimms per channel
@@ -293,6 +296,18 @@ PC
     - but only if the freq is not reduced due to having to access both ranks
 - power consumption
   - a 16GB DDR5 module consumes 3W on idle and 6-9W on busy
+- ddr5 die
+  - the major die manufacturers are samsung, sk hynix, and micron
+  - it consists of, hierarchically,
+    - several bank groups
+    - within each bank group, there are banks
+    - within each bank, there are memory arrays
+    - within each memory array, there are capacitors to store bits
+  - a physical address thus consists of `(bank group, bank, row, col)`
+  - 16Gb die
+    - possible column widths are x4, x8, or x16
+    - that is, each column in a memory array has 4-bit, 8-bit, or 16-bit
+    - aka DQ
 
 ## Storage
 
