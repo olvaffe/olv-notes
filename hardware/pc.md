@@ -280,6 +280,14 @@ PC
   - LPDDR4X-4267 means 4267 MT/s
     - the bus is 32-bit wide and dual-channel means 64-bit per transaction
     - the bandwidth is `4267 * 64 / 8 / 1024 = 33.3 GB/s` if dual-channel
+  - when benchmarking with `memset`,
+    - the first iteration faults pages in and should be excluded
+    - we should report the highest bw rather than the average bw
+      - in this case, the first iteration is automatically excluded
+  - when benchmarking with `memcpy`,
+    - similar to `memset`
+    - additionally, we should init src to non-zero value
+      - without init, or when init to zero, kernel might page in the zero page
 - in practice
   - the memory controller typically supports 2 channels
   - a mobo typically has 2 dimms per channel
