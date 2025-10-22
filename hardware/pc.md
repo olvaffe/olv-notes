@@ -282,6 +282,8 @@ PC
     - the bandwidth is `4267 * 64 / 8 / 1024 = 33.3 GB/s` if dual-channel
   - when benchmarking with `memset`,
     - the first iteration faults pages in and should be excluded
+    - we should use the dst (`dst[0] *= 2`) otherwise compiler might optimize
+      it away
     - we should report the highest bw rather than the average bw
       - in this case, the first iteration is automatically excluded
   - when benchmarking with `memcpy`,
