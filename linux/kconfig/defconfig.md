@@ -5,7 +5,7 @@ Kernel defconfig
 
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
-  - select `System V IPC` if desired (for fakeroot)
+  - select `System V IPC` if desired (for fakeroot, fio, etc.)
   - select `POSIX Message Queues` if desired, depending on `NET`
   - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
