@@ -53,6 +53,9 @@ HW Diagnosis
   - similar to `memset`
   - additionally, we should init src to non-zero value
     - without init, or when init to zero, kernel might page in the zero page
+- `/lib64/ld-linux-x86-64.so.2 --list-tunables`
+  - `memset` and `memcpy` skip caches when the size is larger than thresholds
+  - `GLIBC_TUNABLES=glibc.cpu.x86_memset_non_temporal_threshold=0xffffffff:glibc.cpu.x86_non_temporal_threshold=0xffffffff`
 
 ## Storage: `fio`
 
