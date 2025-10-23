@@ -412,6 +412,29 @@ PC
   - 2019-2020: SN550, SN750, SN850
   - 2021-2022: SN570, SN770, SN850X
   - 2024-2025: SN5100, SN7100, SN8100
+- fio
+  - config
+    - `filename=/dev/sda`
+    - `rw=read`, to avoid corrupt `/dev/sda`
+    - `runtime=5`
+    - `time_based`
+    - `ioengine=libaio`
+    - `direct=1`
+    - `bs` from `/sys/block/sda/queue/optimal_io_size` and/or experiment
+    - `iodepth` from `/sys/block/sda/device/queue_depth` and/or experiment
+  - SATA SSD: `bs=4M` and `iodepth=8`
+    - `READ: bw=515MiB/s`
+  - eMMC: `bs=512K` and `iodepth=8`
+    - `READ: bw=171MiB/s`
+  - USB
+    - `sudo lspci -vv -s <usb-controller>` and look for `LnkSta`
+      - `Speed 5GT/s, Width x1` is pcie 2.0 x1, 0.5GB/s
+    - `sudo lsusb -vv -s <adapter>`
+      - `Negotiated speed: SuperSpeed (5Gbps)` is usb 3.0
+  - USB UAS over NVMe: `bs=256K` and `iodepth=8`
+    - `READ: bw=372MiB/s`
+  - USB UAS over SATA HDD: `bs=256K` and `iodepth=8`
+    - `READ: bw=130MiB/s`
 
 ## Cases
 
