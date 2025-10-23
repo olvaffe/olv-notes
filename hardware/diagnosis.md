@@ -70,6 +70,8 @@ HW Diagnosis
   - `iodepth` from `/sys/block/sda/device/queue_depth` and/or experiment
 - nVME: `bs=512K` and `iodepth=16`
   - `READ: bw=3317MiB/s`
+- UFS: `bs=512K` and `iodepth=8`
+  - `READ: bw=1876MiB/s`
 - SATA SSD: `bs=4M` and `iodepth=8`
   - `READ: bw=515MiB/s`
 - eMMC: `bs=512K` and `iodepth=8`
@@ -85,3 +87,5 @@ HW Diagnosis
   - `READ: bw=372MiB/s`
 - USB UAS over SATA HDD: `bs=256K` and `iodepth=8`
   - `READ: bw=130MiB/s`
+- SD: `bs=256K` and `iodepth=8`
+  - `READ: bw=45.0MiB/s`
