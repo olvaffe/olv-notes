@@ -56,6 +56,24 @@ HW Diagnosis
 - `/lib64/ld-linux-x86-64.so.2 --list-tunables`
   - `memset` and `memcpy` skip caches when the size is larger than thresholds
   - `GLIBC_TUNABLES=glibc.cpu.x86_memset_non_temporal_threshold=0xffffffff:glibc.cpu.x86_non_temporal_threshold=0xffffffff`
+- L1d
+  - to benchmark L1d, pick a size that is smaller than L1d
+    - memset (`rep stos`) is about 253GB/s
+    - memcpy (`rep movsb`) is about 223GB/s (remember to half the size)
+  - modern L1d is multi-ported and can perform multiple ops per cycle in parallel
+    - two or more loads
+    - one or more stores
+  - `perf stat -e mem_load_retired.l1_hit,mem_load_retired.l1_miss`
+- L2
+  - to benchmark L2, pick a size that is smaller than L2 but larger than L1d
+    - memset (`rep stos`) is about 91GB/s
+    - memcpy (`rep movsb`) is about 66GB/s (remember to half the size)
+  - `perf stat -e mem_load_retired.l2_hit,mem_load_retired.l2_miss`
+- L3
+  - to benchmark L3, pick a size that is smaller than L3 but larger than L2
+    - memset (`rep stos`) is about 46GB/s
+    - memcpy (`rep movsb`) is about 30GB/s (remember to half the size)
+  - `perf stat -e mem_load_retired.l3_hit,mem_load_retired.l3_miss`
 
 ## Storage: `fio`
 
