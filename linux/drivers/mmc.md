@@ -12,12 +12,13 @@ Kernel MMC/SD/SDIO
     - max speed 25MB/s (high speed)
   - 2006, SD 2.0
     - max size 32GB (high capacity, SDHC)
-  - 2009, SD 3.01
+  - 2010, SD 3.01
     - max size 2TB (extended capacity, SDXC)
     - max speed 50MB/s at 100MHz and 104MB/s at 208MHz (UHS-I)
       - doubled when DDR
-  - SD 4.0
+  - 2013, SD 4.1
     - max speed 156MB/s or 312MB/s (UHS-II)
+  - 2016, SD 5.0 and 5.1
   - 2017, SD 6.0
     - max speed 312MB/s or 624MB/s (UHS-III)
   - 2018, SD 7.0
@@ -25,20 +26,39 @@ Kernel MMC/SD/SDIO
     - max speed 985MB/s (SD Express)
   - 2020, SD 8.0
     - max speed 1969MB/s or 3938MB/s
-- consumer-facing speed classes
-  - C2, min write speed 2MB/s
-  - C4, min write speed 4MB/s
-  - C6, min write speed 6MB/s
-  - C10, min write speed 10MB/s
-  - U1, min write speed 10MB/s
-  - U3, min write speed 30MB/s
+  - 2022, SD 9.0
+  - 2023, SD 9.1
+- card speed class ratings
+  - C classes (original)
+    - C2, min write speed 2MB/s
+    - C4, min write speed 4MB/s
+    - C6, min write speed 6MB/s
+    - C10, min write speed 10MB/s
+  - U classes (UHS)
+    - U1, min write speed 10MB/s
+    - U3, min write speed 30MB/s
+  - V classes (Video)
+    - V6, min write speed 6MB/s
+    - V10, min write speed 10MB/s
+    - V30, min write speed 30MB/s
+    - V60, min write speed 60MB/s
+    - V90, min write speed 90MB/s
+  - E classes (Express)
+    - E150, min write speed 150MB/s
+    - E300, min write speed 300MB/s
+    - E450, min write speed 450MB/s
+    - E600, min write speed 600MB/s
+- performance ratings
+  - A classes
+    - A1, read 1500 ipos and write 500 ips
+    - A2, read 4000 ipos and write 2000 ips
 - inside an sd card, there are
   - an sd controller,
   - one or more nand chips
 - eMMC
   - a MMC card in a BGA IC package, including
     - a mmc controller and a nand chip
-  - UFS slows replaces eMMC since 2016
+  - UFS slowly replaces eMMC since 2016
   - 2011, eMMC 4.5
     - read 140MB/s write 50MB/s
   - 2013, eMMC 5.0
