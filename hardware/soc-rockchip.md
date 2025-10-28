@@ -375,6 +375,7 @@ Rockchip SoCs
   - RK3588 Brief Datasheet, 3 pages
   - RK3588 Datasheet, 35 pages
   - RK3588 Technical Reference Manual , 2287+3706 pages
+- <https://gitlab.collabora.com/hardware-enablement/rockchip-3588/notes-for-rockchip-3588/-/blob/main/mainline-status.md>
 - eMMC
   - `sdhci: mmc@fe2e0000`
   - `dwcmshc_probe` probes the controller

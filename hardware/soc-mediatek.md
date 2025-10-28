@@ -273,6 +273,8 @@ MediaTek SoCs
 ## MT8196 SoC
 
 - <https://chromium-review.googlesource.com/c/chromiumos/third_party/kernel/+/6074027>
+- <https://gitlab.collabora.com/mediatek/aiot/wiki/-/blob/main/mainline-status-8196.md>
+  - <https://gitlab.collabora.com/mediatek/aiot/linux/>
 - `/firmware/optee`, `linaro,optee-tz`, `CONFIG_OPTEE`
 - `/firmware/scmi`, `arm,scmi`, `CONFIG_ARM_SCMI_TRANSPORT_MAILBOX`
 - `/pmu-hunter`, `arm,cortex-a720-pmu`, `CONFIG_ARM_PMUV3`
