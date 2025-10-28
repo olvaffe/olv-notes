@@ -97,13 +97,12 @@ ANGLE
   - `target_os = "android"`
   - `target_cpu = "arm64"`
   - `angle_enable_vulkan = true`
-  - `angle_expose_non_conformant_extensions_and_versions = true`
   - `is_component_build = false`
-  - `is_official_build = true`
   - `is_debug = false`
   - `angle_assert_always_on = false`
-  - `use_goma = true`
-- `autoninja -C out/Android`
+  - `use_remoteexec = true`
+  - maybe: `angle_expose_non_conformant_extensions_and_versions = true`
+- `autoninja -C out/Android angle_apks`
 - `adb install -r -d --force-queryable out/Android/apks/AngleLibraries.apk`
   - verify installation with `adb shell pm path org.chromium.angle`
 - enable angle (require root)
