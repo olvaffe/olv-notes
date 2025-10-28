@@ -8,7 +8,6 @@ Skia
   - `cd skia`
   - `./tools/git-sync-deps`
   - `./tools/install_dependencies.sh`
-  - `./bin/fetch-gn`
   - `./bin/gn gen out`
   - `ninja -C out`
 - update
@@ -205,6 +204,38 @@ Skia
 - CTS run
   - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases
        --module-arg 'CtsSkQPTestCases:include-filter:org.skia.skqp.SkQPRunner#gles_imageblur*'`
+- android skqp cmdline build
+  - `./bin/gn args out`
+    - see `gn/skqp_gn_args.py`
+    - `ndk_api = 26`
+    - `is_debug = false`
+    - `skia_enable_fontmgr_android = false`
+    - `skia_enable_fontmgr_empty = true`
+    - `skia_enable_graphite = true`
+    - `skia_enable_pdf = false`
+    - `skia_enable_skottie = false`
+    - `skia_enable_skshaper = false`
+    - `skia_enable_svg = false`
+    - `skia_enable_tools = true`
+    - `skia_tools_require_resources = true`
+    - `skia_use_dng_sdk = false`
+    - `skia_use_expat = true`
+    - `skia_use_freetype = false`
+    - `skia_use_icu = false`
+    - `skia_use_lua = false`
+    - `skia_use_piex = false`
+    - `skia_use_vulkan = true`
+    - `skia_use_wuffs = true`
+    - `target_cpu = "arm64"`
+    - `ndk = "/home/olv/android/sdk/ndk/28.0.13004108"`
+  - `ninja -C out skqp`
+  - dist
+    - `mkdir -p skqp-dist/assets`
+    - `aarch64-linux-gnu-strip -o skqp-dist/skqp out/skqp`
+    - `ln -sf ../../resources skqp-dist/assets`
+    - `tar -zchf skqp-dist.tar.gz skqp-dist`
+    - `rm -rf skqp-dist`
+  - run
 
 ## `sk_app`
 
