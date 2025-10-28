@@ -176,9 +176,10 @@ QEMU
 
 ## Example: AArch64
 
-- `qemu-system-aarch64 -machine virt -accel tcg -cpu cortex-a76 -m 2G -nodefaults -nographic -serial mon:stdio`
+- `qemu-system-aarch64 -machine virt -accel tcg -cpu cortex-a76 -smp 2 -m 2G -nodefaults -nographic -serial mon:stdio`
+  - `-machine virt,dumpdtb=qemu.dtb` to dump dtb
 - `-kernel Image.gz -initrd initramfs.cpio.zst -append ...`
-- `-display sdl,gl=core -device virtio-vga-gl -nic user,model=virtio-net-pci`
+- `-display sdl,gl=core -device virtio-gpu-gl -nic user,model=virtio-net-pci`
 
 ## Bootstrap with ISO
 

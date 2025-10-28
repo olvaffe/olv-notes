@@ -151,7 +151,8 @@ Kernel defconfig
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `Support for PCI Hotplug` if needed (for usb4)
     - select `PCI controller drivers` if arm
-      - select `Broadcom Brcmstb PCIe host controller` if rpi
+      - select `Broadcom Brcmstb PCIe controller` if rpi
+      - select `Generic PCI host controller` if guest
       - select `MediaTek Gen3 PCIe controller` if mtk
       - select `DesignWare-based PCIe controllers`
         - select `Qualcomm PCIe controller (host mode)` if qcom
