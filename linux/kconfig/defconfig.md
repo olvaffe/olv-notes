@@ -52,7 +52,6 @@ Kernel defconfig
   - select `Qualcomm Platforms` if qcom
   - select `Rockchip Platforms` if rk
 - select `Kernel Features` if arm
-  - select `Multi-core scheduler support`
   - select `Timer frequency (1000 HZ)` if desired
   - select `Enable paravirtualization code` if guest
   - select `Kernel support for 32-bit EL0`
@@ -63,8 +62,6 @@ Kernel defconfig
 - select `Mitigations for CPU vulnerabilities` if x86
   - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
 - select `Power management and ACPI options` if x86
-  - select `Device power management core functionality`
-    - select `Power Management Debug Support` if debug
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
   - select `ACPI (Advanced Configuration and Power Interface) Support`
     - select `ACPI Time and Alarm (TAD) Device Support` if desired
@@ -76,8 +73,6 @@ Kernel defconfig
       - select `ACPI Processor P-States driver` if amd
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Power management options` if arm
-  - select `Device power management core functionality`
-    - select `Power Management Debug Support` if debug
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`
 - select `CPU Power Management` if arm
   - select `CPU Idle`
@@ -190,7 +185,7 @@ Kernel defconfig
     - select `Caching block device access to MTD devices`
     - select `SPI NOR device support`, depending on `SPI`
   - select `Block devices`
-    - select `Compressed RAM block device support`, depending on `CRYPTO_LZO`
+    - select `Compressed RAM block device support`
     - select `Loopback device support`
     - select `Virtio block driver` if guest, depending on `VIRTIO_PCI`
   - select `NVME Support` if needed
@@ -279,6 +274,8 @@ Kernel defconfig
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
+        - select `ARM AMBA PL011 serial port support` if guest
+          - select `Support for console on AMBA serial port`
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
     - select `Serial device bus` if needed

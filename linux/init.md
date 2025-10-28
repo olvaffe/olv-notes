@@ -330,16 +330,6 @@ Kernel init
 
 ## packing/unpacking initramfs
 
-- a minimal busybox-based initramfs can do these in `/init` to get a shell
-  - `#!/bin/busybox sh`
-  - `mkdir /proc; mount -t proc none /proc`
-  - `mkdir /sys; mount -t sysfs none /sys`
-  - `mkdir /dev; mount -t devtmpfs none /dev`
-  - `exec >/dev/console 2>/dev/console </dev/console`
-  - `exec sh -i`
-  - if busybox relies on symlinks or `$PATH` to find its applets, prepend
-    - `/bin/busybox --install -s /bin`
-    - `export PATH=/bin`
 - to create the cpio archive
   - `find . | cpio -o -H newc -R root:root > ../initramfs.cpio`
   - the kernel initramfs unpacker checks if the cpio starts with "070701",

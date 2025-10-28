@@ -1,6 +1,11 @@
 QEMU
 ====
 
+## Install
+
+- `pacman -S qemu-base qemu-ui-sdl qemu-ui-opengl qemu-hw-display-{virtio-gpu,virtio-gpu-gl,virtio-gpu-pci,virtio-gpu-pci-gl,virtio-vga,virtio-vga-gl}`
+- `pacman -S qemu-system-aarch64`
+
 ## Get Source Code
 
 - `git clone https://gitlab.com/qemu-project/qemu.git`
@@ -168,6 +173,12 @@ QEMU
     - or, set up forwarding/firewall/nat/dhcp/dns
 - second vm with tap1
   - `ip address add 192.168.1.2/24 dev enp0s1`
+
+## Example: AArch64
+
+- `qemu-system-aarch64 -machine virt -accel tcg -cpu cortex-a76 -m 2G -nodefaults -nographic -serial mon:stdio`
+- `-kernel Image.gz -initrd initramfs.cpio.zst -append ...`
+- `-display sdl,gl=core -device virtio-vga-gl -nic user,model=virtio-net-pci`
 
 ## Bootstrap with ISO
 

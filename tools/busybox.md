@@ -32,3 +32,20 @@ BusyBox
 ## toybox
 
 - started from scratch by then busybox maintainer after licensing argument
+
+## initramfs
+
+- prepare cpio archive
+  - `mkdir tmp && cd tmp`
+  - `curl -L http://mirror.archlinuxarm.org/aarch64/extra/busybox-1.36.1-2-aarch64.pkg.tar.xz | tar -Jx --strip 1 usr/bin/busybox`
+  - `vi init`
+  - `chmod 755 init`
+  - `find . | cpio -o -H newc -R root:root | zstd > ../initramfs.cpio.zst`
+- a minimal busybox-based initramfs can do these in `/init` to get a shell
+  - `#!/bin/busybox sh`
+  - `/bin/busybox --install -s /bin`
+  - `export PATH=/bin`
+  - `mkdir /proc; mount -t proc none /proc`
+  - `mkdir /sys; mount -t sysfs none /sys`
+  - `mount -t devtmpfs none /dev`
+  - `exec sh -i`
