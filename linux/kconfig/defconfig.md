@@ -123,8 +123,8 @@ Kernel defconfig
         - select `IPv6 nf_tables support`
     - select `802.1d Ethernet Bridging` if desired
     - select `802.1Q/802.1ad VLAN Support` if desired
-    - select `Virtual Socket protocol` if kvm or guest
-    - select `virtio transport for Virtual Sockets` if guest, depending on `PCI` and `VIRTIO_PCI`
+    - select `Virtual Socket protocol` if desired (for kvm and guest)
+      - select `virtio transport for Virtual Sockets` if guest, depending on `VIRTIO_PCI`
     - select `Qualcomm IPC Router support` if qcom
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
       - select `TUN device for Qualcomm IPC Router` if qcom modem
@@ -208,6 +208,8 @@ Kernel defconfig
     - select `SCSI device support`
     - deselect `legacy /proc/scsi/ support`
     - select `SCSI disk support`
+    - select `SCSI low-level drivers`
+      - select `virtio-scsi support` if desired
   - select `Serial ATA and Parallel ATA drivers (libata)` if needed
     - select `AHCI SATA support`
     - deselect `ATA SFF support (for legacy IDE and PATA)`
@@ -254,7 +256,7 @@ Kernel defconfig
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
-        - select `GPIO Buttons` if rk3568, mt8186, or qcom x1
+        - select `GPIO Buttons` if rk3568, mt8186, qcom x1, or arm guest
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -275,12 +277,12 @@ Kernel defconfig
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
-        - select `ARM AMBA PL011 serial port support` if arm and guest
+        - select `ARM AMBA PL011 serial port support` if arm guest
           - select `Support for console on AMBA serial port`
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
     - select `Serial device bus` if needed
-    - select `Virtio console` if guest
+    - select `Virtio console` if desired
     - select `Hardware Random Number Generator Core support`
       - deselect all but the needed drivers
     - select `TPM Hardware Support` (for luks, etc.)
@@ -333,8 +335,9 @@ Kernel defconfig
       - select `Pinctrl and GPIO driver for RK805 PMIC`
       - select `Rockchip gpio and pinctrl driver`
   - select `GPIO Support`
-    - select `Memory mapped GPIO drivers` if rk
-      - select `Rockchip GPIO support`
+    - select `Memory mapped GPIO drivers` if arm
+      - select `PrimeCell PL061 GPIO support` if guest
+      - select `Rockchip GPIO support` if rk
   - select `Board level reset or power off` if qcom x1
     - select `Qualcomm power-on driver`
   - select `Power Sequencing support` if qcom x1
@@ -587,6 +590,7 @@ Kernel defconfig
   - select `Real Time Clock`
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
     - select `Haoyu Microelectronics HYM8563` if rk
+    - select `ARM AMBA PL031 RTC` if arm guest
     - select `MediaTek PMIC based RTC` if mtk
     - select `Qualcomm PMIC8XXX RTC` if qcom x1
   - select `DMA Engine support`
@@ -658,7 +662,7 @@ Kernel defconfig
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
     - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588 or mt8196
     - select `MediaTek IOMMU Support` if mt8186/mt8195
-    - select `Virtio IOMMU driver` if guest
+    - select `Virtio IOMMU driver` if desired
   - select `Remoteproc drivers` if arm
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
