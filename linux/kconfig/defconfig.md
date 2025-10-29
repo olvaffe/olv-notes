@@ -33,7 +33,7 @@ Kernel defconfig
     - select `Kernel performance events and counters`
 - select `Processor type and features` if x86
   - select `Symmetric multi-processing support`
-  - select `Support x2apic`, depending on `IRQ_REMAP`
+  - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
@@ -275,7 +275,7 @@ Kernel defconfig
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
-        - select `ARM AMBA PL011 serial port support` if guest
+        - select `ARM AMBA PL011 serial port support` if arm and guest
           - select `Support for console on AMBA serial port`
         - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `QCOM GENI Serial Console support`
@@ -815,7 +815,7 @@ Kernel defconfig
     - select `EFI Variable filesystem` if uefi, depending on `EFI`
   - select `Miscellaneous filesystems`
     - select `SquashFS 4.0 - Squashed file system support` if desired
-    - select `Persistent store support`
+    - select `Persistent store support` if desired
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
     - select `EROFS filesystem support` if desired
