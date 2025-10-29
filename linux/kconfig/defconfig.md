@@ -185,7 +185,7 @@ Kernel defconfig
     - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
-  - select `Memory Technology Device (MTD) support` if needed (for fw update)
+  - select `Memory Technology Device (MTD) support` if needed (for spi nor)
     - select `Caching block device access to MTD devices`
     - select `SPI NOR device support`, depending on `SPI`
   - select `Block devices`
@@ -199,7 +199,7 @@ Kernel defconfig
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
-      - select `SPD EEPROMs on DDR4 memory modules` if desired (for ddr4)
+      - select `SPD EEPROMs on DDR4 memory modules` if needed (for ddr4)
     - select `Intel Management Engine Interface` if intel
       - select `ME Enabled Intel Chipsets`
       - select `Intel MEI GSC embedded device`
@@ -207,7 +207,7 @@ Kernel defconfig
       - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
     - select `Realtek PCI-E card reader` if needed
-  - select `SCSI device support` if needed (for sata or usb mass storage)
+  - select `SCSI device support` if needed (for sata, usb mass storage, uas, ufs, etc.)
     - select `SCSI device support`
     - deselect `legacy /proc/scsi/ support`
     - select `SCSI disk support`
@@ -222,10 +222,10 @@ Kernel defconfig
   - select `Network device support`
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
-      - select `MAC-VLAN support` if container
+      - select `MAC-VLAN support` if desired (for container)
       - select `Network console logging support` if desired
       - select `Universal TUN/TAP device driver support` if kvm
-      - select `Virtual ethernet pair device` if container
+      - select `Virtual ethernet pair device` if desired (for container)
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
       - deselect all but the needed drivers, such as
@@ -241,7 +241,7 @@ Kernel defconfig
     - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
     - select `USB Network Adapters` if needed, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
-    - select `Wireless LAN` if desired
+    - select `Wireless LAN` if needed
       - deselect all but the needed drivers, such as
       - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support` if sc7180
@@ -286,9 +286,9 @@ Kernel defconfig
           - select `QCOM GENI Serial Console support`
     - select `Serial device bus` if needed
     - select `Virtio console` if desired
-    - select `Hardware Random Number Generator Core support`
+    - select `Hardware Random Number Generator Core support` if needed
       - deselect all but the needed drivers
-    - select `TPM Hardware Support` (for luks, etc.)
+    - select `TPM Hardware Support` if needed (for luks, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
         - select `Cr50 SPI Interface` if cros
@@ -300,7 +300,8 @@ Kernel defconfig
         - select `Intel 82801 (ICH/PCH)` if intel
         - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if x86
         - select `Broadcom BCM2835 I2C controller` if rpi
-        - select `Synopsys DesignWare Platform` if x86, depending on `COMMON_CLK`
+        - select `Synopsys DesignWare I2C adapter` if x86
+          - select `Synopsys DesignWare Platform driver`, depending on `COMMON_CLK`
           - select `AMD PSP I2C semaphore support` if amd
         - select `MediaTek I2C adapter` if mtk
         - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if qcom, depending on `QCOM_GENI_SE`
@@ -356,7 +357,7 @@ Kernel defconfig
     - select `Intel Core/Core2/Atom temperature sensor` if intel
     - select `PWM fan` if rk3588
     - select `Raspberry Pi voltage monitor` if rpi
-    - select `SPD5118 Compliant Temperature Sensors` if desired (for ddr5)
+    - select `SPD5118 Compliant Temperature Sensors` if needed (for ddr5)
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
     - select `Generic device cooling support` if arm, depending on `PM_DEVFREQ`
