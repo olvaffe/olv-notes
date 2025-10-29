@@ -236,7 +236,8 @@ QEMU
       - `-chardev file,path=<path>,id=foo` to use a file as backend
       - `-device virtio-serial-pci` to add a frontend console bus
         - this is driven by `virtio_console` guest driver
-      - `-device virtconsole,chardev=foo` to add a frontend console port
+      - `-device virtconsole,chardev=foo` to add a frontend console port on
+        the console bus
         - this port shows up as `/dev/vport0p0` in the guest
         - qemu also sends `VIRTIO_CONSOLE_CONSOLE_PORT`, which causes the port
           to be owned by hvc and is accessible as `/dev/hvc0`
@@ -244,7 +245,7 @@ QEMU
         - this port shows up and is accessible as `/dev/vport0p0` in the guest
     - another example
       - `-chardev stdio,mux=on,id=foo` to use stdio as backend
-      - `-device isa-serial,chardev:foo` to connect guest `/dev/ttyS0` to the backend
+      - `-device isa-serial,chardev=foo` to connect guest `/dev/ttyS0` to the backend
       - `-mon chardev=foo` to connect monitor to the backend
   - the convenient way
     - `-serial mon:stdio`
@@ -519,6 +520,7 @@ QEMU
 - when a key is pressed, it is processed by the display (SDL2/gtk/...) and
   `qkbd_state_key_event` is called
   - it goes a long way but eventually `qemu_input_event_send_impl` is called
+- to display ps2 keyboard and mouse, `-machine q35,i8042=off`
 
 ## main loop
 
