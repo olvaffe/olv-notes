@@ -11,7 +11,7 @@ Kernel defconfig
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
-  - select `BPF subsystem`
+  - select `BPF subsystem` if desired
     - select `Enable bpf() system call`
     - select `Enable BPF Just In Time compiler`
       - select `Permanently enable BPF JIT and remove BPF interpreter`
@@ -123,6 +123,10 @@ Kernel defconfig
         - select `IPv6 nf_tables support`
     - select `802.1d Ethernet Bridging` if desired
     - select `802.1Q/802.1ad VLAN Support` if desired
+    - select `QoS and/or fair queueing` if desired
+      - select `Fair Queue Controlled Delay AQM (FQ_CODEL)`
+      - select `Allow override default queue discipline`
+        - select `Default queuing discipline (Fair Queue Controlled Delay)`
     - select `Virtual Socket protocol` if desired (for kvm and guest)
       - select `virtio transport for Virtual Sockets` if guest, depending on `VIRTIO_PCI`
     - select `Qualcomm IPC Router support` if qcom
@@ -159,7 +163,6 @@ Kernel defconfig
         - select `Rockchip DesignWare PCIe controller (host mode)` if rk
   - select `Generic Driver Options`
     - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
-      - select `Automount devtmpfs at /dev, after the kernel mounted the rootfs`
     - select `Firmware loader`
       - select `Firmware loading facility`
         - select `Build named firmware blobs into the kernel binary` if desired (for microcode and built-in drivers)
@@ -373,7 +376,7 @@ Kernel defconfig
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
       - select `Qualcomm SPMI PMIC Temperature Alarm`
     - select `Rockchip thermal driver` if rk, depending on `RESET_CONTROLLER`
-  - select `Watchdog Timer Support`
+  - select `Watchdog Timer Support` if needed
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `ARM SBSA Generic Watchdog` if qcom x1
     - select `QCOM watchdog` if sc7180
@@ -401,13 +404,13 @@ Kernel defconfig
       - select `MediaTek DVFSRC regulator driver`
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
-  - select `Multimedia support` if desired
+  - select `Multimedia support` if needed
     - select `Media device types`
       - select `Cameras/video grabbers support`
       - select `Platform-specific devices` if arm
     - select `Media drivers`
       - select `Media USB Adapters`, depending on `USB`
-        - select `USB Video Class (UVC)`
+        - select `USB Video Class (UVC)` if needed
       - select `Media platform devices` if arm
         - select `V4L platform devices`
         - select `Memory-to-memory multimedia devices`
@@ -453,38 +456,40 @@ Kernel defconfig
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
-  - select `Sound card support` if desired
+  - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
-      - select `Dynamic device file minor numbers` (for asoc on old kernel)
       - deselect `Support old ALSA API`
       - select `Sequencer support` if desired (for midi)
       - select `HD-Audio` if x86
         - select `HD Audio PCI` if old x86
           - new intel uses `SND_SOC_SOF_HDA_AUDIO_CODEC` instead
-        - select `Build Realtek HD-audio codec support` if needed
-        - select `Build HDMI/DisplayPort HD-audio codec support`
+        - select `Realtek HD-audio codec support` if needed
+        - select `HD-audio HDMI codec support`
       - select `USB sound devices`
         - select `USB Audio/MIDI driver` if needed
       - select `ALSA for SoC audio support`
-        - select `AMD Audio Coprocessor - Renoir support` if old amd
-          - select `AMD Renoir support for DMIC`
-        - select `AMD Audio ACP Common support` if amd
-        - select `AMD SOF Machine Driver Support` if amd and cros
-        - deselect `Intel ASoC SST drivers`
-        - select `Intel Machine drivers` if intel
-          - select `Use more user friendly long card names`
-          - select `Skylake+ with HDA Codecs`
-          - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
-          - select `SOF with nau8825 codec in I2S Mode` if needed
-          - select `SoundWire generic machine driver` if needed
-        - select `ASoC support for Mediatek MT8186 chip` if mt8186
-          - select `ASoC Audio driver for MT8186 with MT6366 and I2S codecs`, depending on `MTK_PMIC_WRAP`
-        - select `ASoC support for Mediatek MT8195 chip` if mt8195
-          - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
-        - select `ASoC support for QCOM platforms` if qcom
+        - select `AMD` if amd
+          - select `AMD Audio Coprocessor - Renoir support` if old amd
+            - select `AMD Renoir support for DMIC`
+          - select `AMD Audio ACP Common support`
+          - select `AMD SOF Machine Driver Support` if cros
+        - select `Intel` if intel
+          - deselect `Intel ASoC SST drivers`
+          - select `Intel Machine drivers` if intel, depending on `SND_SOC_SOF_INTEL_TOPLEVEL`
+            - select `Use more user friendly long card names`
+            - select `Skylake+ with HDA Codecs`
+            - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
+            - select `SOF with nau8825 codec in I2S Mode` if needed
+            - select `SoundWire generic machine driver` if needed
+        - select `Mediatek` if mtk
+          - select `ASoC support for Mediatek MT8186 chip` if mt8186
+            - select `ASoC Audio driver for MT8186 with MT6366 and I2S codecs`, depending on `MTK_PMIC_WRAP`
+          - select `ASoC support for Mediatek MT8195 chip` if mt8195
+            - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
+        - select `Qualcomm` if qcom
           - select `SoC Machine driver for SC7180 boards` if sc7180
           - select `SoC Machine driver for X1E80100 boards` if qcom x1, depending on `SOUNDWIRE`
-        - select `ASoC support for Rockchip` if rk
+        - select `Rockchip` if rk
           - select `Rockchip I2S Device Driver` if rk3588
           - select `Rockchip I2S/TDM Device Driver`
         - select `Sound Open Firmware Support`
@@ -522,12 +527,12 @@ Kernel defconfig
         - select `Nintendo Joy-Con and Pro Controller support`
         - select `Wacom Intuos/Graphire tablet support (USB)`
         - select `HID Sensors framework support`
-    - select `I2C HID support`
-      - select `HID over I2C transport layer ACPI driver` if x86 (for I2C touchpads)
-      - select `HID over I2C transport layer Open Firmware driver` if arm
-      - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
-    - select `AMD SFH HID Support` if amd
-      - select `AMD Sensor Fusion Hub`
+      - select `I2C HID support`
+        - select `HID over I2C transport layer ACPI driver` if x86 (for I2C touchpads)
+        - select `HID over I2C transport layer Open Firmware driver` if arm
+        - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
+      - select `AMD SFH HID Support` if amd
+        - select `AMD Sensor Fusion Hub`
   - select `USB support`
     - select `Support for Host-side USB`
     - select `xHCI HCD (USB 3.0) support` if needed
@@ -541,12 +546,13 @@ Kernel defconfig
       - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
-      - select `DWC3 Mode Selection (Dual Role mode)` if rk, depending on `USB_GADGET`
+      - select `DWC3 Mode Selection (Dual Role mode)` if desired, depending on `USB_GADGET`
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if sc7180
-    - select `USB Gadget Support` if needed
+    - select `USB Gadget Support` if desired
+      - select `USB Gadget functions configurable through configfs`
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk3588
         - select `Fairchild FUSB302 Type-C chip driver`
@@ -560,7 +566,7 @@ Kernel defconfig
       - select `USB Type-C Alternate Mode drivers`
         - select `DisplayPort Alternate Mode driver`
     - select `USB Role Switch Support`
-  - select `MMC/SD/SDIO card support` if desired
+  - select `MMC/SD/SDIO card support` if needed
     - select `Secure Digital Host Controller Interface support` if needed
       - select `SDHCI support on PCI bus` if x86
       - select `SDHCI support for ACPI enumerated SDHCI controllers` if x86
@@ -572,7 +578,7 @@ Kernel defconfig
     - select `Qualcomm SDHCI Controller Support` if qcom, depending on `MMC_SDHCI_PLTFM`
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
-  - select `Universal Flash Storage Controller` if needed
+  - select `Universal Flash Storage Controller` if needed, depending on `SCSI`
     - select `Platform bus based UFS Controller support`
       - select `Mediatek specific hooks to UFS controller platform driver` if mt8195
   - select `LED Support`
@@ -583,7 +589,7 @@ Kernel defconfig
     - select `LED support for Qualcomm LPG` if qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
-  - select `EDAC (Error Detection And Correction) reporting`, depending on `RAS`
+  - select `EDAC (Error Detection And Correction) reporting` if needed, depending on `RAS`
     - deselect `EDAC legacy sysfs`
     - select `Intel client SoC Integrated MC` if intel
     - select `QCOM EDAC Controller` if qcom, depending on `QCOM_LLCC`
@@ -608,7 +614,7 @@ Kernel defconfig
     - select `Virtio input driver`
   - select `VHOST drivers` if kvm
     - select `Host kernel accelerator for virtio net`
-    - select `vhost virtio-vsock driver`
+    - select `vhost virtio-vsock driver` if desired
   - select `Staging drivers`
     - select `Broadcom VideoCore support` if rpi
       - select all
@@ -737,8 +743,8 @@ Kernel defconfig
     - select `ChromeOS EC PWM driver` if cros
     - select `MediaTek display PWM driver` if mtk
     - select `Rockchip PWM support` if rk
-  - select `IRQ chip support` if qcom
-    - select `QCOM PDC`
+  - select `IRQ chip support` if arm
+    - select `QCOM PDC` if qcom
   - select `Reset Controller Support` if arm
     - select `Qcom AOSS Reset Driver` if sc7180
     - select `Qualcomm PDC Reset Driver` if sc7180
@@ -765,8 +771,7 @@ Kernel defconfig
       - select `Rockchip Snps PCIe3 PHY Driver`
       - select `Rockchip USBDP COMBO PHY Driver` if rk3588
   - select `Generic powercap sysfs driver` if x86
-    - select `Intel RAPL Support via MSR Interface`, depending on `IOSF_MBI`
-  - select `Reliability, Availability and Serviceability (RAS) features`
+    - select `Intel RAPL Support via MSR Interface`
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support` if arm
     - select `Mediatek SoCs EFUSE support` if mtk
@@ -777,7 +782,7 @@ Kernel defconfig
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
   - select `SLIMbus support` if qcom and `SND`
-  - select `On-Chip Interconnect management support` if qcom/mtk
+  - select `On-Chip Interconnect management support` if arm
     - if qcom
       - select `Qualcomm Network-on-Chip interconnect drivers`
       - select `Qualcomm OSM L3 interconnect driver` if sc7180
