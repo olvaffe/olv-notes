@@ -267,22 +267,27 @@ Android Build System
   - see also <https://source.android.com/docs/core/architecture/partitions>
   - p1: `userdata`, 4G
   - p2: `KERN-A`, 32M, only by recovery usb image
+    - when `m pack-recovery-image` generates
+      `android-desktop_recovery_image.bin`, `pack_image` packs
+      `recovery-kernel` into this partition
+      - it also packs ap fw update to `ROOT-B` and recovery script to `KERN-B`
   - p3: `super`, 8G, `super.img`
     - `m superimage` runs `build_super_image` which runs `lpmake` to pack
       these to `super.img`
       - `system.img`
-      - `system_ext.img`
-      - `system_dlkm.img`
+      - `system_ext.img`, vendor extension to system
+      - `system_dlkm.img`, gki kernel modules
       - `vendor.img`
-      - `vendor_dlkm.img`
-      - `product.img`
+      - `vendor_dlkm.img`, vendor kernel modules
+      - `product.img`, product-specific apks and stuff
   - p4: `KERN-B`, unused
   - p5: `ROOT-B`, unused
   - p6: `KERN-C`, unused
   - p7: `ROOT-C`, unused
-  - p8: `OEM`, 4M
-  - p9: `MINIOS-A`, 128M
-  - p10: `MINIOS-B`, 128M
+  - p8: `OEM`, 4M, mostly unused
+  - p9: `ota_recovery_a`, 128M, for chromebook ota recovery
+    - minimal os whose job is to download images and flash partitions
+  - p10: `ota_recovery_b`, 128M
   - p11
   - p12: `EFI-SYSTEM`, 64M, only by non-chromebook uefi system
   - p13: `boot_a`, 64M, `boot.img`
@@ -292,8 +297,15 @@ Android Build System
   - p15: `vbmeta_a`, 4M, `vbmeta.img`
     - `m vbmetaimage` runs `avbtool make_vbmeta_image` to generate
       `vbmeta.img`
+    - it contains hashes for partitions listed in
+      `INSTALLED_VBMETAIMAGE_TARGET` for verified boot
+      - <https://android.googlesource.com/platform/external/avb/+/refs/heads/main/README.md>
   - p16: `vbmeta_b`, 4M
   - p17: `metadata`, 16M, generated
+    - it stores encryption key for `userdata` when `BOARD_USES_METADATA_PARTITION`
+      - <https://source.android.com/docs/security/features/encryption/metadata>
+      - `userdata` employs file-based encryption for file data
+      - metadata encryption encrypts fs metadata
   - p18: `init_boot_a`, 32M, `init_boot.img`
     - `m initbootimage` runs `mkbootimg` to pack `INSTALLED_RAMDISK_TARGET`
       (`ramdisk.img`) to `init_boot.img`
@@ -302,13 +314,30 @@ Android Build System
     - `m vendorbootimage` runs `mkbootimg` to pack these to `vendor_boot.img`
       - `INTERNAL_KERNEL_CMDLINE` (`BOARD_KERNEL_CMDLINE`)
       - `INTERNAL_VENDOR_RAMDISK_TARGET` (`vendor_ramdisk.cpio.lz4`)
-      - `INTERNAL_VENDOR_RAMDISK_FRAGMENTS` (`recovery.cpio.lz4`)
+      - `INTERNAL_VENDOR_RAMDISK_FRAGMENTS` (`recovery.cpio.lz4`) if
+        `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`
   - p21: `vendor_boot_b`, 32M
   - p22: `pvmfw_a`, 4M, `pvmfw.img`
+    - `m pvmfwimage` generates `pvmfw.img`, which is entrypoint for pVMs
+      - <https://android.googlesource.com/platform/packages/modules/Virtualization/+/refs/heads/main/guest/pvmfw/README.md>
+      - hypervisor: pkvm
+      - host: android in a vm
+      - pVMs: protected vms that host has restricted access to
   - p23: `pvmfw_b`, 4M
   - p24: `misc`, 4M
+    - persistent bootloader settings such as current ab slot
   - p25: `RWFW-A`, unused
   - p26: `RWFW-B`, unused
+  - p27: `recovery_a`, 32M, vendor initramfs for fastbootd
+    - because of `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`, the
+      initramfs is usually a part of `vendor_boot.img` instead
+  - p28: `recovery_b`, 32M
+  - p29: `desktop_security_persist`, 16M
+    - trusty
+  - p30: `desktop_security_storage`, 32M
+    - trusty
+  - p31: `frp_persist`, 2M
+    - persistent data across factory resets, for anti-theft
 
 ## boot.img (of x86): 
 
