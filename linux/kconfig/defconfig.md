@@ -537,7 +537,6 @@ Kernel defconfig
     - select `Support for Host-side USB`
     - select `xHCI HCD (USB 3.0) support` if needed
       - select `xHCI support for MediaTek SoCs` if mtk
-      - select `Generic xHCI driver for a platform device` if qcom
     - select `EHCI HCD (USB 2.0) support` if needed
       - select `Generic EHCI driver for a platform device` if rk
     - select `OHCI HCD (USB 1.1) support` if needed
