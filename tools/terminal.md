@@ -129,6 +129,11 @@ Terminal
   - receiving device: `base64 -d > file`
   - sending device: `Ctrl-A Ctrl-S`
   - receiving device: `Ctrl-D`
+- poorman 2
+  - sending device: `picocom -b 115200 /dev/ttyUSB0`
+  - receiving device: `stty -echo; base64 -d > file; stty echo`
+  - sending device: `base64 file > /dev/ttyUSB0`
+  - sending device: `Ctrl-D`
 
 ## ncurses
 
