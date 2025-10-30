@@ -1,9 +1,6 @@
 # CONFIG_LOCALVERSION_AUTO is not set
 CONFIG_NO_HZ_IDLE=y
 CONFIG_HIGH_RES_TIMERS=y
-CONFIG_BPF_SYSCALL=y
-CONFIG_BPF_JIT=y
-CONFIG_BPF_JIT_ALWAYS_ON=y
 CONFIG_PREEMPT_VOLUNTARY=y
 CONFIG_TASKSTATS=y
 CONFIG_TASK_DELAY_ACCT=y
@@ -39,12 +36,10 @@ CONFIG_PACKET=y
 CONFIG_UNIX=y
 CONFIG_INET=y
 # CONFIG_WIRELESS is not set
-CONFIG_RFKILL=y
 CONFIG_PCI=y
 CONFIG_PCIEPORTBUS=y
 CONFIG_PCIEAER=y
 CONFIG_DEVTMPFS=y
-CONFIG_DEVTMPFS_MOUNT=y
 CONFIG_EXTRA_FIRMWARE="amdgpu/dcn_3_1_6_dmcub.bin amdgpu/gc_10_3_7_ce.bin amdgpu/gc_10_3_7_me.bin amdgpu/gc_10_3_7_mec2.bin amdgpu/gc_10_3_7_mec.bin amdgpu/gc_10_3_7_pfp.bin amdgpu/gc_10_3_7_rlc.bin amdgpu/psp_13_0_8_asd.bin amdgpu/psp_13_0_8_ta.bin amdgpu/psp_13_0_8_toc.bin amdgpu/sdma_5_2_7.bin amdgpu/yellow_carp_vcn.bin amdgpu/yellow_carp_asd.bin amdgpu/yellow_carp_ce.bin amdgpu/yellow_carp_dmcub.bin amdgpu/yellow_carp_me.bin amdgpu/yellow_carp_mec2.bin amdgpu/yellow_carp_mec.bin amdgpu/yellow_carp_pfp.bin amdgpu/yellow_carp_rlc.bin amdgpu/yellow_carp_sdma.bin amdgpu/yellow_carp_ta.bin amdgpu/yellow_carp_toc.bin amdgpu/green_sardine_asd.bin amdgpu/green_sardine_ce.bin amdgpu/green_sardine_dmcub.bin amdgpu/green_sardine_me.bin amdgpu/green_sardine_mec2.bin amdgpu/green_sardine_mec.bin amdgpu/green_sardine_pfp.bin amdgpu/green_sardine_rlc.bin amdgpu/green_sardine_sdma.bin amdgpu/green_sardine_ta.bin amdgpu/green_sardine_vcn.bin amdgpu/renoir_asd.bin amdgpu/renoir_ce.bin amdgpu/renoir_dmcub.bin amdgpu/renoir_gpu_info.bin amdgpu/renoir_me.bin amdgpu/renoir_mec2.bin amdgpu/renoir_mec.bin amdgpu/renoir_pfp.bin amdgpu/renoir_rlc.bin amdgpu/renoir_sdma.bin amdgpu/renoir_ta.bin amdgpu/renoir_vcn.bin amdgpu/raven_dmcu.bin amdgpu/raven2_asd.bin amdgpu/raven2_ce.bin amdgpu/raven2_gpu_info.bin amdgpu/raven2_me.bin amdgpu/raven2_mec.bin amdgpu/raven2_mec2.bin amdgpu/raven2_pfp.bin amdgpu/raven2_rlc.bin amdgpu/raven2_sdma.bin amdgpu/raven2_vcn.bin amdgpu/raven2_ta.bin amdgpu/picasso_asd.bin amdgpu/picasso_ce.bin amdgpu/picasso_gpu_info.bin amdgpu/picasso_me.bin amdgpu/picasso_mec2.bin amdgpu/picasso_mec.bin amdgpu/picasso_pfp.bin amdgpu/picasso_rlc_am4.bin amdgpu/picasso_rlc.bin amdgpu/picasso_sdma.bin amdgpu/picasso_vcn.bin amdgpu/picasso_ta.bin amdgpu/stoney_ce.bin amdgpu/stoney_me.bin amdgpu/stoney_mec.bin amdgpu/stoney_pfp.bin amdgpu/stoney_rlc.bin amdgpu/stoney_sdma.bin amdgpu/stoney_uvd.bin amdgpu/stoney_vce.bin"
 CONFIG_FW_LOADER_COMPRESS=y
 CONFIG_FW_LOADER_COMPRESS_ZSTD=y
@@ -76,9 +71,6 @@ CONFIG_SERIAL_8250=y
 CONFIG_SERIAL_8250_CONSOLE=y
 CONFIG_SERIAL_8250_DW=y
 CONFIG_SERIAL_DEV_BUS=y
-# CONFIG_HW_RANDOM_INTEL is not set
-# CONFIG_HW_RANDOM_AMD is not set
-# CONFIG_HW_RANDOM_VIA is not set
 CONFIG_TCG_TPM=y
 CONFIG_TCG_TIS_I2C_CR50=y
 CONFIG_I2C_PIIX4=y
@@ -121,14 +113,8 @@ CONFIG_TYPEC_UCSI=y
 CONFIG_UCSI_ACPI=y
 CONFIG_TYPEC_DP_ALTMODE=y
 CONFIG_USB_ROLE_SWITCH=y
-CONFIG_MMC=y
-CONFIG_MMC_SDHCI=y
-CONFIG_MMC_SDHCI_PCI=y
-CONFIG_MMC_SDHCI_ACPI=y
 CONFIG_NEW_LEDS=y
 CONFIG_LEDS_CLASS=y
-CONFIG_EDAC=y
-# CONFIG_EDAC_LEGACY_SYSFS is not set
 CONFIG_RTC_CLASS=y
 CONFIG_RTC_DRV_CROS_EC=y
 CONFIG_DMADEVICES=y
@@ -173,7 +159,6 @@ CONFIG_NLS_ISO8859_1=y
 CONFIG_NLS_UTF8=y
 CONFIG_SECURITY=y
 CONFIG_SECURITY_LANDLOCK=y
-CONFIG_CRYPTO_LZO=y
 CONFIG_CRYPTO_AES_NI_INTEL=y
 CONFIG_CRYPTO_DEV_CCP=y
 CONFIG_CRYPTO_DEV_CCP_DD=y

@@ -859,7 +859,7 @@ Kernel defconfig
   - select `Hardware crypto devices`
     - select `Support for AMD Secure Processor` if amd
       - select `Secure Processor device driver`
-        - select `Cryptographic Coprocessor device`
+        - select `Cryptographic Coprocessor device`, depending on `DMADEVICES`
           - deselect `Encryption and hashing offload support` if raven (boot issue)
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed, depending on `CMA`
