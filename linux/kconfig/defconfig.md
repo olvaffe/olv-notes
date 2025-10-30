@@ -597,7 +597,7 @@ Kernel defconfig
     - select `ARM AMBA PL031 RTC` if arm guest
     - select `MediaTek PMIC based RTC` if mtk
     - select `Qualcomm PMIC8XXX RTC` if qcom x1
-  - select `DMA Engine support`
+  - select `DMA Engine support` if needed
     - select `BCM2835 DMA engine support` if rpi
     - select `DMA API Driver for PL330` if rk
     - select `Qualcomm Technologies GPI DMA support` if qcom x1
@@ -780,7 +780,7 @@ Kernel defconfig
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
   - select `SLIMbus support` if qcom and `SND`
-  - select `On-Chip Interconnect management support` if arm
+  - select `On-Chip Interconnect management support` if needed
     - if qcom
       - select `Qualcomm Network-on-Chip interconnect drivers`
       - select `Qualcomm OSM L3 interconnect driver` if sc7180
