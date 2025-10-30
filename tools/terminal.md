@@ -74,6 +74,62 @@ Terminal
       - it emulates a vt102 terminal on top of the host terminal
         - `-c on` to enable color support
 
+## ZMODEM
+
+- semi-manual
+  - receiving device
+    - `systemctl stop serial-getty@ttyS0`
+    - `stty -F /dev/ttyS0 115200`
+    - `rz -vv < /dev/ttyS0 > /dev/ttyS0`
+  - sending device
+    - `stty -F /dev/ttyUSB0 115200`
+    - `sz -vv some_file < /dev/ttyUSB0 > /dev/ttyUSB0`
+- picocom
+  - receiving device: `rz -vv`
+    - stdin/stdout is the right tty already
+  - sending device: `Ctrl-A Ctrl-S`
+    - picocom invokes `sz -vv some_file` on the tty
+- internals
+  - handshake
+    - rz starts
+    - rz `main` configs stdin to mode 1 (raw)
+    - rz `tryz` writes `ZRINIT` and waits for `ZRQINIT`
+    - sz starts
+    - sz `main` configs stdin to mode 1 (raw)
+    - sz `main` writes `rz\n`
+    - sz `main` writes `ZRQINIT`
+    - sz `getzrxinit` reads `ZRINIT`
+    - sz `getzrxinit` configs stdin to mode 2 (`IXOFF`)
+    - rz `tryz` reads `ZRQINIT`
+  - transfer
+    - sz `zsendfile` writes `ZFILE` and filename
+    - rz `tryz` reads `ZFILE` and filename
+    - rz `tryz` configs stdin to mode 2 (`IXOFF`)
+    - rz `rzfile` writes `ZRPOS`
+    - sz `zsendfile` reads `ZRPOS`
+    - sz `zsendfdata` writes data
+    - rz `rzfile` reads data
+    - sz `zsendfdata` writes `ZEOF`
+    - rz `rzfile` reads `ZEOF`
+  - terminate
+    - rz `tryz` writes `ZRINIT` for more files
+    - sz `saybibi` writes `ZFIN`
+    - sz `saybibi` reads `ZRINIT` and ignores it
+    - rz `tryz` reads `ZFIN`
+    - rz `ackbibi` writes `ZFIN`
+    - rz `main` configs stdin to mode 0 (canon)
+    - rz exits
+    - sz `saybibi` writes `ZFIN`
+    - sz `saybibi` reads `ZFIN`
+    - sz `saybibi` writes `OO`
+    - sz `main` configs stdin to mode 0 (canon)
+    - sz exits
+- poorman
+  - sending device: `picocom -b 115200 --send-cmd base64 /dev/ttyUSB0`
+  - receiving device: `base64 -d > file`
+  - sending device: `Ctrl-A Ctrl-S`
+  - receiving device: `Ctrl-D`
+
 ## ncurses
 
 - all TUI (text user interface) apps need terminal control
