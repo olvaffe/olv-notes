@@ -33,7 +33,7 @@ Kernel defconfig
     - select `Kernel performance events and counters`
 - select `Processor type and features` if x86
   - select `Symmetric multi-processing support`
-  - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP`
+  - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP` or `HYPERVISOR_GUEST`
   - deselect `Enable MPS table`
   - deselect `Support for extended (non-PC) x86 platforms`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
@@ -132,7 +132,7 @@ Kernel defconfig
     - select `Qualcomm IPC Router support` if qcom
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
       - select `TUN device for Qualcomm IPC Router` if qcom modem
-  - select `Bluetooth subsystem support` if desired
+  - select `Bluetooth subsystem support` if needed
     - select `Bluetooth device drivers`
       - select `HCI USB driver` if x86/mtk, depending on `USB`
         - select `MediaTek protocol support` if mtk
@@ -140,10 +140,10 @@ Kernel defconfig
         - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
         - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
       - select `MediaTek HCI SDIO driver` if mt8186
-  - select `Wireless` if desired
+  - select `Wireless` if needed
     - select `cfg80211 - wireless configuration API`
     - select `Generic IEEE 802.11 Networking Stack (mac80211)`
-  - select `RF switch subsystem support`
+  - select `RF switch subsystem support` if desired
 
 ## Config: Device Drivers
 
