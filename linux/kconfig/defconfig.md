@@ -64,8 +64,8 @@ Kernel defconfig
 - select `Power management and ACPI options` if x86
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
   - select `ACPI (Advanced Configuration and Power Interface) Support`
-    - select `ACPI Time and Alarm (TAD) Device Support` if desired
-    - select `Processor Aggregator` if desired
+    - select `ACPI Time and Alarm (TAD) Device Support` if needed
+    - select `Processor Aggregator` if needed
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `AMD Processor P-State driver` if amd
@@ -91,8 +91,8 @@ Kernel defconfig
   - select `IA32 Emulation`
 - select `Virtualization` if desired
   - select `Kernel-based Virtual Machine (KVM) support`
-    - select `KVM for Intel processors support` if intel
-    - select `KVM for AMD processors support` if amd
+  - select `KVM for Intel processors support` if intel
+  - select `KVM for AMD processors support` if amd
 - select `General architecture-dependent options`
   - select `Optimize very unlikely/likely branches`
   - select `Provide system calls for 32-bit time_t`
@@ -137,12 +137,12 @@ Kernel defconfig
       - select `HCI USB driver` if x86/mtk, depending on `USB`
         - select `MediaTek protocol support` if mtk
       - select `HCI UART driver` if qcom/rpi
-        - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS`
-        - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
-      - select `MediaTek HCI SDIO driver` if mt8186
+      - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS` and `GPIOLIB`
+      - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
+      - select `MediaTek HCI SDIO driver` if mt8186, depending on `SERIAL_DEV_BUS`
   - select `Wireless` if needed
     - select `cfg80211 - wireless configuration API`
-    - select `Generic IEEE 802.11 Networking Stack (mac80211)`
+      - select `Generic IEEE 802.11 Networking Stack (mac80211)`
   - select `RF switch subsystem support` if desired
 
 ## Config: Device Drivers
@@ -547,7 +547,6 @@ Kernel defconfig
       - select `USB Attached SCSI`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
-      - select `DWC3 Mode Selection (Dual Role mode)` if desired, depending on `USB_GADGET`
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
@@ -574,9 +573,9 @@ Kernel defconfig
       - select `SDHCI platform and OF driver helper` if arm
         - select `SDHCI OF support for the Synopsys DWC MSHC` if rk
     - select `SDHCI support for the BCM2835 & iProc SD/MMC Controller` if rpi
+    - select `Qualcomm SDHCI Controller Support` if qcom, depending on `MMC_SDHCI_PLTFM`
     - select `Synopsys DesignWare Memory Card Interface` if rk
       - select `Rockchip specific extensions for Synopsys DW Memory Card Interface`
-    - select `Qualcomm SDHCI Controller Support` if qcom, depending on `MMC_SDHCI_PLTFM`
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `Universal Flash Storage Controller` if needed, depending on `SCSI`
@@ -681,7 +680,7 @@ Kernel defconfig
     - select `MediaTek SCP` if mtk
     - select `Qualcomm SMEM Glink driver` if qcom
     - select `Qualcomm Shared Memory Driver` if qcom modem
-  - select `SoundWire support` if needed
+  - select `SoundWire support` if needed, depending on `SND_SOC`
     - select `AMD SoundWire Manager driver` if amd
     - select `Intel SoundWire Master driver` if intel
     - select `Qualcomm SoundWire Master driver` if qcom
@@ -725,7 +724,7 @@ Kernel defconfig
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support`
     - select `Accelerometers`
-      - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s)
+      - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s), depending on `HID_SENSOR_HUB`
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
       - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if sc7180
