@@ -615,8 +615,10 @@ GPU Benchmarks
       result
   - `globalSize` is scaled by `numCUs` and `maxWGSize`
 
-## Unity Boat Attack
+## Unity: Boat Attack
 
+- <https://github.com/Unity-Technologies/BoatAttack>
 - adb
-  - `adb shell am start -n com.UnityTechnologies.BoatAttack/com.unity3d.player.UnityPlayerActivity`
+  - `adb shell am start --windowingMode 1 -n com.UnityTechnologies.BoatAttack/com.unity3d.player.UnityPlayerActivity`
+    - optional `-e unity \"-quality:hq\"`
   - `adb shell am force-stop com.UnityTechnologies.BoatAttack`
