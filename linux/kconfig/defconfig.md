@@ -233,7 +233,8 @@ Kernel defconfig
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
-      - select `Realtek 8169/8168/8101/8125 ethernet support` if rk3568
+      - select `Realtek devices` if rk3568
+        - select `Realtek 8169/8168/8101/8125 ethernet support`
       - select `STMicroelectronics devices` if rk
         - select `STMicroelectronics Multi-Gigabit Ethernet driver`
     - select `PHY Device support and infrastructure` if rk
@@ -286,8 +287,7 @@ Kernel defconfig
           - select `QCOM GENI Serial Console support`
     - select `Serial device bus` if needed
     - select `Virtio console` if desired
-    - select `Hardware Random Number Generator Core support` if needed
-      - deselect all but the needed drivers
+    - deselect `Hardware Random Number Generator Core support` if not needed
     - select `TPM Hardware Support` if needed (for luks, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
@@ -317,7 +317,7 @@ Kernel defconfig
     - select `Qualcomm GENI based SPI controller` if qcom
     - select `Rockchip SPI controller driver` if rk
     - select `Rockchip Serial Flash Controller (SFC)` if rk
-  - select `SPMI support` if arm
+  - select `SPMI support` if needed
     - select `Mediatek SPMI Controller (PMIC Arbiter)` if mtk
     - select `Qualcomm MSM SPMI Controller (PMIC Arbiter)` if qcom
   - select `Pin controllers`
@@ -355,7 +355,6 @@ Kernel defconfig
     - select `AMD Family 10h+ temperature sensor` if amd
     - select `Dell laptop SMM BIOS hwmon driver` if dell
     - select `Intel Core/Core2/Atom temperature sensor` if intel
-    - select `PWM fan` if rk3588
     - select `Raspberry Pi voltage monitor` if rpi
     - select `SPD5118 Compliant Temperature Sensors` if needed (for ddr5)
   - select `Thermal drivers`
@@ -456,7 +455,7 @@ Kernel defconfig
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk3588
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
-        - select `Generic PWM based Backlight Driver` if arm, depending on `PWM`
+        - select `Generic PWM based Backlight Driver` if needed, depending on `PWM`
   - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
       - deselect `Support old ALSA API`
@@ -528,7 +527,7 @@ Kernel defconfig
         - select `Nintendo Joy-Con and Pro Controller support`
         - select `Wacom Intuos/Graphire tablet support (USB)`
         - select `HID Sensors framework support`
-      - select `I2C HID support`
+      - select `I2C HID support` if needed
         - select `HID over I2C transport layer ACPI driver` if x86 (for I2C touchpads)
         - select `HID over I2C transport layer Open Firmware driver` if arm
         - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
@@ -556,7 +555,7 @@ Kernel defconfig
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk3588
         - select `Fairchild FUSB302 Type-C chip driver`
-      - select `USB Type-C Connector System Software Interface driver`
+      - select `USB Type-C Connector System Software Interface driver` if needed
         - select `UCSI ACPI Interface Driver` if x86
         - select `UCSI Qualcomm PMIC GLINK Interface Driver` if qcom x1, depending on `QCOM_PMIC_GLINK`
         - select `UCSI Driver for ChromeOS EC` if cros
@@ -584,7 +583,7 @@ Kernel defconfig
   - select `LED Support`
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
-    - select `PWM driven LED Support` if arm, depending on `PWM`
+    - select `PWM driven LED Support` if needed, depending on `PWM`
     - select `LED support for flash module inside Qualcomm Technologies, Inc. PMIC` if qcom, depending on `LEDS_CLASS_FLASH`
     - select `LED support for Qualcomm LPG` if qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
@@ -653,7 +652,7 @@ Kernel defconfig
       - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if qcom x1
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
-  - select `Mailbox Hardware Support` if arm
+  - select `Mailbox Hardware Support` if needed
     - select `BCM2835 Mailbox` if rpi
     - select `Qualcomm APCS IPC driver` if sc7180
     - select `MediaTek ADSP Mailbox Controller` if mtk
@@ -662,21 +661,21 @@ Kernel defconfig
     - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `AMD IOMMU support` if amd
+    - select `ARM Ltd. System MMU (SMMU) Support` if qcom
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588 or mt8196
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
     - select `Rockchip IOMMU Support` if rk
-    - select `ARM Ltd. System MMU (SMMU) Support` if qcom
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588 or mt8196
     - select `MediaTek IOMMU Support` if mt8186/mt8195
     - select `Virtio IOMMU driver` if desired
-  - select `Remoteproc drivers` if arm
+  - select `Remoteproc drivers` if needed
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
       - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if sc7180
       - select `Qualcomm Hexagon v5 Peripheral Authentication Service support` if qcom x1
       - select `Qualcomm sysmon driver` if qcom modem
       - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
-  - select `Rpmsg drivers` if arm
+  - select `Rpmsg drivers` if needed
     - select `MediaTek SCP` if mtk
     - select `Qualcomm SMEM Glink driver` if qcom
     - select `Qualcomm Shared Memory Driver` if qcom modem
@@ -718,11 +717,11 @@ Kernel defconfig
     - select `Simple Ondemand`
     - select `Performance`
     - select `MEDIATEK CCI DEVFREQ Driver` if mt8186
-    - select `DEVFREQ-Event device Support`
-      - select `ROCKCHIP DFI DEVFREQ event Driver` if rk
-  - select `External Connector Class (extcon) support` if arm
+    - select `DEVFREQ-Event device Support` if rk
+      - select `ROCKCHIP DFI DEVFREQ event Driver`
+  - select `External Connector Class (extcon) support` if needed
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
-  - select `Industrial I/O support`
+  - select `Industrial I/O support` if needed
     - select `Accelerometers`
       - select `HID Accelerometers 3D` if needed (tablets, 2-in-1s), depending on `HID_SENSOR_HUB`
     - select `Analog to digital converters`
@@ -778,7 +777,7 @@ Kernel defconfig
     - select `QCOM QFPROM Support` if qcom
     - select `SPMI SDAM Support` if qcom x1
     - select `Rockchip OTP controller support` if rk3588
-  - select `Trusted Execution Environment support`
+  - select `Trusted Execution Environment support` if needed
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
   - select `SLIMbus support` if qcom and `SND`
