@@ -616,6 +616,7 @@ PC
 - AMD Radeon
   - mid-end: $200 ~ $400
     - 6600, 6600 XT
+  - Vendors: sapphire > powercolor > xfx
 - TDP
   - mid-end: 160W - 200W
 - pcie card sizes
@@ -678,9 +679,11 @@ PC
   - RTX 4060 Ti,      Ada,        34 SMs, 160W
   - RTX 5060,         Blackwell,  30 SMs, 145W
   - RTX 5050,         Blackwell,  20 SMs, 130W
-  - RTX 4060,         Ada,        24 SMs, 115W
   - RX 7600 XT,       RDNA3,      32 CUs, 190W
+  - RTX 4060,         Ada,        24 SMs, 115W
+  - Arc B580,         Xe2,        20 EUs, 190W
   - RX 7600,          RDNA3,      32 CUs, 165W
+  - Arc A580,         Xe,         24 EUs, 175W
 
 ## Example
 
