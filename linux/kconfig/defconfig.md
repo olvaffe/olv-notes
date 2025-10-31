@@ -793,18 +793,21 @@ Kernel defconfig
 ## Config: Post-Device Drivers
 
 - select `File systems`
-  - select `The Extended 4 (ext4) filesystem`
+  - select `The Extended 4 (ext4) filesystem` if desired
     - select `Ext4 POSIX Access Control Lists` (for systemd)
     - select `Ext4 Security Labels` (for pacman)
   - select `Btrfs filesystem support` if desired
     - select `Btrfs POSIX Access Control Lists`
   - select `F2FS filesystem support` if desired
+    - select `F2FS extended attributes`
+      - select `F2FS Security Labels`
   - deselect `Dnotify support`
   - select `Filesystem wide access notification`
   - select `Quota support` if desired
   - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
   - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
+    - select `Virtio Filesystem` if desired
   - select `Overlay filesystem support` if desired
   - select `CD-ROM/DVD Filesystems` if desired
     - select `ISO 9660 CDROM file system support`
@@ -819,14 +822,26 @@ Kernel defconfig
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
+      - select `Use 64-bit ino_t by default in tmpfs`
     - select `EFI Variable filesystem` if uefi, depending on `EFI`
   - select `Miscellaneous filesystems`
     - select `SquashFS 4.0 - Squashed file system support` if desired
+      - select `Squashfs XATTR support`
+      - select `Include support for XZ compressed file systems`
+      - select `Include support for ZSTD compressed file systems`
     - select `Persistent store support` if desired
       - select `Log kernel console messages`
       - select `Log panic/oops to a RAM buffer`
     - select `EROFS filesystem support` if desired
-  - select `Native language support` if `VFAT_FS`
+  - select `Network File Systems`
+    - select `NFS client support` if desired
+      - select `NFS client support for NFS version 4`
+    - select `NFS server support` if desired
+      - select `NFS server support for NFS version 4`
+    - select `SMB3 and CIFS support (advanced network filesystem)` if desired
+      - select `CIFS extended attributes`
+    - select `SMB3 server support` if desired
+  - select `Native language support` if desired (for vfat, ntfs, cifs, iso, etc.)
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`

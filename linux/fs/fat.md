@@ -9,17 +9,21 @@ Kernel FAT
 - long filenames
   - limited to 255 characters
   - encoded in utf-16
-- configs
-  - `CONFIG_FAT_DEFAULT_CODEPAGE` defaults to 437
-  - `CONFIG_FAT_DEFAULT_IOCHARSET` defaults to `iso8859-1`
-  - `CONFIG_FAT_DEFAULT_UTF8` should be set
 - mount options
-  - `iocharset` is for long filenames
-    - `sbi->nls_io = load_nls(sbi->options.iocharset)`
   - `codepage` is for short filenames
+    - default to `CONFIG_FAT_DEFAULT_CODEPAGE` (437)
     - `sbi->nls_disk = load_nls("cp%d")`
-  - `utf8`
-  - `uni_xlate`
+    - it converts short filenames between codepage and utf-16, such that short
+      filenames can be handled as long filenames
+  - `iocharset` is for vfs representation
+    - default to `CONFIG_FAT_DEFAULT_IOCHARSET` (`iso8859-1`)
+    - `sbi->nls_io = load_nls(sbi->options.iocharset)`
+    - it converts filenames between iocharset and utf-16, such that vfs sees
+      iocharset instead of utf-16
+  - `utf8` hijacks iocharset and utf-16 conversion
+    - default to `CONFIG_FAT_DEFAULT_UTF8` (it should be set)
+    - it hijacks the conversion such that vfs sees utf-8 instead of iocharset
+      - iocharset is still used internally for case-insensitive cmp
 - `fat_readdir`
   - `fat_parse_long` reads the utf-16 long filename from the disk
     - `fat16_towchar` is `memcpy` unless endian issue
