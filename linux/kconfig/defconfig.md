@@ -45,6 +45,21 @@ Kernel defconfig
   - select `Timer frequency (1000 HZ)` if desired
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
+- select `Mitigations for CPU vulnerabilities` if x86
+  - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
+- select `Power management and ACPI options` if x86
+  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
+  - select `ACPI (Advanced Configuration and Power Interface) Support`
+    - select `ACPI Time and Alarm (TAD) Device Support` if needed
+    - select `Processor Aggregator` if needed
+  - select `CPU Frequency scaling`
+    - select `CPU Frequency scaling`
+      - select `AMD Processor P-State driver` if amd
+        - select `AMD Processor P-State default mode` if cros (guybrush requires 2)
+      - select `ACPI Processor P-States driver` if amd
+  - select `Cpuidle Driver for Intel Processors` if intel
+- select `Binary Emulations` if x86
+  - select `IA32 Emulation`
 - select `Platform selection` if arm
   - select `Broadcom SoC Support` if rpi
     - select `Broadcom BCM2835 family`
@@ -59,19 +74,6 @@ Kernel defconfig
   - select `Default kernel command string` if desired
     - select `Kernel command line type (Always use the default kernel command string)` if desired
   - deselect `UEFI runtime support` if not uefi
-- select `Mitigations for CPU vulnerabilities` if x86
-  - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
-- select `Power management and ACPI options` if x86
-  - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
-  - select `ACPI (Advanced Configuration and Power Interface) Support`
-    - select `ACPI Time and Alarm (TAD) Device Support` if needed
-    - select `Processor Aggregator` if needed
-  - select `CPU Frequency scaling`
-    - select `CPU Frequency scaling`
-      - select `AMD Processor P-State driver` if amd
-        - select `AMD Processor P-State default mode` if cros (guybrush requires 2)
-      - select `ACPI Processor P-States driver` if amd
-  - select `Cpuidle Driver for Intel Processors` if intel
 - select `Power management options` if arm
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`
 - select `CPU Power Management` if arm
@@ -87,9 +89,7 @@ Kernel defconfig
       - select `QCOM CPUFreq HW driver` if sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
-- select `Binary Emulations` if x86
-  - select `IA32 Emulation`
-- select `Virtualization` if desired
+- select `Virtualization` if kvm
   - select `Kernel-based Virtual Machine (KVM) support`
   - select `KVM for Intel processors support` if intel
   - select `KVM for AMD processors support` if amd
@@ -143,7 +143,7 @@ Kernel defconfig
   - select `Wireless` if needed
     - select `cfg80211 - wireless configuration API`
       - select `Generic IEEE 802.11 Networking Stack (mac80211)`
-  - select `RF switch subsystem support` if desired
+  - select `RF switch subsystem support` if needed
 
 ## Config: Device Drivers
 
