@@ -667,23 +667,27 @@ PC
   - RTX 4060,         Ada,        24 SMs, 115W
 - sub-75W desktop gpus
   - <https://microsounds.github.io/notes/low-profile-gpus-for-sff-pcs.htm>
-  - RX 7400,          RDNA3,      28 CUs, 55W
-  - RTX 3050 6GB,     Ampere,     18 SMs, 70W
-  - GTX 1650,         Turing,     14 SMs, 75W
-  - RX 6400,          RDNA2,      12 CUs, 53W
+  - RX 7400,          RDNA3,      8 GB,  28 CUs, 55W
+  - RTX 3050,         Ampere,     6 GB,  18 SMs, 70W
+  - GTX 1650,         Turing,     4 GB,  14 SMs, 75W
+  - RX 6400,          RDNA2,      4 GB,  12 CUs, 53W
 - sub-200W desktop gpus
   - <https://gpuprices.ai/comparison>
-  - RTX 4070,         Ada,        46 SMs, 200W
-  - RTX 5060 Ti,      Blackwell,  36 SMs, 180W
-  - RX 9060 XT,       RDNA4,      32 CUs, 160W
-  - RTX 4060 Ti,      Ada,        34 SMs, 160W
-  - RTX 5060,         Blackwell,  30 SMs, 145W
-  - RTX 5050,         Blackwell,  20 SMs, 130W
-  - RX 7600 XT,       RDNA3,      32 CUs, 190W
-  - RTX 4060,         Ada,        24 SMs, 115W
-  - Arc B580,         Xe2,        20 EUs, 190W
-  - RX 7600,          RDNA3,      32 CUs, 165W
-  - Arc A580,         Xe,         24 EUs, 175W
+  - RTX 4070,         Ada,        12 GB, 46 SMs, 200W
+  - RTX 5060 Ti,      Blackwell,  16 GB, 36 SMs, 180W, $420
+  - RX 9060 XT,       RDNA4,      16 GB, 32 CUs, 160W, $360
+  - RTX 4060 Ti,      Ada,        16 GB, 34 SMs, 160W
+  - RTX 5060,         Blackwell,  8 GB,  30 SMs, 145W, $300
+  - RX 7600 XT,       RDNA3,      16 GB, 32 CUs, 190W
+  - RTX 4060,         Ada,        8 GB,  24 SMs, 115W
+  - Arc B580,         Xe2,        12 GB, 20 EUs, 190W, $250
+  - RTX 5050,         Blackwell,  8 GB,  20 SMs, 130W, $250
+  - RX 7600,          RDNA3,      8 GB,  32 CUs, 165W
+  - Arc A580,         Xe,         8 GB,  24 EUs, 175W
+- used desktop gpus
+  - <https://bestvaluegpu.com/>
+  - RX 6600 XT,       RDNA2,      8 GB,  32 CUs, 160W, $150
+  - Arc A580,         Xe,         8 GB,  24 EUs, 175W, $130
 
 ## Example
 
@@ -692,9 +696,9 @@ PC
 - <https://pcpartpicker.com/list/DcdFRV>
   - CPU: Ryzen 5 9600X, $200
   - Cooler: Noctua NH-L12S, $75
-  - MB: Asus ROG STRIX B650E-I, $200
-  - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $140
-  - M2: Samsung 990 Pro 2TB, $160
+  - MB: Asus ROG STRIX B650E-I, $180
+  - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $220
+  - M2: Samsung 990 Pro 2TB, $175
   - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
     - comparing to 6600 XT, 60%+ rast, 90%+ rt
   - Case: Fractal Design Ridge PCIe 4.0, $145
