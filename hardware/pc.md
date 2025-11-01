@@ -702,6 +702,8 @@ PC
   - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
     - comparing to 6600 XT, 60%+ rast, 90%+ rt
   - Case: Fractal Design Ridge PCIe 4.0, $145
+    - cpu cooler clearance: 70
+    - gpu clearance: 325x125x57
   - PSU: Corsair SF750 750W, $160
   - Top Fans: Noctua NF-A8, $18 x2
   - Bottom Fans: Noctua NF-A6x25, $17 x2
