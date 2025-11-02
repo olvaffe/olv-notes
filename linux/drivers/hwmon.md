@@ -37,11 +37,35 @@ Kernel hwmon
   - `hwmon_temp_rated_max` rated highest temp
   - `hwmon_temp_beep` beep
 - `hwmon_in`
+  - `hwmon_in_enable` enable/disable sensor
+  - `hwmon_in_input` voltage in mV
+  - `hwmon_in_{lcrit,min,max,crit}` low/high critical/operational voltage in mV
+  - `hwmon_in_average` average voltage in mV
+  - `hwmon_in_{lowest,highest}` historical low/high voltage
+  - `hwmon_in_reset_history` resets history
+  - `hwmon_in_label` suggested name/label for the sensor
+  - `hwmon_in_*_alarm` low/high critical/operational voltage detected
+  - `hwmon_in_rated_{min,max}` rated lowest/highest voltage
+  - `hwmon_in_beep` beep
+  - `hwmon_in_fault` hard failure detected (e.g., shorted)
 - `hwmon_curr`
+  - `hwmon_curr_enable` enable/disable sensor
+  - `hwmon_curr_input` current in mA
 - `hwmon_power`
+  - `hwmon_power_enable` enable/disable sensor
+  - `hwmon_power_input` instantaneous power in uW
 - `hwmon_energy`
+  - `hwmon_energy_enable` enable/disable sensor
+  - `hwmon_energy_input` cumulative energy in uJ
 - `hwmon_energy64`
 - `hwmon_humidity`
 - `hwmon_fan`
+  - `hwmon_fan_enable` enable/disable sensor
+  - `hwmon_fan_input` fan speed in rpm
 - `hwmon_pwm`
+  - `hwmon_pwm_input` 0 for 0% and 255 for 100%
+  - `hwmon_pwm_enable` enable/disable pwm control (0: full, 1: manual, 2: auto)
+  - `hwmon_pwm_mode` pwm mode (0: dc, 1: pwm)
+  - `hwmon_pwm_freq` pwm freq in hz
+  - `hwmon_pwm_auto_channels_temp`
 - `hwmon_intrusion`
