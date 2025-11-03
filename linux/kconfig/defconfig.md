@@ -232,6 +232,7 @@ Kernel defconfig
       - select `Broadcom devices` if rpi
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
+        - select `Intel(R) PRO/1000 PCI-Express Gigabit Ethernet support`
         - select `Intel(R) Ethernet Controller I225-LM/I225-V support`
       - select `Realtek devices` if rk3568
         - select `Realtek 8169/8168/8101/8125 ethernet support`
@@ -272,6 +273,12 @@ Kernel defconfig
         - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
         - select `Windows-compatible SoC Button Array` if needed, depending on `KEYBOARD_GPIO`
+      - select `Synaptics RMI4 bus support` if needed
+        - select `RMI4 SMB Support`
+        - select `RMI4 Function 03 (PS2 Guest)`
+        - select `RMI4 Function 11 (2D pointing)`
+        - select `RMI4 Function 30 (GPIO LED)`
+        - select `RMI4 Function 34 (Device reflash)`
   - select `Character devices`
     - select `Enable TTY`
       - deselect `Legacy (BSD) PTY support`
@@ -380,6 +387,7 @@ Kernel defconfig
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `ARM SBSA Generic Watchdog` if qcom x1
     - select `QCOM watchdog` if sc7180
+    - select `Intel OC Watchdog` if needed
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
@@ -409,8 +417,8 @@ Kernel defconfig
       - select `Cameras/video grabbers support`
       - select `Platform-specific devices` if arm
     - select `Media drivers`
-      - select `Media USB Adapters`, depending on `USB`
-        - select `USB Video Class (UVC)` if needed
+      - select `Media USB Adapters` if needed, depending on `USB`
+        - select `USB Video Class (UVC)`
       - select `Media platform devices` if arm
         - select `V4L platform devices`
         - select `Memory-to-memory multimedia devices`
@@ -630,13 +638,14 @@ Kernel defconfig
     - select `WMI`
     - select `AMD SoC PMC driver` if amd
     - select `Dell X86 Platform Specific Device Drivers` if dell
+    - select `Intel PMC Core driver` if intel
+    - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
+    - select `Intel WMI thunderbolt force power driver` if intel
+    - select `Intel HID Event` if intel
+    - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Lenovo IdeaPad Laptop Extras` if ideapad
     - select `ThinkPad ACPI Laptop Extras` if thinkpad
     - select `Lenovo WMI-based systems management driver` if thinkpad
-    - select `Intel PMC Core driver` if intel
-    - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
-    - select `Intel HID Event` if intel
-    - select `Intel Vendor Specific Extended Capabilities Driver` if intel
     - select `Intel SCU platform driver` if intel
   - select `Common Clock Framework`
     - select `Broadcom BCM2835 clock support` if rpi
