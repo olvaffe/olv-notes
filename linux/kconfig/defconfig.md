@@ -572,6 +572,7 @@ Kernel defconfig
       - select `USB Type-C Alternate Mode drivers`
         - select `DisplayPort Alternate Mode driver`
     - select `USB Role Switch Support`
+      - select `Intel XHCI USB Role Switch` if needed
   - select `MMC/SD/SDIO card support` if needed
     - select `Secure Digital Host Controller Interface support` if needed
       - select `SDHCI support on PCI bus` if x86
