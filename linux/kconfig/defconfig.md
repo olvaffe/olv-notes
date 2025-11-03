@@ -72,7 +72,7 @@ Kernel defconfig
   - select `Kernel support for 32-bit EL0`
 - select `Boot options` if arm
   - select `Default kernel command string` if desired
-    - select `Kernel command line type (Always use the default kernel command string)` if desired
+    - select `Kernel command line type (Always use the default kernel command string)` if desired (hangs mt8196)
   - deselect `UEFI runtime support` if not uefi
 - select `Power management options` if arm
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`
@@ -396,7 +396,8 @@ Kernel defconfig
   - select `Multifunction device drivers`
     - select `ChromeOS Embedded Controller multifunction device` if cros, depending on `CROS_EC`
     - select `Intel Low Power Subsystem support in PCI mode` if intel
-    - select `MediaTek MT6397 PMIC Support` if mtk
+    - select `MediaTek MT6397 PMIC Support` if mtk before mt8196
+    - select `MediaTek SPMI PMICs` if mt8196
     - select `Qualcomm SPMI PMICs` if qcom
     - select `Rockchip RK805/RK808/RK809/RK816/RK817/RK818 Power Management Chip` if rk3568
     - select `Rockchip RK806 Power Management Chip` if rk3588
@@ -405,11 +406,15 @@ Kernel defconfig
     - select `Fairchild FAN53555 Regulator` if rk3588
     - select `ChromeOS EC regulators` if cros
     - select `GPIO regulator support` if rpi
-    - if mtk
+    - if mtk before mt8196
       - select `MediaTek MT6315 PMIC`
       - select `MediaTek MT6358 PMIC`
       - select `MediaTek MT6359 PMIC`
-      - select `MediaTek DVFSRC regulator driver`
+    - if mt8196
+      - select `MT6316 SPMI PMIC regulator driver`
+      - select `MT6363 SPMI PMIC regulator driver`
+      - select `MT6373 SPMI PMIC regulator driver`
+    - select `MediaTek DVFSRC regulator driver` if mtk
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
   - select `Multimedia support` if needed
