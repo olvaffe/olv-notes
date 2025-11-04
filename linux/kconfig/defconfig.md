@@ -35,7 +35,6 @@ Kernel defconfig
   - select `Symmetric multi-processing support`
   - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP` or `HYPERVISOR_GUEST`
   - deselect `Enable MPS table`
-  - deselect `Support for extended (non-PC) x86 platforms`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
