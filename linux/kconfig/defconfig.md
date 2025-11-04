@@ -71,7 +71,7 @@ Kernel defconfig
   - select `Kernel support for 32-bit EL0`
 - select `Boot options` if arm
   - select `Default kernel command string` if desired
-    - select `Kernel command line type (Always use the default kernel command string)` if desired (hangs mt8196)
+    - select `Kernel command line type (Always use the default kernel command string)` if desired
   - deselect `UEFI runtime support` if not uefi
 - select `Power management options` if arm
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`, depending on `CPU_FREQ`

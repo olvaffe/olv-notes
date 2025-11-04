@@ -15,7 +15,7 @@ CONFIG_BLK_DEV_INITRD=y
 CONFIG_PERF_EVENTS=y
 CONFIG_ARCH_MEDIATEK=y
 CONFIG_COMPAT=y
-CONFIG_CMDLINE="console=ttyS0,115200 console=tty0 root=PARTLABEL=arch-root rootwait"
+CONFIG_CMDLINE="console=ttyS0,115200 console=tty0 root=PARTLABEL=arch-root rootwait arm64.nomte"
 CONFIG_CMDLINE_FORCE=y
 # CONFIG_EFI is not set
 CONFIG_ENERGY_MODEL=y
