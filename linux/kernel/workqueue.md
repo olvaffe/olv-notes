@@ -78,3 +78,48 @@ Linux workqueue
   - the work function is not changed,
   - the item is not queued to another queue, and
   - the item is not re-initialized
+
+## `delayed_work`
+
+- a `delayed_work` is a work with a timer
+- `INIT_DELAYED_WORK` inits a delayed work with the specified fn
+  - `INIT_WORK` inits `work` with the specified fn
+  - `__timer_init` inits `timer` with `delayed_work_timer_fn`
+- to queue a delayed work,
+  - `queue_delayed_work`
+    - `WORK_STRUCT_PENDING_BIT` means the work is pending execution
+      - that is, it is queued and is not disabled
+    - if the work is already pending,
+      - if the work is enabled, nop
+      - if the work is disabled, `clear_pending_if_disabled` clears the bit
+    - if the work is not pending,
+      - the bit is set
+      - `__queue_delayed_work` queues the delayed work
+        - if there is delay, `add_timer_global` starts the timer
+        - if there is no delay, `__queue_work` queues the work
+  - `schedule_delayed_work` is `queue_delayed_work` on `system_percpu_wq`
+  - `mod_delayed_work`
+    - `work_grab_pending` steals the work for modification
+      - if there is a timer, `timer_delete` stops the timer
+    - if not disabled, `__queue_delayed_work` queues the delayed work
+- to flush (wait for completion if queued) a delayed work,
+  - `flush_delayed_work`
+    - `timer_delete_sync` stops the timer
+      - it returns true only if the timer was started
+      - `_sync` means, if the timer was fired, block until the handler returns
+    - if the timer was started, `__queue_work` queues the work now
+    - `flush_work` waits for work completion
+- to cancel a delayed work,
+  - `cancel_delayed_work`
+    - `work_grab_pending` steals the work for modification
+      - if there is a timer, `timer_delete` stops the timer
+    - no queuing the work back
+  - `cancel_delayed_work_sync`
+    - it cancels and flushes the work
+- to enable/disable a delayed work,
+  - `disable_delayed_work` is `cancel_delayed_work` plus incrementing disable
+    count
+  - `disable_delayed_work_sync` is `cancel_delayed_work_sync` plus
+    incrementing disable count
+  - `enable_delayed_work` decrements disable count (only if the work is
+    already disabled)
