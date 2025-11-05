@@ -7,12 +7,12 @@ fdisk
   - `g` to use GPT
     - by default, fdisk reserves the first and the last 1MB of the disk for
       primary and secondary GPT tables
-  - partition 1: 1GB, ESP
-    - `mkfs.vfat -F32` to force FAT32
+  - partition 1: 2GB, ESP
+    - `mkfs.fat -F32` to force FAT32
       - otherwise, it picks one of FAT12, FAT16, or FAT32
     - FAT32 is the only required fs by uefi
   - partition 2: rest of the disk, Linux
-    - use two partitions if want to separate root and home
+    - use btrfs or two partitions if want to separate root and home
   - no swap
     - use zram instead
 - current disk usage on a small laptop
@@ -44,12 +44,14 @@ fdisk
       - e.g., the fw can be uboot spl
     - the fw loads BL31 and BL33 and jumps to BL31/BL33
       - e.g., BL31 can be atf and BL33 can be uboot proper
+      - there is optional BL33 which can be op-tee
     - uboot proper can boot to edk2, or more commonly, boot to kernel directly
 - edk2 finds the bootloader on ESP
   - bootloader finds its config files on ESP
     - e.g., `systemd-boot` finds `/loader/loader.conf` on ESP
-  - bootloader finds bootloader entries (`/loader/entries/*.conf`) on ESP and,
-    if exists, XBOOTLDR
+  - bootloader finds bootloader entries on ESP and, if exists, XBOOTLDR
+    - type #1 boot entries are defined by `/loader/entries/*.conf`
+    - type #2 boot entries are ukis under `/EFI/Linux/*.efi`
   - bootloader entries refer to kernel/initramfs files using absolute paths on
     the same partitions
     - that is, a bootloader entry and its associated kernel/initramfs must be on
@@ -72,7 +74,7 @@ fdisk
         - remove `size` as well for the last partition
       - remove the rest and let sfdisk derive them
 - partition cloning
-  - the old nad new partitions should have the same size
+  - the old and new partitions should have the same size
     - if the size grows, follow the cloning by `resize2fs /dev/sdb4`
   - `cp /dev/sda4 /dev/sdb4` copies the entire partition
   - `e2image -arp /dev/sda4 /dev/sdb4` copies ext partitions
@@ -144,7 +146,7 @@ fdisk
   - partition 3: sector 32768, size 1GB, esp, fat32
     - for `/boot/firmware` on broadcom
     - label `RASPIFIRM`
-  - partition 4: size 1GB, xbootldr, fat32
+  - partition 4: size 2GB, xbootldr, fat32
     - for `/boot`
     - label `RASPIBOOT`
   - partition 5: rest, ext4
@@ -267,11 +269,11 @@ fdisk
     - FAT32 requires a minimum size of 260MB on 4KB-sector disks (and a
       minimum size of 36MB on 512B-sector disks)
       - because it requires a minimum of 65527 clusters plus some for metadata
-    - `mkfs.vfat -F 32 -S 4096` warns when the partition size is
+    - `mkfs.fat -F 32 -S 4096` warns when the partition size is
       `65695 * 4096` or less
-    - `mkfs.vfat -F 32 -S 4096 -a -f 1 -h 0 -R 2 -s 1` warns when the
+    - `mkfs.fat -F 32 -S 4096 -a -f 1 -h 0 -R 2 -s 1` warns when the
       partition size is `65590 * 4096` or less
-    - `mkfs.vfat -F 32` warns when the partition size is `66591 * 512` or less
+    - `mkfs.fat -F 32` warns when the partition size is `66591 * 512` or less
 - MSR
   - 16MB
   - each GPT disk should have a MSR partition
@@ -280,6 +282,10 @@ fdisk
   - must set preserved bit
 - Windows partition
   - minimum size is 20GB
+    - for win11, 128GB
+      - <https://www.microsoft.com/en-us/windows/windows-11-specifications>
+      - 64GB for installation
+      - double that for updates
   - must be NTFS
   - must be on a GPT disk
 - Recovery tools partition

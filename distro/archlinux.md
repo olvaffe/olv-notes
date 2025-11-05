@@ -177,6 +177,16 @@ Arch Linux
     - uncomment the `[multilib]` section in `/etc/pacman.conf`
     - `lib32-{mesa,libdrm,libunwind,libx11}`
 
+## Tidy Up an Existing Installation
+
+- `pacman -Qeq` to get explicitly packages
+- `pacman -D --asdeps` to mark them deps
+- `pacman -D --asexplicit` to mark desired packages explicit
+- `pacman -Qttdq` to get packages to remove
+- to find orphaned files,
+  - `pacman -Ql $(pacman -Qq) | cut -d' ' -f2- | sort | uniq > pacman.list`
+  - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
+
 ## Bootstrap
 
 - the bootstrap tarball, `archlinux-bootstrap-XXX.tar.gz`, is for chroot from
@@ -191,69 +201,6 @@ Arch Linux
 - manually
   - use `pacstrap` from `arch-install-scripts`
     - <https://github.com/archlinux/arch-install-scripts>
-
-## Disk Image
-
-- <https://wiki.archlinux.org/title/Install_Arch_Linux_on_a_removable_medium>
-- bootstrap a disk image
-  - `fallocate -l 4G arch.img`
-  - `fdisk arch.img`
-    - esp, cros kernel a/b, arch
-    - label esp and arch
-  - `sudo losetup -f -P arch.img`
-  - `sudo mkfs.vfat -F32 /dev/loop0p1`
-  - `sudo mkfs.f2fs -O extra_attr,compression /dev/loop0p4`
-  - `mkdir arch`
-  - `sudo mount /dev/loop0p4 arch`
-  - `sudo tar -xf archlinux-bootstrap-x86_64.tar.gz -C arch --strip 1`
-  - `sudo rm arch/pkglist.x86_64.txt arch/version`
-  - `sudo vim arch/etc/pacman.d/mirrorlist`
-  - `sudo umount arch`
-  - `rmdir arch`
-  - `losetup -D`
-- install packages
-  - `sudo systemd-nspawn -i arch.img --private-users=identity`
-    - it is smart enough to mount esp and root automatically
-  - `pacman-key --init`
-  - `pacman-key --populate`
-  - `pacman -R arch-install-scripts`
-  - `pacman -Syu linux linux-firmware dosfstools f2fs-tools zram-generator \
-                 iwd sudo vim man-db base-devel git sway polkit i3status \
-                 swayidle swaylock mako alacritty noto-fonts wayland-utils \
-                 mesa mesa-utils vulkan-tools`
-  - `pacman -Scc`
-- setup
-  - `passwd`
-  - `vim arch/etc/fstab`
-  - `vim /etc/locale.gen`
-  - `locale-gen`
-  - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
-  - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
-  - `echo usb > /etc/hostname`
-  - `echo -e '[zram0]' > /etc/systemd/zram-generator.conf`
-- create a normal user
-  - `useradd -m -G wheel olv`
-  - `passwd olv`
-  - `visudo`
-    - allow wheel to sudo
-- install bootloader
-  - `bootctl install`
-  - `echo 'default arch.conf' >> /boot/loader/loader.conf`
-  - `vim /boot/loader/entries/arch.conf`
-- update
-  - `pacman -Syu`
-  - `pacman -Scc`
-- if chroot or loop0 is busy, see if pacman's `gpg-agent` is still alive
-
-## Tidy Up an Existing Installation
-
-- `pacman -Qeq` to get explicitly packages
-- `pacman -D --asdeps` to mark them deps
-- `pacman -D --asexplicit` to mark desired packages explicit
-- `pacman -Qttdq` to get packages to remove
-- to find orphaned files,
-  - `pacman -Ql $(pacman -Qq) | cut -d' ' -f2- | sort | uniq > pacman.list`
-  - `find / -xdev -path "/home/*" -prune -o -print | sort > find.list`
 
 ## Pacman
 
@@ -284,66 +231,6 @@ Arch Linux
   - `pacman -F` queries the sync files database
 - to estimate total installation size
   - `pacman -Qi | grep 'Installed Size' | grep MiB | awk '{s+=$4} END {print s}'`
-
-## `base` package
-
-- archlinux-keyring
-- bash
-- bzip2
-- coreutils (`ls`, `mv`, `echo`, `env`, etc.)
-- file
-- filesystem
-  - directory strucutre (e.g., /root, /usr/bin)
-  - basic links (e.g., /bin to /usr/bin)
-  - some files in /etc (e.g., passwd, group, mtod)
-- findutils (`find`, `xargs`, etc.)
-- gawk
-- gcc-libs (`libgcc_s.so`, `libstdc++.so`, `libatomic.so`, etc.)
-- gettext
-- glibc (C headers and runtime, loader, `ldconfig`, `ldd`, `locale-gen`, etc.)
-- grep
-- gzip
-- iproute2 (`ip`, `ss`, etc.)
-- iputils (`ping`, etc.)
-- licenses
-- pacman
-- pciutils (`lspci`, etc.)
-- procps-ng (`ps`, `top`, `uptime`, `free`, `kill`, etc.)
-- psmisc (`killall`, `pstree`, `fuser`, etc.)
-- sed
-- shadow (`useradd`, `groupadd`, `passwd`, etc.)
-- systemd (`systemctl`, `networkctl`, `udevadm`, etc.)
-- systemd-sysvcompat (`init`, `reboot`, `shutdown`, etc.; all symlinks)
-- tar
-- util-linux (`agetty`, `login`, `dmesg`, `mkfs`, `mount`, etc.)
-- xz
-
-## Big Picture Mode
-
-- `plymouth`
-  - `pacman -S plymouth`
-  - use `plymouth-set-default-theme` to set/get the default theme or list all
-    available themes
-- initramfs
-  - edit `/etc/mkinitcpio.conf` to add `plymouth` before `autodetect` hook
-  - `mkinitcpio -p linux` to regenerate initramfs
-- bootloader
-  - edit `/boot/loader/entries/arch.conf`
-  - add `quiet` such that kernel does not print messages before `plymouth`
-    takes over
-  - add `splash` such that `plymouth` shows the theme
-- kernel
-  - i915 has a "fastboot" mode that is enabled by default since skylake and
-    can be forced elsewhere with `i915.fastboot=1`
-  - amdgpu has a "seamless" mode that is only enabled on DCN3+ (RDNA2+) APU
-- systemd
-  - add `/etc/systemd/system/getty@tty1.service.d/autologin.conf` to override
-    `getty@tty1.service`
-  - `[Service]`
-  - `ExecStart=`
-  - `ExecStart=-/sbin/agetty -o '-p -f -- olv' --noclear --noissue --skip-login %I $TERM`
-- login
-  - `touch ~/.hushlogin` to do a quiet login
 
 ## Kernel
 
@@ -394,3 +281,30 @@ Arch Linux
 - `plymouth` hook
   - it adds `plymouth`, the current theme (returned by
     `plymouth-set-default-theme`), and the runscript
+
+## Big Picture Mode
+
+- `plymouth`
+  - `pacman -S plymouth`
+  - use `plymouth-set-default-theme` to set/get the default theme or list all
+    available themes
+- initramfs
+  - edit `/etc/mkinitcpio.conf` to add `plymouth` before `autodetect` hook
+  - `mkinitcpio -p linux` to regenerate initramfs
+- bootloader
+  - edit `/boot/loader/entries/arch.conf`
+  - add `quiet` such that kernel does not print messages before `plymouth`
+    takes over
+  - add `splash` such that `plymouth` shows the theme
+- kernel
+  - i915 has a "fastboot" mode that is enabled by default since skylake and
+    can be forced elsewhere with `i915.fastboot=1`
+  - amdgpu has a "seamless" mode that is only enabled on DCN3+ (RDNA2+) APU
+- systemd
+  - add `/etc/systemd/system/getty@tty1.service.d/autologin.conf` to override
+    `getty@tty1.service`
+  - `[Service]`
+  - `ExecStart=`
+  - `ExecStart=-/sbin/agetty -o '-p -f -- olv' --noclear --noissue --skip-login %I $TERM`
+- login
+  - `touch ~/.hushlogin` to do a quiet login

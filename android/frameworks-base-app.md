@@ -84,7 +84,7 @@ package
 beagle
 - sudo cp ~/google/mydroid/out/target/product/eee_701/system/app/Firefox.apk /data/app/org.unk.firefox.apk
 - cp mplayer, qxxx.flv
-- mkfs.vfat /dev/mmcblp0p1
+- mkfs.fat /dev/mmcblp0p1
 - mke2fs /dev/mmcblp0p2
 - mmcinit
 - fatload mmc 0 0x80300000 uImage.bin

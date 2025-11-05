@@ -262,7 +262,7 @@ Rockchip SoCs
     - the third partition should be ESP for uboot to consider it bootable
   - `dd if=src.img of=a.img bs=512 skip=64 seek=64 count=16320 conv=notrunc`
   - `dd if=src.img of=a.img bs=512 skip=16384 seek=16384 count=16384 conv=notrunc`
-  - `losetup -fP && mkfs.vfat /dev/loop0p3 && losetup -D`
+  - `losetup -fP && mkfs.fat -F32 /dev/loop0p3 && losetup -D`
     - populate `/extlinux/extlinux.conf`, kernel, rootfs, etc.
 - serial
   - `minicom -D /dev/ttyUSB0 -b 1500000`
