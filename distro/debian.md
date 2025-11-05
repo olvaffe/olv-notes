@@ -81,101 +81,32 @@ Debian
 
 ## Post-Install Setup
 
-- packages
-  - `apt-mark` packages appropriately
-  - boot
-    - `init linux-image-arm64`
-  - base
-    - `sudo vim`
-    - `fdisk dosfstools`
-    - `systemd-zram-generator`
-    - `locales man-db whiptail logrotate`
-  - network
-    - `systemd-resolved`
-    - `iproute2 iputils-ping nftables`
-    - `wireless-regdb wpasupplicant` (or `iwd`)
-    - `ssh`
-  - rpi
-    - `raspi-firmware firmware-brcm80211 bluez-firmware`
-    - remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
-      `/usr/local`, and `/boot/firmware`
-  - gce
-    - `grub-cloud-amd64 linux-image-cloud-amd64`
-    - `google-compute-engine-oslogin google-guest-agent`
-    - `google-cloud-sdk google-compute-engine google-osconfig-agent`
-  - server
-    - `unattended-upgrades auditd msmtp`
-    - `wireguard qrencode`
-    - `podman containers-storage`
-    - `cups sane-utils`
-  - tools
-    - `file git lsof strace`
-    - `pciutils usbutils`
-    - `curl`
 - base setup
   - `dpkg-reconfigure locales tzdata`
   - `systemctl enable --now systemd-networkd systemd-resolved`
-  - `visudo`
-  - `useradd -m olv`
+- rpi
+  - `raspi-firmware firmware-brcm80211 bluez-firmware`
+  - remove locally-installed `*rpi*` and `*raspi*` files under `/etc`,
+    `/usr/local`, and `/boot/firmware`
+- gce
+  - `grub-cloud-amd64 linux-image-cloud-amd64`
+  - `google-compute-engine-oslogin google-guest-agent`
+  - `google-cloud-sdk google-compute-engine google-osconfig-agent`
+- container
+  - `podman containers-storage`
 
-## dpkg and apt internals
+## Tidy Up Packages
 
-- dpkg works with the local package database
-  - `/var/lib/dpkg` is the database
-  - when a `.deb` is installed,
-    - the control info is added to `/var/lib/dpkg/status`
-      - this also adds `Status` field
-    - the metadata are processed and saved to `/var/lib/dpkg/info`
-    - the contents are unpacked to `/`
-  - `dpkg` and `dpkg-*` work with `/var/lib/dpkg`
-- apt works with remote sources
-  - `/var/lib/apt` is the database
-  - package indices from sources are saved to `/var/lib/apt/lists`
-    - only a subset of package control info is included
-  - when a package is installed,
-    - it resolves dependencies based on package indices
-    - it downloads and installs `.deb`
-  - `apt` and `apt-*` work with `/var/lib/apt`
-- interesting control info fields
-  - `Package` is the name
-  - `Version` is the version
-  - `Description` is the description
-  - `Installed-Size` is the installed size
-  - `Essential` specifies whether a package is essential or not
-    - `dpkg -r` refuses to remove essential packages unless `--force-remove-essential`
-  - `Protected` is undocumented
-    - the package may not be installed, but once installed, it is treated as
-      `Essential`
-    - it was renamed from `Important`
-    - there are these `Protected`/`Important` packages
-      - `e2fsprogs`
-      - `grub-efi-amd64-signed`
-      - `init`
-      - `libgcc-s1`
-      - `login`
-  - `Priority`
-    - `required` has ~35 packages for a rootfs that one can chroot into and
-      install more packages
-    - `important` has ~30 packages for a rootfs with minimum admin tools
-      (e.g., init, editor, net)
-    - `standard` has ~40 packages for a rootfs with standard admin tools
-    - `optional` is the rest
-  - inter-relationship fields
-    - `Depends`
-    - `Pre-Depends`
-    - `Recommends`: A recommends B when A is pointless without B for most users
-    - `Suggests`: A suggests B when A is enhanced by B
-    - `Breaks`
-    - `Conflicts`
-    - `Provides`
-    - `Replaces`
-    - `Enhances`
-- a .deb file is an ar-archive
-  - `ar t <pkg>.deb` shows 3 files
-    - `debian-binary` specifies the package format version (2.0)
-    - `control.tar.xz` contains package metadata and install scripts
-    - `data.tar.xz` contains files
-  - `ar x <pkg>.deb` to extracts them
+- `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
+- `apt autoremove --dry-run -o APT::Autoremove::SuggestsImportant=0` to
+  selectively mark packages manual
+  - it ignores packages that are on `Recommends` or `Suggests` by default
+  - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
+  - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
+- `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
+- without marking any package manual, we will end up with a system with only
+  `Essential/Important/Protected` packages and their dependencies/recommends
+  - also packages listed in `NeverAutoRemove` of `/etc/apt/apt.conf.d/01autoremove`
 
 ## APT
 
@@ -229,18 +160,41 @@ Debian
   - `-l` lists installed packages
   - `-S` lists packages who own `<path>`
 
-## Tidy Up Packages
+## Logs
 
-- `apt-mark showmanual | xargs sudo apt-mark auto` to mark everything auto
-- `apt autoremove --dry-run -o APT::Autoremove::SuggestsImportant=0` to
-  selectively mark packages manual
-  - it ignores packages that are on `Recommends` or `Suggests` by default
-  - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
-  - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
-- `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
-- without marking any package manual, we will end up with a system with only
-  `Essential/Important/Protected` packages and their dependencies/recommends
-  - also packages listed in `NeverAutoRemove` of `/etc/apt/apt.conf.d/01autoremove`
+- `update-alternatives` logs to `/var/log/alternatives.log`
+- `apt` logs to `/var/log/apt`
+  - `term.log` is stdout
+  - `history.log` is the package install/remove/upgrade history
+- `dpkg` logs to `/var/log/dpkg.log`
+  - it is low-level than apt
+  - a package change done by `dpkg` will not show up in apt logs
+- `unattended-upgrades` logs to `/var/log/unattended-upgrades`
+  - `unattended-upgrades.log` contains the invocation log (no update, update
+    package X)
+  - `unattended-upgrades-dpkg.log` contains dpkg stdout
+
+## Users and Groups
+
+- <https://salsa.debian.org/debian/base-passwd/-/raw/master/doc/users-and-groups.sgml>
+  - only global static ids
+- `root` is the superuser
+- `daemon` is a legacy user
+  - daemons should run as indivitual users nowadays
+  - legacy daemons that have fs system may run as `daemon.daemon`
+  - legacy daemons that have no fs system may run as `nobody.nogroup`
+- `bin` is a legacy user
+  - in 80's, softwares could be installed and updated as user `bin`
+- `sys` is a legacy user
+  - kernels could be installed and updated as user `sys`
+  - it was obsoleted by `bin` which was also obsoleted
+- `sync` runs `/bin/sync` on login
+  - it allows anyone to sync if `sync` does not have a password
+- `games` is for games to write their high score files
+- `man` is for updating `/var/cache/man` db
+- `lp` is for `/dev/lp*`
+- `mail` is for `/var/mail`
+- more
 
 ## `debootstrap`
 
@@ -278,15 +232,13 @@ Debian
   - `cp /usr/bin/qemu-aarch64-static stable-arm64-chroot`
   - `chroot stable-chroot /qemu-aarch64-static /bin/bash -i`
   - `/debootstrap/debootstrap --second-stage`
-
-## cross-compile
-
-- `apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
-- in chroot, install whatever dependent -dev packages
-- note that some -dev packages in chroot use absolute links
-  - `ls -l /usr/lib/aarch64-linux-gnu | grep ' -> /lib'`
-  - they need to be fixed otherwise the linker can unexpectedly fall back to
-    the static libraries
+- cross-compile
+  - in host, `apt install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu`
+  - in debootstrap chroot, install whatever dependent -dev packages
+  - note that some -dev packages in chroot use absolute links
+    - `ls -l /usr/lib/aarch64-linux-gnu | grep ' -> /lib'`
+    - they need to be fixed otherwise the linker can unexpectedly fall back to
+      the static libraries
 
 ## Kernel
 
@@ -413,38 +365,61 @@ Debian
   - `echo "Version: <ver>" >> debian/control`
   - `equivs-build debian/control`
 
-## Logs
+## dpkg and apt internals
 
-- `update-alternatives` logs to `/var/log/alternatives.log`
-- `apt` logs to `/var/log/apt`
-  - `term.log` is stdout
-  - `history.log` is the package install/remove/upgrade history
-- `dpkg` logs to `/var/log/dpkg.log`
-  - it is low-level than apt
-  - a package change done by `dpkg` will not show up in apt logs
-- `unattended-upgrades` logs to `/var/log/unattended-upgrades`
-  - `unattended-upgrades.log` contains the invocation log (no update, update
-    package X)
-  - `unattended-upgrades-dpkg.log` contains dpkg stdout
-
-## Users and Groups
-
-- <https://salsa.debian.org/debian/base-passwd/-/raw/master/doc/users-and-groups.sgml>
-  - only global static ids
-- `root` is the superuser
-- `daemon` is a legacy user
-  - daemons should run as indivitual users nowadays
-  - legacy daemons that have fs system may run as `daemon.daemon`
-  - legacy daemons that have no fs system may run as `nobody.nogroup`
-- `bin` is a legacy user
-  - in 80's, softwares could be installed and updated as user `bin`
-- `sys` is a legacy user
-  - kernels could be installed and updated as user `sys`
-  - it was obsoleted by `bin` which was also obsoleted
-- `sync` runs `/bin/sync` on login
-  - it allows anyone to sync if `sync` does not have a password
-- `games` is for games to write their high score files
-- `man` is for updating `/var/cache/man` db
-- `lp` is for `/dev/lp*`
-- `mail` is for `/var/mail`
-- more
+- dpkg works with the local package database
+  - `/var/lib/dpkg` is the database
+  - when a `.deb` is installed,
+    - the control info is added to `/var/lib/dpkg/status`
+      - this also adds `Status` field
+    - the metadata are processed and saved to `/var/lib/dpkg/info`
+    - the contents are unpacked to `/`
+  - `dpkg` and `dpkg-*` work with `/var/lib/dpkg`
+- apt works with remote sources
+  - `/var/lib/apt` is the database
+  - package indices from sources are saved to `/var/lib/apt/lists`
+    - only a subset of package control info is included
+  - when a package is installed,
+    - it resolves dependencies based on package indices
+    - it downloads and installs `.deb`
+  - `apt` and `apt-*` work with `/var/lib/apt`
+- interesting control info fields
+  - `Package` is the name
+  - `Version` is the version
+  - `Description` is the description
+  - `Installed-Size` is the installed size
+  - `Essential` specifies whether a package is essential or not
+    - `dpkg -r` refuses to remove essential packages unless `--force-remove-essential`
+  - `Protected` is undocumented
+    - the package may not be installed, but once installed, it is treated as
+      `Essential`
+    - it was renamed from `Important`
+    - there are these `Protected`/`Important` packages
+      - `e2fsprogs`
+      - `grub-efi-amd64-signed`
+      - `init`
+      - `libgcc-s1`
+      - `login`
+  - `Priority`
+    - `required` has ~35 packages for a rootfs that one can chroot into and
+      install more packages
+    - `important` has ~30 packages for a rootfs with minimum admin tools
+      (e.g., init, editor, net)
+    - `standard` has ~40 packages for a rootfs with standard admin tools
+    - `optional` is the rest
+  - inter-relationship fields
+    - `Depends`
+    - `Pre-Depends`
+    - `Recommends`: A recommends B when A is pointless without B for most users
+    - `Suggests`: A suggests B when A is enhanced by B
+    - `Breaks`
+    - `Conflicts`
+    - `Provides`
+    - `Replaces`
+    - `Enhances`
+- a .deb file is an ar-archive
+  - `ar t <pkg>.deb` shows 3 files
+    - `debian-binary` specifies the package format version (2.0)
+    - `control.tar.xz` contains package metadata and install scripts
+    - `data.tar.xz` contains files
+  - `ar x <pkg>.deb` to extracts them
