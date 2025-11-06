@@ -698,15 +698,15 @@ PC
   - Cooler: Noctua NH-L12S, $75
   - MB: Asus ROG STRIX B650E-I, $180
   - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $220
-  - M2: Samsung 990 Pro 2TB, $175
+  - M2: Samsung 990 Pro 2TB, $170
   - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
     - comparing to 6600 XT, 60%+ rast, 90%+ rt
   - Case: Fractal Design Ridge PCIe 4.0, $145
     - cpu cooler clearance: 70
     - gpu clearance: 325x125x57
-  - PSU: Corsair SF750 750W, $160
-  - Top Fans: Noctua NF-A8, $18 x2
-  - Bottom Fans: Noctua NF-A6x25, $17 x2
+  - PSU: Corsair SF750 750W, $150
+  - Top Fans: Noctua NF-A8, $18
+  - Bottom Fans: Noctua NF-A6x25, $17
 
 ## Laptops
 
