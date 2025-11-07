@@ -15,7 +15,7 @@ Kernel defconfig
     - select `Enable bpf() system call`
     - select `Enable BPF Just In Time compiler`
       - select `Permanently enable BPF JIT and remove BPF interpreter`
-  - select `Preemption Model (Voluntary Kernel Preemption (Desktop))`
+  - select `Preemption Model (Scheduler controlled preemption model)`
   - select `CPU/Task time and stats accounting`
     - select `Export task/process statistics through netlink`, depending on `NET` (for htop, iotop)
       - select `Enable per-task delay accounting`
@@ -44,6 +44,7 @@ Kernel defconfig
   - select `Timer frequency (1000 HZ)` if desired
   - select `Built-in kernel command line` if desired
     - select `Built-in command line overrides boot loader arguments` if desired
+  - select `vsyscall table for legacy applications (None)`
 - select `Mitigations for CPU vulnerabilities` if x86
   - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
 - select `Power management and ACPI options` if x86
@@ -95,13 +96,20 @@ Kernel defconfig
 - select `General architecture-dependent options`
   - select `Optimize very unlikely/likely branches`
   - select `Provide system calls for 32-bit time_t`
+  - select `Support for randomizing kernel stack offset on syscall entry`
+    - select `Default state of kernel stack offset randomization`
 - select `Enable loadable module support`
   - select `Module unloading`
+- select `Enable the block layer`
+  - select `Enable support for block device writeback throttling`
 - select `Executable file formats`
   - select `Kernel support for MISC binaries`
 - select `Memory Management options`
+  - deselect `Disable heap randomization`
+  - select `Enable KSM for page merging` if kvm
   - select `Transparent Hugepage Support`
   - select `Contiguous Memory Allocator` if needed
+  - select `Enable userfaultfd() system call` if desired
   - select `Multi-Gen LRU`
     - select `Enable by default`
 - select `Networking support`
@@ -809,6 +817,7 @@ Kernel defconfig
   - select `F2FS filesystem support` if desired
     - select `F2FS extended attributes`
       - select `F2FS Security Labels`
+  - select `FS Encryption (Per-file encryption)` if desired
   - deselect `Dnotify support`
   - select `Filesystem wide access notification`
   - select `Quota support` if desired
@@ -885,10 +894,12 @@ Kernel defconfig
           - deselect `Encryption and hashing offload support` if raven (boot issue)
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed, depending on `CMA`
+  - select `Terminus 16x32 font (not supported by all drivers)` if desired, depending on `FONTS`
 - select `Kernel hacking`
   - select `printk and dmesg options`
     - select `Show timing information on printks`
     - select `Show caller information on printks` if desired
+    - select `Delay each boot printk message by N milliseconds` if desired
     - select `Enable dynamic printk() support` if desired
   - select `Kernel debugging`
   - select `Generic Kernel Debugging Instruments`
