@@ -174,13 +174,13 @@ Das U-Boot
       - it calls `board_init_f`
       - it branches to `board_init_r`
     - `board_init_f` of `common/board_f.c`
-      - it calls all init functions on `init_sequence_f`
+      - `initcall_run_f` calls various init functions
       - `serial_init` inits serial
       - `display_options` prints the `U-Boot` banner, `U_BOOT_VERSION_STRING`
       - `show_board_info` prints `Model: ...`
       - `announce_dram_init` prints `DRAM:`
     - `board_init_r` of `common/board_r.c`
-      - it calls all init functions on `init_sequence_r`
+      - `initcall_run_r` calls various init functions
       - `dm_announce` prints `Core: ...`
       - `initr_mmc` prints `MMC: ...`
       - `initr_env` prints `Loading Environment from ...`
@@ -321,7 +321,7 @@ Das U-Boot
       - `run_main_loop` is the last function and calls `main_loop`
 - `main_loop` in `common/main.c`
   - `run_preboot_environment_command` runs `CONFIG_PREBOOT` commands
-    - it runs `usb start` by default
+    - `CONFIG_PREBOOT` defaults to `usb start` if `CONFIG_USB_KEYBOARD`
       - console: `starting USB...`
       - `do_usb_start` calls `usb_init` to initialize and scan usb
   - `bootdelay_process` gets boot cmd
