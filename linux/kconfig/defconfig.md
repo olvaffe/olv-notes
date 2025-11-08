@@ -192,18 +192,23 @@ Kernel defconfig
     - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
-  - select `Memory Technology Device (MTD) support` if needed (for spi nor)
+  - select `Memory Technology Device (MTD) support` if needed (for spi nor, etc.)
     - select `Caching block device access to MTD devices`
-    - select `SPI NOR device support`, depending on `SPI`
+    - select `Self-contained MTD device drivers`
+      - select `Intel Discrete Graphics non-volatile memory driver` if needed
+    - select `SPI NOR device support` if needed, depending on `SPI`
   - select `Block devices`
     - select `Compressed RAM block device support`
     - select `Loopback device support`
+      - select `Number of loop devices to pre-create at init time` (to 0)
     - select `Virtio block driver` if guest, depending on `VIRTIO_PCI`
   - select `NVME Support` if needed
     - select `NVM Express block device`
+    - select `NVMe hardware monitoring`
   - select `Misc devices`
     - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
+    - select `NT synchronization primitive emulation` if desired
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
       - select `SPD EEPROMs on DDR4 memory modules` if needed (for ddr4)
@@ -218,8 +223,10 @@ Kernel defconfig
     - select `SCSI device support`
     - deselect `legacy /proc/scsi/ support`
     - select `SCSI disk support`
+    - select `SCSI CDROM support` if needed
     - select `SCSI low-level drivers`
       - select `virtio-scsi support` if desired
+    - select `Asynchronous SCSI scanning`
   - select `Serial ATA and Parallel ATA drivers (libata)` if needed
     - select `AHCI SATA support`
     - deselect `ATA SFF support (for legacy IDE and PATA)`
@@ -292,6 +299,7 @@ Kernel defconfig
       - deselect `Allow legacy TIOCSTI usage`
       - select `Serial drivers`
         - select `8250/16550 and compatible serial support` if x86/mtk/rk
+          - deselect `Support 8250_core.* kernel options`
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
@@ -437,6 +445,7 @@ Kernel defconfig
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
+      - select `Display a user-friendly message when a kernel panic occurs`
       - select `Supported DRM clients`, depending on any drm driver
         - select `Enable legacy fbdev support for your modesetting driver` (for vt)
       - select `AMD GPU` if amd
@@ -594,6 +603,7 @@ Kernel defconfig
     - select `Realtek PCI-E SD/MMC Card Interface Driver` if needed, depending on `MISC_RTSX_PCI`
     - select `MediaTek SD/MMC Card Interface support` if mtk
   - select `Universal Flash Storage Controller` if needed, depending on `SCSI`
+    - select `UFS Temperature Notification`
     - select `Platform bus based UFS Controller support`
       - select `Mediatek specific hooks to UFS controller platform driver` if mt8195/mt8196
   - select `LED Support`
@@ -821,6 +831,7 @@ Kernel defconfig
   - deselect `Dnotify support`
   - select `Filesystem wide access notification`
   - select `Quota support` if desired
+  - select `Report quota messages through netlink interface` if `QUOTA`
   - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
   - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
