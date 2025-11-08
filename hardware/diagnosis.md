@@ -107,3 +107,20 @@ HW Diagnosis
   - `READ: bw=130MiB/s`
 - SD: `bs=256K` and `iodepth=8`
   - `READ: bw=45.0MiB/s`
+
+## Windows
+
+- Prime95
+  - <https://www.mersenne.org/>
+  - torture test: small ffts for cpu, large ffts for mem, blend for both
+- y-cruncher
+  - <https://www.numberworld.org/y-cruncher/>
+  - svt/sftv4 for cpu; vt3/fftv4 for mem
+- testmem5
+  - <https://www.overclock.net/threads/memory-testing-with-testmem5-tm5-with-custom-configs.1751608/>
+- OCCT
+  - <https://www.ocbase.com/>
+- Furmark
+  - <https://geeks3d.com/furmark/>
+- CrystalDiskMark
+  - <https://crystalmark.info/en/>
