@@ -15,7 +15,7 @@ Arch Linux
   - `timedatectl` and wait until system clock synced
   - partition and format disk
     - `fdisk <dev>`
-      - 1GB for EFI system partition (ESP)
+      - 2GB for EFI system partition (ESP)
       - remainder for root partition
     - `mkfs.fat -F32 <part>`
     - `mkfs.ext4 <part>`
@@ -27,14 +27,16 @@ Arch Linux
       - `mount <part> /mnt`
       - `btrfs subvolume create /mnt/@`
       - `btrfs subvolume create /mnt/@home`
+      - `btrfs subvolume create /mnt/@srv`
       - `btrfs subvolume set-default /mnt/@`
       - `umount /mnt`
   - mount partitions to `/mnt` and `/mnt/boot`
     - if btrfs,
       - `mount -o compress=zstd <part> /mnt`
-      - `mkdir /mnt/{boot,home}`
+      - `mkdir /mnt/{boot,home,srv}`
       - `mount <esp> /mnt/boot`
       - `mount -o subvol=@home <part> /mnt/home`
+      - `mount -o subvol=@srv <part> /mnt/srv`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
@@ -47,9 +49,10 @@ Arch Linux
   - `hwclock --systohc`
     - this updates `/etc/adjtime` so should be done in chroot
   - install more packages
-    - `pacman -S linux linux-firmware intel-ucode dosfstools btrfs-progs systemd-ukify`
-    - `pacman -S sudo vim`
-    - `pacman -S dhcpcd iwd wpa_supplicant`, at most one of them should suffice
+    - `pacman -S sudo vim dosfstools btrfs-progs`
+    - `pacman -S iwd wpa_supplicant`, either suffices
+    - `pacman -S {intel,amd}-ucode linux-firmware-{amdgpu,intel,mediatek}`
+    - `pacman -S linux systemd-ukify`
     - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
   - generate locale
     - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen`
@@ -118,64 +121,14 @@ Arch Linux
   - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
   - `./olv-etc/create-links`
 - packages
-  - base
-    - `base linux linux-firmware intel-ucode`
-    - `dosfstools btrfs-progs`
-    - `sudo vim`
-    - `zram-generator`
-      - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
-    - `systemd-ukify sbctl`
-  - network
-    - `openssh wireguard-tools`
-    - `iwd` or `wpa_supplicant`
-    - `networkmanager`
-    - `linux-headers broadcom-wl-dkms`
-  - tools
-    - `bc unzip zip`
-    - `dmidecode usbutils hdparm iw`
-    - `lsof htop iotop`
-    - `rsync wget`
-    - `man-db man-pages`
-    - `picocom`
-  - devel
-    - `base-devel ccache ctags gdb git meson cmake`
-    - `perf trace-cmd strace debuginfod`
-    - `llvm clang`
-    - `rustup`
-  - mesa devel
-    - `wayland-protocols libxrandr`
-    - `llvm glslang libclc spirv-llvm-translator`
-    - `vulkan-validation-layers vulkan-extra-layers`
-    - `python -m venv --system-site-packages ~/.pip`
-      - `pip install packaging mako pyyaml`
-  - cross-compile
-    - `aarch64-linux-gnu-gcc`
-    - `qemu-user-static qemu-user-static-binfmt`
-  - gui
-    - `sway polkit i3status swayidle swaylock mako`
-    - `mesa mesa-utils vulkan-tools vulkan-intel vulkan-radeon`
-    - `noto-fonts noto-fonts-cjk noto-fonts-emoji`
-    - `brightnessctl wl-clipboard wayland-utils`
-    - `fcitx5-chewing fcitx5-configtool fcitx5-gtk`
-    - `xdg-desktop-portal-gtk xdg-desktop-portal-wlr`
-    - `alacritty google-chrome gtk4`
-    - `swayimg grim slurp`
-    - `mpv intel-media-driver`
-    - `xorg-xwayland`
-  - legacy x11
-    - `xorg xorg-xinit i3 xterm`
-  - audio
-    - `pipewire pipewire-pulse`
-    - `pavucontrol`
-  - bluetooth
-    - `bluez bluez-utils`
-    - `bcm20702a1-firmware`
-  - printer
-    - `cups`
-    - `cnrdrvcups-lb samsung-unified-driver-printer`
-  - 32-bit
-    - uncomment the `[multilib]` section in `/etc/pacman.conf`
-    - `lib32-{mesa,libdrm,libunwind,libx11}`
+  - `zram-generator`
+    - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
+  - `steam`
+    - uncomment the `[multilib]` section in `/etc/pacman.conf` first
+  - media: `intel-media-driver`
+  - legacy x11: `xorg xorg-xinit i3 xterm`
+  - bluetooth: `bluez bluez-utils`
+  - printer: `cups cnrdrvcups-lb samsung-unified-driver-printer`
 
 ## Tidy Up an Existing Installation
 
