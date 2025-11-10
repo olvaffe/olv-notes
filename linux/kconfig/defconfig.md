@@ -913,6 +913,8 @@ Kernel defconfig
     - select `Delay each boot printk message by N milliseconds` if desired
     - select `Enable dynamic printk() support` if desired
   - select `Kernel debugging`
+  - select `Compile-time checks and compiler options`
+    - select `Debug information (Rely on the toolchain's implicit default DWARF version)` if desired
   - select `Generic Kernel Debugging Instruments`
     - select `Magic SysRq key`
     - select `Debug Filesystem`
