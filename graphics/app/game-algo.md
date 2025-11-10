@@ -1,6 +1,17 @@
 3D Techniques
 =============
 
+## Super Resolution
+
+- Spatial Upscaling
+  - game integration optional
+  - e.g., DLSS 1, FSR 1
+- Temporal Upscaling
+  - game integration required
+  - e.g., DLSS 2, FSR 2
+- Frame Generation
+- Ray Reconstructoin / Regeneration
+
 ## Lighting
 
 - for each fragment, we want to calculate the light perceived by the camera
