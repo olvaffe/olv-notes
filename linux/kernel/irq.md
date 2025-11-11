@@ -131,3 +131,22 @@ Kernel and IRQ
     `irq_finalize_oneshot` sets
     - `desc->threads_oneshot &= ~action->thread_mask;`
     - `unmask_threaded_irq` unmasks the line
+
+## `irq_work`
+
+- `irq_work` is a bottom-half mechanism that executes in hardirq ctx
+- but why moves the work from hardirq ctx to another hardirq ctx?
+  - NMI: it moves the work from unsafe nmi hardirq ctx to standard hardirq ctx
+  - deadlock: when `printk` prints to a console that has a nested `printk`,
+    defer the nested `printk`
+- `init_irq_work` inits an irq work
+- `irq_work_queue` queues an irq work (from hardirq ctx)
+  - it adds the work to the global `raised_list`
+  - `irq_work_raise` raises a arch-specific ipi
+- x86 `arch_irq_work_raise` raises `IRQ_WORK_VECTOR` ipi to itself
+  - when the local irq is enabled, `sysvec_irq_work` handles the ipi and calls
+    `irq_work_run`
+- arm `arch_irq_work_raise` raises `IPI_IRQ_WORK` ipi to itself
+  - when the local irq is enabled, `do_handle_IPI` handles the ipi and calls
+    `irq_work_run`
+- `irq_work_run` calls `irq_work_single` on each work on `raised_list`
