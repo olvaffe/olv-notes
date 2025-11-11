@@ -141,6 +141,29 @@ Scheduler
 - `wake_up_interruptible` calls the callback function, which calls
   `try_to_wake_up`
 
+## `completion`
+
+- `struct completion` consists of
+  - `unsigned int done` as the done counter
+  - `struct swait_queue_head wait` as the wait queue
+    - the wait queue has a spinlock to protect itself and `done`
+- `init_completion` inits `done` to 0 and inits the wait queue
+- `complete` increments `done`
+  - `swake_up_locked` wakes up the first task
+- `wait_for_completion*` decrements `done`
+  - they all call `__wait_for_common`, with these defaults
+    - `action` is `schedule_timeout`
+    - `timeout` is `MAX_SCHEDULE_TIMEOUT`
+    - `state` is `TASK_UNINTERRUPTIBLE`
+  - it calls `action` in a loop until `done > 0` or `timeout == 0`
+  - it returns remaining time (0 means timeout)
+- `try_wait_for_completion` decrements `done` without waiting
+  - it early returns with false if `done == 0`
+- `completion_done` checks if `done != 0`
+- `complete_all` sets `done` to `UINT_MAX`
+  - `swake_up_all_locked` wakes up all tasks
+- `reinit_completion` re-inits `done` to 0, after `complete_all`
+
 ## man 7 sched
 
 - conceptually,
