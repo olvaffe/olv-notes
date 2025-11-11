@@ -23,3 +23,20 @@ Kernel smp
       is online
 - the idle tasks on each CPU enter `cpu_startup_entry` and never exit
   - i.e., when it is scheduled on the CPU, the CPU goes idle
+
+## smpboot
+
+- `smpboot_register_percpu_thread` creates per-cpu threads
+  - `__smpboot_create_thread` creates a thread for each cpu
+  - `smpboot_thread_fn` is the thread entrypoint
+- clients
+  - `cpu_stop_init` creates `migration/%u` to run `cpu_stopper_thread`
+    - `sched_set_stop_task` makes the threads highest priority
+    - `stop_one_cpu` calls the specified func from the specified thread at the
+      highest priority
+  - `cpuhp_threads_init` creates `cpuhp/%u` to run `cpuhp_thread_fun`
+    - it is responsible to bring up and tear down each cpu
+  - `spawn_ksoftirqd` creates `softirqd/%u` to run `run_ksoftirqd`
+    - normally, `irq_exit` calls `invoke_softirq` to handle softirqs
+    - but when under heavy load, `softirqd/%u` also calls `handle_softirqs` to
+      handle softirqs

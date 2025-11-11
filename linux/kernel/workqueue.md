@@ -1,6 +1,18 @@
 Linux workqueue
 ===============
 
+## Overview
+
+- there are system-wide worker pools
+  - the number of workers in each pool increases and decreases automatically
+    depending on the load
+- `alloc_workqueue` allocates a workqueue
+  - works queued via the workqueue will be dispatched to system-wide worker
+    pools
+  - workqueue attributes determine which worker pools to use
+  - "pwq" is the glue that dispatches works to a worker pool
+- `queue_work` queues a work to a queue
+
 ## Initialization
 
 - `workqueue_init_early` is called early from `start_kernel`
@@ -44,7 +56,7 @@ Linux workqueue
   - other `wq_pod_types` are initialized
   - `unbound_wq_update_pwq` allocs `pool_workqueue` for `WQ_UNBOUND` queues
 
-## Worker
+## Worker Pools
 
 - workers run `worker_thread`
 - `manage_workers` may spawn more workers if necessary
@@ -56,6 +68,46 @@ Linux workqueue
     - note that the work can be queued again after this point, even before it
       starts running
   - `worker->current_func(work)` calls the work function
+
+## Work
+
+- a `struct work_struct` is very compact
+  - `atomic_long_t data` has various meanings
+  - `struct list_head entry` is for `insert_work` to add the work to
+    `pool->worklist`, `pwq->inactive_works`, etc.
+  - `work_func_t func` is the callback
+- `atomic_long_t data`
+  - bit layout
+    - bit 0..3
+      - `WORK_STRUCT_PENDING_BIT`
+      - `WORK_STRUCT_INACTIVE_BIT`
+      - `WORK_STRUCT_PWQ_BIT`
+      - `WORK_STRUCT_LINKED_BIT`
+    - if `WORK_STRUCT_PWQ_BIT`,
+      - bit 4..7: `WORK_STRUCT_COLOR_BITS`
+      - bit 8..: pwq pointer (aligned to 256 bytes)
+    - if no `WORK_STRUCT_PWQ_BIT`,
+      - bit 4: `WORK_OFFQ_BH_BIT`
+      - bit 5..20: `WORK_OFFQ_DISABLE_BITS`
+      - bit 21..: `WORK_OFFQ_POOL_BITS` (pool id)
+  - `INIT_WORK` inits data to `WORK_DATA_INIT`
+    - pool id is `WORK_OFFQ_POOL_NONE`
+    - the rest is zero
+  - when `queue_work` queues a work,
+    - `test_and_set_bit` sets data to
+      - `WORK_STRUCT_PENDING`
+    - when `insert_work` adds the work to a list, `set_work_pwq` sets data to
+      - `WORK_STRUCT_PENDING`
+      - `WORK_STRUCT_PWQ`
+      - color bits
+      - pwq pointer
+  - when `process_one_work` processes the work,
+    `set_work_pool_and_clear_pending` sets data to
+    - pool id
+  - when `work_grab_pending` steals a work from pwq for modifications,
+    `set_work_pool_and_keep_pending` sets data to
+    - `WORK_STRUCT_PENDING`
+    - pool id
 
 ## API
 
