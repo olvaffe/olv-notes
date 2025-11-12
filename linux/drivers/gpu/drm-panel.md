@@ -31,46 +31,42 @@ DRM Panel
 
 ## DisplayPort
 
-- DisplayPort 1.0
-  - 2006
+- 2006, DisplayPort 1.0
   - 10.8 Gb/s (HBR x 4 lanes)
   - DPCP (DisplayPort Content Protection)
-- DisplayPort 1.1
-  - 2007
+- 2007, DisplayPort 1.1
   - alternative link layers such as fiber optic
   - HDCP (High-bandwidth Digital Content Protection) 1.3
   - DisplayPort Dual-Mode (DP++), allowing DVI and HDMI adapters
   - stereoscopic 3D
-- DisplayPort 1.1a
-  - 2008
-- DisplayPort 1.2
-  - 2010
+- 2008, DisplayPort 1.1a
+- 2010, DisplayPort 1.2
   - 21.6 Gb/s (HBR2 x 4 lanes)
   - 4K at 60 Hz at 10 bpc
   - MST (Multi-Stream Transport)
   - more color spaces (sRGB, scRGB, DCI-P3)
   - compatible with Mini DisplayPort connector
-- DisplayPort 1.2a
-  - 2013
+- 2013, DisplayPort 1.2a
+  - optional Adaptive Sync and PSR (panel self-refresh)
+- 2014, DisplayPort 1.3
+  - 32.4 Gb/s (HBR3 x 4 lanes, 8K@30Hz)
+  - mandatory Dual-Mode for DVI and HDMI (2.0) adapters
+    - HDMI CEC is tunneled via AUX
   - HDCP 2.2
-  - optional Adaptive Sync
-- DisplayPort 1.3
-  - 2014
-  - 32.4 Gb/s (HBR3 x 4 lanes)
-  - 8K at 30 Hz
-  - BT.2020
-- DisplayPort 1.4
-  - 2016
+- 2016, DisplayPort 1.4
   - DSC (Display Stream Compression) 1.2
   - HDR10 with static and dynamic metadata
-- DisplayPort 1.4a
-  - 2018
+  - BT.2020
+- 2018, DisplayPort 1.4a
   - DSC 1.2a
-- DisplayPort 2.0
-  - 2019
-  - 80.0 Gb/s (UHBR 20 x 4 lanes)
-- DisplayPort 2.1
-  - 2022
+- 2019, DisplayPort 2.0
+  - 80.0 Gb/s (UHBR20 x 4 lanes, 8K@60Hz)
+- 2022, DisplayPort 2.1
+  - DP40 cable: up to UHBR10x4
+  - DP80 cable: up to UHBR20x4
+- 2024, DisplayPort 2.1a
+  - DP54 cable: up to UHBR13.5x4, replacing DP40
+- 2025, DisplayPort 2.1b
 - eDP
   - eDP 1.0, 2008
   - eDP 1.1/1.1a, 2009
@@ -90,68 +86,64 @@ DRM Panel
   - the display controller will output dp signal or hdmi signal depending on
     whether the sink is dp or hdmi
   - as such, dp-to-hdmi cable is a passive adapter and is simple
+- type-c dp alt mode
+  - type-c has 4 differential pairs
+  - when a pair (x1) or two pairs (x2) are configured as dp lanes, it can
+    provide both DP and SS usb at the same time
+  - when all pairs (x4) are configured as dp lanes, it can provide both DP and
+    non-SS usb at the same time
+  - AUX is supported
+  - PD is supported simultaneously
+  - no dual mode
+    - but there is type-c hdmi alt mode to provide hdmi (instead of dp)
 
 ## HDMI
 
-- HDMI 1.0
-  - 2002
-  - 165 MHz / 3.96 Gbs
-  - 1080p
-- HDMI 1.1
-  - 2004
+- 2002, HDMI 1.0
+  - 165 MHz / 3.96 Gbs (1080p@60Hz)
+- 2004, HDMI 1.1
   - DVD-Audio
-- HDMI 1.2
-  - 2005
+- 2005, HDMI 1.2
   - PC-friendly by allowing RGB-only sources
-- HDMI 1.2a
-  - 2005
+- 2005, HDMI 1.2a
   - CEC, allowing control commands between devices
-- HDMI 1.3
-  - 2006
-  - 340 MHz / 8.16 Gbs
-  - 1440p
+- 2006, HDMI 1.3
+  - 340 MHz / 8.16 Gbs (1440p@75Hz, 1080p@144Hz)
   - deep color (10, 12, and 16 bpc color depths)
-  - cables
-    - category 1: up to 74.25 MHz
-    - category 2: up to 340 MHz
-    - HDMI Type C Mini Connector
-- HDMI 1.3a
-  - 2006
-- HDMI 1.4
-  - 2009
-  - 4K at 30 Hz
+  - mini hdmi (type c; unrelated to usb type-c)
+  - standard cable: category 1, up to 74.25 MHz
+  - high speed cable: category 2, up to 340 MHz
+- 2006, HDMI 1.3a
+- 2009, HDMI 1.4
+  - 4K@30Hz
   - 3D
   - HEC (HDMI Ethernet Channel), allowing internet sharing
-  - Micro HDMI Connector
-- HDMI 1.4a
-  - 2010
+  - micro hdmi (type d)
+- 2010, HDMI 1.4a
   - more 3D formats
-- HDMI 1.4b
-  - 2011
-- HDMI 2.0
-  - 2013
-  - 600 MHz / 18.0 Gbs
-  - 4K at 60 Hz
+- 2011, HDMI 1.4b
+- 2013, HDMI 2.0
+  - 600 MHz / 14.4 Gbs (4K@60Hz)
   - Rec. 2020 color space
-- HDMI 2.0a
-  - 2015
+  - premium high speed cable: up to 600 MHz
+- 2015, HDMI 2.0a
   - HDR with static metadata
-- HDMI 2.0b
-  - 2016
+- 2016, HDMI 2.0b
   - HDR10 and HLG
-- HDMI 2.1
-  - 2017
-  - 48.0 Gbs
-  - 4K at 120Hz
-  - 8K at 60Hz
-  - Ultra High Speed Cable
+- 2017, HDMI 2.1
+  - not allowed in open source
+  - 600 MHz / 42.0 Gbs (8K@60Hz, 4K@120Hz)
+  - ultra high speed cable: up to 42.0 Gbs
   - Dynamic HDR
   - DSC (Display Stream Compression) 1.2
   - HFR (High Frame Rate)
   - VRR (Variable Refresh Rate)
-- HDMI 2.1a
-  - 2022
+- 2022, HDMI 2.1a
   - SBTM (Source-Based Tone Mapping)
+- 2023, HDMI 2.1b
+- 2025, HDMI 2.2
+  - 600 MHz / 84.0 Gbs (8K@60Hz, 4K@120Hz)
+  - Latency Indication Protocol (LIP)
 
 ## `struct drm_panel_funcs`
 
