@@ -1,6 +1,27 @@
 Android Docs
 ============
 
+## Android Releases
+
+- <https://developer.android.com/about/versions>
+- Android 16, baklava/25q2, api 36, 2025
+- Android 15, vic/24q3, api 35, 2024
+- Android 14, udc, api 34, 2023
+- Android 13, tm, api 33, 2022
+- Android 12, sc, api 31, 2021
+- Android 11, rvc, api 30, 2020
+- Android 10, qt, api 29, 2019
+- Android 9, pie, api 28, 2018
+- MPRs and QPRs
+  - Android 16 is 25Q2
+  - Android 16 QPR1 is 25Q3
+  - Android 16 QPR2 is 25Q4
+  - Android 16 QPR3 is 26Q1?
+  - there are also monthly releases between QPRs for security fixes
+- <https://source.android.com/docs/setup/contribute/release-lifecycle>
+  - release branches are branched from internal main
+  - there are also feature launch flags to enable/disable features
+
 ## CDD Terms
 
 - CDD: Compatibility Definition Document
