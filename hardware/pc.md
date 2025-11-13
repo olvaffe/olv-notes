@@ -748,6 +748,22 @@ PC
   - dell precision
   - asus proart
   - acer conceptd
+- OEMs and ODMs
+  - major OEMs: dell, hp, lenovo, apple, acer, asus, etc.
+  - major ODMs: quanta, compal, etc.
+  - OEMs design and contract ODMs to manufacture
+  - in fact,
+    - when a new soc is developed, soc vendor contracts ODMs to build
+      reference designs
+      - they are for internal verification and are used as the base for
+        OEM/ODM designs
+      - intel calls it RVP or CRB
+      - qcom calls it CRD
+    - ODMs also come up with their reference designs
+      - they are for OEMs that do not make their own designs
+      - it's sometimes called ORB?
+    - OEMs make their designs based on soc reference design or ODM reference
+      design
 
 ## SBCs
 
