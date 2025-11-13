@@ -71,15 +71,14 @@ Arch Linux
     - create `/etc/kernel/cmdline`
       - `root=<part> loglevel=7`
       - if luks, `rd.luks.name=<LUKS_UUID>=root root=/dev/mapper/root`
+        - `cryptsetup luksUUID <part>` to get uuid
     - edit `/etc/mkinitcpio.d/linux.preset`
-      - remove `fallback` from `PRESETS`
       - comment out `default_image`
       - `default_uki=/boot/EFI/Linux/arch-linux.efi`
-    - edit `/etc/mkinitcpio.conf`
-      - replace `udev` by `systemd` and `keymap consolefont` by `sd-vconsole`
-        in `HOOKS`
-        - if luks, add `sd-encrypt` after `sd-vconsole`
+    - if luks, edit `/etc/mkinitcpio.conf`
+      - add `sd-encrypt` after `sd-vconsole` in `HOOKS`
     - `mkinitcpio -p linux`
+    - `rm /boot/initramfs-linux.img`
 - Reboot
 
 ## Post-Installation
@@ -218,7 +217,8 @@ Arch Linux
     `/etc/mkinitcpio.d/<present>.preset`
 - `/etc/mkinitcpio.conf` by default enables these hooks in order
   - `base` adds `busybox`, `kmod`, `blkid`, `mount`, `/init`, and others
-  - `udev` adds `systemd-udevd`, `udevadm`, and others
+  - `systemd` adds systemd and units
+    - it can replace `base` and `udev`
   - `autodetect` scans `/sys` for `modalias`s and invokes `modprobe -R` to map
     them to module names cached in `_autodetect_cache` variable; hooks after
     `autodetect` only consider modules in `_autodetect_cache`
@@ -227,10 +227,14 @@ Arch Linux
   - `kms` adds modules related to drm as well as their dependencies/firmwares
   - `keyboard` adds modules related to input
   - `keymap` adds the keymap if any
-  - `consolefont` adds the console font if any
+  - `sd-vconsole` adds the keymap if any
+    - it can replace `keymap` and `consolefont`
   - `block` adds modules related to block
   - `filesystems` adds modules related to fs
   - `fsck` adds fsck for different filesystems
+- `sd-encrypt` hook
+  - it adds dm, crypto, and tpm modules
+  - it adds udev rules, systemd crypt units, etc.
 - `plymouth` hook
   - it adds `plymouth`, the current theme (returned by
     `plymouth-set-default-theme`), and the runscript
