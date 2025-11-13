@@ -106,7 +106,8 @@ Arch Linux
   - `sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI`
   - `sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi`
   - `sbctl sign -s /boot/EFI/Linux/arch-linux.efi`
-- luks
+- luks and tpm2
+  - `bootctl` must report `TPM2 Support: yes` and `Measured UKI: yes`
   - create `/etc/kernel/uki.conf`
     - `[PCRSignature:initrd]`
     - `Phases=enter-initrd`
