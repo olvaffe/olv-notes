@@ -16,7 +16,9 @@ Intel CPUs
   - Raptor Cove   - 2022 - Intel 7
   - Redwood Cove  - 2023 - Intel 4
   - Lion Cove     - 2024 - 3nm
-  - Panther Cove  - 2025 - Intel 18A?
+  - Cougar Cove   - 2025 - Intel 18A
+  - Coyote Cove?
+  - Griffin Cove?
 - Little Cores
   - Silvermont    - 2013 - 22nm
   - Airmont       - 2014 - 14nm
@@ -26,7 +28,7 @@ Intel CPUs
   - Gracemont     - 2021 - Intel 7
   - Crestmont     - 2023 - Intel 4
   - Skymont       - 2024 - 3nm
-  - Darkmont      - 2025 - Intel 18A?
+  - Darkmont      - 2025 - Intel 18A
 
 ## CPUs
 
