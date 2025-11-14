@@ -478,6 +478,26 @@ Das U-Boot
       - `bootz` boots raw kernel `zImage`
       - `zboot` boots raw kernel `bzImage`
 
+## PXE Boot
+
+- <https://docs.u-boot.org/en/latest/usage/pxe.html>
+  - u-boot implements a subset of PXE boot
+- server
+  - `mkdir -p /tmp/tftpboot/pxelinux.cfg`
+  - `vi /tmp/tftpboot/pxelinux.cfg/default`
+    - `menu title MyTitle`
+    - `timeout 30`
+    - `label MyLabel`
+      - `kernel /my.vmlinuz`
+      - `fdt /my.dtb`
+      - `initrd /my.initrd`
+      - `append earlycon console=ttyS2,1500000`
+  - `dnsmasq --no-daemon --bind-interfaces --listen-address 192.168.0.1 --port 0 --dhcp-range 192.168.0.10,192.168.0.20 --enable-tftp --tftp-root /tmp/tftpboot`
+- board
+  - `dhcp` sets up network
+  - `pxe get` retrieves `pxelinux.cfg/default`
+  - `pxe boot` boots the retrieved config
+
 ## Usage
 
 - Environment Variable Commands
