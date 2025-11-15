@@ -346,3 +346,27 @@ Device Tree
 - `rockchip/rk3588-rock-5b.dts` modifies `&gpu`
   - `mali-supply = <&vdd_gpu_s0>;`
   - `status = "okay";`
+
+## Minimal DT
+
+- a minimal dt with serial describes
+  - `chosen` specifies `stdout-path`, for earlycon
+  - `aliases` assigns uart an alias
+  - `memory` describe the dram size
+    - it is optional because bootloader may set it up as well
+  - `cpus` describes cpus
+    - `operating-points-v2`, `clocks`, `cpu-supply` are for cpufreq and can be
+      omitted
+    - `cpu-idle-states` is for cpuidle and can be omitted
+    - `cpu-map` is exported to sysfs and can be omitted
+    - cache info is exported to sysfs and can be omitted
+  - `psci` is required to boot secondary cpus when `enable-method` is `psci`
+  - `timer` describes `arm,armv8-timer`
+    - `time_init` requires the timer to exist
+  - `soc`
+    - `clock-controller@XXX` describes soc clks, for uart
+    - `interrupt-controller@XXX` describes soc irqchip, for uart
+    - `serial@XXX` describes uart
+      - we get away without regulator, pmdomain, etc. because bootloader has
+        set them up
+- e.g., <https://lore.kernel.org/lkml/20251111112158.4.I5032910018cdd7d6be7aea78870d04c0dc381d6e@changeid/>
