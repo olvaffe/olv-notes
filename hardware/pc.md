@@ -689,25 +689,6 @@ PC
   - RX 6600 XT,       RDNA2,      8 GB,  32 CUs, 160W, $150
   - Arc A580,         Xe,         8 GB,  24 EUs, 175W, $130
 
-## Example
-
-- media center compartment
-  - 56x41x16, opening height is 11.5
-- <https://pcpartpicker.com/list/DcdFRV>
-  - CPU: Ryzen 5 9600X, $200
-  - Cooler: Noctua NH-L12S, $75
-  - MB: Asus ROG STRIX B650E-I, $180
-  - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $220
-  - M2: Samsung 990 Pro 2TB, $170
-  - GPU: Sapphire PULSE Radeon RX 9060 XT 16 GB, $370
-    - comparing to 6600 XT, 60%+ rast, 90%+ rt
-  - Case: Fractal Design Ridge PCIe 4.0, $145
-    - cpu cooler clearance: 70
-    - gpu clearance: 325x125x57
-  - PSU: Corsair SF750 750W, $150
-  - Top Fans: Noctua NF-A8, $18
-  - Bottom Fans: Noctua NF-A6x25, $17
-
 ## Laptops
 
 - consumer
@@ -805,6 +786,8 @@ PC
 ## Devices
 
 - me
+  - DIY: Ridge
+    - R5-9600X (x6), 32GB DDR5, 2TB NVMe
   - Lenovo ThinkPad T580
     - i7-8650U (x4), 16GB DDR4, 256GB SATA SSD
   - Dell XPS 13 (9343)
@@ -847,3 +830,19 @@ PC
     - X1P: 2300
     - A7x: 800
     - A5x: 200
+
+## DIY: Ridge
+
+- media center compartment
+  - 56x41x16, opening height is 11.5
+- <https://pcpartpicker.com/list/GKMc2x>
+  - CPU: Ryzen 5 9600X, $200
+  - Cooler: Noctua NH-L12S, $75
+  - MB: Asus ROG STRIX B650E-I, $180
+  - RAM: G.Skill Flare X5 32GB DDR5-6000 CL30, $220
+  - M2: Samsung 990 Pro 2TB, $170
+  - GPU: GIGABYTE Radeon RX 9060 XT GAMING OC 8G, $200
+  - Case: Fractal Design Ridge PCIe 4.0, $145
+  - PSU: Corsair SF750 750W, $150
+  - Top Fans: Noctua NF-A8, $18
+  - Bottom Fans: Noctua NF-A6x25, $17
