@@ -369,4 +369,5 @@ Device Tree
     - `serial@XXX` describes uart
       - we get away without regulator, pmdomain, etc. because bootloader has
         set them up
+      - specify `clock-frequency` and `clock-controller@XXX` can be omitted
 - e.g., <https://lore.kernel.org/lkml/20251111112158.4.I5032910018cdd7d6be7aea78870d04c0dc381d6e@changeid/>
