@@ -214,3 +214,51 @@ UEFI
       - if there is the vendor specific option (43), it is further parsed to
         distinguish between pxe 1.0 and binl (microsoft?)
     - else, this is a dhcpv4-only offer
+
+## ASUS ROG
+
+- Main
+  - `Security` sets passwords
+- Ai Tweaker
+  - it provides easier overclocking
+- Advanced
+  - `Trusted Computing` configs tpm for boot measurement
+  - `PCI Subsystem Settings` enables/disables rebar, etc.
+  - `USB Confuguration` enables/disables usb ports
+  - `Network Stack Confuguration` is for pxe?
+  - `Onboard Devices Configuration`
+    - `Native ASPM` is for ASPM
+    - audio, lan, wifi, and bt can be enabled/disabled
+    - `PCIE Link Speed` forces pcie gen for gpu, m2, chipset
+  - `NB Configuration` configs igpu
+  - `AMD CBS` provides amd-specific Custom Bios Settings
+  - `AMD PBS` provides amd-specific Processor Boost States
+  - `AMD Overclocking` provides manual overclocking
+- Monitor
+  - `Temperature Monitor` shows cpu, mb (chassis?), vrm (regulators), chipset,
+    custom sensor (connected to `T_Sensor` pins), and ram temps
+  - `Fan Speed Monitor` monitors cpu, chassic, aio pump, and vrm fans
+  - `Voltage Monitor` shows cpu, 12v (fans, pcie, etc.), 5v (usb, sata, etc.),
+    3.3v (rarely drawn directly) cpu vddio/mc
+    - modern mb draws 12v and uses vrm to convert to other voltages
+  - `Q-Fan Tuning` tunes cpu, chassic, and aio pump fan curves
+- Boot
+  - `Secure Boot`
+    - `Secure Boot state` is `User` or `Setup`
+    - `OS Type` enables/disables secure boot
+    - `Secure Boot Mode` is `Standard` (std keys) or `Custom` (custom keys)
+  - `Boot Configuration`
+    - `AMI Native NVMe Driver Support` is for csm/legacy boot on nvme
+    - `Setup Mode` selects ez or advanced bios mode
+  - `Boot Option Priorities` adjusts boot priorities
+  - `Boot Override` boots the selected item immediately
+- Tool
+  - `ASUS EZ Flash 3 Utility` flashes bios from nvme or usb fat partitions
+  - `Publish HII Resources`
+    - HII stands for uefi `Human Interface Infrastructure`
+    - it exposes uefi nvmem to os
+  - `ASUS User Profile` saves/loads settings to/from profiles
+  - `ASUS SPD Information` shows DDR5 SPD info
+    - JEDEC defines up to 4800MHz
+    - AMD EXPO allows higher freqs
+  - there are also settings that win honors to notify app install

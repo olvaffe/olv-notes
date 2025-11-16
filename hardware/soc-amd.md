@@ -167,3 +167,31 @@ AMD CPUs
   - responsible for power, clock, thermal, etc.
 - MP2 is known as SFH, sensor fusion hub
   - responsible for external sensors
+
+## Zen 4 Overclocking
+
+- <https://skatterbencher.com/2022/09/26/raphael-overclocking-whats-new/>
+- clocking topo: `CGPLL` converts external crystal 48mhz to
+  - `CCLK -> VCO -> CCX -> cpu cores`
+  - `PCIECLK -> pcie`
+  - `FCLK -> infinity fabric`
+  - `UMCCLK -> UCLK -> memory controller`
+  - `UMCCLK -> MCLK -> dram`
+  - `GFXCLK -> igpu`
+  - `USB -> usb`
+- voltage topo: there are 4 power rails from vrm
+  - `VDDCR` is converted to `VDDCR_CPU` (cores) and `VDDCR_VDDM` (caches)
+  - `VDDCR_SOC` is converted to `VDDCR_SOC` (umc, smu, etc.) and `VDDCR_GFX` (igpu)
+  - `VDDCR_MISC` is converted to `VDDGs` (one for each infinity fabric interconnect)
+  - `VDDIO_MEM_S3` is converted to `VDDP_DDR` (dram)
+- AMD Serial VID Interface 3 (SVI3)
+  - an interface (similar to i2c) to control soc voltage regulators
+- Precision Boost
+  - the task is performed by SMUs in each die
+  - Sustained Power Limit (SPL) is tdp
+  - Package Power Tracking (PPT) is the max power draw for boost, with
+    limiting factor being thermal
+  - Electrical Design Current (EDC) is the peak current, with limiting factor
+    being vrm
+  - Thermal Design Current (TDC) is the sustained current, with limiting
+    factor being vrm and thermal
