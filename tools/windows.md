@@ -17,6 +17,10 @@ Windows
   - if the disk is already partitioned, it refuses to install to any existing
     partition
     - must delete a partition and install to the unallocated space
+    - this creates 3 partitions from the unallocated space
+      - `Microsoft reserved`: win requires each disk to have a MSR partition
+      - `Microsoft basic data`: this is drive C and is bitlocked
+      - `Windows recovery environment`: this is WinRE for recovery
   - network is required
     - might need to download drivers from vendor/motherboard website and unzip
       them to (second?) usb
