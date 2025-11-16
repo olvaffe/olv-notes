@@ -195,3 +195,60 @@ AMD CPUs
     being vrm
   - Thermal Design Current (TDC) is the sustained current, with limiting
     factor being vrm and thermal
+
+## Ryzen 5 9600X PCI and USB
+
+- lspci and lsusb
+  - 00:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge IOMMU
+  - 00:01.2 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge GPP Bridge
+    - 01:00.0 Non-Volatile memory controller: Samsung Electronics Co Ltd NVMe SSD Controller S4LV008[Pascal]
+  - 00:02.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge GPP Bridge
+    - 02:00.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Upstream Port (rev 01)
+      - 07:00.0 Ethernet controller: Intel Corporation Ethernet Controller I225-V (rev 03)
+      - 08:00.0 Network controller: MEDIATEK Corp. MT7922 802.11ax PCI Express Wireless Network Adapter
+      - 09:00.0 USB controller: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset USB 3.2 Controller (rev 01)
+        - Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub (12 ports)
+          - Bus 001 Device 002: ID 0b05:1a5c ASUSTek Computer, Inc. USB Audio
+          - Bus 001 Device 003: ID 0b05:19af ASUSTek Computer, Inc. AURA LED Controller
+          - Bus 001 Device 004: ID 0489:e0e2 Foxconn / Hon Hai Wireless_Device
+        - Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub (5 ports)
+      - 0a:00.0 SATA controller: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset SATA Controller (rev 01)
+  - 00:08.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Internal GPP Bridge to Bus [C:A]
+    - 0b:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Granite Ridge [Radeon Graphics] (rev c6)
+    - 0b:00.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Radeon High Definition Audio Controller [Rembrandt/Strix]
+    - 0b:00.2 Encryption controller: Advanced Micro Devices, Inc. [AMD] Family 19h PSP/CCP
+    - 0b:00.3 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 3.1 xHCI
+      - Bus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub (2 ports)
+      - Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub (2 ports)
+    - 0b:00.4 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 3.1 xHCI
+      - Bus 005 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub (2 ports)
+      - Bus 006 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub (2 ports)
+  - 00:08.3 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Internal GPP Bridge to Bus [C:A]
+    - 0c:00.0 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 2.0 xHCI
+      - Bus 007 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub (1 port)
+  - 00:14.0 SMBus: Advanced Micro Devices, Inc. [AMD] FCH SMBus Controller (rev 71)
+  - 00:14.3 ISA bridge: Advanced Micro Devices, Inc. [AMD] FCH LPC Bridge (rev 51)
+- <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-5-9600x.html>
+  - two `USB 3.1 xHCI` each providing 2 ports usb3 gen2 (10G)
+  - one `USB 2.0 xHCI` providing 1 port
+- <https://www.amd.com/en/products/processors/chipsets/am5.html#specs>
+  - one `USB 3.2 Controller` providing
+    - 5-port usb3 gen2x2 (20G)
+    - 12-port usb2
+  - one `SATA Controller`
+- <https://rog.asus.com/us/motherboards/rog-strix/rog-strix-b650e-i-gaming-wifi-model/>
+  - one `USB Audio`
+  - one `AURA LED Controller`
+  - one `Foxconn / Hon Hai Wireless_Device` (mtk)
+  - one `Ethernet controller` (intel)
+  - one `Network controller` (mtk)
+  - internal usb headers providing one typec (10G), two usb3 (5G), two usb2
+    - all connected to `USB 3.2 Controller`
+  - one usb3 and one typec in back io far right
+    - both connected to `USB 3.2 Controller`
+  - two usb2 in back io far left
+    - top one connected to `USB 3.2 Controller`
+    - bottom one connected to `USB 2.0 xHCI`
+  - three usb3 and one typec in back io center
+    - middle two usb3 connected to `USB 3.1 xHCI`
+    - the other usb3 and typec connected to another `USB 3.1 xHCI`
