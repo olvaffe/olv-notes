@@ -358,8 +358,9 @@ Kernel defconfig
     - select `Pinctrl and GPIO driver for RK805 PMIC` if rk
     - select `Rockchip gpio and pinctrl driver` if rk
   - select `GPIO Support`
-    - select `Memory mapped GPIO drivers` if arm
-      - select `PrimeCell PL061 GPIO support` if guest
+    - select `Memory mapped GPIO drivers`
+      - select `AMD Promontory GPIO support` if amd
+      - select `PrimeCell PL061 GPIO support` if arm guest
       - select `Rockchip GPIO support` if rk
   - select `Board level reset or power off` if qcom x1
     - select `Qualcomm power-on driver`
@@ -656,6 +657,8 @@ Kernel defconfig
   - select `X86 Platform Specific Device Drivers` if x86
     - select `WMI`
     - select `AMD SoC PMC driver` if amd
+    - select `ASUS WMI Driver` if asus, depending on `RFKILL` and `HOTPLUG_PCI`
+    - select `Eee PC WMI Driver` if asus
     - select `Dell X86 Platform Specific Device Drivers` if dell
     - select `Intel PMC Core driver` if intel
     - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
