@@ -3,6 +3,8 @@ Kernel UFS
 
 ## Universal Flash Storage Versions
 
+- UFS, Universal Flash Storage
+  - there are both UFS memory card and eUFS
 - 1.0, 2011, max 300 MB/s
 - 1.1, 2012
 - 2.0, 2013, max 1200 MB/s

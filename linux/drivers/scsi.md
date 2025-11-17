@@ -1,6 +1,17 @@
 Linux scsi
 ==========
 
+## Specs
+
+- Serial Attached SCSI
+  - SAS-1:  3.0 Gb/s, 2004
+  - SAS-2:  6.0 Gb/s, 2009
+  - SAS-3: 12.0 Gb/s, 2013
+  - SAS-4: 22.5 Gb/s, 2017
+  - SAS-5: 45.0 Gb/s, wip
+  - SCSI command set
+  - host controller usually needs its own driver
+
 ## AHCI and SCSI
 
 - SCSI

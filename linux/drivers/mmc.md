@@ -66,15 +66,6 @@ Kernel MMC/SD/SDIO
   - 2015, eMMC 5.1
     - read 250MB/s write 125MB/s
   - 2019, eMMC 5.1A
-- UFS, Universal Flash Storage
-  - there are both UFS memory card and eUFS
-  - 2011, UFS 1.0, 300MB/s
-  - 2012, UFS 1.1, 300MB/s
-  - 2013, UFS 2.0, 600MB/s
-  - 2016, UFS 2.1, 600MB/s
-  - 2018, UFS 3.0, 1450MB/s
-  - 2020, UFS 3.1, 1450MB/s
-  - 2022, UFS 4.0, 2900MB/s
 
 ## SDIO spec
 

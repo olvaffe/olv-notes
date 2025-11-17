@@ -1,6 +1,15 @@
 Linux ata
 =========
 
+## Spec
+
+- Serial ATA
+  - 1.0: 1.5 Gb/s, 2003
+  - 2.0: 3.0 Gb/s, 2004
+  - 3.0: 6.0 Gb/s, 2009
+  - ATA8-ACS command set
+  - host controller usually provides a generic AHCI interface
+
 ## AHCI
 
 - Advanced Host Controller Interface
