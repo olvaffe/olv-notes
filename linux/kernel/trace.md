@@ -142,3 +142,15 @@ Kernel trace
   or `event_class_syscall_exit` is recorded
 - when the trace is printed, `print_syscall_enter` or `print_syscall_exit`
   prints the formatted line
+
+## Tracepoints
+
+- `cd /sys/kernel/debug/tracing`
+  - for help, `cat README`
+  - clear trace: `echo > trace`
+  - enable a tracepoint: `echo 1 > events/power/cpu_frequency/enable`
+  - start tracing: `echo 1 > tracing_on`
+  - stop tracing: `echo 0 > tracing_on`
+  - get trace: `cat trace`
+- list all events
+  - `find /sys/kernel/debug/tracing/events -type d`
