@@ -58,7 +58,6 @@ USB Gadget
 
 ## RK3588
 
-page 5,9,11,14
 - the soc has
   - xHCI 3.0 controllers x2
     - `usb_host0_xhci: usb@fc000000` paired with `u2phy0_otg: otg-port` and `usbdp_phy0: phy@fed80000`

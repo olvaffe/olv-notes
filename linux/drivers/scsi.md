@@ -3,6 +3,8 @@ Linux scsi
 
 ## Specs
 
+- SCSI was initially parallel interface
+- modern SCSI development focuses on serial interface
 - Serial Attached SCSI
   - SAS-1:  3.0 Gb/s, 2004
   - SAS-2:  6.0 Gb/s, 2009
@@ -11,6 +13,9 @@ Linux scsi
   - SAS-5: 45.0 Gb/s, wip
   - SCSI command set
   - host controller usually needs its own driver
+- USB Attached SCSI
+- SCSI command protocol
+  - outside SCSI, ATAPI or USB mass storage also uses SCSI command protocol
 
 ## AHCI and SCSI
 
