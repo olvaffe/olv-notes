@@ -847,3 +847,6 @@ PC
   - Total: $1355
 - media center compartment
   - 56x41x16, opening height is 11.5
+- fan curves
+  - cpu: 20%@60, 40%@70, 80%@80, 100%@85
+  - gpu: 20%@60, 40%@70, 80%@80, 100%@85
