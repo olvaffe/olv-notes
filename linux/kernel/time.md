@@ -178,6 +178,18 @@ Kernel Time
   calls `ktime_get_real_ts64`
   - this is similar to `ktime_get_ts64` but without `tk->wall_to_monotonic`
 
+## NTP
+
+- `timedatectl set-ntp yes` starts `systemd-timesyncd`
+  - when synced, it calls `clock_adjtime(CLOCK_REALTIME)`
+- `SYSCALL_DEFINE2(clock_adjtime, ...)`
+  - `posix_clock_realtime_adj` calls `do_adjtimex`
+  - `ntp_notify_cmos_timer` saves synced time to rtc
+- `sync_hw_clock` is called on ntp sync or every `SYNC_PERIOD_NS` (11 minutes)
+  - `update_persistent_clock64` is only for x86
+    - `mach_set_cmos_time` calls `mc146818_set_time` directly
+  - `update_rtc` updates `rtc0`
+
 ## hrtimer
 
 - the functionality is always compiled

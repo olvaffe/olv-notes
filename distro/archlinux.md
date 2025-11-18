@@ -3,6 +3,10 @@ Arch Linux
 
 ## Installation
 
+- Boot
+  - disable secure boot and keep oem keys for backup
+  - boot from usb
+    - `curl -O https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso`
 - Preparation
   - require an internet connection
     - `ip link`
@@ -13,116 +17,122 @@ Arch Linux
     - wireless: `iwctl station <iface> connect <ssid>`
       - no easy way if the wireless adapter is not supported by the live image
   - `timedatectl` and wait until system clock synced
+    - kernel updates rtc automatically and `hwclock --systohc` after chroot is
+      unnecessary
   - partition and format disk
     - `fdisk <dev>`
       - 2GB for EFI system partition (ESP)
-      - remainder for root partition
-    - `mkfs.fat -F32 <part>`
-    - `mkfs.ext4 <part>`
+      - xGB for arch (`/`, `/home`, `/srv`)
+      - optional xGB for other distros
+      - optional unallocated space for windows
     - if luks,
-      - `cryptsetup luksFormat <part>`
-      - `systemd-cryptsetup attach root <part>`
-    - if btrfs,
-      - `mkfs.btrfs <part>`
-      - `mount <part> /mnt`
-      - `btrfs subvolume create /mnt/@`
-      - `btrfs subvolume create /mnt/@home`
-      - `btrfs subvolume create /mnt/@srv`
-      - `btrfs subvolume set-default /mnt/@`
-      - `umount /mnt`
-  - mount partitions to `/mnt` and `/mnt/boot`
-    - if btrfs,
-      - `mount -o compress=zstd <part> /mnt`
-      - `mkdir /mnt/{boot,home,srv}`
-      - `mount <esp> /mnt/boot`
-      - `mount -o subvol=@home <part> /mnt/home`
-      - `mount -o subvol=@srv <part> /mnt/srv`
+      - `cryptsetup luksFormat <part2>`
+      - `systemd-cryptsetup attach root <part2>`
+    - `mkfs.fat -F32 <part1>`
+    - `mkfs.ext4 <part2>`
+      - if btrfs, `mkfs.btrfs <part2>`
+        - `mount <part2> /mnt`
+        - `btrfs subvolume create /mnt/{@,@home,@srv}`
+        - `btrfs subvolume set-default /mnt/@`
+        - `umount /mnt`
+  - mount partitions
+    - `mount <part2> /mnt`
+      - if btrfs, `mount -o compress=zstd <part2> /mnt`
+        - `mkdir /mnt/{home,srv}`
+        - `mount -o subvol=@home <part2> /mnt/home`
+        - `mount -o subvol=@srv <part2> /mnt/srv`
+    - `mkdir /mnt/boot`
+    - `mount -o fmask=027 <part1> /mnt/boot`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
+    - `Server = https://mirror.fcix.net/archlinux/$repo/os/$arch`
     - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
   - `pacstrap -K /mnt base`
-  - `genfstab -U /mnt >> /mnt/etc/fstab` and edit
-    - replace expanded default options by `defaults`
+  - `genfstab -U /mnt >> /mnt/etc/fstab` and edit mount options
+    - vfat is `defaults,fmask=027`
+    - ext4 is `defaults`
+    - btrfs is `defaults,compress=zstd` for root and `defaults,subvol=@foo` for others
 - Configure
-  - `arch-chroot /mnt`
-  - `hwclock --systohc`
-    - this updates `/etc/adjtime` so should be done in chroot
+  - `arch-chroot -S /mnt`
   - install more packages
-    - `pacman -S sudo vim dosfstools btrfs-progs`
-    - `pacman -S iwd wpa_supplicant`, either suffices
-    - `pacman -S {intel,amd}-ucode linux-firmware-{amdgpu,intel,mediatek}`
-    - `pacman -S linux systemd-ukify`
-    - `pacman -S linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
+    - `sudo vim dosfstools btrfs-progs git zram-generator`
+    - `iwd wpa_supplicant`, either suffices
+    - `{intel,amd}-ucode linux-firmware-{amdgpu,intel,mediatek}`
+    - `linux systemd-ukify`
+    - `linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
+  - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
+  - create user
+    - `useradd -m -G wheel <user>`
+    - `passwd <user>`
+    - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
+    - `su - <user>`
+      - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
+      - `./olv-etc/create-links`
   - generate locale
-    - uncomment `en_US.UTF-8 UTF-8` from `/etc/locale.gen`
+    - `sed -i '/^# en_US.UTF-8 UTF-8$/s/^# //' /etc/locale.gen`
     - `locale-gen`
   - `systemd-firstboot --prompt --force`, or
     - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
     - `ln -sf /usr/share/zoneinfo/America/Los_Angeles /etc/localtime`
     - `echo <host-name> > /etc/hostname`
     - `passwd` to set a password for root
-  - create user
-    - `useradd -m -G wheel <user>`
-    - `passwd <user>`
-    - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
-  - `bootctl install`
+  - network
+    - `echo -e '[Match]\nType=ether\n[Network]\nDHCP=yes' > /etc/systemd/network/60-ether.network`
+    - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/60-wlan.network`
+    - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
+      - no resolve from this point on
+    - `systemctl enable systemd-networkd systemd-resolved iwd`
+    - `timedatectl set-ntp yes`
   - generate uki
-    - create `/etc/kernel/cmdline`
-      - `root=<part> loglevel=7`
-      - if luks, `rd.luks.name=<LUKS_UUID>=root root=/dev/mapper/root`
-        - `cryptsetup luksUUID <part>` to get uuid
+    - if luks, edit `/etc/mkinitcpio.conf`
+      - add `sd-encrypt` after `sd-vconsole` in `HOOKS`
+    - if luks with tpm2,
+      - `cp /usr/lib/kernel/uki.conf /etc/kernel/uki.conf` and edit
+        - `[PCRSignature:initrd]`
+        - `PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key.pem`
+        - `PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem`
+        - `Phases=enter-initrd`
+      - `ukify genkey -c /etc/kernel/uki.conf` generates the key to sign pcr
+        policies
     - edit `/etc/mkinitcpio.d/linux.preset`
       - comment out `default_image`
       - `default_uki=/boot/EFI/Linux/arch-linux.efi`
-    - if luks, edit `/etc/mkinitcpio.conf`
-      - add `sd-encrypt` after `sd-vconsole` in `HOOKS`
+    - create `/etc/kernel/cmdline`
+      - `root=<part2> loglevel=7`
+        - if luks, `rd.luks.name=<LUKS_UUID>=root root=/dev/mapper/root`
+          - `cryptsetup luksUUID <part2>` to get uuid
     - `mkinitcpio -p linux`
     - `rm /boot/initramfs-linux.img`
+  - `bootctl install`
+    - `mount -o fmask=027` silences a security warning
+    - `arch-chroot -S` allows `bootctl` to update efivar
+  - if secure boot,
+    - `pacman -S sbctl`
+    - `sbctl create-keys`
+    - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`
+    - `mv /var/lib/sbctl/keys/custom/{DB,db}`
+    - `sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI`
+    - `sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi`
+    - `sbctl sign -s /boot/EFI/Linux/arch-linux.efi`
 - Reboot
 
 ## Post-Installation
 
+- if secure boot,
+  - enable secure boot and clear oem keys to enter setup mode
+  - `sbctl -c enroll-keys`
+  - if luks with tpm2,
+    - reboot so that pcr #7 measures newly enrolled keys
+    - `bootctl` must report `TPM2 Support: yes` and `Measured UKI: yes`
+    - `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --tpm2-public-key-pcrs=11 --tpm2-public-key=/etc/systemd/tpm2-pcr-public-key.pem <part2>`
+      - on future boot, auto unlock if pcr #7 has the current value and pcr
+        #11 has the value specified by a signed policy
+      - a signed policy will be generated and embedded in the uki image
+  - reboot to verify
 - network
-  - for quick connection, see `Installation`
-  - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/60-wlan.network`
-  - `systemctl enable --now iwd systemd-networkd systemd-resolved`
   - `iwctl station <iface> connect <ssid>`
-  - for wireless adapter that requiers out-of-tree driver,
-    - `dkms autoinstall`
-    - `/etc/modules-load.d`
-    - `/etc/modprobe.d/blacklist.conf`
-  - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
-  - `timedatectl set-ntp yes`
-- secure boot
-  - `pacman -S sbctl`
-  - `sbctl create-keys`
-  - if preserving oem keys,
-    - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`
-    - `mv /var/lib/sbctl/keys/custom/{DB,db}`
-  - reboot and clear oem keys to enter setup mode
-  - `sbctl enroll-keys`
-    - `-c` if preserving oem keys
-  - `sbctl sign -s /boot/EFI/BOOT/BOOTX64.EFI`
-  - `sbctl sign -s /boot/EFI/systemd/systemd-bootx64.efi`
-  - `sbctl sign -s /boot/EFI/Linux/arch-linux.efi`
-- luks and tpm2
-  - `bootctl` must report `TPM2 Support: yes` and `Measured UKI: yes`
-  - create `/etc/kernel/uki.conf`
-    - `[PCRSignature:initrd]`
-    - `Phases=enter-initrd`
-    - `PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key.pem`
-    - `PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem`
-  - `ukify genkey -c /etc/kernel/uki.conf` generates the key to sign pcr
-    policies
-  - `systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=7 --tpm2-public-key-pcrs=11 --tpm2-public-key=/etc/systemd/tpm2-pcr-public-key.pem <part>`
-  - `mkinitcpio -p linux`
-- login as user
-  - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
-  - `./olv-etc/create-links`
 - packages
-  - `zram-generator`
-    - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
   - `steam`
     - uncomment the `[multilib]` section in `/etc/pacman.conf` first
   - media: `intel-media-driver`
@@ -205,6 +215,10 @@ Arch Linux
   - `mkinitcpio -k <version> --kernelimage <bzImage> -U /boot/EFI/Linux/custom.efi`
     - ignore errors on missing modules if they are unnecessary or built-in
     - the kernel image must have efi stub
+- dkms
+  - `dkms autoinstall`
+  - `/etc/modules-load.d`
+  - `/etc/modprobe.d/blacklist.conf`
 
 ## mkinitcpio
 

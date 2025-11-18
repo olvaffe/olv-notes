@@ -851,6 +851,7 @@ PC
   - cpu: 20%@60, 40%@70, 80%@80, 100%@85
   - gpu: 20%@60, 40%@70, 80%@80, 100%@85
 - mb coil whine
+  - it appears to happen when vcore fluctuates below 1V
   - disable cpu C-states eliminate it
     - `for i in 1 2 3; do cpupower idle-set -d $i; done`
     - according to `turbostat`, core idle consumption increases by 30W
