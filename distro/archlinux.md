@@ -42,7 +42,7 @@ Arch Linux
         - `mount -o subvol=@home <part2> /mnt/home`
         - `mount -o subvol=@srv <part2> /mnt/srv`
     - `mkdir /mnt/boot`
-    - `mount -o fmask=027 <part1> /mnt/boot`
+    - `mount -o umask=027 <part1> /mnt/boot`
 - Bootstrap
   - update `/etc/pacman.d/mirrorlist` if desired
     - `Server = https://geo.mirror.pkgbuild.com/$repo/os/$arch`
@@ -50,27 +50,21 @@ Arch Linux
     - `Server = https://mirrors.kernel.org/archlinux/$repo/os/$arch`
   - `pacstrap -K /mnt base`
   - `genfstab -U /mnt >> /mnt/etc/fstab` and edit mount options
-    - vfat is `defaults,fmask=027`
+    - vfat is `defaults,umask=027`
     - ext4 is `defaults`
     - btrfs is `defaults,compress=zstd` for root and `defaults,subvol=@foo` for others
 - Configure
+  - `ln -sf /run/systemd/resolve/stub-resolv.conf /mnt/etc/resolv.conf`
   - `arch-chroot -S /mnt`
   - install more packages
     - `sudo vim dosfstools btrfs-progs git zram-generator`
     - `iwd wpa_supplicant`, either suffices
     - `{intel,amd}-ucode linux-firmware-{amdgpu,intel,mediatek}`
-    - `linux systemd-ukify`
+    - `linux systemd-ukify sbctl`
     - `linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
   - `echo '[zram0]' > /etc/systemd/zram-generator.conf`
-  - create user
-    - `useradd -m -G wheel <user>`
-    - `passwd <user>`
-    - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
-    - `su - <user>`
-      - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
-      - `./olv-etc/create-links`
   - generate locale
-    - `sed -i '/^# en_US.UTF-8 UTF-8$/s/^# //' /etc/locale.gen`
+    - `sed -i '/^#en_US.UTF-8/s/^#//' /etc/locale.gen`
     - `locale-gen`
   - `systemd-firstboot --prompt --force`, or
     - `echo LANG=en_US.UTF-8 > /etc/locale.conf`
@@ -80,10 +74,17 @@ Arch Linux
   - network
     - `echo -e '[Match]\nType=ether\n[Network]\nDHCP=yes' > /etc/systemd/network/60-ether.network`
     - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/60-wlan.network`
-    - `ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf`
-      - no resolve from this point on
-    - `systemctl enable systemd-networkd systemd-resolved iwd`
-    - `timedatectl set-ntp yes`
+    - `systemctl enable systemd-{networkd,resolved,timesyncd} iwd`
+  - create user
+    - `useradd -m -G wheel <user>`
+    - `passwd <user>`
+    - `visudo` to uncomment `%wheel ALL=(ALL:ALL) NOPASSWD: ALL`
+    - `su - <user>`
+      - `git clone --recurse-submodules https://github.com/olvaffe/olv-etc.git`
+      - `./olv-etc/create-links`
+  - `bootctl install`
+    - `mount -o umask=027` silences a security warning
+    - `arch-chroot -S` allows `bootctl` to update efivar
   - generate uki
     - if luks, edit `/etc/mkinitcpio.conf`
       - add `sd-encrypt` after `sd-vconsole` in `HOOKS`
@@ -104,11 +105,7 @@ Arch Linux
           - `cryptsetup luksUUID <part2>` to get uuid
     - `mkinitcpio -p linux`
     - `rm /boot/initramfs-linux.img`
-  - `bootctl install`
-    - `mount -o fmask=027` silences a security warning
-    - `arch-chroot -S` allows `bootctl` to update efivar
   - if secure boot,
-    - `pacman -S sbctl`
     - `sbctl create-keys`
     - `sbctl export-enrolled-keys --dir /var/lib/sbctl/keys/custom --disable-landlock`
     - `mv /var/lib/sbctl/keys/custom/{DB,db}`
@@ -130,8 +127,10 @@ Arch Linux
         #11 has the value specified by a signed policy
       - a signed policy will be generated and embedded in the uki image
   - reboot to verify
-- network
-  - `iwctl station <iface> connect <ssid>`
+- verify
+  - `free` and swap
+  - `networkctl` and network
+  - `timedatectl` and ntp
 - packages
   - `steam`
     - uncomment the `[multilib]` section in `/etc/pacman.conf` first
