@@ -272,8 +272,9 @@ Bluetooth
       - `input_device_set_channel` calls `input_device_connadd` after both
         ctrl and intr channels are set up
       - `input_device_connadd` calls `input_device_connected`
-      - `input_device_connected` calls `hidp_add_connection` which calls
-        `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
+      - `input_device_connected` calls `hidp_add_connection` which calls either
+        - `uhid_connadd` to create the hid device
+        - `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
 
 ## BlueZ `bluetoothctl`
 
@@ -373,21 +374,23 @@ Bluetooth
   - `lsmod` shows that uinput is loaded, which is used by bluez to create an
     input device
     - `AVRCP -> AVCTP -> uinput_create`
-- my old gamepad
+- my new gamepad
   - it has thse profiles
+    - HOGP (HID over GATT Profile)
+  - bluez `hog_profile` uses `uhid` to create `hid_device` from userspace
+- my old gamepad
+  - it has these profiles
     - SDP (Service Discovery Protocol)
     - HIDP (Human Interface Device Profile)
     - PnP Information
+  - bluez `input_profile` uses `uhid` to create `hid_device` from userspace
+    - if kernel has no `uhid` support, it falls back to `hidp`
   - `hidp` kernel module calls either `hid_allocate_device` to create a
     `hid_device`, or calls `input_allocate_device` to create a `input_dev`
     - this is decided by bluez depending what the device reports
     - in case of `hid_device`, a real `hid_driver` is needed to drive the
       `hid_device` and create `input_dev`s
   - for this gamepad, the `hid_driver` is `hid-generic`
-- my new gamepad
-  - it has thse profiles
-    - HOGP (HID over GATT Profile)
-  - bluez uses `uhid` to create `hid_device` from userspace and skips `hidp`
 
 ## Stack
 
