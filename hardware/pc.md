@@ -689,6 +689,45 @@ PC
   - RX 6600 XT,       RDNA2,      8 GB,  32 CUs, 160W, $150
   - Arc A580,         Xe,         8 GB,  24 EUs, 175W, $130
 
+## Controllers
+
+- Console Controllers
+  - Console Generations
+    - Gen6: Sony PS2, MS Xbox, Nintendo GC, Sega DC
+    - Gen7: Sony PS3, MS Xbox 360, Nintendo Wii
+    - Gen8: Sony PS4, MS Xbox One, Nintendo Wii U and Switch
+    - Gen9: Sony PS5, MS Xbox X/S, Nintendo Switch 2
+  - PlayStation DualShock/DualSense Wireless Controller
+    - 2006: Sixaxis, USB Mini, BT (proprietary)
+    - 2007: DualShock 3, USB Mini, BT (proprietary)
+    - 2013: DualShock 4,, USB Micro, BT (proprietary)
+    - 2020: DualSense, USB-C, BT (proprietary, limited std), $75
+  - Xbox Wireless Controller
+    - 2013: USB Micro, BT (proprietary)
+    - 2016: USB Micro, BT (proprietary, std)
+    - 2020: USB-C, BT (proprietary, std), $50
+  - Switch Pro Controller
+    - 2017: USB-C, BT (proprietary), $80
+    - 2025: USB-C, BT (proprietary), $90
+- 8BitDo
+  - most controllers can switch between DirectInput and XInput modes
+    - some can do Switch mode for Nintendo Switch
+    - no PS5 support
+  - wireless or 2.4G: proprietary protocol that requires a dongle on the host
+    - dongle appears as a wired controller to the host
+  - bt: emulate switch proprietary protocol just for switch
+- Win APIs
+  - DirectInput: older, wider varities, lower-level, higher flexibility
+  - XInput: introduced with Xbox 360
+- Linux
+  - if controller supports bt HIDP or HOGP profile, bluez uses `uhid` to
+    create a kernel hid device
+  - kernel hid drivers
+    - hid-generic can support basic functions
+    - special drivers can support more functions
+  - userspace hid drivers
+    - hidraw allows userspace to talk to kernel hid device directly
+
 ## Laptops
 
 - consumer
