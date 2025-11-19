@@ -727,6 +727,16 @@ PC
     - special drivers can support more functions
   - userspace hid drivers
     - hidraw allows userspace to talk to kernel hid device directly
+- SDL
+  - uses hidapi (with hidraw backend on linux) to drive the hid device
+    directly
+- Steam
+  - i guess steam input
+    - can use evdev
+    - can use hidapi to drive the hid device directly
+    - can emulate an xbox controller if enabled in settings
+  - for games that use steam input api, they either see evdev, the real
+    controller, or the emulated xbox controller
 
 ## Laptops
 
