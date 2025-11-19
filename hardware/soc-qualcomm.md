@@ -5,341 +5,112 @@ Qualcomm SoC
 
 - Snapdragon S series
   - discontinued
-  - S1
-    - 2007-2008
-    - MSM7x27
-    - 65nm
-    - Adreno 200, GLES 2.0
-  - S2
-    - 2010
-    - MSM7x30, MSM8x55
-    - 45nm
-    - Adreno 205, GLES 2.0
-  - S3
-    - 2010
-    - MSM8x60
-    - 45nm
-    - Adreno 220, GLES 2.0
-  - S4
-    - 2012
-    - MSM8x{25,27,30,60}
-    - 28nm-45nm
-    - Adreno 203, 225, 305, 320
+  - 2007-2008, S1 (MSM7x27), 65nm, Adreno 200, GLES2
+  - 2010, S2 (MSM7x30, MSM8x55), 45nm, Adreno 205, GLES2
+  - 2010, S3 (MSM8x60), 45nm, Adreno 220, GLES2
+  - 2012, S4 (MSM8x{25,27,30,60}), 28-45nm, Adreno 203,225,305,320
 - Snapdragon 2 series
   - ultra budget
-  - 200
-    - 2013
-    - MSM8x{10,12}
-    - 28nm
-    - Adreno 302
-  - 205, 208, 210, 212
-    - 2014-2017
-    - MSM8x{05,08,09}
-    - 28nm
-    - Adreno 304
-  - 215
-    - 2019
-    - QM215
-    - 28nm
-    - Adreno 308
+  - 2013, 200 (MSM8x{10,12}), 28nm, Adreno 302
+  - 2014-2017, 205/208/210/212 (MSM8x{05,08,09}), 28nm, Adreno 304
+  - 2019, 215 (QM215), 28nm, Adreno 308
 
 ## SoC: Mobile Series
 
 - Snapdragon 4 series
   - entry level
-  - 400
-    - 2013
-    - MSM8x{26,28,30}
-    - 28nm
-    - Adreno 305
-  - 410, 412, 415
-    - 2014-2015
-    - MSM8x{16,29}
-    - 28nm
-    - Adreno 306, 405
-  - 425, 427, 430, 435
-    - 2015-2016
-    - MSM8x{17,20,37,40}
-    - 28nm
-    - Adreno 308, 505
-  - 429, 439, 450
-    - 2017-2018
-    - SDM{429,439,450}
-    - 12nm-14nm
-    - Adreno 504, 505, 506
-  - 460
-    - 2020
-    - SM4250
-    - 11nm
-    - Adreno 610
-  - 480
-    - 2021
-    - SM4350
-    - 8nm
-    - Adreno 619
-  - 4 Gen 1
-    - 2022
-    - SM4375
-    - 6nm
-    - Adreno 619
-  - 4 Gen 2
-    - 2023
-    - SM4450
-    - 4nm
-    - Adreno 613
-  - 4s Gen 2
-    - 2024
-    - SM4635
-    - 4nm
-    - Adreno 611
+  - 2013, 400 (MSM8x{26,28,30}), 28nm, Adreno 305
+  - 2014-2015, 410/412/415 (MSM8x{16,29}), 28nm, Adreno 306/405
+  - 2015-2016, 425/427/430/435 (MSM8x{17,20,37,40}), 28nm, Adreno 308/505
+  - 2017-2018, 429/439/450 (SDM{429,439,450}), 12-14nm, Adreno 504/505/506
+  - 2020, 460 (SM4250), 11nm, Adreno 610
+  - 2021, 480 - SM4350 - 8nm - Adreno 619
+  - 2022, 4 Gen1 (SM4375), 6nm, Adreno 619
+  - 2023, 4 Gen2 (SM4450), 4nm, Adreno 613
+  - 2024, 4s Gen2 (SM4635), 4nm, Adreno 611
 - Snapdragon 6 series
   - mid-range
-  - 600
-    - 2013
-    - APQ8064
-    - 28nm
-    - Adreno 320
-  - 610, 615, 616
-    - 2014-2015
-    - MSM89{36,39}
-    - 28nm
-    - Adreno 405
-  - 625, 626
-    - 2016
-    - MSM8953
-    - 14nm
-    - Adreno 506
-  - 650, 652, 653
-    - 2016
-    - MSM89{56,76}
-    - 28nm
-    - Adreno 510
-  - 630, 636, 660
-    - 2017
-    - SDM{630,636,660}
-    - 14nm
-    - Adreno 508, 509, 512
-  - 632, 670
-    - 2018
-    - SDM{632,670}
-    - 10nm-14nm
-    - Adreno 506, 615
-  - 662, 665, 675, 678
-    - 2019-2020
-    - SM61{15,25,50}
-    - 11nm
-    - Adreno 610, 612
-  - 680, 690, 695
-    - 2020-2021
-    - SM{6225,6350,6375}
-    - 6nm-8nm
-    - Adreno 610, 619
-  - 6 Gen 1
-    - 2023
-    - SM6450
-    - 4nm
-    - Adreno 710
-  - 6s Gen 1
-    - 2024
-    - SM6115-AC
-    - 11nm
-    - Adreno 610
-  - 6 Gen 3
-    - 2024
-    - SM6475-AB
-    - 4nm
-    - Adreno 710
-  - 6s Gen 3
-    - 2024
-    - SM6375-AC
-    - 6nm
-    - Adreno 619
-  - 6 Gen 4
-    - 2025
-    - SM6650
-    - 4nm
-    - Adreno 810
+  - 2013, 600 (APQ8064), 28nm, Adreno 320
+  - 2014-2015, 610/615/616 (MSM89{36,39}), 28nm, Adreno 405
+  - 2016, 625/626 (MSM8953), 14nm, Adreno 506
+  - 2016, 650/652/653 (MSM89{56,76}), 28nm, Adreno 510
+  - 2017, 630/636/660 (SDM{630,636,660}), 14nm, Adreno 508/509/512
+  - 2018, 632/670 (SDM{632,670}), 10-14nm, Adreno 506/615
+  - 2019-2020, 662/665/675/678 (SM61{15,25,50}), 11nm, Adreno 610/612
+  - 2020-2021, 680/690/695 (SM{6225,6350,6375}), 6-8nm, Adreno 610/619
+  - 2023, 6 Gen1 (SM6450), 4nm, Adreno 710
+  - 2024, 6s Gen1 (SM6115-AC), 11nm, Adreno 610
+  - 2024, 6 Gen3 (SM6475-AB), 4nm, Adreno 710
+  - 2024, 6s Gen3 (SM6375-AC), 6nm, Adreno 619
+  - 2025, 6 Gen4 (SM6650), 4nm, Adreno 810
+  - 2025, 6s Gen4 (SM6435-AA), 4nm, Adreno
 - Snapdragon 7 series
   - upper mid-range
-  - 710, 712
-    - 2018-2019
-    - SDM{710,712}
-    - 10nm
-    - Adreno 616
-  - 720G, 730G, 732G
-    - 2019-2020
-    - SM71{25,50}
-    - 8nm
-    - Adreno 618
-  - 750G, 765G, 768G
-    - 2020
-    - SM72{25,50}
-    - 7nm
-    - Adreno 620
-  - 778G, 780G
-    - 2021
-    - SM73{25,50}
-    - 5nm-6nm
-    - Adreno 642
-  - 7 Gen1
-    - 2022
-    - SM7450
-    - 4nm
-    - Adreno 644
-  - 7s/7+ Gen2
-    - 2023
-    - SM{7435,7475}-AB
-    - 4nm
-    - Adreno 710/725
-  - 7/7+ Gen3
-    - 2024
-    - SM{7550,7675}-AB
-    - 4nm
-    - Adreno {720,732}
-  - 7s Gen3
-    - 2024
-    - SM7635
-    - 4nm
-    - Adreno 810
+  - 2018-2019, 710/712 (SDM{710,712}), 10nm, Adreno 616
+  - 2019-2020, 720G/730G/732G (SM71{25,50}), 8nm, Adreno 618
+  - 2020, 750G/765G/768G (SM72{25,50}), 7nm, Adreno 620
+  - 2021, 778G/780G (SM73{25,50}), 5-6nm, Adreno 642
+  - 2022, 7 Gen1 (SM7450), 4nm, Adreno 644
+  - 2023, 7s/7+ Gen2 (SM{7435,7475}-AB), 4nm, Adreno 710/725
+  - 2024, 7/7+ Gen3 (SM{7550,7675}-AB), 4nm, Adreno 720/732
+  - 2024, 7s Gen3 (SM7635), 4nm, Adreno 810
+  - 2025, 7 Gen4 (SM7750-AB), 4nm, Adreno 722
+  - 2025, 7s Gen4 (SM7635-AC), 4nm, Adreno 810
 - Snapdragon 8 series
   - high-end
-  - 800, 801, 805
-    - 2013-2014
-    - MSM8x74, APQ8084
-    - 28nm
-    - Adreno 330, 420
-  - 808, 810
-    - 2015
-    - MSM9x{92,94}
-    - 20nm
-    - Adreno 418, 430
-  - 820, 821
-    - 2016
-    - MSM8996
-    - 14nm
-    - Adreno 530
-  - 835
-    - 2017
-    - MSM8998
-    - 10nm
-    - Adreno 540
-  - 845
-    - 2018
-    - SDM845
-    - 10nm
-    - Adreno 630
-  - 855, 860
-    - 2019, 2021
-    - SM8150
-    - 7nm
-    - Adreno 640
-  - 865/865+, 870
-    - 2020-2021
-    - SM8250
-    - 7nm
-    - Adreno 650
-  - 888/888+
-    - 2021
-    - SM8350
-    - 5nm
-    - Adreno 660
-  - 8/8+ Gen1
-    - 2022
-    - SM84{50,75}
-    - 4nm
-    - Adreno 730
-  - 8 Gen2
-    - 2023
-    - SM8550
-    - 4nm
-    - Adreno 740
-  - 8/8s Gen3
-    - 2024
-    - SM{8650,8635}
-    - 4nm
-    - Adreno {750,735}
-  - 8 Elite
-    - 2024
-    - SM8750, Pakala
-    - 3nm
-    - Adreno 830
-  - Kaanapali?
+  - 2013-2014, 800/801/805 (MSM8x74/APQ8084), 28nm, Adreno 330/420
+  - 2015, 808/810 (MSM9x{92,94}), 20nm, Adreno 418/430
+  - 2016, 820/821 (MSM8996), 14nm, Adreno 530
+  - 2017, 835 (MSM8998), 10nm, Adreno 540
+  - 2018, 845 (SDM845), 10nm, Adreno 630
+  - 2019-2021, 855/860 (SM8150), 7nm, Adreno 640
+  - 2020-2021, 865/865+/870 (SM8250), 7nm, Adreno 650
+  - 2021, 888/888+ (SM8350), 5nm, Adreno 660
+  - 2022, 8/8+ Gen1 (SM84{50,75}), 4nm, Adreno 730
+  - 2023, 8 Gen2 (SM8550), 4nm, Adreno 740
+  - 2024, 8/8s Gen3 (SM{8650,8635}), 4nm, Adreno {750,735}
+  - 2024, 8 Elite (SM8750), 3nm, Adreno 830
+    - `pakala`
+  - 2025, 8s Gen4 (SM8735), 4nm, Adreno 825
+  - 2025, 8 Elite Gen5 (SM8850-AC), 3nm, Adreno 840
+    - `kaanapali`
 
 ## SoC: Compute Platforms
 
 - Snapdragon 7 Compute Platforms
-  - 7c
-    - 2020
-    - SC7180
-    - 8nm
-    - Adreno 618
+  - 2020, 7c (SC7180), 8nm, Adreno 618
     - cros: trogdor
       - `sc7180-trogdor-lazor-r3-kb.dts`
       - `sc7180-trogdor-coachz-r3.dts`
-  - 7c Gen2
-    - 2021
-    - SC7180P
-    - 8nm
-    - Adreno 618
-  - 7c+ Gen3
-    - 2022
-    - SC7280
-    - 6nm
-    - Adreno 7c+ Gen3 (Adreno 635)
+  - 2021, 7c Gen2 (SC7180P), 8nm, Adreno 618
+  - 2022, 7c+ Gen3 (SC7280), 6nm, Adreno 7c+ Gen3 (Adreno 635)
     - idp reference design: `sc7280-idp.dts`
     - compute reference design: `sc7280-crd-r3.dts`
     - cros: herobrine
       - `sc7280-herobrine-villager-r1.dts`
 - Snapdragon 8 Compute Platforms
-  - 835, 850
-    - 2018
-    - MSM8998, SDM850
-    - 10nm
-    - Adreno 540, 630
-  - 8c, 8cx
-    - 2019
-    - SC8180X
-    - 7nm
-    - Adreno 675, 680, 690
-  - 8cx Gen2
-    - 2020
-    - SC8180XP
-    - 7nm
-    - Adreno 690
-  - 8cx Gen3
-    - 2022
-    - SC8280XP
-    - 5nm
-    - Adreno 8cx Gen3 (Adreno 730)
+  - 2018, 835 (MSM8998), 10nm, Adreno 540
+  - 2018, 850 (SDM850), 10nm, Adreno 630
+  - 2019, 8cx (SC8180X), 7nm, Adreno 680
+  - 2020, 8c (SC8180), 7nm, Adreno 675
+  - 2020, 8cx Gen 2 (SC8180XP), 7nm, Adreno 690
+  - 2022, 8cx Gen 3 (SC8280), 5nm, Adreno 695
 - Snapdragon X Series
-  - X Elite/Plus
-    - 2024
-    - X1E-{78,80,84}, X1P-{42,46,64,66} (internally SC8380)
-      - `hamoa`: 10-core and 12-core, with X1-85 gpu
-      - `purwa`: 8-core, with X1-45 gpu
-    - 4nm
-    - Adreno X1
+  - 2024, X Elite/Plus (SC8380, X1E-80-100/X1P-42-100), 4nm, Adreno X1-85/X1-45
+    - `hamoa`: 10-core and 12-core, with X1-85 gpu
+    - `purwa`: 8-core, with X1-45 gpu
     - qualcomm compute platform: `x1e80100-qcp.dts`
     - compute reference design: `x1e80100-crd.dts`
+  - 2025, X2 Elite (SC8480, X2-80-100), 3nm, Adreno X2-85
+    - `glymur`
 
 ## SoC: Gaming Platforms
 
 - Snapdragon G series
-  - G3x Gen 1
-    - 2023
+  - 2023, G3x Gen1, 5nm, Adreno 660
     - rebranding of 888+
-    - 5nm
-    - Adreno 660
-  - G3x Gen 2
-    - 2023
-    - ?
-    - 4nm
-    - Adreno A32 (based on Adreno 740)
-  - G3 Gen 3
-    - 2023
-    - ?
-    - 4nm
-    - Adreno A33
+  - 2023, G3x Gen2, 4nm, Adreno A32 (based on Adreno 740)
+  - 2025, G3 Gen3, 4nm, Adreno A33
 
 ## Qualcomm Modem/WiFi/BT?
 
