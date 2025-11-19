@@ -391,6 +391,9 @@ Bluetooth
     - in case of `hid_device`, a real `hid_driver` is needed to drive the
       `hid_device` and create `input_dev`s
   - for this gamepad, the `hid_driver` is `hid-generic`
+- HOGP and HIDP for gamepads
+  - HOGP is for BLE: low power consumption, higher latency (unless BLE 5.0+)
+  - HIDP is for BR/EDR (classic): high power consumption, low latency
 
 ## Stack
 
