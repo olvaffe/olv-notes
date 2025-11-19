@@ -814,6 +814,8 @@ Kernel defconfig
   - select `On-Chip Interconnect management support` if needed
     - select `MediaTek interconnect drivers` if mtk
       - select `MediaTek DVFSRC EMI interconnect driver`
+        - select `MediaTek MT8195 interconnect driver` if mt8195
+        - select `MediaTek MT8196 interconnect driver` if mt8196
     - select `Qualcomm Network-on-Chip interconnect drivers` if qcom
     - select `Qualcomm OSM L3 interconnect driver` if sc7180
     - select `Qualcomm SC7180 interconnect driver` if sc7180
