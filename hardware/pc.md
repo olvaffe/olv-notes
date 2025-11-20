@@ -906,3 +906,80 @@ PC
     - according to `turbostat`, core idle consumption increases by 30W
   - set `Power Supply Idle Control` to `Typical Current Idle` greatly reduce it
     - under `Advanced -> AMD CBS -> CPU Common Options`
+- HWiNFO 64
+  - `CPU [#0]: AMD Ryzen 5 9600X`
+    - these are from cpu MSRs
+    - `Core VIDs` is requested voltage
+    - linux: `turbostat`
+  - `CPU [#0]: AMD Ryzen 5 9600X: C-State Residency`
+    - these are from cpu MSRs
+    - linux: `turbostat`
+  - `Memory Timings`
+    - these are likely from DDR5 SPD
+    - linux: `spd5118` and spd decoder
+  - `CPU [#0]: AMD Ryzen 5 9600X: Enhanced`
+    - these are from AMD SMN, SVI3, etc.
+    - linux: `k10temp`
+      - `Tctl` is derived for the purpose of fan control
+      - `Tccd1` is CCD1 temp
+  - `ASUS ROG STRIX B650E-I GAMING WIFI (Nuvoton NCT6799D/NCT6796D-S)`
+    - linux: `nct6775`
+      - `in0` is `Vcore`
+      - `in10` is `CPU VDDIO / MC`
+      - `in17` is `CPU SOC`
+      - `fan1` is `Chassis`
+      - `fan2` is `CPU`
+      - `fan7` is `AIO Pump`
+      - `SYSTIN` is `Motherboard` (a thermistor on mb)
+      - `CPUTIN` is `CPU` (a thermistor on cpu socket)
+      - `PECI/TSI Agent 0 Calibration` is cpu-provided temp (slightly lower than `Tccd1`)
+      - `TSI0_TEMP` is cpu-provided `Tctl`
+  - `ASUS ROG STRIX B650E-I GAMING WIFI (AMD Chipset)`
+    - chipset temp sensor
+    - linux: none?
+  - `ASUS EC: ASUS`
+    - linux: `asus-ec-sensors`
+  - `DDR5 DIMM [#1]: G.Skill F5-6000J3038F16G (P0 CHANNEL A/DIMM 1)`
+    - linux: `spd5118` and `dmidecode`
+  - `DDR5 DIMM [#3]: G.Skill F5-6000J3038F16G (P0 CHANNEL B/DIMM 1)`
+    - linux: `spd5118` and `dmidecode`
+  - `S.M.A.R.T.: Samsung SSD 990 PRO 2TB`
+    - linux: `smartctl`
+  - `Drive: Samsung SSD 990 PRO 2TB`
+    - linux: `smartctl`
+  - `GPU [#0]: AMD Radeon`
+    - linux: `amdgpu`
+      - `vddgfx` is `GPU Core Voltage (VDDCR_GFX)`
+      - `vddnb` is igpu north bridge voltage (mc, cache, etc.)
+      - `edge` is `GPU Temperature`
+      - `PPT` is `GPU Core Power (VDDCR_GFX)` (package power tracking)
+      - `sclk` is `GPU Clock`
+      - pci device
+        - `power_dpm_force_performance_level` picks the perf level
+        - `power_dpm_state` is legacy
+        - `power_state` is the pcie power state
+          - `power/control` is `on` or `auto`
+        - `pp_dpm_*clk` shows current and available freqs
+      - debugfs `amdgpu_pm_info`
+        - `average SoC including CPU` is average power
+        - `current SoC including CPU` is instant power (`PPT`)
+        - `GPU Temperature` is `edge`
+  - `GPU [#1]: AMD Radeon RX 9060 XT: GIGABYTE Radeon RX 9060 XT GAMING OC 8G`
+    - linux: `amdgpu`
+      - `vddgfx` is `GPU Core Voltage (VDDCR_GFX)`
+      - `fan1` is `GPU Core Voltage (VDDCR_GFX)`
+      - `edge` is `GPU Temperature`
+      - `junction` is `GPU Hot Spot Temperature`
+      - `mem` is `GPU Memory Junction Temperature`
+      - `PPT` is `GPU Core Input Power (VDDCR_GFX)` (package power tracking)
+      - `pwm1` is `GPU Fan PWM`
+      - `sclk` is `GPU Clock`
+      - `mclk` is `GPU Memory Clock`
+      - pci device
+        - see above
+      - debugfs `amdgpu_pm_info`
+        - see above
+        - `average SoC` is average power (`PPT`)
+        - `current SoC` is instant power
+  - linux-only
+    - linux: `mt7921e` has a temp sensor for the wifi/bt chipset

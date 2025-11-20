@@ -143,6 +143,22 @@ PCI
   - `14h to FEh` Reserved
   - `FFh` Device does not fit in any defined classes
 
+## lspci
+
+- `lspci -vv -s <slot>`
+- capabilities
+  - `Power Management version 3`
+    - `Status: D0` means the device is in D0 (active)
+      - `D3` is the lowest power state
+      - when os puts a device to `D3`, it is actually in `D3hot`, meaning the
+        device is in D3 but still powered
+      - hw may be able to put the device to `D3cold` and cut the power
+  - `Express (v2) Legacy Endpoint, IntMsgNum 0`
+    - `LnkCtl: ASPM L1 Enabled` means aspm is enabled
+    - `LnkSta: Speed 32GT/s, Width x16` means pcie 5.0 x16
+  - `Physical Resizable BAR` is rebar
+    - it shows current and supported bar sizes
+
 ## x86 PCI Setup
 
 - `pci_setup` parses pci= cmdline
