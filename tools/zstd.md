@@ -1,6 +1,31 @@
 Zstandard
 =========
 
+## zstd command line
+
+- usage
+  - `zstd <files>...` compresses specified files individually
+  - `zstd` or `zstd -` compresses stdin to stdout
+    - stdin/stdout must not be tty unless `-f` or `-c`
+- operation modes
+  - `-z` is the default and compresses
+  - `-d` decompresses
+- operation modifiers
+  - `-3` is the default compression level (valid levels are 1 to 19)
+  - `--fast` is the ultra-fast compression level
+  - `-T0` uses all cpu cores
+  - `--long` uses long window
+  - `-f` disables many checks
+    - input can be symlink, blk, tty
+    - output can be tty, and can overwrite existing file
+  - `-c` force-outputs to stdout
+  - `-o <file>` outputs to the specified file
+  - `--sparse`/`--no-sparse` enables/disables sparse (default on unless tty)
+- ssh examples
+  - `time ssh <remote> "zstd -c <file>" | zstd -dfo <file>`
+    - `--no-sparse` if the local file is blk
+  - `time zstd -c <file> | ssh <remote> "zstd -dfo <file>"`
+
 ## Algorithms and Formats
 
 - compression process
