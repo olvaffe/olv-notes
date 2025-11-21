@@ -467,11 +467,11 @@ PC
   - NF-A14x25: 140x140x25
   - NF-A14x15: 140x140x15
   - NF-A12x25: 120x120x25
-  - NF-A12x15: 120x120x15
+  - NF-A12x15: 120x120x15, inaudible 20%
   - NF-A9: 92x92x25
   - NF-A9x14: 92x92x14
   - NF-A8: 80x80x25
-  - NF-A6x25: 60x60x25
+  - NF-A6x25: 60x60x25, inaudible 20%
   - NF-A6x15: 60x60x15
   - NF-A4x20: 40x40x20
   - NF-A4x10: 40x40x10
@@ -896,16 +896,23 @@ PC
   - Total: $1355
 - media center compartment
   - 56x41x16, opening height is 11.5
-- fan curves
-  - cpu: 20%@60, 40%@70, 80%@80, 100%@85
-  - gpu: 20%@60, 40%@70, 80%@80, 100%@85
+- bios
+  - `Ai Tweaker -> Ai Overclock Tuner -> EXPO I`
+  - `Advanced -> Onboard Devices Configuration`
+    - `USB Audio Controller -> Disabled` (optional, to speed up boot)
+    - `PCIE Link Speed -> PCIEX16 Link Mode -> GEN 4`
+  - `Advanced -> AMD CBS -> CPU Common Options`
+    - `Power Supply Idle Control -> Typical Current Idle`
+  - `Monitor -> Q-Fan Tuning`
+    - cpu: 20%@55, 40%@65, 80%@75, 100%@85
+  - `Boot -> Secure Boot -> OS Type -> Windows UEFI mode`
 - mb coil whine
-  - it appears to happen when vcore fluctuates below 1V
+  - it appears to happen when cpu draws less than 20W
   - disable cpu C-states eliminate it
     - `for i in 1 2 3; do cpupower idle-set -d $i; done`
     - according to `turbostat`, core idle consumption increases by 30W
   - set `Power Supply Idle Control` to `Typical Current Idle` greatly reduce it
-    - under `Advanced -> AMD CBS -> CPU Common Options`
+    - according to `turbostat`, package idle consumption increases from 15W to 20W
 - HWiNFO 64
   - `CPU [#0]: AMD Ryzen 5 9600X`
     - these are from cpu MSRs
@@ -923,6 +930,10 @@ PC
       - `Tctl` is derived for the purpose of fan control
       - `Tccd1` is CCD1 temp
   - `ASUS ROG STRIX B650E-I GAMING WIFI (Nuvoton NCT6799D/NCT6796D-S)`
+    - `Motherboard` is thermistor on mb
+    - `CPU Package` is cpu-reported `Tctl`
+    - `CPU` is cpu-reported, slightly lower than `Tccd1`
+      - this is what fan curves use by default
     - linux: `nct6775`
       - `in0` is `Vcore`
       - `in10` is `CPU VDDIO / MC`
@@ -930,22 +941,21 @@ PC
       - `fan1` is `Chassis`
       - `fan2` is `CPU`
       - `fan7` is `AIO Pump`
-      - `SYSTIN` is `Motherboard` (a thermistor on mb)
-      - `CPUTIN` is `CPU` (a thermistor on cpu socket)
-      - `PECI/TSI Agent 0 Calibration` is cpu-provided temp (slightly lower than `Tccd1`)
-      - `TSI0_TEMP` is cpu-provided `Tctl`
+      - `SYSTIN` is `Motherboard`
+      - `CPUTIN` is thermistor on cpu socket, slightly lower than `CPU`
+      - `PECI/TSI Agent 0 Calibration` is `CPU`
+      - `TSI0_TEMP` is `TSI0 (CPU)`, sams as `CPU Package`
   - `ASUS ROG STRIX B650E-I GAMING WIFI (AMD Chipset)`
     - chipset temp sensor
     - linux: none?
   - `ASUS EC: ASUS`
     - linux: `asus-ec-sensors`
+      - `VRM`
   - `DDR5 DIMM [#1]: G.Skill F5-6000J3038F16G (P0 CHANNEL A/DIMM 1)`
     - linux: `spd5118` and `dmidecode`
   - `DDR5 DIMM [#3]: G.Skill F5-6000J3038F16G (P0 CHANNEL B/DIMM 1)`
     - linux: `spd5118` and `dmidecode`
   - `S.M.A.R.T.: Samsung SSD 990 PRO 2TB`
-    - linux: `smartctl`
-  - `Drive: Samsung SSD 990 PRO 2TB`
     - linux: `smartctl`
   - `GPU [#0]: AMD Radeon`
     - linux: `amdgpu`
