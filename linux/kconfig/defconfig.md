@@ -375,8 +375,11 @@ Kernel defconfig
     - select `AMD Family 10h+ temperature sensor` if amd
     - select `Dell laptop SMM BIOS hwmon driver` if dell
     - select `Intel Core/Core2/Atom temperature sensor` if intel
+    - select `Platform driver for Nuvoton NCT6775F and compatibles` if asus
     - select `Raspberry Pi voltage monitor` if rpi
     - select `SPD5118 Compliant Temperature Sensors` if needed (for ddr5)
+      - select `Enable detect function`
+    - select `ASUS EC Sensors` if asus
   - select `Thermal drivers`
     - select `Generic cpu cooling support` if arm
     - select `Generic device cooling support` if arm, depending on `PM_DEVFREQ`
