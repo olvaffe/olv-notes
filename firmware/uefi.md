@@ -232,7 +232,9 @@ UEFI
     - `PCIE Link Speed` forces pcie gen for gpu, m2, chipset
   - `NB Configuration` configs igpu
   - `AMD CBS` provides amd-specific Custom Bios Settings
-  - `AMD PBS` provides amd-specific Processor Boost States
+  - `AMD PBS` provides amd-specific Platform Bios Settings
+    - `Graphics Features` configs dgpu
+      - `D3Cold Support`
   - `AMD Overclocking` provides manual overclocking
 - Monitor
   - `Temperature Monitor` shows cpu, mb (chassis?), vrm (regulators), chipset,
