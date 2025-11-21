@@ -170,7 +170,48 @@ AMD CPUs
 
 ## Zen 4 Overclocking
 
-- <https://skatterbencher.com/2022/09/26/raphael-overclocking-whats-new/>
+- <https://skatterbencher.com/overclocking-technologies/>
+- Precision Boost
+  - cpu expects to sustain base clock and generates tdp heat
+  - precision boost is an altorithm that, whenever possible, boosts to higher
+    clocks to maximize performance
+  - the algorithm also considers factors that are controlled by the system
+    instead of the cpu, such as cpu thermal, vrm quality, and vrm thermal
+  - Sustained Power Limit (SPL), aka TDP
+    - limiting factors are usually power supply and thermal
+  - Package Power Tracking (PPT) is the max power draw for boost
+    - limiting factor is usually cpu thermal
+  - Electrical Design Current (EDC) is the max peak current
+    - limiting factor is usually vrm quality
+  - Thermal Design Current (TDC) is the sustainable current
+    - limiting factors are usually vrm quality and vrm thermal
+  - Thermal (THM) is the max core temperature, aka TjMax
+    - typically 95 degrees
+  - Processor Hot (PROCHOT) is a signal from mobo to throttle the cpu when
+    another system component overheats
+  - Failure In Time (FIT) is the rate the cpu fails over its lifespan
+    - the rate corelates to high temperature and high voltage
+  - Fused Maximum Frequency (FMAX) is the max boost frequency
+    - factory-fused
+- Precision Boost Overdrive (PBO)
+  - <https://skatterbencher.com/amd-precision-boost-overdrive/>
+  - it gives end-users some tuning knobs to the precision boost algorithm
+  - sicne Zen+: PPT, EDC, and TDC
+  - since Zen 2:
+    - AutoOC, aka Boost Clock Override or Fmax Override, offsets FMAX upward
+      or downward
+    - Scalar multiplies FIT, such that the cpu can stay at high
+      voltage/temperature for longer (at the cost of the cpu lifespan)
+- Precision Boost Overdrive 2
+  - <https://skatterbencher.com/amd-precision-boost-overdrive-2/>
+  - since Zen 3
+  - Platform Thermal Throttle allows TjMax to be decreased
+  - Curve Optimizer applies a constant voltage offset across the entire cpu
+    VFT table
+    - that is, voltage-frequency table, or OPP table
+    - this is mainly for undervolt
+  - Curve Shaper applies different voltage offsets to different regions of the
+    cpu VFT table
 - clocking topo: `CGPLL` converts external crystal 48mhz to
   - `CCLK -> VCO -> CCX -> cpu cores`
   - `PCIECLK -> pcie`
@@ -186,15 +227,6 @@ AMD CPUs
   - `VDDIO_MEM_S3` is converted to `VDDP_DDR` (dram)
 - AMD Serial VID Interface 3 (SVI3)
   - an interface (similar to i2c) to control soc voltage regulators
-- Precision Boost
-  - the task is performed by SMUs in each die
-  - Sustained Power Limit (SPL) is tdp
-  - Package Power Tracking (PPT) is the max power draw for boost, with
-    limiting factor being thermal
-  - Electrical Design Current (EDC) is the peak current, with limiting factor
-    being vrm
-  - Thermal Design Current (TDC) is the sustained current, with limiting
-    factor being vrm and thermal
 
 ## Ryzen 5 9600X PCI and USB
 
