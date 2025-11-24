@@ -103,9 +103,9 @@ PC
     - 16C@4.3GHz - 1280KB/16MB/64MB - 170W, x2.94 plus bigger L1/L2/L3
     - $550, x2.75
 - Ryzen 7 9700X
-  - <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-7-9700x.html>
+  - <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-5-9600x.html>
   - General
-    - Core: Zen 5, 4nm, x8, 3.8GHz boosted to 5.5GHz
+    - Core: Zen 5, 4nm, x6, 3.9GHz boosted to 5.4GHz
     - Cache: L1 80KB per core, L2 1MB per core, L3 32MB shared
     - TDP: 65W
   - Connectivity:

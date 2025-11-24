@@ -39,6 +39,7 @@ Kernel defconfig
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
+  - select `/dev/cpu/*/msr - Model-specific register support` if desired (for turbostat)
   - select `EFI runtime service support`
     - select `EFI stub support` if uki
   - select `Timer frequency (1000 HZ)` if desired
