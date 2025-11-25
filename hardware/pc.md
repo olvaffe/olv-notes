@@ -843,8 +843,10 @@ PC
     - i5-5200U (x2), 4GB DDR3L, 256GB M.2 SATA
   - Raspberry 4 Model B Rev 1.2
     - BCM2711 (A72 x4), 4GB LPDDR4, no storage
+    - power: idle server 4W
   - FriendlyElec NanoPi R5C
     - RK3568B2 (A55 x4), 4GB LPDDR4X, 32GB eMMC
+    - power: idle 2.7W, normal load 3.3W
 - spouse
   - Minisforum UM690
     - 6900HX (x8), 32GB LPDDR5, 1TB NVMe
@@ -860,6 +862,7 @@ PC
     - i7-1185G7 (x4), 32GB LPDDR4X, 256GB NVMe
   - HP Elite Dragonfly 13.5 Chromebook
     - i7-1265U (2+8), 32GB LPDDR4X, 512GB NVMe
+    - power: suspend 2.1W, idle+screen off 5W, idle 6.5W, stressed 24W, boosted 50W
   - ASUS Vivobook S 15 (Q5507)
     - X1P-42-100 (x8), 16GB LPDDR5X, 512GB NVMe
   - Xunlong Orange Pi 5
