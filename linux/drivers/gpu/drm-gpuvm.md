@@ -1,6 +1,21 @@
 DRM GPUVM
 =========
 
+## History
+
+- 2002.03: i915 proposed `VM_BIND` but never merged
+  - it allows userspace to manage GPU VMs
+  - no bo list is needed on submission
+- 2023.01: nouveau proposed `VM_BIND`
+  - a generic DRM GPUVA manager is also introduced
+- 2023.08: nouveau gained `VM_BIND` support
+- 2023.09: GPUVA growed into GPUVM
+  - gem bos exclusive to a vm can share the same dma-resv and be locked
+    altogether
+- 2023.12: xe merged with `VM_BIND`
+- 2024.03: panthor merged with `VM_BIND`
+- 2025.07: msm gained `VM_BIND` support
+
 ## Basics
 
 - `drm_gpuvm` is the gpu va manager
