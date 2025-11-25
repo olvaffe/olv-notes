@@ -5,6 +5,7 @@ dEQP
 
 - Build
   - `python3 external/fetch_sources.py`
+    - `--clean` to clean up first if necessary
   - `cmake -S . -B out -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DDEQP_TARGET=surfaceless`
     - a debug build can be significantly slower when used with deqp-runner
     - `DEQP_TARGET` is for GL/GLES and VK WSI
