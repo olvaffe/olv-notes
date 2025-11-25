@@ -867,6 +867,7 @@ PC
     - X1P-42-100 (x8), 16GB LPDDR5X, 512GB NVMe
   - Xunlong Orange Pi 5
     - RK3588S (A76 x4, A55 x4), 16GB LPDDR4X, no eMMC
+    - power: idle: 2.0W, stressed 7.9W
 - geekbench single-core scores
   - intel
     - i7-12xx: 2300
@@ -996,3 +997,9 @@ PC
         - `current SoC` is instant power
   - linux-only
     - linux: `mt7921e` has a temp sensor for the wifi/bt chipset
+- power
+  - poweroff: 1.7W
+  - suspend: 2.2W
+  - idle: 32-36W
+  - stressed: 125W
+  - Dell P2723DE: 17.6W
