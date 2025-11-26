@@ -997,9 +997,11 @@ PC
         - `current SoC` is instant power
   - linux-only
     - linux: `mt7921e` has a temp sensor for the wifi/bt chipset
-- power
+- power from outlet
   - poweroff: 1.7W
   - suspend: 2.2W
-  - idle: 32-36W
+  - idle
+    - with expo (6000@1.35V): 32-36W
+    - without expo (4800@1.1V): 27-31W
   - stressed: 125W
   - Dell P2723DE: 17.6W
