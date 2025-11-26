@@ -679,6 +679,66 @@ DRM panthor
       calls `drm_sched_start` on their queues and moves them back to
       `sched->groups.idle` or `sched->groups.runnable`
     - it queues `tick_work` and `sync_upd_work`
+- priority
+  - groups and queues both have userspace-specified priorities
+    - `panthor_group_create` inits `group->priority` to one of
+      - `PANTHOR_CSG_PRIORITY_LOW`
+      - `PANTHOR_CSG_PRIORITY_MEDIUM`
+      - `PANTHOR_CSG_PRIORITY_HIGH`
+      - `PANTHOR_CSG_PRIORITY_RT`
+      - this is vk global priority
+    - `group_create_queue` inits `queue->priority` between `[0, CSF_MAX_QUEUE_PRIO]`
+      - panvk always uses 1
+  - queue priority is used by hw directly with `CS_CONFIG_PRIORITY`
+  - group priority is used by hw indirectly
+    - `tick_ctx_apply` assigns each group a different hw prio starting from
+      `MAX_CSG_PRIO`
+    - hw prio is used with `CSG_EP_REQ_PRIORITY`
+- group tracking with `group->run_node`
+  - `panthor_group_create` adds a group to
+    `sched->groups.idle[group->priority]` initially
+  - when a job is submitted, `group_schedule_locked` moves the group to
+    `sched->groups.runnable[group->priority]`
+  - upon tick,
+    - `tick_work` moves the group to `ctx->groups[group->priority]`
+    - `tick_ctx_apply` removes the group from any list
+      - instead, `csg_slot->group` points the group now
+  - when userspace destroys the group, it triggers another tick
+    - `tick_ctx_insert_old_group` adds the active group to
+      `ctx->old_groups[group->priority]`
+    - `tick_ctx_apply` suspends the active group
+    - `tick_ctx_cleanup` removes the group from any list and schedules
+      `group_term_work`
+- `tick_work` group rotation
+  - `tick_ctx_init` calls `tick_ctx_insert_old_group` on each active group
+    - it adds each active group to `ctx->old_groups[group->priority]`
+    - it also sort active groups by hw prios
+      - almost all groups are `PANTHOR_CSG_PRIORITY_MEDIUM` and are on the same list
+      - groups on the same list are sorted by their hw prios
+  - it loops to pick from active and runnable groups
+    - `tick_ctx_pick_groups_from_list` moves active groups from
+      `ctx.old_groups[prio]` to `ctx->groups[group->priority]`
+    - `tick_ctx_pick_groups_from_list` moves runnable groups from
+      `sched->groups.runnable[prio]` to `ctx->groups[group->priority]`
+    - note that the active group with the highest hw prio is moved to the tail
+      - this is to assign it a lower hw prio and assign higher hw prios to
+        other groups with the same group priority
+      - remember that almost all groups are `PANTHOR_CSG_PRIORITY_MEDIUM` and
+        we don't want one group to starve others with the same group priority
+  - it loops again to pick from idle groups
+    - same as above, but this time idle groups are considered
+  - `tick_ctx_apply`
+    - if an active group is not picked and is still on
+      `ctx->old_groups[prio]`, it is suspended
+    - if an active group is picked, it is assigned a new hw prio
+    - if a runnable/idle group is picked, it is started
+    - active groups are no longer tracked on any list
+      - instead, they are pointed to by `csg_slot->group`
+    - suspended groups are moved from `ctx->old_groups[prio]` to
+      `sched->groups.idle[prio]` or `sched->groups.runnable[prio]` if they
+      still can run
+  - `tick_ctx_cleanup`
+    - suspended groups that can no longer run are sent to `group_term_work`
 
 ## Error Recovery
 
