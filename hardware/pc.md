@@ -901,12 +901,14 @@ PC
 - media center compartment
   - 56x41x16, opening height is 11.5
 - bios
-  - `Ai Tweaker -> Ai Overclock Tuner -> EXPO I`
+  - `Ai Tweaker -> Ai Overclock Tuner -> EXPO I` (optional, to OC ram)
   - `Advanced -> Onboard Devices Configuration`
     - `USB Audio Controller -> Disabled` (optional, to speed up boot)
     - `PCIE Link Speed -> PCIEX16 Link Mode -> GEN 4`
   - `Advanced -> AMD CBS -> CPU Common Options`
-    - `Power Supply Idle Control -> Typical Current Idle`
+    - `Power Supply Idle Control -> Typical Current Idle` (optional, to silence mobo vrm)
+  - `Advanced -> AMD PBS -> Graphics Features`
+    - `D3Cold Support -> Enabled` (optional, does not appear to help)
   - `Monitor -> Q-Fan Tuning`
     - cpu: 20%@55, 40%@65, 80%@75, 100%@85
   - `Boot -> Secure Boot -> OS Type -> Windows UEFI mode`
@@ -1000,8 +1002,13 @@ PC
 - power from outlet
   - poweroff: 1.7W
   - suspend: 2.2W
-  - idle
-    - with expo (6000@1.35V): 32-36W
-    - without expo (4800@1.1V): 27-31W
+  - idle: 32-36W (ddr5 6000@1.35V)
+    - without expo: 27-31W (ddr5 4800@1.1V)
   - stressed: 125W
+  - dgpu: 38-42W
+    - without output: 36-40W (D3hot)
+    - D3cold appears to hurt rather than to help
+  - youtube:
+    - igpu: 47-51 (dgpu D3hot)
+    - dgpu: 62-65 (dgpu D0)
   - Dell P2723DE: 17.6W
