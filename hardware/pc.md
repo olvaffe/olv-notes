@@ -1012,3 +1012,7 @@ PC
     - igpu: 47-51 (dgpu D3hot)
     - dgpu: 62-65 (dgpu D0)
   - Dell P2723DE: 17.6W
+  - Sony XR-75X90CJ:
+    - off: 0.5W
+    - home & youtube: 135W
+    - switch: 175W
