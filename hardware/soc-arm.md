@@ -67,7 +67,17 @@ ARM Processors
   - Cortex-A725, 2024
   - Cortex-X925, 2024
 - ARMv8.8-A and ARMv9.3-A
+  - C1-Nano, 2025 (was A5xx)
+  - C1-Pro, 2025 (was A7xx)
+  - C1-Premium, 2025 (new)
+  - C1-Ultra, 2025 (was X9xx)
 - ARMv8.9-A and ARMv9.4-A
+- ARMv9.5-A
+- ARMv9.6-A
+- ARMv9.7-A
+- ARMv9.8-A
+- ARMv9.9-A
+- ARMv10.0-A
 
 ## Microcontroller Profile
 

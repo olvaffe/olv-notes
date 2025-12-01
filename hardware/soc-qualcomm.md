@@ -74,6 +74,8 @@ Qualcomm SoC
   - 2025, 8s Gen4 (SM8735), 4nm, Adreno 825
   - 2025, 8 Elite Gen5 (SM8850-AC), 3nm, Adreno 840
     - `kaanapali`
+  - 2025, 8 Gen5 (SM8845), 3nm, Adreno 840
+    - `alana`
 
 ## SoC: Compute Platforms
 

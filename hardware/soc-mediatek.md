@@ -27,6 +27,7 @@ MediaTek SoCs
   - 2021, G96 / MT6781,  12nm, Cortex-{A76,A55}, Mali-G57 MC2
   - 2022, G99 / MT6789,   6nm, Cortex-{A76,A55}, Mali-G57 MC2
   - 2024, G100 / MT6789,  6nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - 2025, G200 / MT6789T, 6nm, Cortex-{A76,A55}, Mali-G57 MC2
 - Dimensity ~2022
   - 2021, Dimensity  700 / MT6833, 7nm, Cortex-{A76,A55}, Mali-G57 MC2
   - 2020, Dimensity  720 / MT6853, 7nm, Cortex-{A76,A55}, Mali-G57 MC3
@@ -66,8 +67,10 @@ MediaTek SoCs
   - 2022, Dimensity 9200 / MT6985,  4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
   - 2023, Dimensity 9200+ / MT6985, 4nm, Cortex-{X3,A715,A510}, Immortalis-G715 MC11
   - 2023, Dimensity 9300 / MT6989,  4nm, Cortex-{X4,A720}, Immortalis-G720 MC12
-  - 2024, Dimensity 9300+ / MT????, 4nm, Cortex-{X4,A720}, Immortalis-G720 MC12
-  - 2024, Dimensity 9400 / MT????,  3nm, Cortex-{X925,X4,A720}, Immortalis-G925 MC12
+  - 2024, Dimensity 9300+ / MT6989, 4nm, Cortex-{X4,A720}, Immortalis-G720 MC12
+  - 2024, Dimensity 9400 / MT6991,  3nm, Cortex-{X925,X4,A720}, Immortalis-G925 MC12
+  - 2025, Dimensity 9400+ / MT6991, 3nm, Cortex-{X925,X4,A720}, Immortalis-G925 MC12
+  - 2025, Dimensity 9500 / MT6993,  3nm, C1-{Ultra,Premium,Pro}, Mali G1-Ultra MC12
 - Kompanio (for Chromebooks)
   - 2015, MT8173, 28nm, Cortex-{A72,A53}, PowerVR GX6250
     - cros: oak
@@ -77,11 +80,11 @@ MediaTek SoCs
     - cros: corsola
     - `mt8186-corsola-steelix-sku131073.dts`
   - 2022, Kompanio 528 / MT8186T, 12nm, Cortex-{A76,A55}, Mali-G52 MC2
-  - 2022, Kompanio 800T / MT????,  6nm, Cortex-{A76,A55}, Mali-G57 MC2
-  - 2021, Kompanio 820 / MT8192,   7nm, Cortex-{A76,A55}, Mali-G57 MC5
-  - 2021, Kompanio 828 / MT81??,   7nm, Cortex-{A76,A55}, Mali-G57 MC5
+  - 2022, Kompanio 800T / MT8771,  6nm, Cortex-{A76,A55}, Mali-G57 MC2
+  - 2021, Kompanio 820 / MT8192V,  7nm, Cortex-{A76,A55}, Mali-G57 MC5
+  - 2021, Kompanio 828 / MT8192T,  7nm, Cortex-{A76,A55}, Mali-G57 MC5
     - cros: asurada
-  - 2024, Kompanio 838 / MT8188G   6nm, Cortex-{A78,A55}, Mali-G57 MC3
+  - 2024, Kompanio 838 / MT8188G,  6nm, Cortex-{A78,A55}, Mali-G57 MC3
     - cros: geralt
   - 2021, Kompanio 900T / MT8791,  6nm, Cortex-{A78,A55}, Mali-G68 MCT
   - 2021, Kompanio 1200 / MT8195,  6nm, Cortex-{A78,A55}, Mali-G57 MC5
@@ -93,6 +96,12 @@ MediaTek SoCs
   - 2025, Kompanio Ultra 910 / MT8196, 3nm, Cortex-{X925x1,X4x3,A720x4}, Immortalis-G925 MC11
     - cros: rauru
     - `mt8196-rauru-navi-sku1.dts`
+- Genio (for IoT)
+  - 2020, Genio 700 / MT8390, 6nm, Cortex-{A78x2,A55x6}, Mali-G57 MC3
+  - 2022, Genio 1200 / MT8395, 6nm, Cortex-{A78x4,A55x4}, Mali-G57 MC5
+  - 2024, Genio 510 / MT8370, 6nm, Cortex-{A78x2,A55x4}, Mali-G57 MC2
+  - 2025, Genio 520 / MT8371 6nm, Cortex-{A78x2,A55x6}, Mali-G57 MC2
+  - 2025, Genio 720 / MT8391 6nm, Cortex-{A78x2,A55x6}, Mali-G57 MC2
 
 ## MT8195 SoC
 

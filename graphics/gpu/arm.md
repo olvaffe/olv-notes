@@ -74,6 +74,9 @@ ARM Mali
 - 2024: 5th gen
   - Mali-{G625,G725}, Immortalis-G925
   - e.g., dimensity 9400
+- 2025: G1
+  - Mali G1-{Pro,Premium,Ultra} (was G6xx/G7xx/G9xx)
+  - e.g., dimensity 9500
 
 ## Resources
 
@@ -182,8 +185,17 @@ ARM Mali
     - Mali-G725
       - Immortalis-G925 if high core count and raytracing
       - G625 if low core count
+    - krake
   - `GPU_ID_PRODUCT_LKRX` is `GPU_ID_MODEL_MAKE(13, 1)`
     - Mali-G625
+- panthor
+  - `GPU_PROD_ID_MAKE(14, 0)`
+    - Mali-G1-Ultra
+    - drage
+  - `GPU_PROD_ID_MAKE(14, 1)`
+    - Mali-G1-Premium
+  - `GPU_PROD_ID_MAKE(14, 3)`
+    - Mali-G1-Pro
 
 ## Utgard
 
