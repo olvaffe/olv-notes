@@ -65,6 +65,28 @@ ACPI sleep
   - `P1`: slower than `P0`
   - `P2`: slower than `P1`
   - `Pn`: slower than `P(n-1)`
+- chromebook (read from bottom to top)
+  - `G0`
+    - `S0`: ap is running
+  - `G1`
+    - `S0ix`: modern suspend-to-idle
+    - `S3`: legacy suspend-to-ram
+  - `G2`
+    - `S5`: ap is powered but not running
+      - this is what user perceives as power off
+      - gsc, ec, usb power controllers are running
+      - ec monitors battery/thermal, and charges battery if ac is inserted
+        - on modern qcom, adsp inside ap is running in `S5` to monitor/charge
+          battery instead
+      - power button press moves up to `S0`
+  - `G3`
+    - `Z1`: ec and usb power controllers are running
+    - `Z2`: ec is powered and running in low-power mode
+    - `Z3`: gsc is running
+    - `Z4`: gsc is powered but not running
+    - `Z5`: only rtc and power button are powered
+    - battery cutoff: either physically or electrically
+      - if electrically, the only way to move up to `Z5` is to insert AC
 
 ## Initialization
 
