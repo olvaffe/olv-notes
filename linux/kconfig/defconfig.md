@@ -300,7 +300,6 @@ Kernel defconfig
       - deselect `Allow legacy TIOCSTI usage`
       - select `Serial drivers`
         - select `8250/16550 and compatible serial support` if x86/mtk/rk
-          - deselect `Support 8250_core.* kernel options`
           - select `Console on 8250/16550 and compatible serial port`
         - select `Support for Synopsys DesignWare 8250 quirks` if x86/rk
         - select `Mediatek serial port support` if mtk
