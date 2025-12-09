@@ -62,9 +62,8 @@ Mesa meson
     - to disable EGL, `-Degl=disabled`
     - to disable GLX, `-Dglx=disabled`
     - to disable GBM, `-Dgbm=disabled`
-  - VAAPI/VDPAU driver is enabled automatically,
+  - VAAPI driver is enabled automatically,
     - to disable VAAPI driver, `-Dgallium-va=disabled`
-    - to disable VDPAU driver, `-Dgallium-vdpau=disabled`
     - to enable proprietary codecs, `-Dvideo-codecs=all`
 - one-liners
   - radeonsi-only build
@@ -77,7 +76,7 @@ Mesa meson
 
 ## Options
 
-- `allow-fallback-for` allows specified deps (e.g., `libdrm` and `perfetto`)
+- `allow-fallback-for` allows specified deps (e.g., `libdrm`, `libva`, and `perfetto`)
   to use wraps
 - `allow-kcmp` defines `-DALLOW_KCMP`
   - this is desirable because of seccomp
@@ -145,7 +144,6 @@ Mesa meson
 - `gallium-rusticl-enable-drivers` lists enabled drivers
   - most drivers require setting `RUSTICL_ENABLE` at runtime
 - `gallium-va` enables gallium vaapi frontend/target
-- `gallium-vdpau` enables gallium vdpau frontend/target
 - `gallium-wgl-dll-name` is the name of wgl dll
   - default to `libgallium_wgl.dll`
   - it provides sw gl on windows
@@ -181,6 +179,7 @@ Mesa meson
   - default to `$datadir/doc/mesa`
 - `imagination-srv` defines `-DPVR_SUPPORT_SERVICES_DRIVER`
   - it enables downstream `pvr` kmd support
+- `imagination-uscgen-devices`
 - `install-intel-gpu-tests` installs `intel_FOO_mi_builder_test` unit tests
 - `install-mesa-clc` installs `mesa_clc`
 - `install-precomp-compiler` installs `asahi_clc` and `panfrost_compile`
@@ -243,6 +242,7 @@ Mesa meson
 - `spirv-to-dxil` enables spirv to dxil translation
   - this is needed by vk-to-d3d12
   - it also provides offline `spirv_to_dxil` compiler
+- `spirv-tools` defines `-DHAVE_SPIRV_TOOLS`
 - `split-debug` adds `-gsplit-dwarf` and `-Wl,--gdb-index` for a debug build
   - `-gsplit-dwarf` splits dwarf info to a separate `.dwo` file
   - `--gdb-index` adds `.gdb-index` elf section to speed up gdb
@@ -262,12 +262,10 @@ Mesa meson
   - it helps valgrind does its job
 - `va-libs-path` specifies the install path for vaapi drivers
   - default to `$libdir/dri`
-- `vdpau-libs-path` specifies the install path for vdpau drivers
-  - default to `$libdir/vdpau`
 - `video-codecs` defines `-DVIDEO_CODEC_FOO=1`
   - `{vc1,h264,h265,av1,vp9}{dec,enc}`, or simply `all` or `all_free`
   - it affects anv, radv, gallium-on-d3d12, and `vl_codec_supported` used by
-    vaapi/vdpau
+    vaapi
 - `virtgpu_kumquat` enables kumquat ffi for gfxstream
 - `vmware-mks-stats` defines `-DVMX86_STATS=1` for vmware
 - `vulkan-beta` defines `-DVK_ENABLE_BETA_EXTENSIONS`
@@ -286,6 +284,8 @@ Mesa meson
   - `overlay` draws hud using imgui
   - `screenshot` writes presented images to png
     `vram-report-limit` caps reported mem heap sizes and budgets
+- `vulkan-manifest-per-architecture` decides if `<arch>` part is included in
+  the generated `<drv>_icd.<arch>.json`
 - `xlib-lease` enables `VK_EXT_acquire_xlib_display` support
 - `xmlconfig` defines `-DWITH_XMLCONFIG=`
   - it enables drirc support

@@ -267,12 +267,12 @@ GPU Benchmarks
   - `-w 1920 -h 1080 --gfx egl -t gl_trex_off,gl_trex`
   - `--ei -single_frame=20000`
 - android cmdline
-  - `adb install -r -g gfxbench_vulkan-5.0.5+corporate.apk`
-  - `adb shell am start net.kishonti.gfxbench.vulkan.v50005.corporate/net.kishonti.app.MainActivity`
+  - `adb install -r -g gfxbench_vulkan-5.1.5+corporate.apk`
+  - `adb shell am start net.kishonti.gfxbench.vulkan.v50105.corporate/net.kishonti.app.MainActivity`
   - `adb shell am broadcast -a net.kishonti.testfw.ACTION_RUN_TESTS \
-       -n net.kishonti.gfxbench.v50005.corporate/net.kishonti.benchui.corporate.CommandLineSession \
+       -n net.kishonti.gfxbench.vulkan.v50105.corporate/net.kishonti.benchui.corporate.CommandLineSession \
        -e test_ids 'gl_manhattan31,gl_trex' --ei raw_config.single_frame 20000`
-  - `adb pull /sdcard/Android/data/net.kishonti.gfxbench.vulkan.v50005.corporate/files/results`
+  - `adb pull /sdcard/Android/data/net.kishonti.gfxbench.vulkan.v50105.corporate/files/results`
 - test configs from android apk
   - 3.0
     - `gl_alu`, ALU
