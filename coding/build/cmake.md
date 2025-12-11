@@ -55,6 +55,8 @@ CMake
   - `CMAKE_FIND_ROOT_PATH_MODE_*`
     - cmake finds under `CMAKE_SYSROOT`, `CMAKE_FIND_ROOT_PATH`, and host
       system root
+  - `CMAKE_EXECUTABLE_ENABLE_EXPORTS`
+    - it adds `-rdynamic` to gcc, which adds `--export-dynamic` to ld
 - <https://cmake.org/cmake/help/latest/manual/cmake-env-variables.7.html>
   - `DESTDIR`
   - `LDFLAGS`
