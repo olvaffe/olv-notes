@@ -452,36 +452,38 @@ Kernel defconfig
       - select `Display a user-friendly message when a kernel panic occurs`
       - select `Supported DRM clients`, depending on any drm driver
         - select `Enable legacy fbdev support for your modesetting driver` (for vt)
+      - select `Enable DisplayPort CEC-Tunneling-over-AUX HDMI support` if needed
       - select `AMD GPU` if amd
-      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel before lnl
-        - select `Force probe i915 for selected Intel hardware IDs` (to `!*`) if needed
-      - select `Intel Xe2 Graphics` if intel since lnl
-        - select `Force probe xe for selected Intel hardware IDs` (to `*`) if needed
-      - select `MSM DRM` if qcom
-        - deselect `Enable MDP4 support in MSM DRM driver`
-        - deselect `Enable MDP5 support in MSM DRM driver`
-        - deselect `Enable HDMI support in MSM DRM driver`
-      - select `DRM Support for Rockchip` if rk
-        - deselect `Rockchip VOP driver`
-        - select `Rockchip VOP2 driver`
-        - select `Rockchip specific extensions for Synopsys DW HDMI` if rk3568
-        - select `Rockchip specific extensions for Synopsys DW HDMI QP` if rk3588
-      - select `Virtio GPU driver` if guest
-      - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
-      - select `Display Panels` if arm
-        - select `Samsung ATNA33XC20 eDP panel` if needed
-        - select `support for simple Embedded DisplayPort panels` if needed, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Display Interface Bridges` if arm
         - select `Display connector support`
         - select `ITE IT6505 DisplayPort bridge` if needed
         - select `TI SN65DSI86 DSI to eDP bridge` if needed
         - select `Analogix Anx7625 MIPI to DP interface support` if needed
+      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel before lnl
+        - select `Force probe i915 for selected Intel hardware IDs` (to `!*`) if needed
       - select `DRM Support for Mediatek SoCs` if mtk
         - select `DRM DPTX Support for MediaTek SoCs`
         - select `DRM HDMI Support for Mediatek SoCs`
-      - select `Simple framebuffer driver` if desired
+      - select `MSM DRM` if qcom
+        - deselect `Enable MDP4 support in MSM DRM driver`
+        - deselect `Enable MDP5 support in MSM DRM driver`
+        - deselect `Enable HDMI support in MSM DRM driver`
+      - select `Display Panels` if arm
+        - select `Samsung ATNA33XC20 eDP panel` if needed
+        - select `support for simple Embedded DisplayPort panels` if needed, depending on `BACKLIGHT_CLASS_DEVICE`
       - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if rk3568 or mtk before mt8196
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk3588 or mt8196
+      - select `DRM Support for Rockchip` if rk
+        - deselect `Rockchip VOP driver`
+        - select `Rockchip VOP2 driver`
+        - select `Rockchip specific extensions for Synopsys DW HDMI` if rk3568
+        - select `Rockchip specific extensions for Synopsys DW HDMI QP` if rk3588
+      - select `Drivers for system framebuffers` if desired
+        - select `Simple framebuffer driver` if desired
+      - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
+      - select `Virtio GPU driver` if guest
+      - select `Intel Xe2 Graphics` if intel since lnl
+        - select `Force probe xe for selected Intel hardware IDs` (to `*`) if needed
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if needed, depending on `PWM`
