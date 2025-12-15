@@ -39,3 +39,15 @@ RenderDoc
 - replay
   - `renderdoccmd replay <capture.rdc>` just works
   - `renderdoccmd remoteserver` just works for remote replay
+
+## Performance Counter
+
+- `Capture counters` calls `PerformanceCounterViewer::CaptureCounters`
+  - `PerformanceCounterSelection` dialog is shown
+  - `GLReplay::EnumerateCounters` or `VulkanReplay::EnumerateCounters`
+    enumerates counters
+    - for gl, `ARB_timer_query` (or `EXT_disjoint_timer_query`) maps to
+      `GPUCounter::EventGPUDuration`
+  - it blocks until `Sample counters` is clicked to return `QDialog::Accepted`
+  - `GLReplay::FetchCounters` or `VulkanReplay::FetchCounters` replays with
+    the specified counters
