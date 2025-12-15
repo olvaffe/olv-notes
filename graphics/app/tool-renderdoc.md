@@ -51,3 +51,7 @@ RenderDoc
   - it blocks until `Sample counters` is clicked to return `QDialog::Accepted`
   - `GLReplay::FetchCounters` or `VulkanReplay::FetchCounters` replays with
     the specified counters
+- `Time durations for the actions` calls
+  `EventBrowser::on_timeActions_clicked`
+  - the timings are collected with
+    `r->FetchCounters({GPUCounter::EventGPUDuration})`

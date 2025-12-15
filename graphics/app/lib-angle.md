@@ -364,3 +364,10 @@ ANGLE
   - `supportsBlendOperationAdvanced` is set
   - otherwise, `emulateAdvancedBlendEquations` is set if not on intel
   - `GL_KHR_blend_equation_advanced` is advertised if either is set
+
+## GLES 3.2
+
+- vk `Renderer::getMaxSupportedESVersion`
+  - `GetRequiredGLES32ExtensionList` has a list of required extensions for 3.2
+  - panvk lacks xfb support and requires
+    `pan_force_enable_shader_atomics=true` before v13
