@@ -163,6 +163,11 @@ Vulkan Loader
        -c android.intent.category.LAUNCHER \
        --es args '"--present_mode 2"'`
 
+## volk
+
+- <https://github.com/zeux/volk>
+- vulkan meta-loader
+
 ## Call Chain
 
 - `vkCreateBuffer` in loader
