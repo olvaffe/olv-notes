@@ -65,6 +65,49 @@ SPIR-V Apps
     - e.g., when `#version 460 core` is missing
     - when the client is vulkan, use `100` and `GLSLANG_NO_PROFILE`
 
+## OpenCL C
+
+- <https://github.com/KhronosGroup/OpenCL-Guide/blob/main/chapters/os_tooling.md>
+- OpenCL C to LLVM IR
+  - `clang -c -target spir -O0 -emit-llvm -o test.bc test.cl`
+  - `-x` specifies the language explicitly
+    - `c` for c
+    - `c++` for c++
+    - `cl` for opencl
+    - `cuda` for cuda
+    - otherwise, it is based on the filename suffix
+  - `-std` specifies the language standard
+    - `c17` for c17
+    - `c++17` for c++17
+    - `cl3.0` for opencl c 3.0
+    - `cuda` for cuda
+  - `-target` specifies the target arch
+    - `x86_64-linux-gnu` for x86-64
+    - `aarch64-linux-gnu` for aarch64
+    - `spirv64-unknown-unknown` for spirv 64
+      - it was called `spir64-unknown-unknown`
+      - it invokes `llvm-spirv` to convert from llvm ir to spirv
+  - `-emit-llvm` generates llvm ir instead
+    - it cannot be used with linking so `-c` must also be specified
+  - `-g` generates debug info
+- LLVM IR to SPIR-V
+  - `llvm-spirv test.bc -o test.spv`
+- SPIR-V
+  - `clCreateProgramWithIL` can load `test.spv`
+  - the spirv generated this way is not compatible with vulkan
+    - it uses capabilities that vulkan drivers do not support, such as
+      - `OpCapability Addresses`
+      - `OpCapability Linkage`
+      - `OpCapability Kernel`
+    - use `clspv` for that purpose instead
+  - `spirv-dis test.spv` to disassemble
+- SPIR-V to NIR
+  - `spirv2nir test.spv`
+    - must not include debug info
+      - `Unsupported extension: OpenCL.DebugInfo.100`
+    - must target `spirv32` rather than `spirv64`
+  - `--optimize` to run basic optimizations
+
 ## SPIRV-Reflect
 
 - build
