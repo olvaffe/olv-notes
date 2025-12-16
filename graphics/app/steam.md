@@ -112,6 +112,26 @@ Steam
      waitforexitandrun
      ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
+- Proton Environment Variables from `user_settings.sample.py`,
+  - proton
+    - `PROTON_USE_WINED3D=1` to use GL-based wined3d rather than dxvk for
+      D3D{9,10,11}
+    - `PROTON_NO_D3D11=1` to disable D3D11 entirely
+    - `PROTON_NO_ESYNC=1` to disable eventfd-based in-process synchronization
+    - `PROTON_NO_FSYNC=1` to disable futex-based in-process synchronization
+  - wine
+    - `WINEDEBUG=+timestamp,+pid,+tid,+seh,+debugstr,+loaddll,+mscoree`
+  - dxvk
+    - `DXVK_LOG_LEVEL=info`
+    - `DXVK_HUD=devinfo,fps` for HUD
+  - vkd3d
+    - `VKD3D_DEBUG=warn`
+  - wine-mono
+    - `MONO_LOG_LEVEL=info`
+    - `WINE_MONO_TRACE=E:System.NotImplementedException`
+  - gstreamer
+    - `GST_DEBUG=4`
+
 
 ## Using runtime and proton directly
 

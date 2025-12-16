@@ -132,40 +132,18 @@ Wine
 ## Direct3D
 
 - Built-in DLLs
-  - `ddraw.dll` for Direct3D 7 and below
-  - `d3d8.dll` for Direct3D 8
-  - `d3d9.dll` for Direct3D 9
-  - `d3d10.dll`, `d3d10core.dll`, and `d3d10_1.dll` for Direct3D 10
-  - `d3d11.dll` for Direct3D 11
-  - `d3d12.dll.so` for Direct3D 12
-    - `libvkd3d.so` is needed
+  - wined3d provides `wined3d.dll` and is used by
+    - `ddraw.dll` for Direct3D 7 and below
+    - `d3d8.dll` for Direct3D 8
+    - `d3d9.dll` for Direct3D 9
+    - `d3d10.dll`, `d3d10core.dll`, and `d3d10_1.dll` for Direct3D 10
+    - `d3d11.dll` for Direct3D 11
+  - vkd3d provides `libvkd3d.so` and is used by
+    - `d3d12.dll.so` for Direct3D 12
   - `dxgi.dll` is needed by Direct3D 10, 11, and 12
-  - `wined3d.dll` is needed by Direct3D 11 and below
-- Native DLLs
+- (External) Native DLLs
   - dxvk provides native `d3d9.dll`, `d3d10.dll`, `d3d10core.dll`,
     `d3d10_1.dll`, `d3d11.dll`, and `dxgi.dll`
-
-## Proton Environment Variables
-
-- from `user_settings.sample.py`,
-  - proton
-    - `PROTON_USE_WINED3D=1` to use GL-based wined3d rather than dxvk for
-      D3D{9,10,11}
-    - `PROTON_NO_D3D11=1` to disable D3D11 entirely
-    - `PROTON_NO_ESYNC=1` to disable eventfd-based in-process synchronization
-    - `PROTON_NO_FSYNC=1` to disable futex-based in-process synchronization
-  - wine
-    - `WINEDEBUG=+timestamp,+pid,+tid,+seh,+debugstr,+loaddll,+mscoree`
-  - dxvk
-    - `DXVK_LOG_LEVEL=info`
-    - `DXVK_HUD=devinfo,fps` for HUD
-  - vkd3d
-    - `VKD3D_DEBUG=warn`
-  - wine-mono
-    - `MONO_LOG_LEVEL=info`
-    - `WINE_MONO_TRACE=E:System.NotImplementedException`
-  - gstreamer
-    - `GST_DEBUG=4`
 
 ## DXVK
 
