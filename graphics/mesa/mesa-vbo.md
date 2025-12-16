@@ -212,3 +212,18 @@ Mesa and Its VBO Context
     before storing the current attrib.
   - `glBindTexture` would `FLUSH_VERTICES` before binding to the new texture.
 
+## Slim Body
+
+- Cut off Vertex Specification
+  - Keep Current Values (color, normal, multi texcoord, vertex attrib)
+  - material?
+  - When draw arrays in called, `recalculate_input_bindings` is called.  All
+    attributes must have an array.  For those not enabled through
+    `glEnableClientState`, `currval` arrays are used.
+    - `currval` arrays have the same struct as client arrays do.  They point to
+      `ctx->Current`.
+    - current attribs are reflected when `vbo_exec_copy_to_current` is called at
+      flush time.  It copies the buffered attribs to `ctx->Current` and updates
+      the `Size` info of the `currval` arrays.
+  - due to above, it cannot disable parts of vbo and use api_noop.
+    `vbo_exec_FlushVertices_internal` must be called at suitable places.

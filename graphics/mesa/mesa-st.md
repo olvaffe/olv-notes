@@ -1,149 +1,5 @@
-Mesa Gallium
-============
-
-## gallium
-
-- directories
-  - `GALLIUM_AUXILIARY_DIRS`: subdirs of `auxiliary` to build
-  - `GALLIUM_DRIVERS_DIRS`: subdirs of `drivers` to build
-  - `GALLIUM_STATE_TRACKERS_DIRS`: subdirs of `state_trackers` and
-    `winsys/drm/intel` to build
-  - `GALLIUM_WINSYS_DIRS`: subdirs of `winsys` to build.
-    - `GALLIUM_WINSYS_DRM_DIRS`: subdirs of `winsys/drm/` to build.
-  - By default (`configs/default`),
-
-    SRC_DIRS = mesa gallium egl gallium/winsys glu glut/glx glew glw
-    DRIVER_DIRS = x11 osmesa
-    GALLIUM_DIRS = auxiliary drivers state_trackers
-    GALLIUM_AUXILIARY_DIRS = draw translate cso_cache pipebuffer tgsi sct rtasm util indices
-    GALLIUM_DRIVERS_DIRS = softpipe i915simple failover trace
-    GALLIUM_WINSYS_DIRS = xlib egl_xlib
-    GALLIUM_STATE_TRACKERS_DIRS = glx
-  - `config/linux-dri`
-
-    SRC_DIRS := glx/x11 egl $(SRC_DIRS)
-    DRIVER_DIRS = dri
-    WINDOW_SYSTEM = dri
-    GALLIUM_WINSYS_DIRS = drm
-    GALLIUM_WINSYS_DRM_DIRS = intel
-    GALLIUM_STATE_TRACKERS_DIRS = egl
-- `src/mesa/`
-  - provides `libmesagallium.a`, `libglapi.a`, the mesa opengl state tracker
-- `src/gallium/`
-  - `auxiliary` provides a `.a` in each subdir
-  - `drivers` provides a `.a` in each subdir; they are pipe drivers (or pipes).
-  - The above two are self-contained and are supposed to be used on a wide range
-    of platforms.
-  - `state_trackers`
-    - `dri` provides `libdridrm.a`, DRI driver interface used by `drm` winsys
-    - `egl` provides `libegldrm.a`, EGL driver interface used by `drm` winsys
-    - `glx` provides `libxlib.a`, GLX API over core X protocol
-    - `python` provides python binding
-    - `vega` provides `libOpenVG.so`, linking to many auxiliaries
-  - `winsys`
-    - `xlib` provides `libGL.so`, linking to all pipes, all auxiliaries,
-      `libxlib.a`, `libglapi.a`, and `libmesagallium.a`.  It uses mesagallium st
-      and any pipe available.
-    - `egl_xlib` provides `egl_softpipe.so`, linking to all pipes and all
-      auxiliaries.  It is an EGL driver used by `src/egl/`.  Only softpipe is
-      used.  Any st (like `libOpenVG.so`) can be used with it.
-    - `drm` provides `xxx_dri.so` or `EGL_xxx.so`.  That is, it provides either
-      EGL driver or DRI driver.  All auxiliaries and `libmesagallium.a` are
-      always linked.
-- `src/gallium/winsys/drm/intel`
-  - `gem` is always built, and provides `libinteldrm.a`.  It supports softpipe
-    and i915simple.
-  - `egl` provides `EGL_i915.so`, linking to `libegldrm.a`, `libinteldrm.a`,
-    `libsoftpipe.a`, and `libi915simple.a`.
-  - `dri` provides `i915_dri.so`, linking to `libdridrm.a`, `libinteldrm.a`,
-    `libsoftpipe.a`, and `libi915simple.a`.
-- winsys combines pipe driver(s) and talks to `state_tracker`.
-  e.g. `egl_softpipe.so` links to `libsoftpipe.a` and calls to functions like
-  `st_create_context`, provided by, say, `libOpenVG.so` state tracker.
-  Or, `i915_dri.so` links to `libi915simple.a` and `libdridrm.a`, which talks to
-  a state tracker, say `libmesagallium.a`.
-- winsys would call certain pipe and st functions.  What a winsys calls might
-  not be defined by every pipe and st.  Thus, one cannot put random winsys,
-  pipe, and st together.
-
-## Impl.
-
-- Initialization
-  - winsys should create a `struct pipe_winsys`, which is used for buffer
-    creation.
-  - winsys should provide a list of supported configs.
-  - `struct pipe_winsys` is passed to desired pipe driver to create
-    `struct pipe_screen`.  Note that the pipe driver is known at this point.
-- Context
-  - pipe driver is asked to create a `struct pipe_context`.
-  - pipe context is then passed to state tracker to `st_create_context` a
-    `struct st_context`.  Which state tracker is used depends on which client
-    api is linked.
-- Framebuffer
-  - state tracker is asked to to `st_create_framebuffer` a
-    `struct st_framebuffer`.  It is only a record.  There is no real buffer
-    associated with it.  It has no context either.
-- `st_make_current` is called to make context/fb current.
-- To swap buffers, a fb is `st_get_framebuffer_surface` to return a renderbuffer
-  (called `struct pipe_surface`).  The contents is copied to the native window.
-
-## EGL drivers
-
-- `EGL_i915.so` and `egl_softpipe.so`
-- state trackers defining
-  `st_api_OpenGL`/`st_api_OpenGL_ES1`/`st_api_OpenGL_ES2`/`st_api_OpenVG` will
-  have respective `EGL_<CLIENT-API>_BIT` set when used with `libEGL.so` and
-  `egl_softpipe.so`.
-
-## OpenGL ES
-
-- `gallium/state_trackers/es/` provides `libGLESv1_CM.so` and `libGLESv2.so`
-- It soft links to most of mesa's source files and builds `libmesa.a` under its
-  `mesa` directory.  Some files are omitted as they are not needed.  Some are
-  specific to ES (`state_tracker/st_cb_drawtex.c`), and some (`main/pixel.c` and
-  `main/mfeatures.h`) are replaced.
-- All libs and objects under `es1` are used to create `libGLESv1_CM.so`.
-- `es2` is similar.
-- In OpenGL, what a function does might depend on the context.  Thus, a dispatch
-  table is used.  It is not the case with OpenGL ES.  A no-op replacement can be
-  found under `es-common/st_glapi.c`.
-- How a `glXXX` is implemented usually has a rule and is generated.  Some are
-  not.  For those cannot be generated, they are listed in `es1_special` and
-  `es2_special`.
-- Three files are generated under either `es1` or `es2`
-  - `st_es1_generated.c` generated by `es_generator.py` and `APIspec.txt`
-  - `st_es1_getproc_gen.c` generated by `es_getproc_gen.py` and `APIspec.txt`
-  - `st_es1_get.c` generated by `get_gen.py`
-  - Similar to `es2`
-- `st_es1_getproc_gen.c` provides `_glapi_get_proc_address` to map function
-  names to function pointers.  According to EGL spec, only those that are
-  extensions are mapped.  It is used to implement `st_get_proc_address`,
-  `eglGetProcAddress` or `glXGetProcAddressARB`.
-- `st_es1_get.c` provides `_mesa_GetBooleanv`, `_mesa_GetFloatv`, and
-  `_mesa_GetIntegerv`.  They are used to implement `st_GetTYPEv` and
-  `glGetTYPEv`.
-- `st_es1_generated.c` provides OpenGL ES API.  It does not use dispatch table
-  and the generated code is very complex.  The generator allows error checking
-  the inputs and allows calling arbitrary "alias" (e.g. `glActiveTexture` calls
-  `_mesa_ActiveTextureARB`).
-
-## `egl_softpipe.so`
-
-- See also `mesa-egl`, same section.
-- From a very high level, programmers calls OpenGL API.  The API is implemented
-  by st.  st implements it by calling pipe driver.  For stuff like buffer
-  allocation, pipe driver calls pipe winsys, without st knowing it.
-  - From EGL's view, EGL is pipe winsys.  It calls pipe driver and st to bind
-    them together.
-- `softpipe_create_screen`
-  - A subclass of `struct pipe_screen` is returned.
-  - It calls `u_simple_screen_init` to pass calls to pipe screen methods
-    directly to pipe winsys methods.
-- `softpipe_create`
-  - A subclass of `struct pipe_context` is returned.
-  - Every EGL context is backed by a pipe context and a st context, backed still
-    by that pipe context.
-  - 
+Mesa and Gallium
+================
 
 ## Idea
 
@@ -335,15 +191,6 @@ Mesa Gallium
   - There is a helper function called `pipe_get_tile_rgba`.  It transfers the
     texels and unpacks it from pipe texture format to rgba.
 
-## Quad
-
-- In `setup_tri`, triangle is rasterized.
-  - The 3 vertices are ordered by their y, and are remembered in `vmin`, `vmid`,
-    and `vmax`.
-  - `ebot` describes the edge from `vmin` to `vmid`.
-  - `etop` describes the edge from `vmid` to `vtop`.
-  - `emaj` describes the edge from `vmin` to `vtop`.
-
 ## Vertex Buffer
 
 - In `st_draw_vbo`, vertex buffer is represented by many
@@ -503,39 +350,6 @@ Mesa Gallium
 - The resulting fragments go to per-fragment operations.
   - including scissor test, depth test, blending, etc.
 
-## TGSI: fragment
-
-- The machine works on a quad at a time
-  - `mach->QuadPos` gives the coordinates of the quad
-  - `mach->InterpCoefs` gives the parameters of the interpolation
-  - `mach->Consts` gives the constants (uniforms, etc.)
-- before the machine runs, declarations for inputs are executed
-  - they specify the inputs and how interpolation is done (constant, linear,
-    or perspective)
-  - `mach->Inputs` are interpolated according to the quad pos, interpolation
-    params, and the declarations.
-- after the machine runs, the outputs are stored according to output decls
-  - output i is color; output j is position; etc.
-  - these info are retrieved by `tgsi_scan_shader`.
-- Actually, before the machine runs,
-  - input declarations are examined and the draw module is taught how to emit
-    vertices. `softpipe_get_vertex_info`.
-  - the emitted vertices are used by `setup_context` and `quad_header` are set
-    up with correct interpolation coefficients.
-  - `quad_header` are then used to prepare the machine
-
-## TGSI: vertex
-
-- Generally in `draw_pt_arrays`, nothing is forced or bypassed.  This means 
-  fetch-shade-pipeline get hit a lot, with or without `PT_PIPELINE`.
-  - shading happens before pipeline.  pipeline only gets to see the outputs of
-    the shader.
-  - post-vs clips, does perspective-division and viewport transform.
-    - remember vs replaces only model-view and projection.
-    - see `post_vs_cliptest_viewport_gl`.
-- Unlike fs, `mach->Inputs` are prepared by the caller, as can be seen in
-  `vs_exec_run_linear`.
-
 ## `winsys/drm/`
 
 - A state tracker has access to `pipe_screen` and `pipe_context`
@@ -575,23 +389,6 @@ Mesa Gallium
   - similar to `struct drm_api`, but at a higher level
   - `create_screen` and `create_context` is the same
   - new stuff! `create_framebuffer`!
-
-## `i915g`
-
-- `struct i915_screen`
-  - buffer functions are initialized in `i915_init_screen_buffer_functions`
-    - winsys is not used; It uses CPU memory (`malloc`)
-    - `buffer_create` `malloc()`s the memory
-    - `user_buffer_create` wraps a user buffer
-    - there is no `surface_buffer_create`
-  - texture functions are initialized in `i915_init_screen_texture_functions`
-    - it uses `struct intel_winsys`, which in turn uses `libdrm_intel`
-    - `texture_blanket` is not implemented
-    - `get_tex_surface` and `get_tex_transfer` are cheap, as guessed
-    - `transfer_map` maps the GEM object.
-  - `struct drm_api` allows wrapping a GEM object in a `pipe_texture`
-    - i915 pipe driver provides `i915_texture_blanket_intel`
-    - Given the GEM object and the stride, it is wrapped in a `pipe_texture`.
 
 ## Buffer Objects
 
@@ -643,35 +440,24 @@ Mesa Gallium
   - `pipe_context::set_sampler_views` indices are the driver-generated
     sequential indices of glsl sampler uniforms
 
-## Threaded Context
+## `st_draw_vbo`
 
-- pipe drivers can call `threaded_context_create` to create a
-  `threaded_context` to wrap their `pipe_context`
-  - it is nop if `util_get_cpu_caps()->nr_cpus <= 1`
-    - `GALLIUM_THREAD` can override
-  - `util_queue_init` creates a `gdrv` thread to process jobs
-- `threaded_context` handles different context functions differently
-  - some functions are passed through
-    - e.g., `tc_create_sampler_view` calls `pipe->create_sampler_view`
-      directly
-  - some functions are batched
-    - e.g., `tc_set_sampler_views` calls `tc_add_slot_based_call` to record
-      the call into the current batch
-  - some functions require synchronization
-    - e.g., `tc_texture_map` calls `tc_sync_msg` to wait the current batch
-  - the pipe context fluch function is `tc_flush`
-    - if the flush is async or can be deferred, it calls `tc_add_call` to
-      record the call to the current batch and calls `tc_batch_flush` to flush
-      the current batch
-    - otherwise, it calls `_tc_sync` to wait for the `gdrv` thread to become
-      idle and calls `pipe->flush`
-- `tc_batch_flush` calls `util_queue_add_job` to submit the current batch
-  - `gdrv` thread calls `tc_batch_execute` to execute the batch
-  - `tc->execute_func` is the dispatch table
-  - `set_sampler_views` is dispatched to `tc_call_set_sampler_views`
-    - it calls `pipe->set_sampler_views`
-  - `flush`, when async or deferred, is dispatched to `tc_call_flush` or
-    `tc_call_flush_deferred`
-    - they call `pipe->flush`
-- `_tc_sync` waits for `gdrv` to become idle and also calls `tc_batch_execute`
-  to execute the current batch directly
+- When vertices are flushed, `st_draw_vbo` (gallium) or `_tnl_draw_prims` is
+  called.  We want to have a closer look at `st_draw_vbo` here.
+- First, we look at the memebers of a client array
+  - `Ptr` points to the value of the attr of the first vertex.  It may be
+    userspace buffer or offsets to the buffer object.
+  - `Type` is the type (float, fixed, etc.) of the value.
+  - `Size` is the size of the attr (1, 2, 3, or 4).
+  - `Stride` is the stride given by user.
+  - `StrideB` is the stride to the next vertex.  For user supplied arrays, if
+    `Stride` is not given, it is calculated from `Type` and `Size`.
+- A client array might be from the user, built from vbo, or wraps
+  `ctx->Current.Attrib`.  In the case a `glBegin/glEnd` pair does not contain
+  any `glColor`, the client array for color wraps the current attrib.  It has
+  `Stride` and `StrideB` equal to zero.  Therefore, no matter which vertex is
+  asked, it always dereferences the same memory.
+- `st_draw_vbo` wraps the client arrays in `struct pipe_vertex_buffer` and
+  `struct pipe_vertex_element`.  They are then passed to pipe context to draw
+  the elements.
+- The types the wrapping supports can be seen from `st_pipe_vertex_format`.

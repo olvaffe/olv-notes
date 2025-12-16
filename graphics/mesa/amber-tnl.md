@@ -27,6 +27,16 @@ Mesa and TNL Context
   - swrast draws renderbuffer using renderbuffer's `PutRow`, etc.
   - These hooks are set up by including `intel_spantmp.h`.
 
+## `_tnl_draw_prims`
+
+- Now, turn our attension to `_tnl_draw_prims`.
+- It wraps the client arrays in `struct vertex_buffer`, which expects the type
+  to be float.  Conversion is done if needed, as can be seen from
+  `_tnl_import_array`.
+- The value of certain attributes (color, normal, and depth) are normalized.
+  That is, when the normal has an ubyte value 128, it is normalized to ~0.5f.
+- It is clear from the function that `GL_FIXED` is not supported.
+
 ## Render, the Last Stage
 
 - `struct vertex_buffer` emits its status in the format described by

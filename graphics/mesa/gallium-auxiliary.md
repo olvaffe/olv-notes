@@ -1,7 +1,73 @@
-Gallium Draw Module
-===================
+Gallium Auxiliary
+=================
 
-## Overview
+## Threaded Context
+
+- pipe drivers can call `threaded_context_create` to create a
+  `threaded_context` to wrap their `pipe_context`
+  - it is nop if `util_get_cpu_caps()->nr_cpus <= 1`
+    - `GALLIUM_THREAD` can override
+  - `util_queue_init` creates a `gdrv` thread to process jobs
+- `threaded_context` handles different context functions differently
+  - some functions are passed through
+    - e.g., `tc_create_sampler_view` calls `pipe->create_sampler_view`
+      directly
+  - some functions are batched
+    - e.g., `tc_set_sampler_views` calls `tc_add_slot_based_call` to record
+      the call into the current batch
+  - some functions require synchronization
+    - e.g., `tc_texture_map` calls `tc_sync_msg` to wait the current batch
+  - the pipe context fluch function is `tc_flush`
+    - if the flush is async or can be deferred, it calls `tc_add_call` to
+      record the call to the current batch and calls `tc_batch_flush` to flush
+      the current batch
+    - otherwise, it calls `_tc_sync` to wait for the `gdrv` thread to become
+      idle and calls `pipe->flush`
+- `tc_batch_flush` calls `util_queue_add_job` to submit the current batch
+  - `gdrv` thread calls `tc_batch_execute` to execute the batch
+  - `tc->execute_func` is the dispatch table
+  - `set_sampler_views` is dispatched to `tc_call_set_sampler_views`
+    - it calls `pipe->set_sampler_views`
+  - `flush`, when async or deferred, is dispatched to `tc_call_flush` or
+    `tc_call_flush_deferred`
+    - they call `pipe->flush`
+- `_tc_sync` waits for `gdrv` to become idle and also calls `tc_batch_execute`
+  to execute the current batch directly
+
+## TGSI: fragment
+
+- The machine works on a quad at a time
+  - `mach->QuadPos` gives the coordinates of the quad
+  - `mach->InterpCoefs` gives the parameters of the interpolation
+  - `mach->Consts` gives the constants (uniforms, etc.)
+- before the machine runs, declarations for inputs are executed
+  - they specify the inputs and how interpolation is done (constant, linear,
+    or perspective)
+  - `mach->Inputs` are interpolated according to the quad pos, interpolation
+    params, and the declarations.
+- after the machine runs, the outputs are stored according to output decls
+  - output i is color; output j is position; etc.
+  - these info are retrieved by `tgsi_scan_shader`.
+- Actually, before the machine runs,
+  - input declarations are examined and the draw module is taught how to emit
+    vertices. `softpipe_get_vertex_info`.
+  - the emitted vertices are used by `setup_context` and `quad_header` are set
+    up with correct interpolation coefficients.
+  - `quad_header` are then used to prepare the machine
+
+## TGSI: vertex
+
+- Generally in `draw_pt_arrays`, nothing is forced or bypassed.  This means 
+  fetch-shade-pipeline get hit a lot, with or without `PT_PIPELINE`.
+  - shading happens before pipeline.  pipeline only gets to see the outputs of
+    the shader.
+  - post-vs clips, does perspective-division and viewport transform.
+    - remember vs replaces only model-view and projection.
+    - see `post_vs_cliptest_viewport_gl`.
+- Unlike fs, `mach->Inputs` are prepared by the caller, as can be seen in
+  `vs_exec_run_linear`.
+
+## Draw: Overview
 
 - a pipe driver can use draw module for all operations up until rasterize.
 - a pipe driver must install the rasterize stage through
@@ -9,7 +75,7 @@ Gallium Draw Module
 - when run, the draw module will run the primitives through the stages
 - usually, a driver installs vbuf-based rasterize stage.  See `vbuf_render`.
 
-## The draw module
+## Draw: The draw module
 
 - Functions of the draw pipeline
   - vertex fetch
@@ -66,7 +132,7 @@ Gallium Draw Module
     - Always fetch and emit M vertices because they are slow operations
       - vcache fails this because there is no `vertex_id` yet
 
-## `draw_pt`
+## Draw: `draw_pt`
 
 - The main entry point of the draw module: `draw_arrays`
 - There two frontends
@@ -85,7 +151,7 @@ Gallium Draw Module
   - `run_linear` for non-indexed fetch and non-indexed draw (and non-pipeline)
   - `run_linear_elts` for non-indexed fetch and indexed draw (and non-pipeline)
 
-## Frontends
+## Draw: Frontends
 
 - `draw_pt_varray`
   - It will simply call `middle->run_linear` mostly.
@@ -103,7 +169,7 @@ Gallium Draw Module
   - The idea is that, to run the pipeline, we need additional flags.  We must
     use the slow `vcache_run_extras`.
 
-## Middle-end
+## Draw: Middle-end
 
 - pipeline middle-end, among others, has two important submodules
   - `draw_pt_fetch` turns vertex attributes into the standard 4-float format for
