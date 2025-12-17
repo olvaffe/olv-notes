@@ -3,6 +3,7 @@ GFXReconstruct
 
 ## Build
 
+- dependencies: liblz4-dev, zlib1g-dev, libxcb-glx0-dev
 - `git clone --recurse-submodules https://github.com/LunarG/gfxreconstruct.git`
 - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
 - `ninja -C out`
@@ -10,9 +11,19 @@ GFXReconstruct
   - edit `VkLayer_gfxreconstruct.json` to point to local
     `libVkLayer_gfxreconstruct.so`
   - set `VK_LAYER_PATH` to where `VkLayer_gfxreconstruct.json` lives
-  - `gfxrecon-capture.py -o <name.gfxr> <executable> ...` to capture
-  - `gfxrecon-replay <name.gfxr>` to replay
-    - might need `--wsi xlib` on xwayland
+- dist
+  - `mkdir gfxrecon`
+  - `for i in $(find out/tools -type f -name 'gfxrecon*') out/layer/{libVkLayer_gfxreconstruct.so,VkLayer_gfxreconstruct.json}; do ln -sf ../$i gfxrecon/$(basename $i); done`
+  - `strip gfxrecon/*`
+  - `tar --zstd -hcf gfxrecon.tar.zst gfxrecon`
+
+## Usage
+
+- `export PATH=<gfxrecon>:$PATH`
+- `export VK_LAYER_PATH=<gfxrecon>`
+- `gfxrecon.py capture -o <name.gfxr> <executable> ...` to capture
+- `gfxrecon.py replay <name.gfxr>` to replay
+  - might need `--wsi xlib` on xwayland
 
 ## Android Build
 
