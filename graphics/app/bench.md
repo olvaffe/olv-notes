@@ -587,6 +587,54 @@ GPU Benchmarks
     - Render Pass: r8g8b8a8, 2574x1380
       - 3.2ms
 
+## GFXBench `gl_trex`
+
+- `-single_frame=20000`
+- `Creating test factory for: gl_trex`
+  - this dlsyms for `create_test_gl_trex` and calls it to create the test
+- `Initializing GLES context` to `Selected EGL cofiguration`
+  - they go through `eglGetDisplay`, `eglInitialize`, `eglGetConfigs`,
+    `eglCreateWindowSurface`, `eglCreateContext`, `eglMakeCurrent`
+- `Preparing done.`
+- `in loop`
+  - they handle X11 events
+- `Initializing gl_trex` to `Initialization successful`
+  - `OpenGL Vendor: ...` to `feature ...`
+    - these prints gl, fb, ext info
+  - `Texture type=ETC1`, `PROGRESS: ...`, to `Using mediump in fs.`
+    - these init the `Engine2` engine and `GLB_Scene_ES2` scene
+    - progress 0.10 to 0.30 load scene graph
+      - `trex/scene_trex.xml`
+      - `animations/*` seems to specify where each object goes at any
+        specific timestamp
+      - `actors.txt` seems to specify objects in the scene, including their
+        meshes (`meshes/*`) and materials (`materials/*`)
+      - `rooms.txt` seems to specify backgrounds in the scene, very similar
+        to `actors.txt`
+      - `portals.txt` seems to specify how rooms are connected
+      - `envmaps.txt`
+    - progress 0.50 to 0.52 prep ubershader
+    - progress 0.53 to 0.55 create scene fbos
+    - progress 0.56 to 0.58 load images
+    - progress 0.60 to 0.70 load meshes
+    - progress 0.70 to 0.75 compile shaders
+    - progress 0.75 to 0.80 create textures
+- `Running gl_trex`
+  - this steps through the scene until done
+  - for each frame, it updates the states and renders
+  - frame analysis
+    - the first pass renders shadow map for the biker
+    - the second pass renders shadow map for trex
+    - the third pass renders the frame with `zprepass`
+      - disables color mask
+      - renders opaque objects (ground, tree, biker, trex, bushes, etc.) to the depth buffer
+      - enables color mask
+      - renders all objects
+      - renders skybox
+    - the fourth pass renders displacements of moving objects
+      - renders pos-delta for moving objects
+    - it combines fbos from 3rd and 4th passes to produce the final frame
+
 ## clpeak
 
 - `device_info_t`
