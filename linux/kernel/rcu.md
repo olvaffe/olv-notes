@@ -28,15 +28,8 @@ RCU
       dummy task runs, it means the CPU has left the read-side critical
       section.
 
-## RCU
+## SRCU
 
-- RCU stands for read, copy, and update
-- A sync mechanism that is optimized for read-mostly situations
-- reader
-  - `rcu_read_lock`
-  - `rcu_dereference`
-  - `rcu_read_unlock`
-  - very lightweight lock or no locking at all
-- writer
-  - `rcu_assign_pointer` to update a pointer
-  - `synchronize_rcu` to reclaim/free the objects pointed by the old pointers
+- srcu stands for sleepable rcu
+  - `rcu_read_{lock,unlock}` must obey the same rules as `spin_{lock,unlock}`,
+    where blocking and sleeping are prohibited
