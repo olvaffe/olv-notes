@@ -126,3 +126,45 @@ Kernel Driver Core
     - It lives on the `mmc` bus `/bus/mmc/devices/mmc0:e624`.
 - It seems that class devices are usually functions of a physical device.
   - Those not under this category can be found under `/devices/virtual`.
+
+## devlink
+
+- dt devlinks
+  - when `of_platform_default_populate_init` calls `device_add` to populate
+    the platform bus with dt devices, `fw_devlink_link_device` adds devlinks
+  - `fw_devlink_parse_fwtree` calls `add_links` cb, which points to
+    `of_fwnode_add_links`, to add fwnode links
+    - it checks dt node properties matched by `of_supplier_bindings` and adds
+      them as suppliers
+    - these properties are matched: `clocks`, `interconnects`, `mboxes`,
+      `power-domains`, `nvmem-cells`, `phys`, `pinctrl-*`, `pwms`, `resets`,
+      `leds`, `backlight`, `panel`, `*-supply`, `*-gpio`, etc.
+  - `__fw_devlink_link_to_consumers` and `__fw_devlink_link_to_suppliers`
+    adds devlinks
+    - as devlinks are added, `__fwnode_link_del` removes fwnode links
+- when `device_link_add` adds a devlink,
+  - `device_reorder_to_tail` moves the consumer to the tail to ensure
+    suppliers always come before consumers
+    - `devices_kset_move_last` updates `devices_kset`
+    - `device_pm_move_last` updates `dpm_list`
+- before a driver probes a dev, `really_probe` calls
+  `device_links_check_suppliers` first to potentially defer the probe
+  - if `fwnode_links_check_suppliers` returns a fwnode, it prints `wait for supplier <foo>`
+    - this happens when `device_add` hasn't been called for the supplier dt
+      node and thus the fwnode link hasn't been removed
+  - if a supplier on `dev->links.suppliers` is not ready, it prints `supplier <foo> not ready`
+- `late_initcall(deferred_probe_initcall)`
+  - it probes all devices that are on `deferred_probe_pending_list`
+  - it schedules `deferred_probe_timeout_work_func` after
+    `driver_deferred_probe_timeout` (10) seconds
+  - when `deferred_probe_timeout_work_func` runs,
+    - `fw_devlink_drivers_done` relaxes supplier requirement if the supplier
+      has no driver at all
+    - it probes all devices again
+    - it prints `deferred probe pending: <reason>` for all remaining pending
+      devs
+    - `fw_devlink_probing_done`
+      - `fw_devlink_dev_sync_state` prints `sync_state() pending due to <consumer>`
+        - we want to call `dev_sync_state` on the supplier after all consumers
+          are probed
+        - if any consumer is not probed, this msg is printed
