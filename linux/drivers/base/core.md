@@ -58,14 +58,6 @@ Kernel Driver Core
   - `workqueue` is from `wq_sysfs_init`, a virtual subsys
   - `dma_heap` is from `dma_heap_add`, a class device with no parent
 
-## Device Link
-
-- <https://docs.kernel.org/driver-api/device_link.html>
-- device hierarchy forms a tree
-  - each child depends on its parent
-- device link turns device hierarchy into a DAG
-  - each consumer depends on its producer(s)
-
 ## Device Model
 
 - `/sys/devices` is hierarchical.
@@ -127,8 +119,13 @@ Kernel Driver Core
 - It seems that class devices are usually functions of a physical device.
   - Those not under this category can be found under `/devices/virtual`.
 
-## devlink
+## Device Link
 
+- <https://docs.kernel.org/driver-api/device_link.html>
+- device hierarchy forms a tree
+  - each child depends on its parent
+- device link turns device hierarchy into a DAG
+  - each consumer depends on its producer(s)
 - dt devlinks
   - when `of_platform_default_populate_init` calls `device_add` to populate
     the platform bus with dt devices, `fw_devlink_link_device` adds devlinks
@@ -168,3 +165,56 @@ Kernel Driver Core
         - we want to call `dev_sync_state` on the supplier after all consumers
           are probed
         - if any consumer is not probed, this msg is printed
+- fwnode flags
+  - `FWNODE_FLAG_LINKS_ADDED`
+    - when `device_add` calls `fw_devlink_link_device`, the flag ensures
+      `add_links` is called only once for each fwnode to add fwnode
+      supplier/consumer links
+  - `FWNODE_FLAG_NOT_DEVICE`
+    - when `fw_devlink_create_devlink` adds a devlink, the flag causes the
+      parent device of the supplier to be used as the supplier
+  - `FWNODE_FLAG_INITIALIZED`
+    - some special drivers do not bind to their devices but instead set this flag
+  - `FWNODE_FLAG_NEEDS_CHILD_BOUND_ON_ADD`
+    - net mdio sets the flag to prevent `fw_devlink_create_devlink` from adding
+      devlink
+  - `FWNODE_FLAG_BEST_EFFORT`
+    - earlycon `stdout-path` sets the flag to prevent
+      `device_links_check_suppliers` from checking the supplier deps
+  - `FWNODE_FLAG_VISITED`
+    - when `fw_devlink_create_devlink` calls `__fw_devlink_relax_cycles` to find
+      dep cycles, the flag ensures each fwnode is visited once
+- `dev->links.status`
+  - `DL_DEV_NO_DRIVER` is the initial status
+  - when `really_probe` calls `device_links_check_suppliers`, the status
+    becomes `DL_DEV_PROBING`
+  - if the driver probes, `driver_bound` calls `device_links_driver_bound` to
+    set the status to `DL_DEV_DRIVER_BOUND`
+  - if the driver does not probe, `device_links_no_driver` resets the status
+    to `DL_DEV_NO_DRIVER`
+  - when `device_release_driver_internal` unbinds a driver, the status becomes
+    `DL_DEV_UNBINDING`
+- devlink status
+  - `DL_STATE_NONE` means not tracked
+  - `DL_STATE_DORMANT` means supplier is not ready (no driver bound)
+  - `DL_STATE_AVAILABLE` means supplier is ready but consumer is not
+  - `DL_STATE_CONSUMER_PROBE` means supplier is ready and consumer is probing
+  - `DL_STATE_ACTIVE` means both supplier/consumer are ready
+  - `DL_STATE_SUPPLIER_UNBIND` means supplier is unbinding
+  - when `device_link_add` adds a link,
+    - if `DL_FLAG_STATELESS` (no tracking), the status is `DL_STATE_NONE`
+    - otherwise, `device_link_init_status` sets the status based on
+      consumer/supplier status
+- devlink flags
+  - `DL_FLAG_STATELESS` means explicit link lifetime management
+  - `DL_FLAG_AUTOREMOVE_CONSUMER` means the link is auto-removed when the consumer
+    driver unbinds
+  - `DL_FLAG_PM_RUNTIME` means the link participates in runtime pm
+  - `DL_FLAG_RPM_ACTIVE` means the link keeps the supplier powered
+  - `DL_FLAG_AUTOREMOVE_SUPPLIER` means the link is auto-removed when the
+    supplier driver unbinds
+  - `DL_FLAG_AUTOPROBE_CONSUMER`
+  - `DL_FLAG_MANAGED` is the opposite of `DL_FLAG_STATELESS`
+  - `DL_FLAG_SYNC_STATE_ONLY`
+  - `DL_FLAG_INFERRED` means the link is auto-derived from dt
+  - `DL_FLAG_CYCLE` means cyclic dep between consumer/supplier
