@@ -65,6 +65,18 @@ GFXBench
     - `resourcemanager` unused
     - `hostapp/basic` provides `testfw_app` executable
 
+## Cross-Compile
+
+- `export PLATFORM=linux_arm64` instead of `export PLATFORM=linux`
+- `export OGLX_DRIVER=ES3`
+- `export OGLX_VARIANT=sys`
+- additional build fixes
+  - edit `frameworks/cmake-utils/cmake/toolchain/linux_arm64.cmake` to add
+    `CMAKE_SYSROOT` and `CMAKE_FIND_ROOT_PATH_MODE_*`
+- dist
+  - `ln -sf ../out/install/linux_arm64/bin tfw-pkg`
+  - `tar --zstd -chf tfw-pkg.tar.zst tfw-pkg`
+
 ## GFXBench
 
 - results
