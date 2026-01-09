@@ -1,6 +1,67 @@
 Android SurfaceFlinger
 ======================
 
+## Native Activity
+
+- before looking into how surfaceflinger works, let's look into how a native
+  activity interacts with sf
+  - upon `onNativeWindowCreated`, app receives an `ANativeWindow`
+  - `ANativeWindow_lock` locks the win for cpu access
+  - `ANativeWindow_unlockAndPost` unlocks and presents the updated contents
+  - egl and vk also accept `ANativeWindow` for gpu access
+- internally, when an activity is created,
+  - a `SurfaceControl` is created to connect to the sf
+  - it also creates a surface for drawing, at which point
+    `onNativeWindowCreated` is called
+- inside libgui,
+  - a `SurfaceControl` owns
+    - a `SurfaceComposerClient` which is the connection to sf
+    - a `SurfaceControl` which is a child surface created from sf
+    - a `BLASTBufferQueue` that wraps the child surface
+    - a `Surface` that wraps the blast bq and is a `ANativeWindow`
+  - `ANativeWindow_lock` calls `Surface::lock` to dequeue a buffer from
+    `BBQBufferQueueProducer` and locks it for cpu access
+    - the buffer is either reused or newly allocated directly
+  - `ANativeWindow_unlockAndPost` calls `Surface::unlockAndPost` to unlocks
+    the buffer and queues it to `BBQBufferQueueProducer`
+    - `SurfaceComposerClient::Transaction::setBuffer` adds buffer change to
+      the transaction
+- on the sf side,
+  - `SurfaceComposerAIDL::createConnection` creates a `Client`
+  - `Client::createSurface` creates a `Layer`
+  - `SurfaceFlinger::setTransactionState` handles a batch of transactions
+    - client batches their transactions
+    - this function queues up transactions and notifies the scheduler
+  - `SurfaceFlinger::commit` commits transactions
+    - this is called from the scheduler
+    - `SurfaceFlinger::updateLayerSnapshots` applies the transactions
+      - `Layer::setBuffer` handles buffer change
+  - `SurfaceFlinger::composite` composites a frame
+    - this is also called from the scheduler
+    - `CompositionEngine::present` composites and presents
+      - this calls `Output::present` of each output
+        - `Output::presentFrameAndReleaseLayers`
+        - `Display::presentFrame`
+          - note that a `Display` is a `Output`
+        - `HWComposer::presentAndGetReleaseFences`
+        - `HWC2::impl::Display::present`
+
+## GPU Composition
+
+- during init, `SurfaceFlinger::processDisplayAdded` adds a `DisplayDevice`
+  - it creates a `LegacyFramebufferSurface` which is like a bq
+  - it creates a `DisplayDevice` over the legacy fb surface
+    - `Display::createRenderSurface` to create a `RenderSurface` where
+      - `mNativeWindow` is the producer end of the fb
+      - `mDisplaySurface` is the consumer end of the fb
+- `Output::present`
+  - `Output::dequeueRenderBuffer` dequeues a buf from fb
+  - `Output::composeSurfaces` performs gpu composition to the buf
+    - `RenderEngine::drawLayers` draws
+  - `RenderSurface::queueBuffer` queues the buf
+  - `LegacyFramebufferSurface::advanceFrame` calls
+    `HWComposer::setClientTarget`
+
 ## Protocol Overview
 
 - `ISurfaceComposer` is the interface of `SurfaceFlinger`
