@@ -1,6 +1,70 @@
 GFXBench
 ========
 
+## Build
+
+- <https://github.com/Kishonti-Opensource/gfxbench>
+- build
+  - `export PRODUCT_ID=gfxbench_vulkan`
+    - this implies gl and vk, while the default `gfxbench` implies dx as well
+  - `export PLATFORM=linux`
+  - `export CONFIG=Release`
+  - `export COMMON_OPTS="-GNinja -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache"`
+  - `export VULKAN_LIB_PATH=$(pkg-config --variable=libdir vulkan)`
+    - this helps ngl finds the right vulkan loader
+  - `scripts/build-3rdparty.sh`
+    - build fixes
+      - edit `3rdparty/zlib/CMakeLists.txt` to always set `Z_HAVE_UNISTD_H`
+      - edit `3rdparty/poco/CMakeLists.txt` to default `DISABLE_OPENSSL` to `ON`
+  - `scripts/build.sh`
+    - build fixes
+      - edit `scripts/build.sh` to remove `frameworks/cudaw`
+- dist
+  - `tar --zstd -cf tfw-pkg.tar.zst tfw-pkg`
+- run
+  - `./bin/testfw_app --gfx=egl -w 1024 -h 768 -t gl_5_normal`
+  - `./bin/testfw_app --gfx=xcb_vulkan -w 1024 -h 768 -t vulkan_5_normal`
+- `scripts/build-3rdparty.sh` builds these projects using cmake under `out/`
+  - `3rdparty/libepoxy`
+  - `3rdparty/zlib`
+  - `3rdparty/libpng`
+  - `3rdparty/poco`
+  - `3rdparty/AgilitySDK`
+  - `3rdparty/glew` because of `PLATFORM=linux`
+  - `3rdparty/glfw` because of `PLATFORM=linux`
+  - `frameworks/ngl/src/v1.0.3/loader` because of `PLATFORM=linux`
+- `scripts/build.sh` builds these projects using cmake under `out/`
+  - `frameworks/ngrtl` for basic utilities
+  - `gfxbench-data`
+    - `/gfxbench-data40` for 2.0, 3.0, 4.0 assets
+    - `/gfxbench-data50` for 5.0 assets
+  - `frameworks/clew` similar to glew but for CL
+  - `frameworks/systeminfo` for sysinfo collection
+  - `frameworks/oglx` provides `oglx/gl.h` to include the real gl headers
+  - `frameworks/testfw`
+    - `/gfxbench`
+      - `/gfxbench40`
+        - `/frameworks/kcl_framework`
+        - `/frameworks/testfw/schemas`
+        - `src/common`
+        - `src/tests/40`
+          - `../../gfx4`
+            - `../common_31`
+            - `../gfx3_1`
+              - `../gfx3_0`
+                - `/frameworks/krl`
+      - `/gfxbench50`
+        - `/frameworks/kcl_framework`
+        - `/frameworks/ngl`
+        - `src/testbases`
+          - `/frameworks/ksl_compiler`
+        - `src/common`
+          - `/frameworks/ksl_compiler`
+        - `src/scene5`
+    - `deviceinfo` for devinfo collection
+    - `resourcemanager` unused
+    - `hostapp/basic` provides `testfw_app` executable
+
 ## GFXBench
 
 - results
