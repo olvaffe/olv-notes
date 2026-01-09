@@ -67,15 +67,24 @@ GFXBench
 
 ## Cross-Compile
 
-- `export PLATFORM=linux_arm64` instead of `export PLATFORM=linux`
-- `export OGLX_DRIVER=ES3`
-- `export OGLX_VARIANT=sys`
-- additional build fixes
-  - edit `frameworks/cmake-utils/cmake/toolchain/linux_arm64.cmake` to add
-    `CMAKE_SYSROOT` and `CMAKE_FIND_ROOT_PATH_MODE_*`
+- build
+  - `export PLATFORM=linux_arm64` instead of `export PLATFORM=linux`
+  - `export OGLX_VARIANT=sys`
+  - `export OGLX_DRIVER=ES3`
+  - additional build fixes
+    - edit `frameworks/cmake-utils/cmake/toolchain/linux_arm64.cmake` to add
+      `CMAKE_SYSROOT` and `CMAKE_FIND_ROOT_PATH_MODE_*`
 - dist
   - `ln -sf ../out/install/linux_arm64/bin tfw-pkg`
   - `tar --zstd -chf tfw-pkg.tar.zst tfw-pkg`
+- `export OGLX_VARIANT=sys`
+  - it is `default` by default, and oglx links to sys big GL and glew
+  - if `sys`, oglx uses its own khr headers and links to sys egl/gles
+  - if `dummy` oglx uses its own khr headers and links to dummy egl/gles
+- `export OGLX_DRIVER=ES3`
+  - it is empty by default, and `FindOGLX.cmake` finds glew before falling
+    back to big gl
+  - if `ES3`, `FindOGLX.cmake` finds egl/gles instead
 
 ## GFXBench
 
