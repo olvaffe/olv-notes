@@ -439,19 +439,30 @@ GFXBench
 
 - `-single_frame=20000`
 - `Creating test factory for: gl_trex`
-  - this dlsyms for `create_test_gl_trex` and calls it to create the test
+  - `Runner::prepare` calls `TestFactory::test_factory` to dlsym for
+    `create_test_gl_trex` and calls `TestFactory::create_test` to create the
+    test
+    - `create_test_gl_trex` is defined by `CREATE_FACTORY(gl_trex, GFXBenchCorporateA<Engine2>)`
 - `Initializing GLES context` to `Selected EGL cofiguration`
-  - they go through `eglGetDisplay`, `eglInitialize`, `eglGetConfigs`,
-    `eglCreateWindowSurface`, `eglCreateContext`, `eglMakeCurrent`
+  - `Runner::prepareGraphics` calls `WindowFactory::create` to create a window
+  - with `--gfx=egl`, `WindowFactory::createEGL` creates a `XGraphicsWindow`
+    and a `EGLGraphicsContext`
+  - `EGLGraphicsContext::initWindowSurface` goes through `eglGetDisplay`,
+    `eglInitialize`, `eglGetConfigs`, `eglCreateWindowSurface`,
+    `eglCreateContext`, `eglMakeCurrent`
 - `Preparing done.`
 - `in loop`
   - they handle X11 events
 - `Initializing gl_trex` to `Initialization successful`
+  - `Runner::run` calls `GFXBenchA<Engine2>::init`
   - `OpenGL Vendor: ...` to `feature ...`
-    - these prints gl, fb, ext info
+    - `GFXBench::InitializeTestEnvironment` prints gl, fb, ext info
   - `Texture type=ETC1`, `PROGRESS: ...`, to `Using mediump in fs.`
-    - these init the `Engine2` engine and `GLB_Scene_ES2` scene
-    - progress 0.10 to 0.30 load scene graph
+    - `GFXBenchA<Engine2>::init` creates `Engine2` and calls `InitializeTest`
+      - `Engine2::Engine2` creates `GLB_Scene_ES2`
+      - `TestBase::init0` calls `Engine2::init`
+    - `SceneHandler::Process_Load`
+      - progress 0.10 to 0.30 load scene graph
       - `trex/scene_trex.xml`
       - `animations/*` seems to specify where each object goes at any
         specific timestamp
@@ -461,12 +472,13 @@ GFXBench
         to `actors.txt`
       - `portals.txt` seems to specify how rooms are connected
       - `envmaps.txt`
-    - progress 0.50 to 0.52 prep ubershader
-    - progress 0.53 to 0.55 create scene fbos
-    - progress 0.56 to 0.58 load images
-    - progress 0.60 to 0.70 load meshes
-    - progress 0.70 to 0.75 compile shaders
-    - progress 0.75 to 0.80 create textures
+    - `GLB_Scene_ES2::Process_GL`
+      - progress 0.50 to 0.52 prep ubershader
+      - progress 0.53 to 0.55 create scene fbos
+      - progress 0.56 to 0.58 load images
+      - progress 0.60 to 0.70 load meshes
+      - progress 0.70 to 0.75 compile shaders
+      - progress 0.75 to 0.80 create textures
 - `Running gl_trex`
   - this steps through the scene until done
   - for each frame, it updates the states and renders
