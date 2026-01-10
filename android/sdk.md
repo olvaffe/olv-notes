@@ -12,27 +12,28 @@ Android SDK
 - Install packages
   - `cd ~/android/sdk`
   - `./cmdline-tools/latest/bin/sdkmanager --list`
-  - `./cmdline-tools/latest/bin/sdkmanager --install 'build-tools;33.0.0' 'ndk;25.0.8775105' platform-tools`
+  - `./cmdline-tools/latest/bin/sdkmanager --list_installed`
+  - `./cmdline-tools/latest/bin/sdkmanager 'ndk;<ver>' platform-tools`
 - if only adb is needed,
   - search for "android sdk platform tools" for direct download
   - <https://developer.android.com/studio/releases/platform-tools>
 
 ## Components
 
-- `cmdline-tools` to manage SDK
-  - `sdkmanager`
-  - `avdmanager`
-- `platform-tools` to communicate with devices
-  - `adb`
-  - `fastboot`
-- `build-tools` to build Android apks
+- `build-tools;<ver>` to build Android apks
   - `aapt`
   - `aidl`
   - `d8`
-- `ndk` to build native libraries
-- `platforms` to various runtime versions
+- `cmake;<ver>` to build native binaries using cmake
+- `cmdline-tools;latest` to manage SDK
+  - `sdkmanager`
+  - `avdmanager`
+- `ndk;<ver>` to build native binaries
+- `platforms;android-<ver>` to various runtime versions
   - `android.jar`
-- `emulator` is the emulator
+- `platform-tools` to communicate with devices
+  - `adb`
+  - `fastboot`
 
 ## Emulator
 
