@@ -74,3 +74,21 @@ Android libgui
 - `GraphicBuffer` is an `android_native_buffer_t` (now called
   `ANativeWindowBuffer_t`)
 
+## BLAST
+
+- blast adapts buffer queue to transaction
+  - transactions were used to update layer states
+  - buffer queues were used to update layer buffers
+  - nowadays, transactions are used for both
+  - blast is a buffer queue that translates buffer updates to transactions
+- example: `TEST_F(BLASTBufferQueueTest, onFrameAvailable_Apply)`
+  - `BLASTBufferQueueTest::SetUp`
+    - `SurfaceComposerClient::make` creates a `SurfaceComposerClient`
+    - `SurfaceComposerClient::createSurface` creates a `SurfaceControl`
+  - `BLASTBufferQueueHelper` has a `BLASTBufferQueue`
+  - `BLASTBufferQueueTest::setUpProducer` sets up and returns
+    `BBQBufferQueueProducer` owned by `BLASTBufferQueue`
+  - `BufferQueueProducer::dequeueBuffer` and
+    `BufferQueueProducer::requestBuffer `dequeues a `GraphicBuffer`
+  - `BufferQueueProducer::queueBuffer` queues a `GraphicBuffer`
+  - `Transaction().apply(true)` applies the batched transaction
