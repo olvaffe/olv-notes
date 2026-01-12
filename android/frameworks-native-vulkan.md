@@ -38,3 +38,22 @@ Android vulkan
     - `AddLayerLibrary` during init
   - `vulkan  : Loaded layer VK_LAYER_KHRONOS_validation`
     - `ActivateLayers` during instance creation
+
+## gfxreconstruct
+
+- <https://github.com/LunarG/gfxreconstruct/blob/dev/HOWTO_android.md>
+- steps
+  - `adb root`
+  - `adb shell setenforce 0`
+  - download latest release from
+    <https://github.com/LunarG/gfxreconstruct/releases>
+  - `adb shell mkdir -p /data/local/debug/vulkan`
+  - `adb push libVkLayer_gfxreconstruct.so /data/local/debug/vulkan`
+  - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_gfxreconstruct`
+  - `adb shell setprop debug.gfxrecon.capture_file /data/local/tmp/capture.gfxr`
+    - use a path writable by app
+- when an app starts, there should be
+  - `vulkan  : searching for layers in '/data/local/debug/vulkan'`
+  - `vulkan  : added global layer 'VK_LAYER_LUNARG_gfxreconstruct' from library '/data/local/debug/vulkan/libVkLayer_gfxreconstruct.so'`
+  - `vulkan  : Loaded layer VK_LAYER_LUNARG_gfxreconstruct`
+  - `gfxrecon: ...`
