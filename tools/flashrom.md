@@ -31,3 +31,14 @@ Flashrom
   - `Reading flash... done.`
   - if the clip is not properly installed, `No EEPROM/flash device found.`
     instead
+
+## Chromebook
+
+- on dut, flashrom uses the downstream `ec` programmer
+  - it opens `/dev/cros_ec`
+- on host, flashrom uses the `raiden_debug_spi` programmer
+  - it looks for Cr50/Ti50 usb device which has
+    - `idVendor` 0x18d1 (Google)
+    - `bInterfaceClass` 255 (Vendor Specific Class)
+    - `bInterfaceSubClass` 81 (Raiden SPI)
+  - `target=AP` or `target=EC` selects the nor flash
