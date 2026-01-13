@@ -55,6 +55,42 @@ Android Build System
 - `m` invokes `build/soong/soong_ui.bash --build-mode --all-modules` which
   invokes `runMake`
 
+## Release Flags
+
+- <https://android.googlesource.com/platform/build/release/+/refs/heads/android16-qpr2-release>
+  - BP4A
+    - B is Baklava, 2025
+    - P is Platform
+    - 4 is 4th release of the year
+    - A is the final release
+- `RELEASE_BOARD_API_LEVEL` maps to `ro.board.api_level`
+  - <https://source.android.com/docs/core/architecture/api-flags>
+  - AP2A is 202404
+  - BP2A is 202504
+  - trunk staging is currently 202604
+- `RELEASE_PLATFORM_MIN_SUPPORTED_TARGET_SDK_VERSION` maps to `ro.build.version.min_supported_target_sdk`
+  - it is currently 28
+- `RELEASE_PLATFORM_SDK_VERSION` maps to `ro.build.version.sdk`
+  - AP2A is 34
+  - AP3A is 35
+  - BP2A is 36
+- `RELEASE_PLATFORM_VERSION_CODENAME`
+  - released versions are always REL
+  - trunk staging is currently Baklava
+- `RELEASE_PLATFORM_VERSION_LAST_STABLE`
+  - AP2A is 14
+  - AP3A is 15
+  - BP2A is 16
+- `ro.build.fingerprint`
+  - `BUILD_FINGERPRINT := $(PRODUCT_BRAND)/$(TARGET_PRODUCT)/$(TARGET_DEVICE):$(PLATFORM_VERSION)/$(BUILD_ID)/$(BUILD_NUMBER_FROM_FILE):$(TARGET_BUILD_VARIANT)/$(BUILD_VERSION_TAGS)`
+  - `PLATFORM_VERSION` is codename or released version
+  - `BUILD_ID` is from `build/core/build_id.mk`
+    - `MAIN` or something lik `BP4A.251205.006`
+  - `BUILD_NUMBER_FROM_FILE` is from `out/soong/build_number.txt`
+    - `eng.<username>` or the build number
+  - `TARGET_BUILD_VARIANT` is userdebug, eng ,etc.
+  - `BUILD_VERSION_TAGS` is dev-keys
+
 ## Artifacts
 
 - artifacts in `out`
