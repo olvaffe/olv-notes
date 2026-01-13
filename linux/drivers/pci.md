@@ -146,6 +146,19 @@ PCI
 ## lspci
 
 - `lspci -vv -s <slot>`
+- each slot is `[<domain>:]<bus>:<slot>.<func>`
+  - `lspci -tv` to see the tree structure
+  - the root bridge creates bus 00
+    - it is also a func at `00:00.0`
+  - there are typically more bridges, each creating a new bus
+    - each bridge is a func at `00:XX.0`
+    - there is also `00:XX.1` that creates bus YY
+      - a func under bus YY is thus `YY:<slot>.<func>`
+  - on x86, `acpi_pci_root_add` adds the root bridge
+    - it prints `ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])`
+      - `root->segment`, aka domain, is typically 0
+      - `root->secondary`, aka bus, typically goes from 0 to 255
+    - `pci_acpi_scan_root` calls `acpi_pci_root_create` to create `pci_bus`
 - capabilities
   - `Power Management version 3`
     - `Status: D0` means the device is in D0 (active)
