@@ -480,15 +480,22 @@ GFXBench
       - progress 0.70 to 0.75 compile shaders
       - progress 0.75 to 0.80 create textures
 - `Running gl_trex`
-  - this steps through the scene until done
-  - for each frame, it updates the states and renders
-  - frame analysis
+  - `GFXBench::run` calls `GFXBench::stepNoCtx` in a loop
+    - this steps through the scene until done
+    - `GFXBench::processMessages` handles external events (input, battery, etc.)
+    - `Engine2::animate` calls `KRL_Scene::Animate` to update scene states
+    - `TestBase::render0` calls `Engine2::render` to render
+      - `GLB_Scene_ES2::Render -> GLB_Scene_ES2_::Render`
+  - `GLB_Scene_ES2::Render` frame analysis
     - the first pass renders shadow map for the biker
+      - `GLB_Scene_ES2::RenderShadow`
     - the second pass renders shadow map for trex
+      - `GLB_Scene_ES2::RenderShadow`
     - the third pass renders the frame with `zprepass`
-      - disables color mask
-      - renders opaque objects (ground, tree, biker, trex, bushes, etc.) to the depth buffer
-      - enables color mask
+      - `GLB_Scene_ES2::RenderPrepass`
+        - disables color mask
+        - renders opaque objects (ground, tree, biker, trex, bushes, etc.) to the depth buffer
+        - enables color mask
       - renders all objects
       - renders skybox
     - the fourth pass renders displacements of moving objects
