@@ -46,7 +46,8 @@ Broadcom SoC
     - its job is to reflash the real stage2 bootloader to SPI EEPROM
   - VPU looks for the stage2 bootloader in SPI EEPROM
     - this is the normal boot flow
-  - otherwise, it waits and loads `recovery.bin` from USB
+  - otherwise, if SPI EEPROM has no valid stage2 bootloader, it waits and
+    loads `recovery.bin` from USB
 - VPU executes stage2 bootloader from EEPROM
   - VPU initializes more of the system, including clocks and SDRAM
   - VPU checks the config on EEPROM which affects the boot flow
@@ -122,6 +123,34 @@ Broadcom SoC
   - `make rpi_4_defconfig`
   - copy `u-boot.bin` to the boot dir
   - specify `kernel=u-boot.bin` in `config.txt`
+
+## Bootloader and Firmware Update
+
+- get board revision
+  - `cat /sys/firmware/devicetree/base/model`
+- get current bootloader version
+  - `hex=$(od -v -An -t x1 /sys/firmware/devicetree/base/chosen/bootloader/build-timestamp | tr -d ' ')`
+  - `epoch=$(printf %d 0x$hex)`
+  - `date -d@$epoch`
+- get `pieeprom.bin` version
+  - `strings pieeprom.bin | grep BUILD_TIMESTAMP`
+- prepare sd
+  - `curl -LO https://downloads.raspberrypi.com/imager/imager_latest_amd64.AppImage`
+  - `chmod +x imager_latest_amd64.AppImage`
+  - `xhost +SI:localuser:root`
+  - `sudo ./imager_latest_amd64.AppImage`
+  - select `OS -> Misc utility images -> Bootloader (Pi 4 family) -> USB Boot`
+  - this creates a recovery sd with
+    - `recovery.bin`
+    - `pieeprom.bin` and `pieeprom.sig`
+    - `vl805.bin` and `vl805.sig`
+  - this must be sd because stage1 bootloader boots from existing eeprom
+    before usb
+- boot from the recovery sd
+  - when the screen turns green, it is done
+- update fw
+  - `curl -LO https://github.com/raspberrypi/firmware/releases/download/1.20250915/raspi-firmware_1.20250915.orig.tar.xz`
+  - copy `start4.elf` and `fixup4.dat` to esp
 
 ## Minimal Boot Partition
 
