@@ -63,9 +63,11 @@ AMD CPUs
 - 2024: Ryzen 8000 series
   - Phoenix, 65W, Zen 4, RDNA3
   - Hawk Point, 15-54W, Zen 4, RDNA3
-- 2024: Ryzen 9000 series and AI 300 series
+- 2025: Ryzen 9000 series and AI 300 series
   - Granite Ridge, 65-170W, Zen 5, RDNA2-display
   - Strix Point, 28W, Zen 5, RDNA3.5
+- 2026: Ryzen AI 400 series
+  - Gorgon Point, 15-54W, Zen 5, RDNA3.5
 
 ## Chromebooks
 

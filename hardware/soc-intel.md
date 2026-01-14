@@ -90,8 +90,8 @@ Intel CPUs
     - desktop
   - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
     - mobile
-- 25Q4~: Core Ultra 3xx?
-  - Panther Lake
+- 25Q4~: Core Ultra 3xx
+  - Panther Lake, Cougar Cove, Darkmont, Gfx30 GPU
   - Nova Lake
 
 ## TDP

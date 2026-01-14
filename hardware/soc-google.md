@@ -29,3 +29,9 @@ Google Tensor
   - X4 x1@3.1, A720 x3@2.6, A520 x4@1.92
   - Mali-G715 MP7, turse, v11
   - P24: 9 (tokay), pro (caiman), xl (komodo), a (tegu)
+- 2025, G5
+  - GS501, ?, laguna
+  - 3nm
+  - X4 x1@3.78, A725 x5@3.05, A520 x2@2.25
+  - PowerVR DXT-48-1536 MC1(6CU)
+  - P25: 10 (frankel), pro (blazer), xl (mustang), fold (rango)

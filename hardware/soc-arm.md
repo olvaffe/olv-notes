@@ -132,6 +132,7 @@ ARM Processors
   - 2017, A55, up to 2.3 GHz, +18% perf
   - 2021, A510, up to 2.0 GHz, +35% perf
   - 2023, A520, up to 2.0 GHz, +8% perf
+  - 2025, C1-Nano, up to 2.0 GHz, +5% perf
 - big
   - 2012, A57, up to 2.0 GHz
   - 2015, A72, up to 2.5 GHz, +90% perf
@@ -143,12 +144,17 @@ ARM Processors
   - 2021, A710, up to 3.0 GHz, +10% perf
   - 2022, A715, up to 3.0 GHz, +5% perf
   - 2023, A720, up to 3.0 GHz, +15% perf
+  - 2024, A725, up to 3.0 GHz, +12% perf
+  - 2025, C1-Pro, up to 3.0 GHz, +11% perf
 - x
   - 2019, A77, up to 3.3 GHz
   - 2020, X1, up to 3.3 GHz, +20% perf
   - 2021, X2, up to 3.0 GHz, +30% perf
   - 2022, X3, up to 3.2 GHz, +25% perf
   - 2023, X4, up to 3.4 GHz, +15% perf
+  - 2024, X925, up to 3.8 GHz, +17% perf
+  - 2025, C1-Ultra, up to 4.1 GHz, +26% perf
+    - there is also C1-Premium
 - <https://www.cpubenchmark.net/singleThread.html#mobile-thread>
   - X2
     - 3.1GHz, 3111
