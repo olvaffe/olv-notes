@@ -122,7 +122,7 @@ Android Kernel
 - for cros,
   - build kernel
     - `tools/bazel run //common:kernel_aarch64_dist --config=stamp -- --wipe_destdir`
-    - `tools/bazel run //private/devices/google/foo:foo_dist -- --wipe_destdir`
+    - `tools/bazel run //private/devices/google/foo:foo_dist --config=foo -- --wipe_destdir`
   - if arm64, the kernel image and the dtbs are packaged to fit image
     - the fit image packs `out/kernel_aarch64/dist/Image` and
       `out/foo/dist/*.dtb`
@@ -162,6 +162,12 @@ Android Kernel
     - `kernel_modules` is a list of `kernel_module`s
   - `system_dlkm_image(...)`
   - `vendor_dlkm_image(...)`
+
+## KMI Update
+
+- <https://android.googlesource.com/kernel/build/+/refs/heads/master/kleaf/docs/abi.md>
+- add symbols to `common/gki/aarch64/symbols`
+- `tools/bazel run //common:kernel_aarch64_abi_update`
 
 ## Iterative Development
 
