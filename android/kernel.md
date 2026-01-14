@@ -119,7 +119,17 @@ Android Kernel
     - e.g., `private/google-modules/bar/BUILD.bazel`
 - `tools/bazel run //private/devices/google/foo:foo_dist`
   - this copies files to `out/foo/dist/`
-- for cros, the kernel image and the dtbs are packaged to fit image
+- for cros,
+  - build kernel
+    - `tools/bazel run //common:kernel_aarch64_dist --config=stamp -- --wipe_destdir`
+    - `tools/bazel run //private/devices/google/foo:foo_dist -- --wipe_destdir`
+  - if arm64, the kernel image and the dtbs are packaged to fit image
+    - the fit image packs `out/kernel_aarch64/dist/Image` and
+      `out/foo/dist/*.dtb`
+  - update prebuilt kernel
+  - build android
+    - `m installclean`
+    - `m dist`
 - `BUILD.bazel`
   - `load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")`
     - <https://github.com/bazelbuild/bazel-skylib/blob/main/rules/common_settings.bzl>
@@ -156,6 +166,7 @@ Android Kernel
 ## Iterative Development
 
 - `bazel run --config=fast ...`
+  - specifically, avoid `--config=stamp`!
 - copy kernel and modules to prebuilt
 - `m bootimage system_dlkmimage vendorbootimage vendor_dlkmimage`
   - `bootimage` packs gki kernel to `boot.img`
