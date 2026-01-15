@@ -1,105 +1,6 @@
 GPU Benchmarks
 ==============
 
-## Basemark GPU
-
-- basemarkgpu-1.2.3
-- run the custom benchmark and `ps -ef` shows
-    ./resources/binaries/BasemarkGPU_vk \
-        TestType Custom \
-        TextureCompression bc7 \
-        RenderPipeline simple \
-        RenderResolution 1280x720 \
-        LoopCount 1 \
-        GpuIndex 0 \
-        ProgressBar true \
-        AssetPath ./resources/assets/pkg \
-        StoragePath ./logs \
-        SkipZPrepass true
-- `RenderPipeline` can be `simple`, `medium`, or `highend`
-
-## Unigine Heaven
-
-- `Unigine_Heaven-4.0`
-- run the benchmark and `ps -ef` shows
-    ./heaven_x64 \
-        -project_name Heaven \
-        -data_path ../ \
-        -engine_config ../data/heaven_4.0.cfg \
-        -system_script heaven/unigine.cpp \
-        -sound_app openal \
-        -video_app opengl \
-        -video_multisample 0 \
-        -video_fullscreen 0 \
-        -video_mode 3 \
-        -extern_define RELEASE,LANGUAGE_EN,QUALITY_HIGH,TESSELLATION_DISABLED \
-        -extern_plugin GPUMonitor
-  - `cat /proc/<pid>/environ | tr '\0' '\n'` shows
-    - `LD_LIBRARY_PATH=x64`
-- windows version works under wine
-
-## Unigine Valley
-
-- `Unigine_Valley-1.0`
-- run the benchmark and `ps -ef` shows
-    ./valley_x64 \
-        -project_name Valley \
-        -data_path ../ \
-        -engine_config ../data/valley_1.0.cfg \
-        -system_script valley/unigine.cpp \
-        -sound_app openal \
-	-video_app opengl \
-	-video_multisample 0 \
-	-video_fullscreen 1 \
-	-video_mode -1 \
-	-video_height 720 \
-	-video_width 1280 \
-	-extern_define ,RELEASE,LANGUAGE_EN,QUALITY_HIGH \
-	-extern_plugin ,GPUMonitor
-
-## Vulkan Samples
-
-- build
-  - `git clone --recurse-submodules https://github.com/KhronosGroup/Vulkan-Samples.git`
-  - `cd Vulkan-Samples`
-  - `cmake -H. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
-    - if wayland, `-DVKB_WSI_SELECTION=WAYLAND -DGLFW_BUILD_X11=OFF`
-  - `ninja -C out`
-  - `ln -sf out/app/bin/Debug/x86_64/vulkan_samples`
-- deploy
-  - `tar --zstd -hcf vulkan-samples.tar.zst vulkan_samples assets shaders --transform='s,,vulkan-samples/,'`
-- main loop
-  - stack
-    - `DescriptorManagement::update`
-    - `vkb::Application::step`
-      - app here is a `DescriptorManagement`
-    - `vkb::VulkanSamples::update`
-    - `vkb::Application::step`
-      - app here is a `VulkanSamples` (not `VulkanSample`)
-    - `vkb::Platform::run`
-    - `vkb::Platform::main_loop`
-  - when the window is out of focus and is not in benchmark mode,
-    `vkb::Platform::run` returns immediately and the test will be in a busy
-    loop
-- swapchain
-  - stack of image acquire
-    - `vkb::Swapchain::acquire_next_image`
-    - `vkb::RenderContext::begin_frame`
-    - `vkb::RenderContext::begin`
-    - `DescriptorManagement::update`
-  - stack of image present
-    - `vkb::Queue::present`
-    - `vkb::RenderContext::end_frame`
-    - `vkb::RenderContext::submit`
-    - `vkb::RenderContext::submit`
-    - `DescriptorManagement::update`
-
-## GravityMark
-
-- <https://gravitymark.tellusim.com/>
-  - Android
-  - Linux x86-64 and arm64
-
 ## glmark2
 
 - <https://github.com/glmark2/glmark2>
@@ -158,6 +59,71 @@ GPU Benchmarks
 - run
   - `./out/vkmark --winsys-dir out/src --data-dir data`
     - `--winsys wayland` or `--winsys headless`
+
+## clpeak
+
+- `device_info_t`
+  - `maxAllocSize` is `CL_DEVICE_MAX_MEM_ALLOC_SIZE` (e.g., 4GB)
+  - `maxGlobalSize` is `CL_DEVICE_GLOBAL_MEM_SIZE` (e.g., 32GB)
+  - `maxWGSize` is `CL_DEVICE_MAX_WORK_ITEM_SIZES[0]` (e.g., 512)
+  - `numCUs` is `CL_DEVICE_MAX_COMPUTE_UNITS` (e.g., 96)
+  - `globalBWMaxSize` is hardcoded to 512MB
+  - `computeWgsPerCU` is hardcoded to 2048
+- `clPeak::runGlobalBandwidthTest`
+  - `global_bandwidth_v1_local_offset` kernel
+    - it sums `FETCH_PER_WI` values, each `get_local_size` apart, and writes
+      the result
+  - `global_bandwidth_v1_global_offset` kernel
+    - it sums `FETCH_PER_WI` values, each `get_global_size` apart, and writes
+      the result
+    - that's bogus
+- `clPeak::runComputeSP`
+  - `compute_sp_v1` kernel
+    - it computes `mad` with `get_local_id` for 1024 times and writes the
+      result
+  - `globalSize` is scaled by `numCUs` and `maxWGSize`
+- `clPeak::runComputeInteger`
+  - `compute_integer_v1` kernel
+    - it computes `a*b+c` with `get_local_id` for 1024 times and writes the
+      result
+  - `globalSize` is scaled by `numCUs` and `maxWGSize`
+
+## Vulkan Samples
+
+- build
+  - `git clone --recurse-submodules https://github.com/KhronosGroup/Vulkan-Samples.git`
+  - `cd Vulkan-Samples`
+  - `cmake -H. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
+    - if wayland, `-DVKB_WSI_SELECTION=WAYLAND -DGLFW_BUILD_X11=OFF`
+  - `ninja -C out`
+  - `ln -sf out/app/bin/Debug/x86_64/vulkan_samples`
+- deploy
+  - `tar --zstd -hcf vulkan-samples.tar.zst vulkan_samples assets shaders --transform='s,,vulkan-samples/,'`
+- main loop
+  - stack
+    - `DescriptorManagement::update`
+    - `vkb::Application::step`
+      - app here is a `DescriptorManagement`
+    - `vkb::VulkanSamples::update`
+    - `vkb::Application::step`
+      - app here is a `VulkanSamples` (not `VulkanSample`)
+    - `vkb::Platform::run`
+    - `vkb::Platform::main_loop`
+  - when the window is out of focus and is not in benchmark mode,
+    `vkb::Platform::run` returns immediately and the test will be in a busy
+    loop
+- swapchain
+  - stack of image acquire
+    - `vkb::Swapchain::acquire_next_image`
+    - `vkb::RenderContext::begin_frame`
+    - `vkb::RenderContext::begin`
+    - `DescriptorManagement::update`
+  - stack of image present
+    - `vkb::Queue::present`
+    - `vkb::RenderContext::end_frame`
+    - `vkb::RenderContext::submit`
+    - `vkb::RenderContext::submit`
+    - `DescriptorManagement::update`
 
 ## glbench
 
@@ -238,34 +204,6 @@ GPU Benchmarks
       - it calls `drmModeAddFB` for the scanout bo
       - it calls `drmModeSetCrtc` or `drmModePageFlip` to present
 
-## clpeak
-
-- `device_info_t`
-  - `maxAllocSize` is `CL_DEVICE_MAX_MEM_ALLOC_SIZE` (e.g., 4GB)
-  - `maxGlobalSize` is `CL_DEVICE_GLOBAL_MEM_SIZE` (e.g., 32GB)
-  - `maxWGSize` is `CL_DEVICE_MAX_WORK_ITEM_SIZES[0]` (e.g., 512)
-  - `numCUs` is `CL_DEVICE_MAX_COMPUTE_UNITS` (e.g., 96)
-  - `globalBWMaxSize` is hardcoded to 512MB
-  - `computeWgsPerCU` is hardcoded to 2048
-- `clPeak::runGlobalBandwidthTest`
-  - `global_bandwidth_v1_local_offset` kernel
-    - it sums `FETCH_PER_WI` values, each `get_local_size` apart, and writes
-      the result
-  - `global_bandwidth_v1_global_offset` kernel
-    - it sums `FETCH_PER_WI` values, each `get_global_size` apart, and writes
-      the result
-    - that's bogus
-- `clPeak::runComputeSP`
-  - `compute_sp_v1` kernel
-    - it computes `mad` with `get_local_id` for 1024 times and writes the
-      result
-  - `globalSize` is scaled by `numCUs` and `maxWGSize`
-- `clPeak::runComputeInteger`
-  - `compute_integer_v1` kernel
-    - it computes `a*b+c` with `get_local_id` for 1024 times and writes the
-      result
-  - `globalSize` is scaled by `numCUs` and `maxWGSize`
-
 ## Unity: Boat Attack
 
 - <https://github.com/Unity-Technologies/BoatAttack>
@@ -273,3 +211,71 @@ GPU Benchmarks
   - `adb shell am start --windowingMode 1 -n com.UnityTechnologies.BoatAttack/com.unity3d.player.UnityPlayerActivity`
     - optional `-e unity \"-quality:hq\"`
   - `adb shell am force-stop com.UnityTechnologies.BoatAttack`
+
+## GravityMark
+
+- <https://gravitymark.tellusim.com/>
+  - Android
+  - Linux x86-64 and arm64
+
+## Basemark GPU
+
+- basemarkgpu-1.2.3
+- run the custom benchmark and `ps -ef` shows
+
+    ./resources/binaries/BasemarkGPU_vk \
+        TestType Custom \
+        TextureCompression bc7 \
+        RenderPipeline simple \
+        RenderResolution 1280x720 \
+        LoopCount 1 \
+        GpuIndex 0 \
+        ProgressBar true \
+        AssetPath ./resources/assets/pkg \
+        StoragePath ./logs \
+        SkipZPrepass true
+- `RenderPipeline` can be `simple`, `medium`, or `highend`
+
+## Unigine Benchmarks
+
+- <https://benchmark.unigine.com/>
+- Sanctuary, 2007, 28MB
+- Tropics, 2008, 56MB
+- Heaven, 2009, 273MB
+  - `Unigine_Heaven-4.0`
+  - run the benchmark and `ps -ef` shows
+
+      ./heaven_x64 \
+          -project_name Heaven \
+          -data_path ../ \
+          -engine_config ../data/heaven_4.0.cfg \
+          -system_script heaven/unigine.cpp \
+          -sound_app openal \
+          -video_app opengl \
+          -video_multisample 0 \
+          -video_fullscreen 0 \
+          -video_mode 3 \
+          -extern_define RELEASE,LANGUAGE_EN,QUALITY_HIGH,TESSELLATION_DISABLED \
+          -extern_plugin GPUMonitor
+  - `cat /proc/<pid>/environ | tr '\0' '\n'` shows
+    - `LD_LIBRARY_PATH=x64`
+  - windows version works under wine
+- Valley, 2013, 394MB
+  - `Unigine_Valley-1.0`
+  - run the benchmark and `ps -ef` shows
+
+      ./valley_x64 \
+          -project_name Valley \
+          -data_path ../ \
+          -engine_config ../data/valley_1.0.cfg \
+          -system_script valley/unigine.cpp \
+          -sound_app openal \
+          -video_app opengl \
+          -video_multisample 0 \
+          -video_fullscreen 1 \
+          -video_mode -1 \
+          -video_height 720 \
+          -video_width 1280 \
+          -extern_define ,RELEASE,LANGUAGE_EN,QUALITY_HIGH \
+          -extern_plugin ,GPUMonitor
+- Superposition, 2017, 1564MB
