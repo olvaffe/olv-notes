@@ -104,8 +104,8 @@ Android Build System
 - `target` is for target
   - `common` is java-based target binaries
   - `product/foo` is foo-specific target binaries
-    - `boot.img` consists of kernel, dtb, cmdline, etc.
-    - `init_boot.img` consists the initrd
+    - `boot.img` consists of gki kernel
+    - `init_boot.img` consists of initrd
     - `product` and `product.img` are the product partition
     - `ramdisk` and `ramdisk.img` are the initrd
     - `root` is the root partition
@@ -122,6 +122,7 @@ Android Build System
     - `userdata.img` is the data partition (and is empty)
     - `vbmeta.img` is the verified boot meta partition
     - `vendor` and `vendor.img` are the vendor partition
+    - `vendor_boot.img` consists of cmdline, dtbs, vendor initrd, recovery, etc.
     - `vendor_dlkm` and `vendor_dlkm.img` are the vendor dlkm partition
 - `verbose.log.gz` is the verbose log
 
