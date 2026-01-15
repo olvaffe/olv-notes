@@ -304,6 +304,52 @@ Das U-Boot
 - `run` runs cmds in an env var
 - `usb` handles usb
 - `version` shows version
+- Environment Variable Commands
+  - `printenv`
+  - `setenv bootargs 'console=ttyS0,115200'` sets kernel cmdline
+    - or `console=tty0` or both
+  - `saveenv`
+- Storage Commands
+  - `usb reset` rescans USB devices
+  - `usb storage` lists USB storage devices
+  - `usb part` lists USB storage partitions
+  - `ls usb 0:1` lists files in USB storage device 0 partition 1
+  - `load usb 0:1 0x3000000 vmlinuz` loads kernel to 0x3000000
+  - `load usb 0:1 0x6000000 initramfs.img` loads initramfs to 0x6000000
+- Boot Commands
+  - `zboot 0x3000000 - 0x6000000 ${filesize}` boots bzImage at 0x3000000 with
+    initramfs at 0x6000000
+    - note that initramfs size is required and is in hex
+    - `Valid Boot Flag`
+    - `Setup Size = 0x00003e00`
+    - `Magic signature found`
+    - `Using boot protocol version 2.0f`
+    - `Linux kernel version ...`
+    - `Building boot_params at 0x00090000`
+    - `Loading bzImage at address 100000 (9398496 bytes)`
+    - `Magic signature found`
+    - `Kernel command line: "console=ttyS0,115200"`
+    - `Magic signature found`
+    - `Starting kernel ...`
+    - after the kernel initializes the console, it prints the banner
+      - `[    0.000000] Linux version ...`
+  - `boot` runs the commands in `bootcmd`
+- Automatic Boot
+  - `setenv bootdelay 5`
+  - `setenv bootcmd '...'` for semicolon-separated commands
+  - `setenv bootargs '...'` for kernel cmdline
+  - it will run `boot` after the delay
+- On my testing machine,
+  - u-boot is really slow because of fb init and updates
+  - there is no `saveenv`
+  - mmc is not supported; has to use usb storage
+  - loading kernel/initramfs to 0x1000000/0x2000000 does not work
+    - initramfs seems to be corrupted
+  - `console=ttyS0,115200` stops working after switching from Debian kernel to
+    Arch kernel
+    - probably just a loglevel issue?
+  - login takes ~20 seconds for some unknown reason
+
 
 ## Code Flow: armv8
 
@@ -497,54 +543,6 @@ Das U-Boot
   - `dhcp` sets up network
   - `pxe get` retrieves `pxelinux.cfg/default`
   - `pxe boot` boots the retrieved config
-
-## Usage
-
-- Environment Variable Commands
-  - `printenv`
-  - `setenv bootargs 'console=ttyS0,115200'` sets kernel cmdline
-    - or `console=tty0` or both
-  - `saveenv`
-- Storage Commands
-  - `usb reset` rescans USB devices
-  - `usb storage` lists USB storage devices
-  - `usb part` lists USB storage partitions
-  - `ls usb 0:1` lists files in USB storage device 0 partition 1
-  - `load usb 0:1 0x3000000 vmlinuz` loads kernel to 0x3000000
-  - `load usb 0:1 0x6000000 initramfs.img` loads initramfs to 0x6000000
-- Boot Commands
-  - `zboot 0x3000000 - 0x6000000 ${filesize}` boots bzImage at 0x3000000 with
-    initramfs at 0x6000000
-    - note that initramfs size is required and is in hex
-    - `Valid Boot Flag`
-    - `Setup Size = 0x00003e00`
-    - `Magic signature found`
-    - `Using boot protocol version 2.0f`
-    - `Linux kernel version ...`
-    - `Building boot_params at 0x00090000`
-    - `Loading bzImage at address 100000 (9398496 bytes)`
-    - `Magic signature found`
-    - `Kernel command line: "console=ttyS0,115200"`
-    - `Magic signature found`
-    - `Starting kernel ...`
-    - after the kernel initializes the console, it prints the banner
-      - `[    0.000000] Linux version ...`
-  - `boot` runs the commands in `bootcmd`
-- Automatic Boot
-  - `setenv bootdelay 5`
-  - `setenv bootcmd '...'` for semicolon-separated commands
-  - `setenv bootargs '...'` for kernel cmdline
-  - it will run `boot` after the delay
-- On my testing machine,
-  - u-boot is really slow because of fb init and updates
-  - there is no `saveenv`
-  - mmc is not supported; has to use usb storage
-  - loading kernel/initramfs to 0x1000000/0x2000000 does not work
-    - initramfs seems to be corrupted
-  - `console=ttyS0,115200` stops working after switching from Debian kernel to
-    Arch kernel
-    - probably just a loglevel issue?
-  - login takes ~20 seconds for some unknown reason
 
 ## `mkimage`
 
