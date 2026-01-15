@@ -65,6 +65,10 @@ Wine
   - 2025
   - full ARM64(EC) support
   - wayland support
+- Wine 11.0
+  - 2026
+  - new WoW64 mode
+  - ntsync
 
 ## Initialization Process
 
