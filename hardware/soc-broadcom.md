@@ -73,7 +73,8 @@ Broadcom SoC
 
 ## Raspberry Pi: Firmware
 
-- at the end of stage2 bootloader, VPU loads the VPU firmware
+- at the end of stage2 bootloader, VPU loads the VPU firmware from the first
+  fat32 partition
  - on legacy rpis, VPU loads `bootcode.bin` which chainloads `start.elf`
  - on rpi4, VPU loads `start4.elf`
  - on rpi5, no loading is needed because the firmware is embedded in stage2

@@ -49,6 +49,85 @@ UEFI
 - `SHIM_LOCK_GUID` (605dab50-e046-4300-abb6-3dd810dd8b23)
   - <https://github.com/rhboot/shim>
 
+## Booting
+
+- ESP
+  - there should be a bootloader for each OS
+    - though some bootloaders can load multiple OS kernels
+  - Bootloaders should be in `EFI/` subdirectory
+  - Windows bootloader is at `EFI/Microsoft/bootmgfw.efi`
+  - EFI provides its own bootloader, which is a boot manager that allows one to
+    choose another bootloader
+    - rEFIt is a better choice for a boot manager
+  - Copy your bootloader to `EFI/Boot/bootx64.efi` to make it the default
+  - Windows 7 insists ESP to be FAT32.  So use it.
+  - `efibootmgr` is a userspace tool to manipulate `EFI/`
+- when the cpu is powered on,
+  - on x86, the cpu typically executes the firmware stored in spi nor
+    - the fw performs very early init, including dram init
+      - e.g., the fw can be coreboot
+    - the fw loads edk2 to dram and jumps to edk2
+      - e.g., edk2 can be a coreboot payload
+    - edk2 picks the bootloader
+      - it consults `BootOrder` variable if defined
+      - otherwise, it falls back to `\EFI\BOOT\BOOTX64.EFI` on ESP
+  - on arm, the cpu typically executes the bootrom stored in mask rom
+    - the bootrom loads the fw from spi nor, spi eeprom, emmc, sd, etc.
+      - the bootrom is read-only and can never be updated
+    - the fw performs very early init, including dram init
+      - e.g., the fw can be uboot spl
+    - the fw loads BL31 and BL33 and jumps to BL31/BL33
+      - e.g., BL31 can be atf and BL33 can be uboot proper
+      - there is optional BL32 which can be op-tee
+    - uboot proper can boot to edk2, or more commonly, boot to kernel directly
+- edk2 finds the bootloader on ESP
+  - bootloader finds its config files on ESP
+    - e.g., `systemd-boot` finds `/loader/loader.conf` on ESP
+  - bootloader finds bootloader entries on ESP and, if exists, XBOOTLDR
+    - type #1 boot entries are defined by `/loader/entries/*.conf`
+    - type #2 boot entries are ukis under `/EFI/Linux/*.efi`
+  - bootloader entries refer to kernel/initramfs files using absolute paths on
+    the same partitions
+    - that is, a bootloader entry and its associated kernel/initramfs must be on
+      the same partition
+- uboot proper can itself be the bootloader
+  - it finds its config file, `/extlinux/extlinux.conf`, on ESP
+  - it can also load `/EFI/BOOT/BOOTAA64.EFI` on ESP like edk2 does
+
+## Bootable USB
+
+- <https://wiki.syslinux.org/wiki/index.php?title=Isohybrid>
+- ISO 9660 filesystem
+  - the first 32KB is unused
+  - that is enough space for MBR or GPT
+- a bootable iso
+  - an ISO 9660 image with MBR or GPT
+  - it is often MBR with 2 partitions
+    - first partition has type "empty" and takes up the entire iso
+    - second partition has type "esp" and is small
+  - bios can boot it as cdrom
+    - the bootloader is isolinux
+  - bios can boot it as usb
+    - the bootloader is isolinux
+  - uefi can find the esp partition, which cotains the bootloader
+    - often grub
+
+## EDK2 PXE
+
+- `EfiPxeBcDiscover` performs the pxe discovery sequence
+  - `PxeBcDhcp4Discover` builds the dhcpv4 discovery packet
+    - it asks for a bunch of dhcp options
+  - `PxeBcParseDhcp4Packet` parses the dhcpv4 offer packet
+    - `mInterestedDhcp4Tags` lists the options to parse
+    - if there is no dhcp message type option (53), this is a bootp offer
+      - the boot file is given by boot file option (67)
+    - else if there is the vendor class id option (60) and it is
+      `PXEClient`, this is a pxe offer
+      - if there is the vendor specific option (43), it is further parsed to
+        distinguish between pxe 1.0 and binl (microsoft?)
+    - else, this is a dhcpv4-only offer
+
+
 ## Secure Boot
 
 - there should be a security module acting as root-of-trust to verify the uefi
@@ -185,35 +264,6 @@ UEFI
   - the official iso is unsigned
   - the official `shim` package is unsigned
   - only aur `shim-signed` package is signed
-
-## GPT disk
-
-- ESP
-  - there should be a bootloader for each OS
-    - though some bootloaders can load multiple OS kernels
-  - Bootloaders should be in `EFI/` subdirectory
-  - Windows bootloader is at `EFI/Microsoft/bootmgfw.efi`
-  - EFI provides its own bootloader, which is a boot manager that allows one to
-    choose another bootloader
-    - rEFIt is a better choice for a boot manager
-  - Copy your bootloader to `EFI/Boot/bootx64.efi` to make it the default
-  - Windows 7 insists ESP to be FAT32.  So use it.
-  - `efibootmgr` is a userspace tool to manipulate `EFI/`
-
-## EDK2 PXE
-
-- `EfiPxeBcDiscover` performs the pxe discovery sequence
-  - `PxeBcDhcp4Discover` builds the dhcpv4 discovery packet
-    - it asks for a bunch of dhcp options
-  - `PxeBcParseDhcp4Packet` parses the dhcpv4 offer packet
-    - `mInterestedDhcp4Tags` lists the options to parse
-    - if there is no dhcp message type option (53), this is a bootp offer
-      - the boot file is given by boot file option (67)
-    - else if there is the vendor class id option (60) and it is
-      `PXEClient`, this is a pxe offer
-      - if there is the vendor specific option (43), it is further parsed to
-        distinguish between pxe 1.0 and binl (microsoft?)
-    - else, this is a dhcpv4-only offer
 
 ## ASUS ROG
 

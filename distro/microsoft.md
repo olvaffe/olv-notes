@@ -25,6 +25,52 @@ Microsoft
     - might need to download drivers from vendor/motherboard website and unzip
       them to (second?) usb
 
+## Windows Partitioning
+
+- <https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/configure-uefigpt-based-hard-drive-partitions>
+- the device can have multiple disks
+  - both GPT and MBR are supported
+  - the disk containing the Windows partition must use GPT
+- types of partitions
+  - System partition (ESP)
+  - Microsoft reserved partition (MSR)
+  - OEM partitions
+  - Windows partition
+  - Recovery tools partition
+  - Data partitions
+- ESP
+  - must have at least 1 ESP
+  - minimum size is 100MB
+  - must be FAT32
+    - FAT32 requires a minimum size of 260MB on 4KB-sector disks (and a
+      minimum size of 36MB on 512B-sector disks)
+      - because it requires a minimum of 65527 clusters plus some for metadata
+    - `mkfs.fat -F 32 -S 4096` warns when the partition size is
+      `65695 * 4096` or less
+    - `mkfs.fat -F 32 -S 4096 -a -f 1 -h 0 -R 2 -s 1` warns when the
+      partition size is `65590 * 4096` or less
+    - `mkfs.fat -F 32` warns when the partition size is `66591 * 512` or less
+- MSR
+  - 16MB
+  - each GPT disk should have a MSR partition
+- OEM partitions
+  - must locate before Windows/Resovery/Data partitions
+  - must set preserved bit
+- Windows partition
+  - minimum size is 20GB
+    - for win11, 128GB
+      - <https://www.microsoft.com/en-us/windows/windows-11-specifications>
+      - 64GB for installation
+      - double that for updates
+  - must be NTFS
+  - must be on a GPT disk
+- Recovery tools partition
+  - minimum size is 300MB
+  - should follow Windows partition immediately
+- Data partitions
+  - not recommended
+  - should follow Recovery tool partition immediately
+
 ## DOS History
 
 - early microcomputers have tapes or have no permanent storage

@@ -14,38 +14,6 @@ Filesystem Hierarchy
   - user packages go to `~/.local`
     - originated from <https://www.python.org/dev/peps/pep-0370/>
 
-## Storage Planning
-
-- static vs variable
-  - most dirs are static except for system update
-  - some dirs are pseudo mountpoints
-  - these dirs can be considered static
-    - `/etc` if we consider config update as system update
-    - `/root` if we use it only for system update
-  - these dirs are variable
-    - `/home` contains user home dirs
-    - `/srv` contains served data
-    - `/var` contains app data
-- `/`
-  - on workstations, 16G suffices
-  - on servers, 4G suffices
-  - speed matters
-- `/home`
-  - on workstations with real users, both capacity and speed matter
-  - on servers, it can be considered static if logged in only for system update
-    - and if rootless podman uses `/var/lib/pod-foo`
-- `/srv`
-  - on workstations, it is unused
-  - on servers, capacity matters if serving tons of data
-    - data are served with minimal processing so we want io bw to exceed net
-      bw as well
-- `/var`
-  - logs, caches, spools can grow reasonably
-  - on servers, some services can have huge app data
-    - databases
-    - containers
-    - vms
-
 ## FHS
 
 - <https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html>

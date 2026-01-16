@@ -99,6 +99,27 @@ Rockchip SoCs
     - U-Boot proper
   - u-boot provides another rockusb implementation
     - `rockusb 0 mmc 0` to enter
+- default partitions
+  - <https://opensource.rock-chips.com/wiki_Partitions>
+  - partition 1 is at sector 64 (0x40)
+    - bootrom always finds preloader at sector 64
+    - preloader initializes dram
+  - partition 2 is at sector 16384 (0x4000, 8MB)
+    - preloader usually finds the bootloader at sector 16384
+    - common bootloader is u-boot proper, in which case
+      - the preloader includes uboot spl
+      - this partition also includes atf
+  - partition 3 is at sector 24576 (0x6000, 12MB)
+    - u-boot includes tf-a and does not need this partition
+  - partition 4 is at sector 32768 (0x8000, 16MB)
+    - this is `/boot` and holds kernel/initramfs/dtb as well as
+      `extlinux/extlinux.conf`
+  - when using uboot, partition 1-3 should be omitted
+    - uboot packs dram training, uboot spl, tfa, and uboot proper into a
+      single `u-boot-rockchip.bin`
+    - `dd if=u-boot-rockchip.bin of=/dev/mmcblk0 seek=64` overwrites where
+      partition 1-3 would occupy
+    - esp becomes partition 1 but still starts at sector 32768
 
 ## Recovery
 
