@@ -18,6 +18,7 @@ Kernel repos
   - base: <https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git>
   - block, nvme: <https://git.kernel.dk/cgit/linux/>
   - char, iio, misc, nvmem, spmi: <https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git>
+    - spmi: <https://git.kernel.org/pub/scm/linux/kernel/git/sboyd/spmi.git>
   - clk: <https://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git>
   - clocksource, irqchip: <https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git>
   - crypto: <https://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git>
@@ -28,6 +29,7 @@ Kernel repos
   - hwmon: <https://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging.git>
   - i2c: <https://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git>
   - input: <https://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git>
+  - interconnect: <https://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git>
   - iommu: <https://git.kernel.org/pub/scm/linux/kernel/git/iommu/linux.git>
   - leds: <https://git.kernel.org/pub/scm/linux/kernel/git/lee/leds.git>
   - mailbox: <https://git.kernel.org/pub/scm/linux/kernel/git/jassibrar/mailbox.git>
