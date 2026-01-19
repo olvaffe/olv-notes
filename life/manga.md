@@ -127,3 +127,11 @@ Manga
     - `details.json`
     - `<chapter1>.cbz`
     - `<chapter2>.cbz`
+
+## Scoring
+
+- Score 1/2: unable to finish
+- Score 3/4: can finish but a waste of time
+- Score 5/6: was ok
+- Score 7/8: enjoyable
+- Score 9/10: masterpiece
