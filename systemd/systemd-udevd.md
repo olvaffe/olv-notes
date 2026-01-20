@@ -43,6 +43,40 @@ udev
     - `device_monitor_send` notifies libudev listeners (e.g., `udevadm`)
     - `sd_notify` sends worker notify to `udevd`
 
+## Device Properties
+
+- upon kernel uevent, `device_new_from_nulstr` creates a device from the uevent
+  - `device_set_devnum` is from `MAJOR` and `MINOR`
+  - `device_set_syspath` is from `DEVPATH` (prefixed by `/sys`)
+  - `device_set_subsystem` is from `SUBSYSTEM`
+  - `device_set_devtype` is from `DEVTYPE`
+  - `device_set_devname` is from `DEVNAME` (prefixed by `/dev`)
+  - `device_set_usec_initialized` is from `USEC_INITIALIZED`
+  - `device_set_driver` is from `DRIVER`
+  - `device_set_ifindex` is from `IFINDEX`
+  - `device_set_devmode` is from `DEVMODE`
+  - `device_set_devuid` is from `DEVUID`
+  - `device_set_devgid` is from `DEVGID`
+  - `device_set_action_from_string` is from `ACTION`
+  - `device_set_seqnum` is from `SEQNUM`
+  - `device_set_diskseq` is from `DISKSEQ`
+  - `device_add_devlink` is from `DEVLINKS`
+  - `device_add_tag` is from `TAGS` and `CURRENT_TAGS`
+  - `device->database_version` is from `UDEV_DATABASE_VERSION`
+- `udev_event_execute_rules` can call
+  - `device_add_property`
+  - `device_add_tag`
+  - `device_add_devlink`
+- `udevadm info /sys/class/net/wlan0`
+  - `P: /devices/pci0000:00/0000:00:14.3/net/wlan0` is from `sd_device_get_devpath`
+  - `M: wlan0` is from `sd_device_get_sysname`
+  - `R: 0` is from `sd_device_get_sysnum`
+  - `J: n3` is from `sd_device_get_device_id`
+  - `U: net` is from `sd_device_get_subsystem`
+  - `T: wlan` is from `sd_device_get_devtype`
+  - `I: 3` is from `sd_device_get_ifindex`
+  - `E: KEY=VAL` is from `FOREACH_DEVICE_PROPERTY`
+
 ## udev rules
 
 - every device is associated with four types of entries
