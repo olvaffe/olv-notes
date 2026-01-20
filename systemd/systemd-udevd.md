@@ -42,6 +42,75 @@ udev
     - `device_update_db` updates db
     - `device_monitor_send` notifies libudev listeners (e.g., `udevadm`)
     - `sd_notify` sends worker notify to `udevd`
+- `udev_event_execute_rules` executes the rules
+  - `udev_rules_apply_to_event` calls `udev_rule_apply_line_to_event` to apply
+    a line, which calls `udev_rule_apply_token_to_event` to apply a token
+  - `TK_M_*` are match tokens
+    - `TK_M_ACTION` matches `sd_device_get_action`
+    - `TK_M_DEVPATH` matches `sd_device_get_devpath`
+    - `TK_M_KERNEL` matches `sd_device_get_sysname`
+    - `TK_M_DEVLINK` matches `FOREACH_DEVICE_DEVLINK`
+    - `TK_M_NAME` matches `event->name`
+    - `TK_M_ENV` matches `device_get_property_value_with_fallback`
+    - `TK_M_CONST` matches global consts
+    - `TK_M_TAG` matches `FOREACH_DEVICE_CURRENT_TAG`
+    - `TK_M_SUBSYSTEM` matches `sd_device_get_subsystem`
+    - `TK_M_DRIVER` matches `sd_device_get_driver`
+    - `TK_M_ATTR` matches `sd_device_get_sysattr_value`
+    - `TK_M_SYSCTL` matches `sysctl_read`
+    - `TK_M_TEST` matches `stat`
+    - `TK_M_PROGRAM` matches prog execution
+    - `TK_M_IMPORT_FILE` imports a file and calls `device_add_property`
+    - `TK_M_IMPORT_PROGRAM` imports prog stdout and calls `device_add_property`
+    - `TK_M_IMPORT_BUILTIN` runs a builtin cmd
+    - `TK_M_IMPORT_DB` imports db and calls `device_add_property`
+    - `TK_M_IMPORT_CMDLINE` imports cmdline and calls `device_add_property`
+    - `TK_M_IMPORT_PARENT` imports parent and calls `device_add_property`
+    - `TK_M_RESULT` matches `event->program_result` from `TK_M_PROGRAM`
+  - `TK_A_*` are assign tokens
+    - `TK_A_OPTIONS_*` sets event options
+    - `TK_A_OWNER` updates `event->uid`
+    - `TK_A_GROUP` updates `event->gid`
+    - `TK_A_MODE` updates `event->mode`
+    - `TK_A_SECLABEL` updates `event->seclabel_list`
+    - `TK_A_ENV` calls `device_add_property`
+    - `TK_A_TAG` calls `device_add_tag`
+    - `TK_A_NAME` updates `event->name`
+    - `TK_A_DEVLINK` calls `device_add_devlink`/`device_remove_devlink`
+    - `TK_A_ATTR` calls `sd_device_set_sysattr_value`
+    - `TK_A_SYSCTL` calls `sysctl_write`
+    - `TK_A_RUN_BUILTIN` updates `event->run_list`
+    - `TK_A_RUN_PROGRAM` updates `event->run_list`
+
+## Built-ins
+
+- `udev_builtin_run` executes a builtin
+- `udev_builtin_blkid` probes a block device with libblkid and calls
+  `udev_builtin_add_property` for each blkid key/val pairs
+  - `ID_FS_*`, such as `TYPE`, `UUID`, `LABEL`, `FSSIZE`, etc.
+  - `ID_PART_TABLE_*`, such as `TYPE`, `UUID`, etc.
+  - `ID_PART_ENTRY_*`, such as `NAME`, `TYPE`, etc.
+  - if loopback, `ID_LOOP_BACKING_*`, such as `DEVICE`, `INODE`, `FILENAME`, etc.
+  - if gpt, `ID_PART_GPT_*`
+- `udev_builtin_btrfs` emits `BTRFS_IOC_DEVICES_READY` ioctl and adds
+  `ID_BTRFS_READY` prop for block devices with btrfs
+- `udev_builtin_dissect_image` adds `ID_DISSECT_*` props for loopback block
+  devices
+- `udev_builtin_factory_reset` adds `ID_FACTORY_RESET` prop
+- `udev_builtin_hwdb` adds props from hwdb
+- `udev_builtin_input_id` parses sysfs attrs and adds `ID_INPUT_*` props
+- `udev_builtin_keyboard` parses props from hwdb and inits input devices
+  - it maps `KEYBOARD_KEY_*` to `EVIOCSKEYCODE`
+  - it maps `EVDEV_ABS_*` to `EVIOCSABS`
+- `udev_builtin_kmod` loads modules with kmod based on `MODALIAS` prop
+- `udev_builtin_net_driver` adds `ID_NET_DRIVER` prop
+- `udev_builtin_net_id` adds `ID_NET_NAMING_SCHEME` and `ID_NET_NAME_*` props
+- `udev_builtin_net_setup_link` applies net `*.link` (`man systemd.link`)
+- `udev_builtin_path_id` adds `ID_PATH*` props
+  - they are used to create `/dev/foo/by-path/*`
+- `udev_builtin_uaccess` updates acl with libacl for seat devices
+- `udev_builtin_usb_id` probes usb devices and adds `ID_BUS`, `ID_MODEL`,
+  `ID_SERIAL`, `ID_VENDOR`, `ID_USB_*`, etc.
 
 ## Device Properties
 
@@ -125,10 +194,6 @@ udev
 - the above two is deprecated in favor of `/dev/.udev/queue.bin`.
 - a queue is empty if there is no busy events and all kernel events have been
   received.
-
-## `vol_id`
-
-- used to add `ID_FS_XXX` properties to block device
 
 ## Coldplug and Hotplug
 
