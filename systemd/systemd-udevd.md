@@ -1,6 +1,48 @@
 udev
 ====
 
+## `udevd`
+
+- `manager_main`
+  - `manager_setup_event` listens to signals, psi, watchdog, etc.
+  - `manager_start_ctrl` listens to a ctrl socket to take cmds from `udevadm`
+    - `on_ctrl_msg` handles the cmds
+  - `manager_start_varlink_server` listens to a varlink socket to take cmds
+    from `udevadm`
+    - `sd_varlink_server_bind_method_many` binds the handlers
+    - varlink is the new interface that deprecates ctrl
+  - `manager_start_device_monitor` listens to the kernel uevent socket
+    - `device_monitor_new_full` creates `AF_NETLINK`/`NETLINK_KOBJECT_UEVENT`
+      socket
+    - `on_uevent` handles uevents
+  - `manager_start_inotify` creates an inotify fd to watch devices
+    - this seems to be for block devices to re-read partition tables
+      - see `/run/udev/watch` for watched devices
+    - `manager_add_watch` watches `IN_CLOSE_WRITE` on `sd_device_get_devname`
+      (`/dev/foo`)
+    - `on_inotify` handles file changes
+  - `manager_start_worker_notify` listens to a socket for worker notifies
+    - `udevd` forks workers which can notify `udevd` via `sd_notify`
+    - `on_worker_notify` handles worker notifies
+- when there is a kernel uevent,
+  - `device_monitor_event_handler` creates a temp `sd_device` for the uevent
+    and calls `on_uevent`
+    - `event_queue_insert` wraps the device in an `Event` and adds the event
+      to `manager->events`
+  - `on_post` calls `event_queue_start` to spawn workers and process events
+    - if there is no idle worker, `worker_spawn` forks a new worker to execute
+      `udev_worker_main` and process the event device
+    - if there is an idle worker, `device_monitor_send` sends the event device
+      to the worker
+- `udev_worker_main` handles kernel uevents
+  - `sd_device_monitor_start` monitors for new event devices to process
+  - `worker_device_monitor_handler` handles the initial and subsequent event devices
+    - `udev_event_execute_rules` executes the rules
+    - `udev_event_execute_run` executes `RUN=`
+    - `device_update_db` updates db
+    - `device_monitor_send` notifies libudev listeners (e.g., `udevadm`)
+    - `sd_notify` sends worker notify to `udevd`
+
 ## udev rules
 
 - every device is associated with four types of entries
@@ -13,44 +55,6 @@ udev
   - devlinks are referenced by `SYMLINK`
   - tags are referenced by `TAG{foo}`
   - sysattr are referenced by `ATTRS{foo}`
-
-## `udevd`
-
-- An unix socket for controlling the daemon is created through
-  `udev_ctrl_new_from_socket`.
-- An netlink socket for monitoring kernel events is created through
-  `udev_monitor_new_from_netlink`.
-  - the socket returns `struct udev_device`.
-  - the device is wrapped in `struct event` and queued on `event_list`.
-- An inotify watch is created through `udev_watch_init`.
-  - `/lib/udev/rules.d`, `/etc/udev/rules.d`, and `/dev/.udev/rules.d` are added
-    to watch list.  Rules are reloaded if changed.
-  - some devices are set to be watched.  When a watched device is opened for
-    write by any process and is closed, udevd is notified and sends "change" to
-    the device's `uevent`.  Check out `/dev/.udev/watch` to see the watched
-    devices.
-- A signal watch is created through `signalfd`.
-- A socket pair is created for talking to the workers.
-  - it is used by worker to tell daemon the result of
-    `udev_event_execute_rules`.
-- workers, idle or active, are stored on `worker_list`.
-  - worker is created by `worker_new`.
-  - worker processes one `struct udev_event` at a time.  It can process multiple
-    events in its lifetime.
-  - every worker has a `worker_monitor`.  After processing one event and
-    updating the db, it sends the modified device to libudev listeners (e.g.
-    udevadm monitor).  It sends the error code of rule execution to the daemon
-    through the socket pair.  It then reads the next event from the monitor.
-    See `worker_new`.
-  - a worker works on a `struct udev_device` by wrapping it in a
-    `struct udev_event`.  It thens calls `udev_event_execute_rules` and
-    `udev_event_execute_run`.  Rule execution involves `udev_device_update_db`.
-- `events_start`
-  - for each queued event, it calls `event_run` to find a worker to work on this
-    event.
-- `struct udev_queue_export` and `struct udev_queue`
-  - `udevd` updates current event in `/dev/.udev/queue.bin`.
-  - `udevadm settle` can make use of it.
 
 ## `udevadm info`
 

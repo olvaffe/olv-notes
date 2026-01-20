@@ -1,6 +1,10 @@
 EGL
 ===
 
+## Specs
+
+- <https://registry.khronos.org/EGL/>
+
 ## History
 
 - 1.0 was released in 2003

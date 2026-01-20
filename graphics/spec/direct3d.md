@@ -1,10 +1,16 @@
 Direct3D
 ========
 
+## Specs
+
+- <https://github.com/microsoft/DirectX-Specs>
+- <https://github.com/microsoft/hlsl-specs>
+
 ## History
 
 - for modern feature levels
   - <https://en.wikipedia.org/wiki/Feature_levels_in_Direct3D>
+  - <https://learn.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-devices-downlevel-intro>
 - 5.0 was released in 1997
 - 6.0 was released in 1998
   - multitexturing

@@ -1,6 +1,10 @@
 OpenGL
 ======
 
+## Specs
+
+- <https://registry.khronos.org/OpenGL/>
+
 ## History
 
 - for modern versions

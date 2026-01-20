@@ -19,6 +19,7 @@ OpenCL
 
 ## References
 
+- <https://registry.khronos.org/OpenCL/>
 - specifications
   - <https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_API.html>
     - this defines the core api

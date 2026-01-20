@@ -3,11 +3,12 @@ Khronos Data Format
 
 ## Specs
 
-- <https://registry.khronos.org/DataFormat/specs/1.3/dataformat.1.3.html>
+- <https://registry.khronos.org/DataFormat/>
+  - <https://registry.khronos.org/DataFormat/specs/1.4/dataformat.1.4.html>
 
 ## ETC2
 
-- <https://registry.khronos.org/DataFormat/specs/1.3/dataformat.1.3.html#ETC2>
+- <https://registry.khronos.org/DataFormat/specs/1.4/dataformat.1.4.html#ETC2>
   - RGB ETC2 is for linear/srgb RGB data
   - RGBA ETC2 is for linear/srgb RGBA data, where the RGB part is exactly the
     same as RGB ETC2 and the A part is similar to R11 EAC

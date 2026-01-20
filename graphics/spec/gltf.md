@@ -1,6 +1,12 @@
 glTF
 ====
 
+## Specs
+
+- <https://registry.khronos.org/glTF/>
+  - <https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html>
+- <https://registry.khronos.org/KTX/>
+
 ## What is glTF?
 
 - a JSON file that describes the structure and composition of a scene
