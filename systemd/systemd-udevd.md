@@ -132,6 +132,8 @@ udev
   - `device_add_devlink` is from `DEVLINKS`
   - `device_add_tag` is from `TAGS` and `CURRENT_TAGS`
   - `device->database_version` is from `UDEV_DATABASE_VERSION`
+  - note that `device_set_*` also calls `device_add_property_internal` to add
+    the uevent key/val as a property
 - `udev_event_execute_rules` can call
   - `device_add_property`
   - `device_add_tag`
@@ -145,6 +147,8 @@ udev
   - `T: wlan` is from `sd_device_get_devtype`
   - `I: 3` is from `sd_device_get_ifindex`
   - `E: KEY=VAL` is from `FOREACH_DEVICE_PROPERTY`
+    - `device_properties_prepare` calls `device_add_property_internal` for
+      devlinks and tags to turn them into props
 
 ## udev rules
 
