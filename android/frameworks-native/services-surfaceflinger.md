@@ -48,6 +48,7 @@ Android SurfaceFlinger
 
 ## GPU Composition
 
+- `adb shell service call SurfaceFlinger 1008 i32 1` forces gpu composition
 - during init, `SurfaceFlinger::processDisplayAdded` adds a `DisplayDevice`
   - it creates a `LegacyFramebufferSurface` which is like a bq
   - it creates a `DisplayDevice` over the legacy fb surface
