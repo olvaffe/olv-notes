@@ -1,3 +1,28 @@
+Android Binder
+==============
+
+## IPC Overview
+
+- native client
+  - it gets hold of a `BpBinder`
+  - it calls `BpBinder::transact` to send a transaction
+    - `IPCThreadState::transact` batches the `BC_TRANSACTION` transaction in `mOut`
+    - `IPCThreadState::flushCommands` calls `IPCThreadState::talkWithDriver`
+      to flush `mOut` to kernel binder
+- native server
+  - the main thread is in `IPCThreadState::joinThreadPool` loop
+  - `IPCThreadState::getAndExecuteCommand`
+    - `IPCThreadState::talkWithDriver` reads the `BR_TRANSACTION` and batches
+      the transaction in `mIn`
+    - `IPCThreadState::executeCommand` calls
+      `IPCThreadState::doTransactBinder` to execute the transaction
+    - `BBinder::transact` handles the transaction and calls
+      virtual `BBinder::onTransact`
+- java server
+  - `Binder::transact` handles the transaction and calls virtual `Binder::onTransact`
+
+## Old
+
 binder (for IPC)
 - every open to /dev/binder gives a binder_proc
 - every thread has a stack (list actually).  One thread sends a transaction
