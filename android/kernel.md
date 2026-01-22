@@ -186,3 +186,54 @@ Android Kernel
     respectively
   - note that with dynamic partitions (`super.img`), dlkm can also be flashed
     through fastbootd
+
+## Kernel Partitions
+
+- image tools
+  - `system/tools/mkbootimg`
+    - `mkbootimg.py` is a python script
+    - `unpack_bootimg.py --boot_img <img> --out tmp` unpacks and prints header
+  - `build/make/tools/releasetools`
+    - `build_image.py` creates an fs image such as an erofs image
+  - `system/extras/partition_tools`
+    - `lpmake` creates a super image
+    - `lpdump` prints super image layout
+    - `lpunpack` unpacks a super image
+- `boot` partition
+  - `m bootimage` builds `boot.img`
+    - `INSTALLED_BOOTIMAGE_TARGET` is `$(PRODUCT_OUT)/boot.img`
+    - `INSTALLED_KERNEL_TARGET` is `$(PRODUCT_OUT)/kernel`
+    - `mkbootimg --kernel $(INSTALLED_KERNEL_TARGET) --output $(INSTALLED_BOOTIMAGE_TARGET)`
+      - it uses header version 4 with only the kernel image
+      - no ramdisk, no cmdline
+- `vendor_boot` partition
+  - `m vendorbootimage` builds `vendor_boot.img`
+    - `INSTALLED_VENDOR_BOOTIMAGE_TARGET` is `$(PRODUCT_OUT)/vendor_boot.img`
+    - `INTERNAL_KERNEL_CMDLINE` is based on `$(BOARD_KERNEL_CMDLINE)`
+    - `INTERNAL_VENDOR_BOOTCONFIG_TARGET` is `$(PRODUCT_OUT)/vendor-bootconfig.img`
+    - `INTERNAL_VENDOR_RAMDISK_TARGET` is `...../vendor_ramdisk.cpio.lz4`
+      - `INTERNAL_VENDOR_RAMDISK_FILES` are files that are installed to
+        `TARGET_VENDOR_RAMDISK_OUT`, which include vendor firmwares and dlkms
+      - board config specifies `BOARD_VENDOR_RAMDISK_KERNEL_MODULES` to
+        control which dlkms are included
+    - `vendor_ramdisk_fragment_target` is `...../recovery.cpio.lz4`
+      - `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT` automatically adds
+        `recovery` to `INTERNAL_VENDOR_RAMDISK_FRAGMENTS`
+    - `mkbootimg --vendor_cmdline $(lINTERNAL_KERNEL_CMDLINE) \
+                 --vendor_bootconfig $(INTERNAL_VENDOR_BOOTCONFIG_TARGET) \
+                 --vendor_ramdisk $(INTERNAL_VENDOR_RAMDISK_TARGET) \
+                 --vendor_ramdisk_fragment $(vendor_ramdisk_fragment_target) \
+                 --verdor_boot $(INSTALLED_VENDOR_BOOTIMAGE_TARGET)`
+      - it uses header version 4 with various vendor stuff
+      - both `--vendor_ramdisk` and `--vendor_ramdisk_fragment` specify
+        ramdisks
+- `super:system_dlkm` partition
+  - `m system_dlkmimage` builds `system_dlkm.img`
+    - `INSTALLED_SYSTEM_DLKMIMAGE_TARGET` is `$(PRODUCT_OUT)/system_dlkm.img`
+    - `TARGET_OUT_SYSTEM_DLKM` is `$(PRODUCT_OUT)/system_dlkm`
+    - `build_image` creates an fs image from `$(TARGET_OUT_SYSTEM_DLKM)`
+- `super:vendor_dlkm` partition
+  - `m vendor_dlkmimage` builds `vendor_dlkm.img`
+    - `INSTALLED_VENDOR_DLKMIMAGE_TARGET` is `$(PRODUCT_OUT)/vendor_dlkm.img`
+    - `TARGET_OUT_VENDOR_DLKM` is `$(PRODUCT_OUT)/vendor_dlkm`
+    - `build_image` creates an fs image from `$(TARGET_OUT_VENDOR_DLKM)`
