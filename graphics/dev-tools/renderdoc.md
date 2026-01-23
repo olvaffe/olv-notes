@@ -55,3 +55,51 @@ RenderDoc
   `EventBrowser::on_timeActions_clicked`
   - the timings are collected with
     `r->FetchCounters({GPUCounter::EventGPUDuration})`
+
+## Remote Context
+
+- `DeviceProtocolRegistration` registers a dev proto
+  - adb is the only dev proto
+- `MainWindow::MainWindow` spawns a thread to call `remoteProbe`
+  - `UpdateEnumeratedProtocolDevices` calls `AndroidController::GetDevices`
+    - `Android::EnumerateDevices` invokes `adb devices`
+    - `Android::IsSupported` invokes `adb shell getprop ro.build.version.sdk`
+    - `Android::adbForwardPorts` invokes `adb forward tcp:<port> localabstract:<socket>`
+      - this forwards local tcp port to remote unix socket
+  - `RemoteHost::CheckStatus` checks the remote status by connecting to the
+    remote server and querying the remote server version
+- when a remote is selected, `MainWindow::setRemoteHost` is called
+  - `RemoteHost::Launch` calls `AndroidController::StartRemoteServer`
+    - `Android::ListPackages` invokes `adb shell pm list packages --user $(am get-current-user) org.renderdoc.renderdoccmd`
+    - `Android::GetSupportedABIs` invokes `adb shell getprop ro.product.cpu.abi`
+    - `Android::RemoveRenderDocAndroidServer` invokes `adb uninstall ...` to
+      uninstall outdated apks
+    - `Android::InstallRenderDocServer` invokes `adb install -r -g --force-queryable <renderdoc>/share/renderdoc/plugins/android/org.renderdoc.renderdoccmd.<abi>.apk`
+      - `--force-queryable` forces the app queryable by other apps
+    - `adb push $HOME/.renderdoc/renderdoc.conf /sdcard/Android/media/org.renderdoc.renderdoccmd.<abi>/files`
+    - `adb shell am start -n org.renderdoc.renderdoccmd.<abi>/.Loader -e renderdoccmd remoteserver`
+  - `ReplayManager::ConnectToRemoteServer` connects to the remote server
+    - thanks to adb port forwarding, this connects to a local tcp port
+- apk `Loader` class inherits from `android.app.NativeActivity`
+  - it requests `android.permission.MANAGE_EXTERNAL_STORAGE`
+  - `android_main` is the native entrypoint
+  - `getRenderdoccmdArgs` gets the args, which are `renderdoccmd remoteserver`
+  - `DisplayGenericSplash` displays the splash using egl/gles
+  - `RenderDoc::BecomeRemoteServer` enters the main loop
+    - on android, it listens to a adb-forwarded socket
+- when we select an executable to capture,
+  - `ReplayManager::ListFolder` calls `AndroidRemoteServer::ListFolder`
+    - `adb shell pm list packages --user $(am get-current-user) -3` lists
+      3rd-party packages
+    - `adb shell dumpsys packages` lists package activities
+  - `CaptureDialog::TriggerCapture` calls `MainWindow::OnCaptureTrigger`
+    - `ReplayManager::ExecuteAndInject` calls `AndroidRemoteServer::ExecuteAndInject`
+    - `adb shell settings put global enable_gpu_debug_layers 1`
+    - `adb shell settings put global gpu_debug_app <package>`
+    - `adb shell settings put global gpu_debug_layer_app org.renderdoc.renderdoccmd.<abi>`
+    - `adb shell settings put global gpu_debug_layers VK_LAYER_RENDERDOC_Capture`
+    - `adb shell settings put global gpu_debug_layers_gles libVkLayer_GLES_RenderDoc.so`
+    - `adb shell mkdir -p /sdcard/Android/media/<package>/files`
+    - `adb shell setprop debug.rdoc.RENDERDOC_CAPOPTS <opts>`
+    - `adb push $HOME/.renderdoc/renderdoc.conf /sdcard/Android/media/<package>/files`
+    - `adb shell am start -S -n <package>/<activity>`
