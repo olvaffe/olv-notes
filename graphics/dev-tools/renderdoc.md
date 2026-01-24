@@ -31,6 +31,17 @@ RenderDoc
   - edit `qrenderdoc/CMakeLists.txt` such that `SWIG_CONFIGURE_CC` and
     `SWIG_CONFIGURE_CXX` use the host compilers
 
+## Android
+
+- `ANDROID_HOME=~/android/sdk ANDROID_NDK=~/android/sdk/ndk/28.2.13676358 JAVA_HOME=/usr/lib/jvm/default-java \
+   cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DBUILD_ANDROID=On -DANDROID_ABI=arm64-v8a \
+   -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
+- build fixes
+  - `s/ALooper_pollAll/ALooper_pollOnce/`
+  - `s/-source 1.7 -target 1.7/-source 1.8 -target 1.8/`
+  - `s/-Wno-cast-function-type-mismatch/-Wno-cast-function-type-strict/`
+- `adb push out/lib/libVkLayer_GLES_RenderDoc.so /data/local/debug/vulkan`
+
 ## `renderdoccmd`
 
 - capture

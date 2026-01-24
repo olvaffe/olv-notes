@@ -136,7 +136,10 @@ Vulkan Loader
   - `ANDROID_SDK_ROOT=~/android/sdk \
      ANDROID_NDK_HOME=~/android/sdk/ndk/26.1.10909125 \
      python scripts/android.py --config Debug --app-abi x86_64 --apk`
-    - the script hardcodes api level 26
+    - build fixes
+      - `s/android-26/android-35/`
+      - `s/ANDROID_PLATFORM=26/ANDROID_PLATFORM=35/`
+      - `s/android:targetSdkVersion="23"/android:targetSdkVersion="24"/`
     - it uses cmake/ndk to build the native code
       - `-D CMAKE_BUILD_TYPE=Debug`
       - `-D UPDATE_DEPS=ON`
