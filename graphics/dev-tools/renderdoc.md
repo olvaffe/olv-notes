@@ -105,15 +105,27 @@ RenderDoc
     - `adb shell dumpsys packages` lists package activities
   - `CaptureDialog::TriggerCapture` calls `MainWindow::OnCaptureTrigger`
     - `ReplayManager::ExecuteAndInject` calls `AndroidRemoteServer::ExecuteAndInject`
-    - `adb shell settings put global enable_gpu_debug_layers 1`
-    - `adb shell settings put global gpu_debug_app <package>`
-    - `adb shell settings put global gpu_debug_layer_app org.renderdoc.renderdoccmd.<abi>`
-    - `adb shell settings put global gpu_debug_layers VK_LAYER_RENDERDOC_Capture`
-    - `adb shell settings put global gpu_debug_layers_gles libVkLayer_GLES_RenderDoc.so`
-    - `adb shell mkdir -p /sdcard/Android/media/<package>/files`
-    - `adb shell setprop debug.rdoc.RENDERDOC_CAPOPTS <opts>`
-    - `adb push $HOME/.renderdoc/renderdoc.conf /sdcard/Android/media/<package>/files`
-    - `adb shell am start -S -n <package>/<activity>`
+      - `adb shell settings put global enable_gpu_debug_layers 1`
+      - `adb shell settings put global gpu_debug_app <package>`
+      - `adb shell settings put global gpu_debug_layer_app org.renderdoc.renderdoccmd.<abi>`
+      - `adb shell settings put global gpu_debug_layers VK_LAYER_RENDERDOC_Capture`
+      - `adb shell settings put global gpu_debug_layers_gles libVkLayer_GLES_RenderDoc.so`
+      - `adb shell mkdir -p /sdcard/Android/media/<package>/files`
+      - `adb shell setprop debug.rdoc.RENDERDOC_CAPOPTS <opts>`
+      - `adb push $HOME/.renderdoc/renderdoc.conf /sdcard/Android/media/<package>/files`
+      - `adb shell am start -S -n <package>/<activity>`
+    - `MainWindow::ShowLiveCapture` shows the live capture tab
+      - `RENDERDOC_CreateTargetControl` connects to the app
+- when we trigger a capture, `LiveCapture::on_triggerImmediateCapture_clicked`
+  - it allows `LiveCapture::connectionThreadEntry` to call
+    `TargetControl::TriggerCapture` to send `ePacket_TriggerCapture`
+  - app `RenderDoc::TargetControlClientThread` handles the packet and calls
+    `RenderDoc::TriggerCapture`
+  - on next frame, app `RenderDoc::ShouldTriggerCapture` returns true and
+    - `WrappedVulkan::StartFrameCapture`
+    - `WrappedVulkan::EndFrameCapture`
+      - `RenderDoc::CreateRDC` creates a `RDCFile` for capture serialization
+      - `RenderDoc::FinishCaptureWriting` writes the `RDCFile` to disk
 
 ## `VK_LAYER_RENDERDOC_Capture`
 
@@ -121,6 +133,8 @@ RenderDoc
   - `RenderDoc::Initialise`
     - `Network::CreateServerSocket` listens on port
       `RenderDoc_FirstTargetControlPort`
+    - `FileIO::GetDefaultFiles` determines output filenames
+      - on android, `GetTempRootPath` returns `/sdcard/Android/media/<package>/files`
   - `LibraryHooks::RegisterHooks` registers hooks for various apis
     - `EGLHook::RegisterHooks` early returns on android because of
       `EGL_ANDROID_GLES_layers`
