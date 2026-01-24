@@ -126,7 +126,17 @@ RenderDoc
       `EGL_ANDROID_GLES_layers`
     - `GLHook::RegisterHooks` early returns on android similarly
     - `VulkanHook::RegisterHooks` inits itself
+- loader finds GIPA/GDPA
+  - `VK_LAYER_RENDERDOC_CaptureGetInstanceProcAddr`
+  - `VK_LAYER_RENDERDOC_CaptureGetDeviceProcAddr`
 - app calls `vkCreateInstance` and ends up in `hooked_vkCreateInstance`
   - `KeepLayerAlive` creates an (ununsed) internal instance on android
   - `WrappedVulkan::vkCreateInstance`
     - `RenderDoc::AddDeviceFrameCapturer` creates a capturer
+- vk 1.0 app failure with renderdoc capture
+  - logcat has
+    - `vulkan  : missing dev proc: vkGetDeviceGroupPresentCapabilitiesKHR`
+    - `vulkan  : missing dev proc: vkGetDeviceGroupSurfacePresentModesKHR`
+    - `vulkan  : missing dev proc: vkAcquireNextImage2KHR`
+  - this is because renderdoc does not return those functions unless vk 1.1 or
+    `VK_KHR_device_group` is enabled
