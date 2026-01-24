@@ -154,3 +154,20 @@ RenderDoc
     - `vulkan  : missing dev proc: vkAcquireNextImage2KHR`
   - this is because renderdoc does not return those functions unless vk 1.1 or
     `VK_KHR_device_group` is enabled
+
+## GLES Capture
+
+- `library_loaded` is called upon `dlopen`
+- on android, loader finds
+  - `AndroidGLESLayer_Initialize` inits the layer
+    - `EGL` and `GL` dispatch tables are initialized with func pionters from
+      driver or the next layer
+  - `AndroidGLESLayer_GetProcAddress` returns func pointers to loader or prev
+    layer
+    - `eglFoo_renderdoc_hooked`
+    - `glFoo_renderdoc_hooked` defined via `DefineSupportedHooks`
+- app calls `eglCreateContext` and ends up in `eglCreateContext_renderdoc_hooked`
+  - `WrappedOpenGL::CreateContext`
+    - `RenderDoc::AddDeviceFrameCapturer` creates a capturer
+- app calls `eglMakeCurrent` and ends up in `eglMakeCurrent_renderdoc_hooked`
+  - `WrappedOpenGL::ActivateContext`

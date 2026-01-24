@@ -14,6 +14,15 @@ Android EGL / OpenGL ES
     - `ro.board.platform`
   - else, it tries non-suffixed `lib{EGL,GLESv1_CM,GLESv2}.so`
 
+## Layers
+
+- `eglGetDisplay` calls `egl_init_drivers`
+  - `LayerLoader::getInstance` loads layers
+    - `GraphicsEnv::getDebugLayersGLES` returns a list of layers (.so)
+    - if no layer, `debug.gles.layers` is used instead
+    - `GraphicsEnv::getLayerPaths` returns the paths to search
+    - if debuggable, `/data/local/debug/gles` is searched too
+
 ## EGL (froyo)
 
 - there is `Loader.cpp`
