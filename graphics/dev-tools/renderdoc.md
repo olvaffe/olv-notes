@@ -114,3 +114,19 @@ RenderDoc
     - `adb shell setprop debug.rdoc.RENDERDOC_CAPOPTS <opts>`
     - `adb push $HOME/.renderdoc/renderdoc.conf /sdcard/Android/media/<package>/files`
     - `adb shell am start -S -n <package>/<activity>`
+
+## `VK_LAYER_RENDERDOC_Capture`
+
+- `library_loaded` is called upon `dlopen`
+  - `RenderDoc::Initialise`
+    - `Network::CreateServerSocket` listens on port
+      `RenderDoc_FirstTargetControlPort`
+  - `LibraryHooks::RegisterHooks` registers hooks for various apis
+    - `EGLHook::RegisterHooks` early returns on android because of
+      `EGL_ANDROID_GLES_layers`
+    - `GLHook::RegisterHooks` early returns on android similarly
+    - `VulkanHook::RegisterHooks` inits itself
+- app calls `vkCreateInstance` and ends up in `hooked_vkCreateInstance`
+  - `KeepLayerAlive` creates an (ununsed) internal instance on android
+  - `WrappedVulkan::vkCreateInstance`
+    - `RenderDoc::AddDeviceFrameCapturer` creates a capturer
