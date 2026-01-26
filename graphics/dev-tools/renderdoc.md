@@ -41,6 +41,31 @@ RenderDoc
   - `s/-source 1.7 -target 1.7/-source 1.8 -target 1.8/`
   - `s/-Wno-cast-function-type-mismatch/-Wno-cast-function-type-strict/`
 - `adb push out/lib/libVkLayer_GLES_RenderDoc.so /data/local/debug/vulkan`
+- cmake internals
+  - with `BUILD_ANDROID`,
+    - `JAVA_HOME` must be defined and `$JAVA_HOME/bin/java` is the bin
+    - `ANDROID_HOME` must be defined and `$ANDROID_HOME/build-tools` must
+      exist
+    - `ANDROID_NDK` must be defined and
+      `$ANDROID_NDK/build/cmake/android.toolchain.cmake` must exist
+    - `ANDROID_PLATFORM` defaults to `android-21`
+    - `ANDROID_STL` defaults to `c++_static`
+    - `ANDROID_ABI` defaults to `armeabi-v7a`
+  - `libVkLayer_GLES_RenderDoc.so`
+    - it is renamed from `librenderdoc.so` by setting `OUTPUT_NAME`
+  - `librenderdoccmd.so`
+    - it is `renderdoccmd` as a native activity
+  - apk
+    - auto-selects the latest `$ANDROID_HOME/build-tools` version
+    - auto-selects the latest `$ANDROID_HOME/platforms` version
+    - generates `debug.keystore` using java `keytool`
+    - depends on the two shared libs, and copys them to `libs/lib/<abi>`
+    - `aapt package ...` generates `R.java`
+    - `javac ...` compiles `*.java` to `*.class`
+    - `d8 ...` compiles `*.class` to `classes.dex`
+    - `aapt package -F RenderDocCmd-unaligned.apk ...` packages `RenderDocCmd-unaligned.apk`
+    - `zipalign RenderDocCmd-unaligned.apk RenderDocCmd.apk` generates `RenderDocCmd.apk`
+    - `apksigner sign ...` signs `RenderDocCmd.apk` using `debug.keystore`
 
 ## `renderdoccmd`
 
