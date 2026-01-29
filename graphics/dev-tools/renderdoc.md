@@ -75,6 +75,56 @@ RenderDoc
 - replay
   - `renderdoccmd replay <capture.rdc>` just works
   - `renderdoccmd remoteserver` just works for remote replay
+- internals
+  - init
+    - `REPLAY_PROGRAM_MARKER` defines a magic symbol
+    - upon `librenderdoc.so` loading, `library_loaded` calls
+      `RenderDoc::Initialise` and marks itself as replaying
+    - `RENDERDOC_InitialiseReplay` inits for replay
+  - `capture` calls `RENDERDOC_ExecuteAndInject`
+  - `replay` calls
+    - if locally, `RENDERDOC_OpenCaptureFile` and `CaptureFile::OpenCapture`
+    - if remotely, `RENDERDOC_CreateRemoteServerConnection`,
+      `RemoteServer::CopyCaptureToRemote`, and `RemoteServer::OpenCapture`
+    - `ReplayController::CreateOutput`
+    - `ReplayOutput::Display`
+  - `remoteserver` calls `RENDERDOC_BecomeRemoteServer`
+
+## Directory Structure
+
+- `qrenderdoc` is the GUI frontend
+- `renderdoc` provides `librenderdoc.so`
+  - `android` provides android support for frontends
+    - it registers a `AndroidController` automatically to enumerate and
+      control android devices using adb
+  - `api/app` provides public headers for apps
+  - `api/replay` provides public headers for frontends
+  - `common` provides common helpers
+  - `core` provides renderdoc core
+  - `driver/gl` provides gl support for both apps and frontends
+  - `driver/vulkan` provides vulkan support for both apps and frontends
+  - `hooks` manages driver hooks
+    - upon dlopen, `LibraryHooks::RegisterHooks` registers driver hooks
+  - `os` is os-specific helpers
+  - `replay` provides local replay support
+  - `serialise` serializes/deserializes data types
+    - depending on whether the serializer is `WriteSerialiser` or
+      `ReadSerialiser`, `SERIALISE_ELEMENT` serializes or deserializes an
+      element respectively
+- `renderdoccmd` is the CLI frontend
+
+## Logging
+
+- `RDCLOG` logs a `LogType::Comment`
+  - `RDCDEBUG` logs a `LogType::Debug` but copmiles to nop by default
+- `rdclog_direct` logs to a buffer
+- `rdclogprint_int` prints the buffer
+  - it prints to `OSUtility::Output_DebugMon`, which is logcat on android
+  - it prints to log file
+    - `GetDefaultFiles`
+      - `/tmp` or `$RENDERDOC_TEMP` is the temp dir
+      - `/tmp/RenderDoc/*.log` is the log file
+- upon exit, `RDCSTOPLOGGING` removes the log file
 
 ## Performance Counter
 
@@ -196,3 +246,90 @@ RenderDoc
     - `RenderDoc::AddDeviceFrameCapturer` creates a capturer
 - app calls `eglMakeCurrent` and ends up in `eglMakeCurrent_renderdoc_hooked`
   - `WrappedOpenGL::ActivateContext`
+
+## Capture Example
+
+- `VK_IMPLICIT_LAYER_PATH=~/projects/renderdoc/out/lib ENABLE_VULKAN_RENDERDOC_CAPTURE=1 vkcube --wsi xcb`
+  - it must be an implicit layer to intercept pre-instance functions
+- `CaptureState::BackgroundCapturing` is the initial state
+  - app `vkCreateBuffer`
+    - `hooked_vkCreateBuffer` is defined by `HookDefine4(VkResult, vkCreateBuffer, ...)`
+    - `WrappedVulkan::vkCreateBuffer`
+      - it calls down to the driver with modified create info
+      - `VulkanResourceManager::WrapResource` wraps the driver buf
+      - `VulkanResourceManager::AddResourceRecord` adds associated `VkResourceRecord`
+      - `Serialise_vkCreateBuffer` serializes the call to a chunk
+      - `ResourceRecord::AddChunk` adds the chunk to the record
+  - app `vkAllocateMemory`
+    - `hooked_vkAllocateMemory` is defined by `HookDefine4(VkResult, vkAllocateMemory, ...)`
+    - `WrappedVulkan::vkAllocateMemory`
+      - it calls down to the driver with modified alloc info
+      - `VulkanResourceManager::WrapResource` wraps the driver mem
+      - `VulkanResourceManager::AddResourceRecord` adds associated `VkResourceRecord`
+      - `Serialise_vkAllocateMemory` serializes the call to a chunk
+      - `ResourceRecord::AddChunk` adds the chunk to the record
+      - `VulkanResourceManager::AddDeviceMemory` tracks the mem
+  - app `vkBindBufferMemory` is pretty regular
+  - app `vkMapMemory`
+    - `hooked_vkMapMemory` is defined by `HookDefine6(VkResult, vkMapMemory, ...)`
+    - `WrappedVulkan::vkMapMemory`
+      - it calls down to the driver
+      - it adds the addr to the record
+  - app `vkQueuePresentKHR`
+    - `hooked_vkQueuePresentKHR` is defined by `HookDefine2(VkResult, vkQueuePresentKHR, ...)`
+    - `WrappedVulkan::vkQueuePresentKHR`
+      - `HandlePresent` draws the overlay
+        - `RenderDoc::GetOverlayText` returns the overlay text
+      - it calls down to the driver
+      - no `Serialise_vkQueuePresentKHR`
+      - `WrappedVulkan::Present`
+- when capture is triggered,
+  - app `vkQueuePresentKHR`
+    - `WrappedVulkan::vkQueuePresentKHR`
+      - `WrappedVulkan::Present`
+        - `RenderDoc::ShouldTriggerCapture` returns true when
+          - `RenderDoc::TriggerCapture` has incremented `m_Cap`
+          - `RenderDoc::QueueCapture` has added a frame to `m_QueuedFrameCaptures`
+        - `RenderDoc::StartFrameCapture` starts the capture
+          - `WrappedVulkan::StartFrameCapture`
+            - it sets state to `CaptureState::ActiveCapturing`
+- `CaptureState::ActiveCapturing` is the active state
+  - app `vkQueuePresentKHR`
+    - `WrappedVulkan::vkQueuePresentKHR`
+      - because we are active, `Serialise_vkQueuePresentKHR` serializes the
+        call to a chunk
+      - `WrappedVulkan::Present`
+        - because we are active, `RenderDoc::EndFrameCapture` ends the capture
+          - `WrappedVulkan::EndFrameCapture`
+            - `EndCaptureFrame` serializes the backbuffer to a chunk
+            - it sets the state back to `CaptureState::BackgroundCapturing`
+            - it reads back the backbuffer for screenshot
+            - `RenderDoc::CreateRDC` creates an rdc
+            - it serializes all chunks referenced by the frame to the rdc
+
+## Replay Example
+
+- `renderdoccmd replay vkcube.rdc`
+- `CaptureFile::OpenFile` calls `RDCFile::Open` to open the rdc file
+- `CaptureFile::OpenCapture` returns an `IReplayController`
+  - `ReplayController::CreateDevice`
+    - `Vulkan_CreateReplayDevice` creates a `WrappedVulkan`
+      - the state is initially `CaptureState::LoadingReplaying`
+    - `PostCreateInit`
+      - `VulkanReplay::ReadLogInitialisation` replays the rdc file
+        - `WrappedVulkan::ProcessChunk` replays a chunk
+        - this replays until `SystemChunk::CaptureScope` chunk
+          - which appears to replay resource creations
+        - `ContextReplayLog` replays `SystemChunk::CaptureScope` chunk
+          - which appears to replay `vkCmd*`
+- os-specific `DisplayRendererPreview`
+  - it creates an xcb window on linux
+  - `ReplayController::CreateOutput` creates a `ReplayOutput` for the window
+  - `ReplayController::SetFrameEvent` replays the specified event
+    - `VulkanReplay::ReplayLog` with `eReplay_WithoutDraw`
+    - `VulkanReplay::ReplayLog` with `eReplay_OnlyDraw`
+  - `ReplayOutput::Display` displays the frame
+    - `ReplayOutput::DisplayTex`
+      - `ReplayOutput::ClearBackground` clears the background to checkboard
+      - `VulkanReplay::RenderTexture` draws the frame to the window
+    - `VulkanReplay::FlipOutputWindow` presents
