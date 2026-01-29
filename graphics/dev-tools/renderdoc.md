@@ -333,3 +333,21 @@ RenderDoc
       - `ReplayOutput::ClearBackground` clears the background to checkboard
       - `VulkanReplay::RenderTexture` draws the frame to the window
     - `VulkanReplay::FlipOutputWindow` presents
+
+## RDC Logical Format
+
+- an RDC file consists of multiple sections
+- `SectionType::FrameCapture` is the most interesting section
+  - `SystemChunk::DriverInit` is the first chunk
+    - this is informative
+  - driver-specific chunks (non-`vkCmd*`)
+    - these create resources
+  - `SystemChunk::InitialContents` chunks appear to hold initial contents of
+    resources
+  - `SystemChunk::InitialContentsList` is the list of resources that need
+    initial contents
+  - `SystemChunk::CaptureScope` marks the start of capture
+  - `SystemChunk::CaptureBegin` is a list of all images and their initial states
+    - this is informative
+  - driver-specific chunks (`vkCmd*` mostly)
+  - `SystemChunk::CaptureEnd` is the presented image
