@@ -260,6 +260,7 @@ RenderDoc
       - `VulkanResourceManager::AddResourceRecord` adds associated `VkResourceRecord`
       - `Serialise_vkCreateBuffer` serializes the call to a chunk
       - `ResourceRecord::AddChunk` adds the chunk to the record
+      - note that the buffer is not marked dirty for initial contents
   - app `vkAllocateMemory`
     - `hooked_vkAllocateMemory` is defined by `HookDefine4(VkResult, vkAllocateMemory, ...)`
     - `WrappedVulkan::vkAllocateMemory`
@@ -270,6 +271,7 @@ RenderDoc
       - `ResourceRecord::AddChunk` adds the chunk to the record
       - `VulkanResourceManager::AddDeviceMemory` tracks the mem
   - app `vkBindBufferMemory` is pretty regular
+      - note that the memory is marked dirty for initial contents
   - app `vkMapMemory`
     - `hooked_vkMapMemory` is defined by `HookDefine6(VkResult, vkMapMemory, ...)`
     - `WrappedVulkan::vkMapMemory`
@@ -292,6 +294,12 @@ RenderDoc
           - `RenderDoc::QueueCapture` has added a frame to `m_QueuedFrameCaptures`
         - `RenderDoc::StartFrameCapture` starts the capture
           - `WrappedVulkan::StartFrameCapture`
+            - `ResourceManager<Configuration>::PrepareInitialContents`
+              captures initial contents for dirty resources
+              - `WrappedVulkan::Prepare_InitialState` copies a dirty resource
+                to a temp buf/mem
+                - note that buffers are not dirty (unless sparse); the bound
+                  memories are dirty instead
             - it sets state to `CaptureState::ActiveCapturing`
 - `CaptureState::ActiveCapturing` is the active state
   - app `vkQueuePresentKHR`
@@ -306,6 +314,10 @@ RenderDoc
             - it reads back the backbuffer for screenshot
             - `RenderDoc::CreateRDC` creates an rdc
             - it serializes all chunks referenced by the frame to the rdc
+              - `ResourceManager<Configuration>::InsertInitialContentsChunks`
+                serializes initial contents for dirty resources
+                - `WrappedVulkan::Serialise_InitialState` serializes a dirty
+                  res by mapping and reading back the temp mem
 
 ## Replay Example
 
@@ -318,15 +330,21 @@ RenderDoc
     - `PostCreateInit`
       - `VulkanReplay::ReadLogInitialisation` replays the rdc file
         - `WrappedVulkan::ProcessChunk` replays a chunk
+          - `Serialise_InitialState` replays an initial content
+            - it allocates temp buf/mem, maps the mem, reads the contents from
+              the chunk
         - this replays until `SystemChunk::CaptureScope` chunk
           - which appears to replay resource creations
         - `ContextReplayLog` replays `SystemChunk::CaptureScope` chunk
           - which appears to replay `vkCmd*`
+          - `WrappedVulkan::ApplyInitialContents` applies initial contents
+            - `WrappedVulkan::Apply_InitialState` copies from temp mem
 - os-specific `DisplayRendererPreview`
   - it creates an xcb window on linux
   - `ReplayController::CreateOutput` creates a `ReplayOutput` for the window
   - `ReplayController::SetFrameEvent` replays the specified event
     - `VulkanReplay::ReplayLog` with `eReplay_WithoutDraw`
+      - `WrappedVulkan::ApplyInitialContents` applies initial contents again
     - `VulkanReplay::ReplayLog` with `eReplay_OnlyDraw`
   - `ReplayOutput::Display` displays the frame
     - `ReplayOutput::DisplayTex`
@@ -351,3 +369,20 @@ RenderDoc
     - this is informative
   - driver-specific chunks (`vkCmd*` mostly)
   - `SystemChunk::CaptureEnd` is the presented image
+
+## External VkBuffer
+
+- capture
+  - `WrappedVulkan::vkCreateBuffer`
+    - if external, `record->resInfo` is initialized based on both the original
+      external buffer and a temp non-external buffer
+  - `WrappedVulkan::vkGetBufferMemoryRequirements`
+    - if external, use `record->resInfo` instead
+    - no serialization
+  - `WrappedVulkan::vkBindBufferMemory`
+- replay
+  - `Serialise_vkCreateBuffer`
+    - `UnwrapNextChain` strips `VkExternalMemoryBufferCreateInfo`
+      - `COPY_STRUCT_CAPTURE_ONLY` does not copy during replay
+  - `Serialise_InitialState`
+  - `Serialise_vkBindBufferMemory`
