@@ -34,6 +34,8 @@ Android System Overview
     - logs `init second stage started!`
     - `PropertyInit` inits props from dtb, cmdline, bootconfig, `build.prop`,
       `default.prop`, etc.
+      - `ProcessKernelCmdline` and `ProcessBootconfig` translate
+        `androidboot.*` to `ro.boot.*`
     - `MountExtraFilesystems` mounts `/apex`, etc.
     - `SelinuxRestoreContext` runs `restorecon`
     - `StartPropertyService` starts prop service over socket
