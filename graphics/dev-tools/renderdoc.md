@@ -66,6 +66,10 @@ RenderDoc
     - `aapt package -F RenderDocCmd-unaligned.apk ...` packages `RenderDocCmd-unaligned.apk`
     - `zipalign RenderDocCmd-unaligned.apk RenderDocCmd.apk` generates `RenderDocCmd.apk`
     - `apksigner sign ...` signs `RenderDocCmd.apk` using `debug.keystore`
+- start server manually
+  - `adb install -r -g --force-queryable ./out-arm64/bin/org.renderdoc.renderdoccmd.arm64.apk`
+  - `adb shell appops set --uid org.renderdoc.renderdoccmd.arm64 MANAGE_EXTERNAL_STORAGE allow`
+  - `adb shell am start -n org.renderdoc.renderdoccmd.arm64/.Loader -e renderdoccmd remoteserver`
 
 ## `renderdoccmd`
 
