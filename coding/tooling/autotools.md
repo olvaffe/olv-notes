@@ -1,6 +1,28 @@
 Autotools
 =========
 
+## Autotools
+
+- <https://www.gnu.org/software/m4/>
+  - macro processor
+  - autoconf is one of the biggest users
+- <https://www.gnu.org/software/autoconf/>
+  - m4 macros under `/usr/share/autoconf`
+  - `autoconf` converts `configure.ac` to `configure` using m4
+  - `autoheader` parses `configure.ac` and generates `config.h.in`
+  - `autoreconf` runs `autoconf`, `aclocal`, `autoheader`, `automake`,
+    `libtoolize`, etc. as necessary
+- <https://www.gnu.org/software/automake/>
+  - `automake` converts `Makefile.am` to `Makefile.in`, which will be
+    converted to `Makefile` by `configure`
+  - `aclocal` parses `configure.ac` and copies used non-autoconf m4 macros
+    under `/usr/share/aclocal` to `aclocal.m4`
+- <https://savannah.gnu.org/projects/config/>
+  - `config.guess` guesses the triplet, such as `x86_64-pc-linux-gnu`
+  - `config.sub` canonicalizes the user-provided string to triplet
+- <https://www.gnu.org/software/libtool/>
+  - `libtoolize` copies `ltmain.sh`, m4 macros, etc. to the project
+
 ## Autoconf
 
 - meaing of arguments passed to `AC_INIT`
