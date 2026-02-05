@@ -377,6 +377,7 @@ libdrm
   - each `-s` sets a connector to a mode
     - `-s 32:#0` sets connector 32 to its first mode
   - `-r` sets all connectors to their preferred modes
+    - conflict with `-s`
   - each `-P` sets a plane
     - `-P 41@65:1000x1000` assigns plane 41 to crtc 65.  The plane scans out
       from a 1000x1000 bo and is centered

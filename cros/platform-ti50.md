@@ -100,6 +100,10 @@ Chrome OS Firmware
 
 ## GSC (Google Security Chip)
 
+- latest release
+  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/main/chromeos-base/chromeos-ti50/chromeos-ti50-0.0.1.ebuild>
+    - e.g., `gs://chromeos-localmirror/distfiles/ti50.r0.0.58.w0.23.242.tar.xz`
+  - <https://chromium.googlesource.com/chromiumos/platform/ec/+/gsc_utils/docs/ti50_firmware_releases.md>
 - titan
   - titan is a family of silicon root of trust (secure microcontrollers)
     developed by google
