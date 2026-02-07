@@ -31,3 +31,21 @@ ukify
   - `man loader.conf` has examples to generate working keys
 - `echo "secure-boot-enroll manual" >> /boot/loader/loader.conf` to enroll
   keys on next boot
+
+## Internals
+
+- `ukify genkey --pcr-private-key test-priv.pem --pcr-public-key test-public.pem`
+  - `generate_priv_pub_key_pair` generates an rsa key pair
+  - the key pair is written to the specified files
+- `ukify build --pcr-private-key test-priv.pem --pcr-public-key test-public.pem --linux test-vmlinuz --initrd test-initrd --cmdline root=/dev/sda2`
+  - systemd-stub (`/usr/lib/systemd/boot/efi/linuxx64.efi.stub`) is the base
+  - `/etc/os-release` is embedded in `.osrel` section
+  - `--cmdline` embeds the kernel cmdline in `.cmdline` section
+  - `--pcr-public-key` embeds the pubkey in `.pcrpkey` section
+  - `--linux` embeds the kernel image (with efi stub) in `.linux` section
+    - uname is parsed out of the image and is embedded in `.uname` section
+  - `--initrd` embeds the initrd image in `.initrd` section
+  - `STUB_SBAT` is embedded in `.sbat` section
+  - `call_systemd_measure`
+    - `--pcr-private-key` signs most sections and embed the signatures in
+      `.pcrsig` section
