@@ -47,5 +47,12 @@ ukify
   - `--initrd` embeds the initrd image in `.initrd` section
   - `STUB_SBAT` is embedded in `.sbat` section
   - `call_systemd_measure`
-    - `--pcr-private-key` signs most sections and embed the signatures in
-      `.pcrsig` section
+    - `systemd-measure` pre-calculates pcr11 values based on pe sections and
+      boot phases
+      - by default, the boot phases are
+        - `enter-initrd` for initrd
+        - `nter-initrd:leave-initrd` for early boot
+        - `enter-initrd:leave-initrd:sysinit` for later boot
+        - `enter-initrd:leave-initrd:sysinit:ready` for post boot
+    - `--pcr-private-key` signs pre-calculated pcr11 values and embeds the
+      signatures in `.pcrsig` section
