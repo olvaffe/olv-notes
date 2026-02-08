@@ -5,7 +5,6 @@ systemd-cryptsetup
 
 - `/etc/kernel/uki.conf`
   - `[PCRSignature:initrd]`
-  - `Phases=enter-initrd`
   - `PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key.pem`
   - `PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem`
 - `ukify genkey -c /etc/kernel/uki.conf` generates the key to sign pcr
