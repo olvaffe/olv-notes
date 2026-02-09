@@ -337,6 +337,7 @@ Android Build System
     - it contains hashes for partitions listed in
       `INSTALLED_VBMETAIMAGE_TARGET` for verified boot
       - <https://android.googlesource.com/platform/external/avb/+/refs/heads/main/README.md>
+    - on eng build, it specifies `--set_hashtree_disabled_flag` to disable verity
   - p16: `vbmeta_b`, 4M
   - p17: `metadata`, 16M, generated
     - it stores encryption key for `userdata` when `BOARD_USES_METADATA_PARTITION`
