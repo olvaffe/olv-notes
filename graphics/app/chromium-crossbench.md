@@ -40,3 +40,13 @@ Chromium crossbench
     - `cuj.memory-pressure.tabs_alive` is the total alive tabs after each new tab
     - `cuj.memory-pressure.average_tabs_alive_after_first_kill` is the average alive tables after first kill
     - `cuj.memory-pressure.tabs_alive_after_first_kill` is the total alive tabs after first kill
+- `tab-stress`
+  - `<variant>.page-config.hjson` opens 100 tabs and cycles through them
+    - the variant determines urls to open
+      - `blank` opens `about:blank`
+      - `heavy` opens `https://html.spec.whatwg.org/`
+      - `real-tab` opens real-world urls
+      - `multi-process` opens `https://chromium-workloads.web.app/web-tests/main/cuj/crossbench/cujs/tab-stress/multiprocess/frame-container/?count=5`
+    - cycling switches to the next tab one-by-one
+  - metrics
+    - `cuj.tab-stress.total_renderers` is the number of alive renderer processes
