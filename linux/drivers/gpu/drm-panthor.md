@@ -282,6 +282,54 @@ DRM panthor
     - `memattr` define 8 attrs, each taking 8 bits
       - `0x9f9f9f9f9c4c9f4c`
 
+## GPUVM
+
+- users
+  - kernel bo uses `panthor_vm_map_bo_range` to map a bo into a vm and uses
+    `panthor_vm_unmap_range` to unmap
+  - userspace bo calls `panthor_vm_bind_exec_sync_op` to map/unmap
+    synchronously or `panthor_vm_bind_job_create` to map/unmap asynchronously
+- high-level view
+  - `panthor_vm_prepare_map_op_ctx` and `panthor_vm_prepare_unmap_op_ctx` prep
+    a temp `panthor_vm_op_ctx`
+  - `panthor_vm_exec_op` calls into gpuvm to map/unmap
+    - gpuvm translates the map/unmap to stepwise
+      `panthor_gpuva_sm_step_map`/`panthor_gpuva_sm_step_unmap`
+  - `panthor_vm_cleanup_op_ctx` cleans up the temp `panthor_vm_op_ctx`
+- map
+  - `panthor_vm_prepare_map_op_ctx`
+    - `panthor_vm_op_ctx_prealloc_vmas` pre-allocs `panthor_vma`s
+    - `panthor_gem_pin` pins bo pages
+    - `drm_gpuvm_bo_create` and `drm_gpuvm_bo_obtain_prealloc` creates a
+      unique `drm_gpuvm_bo` corresponding to the gem bo
+    - `panthor_vm_op_ctx_prealloc_pts` pre-allocs pgtables
+    - if bo is not exclusive, `drm_gpuvm_bo_extobj_add` adds the bo as extobj
+  - `panthor_gpuva_sm_step_map`
+    - `panthor_vm_op_ctx_get_vma` and `panthor_vma_init` inits a pre-allocated
+      vma
+    - `panthor_vm_map_pages` sets up hw pgtable
+    - `drm_gpuva_map` adds the vma to the vm (`gpuvm->rb.tree`)
+    - `drm_gpuva_link` adds the vma to the vm bo (`vm_bo->list.gpuva`)
+    - `drm_gpuvm_bo_put_deferred` derefs the vm bo
+  - `panthor_vm_cleanup_op_ctx`
+    - `panthor_gem_unpin` unpins the gem bo
+    - `drm_gpuvm_bo_deferred_cleanup` cleans up vm bos
+- unmap
+  - `panthor_vm_prepare_unmap_op_ctx`
+  - `panthor_gpuva_sm_step_unmap`
+    - `panthor_vm_unmap_pages` tears down hw pgtable
+    - `drm_gpuva_unmap` removes the vma from the vm (`gpuvm->rb.tree`)
+    - `drm_gpuva_unlink_defer` removes the vma from the vm bo (`vm_bo->list.gpuva`)
+- why `drm_gpuvm_bo_deferred_cleanup`?
+  - commit 8e4865faf7a97de2a0fd797556a62b31528b42bc
+  - vm ops can be on fence signaling path
+  - fence signaling path must not sleep
+    - e.g., must not take `dma_resv_lock` or `mutex_lock`
+  - fence signaling path must alloc with `GFP_NOWAIT`
+    - on alloc, shrinker might need to reclaim pages from gem bos on lowmem
+    - shrinker might block on fence signaling to have idle gem bos to reclaim
+  - we pre-allocate on prep and defers freeing to cleanup
+
 ## GEM
 
 - `panthor_kernel_bo_create` creates a kernel bo
