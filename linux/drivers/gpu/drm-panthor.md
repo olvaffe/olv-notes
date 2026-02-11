@@ -323,11 +323,12 @@ DRM panthor
 - why `drm_gpuvm_bo_deferred_cleanup`?
   - commit 8e4865faf7a97de2a0fd797556a62b31528b42bc
   - vm ops can be on fence signaling path
-  - fence signaling path must not sleep
-    - e.g., must not take `dma_resv_lock` or `mutex_lock`
   - fence signaling path must alloc with `GFP_NOWAIT`
     - on alloc, shrinker might need to reclaim pages from gem bos on lowmem
     - shrinker might block on fence signaling to have idle gem bos to reclaim
+  - fence signaling path must not take `dma_resv_lock`
+    - drivers might take `dma_resv_lock` and alloc on regular paths
+    - if fence signaling path takes `dma_resv_lock`, it leads to deadlock
   - we pre-allocate on prep and defers freeing to cleanup
 
 ## GEM
