@@ -360,6 +360,57 @@ DRM panthor
   - the bo may be exclusive (private) to the vm, or shareable
   - `drm_gem_handle_create` creates the gem handle for userspace
 
+## Shrinker
+
+- `panthor_gem_shrinker_init` allocs and registers a shrinker
+- `panthor_gem_update_reclaim_state_locked`
+  - `panthor_gem_evaluate_reclaim_state_locked`
+    - `PANTHOR_GEM_UNRECLAIMABLE` means pages are pinned or non-existent
+    - `PANTHOR_GEM_GPU_MAPPED_SHARED` means pages are gpu-mapped in multiple vms
+    - `PANTHOR_GEM_GPU_MAPPED_PRIVATE` means pages are gpu-mapped in one vm
+    - `PANTHOR_GEM_MMAPPED` means pages are mmaped
+    - `PANTHOR_GEM_UNUSED` means pages are unused
+  - the bo is moved to the proper lru list
+    - if unused, `ptdev->reclaim.unused`
+    - if mmaped, `ptdev->reclaim.mmaped`
+    - if private gpu-mapped, `panthor_vm_update_bo_reclaim_lru_locked`
+      - it moves the bo to `vm->reclaim.lru`
+      - the vm is added to `ptdev->reclaim.vms`
+    - if shared gpu-mapped, `ptdev->reclaim.gpu_mapped_shared`
+    - if unreclaimable, it is removed from lru list
+- mm `shrink_slab` call all shrinkers on lowmem
+  - `panthor_gem_shrinker_count` counts potentially freeable pages
+    - `SHRINK_EMPTY` means the shrinker has counted and there is no freeable pages
+    - 0 means the shrinker does not count and therefore there is no freeable pages
+  - `panthor_gem_shrinker_scan` evicts freeable pages
+    - `sc->nr_to_scan` is the target number of pages to free
+    - `drm_gem_lru_scan` evicts bos on an lru
+      - `nr_to_scan` is the number of freeable pages to evict
+      - `remaining` is the number of freeable pages that fail to be evicted
+        (due to lock contention)
+      - ret is the number of freeable pages evicted
+    - `panthor_mmu_reclaim_priv_bos` also evicts bos on lrus
+      - this time, the lru is not global in `ptdev->reclaim`, but per-vm in
+        `vm->reclaim`
+    - `panthor_gem_try_evict`
+      - `drm_vma_node_unmap` unmaps from the cpu page tables
+      - if the bo is not exclusive to a vm, all vms are locked
+      - `panthor_gem_update_reclaim_state_locked` updates the bo reclaim state
+        - this can also moves the bo to a different lru list
+      - if the bo is gpu mapped, `dma_resv_wait_timeout` waits for idle
+      - `panthor_vm_evict_bo_mappings_locked` tears down the gpu hw pgtable and
+        marks the vm bos and vmas evicted
+        - `drm_gpuvm_bo_evict` marks the vm bo evicted
+      - `panthor_gem_evict_locked` frees the pages
+- on submit, `panthor_vm_prepare_mapped_bos_resvs` locks the vm and vm bos,
+  - `drm_gpuvm_validate` calls `panthor_vm_bo_validate` to validate each
+    evicted vm bo
+  - `panthor_gem_swapin_locked`
+    - `panthor_gem_backing_get_pages_locked` restores pages
+    - `panthor_gem_dev_map_get_sgt_locked` restores sgt
+  - `panthor_vm_restore_vmas` restores gpu hw pgtable
+  - `drm_gpuvm_bo_evict` marks the vm bo not evicted
+
 ## FW
 
 - `panthor_fw_init` inits `ptdev->fw`
