@@ -28,6 +28,24 @@ Android ADB
 - When there is `/dev/android_adb`, `adbd` opens it for connections.  Otherwise,
   it listens to port 5555
 
+## Host `adb` Internals
+
+- `adb_check_server_version` starts host server on-demand
+  - the server is at `tcp:5037` (`kDefaultServerPort`)
+  - it connects to the server socket to send `host:version`
+  - if the server is not running, `launch_server` invokes
+    `adb -L tcp:5037 fork-server server --reply-fd 4`
+- `adb_server_main` is the host server main loop
+  - `usb_init` inits usb
+    - `device_poll_thread` scans `/dev/bus/usb` every 1s for duts
+    - `register_device` registers a usb transport for each dut
+  - `init_emulator_scanner` inits emulator
+    - `PollAllLocalPortsForEmulator` polls port 5555 on on
+      (`DEFAULT_ADB_LOCAL_TRANSPORT_PORT`)
+- `adb devices` lists devices
+  - `adb_query("host:devices")` sends the req to the host server
+  - `handle_host_request` handles the req
+
 ## Rooting
 
 - Rooting is done by flashing a kernel with debuggable initramfs
