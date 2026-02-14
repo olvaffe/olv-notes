@@ -217,3 +217,24 @@ USB
   - fingerprint reader uses bus 3, port 3
   - camera uses bus 3, port 4
   - bt uses bus 3, port 10
+
+## lsusb
+
+- `lsusb -v -s <bus>:<dev>`
+- `lsusb -tvv` shows the tree structure
+  - each usb controller creates one or more busses
+    - 1.x/2.x controller creates a 1.x/2.x bus
+    - 3.x controller creates a 3.x bus and a 2.x bus
+    - on pc, there are typically multiple usb controllers that are pci devices
+  - usb controllers can be probed in any order
+    - bus numbers are assigned sequentially when probed
+    - dev numbers are assigned sequentially within each bus
+- sysfs naming: `<bus>-<port[.port]...>:<config>-<iface>`
+  - this is different from `lsusb` or `/dev/bus/usb` which does not have ports
+    in their namings
+  - e.g., `3-1.3:1.3`
+    - bus 3
+    - port 1 (which is a hub) then port 3 (of the hub)
+    - config 1
+      - current active config, which is almost always 1
+    - iface 3
