@@ -148,6 +148,17 @@ PCI
 - `lspci -vv -s <slot>`
 - each slot is `[<domain>:]<bus>:<slot>.<func>`
   - `lspci -tv` to see the tree structure
+  - e.g., `0a:00.0 Ethernet controller: Intel Corporation Ethernet Controller I225-V`
+    - it is at bus 0a, slot 00, func 0
+    - the tree view shows
+      - `-[0000:00]-+-02.1-[05-0d]----00.0-[06-0d]--+-0a.0-[0a]----00.0  Intel Corporation Ethernet Controller I225-V`
+      - `00:02.1` is a bridge with bus 05 to 0d underneath
+      - `05:00.0` is a bridge with bus 06 to 0d underneath
+      - `06:0a.0` is a bridge with bus 0a underneath
+      - `0a:00.0` is the device
+  - pci spec requires depth-first enumeration and bus numbers are assigned
+    sequentially
+    - this ensures persistent path
   - the root bridge creates bus 00
     - it is also a func at `00:00.0`
   - there are typically more bridges, each creating a new bus
