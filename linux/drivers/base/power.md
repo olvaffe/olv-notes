@@ -86,6 +86,23 @@ Power Management
     - `dpm_resume_early`
   - `dpm_resume_end` resumes the devices
 
+## Wakeup
+
+- device driver
+  - if the hw is capable of system wakeup, the driver calls
+    `device_set_wakeup_capable`
+  - if the hw should wake up the device (e.g., hid keyboard), the driver calls
+    `device_set_wakeup_enable`
+    - `wakeup_source_register` registers a wakeup source
+    - `device_wakeup_attach` points `ws->wakeirq` to `dev->power.wakeirq`
+- on suspend, `suspend_enter` calls `device_wakeup_arm_wake_irqs` indirectly
+  - it loops through all wakeup sources
+  - `irq_set_irq_wake` enables the irq to wake up the system
+- on resume, `suspend_enter` continues to call
+  `device_wakeup_disarm_wake_irqs` indirectly
+  - it loops through all wakeup sources
+  - `irq_set_irq_wake` disables the irq
+
 ## Runtime PM
 
 - `struct dev_pm_ops`
