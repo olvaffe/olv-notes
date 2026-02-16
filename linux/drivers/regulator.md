@@ -27,6 +27,11 @@ Kernel Regulator
   - `of_get_regulator` returns the phandle of the `%s-supply` prop (`mali` in
     this example)
   - `of_find_regulator_by_node` returns the regulator
+  - when the supply is missing, `_regulator_get_common` logs a warning and
+    returns `dummy_regulator_rdev`
+- `devm_regulator_get_optional` is `devm_regulator_get` with `OPTIONAL_GET`
+  - when the supply is missing, it returns `-ENODEV` such that caller can
+    handle the case
 
 ## PMIC
 
