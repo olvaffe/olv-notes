@@ -159,3 +159,32 @@ Wine
   - there is also a `dxvk-queue` thread
     - it waits on the gpu jobs to complete, free the associated resources, and
       recycles the jobs for reuse
+
+## MiceWine
+
+- <https://github.com/KreitinnSoftware/MiceWine-Application>
+  - `MainActivity` starts `WelcomeActivity` to setup
+    - `RootFSDownloaderFragment` retrieves rootfs list from
+      <https://api.github.com/repos/KreitinnSoftware/MiceWine-RootFS-Generator/releases>
+    - `RootFSDownloaderService` downloads the selected rootfs to `/data/data/com.micewine.emu/files/rootfs.rat`
+    - `RatPackageManager` unpacks the rootfs to `/data/data/com.micewine.emu`
+      - the rootfs is under `files/`
+      - there are rat packages under `adrenoTools/`, `box64/`, `vulkanDrivers/`, and `wine/`
+      - everything is built for android using ndk
+    - `RatPackageManager` unpacks more rat packages to
+      `/data/data/com.micewine.emu/packages/<Name>-<UUID>`
+    - `runXServer` starts xserver
+      - `CmdEntryPoint` loads `libXlorie.so` from the apk
+      - `Java_com_micewine_emu_CmdEntryPoint_start` spawns a thread to run
+        xserver
+    - `createWinePrefix` creates prefix under
+      `/data/data/com.micewine.emu/files/winePrefixes/default/drive_c`
+      - `ShellLoader` loads `libmicewine.so` from the apk
+      - `wineboot` invokes `env DISPLAY=:0 LD_LIBRARY_PATH=<...> PATH=<...> <more> WINEPREFIX=<...> box64 wine wineboot`
+      - `Java_com_micewine_emu_core_ShellLoader_runCommand` invokes the shell cmd
+- <https://github.com/KreitinnSoftware/MiceWine-RootFS-Generator>
+  - it builds various projects using ndk
+  - `mesa-zink` is a `OpenGLDriver` and provides `libGLX_mesa.so`
+  - `mesa-vulkan-wrapper` is a `VulkanDriver` and provides `libvulkan_wrapper.so`
+    - it is a vulkan driver that is a wrapper for `/system/lib64/libvulkan.so`
+  - `mesa-vulkan-freedreno` is a `VulkanDriver` and provides `libvulkan_freedreno.so`
