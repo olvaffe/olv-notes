@@ -84,14 +84,16 @@ Android Docs
     - 0 implies `VK_KHR_variable_pointers` and more
 - Vulkan profiles
   - <https://github.com/KhronosGroup/Vulkan-Profiles/tree/main/profiles>
-  - baseline profiles reflect the common denominator of vulkan impls
-    - `VP_ANDROID_baseline_2021`
-    - `VP_ANDROID_baseline_2022`
-    - aka ABP, android baseline profile
-  - minimums profiles reflect the direction of vulkan impls
-    - `VP_ANDROID_15_minimums`
-    - `VP_ANDROID_16_minimums`
-    - aka VPA, vulkan profile for android
+  - vulkan profiles reflect the common denominator of vulkan impls
+    - `VP_ANDROID_vulkan_profile_2021` (was `VP_ANDROID_baseline_2021`)
+    - `VP_ANDROID_vulkan_profile_2022` ( was `VP_ANDROID_baseline_2022`)
+    - `VP_ANDROID_vulkan_profile_2025`
+    - aka AVP, android vulkan profile (was ABP)
+  - requirement profiles mandate functionalities of new gpus
+    - `VP_ANDROID_15_requirements` (was `VP_ANDROID_15_minimums`)
+    - `VP_ANDROID_16_requirements` (was `VP_ANDROID_16_minimums`)
+    - `VP_ANDROID_17_requirements`
+    - aka VRA, vulkan requirements for android (was VPA)
 - Android 10 CDD
   - <https://source.android.com/docs/compatibility/10/android-10-cdd>
   - strongly recommend Vulkan 1.1
