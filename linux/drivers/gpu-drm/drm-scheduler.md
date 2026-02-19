@@ -13,6 +13,26 @@ DRM Scheduler
    - e.g., when the hw has multiple compute rings, it picks the least busy one
 - when `drm_gpu_scheduler` schedules a job to hw ring, it picks a job that has
   the highest priority and has all deps resolved
+- high-level job flow
+  - `drm_sched_entity_push_job`
+    - pushes a job to `entity->job_queue`
+    - `drm_sched_rq_add_entity` adds the entity to `rq->entities`
+    - `drm_sched_rq_update_fifo_locked` adds the entity to `rq->rb_tree_root`
+  - `drm_sched_run_job_work`
+    - `drm_sched_select_entity` selects the entity from `rq->rb_tree_root`
+    - `drm_sched_entity_pop_job` pops the job
+    - `drm_sched_job_begin` adds the job to `sched->pending_list` and starts
+      timeout timer
+    - `sched->ops->run_job` adds the job to the hw ring and returns the hw fence
+    - `drm_sched_fence_scheduled` signals `scheduled` fence
+  - `drm_sched_job_done_cb` is called when the hw fence signals
+    - `drm_sched_fence_finished` signals `finished` fence
+  - `drm_sched_free_job_work`
+    - `drm_sched_get_finished_job` pops the job from `sched->pending_list`
+    - `sched->ops->free_job` frees the job
+  - if timeout, `drm_sched_job_timedout`
+    - pops the job from `sched->pending_list`
+    - `sched->ops->timedout_job` times out the job
 
 ## Initialization
 
@@ -35,6 +55,9 @@ DRM Scheduler
     - `name` is the name of the scheduler
     - `dev` is the owning dev, for debugging
   - `sched_rq` is an array of `drm_sched_rq`, from high to low priorities
+
+## Entity
+
 - `drm_sched_entity_init` inits a `drm_sched_entity` per userspace queue
   - params
     - `priority` is the priority, which indexes into `sched->sched_rq[entity->priority]`
@@ -62,28 +85,47 @@ DRM Scheduler
         to hw after A's `finished` fence signals
       - if A and B are submitted to different entities of the same scheduler,
         B can be submitted to hw after A's `scheduled` fence signals
-- high-level job flow
+- `drm_sched_entity_destroy` destroys a `drm_sched_entity` corresponding to a
+  user queue
+  - `drm_sched_entity_flush` waits until `drm_sched_entity_is_idle`
+    - `PF_EXITING` indicates the thread/process is terminating
+  - `drm_sched_entity_fini`
+    - `drm_sched_entity_kill`
+- fifo scheduling
   - `drm_sched_entity_push_job`
-    - pushes a job to `entity->job_queue`
-    - `drm_sched_rq_add_entity` adds the entity to `rq->entities`
-    - `drm_sched_rq_update_fifo_locked` adds the entity to `rq->rb_tree_root`
-  - `drm_sched_run_job_work`
-    - `drm_sched_select_entity` selects the entity from `rq->rb_tree_root`
-    - `drm_sched_entity_pop_job` pops the job
-    - `drm_sched_job_begin` adds the job to `sched->pending_list` and starts
-      timeout timer
-    - `sched->ops->run_job` adds the job to the hw ring and returns the hw fence
-    - `drm_sched_fence_scheduled` signals `scheduled` fence
-  - `drm_sched_job_done_cb` is called when the hw fence signals
-    - `drm_sched_fence_finished` signals `finished` fence
-  - `drm_sched_free_job_work`
-    - `drm_sched_get_finished_job` pops the job from `sched->pending_list`
-    - `sched->ops->free_job` frees the job
-  - if timeout, `drm_sched_job_timedout`
-    - pops the job from `sched->pending_list`
-    - `sched->ops->timedout_job` times out the job
-
-## Cleanup
+    - `job->submit_ts` is the submit ts of a job
+    - `entity->job_queue` is the array of jobs on the entity
+  - whenever the head of `entity->job_queue` changes,
+    `drm_sched_rq_update_fifo_locked` is called
+    - this happens when the first job is popped or added
+    - `entity->oldest_job_waiting` is set to `job->submit_ts` of the new first job
+    - `rq->rb_tree_root` is re-sorted by `entity->oldest_job_waiting`
+  - `drm_sched_rq_select_entity_fifo` selects the first entity from
+    `rq->rb_tree_root` that is also `drm_sched_entity_is_ready`
+- job dependency
+  - driver calls `drm_sched_job_add_dependency` to add a fence to `job->dependencies`
+  - whenever `drm_sched_run_job_work` is called,
+    - `drm_sched_select_entity` selects the entity
+    - `drm_sched_entity_pop_job` pops the first job whose dependencies are resolved
+    - `sched->ops->run_job` adds the job to hw ring
+  - `drm_sched_entity_pop_job`
+    - `drm_sched_job_dependency` returns the next fence on `job->dependencies`
+    - `drm_sched_entity_add_dependency_cb` adds `drm_sched_entity_wakeup` fence cb
+      - when this next fence signals, `drm_sched_entity_wakeup` clears
+        `entity->dependency` and schedules `drm_sched_run_job_work` again
+    - this keeps happening until all fences on `job->dependencies` are
+      signaled
+- `drm_sched_entity_is_ready` means the entity has a job whose deps are resolved
+  - `drm_sched_select_entity` is the sole caller, to select the entity to run
+- `drm_sched_entity_is_idle` means the entity has no job queued
+  - `drm_sched_entity_flush` is the sole caller, for gracefuly fini
+- `entity->entity_idle`
+  - it means "scheduler is not accessing the entity"
+  - it is cleared briefly between `drm_sched_select_entity` to after
+    `sched->ops->run_job` in `drm_sched_run_job_work`
+  - it is waited in `drm_sched_entity_kill` after `drm_sched_rq_remove_entity`
+    - this ensures that the scheduler is not accessing entity and can no
+      longer access the entity, to avoid racing
 
 ## Job Submission
 
