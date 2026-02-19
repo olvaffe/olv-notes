@@ -21,23 +21,23 @@ DRM Scheduler
     - `ops` is `drm_sched_backend_ops`
     - `submit_wq` is the submit workqueue
       - it can be ordered (one work at a time) or not
-      - if missing, `drm_sched_alloc_wq` allocs a default one
+      - if missing, `drm_sched_alloc_wq` allocs an ordered one
+    - `timeout_wq` is the timeout workqueue
+      - if missing, it defaults to `system_percpu_wq`
     - `num_rqs` is the number of `drm_sched_rq` to create, ordered from high
       to low priorities
     - `credit_limit` is a u32, which is typically ring size
     - `hang_limit` is deprecated (used by deprecated `drm_sched_resubmit_jobs`)
     - `timeout` is number of jiffies before a running job is timed out
-    - `timeout_wq` is the timeout workqueue, typically `system_wq`
     - `score` is the busyness of the scheduler
       - currently, the number of entities in runqueues plus jobs in entities
         or running
+    - `name` is the name of the scheduler
+    - `dev` is the owning dev, for debugging
   - `sched_rq` is an array of `drm_sched_rq`, from high to low priorities
-  - `drm_sched_job_timedout`
-  - `drm_sched_run_job_work`
-  - `drm_sched_free_job_work`
 - `drm_sched_entity_init` inits a `drm_sched_entity` per userspace queue
   - params
-    - `priority` is the priority
+    - `priority` is the priority, which indexes into `sched->sched_rq[entity->priority]`
     - `sched_list` and `num_sched_list` are an array of `drm_gpu_scheduler`
       - `drm_sched_job_arm` will call `drm_sched_entity_select_rq` to move the
         entity to the best scheduler dynamically, if there are more than one
@@ -62,6 +62,26 @@ DRM Scheduler
         to hw after A's `finished` fence signals
       - if A and B are submitted to different entities of the same scheduler,
         B can be submitted to hw after A's `scheduled` fence signals
+- high-level job flow
+  - `drm_sched_entity_push_job`
+    - pushes a job to `entity->job_queue`
+    - `drm_sched_rq_add_entity` adds the entity to `rq->entities`
+    - `drm_sched_rq_update_fifo_locked` adds the entity to `rq->rb_tree_root`
+  - `drm_sched_run_job_work`
+    - `drm_sched_select_entity` selects the entity from `rq->rb_tree_root`
+    - `drm_sched_entity_pop_job` pops the job
+    - `drm_sched_job_begin` adds the job to `sched->pending_list` and starts
+      timeout timer
+    - `sched->ops->run_job` adds the job to the hw ring and returns the hw fence
+    - `drm_sched_fence_scheduled` signals `scheduled` fence
+  - `drm_sched_job_done_cb` is called when the hw fence signals
+    - `drm_sched_fence_finished` signals `finished` fence
+  - `drm_sched_free_job_work`
+    - `drm_sched_get_finished_job` pops the job from `sched->pending_list`
+    - `sched->ops->free_job` frees the job
+  - if timeout, `drm_sched_job_timedout`
+    - pops the job from `sched->pending_list`
+    - `sched->ops->timedout_job` times out the job
 
 ## Cleanup
 
