@@ -17,11 +17,13 @@ DRM Scheduler
 ## Initialization
 
 - `drm_sched_init` inits a `drm_gpu_scheduler` per hw ring
-  - params
+  - `drm_sched_init_args`
     - `ops` is `drm_sched_backend_ops`
     - `submit_wq` is the submit workqueue
       - it can be ordered (one work at a time) or not
-    - `num_rqs` is the number of `drm_sched_rq`, from high to low priorities
+      - if missing, `drm_sched_alloc_wq` allocs a default one
+    - `num_rqs` is the number of `drm_sched_rq` to create, ordered from high
+      to low priorities
     - `credit_limit` is a u32, which is typically ring size
     - `hang_limit` is deprecated (used by deprecated `drm_sched_resubmit_jobs`)
     - `timeout` is number of jiffies before a running job is timed out
@@ -60,6 +62,8 @@ DRM Scheduler
         to hw after A's `finished` fence signals
       - if A and B are submitted to different entities of the same scheduler,
         B can be submitted to hw after A's `scheduled` fence signals
+
+## Cleanup
 
 ## Job Submission
 
