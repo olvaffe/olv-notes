@@ -132,8 +132,7 @@ Terminal
 - poorman 2
   - sending device: `picocom -b 115200 /dev/ttyUSB0`
   - receiving device: `stty -echo; base64 -d > file; stty echo`
-  - sending device: `base64 file > /dev/ttyUSB0`
-  - receiving device: `Ctrl-D`
+  - sending device: `(base64 file; echo -ne '\x4') > /dev/ttyUSB0`
 
 ## ncurses
 
