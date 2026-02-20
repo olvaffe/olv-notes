@@ -133,7 +133,7 @@ Terminal
   - sending device: `picocom -b 115200 /dev/ttyUSB0`
   - receiving device: `stty -echo; base64 -d > file; stty echo`
   - sending device: `base64 file > /dev/ttyUSB0`
-  - sending device: `Ctrl-D`
+  - receiving device: `Ctrl-D`
 
 ## ncurses
 
