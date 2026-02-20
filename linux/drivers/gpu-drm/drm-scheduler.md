@@ -88,9 +88,25 @@ DRM Scheduler
 - `drm_sched_entity_destroy` destroys a `drm_sched_entity` corresponding to a
   user queue
   - `drm_sched_entity_flush` waits until `drm_sched_entity_is_idle`
-    - `PF_EXITING` indicates the thread/process is terminating
+    - that is, until all jobs queued up in the entity are running in the scheduler
+    - if the thread/process is terminating (`PF_EXITING`), it waits with a timeout
+    - otherwise, it waits forever unless killed
+    - if `PF_EXITING` and `SIGKILL`, `drm_sched_entity_kill` immediately
+      - `entity->last_user` check is for when the entity is leaked to a child
+        process, and the child gets `SIGKILL`ed, the parent process is not
+        affected
+  - when `drm_sched_entity_flush` returns,
+    - if `drm_sched_entity_kill` is called, the entity is empty
+      - `drm_sched_entity_push_job` can still add jobs but scheduler never runs them
+    - otherwise, the entity may or may not be empty
+      - `drm_sched_entity_push_job` can still add jobs and scheduler can run them
   - `drm_sched_entity_fini`
     - `drm_sched_entity_kill`
+      - the entity is removed from the scheduler
+        - scheduler can no longer run the queued jobs
+      - a loop to pop and signal all jobs in order and asynchronously
+        - because we can't rely on the scheduler to run them anymore
+    - because `drm_sched_entity_push_job` is invalid, no new job can be added
 - fifo scheduling
   - `drm_sched_entity_push_job`
     - `job->submit_ts` is the submit ts of a job
