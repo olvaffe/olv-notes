@@ -212,6 +212,20 @@ GPU Benchmarks
     - optional `-e unity \"-quality:hq\"`
   - `adb shell am force-stop com.UnityTechnologies.BoatAttack`
 
+## 3DMark
+
+- <https://benchmarks.ul.com/downloads/3dmark-android-pro.zip>
+  - `adb install -r -g foo.apk`
+  - `adb shell am start -n com.futuremark.dmandroid.application/com.futuremark.flamenco.ui.splash.SplashPageActivity`
+  - `sleep 10`
+  - `adb shell am force-stop com.futuremark.dmandroid.application`
+  - `adb push foo.dlc /data/media/10/Android/data/com.futuremark.dmandroid.application/files`
+  - `adb push foo.xml /data/media/10/Android/data/com.futuremark.dmandroid.application/files`
+    - after editing `license_key`
+  - `adb shell am start -n com.futuremark.dmandroid.application/com.futuremark.dmandroid.application.BenchmarkLauncherActivity \
+       -e com.futuremark.android.InstallDLC true \
+       -e com.futuremark.android.BenchmarkFilePath /storage/emulated/10/Android/data/com.futuremark.dmandroid.application/files/foo.xml`
+
 ## GravityMark
 
 - <https://gravitymark.tellusim.com/>
