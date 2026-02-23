@@ -225,6 +225,10 @@ GPU Benchmarks
   - `adb shell am start -n com.futuremark.dmandroid.application/com.futuremark.dmandroid.application.BenchmarkLauncherActivity \
        -e com.futuremark.android.InstallDLC true \
        -e com.futuremark.android.BenchmarkFilePath /storage/emulated/10/Android/data/com.futuremark.dmandroid.application/files/foo.xml`
+  - `adb pull /data/media/10/Android/data/com.futuremark.dmandroid.application/files/3DMarkAndroid/dma-result-timestamp.zip`
+    - `Results.xml`
+      - `<Foo3DMarkScore>` is score
+      - `<FooGraphicsTest*>` is fps
 
 ## GravityMark
 
