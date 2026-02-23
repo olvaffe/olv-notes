@@ -229,6 +229,48 @@ GPU Benchmarks
     - `Results.xml`
       - `<Foo3DMarkScore>` is score
       - `<FooGraphicsTest*>` is fps
+- <https://support.benchmarks.ul.com/support/solutions/44000377961>
+  - 2013, Ice Storm
+    - cross-platform
+    - uses d3d11 feat9 or gles 2.0
+  - 2013, Fire Strike
+    - windows-only
+    - uses d3d11 feat11
+  - 2015, Sling Shot
+    - mobile-only
+    - regular uses gles 3.0
+    - extreme uses gles 3.1 or vulkan
+    - unlimited uses offscreen and fixed time step
+  - 2016, Time Spy
+    - windows-only
+    - uses d3d11 feat 11
+    - 2017, extreme
+  - 2018, Night Raid
+    - windows-only, targeting igpu
+    - uses dx12 level 11
+  - 2019, Port Royal
+    - windows-only, targeting ray tracing
+    - uses dx12 level 12
+  - 2020, Wild Life
+    - cross-platform
+    - uses vk 1.1
+    - regular runs for 1min
+    - stress runs for 20min
+    - unlimited uses offscreen and fixed time step
+    - 2021, extreme is 3x more gpu demanding
+  - 2022, Speed Way
+    - windows-only, targeting dgpu
+    - uses dx12 level 12
+  - 2023, Solar Bay
+    - cross-platform, targeting ray tracing
+    - uses vk 1.1
+    - regular runs for 1min
+    - stress runs for 20min
+    - 2025, extreme
+  - 2024, Steel Nomad
+    - cross-platform, targeting non-ray tracing
+      - light is cross-platform; regular is windows-only
+    - uses vk 1.1
 
 ## GravityMark
 
