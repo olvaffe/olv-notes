@@ -142,7 +142,7 @@ Chrome OS Firmware
       - devs can access EC using a special usb-c SuzyQ cable
       - devs can also access EC from AP via TPM
         - thus devs can update GSC, EC, and AP firmwares on DUT
-- cr50 / ti50
+- cr50 on h1
   - cr50 is the older firmware that runs on titan H1
   - it is a fork of <https://chromium.googlesource.com/chromiumos/platform/ec>
     for the apps (tpm, ccd, u2f, serial, etc.) and kernel
@@ -167,11 +167,13 @@ Chrome OS Firmware
       - because gsc connects to both ec and ap flashes, `target={ec,ap}`
         should be specified as well
       - use `gsctool` to flash gsc firmware instead
-- ti50
+- ti50 on d2
   - ti50 is the newer firmware that runs on titan D2
   - it consists of a fork of cros ec for the apps and a fork of tock os for
     the kernel
   - the ccd app exposes a usb device with id `18d1:504a`
+- ti50 on nuvotitan
+  - nuvotitan is the successor to titan D2
 
 ## Suzy-Q
 
