@@ -4,14 +4,24 @@ Linux workqueue
 ## Overview
 
 - there are system-wide worker pools
+  - each cpu gets 4 worker pools
+    - `init_cpu_worker_pool` inits a worker pool
+  - there are also unbound worker pools
+    - `get_unbound_pool` creates one on demand
   - the number of workers in each pool increases and decreases automatically
     depending on the load
+    - `maybe_create_worker` and `idle_cull_fn`
 - `alloc_workqueue` allocates a workqueue
   - works queued via the workqueue will be dispatched to system-wide worker
     pools
   - workqueue attributes determine which worker pools to use
-  - "pwq" is the glue that dispatches works to a worker pool
+  - `alloc_and_link_pwqs` creates pwqs
+    - if `WQ_PERCPU`, each per-cpu pwq points to the respective per-cpu worker pool
+    - if `WQ_UNBOUND`, each per-cpu pwq points to a `get_unbound_pool` pool
 - `queue_work` queues a work to a queue
+  - it looks up the per-cpu pwq, which determines the worker pool
+  - the work is added to `pool->worklist`, or if too many active works,
+    `pwq->inactive_works`
 
 ## Initialization
 
