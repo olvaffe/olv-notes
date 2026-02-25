@@ -30,6 +30,11 @@ Linux workqueue
     - if work1 does not sleep, worker1 typically executes both work1 and work2 in order
     - if work1 sleeps, worker1 executes work1 until it sleeps; at that point,
       worker2 wakes up to execute work2
+  - `WQ_UNBOUND` is special
+    - it uses pools from `get_unbound_pool` which have `POOL_DISASSOCIATED`
+    - the pool workers have `WORKER_UNBOUND`, which is considered `WORKER_NOT_RUNNING`
+      - see the comment of `need_more_worker`
+    - when N works are queued in a row, it can spawn up to N-1 workers
 
 ## Flags
 
