@@ -6,6 +6,7 @@ Linux workqueue
 - there are system-wide worker pools
   - each cpu gets 4 worker pools
     - `init_cpu_worker_pool` inits a worker pool
+    - `kthread_set_per_cpu` confines the worker to `pool->cpu` (not -1)
   - there are also unbound worker pools
     - `get_unbound_pool` creates one on demand
   - the number of workers in each pool increases and decreases automatically
@@ -16,12 +17,66 @@ Linux workqueue
     pools
   - workqueue attributes determine which worker pools to use
   - `alloc_and_link_pwqs` creates pwqs
-    - if `WQ_PERCPU`, each per-cpu pwq points to the respective per-cpu worker pool
     - if `WQ_UNBOUND`, each per-cpu pwq points to a `get_unbound_pool` pool
+    - if `WQ_PERCPU`, each per-cpu pwq points to the respective per-cpu worker pool
 - `queue_work` queues a work to a queue
   - it looks up the per-cpu pwq, which determines the worker pool
   - the work is added to `pool->worklist`, or if too many active works,
     `pwq->inactive_works`
+- the purpose of a worker pool is unlike a typical thread pool
+  - a typical thread pool aims to saturate multiple cores
+  - a worker pool aims to saturate a single core
+  - when work1 and work2 are both queued to the same worker pool with worker1 and worker 2,
+    - if work1 does not sleep, worker1 typically executes both work1 and work2 in order
+    - if work1 sleeps, worker1 executes work1 until it sleeps; at that point,
+      worker2 wakes up to execute work2
+
+## Flags
+
+- `max_active` defaults to `WQ_DFL_ACTIVE` (1024)
+  - `wq_adjust_max_active`
+    - if `WQ_UNBOUND`, the limit is per-node
+    - if `WQ_PERCPU`, the limit is per-cpu
+  - `__queue_work` calls `pwq_tryinc_nr_active` to determine whether a work
+    goes to `pool->worklist` or `pwq->inactive_works`
+    - if `WQ_UNBOUND`, `tryinc_node_nr_active` increments the per-node `nna->nr`
+    - if `WQ_PERCPU`, it increments the per-cpu `pwq->nr_active`
+- flags
+  - `WQ_BH`
+  - `WQ_UNBOUND` will become the default
+  - `WQ_FREEZABLE`
+    - `freeze_workqueues_begin` calls `wq_adjust_max_active` to set `max_active`
+      to 0
+  - `WQ_MEM_RECLAIM` allows the wq to be used during mem reclaim
+    - `init_rescuer` spawns a rescuer kthread for the wq
+    - when `maybe_create_worker` creates a worker, but can't due to oom,
+      mayday timer moves the pwq to `wq->maydays` and execute the works on the
+      rescuer kthread
+  - `WQ_HIGHPRI` uses worker pools who workers are `HIGHPRI_NICE_LEVEL`
+    - `alloc_and_link_pwqs` picks highpri pools
+  - `WQ_CPU_INTENSIVE`
+    - `need_more_worker` returns true if there are works on `pool->worklist`
+      and `pool->nr_running` is 0 (no running worker)
+    - when a worker executes a cpu intensive work, it is excluded from `pool->nr_running`
+      - see `worker_set_flags` and `WORKER_NOT_RUNNING`
+  - `WQ_SYSFS` exposes `/sys/devices/virtual/workqueue/<wq>` for config
+  - `WQ_POWER_EFFICIENT` is nop by default
+    - admin can configure it to force `WQ_UNBOUND`
+  - `WQ_PERCPU` is the opposite of `WQ_UNBOUND`
+  - `__WQ_ORDERED` is used with `WQ_UNBOUND` to share `ctx->dfl_pwq`
+- `WQ_UNBOUND`, `WQ_PERCPU`, and `__WQ_ORDERED`
+  - `alloc_and_link_pwqs`
+    - if `WQ_PERCPU`, per-cpu pwqs point to per-cpu worker pools
+    - if `WQ_UNBOUND`, per-cpu pwqs point to the same (unless numa) unbound worker pool
+      - if `__WQ_ORDERED`, per-cpu pwqs actually are the same `ctx->dfl_pwq`
+        pointing to an unbound worker pool
+  - when `queue_work` is called from cpu N,
+    - if `WQ_PERCPU`, per-cpu pwq N dispatches the work to per-cpu pool N
+    - if `WQ_UNBOUND`, per-cpu pwq N dispatches the work to an unbound worker pool
+      - if `__WQ_ORDERED`, `ctx->dfl_pwq` dispatches the work to an unbound worker pool
+  - `alloc_ordered_workqueue` is `WQ_UNBOUND | __WQ_ORDERED` and `max_active == 1`
+    - all works are queued to the same pwq
+    - if a work is running, the remaining works are parked on `pwq->inactive_works`
 
 ## Initialization
 
