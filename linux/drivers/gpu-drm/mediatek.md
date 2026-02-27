@@ -9,6 +9,18 @@ Linux DRM Mediatek
 - VMM is Vcore for MMSYS
   - it is a regulator controlled by VCP fw
 - VCP is Video Companion Processor
+- `CONFIG_MTK_MMSYS`
+  - `mtk-mmsys` probes
+    - `mediatek,mt8196-dispsys0` for display pipeline 0 and clk
+    - `mediatek,mt8196-dispsys1` for display pipeline 1 and clk
+    - `mediatek,mt8196-ovlsys0` for overlay pipeline 0 and clk
+    - `mediatek,mt8196-ovlsys1` for overlay pipeline 1 and clk
+    - `mediatek,mt8196-vdisp-ao` for clk
+  - `mediatek-mutex` probes
+    - `mediatek,mt8196-disp-mutex`
+- `CONFIG_DRM_MEDIATEK`
+  - it probes `mediatek-drm` platform devices registered by `mtk-mmsys`
+  - it creaets a single `drm_device` from all the platform devices
 
 ## Initialization
 
