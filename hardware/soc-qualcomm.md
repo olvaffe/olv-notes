@@ -425,6 +425,39 @@ Qualcomm SoC
   - DT `gpu` picks `qcdxkmsuc8380.mbn`
     - asus x1p may pick `qcdxkmsucpurwa.mbn`
 
+## X1E-80-100 CRD
+
+- tools
+  - <https://docs.qualcomm.com/doc/80-88500-5/topic/update_platform_software.html?product=1601111740013082>
+  - Qualcomm Package Manager (QPM)
+    - this manages qik packages
+  - Qualcomm USB driver (QUD)
+    - this builds and installs a few kernel modules
+      - it often fails on newer kernels
+    - <https://github.com/qualcomm/qcom-usb-kernel-drivers>
+      - `qtiDevInf.ko` is a helper to parse an inf file into a device db
+      - `GobiNet.ko` supports usb devices listed in `qtiwwan.inf`
+      - `QdssDiag.ko` supports usb devices listed in `qdbusb.inf`,
+        `qtiser.inf`, and `qtimdm.inf`
+  - Qualcomm Unified Tools Service (QUTS)
+    - this backend daemon uses QUD to talk to the device
+  - Qualcomm Product Configuration Assistance (PCAT) tool
+    - this frontend talks to QUTS
+- QDL / EDL
+  - <https://docs.qualcomm.com/doc/80-70018-254/topic/flash_images.html>
+  - when booted to QDL mode, there is a usb device
+    - `Qualcomm, Inc. Gobi Wireless Modem (QDL mode)`
+    - `QdssDiag.ko` is the driver and creates `/dev/Q...`
+  - `PCAT -DEVICES` lists devices
+    - make sure kernel driver and QUTSService are running
+  - `PCAT -PLUGIN SD -DEVICE <serial> -MEMORYTYPE <type>`
+    - it uses SD (software download) plugin to flash an image to NVME, UFS,
+      EMMC, NAND, or SPINOR
+- debug board
+  - `FTDI FT4232H` exposes 4 serial ports
+    - `picocom -b 115200 /dev/ttyUSB0` for console
+  - `S4-7` switch foces the device into QDL mode
+
 ## Qualcomm Modem/WiFi/BT?
 
 - trogdor wifi
