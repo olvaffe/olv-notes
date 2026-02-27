@@ -1,6 +1,15 @@
 Linux DRM Mediatek
 ==================
 
+## MT8196 DT
+
+- MMSYS is MediaTek Multimedia Subsystem
+  - display
+  - video codec
+- VMM is Vcore for MMSYS
+  - it is a regulator controlled by VCP fw
+- VCP is Video Companion Processor
+
 ## Initialization
 
 - `CONFIG_MTK_MMSYS` adds the platform devices
