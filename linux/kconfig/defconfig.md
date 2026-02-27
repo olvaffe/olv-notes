@@ -431,6 +431,7 @@ Kernel defconfig
       - select `MT6363 SPMI PMIC regulator driver`
       - select `MT6373 SPMI PMIC regulator driver`
     - select `MediaTek DVFSRC regulator driver` if mtk
+    - select `Qualcomm REFGEN regulator driver` if qcom
     - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
   - select `Multimedia support` if needed
