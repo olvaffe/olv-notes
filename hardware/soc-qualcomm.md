@@ -457,6 +457,9 @@ Qualcomm SoC
   - `FTDI FT4232H` exposes 4 serial ports
     - `picocom -b 115200 /dev/ttyUSB0` for console
   - `S4-7` switch foces the device into QDL mode
+- uefi
+  - the bios is flashed to spi nor
+  - the uefi impl seems to create a 70MB `Persisted_Capsules.bin` in esp
 
 ## Qualcomm Modem/WiFi/BT?
 
