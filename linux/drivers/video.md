@@ -3,6 +3,48 @@ Kernel Video
 
 ## Configs
 
+- `driver/video/Kconfig`
+  - `drivers/auxdisplay/Kconfig`
+    - it provides supports for char-based displays
+    - userspace updates messages via `/dev/lcd` or sysfs
+  - `drivers/char/agp/Kconfig`
+    - it provides supports for agp bus, which is irrelevant
+    - userspace configs gart via `/dev/agpgart`
+  - `drivers/gpu/vga/Kconfig`
+    - `CONFIG_VGA_SWITCHEROO` is for hybrid gpus
+      - gpu drivers call `vga_switcheroo_register_client` to register as clients
+      - mux driver calls `vga_switcheroo_register_handler` to register as the handler
+      - even muxless, mux driver can still cut the power to dgpu
+        - that is, after dgpu driver suspends the pci dev, mux driver can cut
+          the power for greater saving
+  - `drivers/gpu/host1x/Kconfig`
+    - `CONFIG_TEGRA_HOST1X` provides a bus that gpu/media drivers register to
+  - `drivers/gpu/ipu-v3/Kconfig`
+    - `CONFIG_IMX_IPUV3_CORE` provides imx5/6 image processor unit support
+  - `drivers/gpu/nova-core/Kconfig`
+    - `CONFIG_NOVA_CORE` is a dep of `CONFIG_DRM_NOVA`
+  - `drivers/gpu/drm/Kconfig`
+  - `drivers/video/fbdev/Kconfig`
+    - all drivers such as `CONFIG_FB_VESA` and `CONFIG_FB_EFI` are legacy
+    - `drivers/video/fbdev/core/Kconfig`
+      - `CONFIG_FB_CORE` is dep of `CONFIG_FRAMEBUFFER_CONSOLE`
+        - display drivers call `register_framebuffer` to register to fb core,
+          which calls `fbcon_fb_registered` automatically
+      - `CONFIG_FB_DEVICE` provides `/dev/fb*` to userspace, which is legacy
+  - `drivers/video/backlight/Kconfig`
+    - `CONFIG_LCD_CLASS_DEVICE` provides `/sys/class/lcd` support
+    - `CONFIG_BACKLIGHT_CLASS_DEVICE` provides `/sys/class/backlight` support
+  - `drivers/video/console/Kconfig`
+    - `CONFIG_DUMMY_CONSOLE` provides `dummy_con` to vt
+      - it is the default backend
+    - `CONFIG_FRAMEBUFFER_CONSOLE` provides `fb_con` to vt
+    - `CONFIG_VGA_CONSOLE` provides `vga_con` to vt, which is irrelevant
+  - `drivers/video/logo/Kconfig`
+    - `CONFIG_LOGO` provides `fb_find_logo` to return a logo image
+  - `drivers/gpu/trace/Kconfig`
+    - `CONFIG_TRACE_GPU_MEM` provides `gpu_mem/gpu_mem_total` tracepoint
+- `drivers/pci/Kconfig`
+  - `CONFIG_VGA_ARB` keeps track of all `PCI_CLASS_DISPLAY_VGA` pci devices
 - drm, `CONFIG_DRM`
   - `CONFIG_DRM_FBDEV_EMULATION` enables fbdev on top of drm
     - drm drivers call `drm_fbdev_{shmem,ttm,dma}_setup` to enable fbdev
