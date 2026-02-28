@@ -3,6 +3,17 @@ Kernel EFI
 
 ## x86
 
+- `CONFIG_EFI_STUB`
+  - `arch/x86/boot/header.S` constructs PE header for efi
+  - `efi_pe_entry` is the entry point
+    - `efi_allocate_bootparams` allocs boot params
+      - `efi_convert_cmdline` copies cmdline
+    - `efi_decompress_kernel` decompresses bzimage
+    - `efi_load_initrd` loads initrd
+    - `setup_graphics` sets up graphics
+      - it calls `efi_setup_graphics` to query efifb info and init
+        `boot_params->screen_info` and `boot_params->edid_info`
+    - `enter_kernel` jumps to start of the decompressed kernel
 - x86 `setup_arch` initializes efi
   - `EFI_BOOT` and `EFI_64BIT` bits are set in `efi.flags`
   - `efi_init`

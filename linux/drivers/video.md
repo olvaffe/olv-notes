@@ -4,6 +4,10 @@ Kernel Video
 ## Configs
 
 - `driver/video/Kconfig`
+  - `CONFIG_APERTURE_HELPERS` provides
+    `aperture_remove_conflicting_pci_devices` and
+    `aperture_remove_conflicting_devices`
+    - they call `sysfb_disable` to disable sysfb
   - `drivers/auxdisplay/Kconfig`
     - it provides supports for char-based displays
     - userspace updates messages via `/dev/lcd` or sysfs
