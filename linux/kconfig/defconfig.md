@@ -458,6 +458,7 @@ Kernel defconfig
       - select `Display Interface Bridges` if arm
         - select `Display connector support`
         - select `ITE IT6505 DisplayPort bridge` if needed
+        - select `Simple DRM bridge support` if needed
         - select `TI SN65DSI86 DSI to eDP bridge` if needed
         - select `Analogix Anx7625 MIPI to DP interface support` if needed
       - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel before lnl
