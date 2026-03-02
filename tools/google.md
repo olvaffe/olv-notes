@@ -105,3 +105,65 @@ Google Services
   - quick ssh
     - `gcloud compute ssh <vm-instance>`
     - this adds the ssh key to the vm temporarily and ssh to it
+
+## Gemini CLI
+
+- <https://geminicli.com/docs/get-started/>
+  - install
+  - auth
+  - `gemini -s [-m gemini-3.1-pro-preview] [-r latest]`
+- cli options
+  - <https://geminicli.com/docs/cli/cli-reference/>
+  - `gemini` is interactive
+  - `gemini <query>` is one-shot
+    - `-i` to force interactive after one-shot
+  - `-m` selects the model
+  - `-s` sandboxes gemini for safer execution
+  - `extensions` manages extensions
+  - `mcp list` manages mcp
+  - `skills` manages skills
+  - sessions
+    - `--list-sessions` lists sessions
+    - `-r <session>` resumes a session
+      - `-r latest` resumes the lastest session
+- commands
+  - `/about` shows version info
+  - `/commands` manages custom commands
+    - `~/.gemini/commands/*.toml` or `<project>/.gemini/commands/*.toml`
+  - `/extensions` manages extensions
+    - an extension is a package of custom commands, hooks, skills, etc.
+  - `/hooks` manages hooks
+    - `settings.json` has a `hooks` key to describe what hooks to run on what events
+      - `~/.gemini/hooks/*` are hook executables
+  - `/init` creates project `GEMINI.md` automatically
+  - `/mcp` manages mcp
+    - an mcp server is an external service that gemini cli can make use of
+  - `/memory`
+    - `~/.gemini/GEMINI.md` or `<project>/GEMINI.md` sets the context for gemini
+  - `/model` selects a model
+    - the latest is `gemini-3.1-pro-preview`
+  - `/permissions` manages permissions
+    - `~/.gemini/trustedFolders.json` is trusted folders
+      - it prevents a malicious dir from tricking gemini cli
+  - `/plan` switches to plan mode
+    - to outline a plan of modifications before executing them
+  - `/policies`
+    - `~/.gemini/policies/*.toml` or `<project>/.gemini/policies/*.toml`
+    - they define policies (allow, deny, ask, etc.) for tools
+  - `/quit` quits gemini cli
+  - `/settings`
+    - `~/.gemini/settings.json` or `<workspace>/.gemini/settings.json`
+  - `/skills`
+    - `~/.gemini/skills/` or `<workspace>/.gemini/skills/`
+      - `<skill>/SKILL.md` defines a skill
+  - `/stats` shows session/model/tool stats
+  - `/tools` lists available built-in tools
+    - e.g., list dir, read file, write file, grep, etc.
+  - `!<shell command>` runs a shell command
+  - session-related
+    - `/chat` saves/resumes a checkpoint
+    - `/clear` clears the current session (and screen)
+    - `/compress` compresses the current session to a summary
+    - `/directory` includes extra directories for the current session
+    - `/rewind` jumps back and restarts from the specified message
+    - `/resume` resumes a selected session
