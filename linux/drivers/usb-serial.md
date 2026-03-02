@@ -1,6 +1,25 @@
 Kernel USB Serial
 =================
 
+## Core
+
+- each usb-serial driver uses `module_usb_serial_driver` to define a driver
+  - it calls `usb_serial_register_drivers`
+  - `usb_register` registers a usb driver
+  - `usb_serial_register`
+    - `usb_serial_operations_init` init default ops for the usb-serial driver
+      - `usb_serial_generic_open`, `usb_serial_generic_write`, etc.
+    - `usb_serial_bus_register` registers the usb-serial driver to the
+      usb-serial bus
+- when the usb driver probes, `usb_serial_probe`
+  - creates a `usb_serial` corresponding to the usb device
+  - creates a `usb_serial_port` for each usb device endpoint
+  - adds each `usb_serial_port` to the usb-serial bus
+- when the usb-serial driver probes, `usb_serial_device_probe`
+  - this probes a `usb_serial_port`
+  - `tty_port_register_device` registers the tty port with
+    `usb_serial_tty_driver`
+
 ## USB Serial
 
 - when usb urbs come in, usb serial driver parses the urbs
