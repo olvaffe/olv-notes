@@ -23,6 +23,10 @@ coreutils
   - `sync`
   - `uname`
   - etc.
+- <https://savannah.nongnu.org/projects/acl>
+  - `getfacl` and `setfacl`
+- <https://savannah.nongnu.org/projects/attr>
+  - `getfattr` and `setfattr`
 
 ## chmod
 
@@ -51,3 +55,17 @@ coreutils
   - `S_IROTH` (00004)  read by others
   - `S_IWOTH` (00002)  write by others
   - `S_IXOTH` (00001)  execute by others
+- linux kernel caches the mode in `inode->i_mode`
+
+## getfacl
+
+- linux kernel caches the acl in `inode->i_acl` and `inode->i_default_acl`
+- it stores acl as `system.posix_acl_access` and `system.posix_acl_default` xattrs
+
+## getfattr
+
+- `getfattr` defaults to `-m ^user\\.` to show only `user.` namespace
+- `getfattr -m .` shows all xattrs
+  - `security.selinux` is for selinux
+  - `system.posix_acl_access` and `system.posix_acl_default` are for acl
+  - `user.*` is for arbitrary user metadata
