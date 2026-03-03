@@ -160,6 +160,72 @@ DRM panthor
 - `PANTHOR_IRQ_HANDLER(job, JOB, panthor_job_irq_handler)`
   - sources are glb and any of the csg
 
+## Workqueues
+
+- workqueue review
+  - `WQ_UNBOUND` means wq submits works to an unbounded worker pool
+    - the worker pool can spawn many threads if there is a sudden storm of works
+    - the threads can execute on any cpu (thus unbound)
+  - `alloc_ordered_workqueue` means wq submits at most one job to an unbounded
+    worker pool at any time
+    - the rest of the works are parked in `pwq->inactive_works`
+  - an unbound wq can get stuck
+    - if there are already `max_active` works waiting for an event, a
+      following work that triggers the event never executes
+  - we almost always use our wqs rather than the system ones because
+    - we can drain it: such as `panthor_exit` draining `panthor_cleanup_wq`
+    - we may need additional flags, such as `WQ_MEM_RECLAIM`
+- dma-fence signaling path review
+  - it must not acquire `dma_resv`
+    - a job might depend on a fence while its submission path has called
+      `panthor_vm_prepare_mapped_bos_resvs` or
+      `panthor_vm_bind_job_prepare_resvs` to acquire the lock
+    - acquiring the lock in the fence signaling path can lead to deadlock
+  - it must not trigger memory reclaim
+    - triggering memory relcaim in the fence singal path can lead to deadlock
+      if the shrinker blocks on a job and the job depends on the fence being
+      signaled
+  - if a work is on the fence signaling path, other works on the same wq are
+    also on the fence signaling path
+    - this is trivial for ordered wq
+    - see how an unbound wq can get stuck to see how this applies to unbound
+      wq as well
+- `panthor_cleanup_wq` is global, unbound
+  - `panthor_vm_bind_job_cleanup_op_ctx_work` frees an async `panthor_vm_bind_job`
+    - because `drm_gpuvm_bo_deferred_cleanup` calls `dma_resv_lock`, it must
+      be avoided on fence signaling path
+    - that's why the work exists, and is on `panthor_cleanup_wq` rather than
+      `ptdev->mmu->vm.wq`
+  - `group_release_work` frees a `panthor_group`
+    - note how `group_release` can be called from anywhere, potentially on the
+      fence signaling path or with `sched->mutex` acquired
+    - `synchronize_rcu` can block for rcu
+    - `group_free_queue` and `panthor_vm_put` can block for pending jobs
+    - it becomes obvious that it has to be a work on `panthor_cleanup_wq`
+- `ptdev->reset.wq` is per-device, unbound, ordered
+  - this is an ordered wq to avoid concurrency
+    - if reset and ping could run concurrently, we would have to sync between
+      them manually
+    - if reset and timeout run concurrently,
+      - timeout needs to suspend the group and rotate it out on next tick
+      - reset needs to suspend all groups, reset hw, and resume all groups
+    - if timeout of two queues run concurrently,
+      - it seems fine
+  - `panthor_device_reset_work` performs gpu reset
+  - `panthor_fw_ping_work` pings fw every `PING_INTERVAL_MS` ms
+  - `drm_sched_job_timedout` calls `queue_timedout_job`
+- `ptdev->mmu->vm.wq` is per-device, unbound
+  - `drm_sched_run_job_work` calls `panthor_vm_bind_run_job`
+  - `drm_sched_free_job_work` calls `panthor_vm_bind_free_job`
+- `ptdev->scheduler->wq` is per-device, unbound
+  - `drm_sched_run_job_work` calls `queue_run_job`
+  - `drm_sched_free_job_work` calls `queue_free_job`
+- `ptdev->scheduler->heap_alloc_wq` is per-device, unbound
+  - `group_tiler_oom_work`
+    - this allocate gem objs
+- `system_percpu_wq`
+  - `drm_sched_job_timedout` calls `panthor_vm_bind_timedout_job`
+
 ## GPU
 
 - `panthor_gpu_init` inits `ptdev->gpu`
