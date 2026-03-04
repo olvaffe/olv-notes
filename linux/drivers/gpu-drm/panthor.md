@@ -876,14 +876,19 @@ DRM panthor
     - it queues `tick_work`
 - reset
   - `panthor_sched_pre_reset`
+    - it sets `sched->reset.in_progress` to avoid new works from sched
     - it cancels `sync_upd_work` and `tick_work`
+      - how about other works?
+      - at this point, there is no active work nor future work from sched
     - `panthor_sched_suspend` suspends all running groups
     - for idle or runnable groups, `panthor_group_stop` calls `drm_sched_stop`
       on their queues and moves them to `sched->reset.stopped_groups`
+      - at this point, `drm_sched` no longer calls `run_job`
   - `panthor_sched_post_reset`
     - for groups moved to `sched->reset.stopped_groups`, `panthor_group_start`
       calls `drm_sched_start` on their queues and moves them back to
       `sched->groups.idle` or `sched->groups.runnable`
+    - `sched->reset.in_progress` is cleared
     - it queues `tick_work` and `sync_upd_work`
 - priority
   - groups and queues both have userspace-specified priorities
@@ -1104,9 +1109,27 @@ DRM panthor
 
 ## Scheduler Locks
 
-- `sched->lock`
-- `sched->reset.lock`
-- `queue->fence_ctx.lock`
+- per-queue `queue->fence_ctx.lock` protects
+  - `queue->timeout.remaining`
+  - `queue->fence_ctx.in_flight_jobs`
+  - all `job->done_fence` for the queue
+- per-group `group->fdinfo.lock` protects
+  - `group->fdinfo.data`
+- per-group `group->fatal_lock` is unused
+- `sched->reset.lock` protects
+  - `sched->reset.stopped_groups`
+    - `group->run_node` is added to
+      - `sched->groups.runnable` if runnable
+      - `sched->groups.idle` if idle
+      - `sched->reset.stopped_groups` if during reset
+      - none, if running (`csg_slot->group`) or terminating
+        (`group_term_work`)
+    - the lock ensures that a newly created/destroyed group during reset is on
+      `sched->reset.stopped_groups`
+- `sched->lock` protects
+  - entire `sched` other than `sched->reset`
+  - entire `group` other than `group->fdinfo`
+  - entire `queue` other than `queue->fence_ctx` and `queue->timeout`
 
 ## File Operations
 
