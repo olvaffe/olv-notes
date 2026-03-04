@@ -176,10 +176,10 @@ DRM panthor
     - we can drain it: such as `panthor_exit` draining `panthor_cleanup_wq`
     - we may need additional flags, such as `WQ_MEM_RECLAIM`
 - dma-fence signaling path review
+  - <https://docs.kernel.org/driver-api/dma-buf.html#dma-fence-cross-driver-contract>
   - it must not acquire `dma_resv`
-    - a job might depend on a fence while its submission path has called
-      `panthor_vm_prepare_mapped_bos_resvs` or
-      `panthor_vm_bind_job_prepare_resvs` to acquire the lock
+    - `dma_fence_wait` while holding `dma_resv_lock` is valid
+      - `ttm_bo_evict` is the most outsanding example
     - acquiring the lock in the fence signaling path can lead to deadlock
   - it must not trigger memory reclaim
     - triggering memory relcaim in the fence singal path can lead to deadlock
