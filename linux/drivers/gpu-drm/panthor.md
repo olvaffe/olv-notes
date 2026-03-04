@@ -209,8 +209,11 @@ DRM panthor
     - if reset and timeout run concurrently,
       - timeout needs to suspend the group and rotate it out on next tick
       - reset needs to suspend all groups, reset hw, and resume all groups
+      - they seem to be serapate operations and can run concurrently
+      - the reason they are on an ordered queue seem to be an artifact from
+        panfrost, where timeout triggers reset
     - if timeout of two queues run concurrently,
-      - it seems fine
+      - they seem fine to run concurrently
   - `panthor_device_reset_work` performs gpu reset
   - `panthor_fw_ping_work` pings fw every `PING_INTERVAL_MS` ms
   - `drm_sched_job_timedout` calls `queue_timedout_job`
