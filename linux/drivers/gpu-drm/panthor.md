@@ -216,18 +216,55 @@ DRM panthor
       - they seem fine to run concurrently
   - `panthor_device_reset_work` performs gpu reset
   - `panthor_fw_ping_work` pings fw every `PING_INTERVAL_MS` ms
+  - `queue_timeout_work` is our own timeout
+    - we don't rely on `sched->work_tdr`, but use our own timeout to call
+      `drm_sched_fault` to trigger
   - `drm_sched_job_timedout` calls `queue_timedout_job`
 - `ptdev->mmu->vm.wq` is per-device, unbound
   - `drm_sched_run_job_work` calls `panthor_vm_bind_run_job`
+    - we execute the op on cpu; by returning NULL, `drm_sched` calls
+      `drm_sched_job_done` immediately
+    - this is a fence-signaling path
   - `drm_sched_free_job_work` calls `panthor_vm_bind_free_job`
+    - normally, because this shares the wq with the fence-signaling
+      `panthor_vm_bind_run_job`, this should be considered on fence-signaling
+      path
+    - but because `panthor_vm_bind_run_job` executes on cpu, this is actually
+      NOT on fence-signal path despite panthor treats it that way
 - `ptdev->scheduler->wq` is per-device, unbound
-  - `drm_sched_run_job_work` calls `queue_run_job`
-  - `drm_sched_free_job_work` calls `queue_free_job`
+  - global works
+    - `sync_upd_work` responds to group syncobj update, such as
+      `SYNC_ADD64.system_scope` instr on ringbuf after each submit
+      - it moves groups unblocked by the syncobj update from
+        `sched->groups.waiting` to `sched->groups.runnable`, such that tick
+        will consider those groups
+    - `process_fw_events_work` responds to `JOB` irq
+      - `sched_process_global_irq_locked` handles global events
+      - `sched_process_csg_irq_locked` handles per-csg events
+    - `tick_work` enables/disables csg groups after state change, resched,
+      timeout, etc.
+  - per-group works
+    - `group_sync_upd_work` responds to group syncobj update, similar to
+      `sync_upd_work`, but with a totally different goal
+      - `queue_check_job_completion` signals completed fences
+      - this is on the fence-signaling path, and by extension, all works on
+        the wq is on the fence-signaling path
+    - `group_term_work` handles a group that can no longer run and has been evicted
+      - `group_can_run` determines if a group can or can no longer run
+      - `tick_work` evicts groups that can no longer run from hw
+      - `group_term_post_processing` signals remaining fences
+      - this is on the fence-signaling path, and by extension, all works on
+        the wq is on the fence-signaling path
+  - per-queue works
+    - `drm_sched_run_job_work` calls `queue_run_job`
+      - it resumes rpm, writes a job to the ringbuf, and notifies the hw
+    - `drm_sched_free_job_work` calls `queue_free_job`
 - `ptdev->scheduler->heap_alloc_wq` is per-device, unbound
-  - `group_tiler_oom_work`
-    - this allocate gem objs
+  - `group_tiler_oom_work` grows tiler heap by allocaing another heap chunk
+    - this allocs gem obj and cannot be on fence-signaling path
 - `system_percpu_wq`
   - `drm_sched_job_timedout` calls `panthor_vm_bind_timedout_job`
+    - this never happens because vm bind is executed on cpu
 
 ## GPU
 
@@ -1064,6 +1101,12 @@ DRM panthor
     - `MCU_STATUS`
   - general mmu regs
     - `STATUS`
+
+## Scheduler Locks
+
+- `sched->lock`
+- `sched->reset.lock`
+- `queue->fence_ctx.lock`
 
 ## File Operations
 
