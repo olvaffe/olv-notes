@@ -253,25 +253,39 @@ DRM Scheduler
 - if the job times out, `drm_sched_job_timedout` is called
   - it pops the first job from `sched->pending_list`
   - `sched->ops->timedout_job` cancels the job
+    - note that the scheduler and the hw are still running at this point
+    - it this is a false alarm and the hw completes the job, the callback
+      should return `DRM_GPU_SCHED_STAT_NO_HANG` to add the job back to
+      `sched->pending_list`
 - if the driver detects hangs before the timeout, it can call
   `drm_sched_fault` to schedule `drm_sched_job_timedout` immediately
 - a typical `timedout_job` impl
-  - `drm_sched_stop` stops the scheduler
+  - `drm_sched_stop` stops the scheduler in prep for hw reset
     - `drm_sched_wqueue_stop` cancels works and sets `pause_submit`
     - it pushes the job back to `sched->pending_list`
     - it loops through `sched->pending_list` to either remove fence callbacks
       (if unsignaled) or to wait for fence callbacks (if signaled)
+      - note that the hw is still running
+      - it is just that, because `drm_sched_job_done_cb` is removed,
+        `finished` fences are no longer signaled
     - it cancels timeout timer
-  - cancel the bad job from hw somehow
+  - unblock the hw from the job somehow
     - if supported, remove the bad job directly
-    - otherwise, pause all good jobs, reset gpu, and resume all good jobs
+    - otherwise, pause the hw, reset the hw, and resume from the following job
+    - if this is false alarm, nothing needs to happen
     - note that all hw fences, including the hw fence for the bad job, must
-      still signal in finite time
+      still signal in finite time and in order
   - `drm_sched_start` starts the scheduler
     - it loops through `sched->pending_list` to set up `drm_sched_job_done_cb`
       again
     - `drm_sched_start_timeout_unlocked` starts timeout timer
     - `drm_sched_wqueue_start` resets `pause_submit` and queues works
+  - iow, `timedout_job` is to ensure hw fences can signal in finite time
+    - if the current job is fine, nothing needs to happen
+    - if the current job is bad, it can do one of
+      - evict the bad job from hw, signal the bad job, and let the hw continue
+      - evict the bad job and all following jobs, signal all of them in order
+      - etc
 
 ## Fence Contract
 
