@@ -158,3 +158,94 @@ Device Power Management
     - `pm_runtime_resume_and_get` resumes the dev
     - `pm_runtime_mark_last_busy` updates the access time for autosuspend
     - `pm_runtime_put_autosuspend` suspends the dev
+
+## Runtime PM Internals
+
+- `rpm_resume` resumes a device
+  - `dev->power.request` is set to `RPM_REQ_NONE` to cancel async op
+  - if `dev->power.runtime_status` is already `RPM_ACTIVE`, return 1
+  - if another `rpm_resume` or `rpm_suspend` is in-flight,
+    - if `RPM_NOWAIT`, return `-EINPROGRESS`
+    - it waits until the another op has finished
+  - if `RPM_ASYNC`,
+    - `dev->power.request` is set to `RPM_REQ_RESUME`
+    - `dev->power.request_pending` is set
+    - `pm_runtime_work` is scheduled
+    - return 0
+  - if parent,
+    - `rpm_resume` resumes parents recursively
+  - `dev->power.runtime_status` is set to `RPM_RESUMING`
+  - `rpm_callback` calls the callback
+    - `rpm_get_suppliers` resumes all suppliers first
+  - `dev->power.runtime_status` is set to `RPM_ACTIVE`
+  - `rpm_idle(RPM_ASYNC)` suspends the device again async
+    - it will fail if the usage is non-zero
+- `rpm_suspend` suspends a device
+  - `rpm_check_suspend_allowed` requires the usage to be zero and all children
+    are suspended
+  - if another `rpm_resume` is in-flight, and this is not `RPM_ASYNC`, return
+    `-EAGAIN`
+  - if `RPM_AUTO` and no other `rpm_suspend` in-flight,
+    - `pm_runtime_autosuspend_expiration` returns when the auto-suspend should
+      take place
+    - if non-zero, it takes place later
+      - `dev->power.timer_expires` is updated
+      - `dev->power.suspend_timer` is armed
+      - `dev->power.timer_autosuspends` is set
+      - return 0
+  - `pm_runtime_cancel_pending` cancels pending op
+  - if another `rpm_suspend` is in-flight,
+    - if `RPM_ASYNC` or `RPM_NOWAIT`, return `-EINPROGRESS`
+    - it waits until the another op has finished
+  - if `RPM_ASYNC`,
+    - `dev->power.request` is set to `RPM_REQ_AUTOSUSPEND` or `RPM_REQ_SUSPEND`
+    - `dev->power.request_pending` is set
+    - `pm_runtime_work` is scheduled
+    - return 0
+  - `dev->power.runtime_status` is set to `RPM_SUSPENDING`
+  - `rpm_callback` calls the callback
+    - `__rpm_put_suppliers` drops usage counts of suppliers last
+  - `dev->power.runtime_status` is set to `RPM_SUSPENDED`
+  - if `dev->power.deferred_resume`,
+    - it means another `rpm_resume` defers its op to here
+    - call `rpm_resume` and return `-EAGAIN`
+  - if parent,
+    - `rpm_idle(parent, RPM_ASYNC)` puts the parent to idle async
+  - `rpm_suspend_suppliers` puts supplier to idle async
+- `rpm_idle` suspends a device after idle check and notification
+  - `rpm_check_suspend_allowed` requires the usage to be zero and all children
+    are suspended
+  - `dev->power.runtime_status` remains at `RPM_ACTIVE`
+    - if `RPM_GET_PUT`, it can remain at `RPM_SUSPENDED` and this is nop
+  - if `RPM_ASYNC`,
+    - `dev->power.request` is set to `RPM_REQ_IDLE`
+    - `dev->power.request_pending` is set
+    - `pm_runtime_work` is scheduled
+    - return 0
+  - it calls `runtime_idle` callback
+  - unless already suspended or error, `rpm_suspend`
+- `pm_runtime_work` executes `dev->power.request` async
+  - it calls one of `rpm_idle`, `rpm_suspend`, and `rpm_resume`
+
+## Scheduled Suspend and Auto Suspend
+
+- `pm_schedule_suspend` schedules a suspend
+  - if no delay, it simply calls `rpm_suspend(RPM_ASYNC)`
+  - `rpm_check_suspend_allowed` checks if suspend is allowed
+  - `pm_runtime_cancel_pending` cancels pending op
+  - `dev->power.timer_expires` is set to the abs ts
+  - `dev->power.timer_autosuspends` is cleared, indicating the timer is used
+    for scheduled suspend
+  - `dev->power.suspend_timer` is started
+- when `pm_suspend_timer_fn` fires,
+  - `dev->power.timer_expires` is set to 0
+  - `rpm_suspend(RPM_ASYNC)` suspends the device
+    - if auto-suspend, `RPM_AUTO` as well
+- `pm_runtime_set_autosuspend_delay` and `pm_runtime_use_autosuspend` enable
+  auto-suspend
+  - if delay is negative, it holds a usage count and the device is resumed
+  - else, `rpm_idle(RPM_AUTO)` attempts to auto-suspend
+    - if delay is 0, `pm_runtime_autosuspend_expiration` always returns 0 and
+      the suspend goes through
+    - else, if the auto-suspend should be delayed, `rpm_suspend` arms the
+      hrtimer
