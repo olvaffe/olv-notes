@@ -23,7 +23,7 @@ Device Power Management
   - `runtime_suspend`
   - `runtime_resume`
   - `runtime_idle`
-- suspend / resume
+- suspend / resume call sequence
   - `prepare`
   - `suspend`
   - `suspend_late`
@@ -32,7 +32,7 @@ Device Power Management
   - `resume_early`
   - `resume`
   - `complete`
-- hibernation
+- hibernation call sequence
   - `prepare`
   - `freeze`
   - `freeze_late`
