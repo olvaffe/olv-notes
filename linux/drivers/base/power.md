@@ -1,13 +1,5 @@
-Power Management
-================
-
-## Configs
-
-- `CONFIG_SUSPEND` enables system suspend/resume
-- `CONFIG_PM_AUTOSLEEP` enables auto system suspend when there is no wakeup
-  source
-- `CONFIG_PM` enables device power management
-- `CONFIG_PM_SLEEP` is always when `CONFIG_SUSPEND` is set
+Device Power Management
+=======================
 
 ## `struct dev_pm_ops`
 
@@ -71,20 +63,42 @@ Power Management
   - no `NOIRQ_SYSTEM_SLEEP_PM_OPS`
   - `RUNTIME_PM_OPS` is explicitly specified
 
-## Suspend and Resume
+## System Suspend and Resume
 
 - `pm_suspend` suspends the system
-  - it resumes the system before returning
-- `suspend_devices_and_enter`
-  - `dpm_suspend_start` suspends the devices
-  - `suspend_enter`
-    - `dpm_suspend_late`
-    - `dpm_suspend_noirq`
-    - `syscore_suspend` suspends the system
-    - `syscore_resume` resumes the system
-    - `dpm_resume_noirq`
-    - `dpm_resume_early`
-  - `dpm_resume_end` resumes the devices
+  - when it returns, the system has resumed
+- system suspend
+  - `dpm_suspend_start(PMSG_SUSPEND)` suspends the devices
+    - `dpm_prepare` prepares devices on `dpm_list` and moves them to
+      `dpm_prepared_list`
+      - `device_prepare` calls `dev->driver->pm->prepare`
+    - `dpm_suspend` suspends devices on `dpm_prepared_list` and moves them to
+      `dpm_suspended_list`
+      - `device_suspend` calls `dev->driver->pm->suspend`
+  - `dpm_suspend_late(PMSG_SUSPEND)` late-suspends devices on
+    `dpm_suspended_list` and moves them to `dpm_late_early_list`
+    - `device_suspend_late` calls `dev->driver->pm->ops->suspend_late`
+  - `dpm_suspend_noirq(PMSG_SUSPEND)` noirq-suspends devices on
+    `dpm_late_early_list` and moves them to `dpm_noirq_list`
+    - `device_wakeup_arm_wake_irqs` arms the wake irqs to wake up the system
+    - `suspend_device_irqs` disables devices irqs
+    - `device_suspend_noirq` calls `dev->driver->pm->ops->suspend_noirq`
+- system resume
+  - `dpm_resume_noirq(PMSG_RESUME)` noreq-resumes devices on `dpm_noirq_list`
+    and moves them to `dpm_late_early_list`
+    - `device_resume_noirq` calls `dev->driver->pm->ops->resume_noirq`
+    - `resume_device_irqs` enables devices irqs
+    - `device_wakeup_disarm_wake_irqs` disarms the wake irqs
+  - `dpm_resume_early(PMSG_RESUME)` late-resumes devices on
+    `dpm_late_early_list` and moves them to `dpm_suspended_list`
+    - `device_resume_early` calls `dev->driver->pm->ops->resume_early`
+  - `dpm_resume_end(PMSG_RESUME)` resumes the devices
+    - `dpm_resume` resumes devices on `dpm_suspended_list` and
+      moves them to `dpm_prepared_list`
+      - `device_resume` calls `dev->driver->pm->ops->resume`
+    - `dpm_complete` completes devices on `dpm_prepared_list` and
+      moves them to `dpm_list`
+      - `device_complete` calls `dev->driver->pm->ops->complete`
 
 ## Wakeup
 

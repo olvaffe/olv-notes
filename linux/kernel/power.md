@@ -1,6 +1,18 @@
 Kernel power
 ============
 
+## Configs
+
+- `CONFIG_SUSPEND` enables system suspend/resume
+- `CONFIG_HIBERNATION` enables system hibernation
+- `CONFIG_PM_SLEEP` is set whenever suspend or hiberation is set
+- `CONFIG_PM_AUTOSLEEP` enables auto system suspend when there is no wakeup
+  source
+- `CONFIG_PM` enables device power management
+  - when all other configs are disabled, `pm_init` allocs `pm_wq` and adds
+    empty `/sys/power/state`. Nothing more.
+  - the other functionalities are provided by `drivers/base/power/`
+
 ## Initialization
 
 - `pm_init` initializes the PM subsystem
