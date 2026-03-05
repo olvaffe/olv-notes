@@ -56,6 +56,41 @@ Kernel Device/Driver
 - `device_attach` is rarely used and is similar to `device_initial_probe`
   - `drivers_probe_store` or `device_reprobe` triggers the call
 
+## Deferred Probe
+
+- during initcalls, when `driver_probe_device` fails probing with
+  `-EPROBE_DEFER`, `driver_deferred_probe_add` adds a device to
+  `deferred_probe_pending_list`
+- at the end of initcalls, `late_initcall(deferred_probe_initcall)`
+  - it probes all deferred devices once
+  - it probes all deferred devices again
+  - it schedules `deferred_probe_timeout_work_func` after 10s
+- as userspace loads more modules, `deferred_probe_extend_timeout` reschedules
+  `deferred_probe_timeout_work_func`
+- `deferred_probe_timeout_work_func` is called 10s after the last driver
+  registered
+  - `fw_devlink_drivers_done` relaxes links
+    - at this point, we consider all drivers registered
+    - if a supplier still lacks a driver, we relax the link to allow the
+      consumer to be probed
+      - by lacking, it means there is no driver that matches the producer, as
+        opposed to no driver that probes the producer
+  - it probes all derferred devices one last time
+  - it prints warnings for remaining deferred devices
+    - `deferred probe pending: <reason>`
+  - `fw_devlink_probing_done`
+    - at this point, we consider all devices probed
+    - if a supplier requires `sync_state` and any of the consumer misses a
+      driver, `sync_state` is never called and a warning is printed
+      - `sync_state() pending due to <consumer>`
+- `/sys/kernel/debug/devices_deferred` shows devices on
+  `deferred_probe_pending_list`
+- `driver_deferred_probe_trigger` probes all deferred devices
+  - it is nop before `late_initcall(deferred_probe_initcall)`
+  - it moves devices from `deferred_probe_pending_list` to `deferred_probe_active_list`
+  - it schedules `deferred_probe_work_func` to call `bus_probe_device` on all
+    devices on `deferred_probe_active_list`
+
 ## `device_driver`
 
 - ops
