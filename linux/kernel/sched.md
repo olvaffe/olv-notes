@@ -1,21 +1,7 @@
 Scheduler
 =========
 
-## Boot
-
-- `kernel_init`
-  - after `workqueue_init`, workqueue queues start running which spawn a
-    kthread each
-    - `rcu_gp`, `rcu_par_gp`, etc.
-  - `init_mm_internals` starts `mm_percpu_wq`
-  - after `do_pre_smp_initcalls`, `early_initcall`s are executed.
-    - `rcu_spawn_core_kthreads` registers `rcu_cpu_thread_spec`
-    - `spawn_ksoftirqd` registers `softirq_threads`
-    - `cpu_stop_init` registers `cpu_stop_threads`
-    - `idle_inject_init` registers `idle_inject_threads`
-    - `rcu_spawn_gp_kthread` starts `rcu_gp_kthread` (comm is `rcu_preempt`)
-
-## cpuidle
+## Overview
 
 - each task consists of a sequence of instructions to execute
 - a task is runnable if nothing prevents it from running
@@ -23,17 +9,55 @@ Scheduler
 - a CPU can have multiple runnable tasks, time-sharing the CPU
 - when a CPU has no runnable task, it runs the "idle" task.  The CPU is
   considered idle
-- the idle task executes an idle loop.  In each iteration
-  - it asks the governor in cpuidle subsystem which idle state it should enter
-  - it then asks the driver in cpuidle subsystem to enter the idle state
-  - the CPU does not run when it is in the idle state
-  - when the CPU starts running again, it exits the idle state
 
-## Init Idle Task (swapper)
+## Context Switch
 
-- most of the time, a CPU executes the idle thread `swapper/<cpuid>`
+- a running task calls `schedule` to context-switch voluntarily
+- a running task can also be preempted involuntarily
+  - an event calls `resched_curr` or `resched_curr_lazy` to set
+    `TIF_NEED_RESCHED` for the running task
+    - when hz ticks, `sched_tick` may set the flag
+    - when a task is added to a rq (runqueue), `wakeup_preempt` may set the flag
+      (e.g., when the new task has a higher priority)
+  - when the cpu reaches preemption point, it checks for `TIF_NEED_RESCHED`
+    and calls `__schedule(SM_PREEMPT)`
+    - upon irq exit, `raw_irqentry_exit_cond_resched` calls `preempt_schedule_irq`
+    - upon preemption re-enable, `preempt_enable` calls `preempt_schedule`
+- `__schedule`
+  - `pick_next_task` picks the next task to switch to
+    - `pick_task` tries each sched class, from high prio to low
+      - `stop_sched_class` is for `cpu_stop_threads`, for cpu hotplug
+      - `dl_sched_class` is for deadline tasks
+      - `rt_sched_class` is for RT tasks
+      - `fair_sched_class` is for most tasks unless SCX is enabled
+      - `ext_sched_class` is for `SCHED_CLASS_EXT` (SCX)
+      - `idle_sched_class` is for idle tasks
+  - `context_switch` switches context
+    - when it returns, the cpu has switched to the next task
+    - `switch_to` is arch-specific
+      - it saves regs of the old task
+      - it restores regs of the new task
+      - it returns to the new task
+
+## Idle Tasks
+
+- most of the time, each cpu core executes the idle thread `swapper/<cpuid>`
   (`INIT_TASK_COMM`) and is inside `cpu_startup_entry`
-  - the CPU enters idle state inside `cpuidle_idle_call`
+  - boot cpu in `start_kernel`
+    - `sched_init` calls `init_idle` to init `init_task` (pid 0)
+      - `current` is `init_task` statically-defined in `init/init_task.c`
+    - `rest_init` forks pid 1 to run `kernel_init`
+    - `cpu_startup_entry` enters the idle loop
+  - boot cpu in `kernel_init`
+    - `smp_init` forks idle tasks and boot non-boot cpus
+      - on x86, `common_cpu_up` points `current_task` to idle task for
+        non-boot cpus
+  - non-boot cpu in `start_secondary`
+    - `cpu_startup_entry` enters the idle loop
+- `cpu_startup_entry` calls `do_idle` in an infinite loop
+  - when there is nothing to do, `cpuidle_idle_call` enters lower and lower
+    idle states
+    - this calls into the hw-specific cpuidle driver
   - when an idle CPU is assigned a task by another CPU, the other CPU calls
     `ttwu_queue` to queue the task to the idle CPU
     - when the two CPUs do not share LLC (i.e., in different packages), the
@@ -43,11 +67,13 @@ Scheduler
     - otherwise, the calling CPU marks the task `TASK_RUNNING` directly for
       the idle CPU.  Unless the idle CPU polls the need-resched flag, an IPI
       is also sent to wake it up.
-  - the idle CPU exits idle state, notices that `need_resched` is true, and
-    calls `schedule_idle` to context-switch to the task
-  - the CPU context-switches back to `swapper/<cpuid>`, notices that
-    `need_resched` is false, and enters idle state again thanks to the
-    idle loop in `cpu_startup_entry`
+  - the idle CPU exits idle state and returns from `cpuidle_idle_call`
+    -  because `need_resched` is true, it calls `schedule_idle` to
+       context-switch to the task
+  - the CPU context-switches back to `swapper/<cpuid>`
+    - when the running task calls `schedule`, and there is no runnable task,
+      `pick_task_idle` picks the idle task and context-switches to it
+    - the cpu runs `do_idle` loop of the idle task again
 - in ftrace, we normally see these events in order
   - a task is woken by another CPU
     - `sched_waking: comm=Xorg pid=2498 prio=120 target_cpu=005`
