@@ -14,7 +14,7 @@ Scheduler
 
 - a running task calls `schedule` to context-switch voluntarily
 - a running task can also be preempted involuntarily
-  - an event calls `resched_curr` or `resched_curr_lazy` to set
+  - an event calls `resched_curr` (or `resched_curr_lazy`) to set
     `TIF_NEED_RESCHED` for the running task
     - when hz ticks, `sched_tick` may set the flag
     - when a task is added to a rq (runqueue), `wakeup_preempt` may set the flag
@@ -38,6 +38,40 @@ Scheduler
       - it saves regs of the old task
       - it restores regs of the new task
       - it returns to the new task
+
+## Execution Contexts
+
+- a cpu can be in different execution contexts
+  - `in_nmi` is in nmi context
+    - upon hw nmi, `__nmi_enter`/`__nmi_exit` adds/subs `NMI_OFFSET`
+      - they also update `HARDIRQ_OFFSET` and thus imply hardirq context
+  - `in_hardirq` is in hardirq context
+    - upon hw irq, `__irq_enter_raw`/`__irq_exit_raw` adds/subs `HARDIRQ_OFFSET`
+      - sometimes `HARDIRQ_OFFSET` is added/substracted directly
+  - `in_serving_softirq` is in softirq context
+    - inside `handle_softirqs`, `softirq_handle_begin`/`softirq_handle_end`
+      adds/subs `SOFTIRQ_OFFSET`
+    - note that `handle_softirq` enables local irq which is the key difference
+      - hardirq handlers are called with local irq disabled (unless nesting)
+      - toward the end of hardirq, `handle_softirq` calls softirq handlers
+        with local irq enabled
+  - `in_task` is in task context
+    - this returns true when the rest returns false
+- `current` is per-cpu and is always non-NULL
+  - it points to the running task when `in_task`
+  - it points to the preemptied task in other contexts
+- a cpu is in an atomic context when it must not sleep
+  - this happens when scheduling is not possible or utterly wrong (e.g.,
+    deadlock), because sleeping implies scheduling
+  - `in_atomic` does not detect all atomic contexts
+    - with `CONFIG_DEBUG_ATOMIC_SLEEP`, `__might_sleep` tries to detect more
+  - `in_nmi`, `in_hardirq`, and `in_serving_softirq` are atomic contexts
+  - `in_task` can be an atomic context when within
+    - `local_irq_disable` and `local_irq_enable`
+    - `local_bh_disable` and `local_bh_enable`
+    - `preempt_disable` and `preempt_enable`
+    - `spin_lock` and `spin_unlock` (because they imply preempt disable)
+    - more
 
 ## Idle Tasks
 
@@ -92,20 +126,39 @@ Scheduler
   - the CPU enters idle state
     - `cpu_idle: state=1 cpu_id=5`
 
-## Preemption
+## Preemption Configs
 
+- on interesting archs,
+  - `CONFIG_ARCH_HAS_PREEMPT_LAZY` is set
+  - `CONFIG_ARCH_NO_PREEMPT` is cleared
+- `kernel/Kconfig.preempt`
+  - `CONFIG_PREEMPT_NONE` is unavailable
+  - `CONFIG_PREEMPT_VOLUNTARY` is unavailable
+  - `CONFIG_PREEMPT` aka full or low-latency preemption
+  - `CONFIG_PREEMPT_LAZY` aka lazy preemption
 - when a task is in user mode, it can be preempted when
   - it runs out of time
   - a higher priority task is scheduled
+  - on return-to-user path, `exit_to_user_mode_loop` checks for
+    `TIF_NEED_RESCHED`/`TIF_NEED_RESCHED_LAZY` and calls `schedule`
 - when a task is in kernel mode,
-  - `CONFIG_PREEMPT_NONE`: it gets preempted only when it needs to wait for an
-    external event (e.g., I/O)
-  - `CONFIG_PREEMPT_VOLUNTARY`: it gets preempted only when it might need to
-    wait for an external event (where `might_sleep` is called)
-  - `CONFIG_PREEMPT_LL`: it gets preempted similar to when in user mode,
+  - `CONFIG_PREEMPT_VOLUNTARY`: it is never preemptied
+    - `preempt_disable` and `preempt_enable` are essentially nops
+    - `preempt_count` remains `INIT_PREEMPT_COUNT` (1) forever
+    - instead, when the task calls `might_sleep` or `cond_resched`, it calls
+      down to `preempt_schedule_common` to schedule voluntarily
+  - `CONFIG_PREEMPT`: it gets preempted similar to when in user mode,
     unless when preemption is disabled (e.g., in critical sections)
-- one of the variants of `schedule` is called to potentially context switch to
-  another task
+    - there are in-kernel preemption points such as
+      `raw_irqentry_exit_cond_resched` or `preempt_enable` that checks for
+      `TIF_NEED_RESCHED` and calls `__schedule(SM_PREEMPT)`
+  - `CONFIG_PREEMPT_LAZY`: it is similar to `CONFIG_PREEMPT`, except
+    - CFS calls `resched_curr_lazy` to set `TIF_NEED_RESCHED_LAZY`, instead of
+      `resched_curr` to set `TIF_NEED_RESCHED`, in a few cases
+      - this waits until `sched_tick` to upgrade `TIF_NEED_RESCHED_LAZY` to
+        `TIF_NEED_RESCHED`
+    - other events still call `resched_curr` to set `TIF_NEED_RESCHED`
+      immediately
 
 ## Preempt count
 
