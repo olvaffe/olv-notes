@@ -22,7 +22,8 @@ Device Power Management
   - these depend on `CONFIG_PM`
   - `runtime_suspend`
   - `runtime_resume`
-  - `runtime_idle`
+  - `runtime_idle` checks if the device is really idle (before
+    `runtime_suspend`)
 - suspend / resume call sequence
   - `prepare`
   - `suspend`
@@ -223,6 +224,8 @@ Device Power Management
     - `pm_runtime_work` is scheduled
     - return 0
   - it calls `runtime_idle` callback
+    - the callback returns an error if the device is not really idle to skip
+      suspend
   - unless already suspended or error, `rpm_suspend`
 - `pm_runtime_work` executes `dev->power.request` async
   - it calls one of `rpm_idle`, `rpm_suspend`, and `rpm_resume`
@@ -249,3 +252,67 @@ Device Power Management
       the suspend goes through
     - else, if the auto-suspend should be delayed, `rpm_suspend` arms the
       hrtimer
+
+## Runtime PM APIs
+
+- `pm_runtime_enable` and `pm_runtime_disable` enable/disable rpm for a device
+  - resume/suspend will return `-EACCES`
+- `pm_runtime_block_if_disabled` and `pm_runtime_unblock` block/unblock rpm
+  enable/disable
+  - `pm_runtime_enable` will result in a warning
+- `pm_runtime_get_if_active` and `pm_runtime_get_if_in_use` keep active
+  device active by incrementing usage
+  - `pm_runtime_get_if_active` checks for `RPM_ACTIVE`
+  - `pm_runtime_get_if_in_use` checks for both `RPM_ACTIVE` and current usage
+- `pm_runtime_forbid` and `pm_runtime_allow` are similar to
+  `pm_runtime_get_sync` and `__pm_runtime_put_autosuspend`
+  - forbid means keeping resumed and forbidding suspend
+  - the main difference is that userspace can toggle the same via sysfs
+    `power/control`
+- `pm_schedule_suspend` arms a timer to call `rpm_suspend`
+- `pm_runtime_barrier` blocks until concurrent op (from another thread) or
+  async op (from `RPM_ASYNC`) has completed
+- `pm_runtime_no_callbacks` removes sysfs `power/` (and skips drv rpm callbacks)
+- `pm_runtime_irq_safe` means that the drv will do rpm from atomic context
+  - pm core will keep the parent resumed, and will keep spinlock held and irq
+    disabled while calling drv callbacks
+  - don't use it
+- `pm_runtime_set_memalloc_noio` sets `PF_MEMALLOC_NOIO` for drv callback allocs
+- `pm_runtime_get_suppliers` and `pm_runtime_put_suppliers` get/put
+  rpm-managed suppliers
+- `pm_runtime_new_link` and `pm_runtime_drop_link` track supplier count
+- `pm_runtime_release_supplier` decrements supplier usage without suspend
+- `pm_suspend_ignore_children` ignores parent-childen relation
+  - that is, don't resume parent when a child is resumed, etc.
+- `pm_runtime_get_noresume` and `pm_runtime_put_noidle` increment/decrement
+  usage
+- `pm_runtime_active` and `pm_runtime_suspended` return true if dev is
+  resumed/suspended
+  - if rpm is disabled, the dev is considered resumed
+- `pm_runtime_mark_last_busy` updates `dev->power.last_busy` for auto-suspend
+- wrappers of `rpm_resume`, `rpm_suspend`, and `rpm_idle`
+  - no flags; these skip usage count
+    - `pm_runtime_idle` wraps `rpm_idle(0)`
+    - `pm_runtime_suspend` wraps `rpm_suspend(0)`
+    - `pm_runtime_autosuspend` wraps `rpm_suspend(RPM_AUTO)`
+    - `pm_runtime_resume` wraps `rpm_resume(0)`
+  - `RPM_ASYNC`; these skip usage count
+    - `pm_request_idle` wraps `rpm_idle(RPM_ASYNC)`
+    - `pm_request_autosuspend` wraps `rpm_suspend(RPM_ASYNC|RPM_AUTO)`
+    - `pm_request_resume` wraps `rpm_resume(RPM_ASYNC)`
+  - `RPM_GET_PUT` honors usage count
+    - `pm_runtime_get` increments usage before `rpm_resume(RPM_ASYNC)`
+    - `pm_runtime_get_sync` increments usage before `rpm_resume(0)`
+    - `pm_runtime_resume_and_get` increments usage before `rpm_resume(0)`
+      - unlike `pm_runtime_get_sync`, it decrements usage on errors
+    - `pm_runtime_put` decrements usage before `rpm_idle(RPM_ASYNC)`
+    - `pm_runtime_put_sync` decrements usage before `rpm_idle(0)`
+    - `pm_runtime_put_sync_suspend` decrements usage before `rpm_suspend(0)`
+    - `pm_runtime_put_autosuspend` decrements usage before `rpm_suspend(RPM_ASYNC)`
+    - `pm_runtime_put_sync_autosuspend` decrements usage before `rpm_suspend(0)`
+- `pm_runtime_set_active` and `pm_runtime_set_suspended` update the
+  resumed/suspended status without callbacks
+  - when the hw is in a different status than what kernel pm assumes, these
+    update the status to match without calling to the callbacks
+- `pm_runtime_use_autosuspend`, `pm_runtime_dont_use_autosuspend`, and
+  `pm_runtime_set_autosuspend_delay` config auto-suspend
