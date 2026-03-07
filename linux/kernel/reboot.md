@@ -1,13 +1,6 @@
 Reboot
 ======
 
-## System level and runtime
-
-- system level manages the power states of the entire system
-- runtime manages the power states of each device
-- no generic runtime power management available for current kernel
-- one cannot echo 'power-off' to a random device
-
 ## `reboot` syscall
 
 - does not imply `sync`
