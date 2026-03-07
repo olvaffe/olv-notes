@@ -173,19 +173,34 @@ Kernel init
       - replaces the boot cmdline if `CONFIG_CMDLINE_FORCE`,
       - is ignored if there is a boot cmdline, or
       - is used if there is no boot cmdline
-- arch calls `parse_early_param` to parse `early_param`
-  - `__setup_param` defines an entry in `.init.setup` section
-  - `INIT_SETUP` puts them between `__setup_start` and `__setup_end`
+- arch calls `parse_early_param` to parse `early_param`s
+  - `early_param` macro defines an entry in `.init.setup` section
+  - `INIT_SETUP` macro collects them between `__setup_start` and `__setup_end`
+  - `do_early_param` only honors those marked as early
+  - commonly used early params
+    - `mem=4G` caps mem to 4GB
+    - `earlycon=efifb` (x86) or `earlycon` (arm) enables earlycon
+    - `loglevel=7` logs msg below 7 (`KERN_DEBUG`, non-inclusive) to console
+    - `debug` is `loglevel=10`
+    - `quiet` is `loglevel=4` (`KERN_WARNING`, non-inclusive)
 - `start_kernel`
   - `setup_boot_config` parses `bootconfig`
   - `setup_command_line` aggregates cmdlines from different sources
+  - `parse_early_param` early returns if arch has called it
   - `parse_args` parses the cmdline again
-    - `__start___param` and `__stop___param`
-      - `module_param` defines an entry in `.modinfo` section
-      - `RO_DATA` puts them between `__start___param` and `__stop___param`
-    - if a param is unknown at this point (non-early and non module-param;
-      iow, defined by `__setup`, it is handled by `unknown_bootoption`
-      - e.g., `console=` is handled by `unknown_bootoption`
+    - `__start___param` and `__stop___param` are params of built-in modules
+      - `module_param` defines an entry in `__param` section
+      - `RO_DATA` collects them between `__start___param` and `__stop___param`
+    - `unknown_bootoption` handles unknown (non-built-in-module-param) options
+      - `__setup` macro defines an entry in `.init.setup` section
+      - `INIT_SETUP` macro collects them between `__setup_start` and `__setup_end`
+      - `obsolete_checksetup` parses them
+    - commonly used params
+      - `root=/dev/sda2` specifies the root
+      - `rw` mounts the root rw
+      - `ro` mounts the root ro (default); userspace tends to remount rw anyway
+      - `rootwait` waits forever for the root device to appear
+      - `initcall_debug` debugs initcalls
 - minimal cmdline
   - `root=` is required, whether kernel or initramfs mounts it
     - `root_dev_setup` parses `root=` to `saved_root_name`
