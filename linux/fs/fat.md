@@ -34,3 +34,45 @@ Kernel FAT
     - `fat_shortname2uni` uses `sbi->nls_disk` to convert from `codepage` to
       utf-16
     - `fat_uni_to_x8` converts utf-16 to the target encoding
+
+## Physical Format
+
+- <https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system>
+- there are 4 regions
+  - reserved sectors
+    - boot sector
+    - fs info sector
+    - optional sectors
+  - fat region
+    - file allocation table #1
+    - file allocation table #2 (backup)
+  - root directory region (fat12/fat16 only)
+  - data region
+- boot sector
+  - 0x000: jump instruction
+  - 0x003: oem name (e.g., `mkfs.fat`)
+  - bios parameter block (bpb) below
+  - 0x00b: bytes per sector, typically 512
+  - 0x00d: sectors per cluster
+  - 0x00e: number of reserved sectors, typically 32
+  - 0x010: number of file allocation tables, typically 2
+  - 0x015: media type, 0xf8 for disk
+  - 0x020: total number of sectors
+  - 0x024: sectors per file allocation table
+  - 0x030: sector of fs info, typically 1
+  - 0x032: sector of backup boot sectors, typically 6
+  - 0x047: volume label (e.g., `NO NAME`)
+  - 0x052: fs type (e.g., `FAT32`)
+  - boot code
+  - 0x1fe: magic (`0x55 0xaa`)
+- fs info sector
+  - 0x000: magic (`RRaA`)
+  - 0x1e4: magic (`rrAa`)
+  - 0x1fc: magic (`0x00 0x00 0x55 0xaa`)
+- file allocation table
+  - fat consists of an array of entries
+  - each entry is 12-/16-/32-bit on FAT12/16/32
+  - a file is referred to by a singly-linked list of entries
+    - data region is divided into identially-sized clusters
+    - each entry points to a cluster in the data region
+    - each file occupies one or more clusters
