@@ -11,13 +11,16 @@ Kernel and softirq
 - `raise_softirq` raises a softirq
   - it calls `or_softirq_pending` to set the pending bit
   - if called from the interrupt context, that's all
-  - otherwise, it also wakes up ksoftirqd to handle the softirq
-    - ksoftirqd can run on another cpu
-- `invoke_softirq` handles softirqs or wakes up ksoftirqd
+    - because toward the end of hardirq handling, `irq_exit_rcu` will call
+      `invoke_softirq` to handle the raised softirq
+  - otherwise, it wakes up ksoftirqd to handle the softirq
+    - because we are not in interrupt context and have to rely on ksoftirqd to
+      handle the raised softirq
+- `invoke_softirq` handles softirqs
+  - it is called from a few places such as `irq_exit` to handle softirqs
   - `force_irqthreads` is normally false
   - it calls `__do_softirq` to handle softirqs unless ksoftirqd is already
     doing the work
-  - it is called from a few places such as `irq_exit`
 - `__do_softirq`
   - `softirq_handle_begin` increments `softirq_count`
   - actions are called with local irq enabled
