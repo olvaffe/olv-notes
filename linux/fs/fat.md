@@ -72,7 +72,85 @@ Kernel FAT
 - file allocation table
   - fat consists of an array of entries
   - each entry is 12-/16-/32-bit on FAT12/16/32
-  - a file is referred to by a singly-linked list of entries
+  - a dir/file is referred to by a singly-linked list of entries
     - data region is divided into identially-sized clusters
     - each entry points to a cluster in the data region
-    - each file occupies one or more clusters
+    - each dir/file occupies one or more clusters
+
+## Mount
+
+- when `do_mount` mounts a vfat fs,
+  - `get_fs_type` maps the fstype str to `vfat_fs_type`
+  - `fs_context_for_mount` allocs a `fs_context` initialized by
+    `vfat_init_fs_context`
+  - `fc_mount` creates the superblock by `vfat_get_tree`
+- `vfat_init_fs_context` inits fs context
+  - `fc->private` inits to `fat_mount_options` with default vals
+  - `fc->ops` points to `vfat_context_ops`
+- `vfat_get_tree` inits `fc->root`
+  - `get_tree_bdev` creates the superblock singleton for the bdev on demand
+  - `setup_bdev_super` inits the sb with the bdev info
+    - `sb->s_bdev_file` is the opened bdev file
+    - `sb->s_bdev` is the bdev
+    - `sb->s_bdi` is the bdev info
+    - `sb->s_blocksize` is the bdev blocksize
+  - `vfat_fill_super` inits the sb with the fs info
+    - `sb->s_fs_info` points to `msdos_sb_info`
+      - this is the private data for vfat and is shortened to `sbi`
+    - `sb->s_op` points to `fat_sops`
+    - `setup`
+      - `sb->dir_ops` points to `vfat_dir_inode_operations`
+      - `sb->__s_d_op` points to `vfat_dentry_ops`
+    - `fat_read_bpb` parses bpb from the boot sector
+    - `fat_ent_access_init`
+      - `sbi->fatent_ops` points to `fat32_ops`
+    - `sbi->fat_inode` has ino 0
+      - this seems like a dummy inode
+    - `sbi->fsinfo_inode` has ino `MSDOS_FSINFO_INO` (2)
+    - `root_inode` has ino `MSDOS_ROOT_INO` (1)
+    - `fat_read_root` parses the root cluster
+      - `inode->i_op` points to `sb->dir_ops`, which is `vfat_dir_inode_operations`
+      - `inode->i_fop` points to `fat_dir_operations`
+    - `sb->s_root` is `d_make_root(root_inode)`
+
+## Low-Level I/O
+
+- physical entry reading
+  - `fatent_init` preps for physical entry access
+  - `fat_ent_read` reads the specified entry from FAT
+    - `fat_ent_blocknr` translates the entry to bdev block/offset
+    - `fat_ent_bread` reads the bdev block
+    - `fat32_ent_set_ptr` updates `fatent->u.ent32_p` to point to the entry data
+    - `fat32_ent_get` returns the next entry or `FAT_ENT_EOF`
+      - this can be used to read the entire list iteratively
+  - `fatent_brelse` cleans up
+- `fat_get_cluster` caches the entry list for an inode
+  - remember that the inode refers to a list of entries in FAT
+  - `cluster` is the number of entries to walk or `FAT_ENT_EOF` to walk all
+  - `fclus` is the number of entries walked
+  - `dclus` is the physical index of the last entry walked in FAT
+  - it walks the entries one by one and calls `fat_cache_add` to cache them
+- `fat_bmap` maps logical sector of an inode to physical secotr of the bdev
+  - `fat_bmap_cluster` maps the logical cluster of the inode to physical
+    cluster
+    - it calls `fat_get_cluster` to walk the entry list to find the Nth
+      physical entry
+  - `phys` is the physical bdev sector
+  - `mapped_blocks` is the number of contiguous physical sectors that can be accessed
+    - that is, `phys` lands in one of the clusters and `phys + mapped_blocks`
+      is the end of the cluster
+
+## High-Level I/O
+
+- userspace `readdir` on a directory calls `fat_readdir`
+  - `fat_get_entry` reads a physical cluster
+    - `fat_bmap` maps the logical inode pos to physical bdev sector
+    - `sb_bread` reads the sector
+    - because this is a dir, the sector holds a `msdos_dir_entry`
+- userspace `read` on a file calls `fat_read_folio`
+  - `fat_get_block`
+    - `fat_bmap` maps the logical inode pos to physical bdev sector
+    - `map_bh` points bh to the physical sector
+  - `do_mpage_readpage` has a loop to call `fat_get_block` and
+    `mpage_bio_submit_read` submits a bio to read the data from the bdev to
+    folio
