@@ -154,3 +154,13 @@ Kernel FAT
   - `do_mpage_readpage` has a loop to call `fat_get_block` and
     `mpage_bio_submit_read` submits a bio to read the data from the bdev to
     folio
+- userspace `open` a path,
+  - `vfat_lookup` is called for each path component that hasn't been cached
+    - `dir` is the dir inode
+    - `dentry` is a newly allocated dentry for the child
+    - `vfat_find` looks up using the child name
+      - `fat_get_entry` reads in the next `msdos_dir_entry`
+      - if `fat_name_match`, done
+    - `fat_build_inode` builds an inode for the child
+    - `d_splice_alias` inits `dentry->d_inode` and many other stuff
+  - there is no vfat open callback

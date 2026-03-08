@@ -17,3 +17,33 @@ Kernel namei
   - it uses `filename_lookup` to get `path`
   - `path` has a pointer to `dentry` which has a pointer to `struct inode`
   - `vfs_getattr_nosec` reads the attrs from the inode
+- `open` syscall as an example
+  - `do_sys_open -> ... -> path_openat` looks up the dentry
+  - `path_init`
+    - `nd_jump_root` inits
+      - `nd->root` to `fs->root`
+      - `nd->path` to `nd->root`, which is `/`
+      - `nd->inode` to `nd->path.dentry->d_inode`
+  - `link_path_walk` has a loop to walk intermediate components
+    - each loop iteration
+      - update `nd->last` to the remaining components
+        - `hash_name` returns the name with the current component skipped
+      - `nd->last_type` is `LAST_NORM` (if the path is canonical)
+      - if this is the last component, return
+      - otherwise, `walk_component` walks the intermediate component
+        - `lookup_slow` calls `inode->i_op->lookup` to lookup the child dentry
+          under the parent inode
+        - `step_into` updates `nd->path` and `nd->inode`
+    - when `link_path_wlak` returns,
+      - `nd->path` is the next-to-last component
+      - `nd->last` is the last component
+  - `open_last_lookups` looks up (and potentially opens) the last component
+    - `lookup_open` looks up the dentry of the last component
+    - `step_into` updates `nd->path` and `nd->inode`
+  - `do_open` opens the last component
+    - `may_open` checks permissions
+    - `vfs_open` inits `file` from `inode`
+      - `f->f_inode` is `inode`
+      - `f->f_mapping` is `inode->i_mapping`
+      - `f->f_op` is `inode->i_fop`
+      - `f->f_op->open` opens the inode
