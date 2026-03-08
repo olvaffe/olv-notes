@@ -9,6 +9,35 @@ Kernel filemap
     inode
   - `address_space::i_pages` is an array of `struct folio *`
     - the type is `xarray`, which is a sparse array of pointers
+  - `address_space::a_ops` is the ops provided by the fs
+    - e.g., fs translates a file read to bio reads according to fs on-disk
+      format
+  - page cache sits between file operations and bios, such that each inode
+    appears as an array of folios
+    - direct io bypasses page cache
+- folio manipulations
+  - `folio_lock` locks a folio
+  - `folio_unlock` unlocks a folio
+- page cache manipulations
+  - `filemap_add_folio` adds a folio to the page cache (`address_space`)
+  - `filemap_remove_folio` removes a folio from the page cache
+  - `filemap_get_entry` returns the folio at the specified index
+  - `filemap_get_folio` returns the folio at the specified index in fancy
+    ways, such as alloc-on-demand, wait-for-writeback, etc.
+- folio readback/writeback
+  - `filemap_read_folio` reads data to bring a folio uptodate
+  - `filemap_fdatawrite` starts writeback with `WB_SYNC_ALL`
+  - `filemap_flush` starts writeback with `WB_SYNC_NONE`
+  - `filemap_fdatawait` waits for writeback
+  - `filemap_write_and_wait_range` starts and waits for writeback
+- file operations
+  - `generic_file_read_iter` is for read fop
+    - it populates page cache and reads from the page cache
+  - `generic_file_write_iter` is for write fop
+    - it populates page cache and writes to the page cache
+  - `generic_file_mmap_prepare` or (legacy) `generic_file_mmap` is for mmap fop
+    - they use `generic_file_vm_ops` for vm ops, which obviously fault in
+      folios from page cache
 
 ## folio
 
