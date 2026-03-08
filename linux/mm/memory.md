@@ -98,3 +98,21 @@ Kernel memory
     allocator
   - it additionally `copy_user_highpage` from the original page to the COW
     page
+
+## `copy_from_user`
+
+- `__get_user_asm` copies 1, 2, or 4 from userspace
+  - It directly `mov src,dst`.
+  - If no fault, done.
+  - If fault, it jumps to `do_page_fault`.
+  - If the fault comes from an invalid address, we will reach `no_context`
+    - this is where the fixup happens
+    - The snippet `_ASM_EXTABLE(1b, 3b)` means if a fault happens at 1b, jumps
+      to 3b to fix it.
+    - at 3b, an error code is set and it jumps to 2b, where normal execution is
+      resumed.
+  - If the fault comes from an swapped out area, it calls `handle_mm_fault`.
+- If the user pointer points to an mmaped shmem, it probably goes
+  `handle_pte_fault`, `do_linear_fault`, and `__do_fault`.
+  - `vma->vm_ops->fault` is called to fault in the page.
+  - The new page is returned through `vmf->page`.
