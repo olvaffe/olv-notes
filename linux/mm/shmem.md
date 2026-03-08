@@ -42,3 +42,31 @@ Kernel shmem
     or it allocates.  The page is added to both the page cache and the swap
     lru
 - `shmem_read_mapping_page` also calls `shmem_getpage_gfp`
+
+## tmpfs
+
+- `shmem_init` calls `register_filesystem` to register tmpfs
+- when userspace mounts an instance,
+  - `shmem_init_fs_context` inits
+    - `fc->fs_private` to `shmem_options`
+    - `fc->ops` to `shmem_fs_context_ops`
+  - `shmem_get_tree` inits
+    - `sb->s_fs_info` to `shmem_sb_info`
+      - this is tmpfs's private sb info for this instance
+    - `sb->s_op` to `shmem_ops`
+    - `sb->s_root` to `d_make_root(inode)`
+      - `shmem_get_inode` allocs an inode
+- when userspace creates a file,
+  - `shmem_create`
+    - `shmem_get_inode` allocs an inode
+    - `d_make_persistent` inits `dentry->d_inode` and more
+- when userspace opens a file,
+  - `shmem_file_open` does very little
+- when userspace reads a file,
+  - `shmem_file_read_iter`
+    - `shmem_get_folio` returns the folio at the offset
+    - `copy_folio_to_iter` copies the data from the folio to the buf
+- when userspace mmaps a file,
+  - `shmem_mmap_prepare` inits `desc->vm_ops` to `shmem_anon_vm_ops`
+- when userspace faults,
+  - `shmem_fault` faults in a folio
