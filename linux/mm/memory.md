@@ -1,6 +1,30 @@
 Kernel memory
 =============
 
+## Overview
+
+- page fault handling
+  - `handle_mm_fault` handles userspace faults
+    - it is mainly called from arch fault irq
+    - it walks the page table and allocates them as needed
+    - at the last level, `handle_pte_fault`
+      - if the pte is missing,
+        - `do_fault` faults in the page from backing using `vma->vm_ops->fault`
+        - `do_anonymous_page` allocs a new page for the anonymous mapping
+      - if the pte is not present,
+        - `do_swap_page` pages in the page from swap
+- page table management
+  - `unmap_single_vma` zaps (tears down) page table for a vma
+    - `munmap` zaps and destroys vma
+    - `zap_page_range_single` zaps vma but does not destroy it
+  - `copy_page_range` copies page table for `fork`
+- userspace memory mapping
+  - `vm_insert_page` inserts a page to userspace page table, for mmap
+  - `remap_pfn_range` inserts a pfn range to userspace page table, for mmap
+    - it is named "remap" because it remaps pfns that are already accessible
+      to the kernel to the userspace
+  - `vmf_insert_pfn` inserts a pfn to userspace page table, for fault handling
+
 ## Page Tables
 
 - there are 5 levels of page tables
