@@ -13,3 +13,4 @@ Kernel rmap
   - if a folio belongs to an anonymous mapping (no backing file),
     `folio->mapping` points to a `anon_vma`
     - `folio->mapping->rb_root` tracks all vmas
+- `try_to_unmap` calls `rmap_walk` to unmap a page from all vmas for reclaim

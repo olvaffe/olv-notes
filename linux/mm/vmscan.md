@@ -3,6 +3,38 @@ Kernel vmscan
 
 ## Reclaims
 
+- direct reclaim: when `__alloc_pages` fails to alloc pages, and
+  `___GFP_DIRECT_RECLAIM` is set, `__perform_reclaim` calls
+  `try_to_free_pages` to reclaim directly
+  - `do_try_to_free_pages` calls `shrink_zones` in a loop with decreasing
+    `sc->priority`
+  - `shrink_zones` calls `shrink_node` on each node
+- background reclaim: when `__alloc_pages` is called and
+  `__GFP_KSWAPD_RECLAIM` is set, `wake_all_kswapds` calls `wakeup_kswapd` to
+  potentially wake up `kswapd`
+  - when memory too low, `pgdat_balanced` returns false and `kswapd` is woken
+    - `balance_pgdat` calls `kswapd_shrink_node` with decreasing `sc->priority`
+    - `kswapd_shrink_node` calls `shrink_node`
+- `shrink_node`
+  - if mglru, `lru_gen_shrink_node` takes a different path
+  - otherwise, `shrink_node_memcgs` shrinks
+  - `shrink_lruvec` shrink lru lists
+    - `shrink_list` calls either
+      - `shrink_active_list` to move pages from the active list to the inactive list
+      - `shrink_inactive_list` to move pages from the inactive list to a temp list
+    - `shrink_folio_list` unmaps and free pages
+      - if the page is anonymous (no backing), `folio_alloc_swap` allocs space
+        in swap
+        - the page will be backed by swap cache
+        - `folio_test_swapcache` will return true
+        - `folio_mapping` will return `swap_address_space`
+      - if the page is mapped in vmas, `try_to_unmap` unmaps it from all vmas
+      - if the page is dirty, `pageout` writes back
+        - if the page is anonymous (no backing), it writes back to swap
+      - `__remove_mapping` calls `__filemap_remove_folio` to remove the page
+        from the page cache
+      - `free_unref_folios` frees pages back to buddy allocator
+  - `shrink_slab` calls into shrinkers
 - `node_reclaim` is a fast path
   - `may_writepage` is 0 by default
   - `may_unmap` is 0 by default
