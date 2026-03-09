@@ -76,7 +76,11 @@ Kernel memory
 
 - the mm code for fault starts in `handle_mm_fault`
 - a `vm_fault` is set up
-- page table until pte is set up
+- page table down until pmd is set up
+  - `pgd_offset` returns the pgd entry for the va; `mm->pgd` is already allocated
+  - `p4d_alloc` returns the p4d entry for the va; p4d table is allocated on demand
+  - `pud_alloc` returns the pud entry for the va; pud table is allocated on demand
+  - `pmd_alloc` returns the pmd entry for the va; pmd table is allocated on demand
 - for true anonymous (`MAP_ANONYMOUS | MAP_PRIVATE`) vma, `do_anonymous_page`
   - prepare `vma->anon_vma`, which is not a vma at all btw
   - allocate a page from the buddy allocator

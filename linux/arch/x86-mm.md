@@ -196,6 +196,38 @@ X86 MM
   - `pgd_populate` sets the entry value to point to a p4d table
   - `pgd_addr_end` rounds va up to the boundary or the end
     - `((va >> 48) + 1) << 48` or `end`, whichever is lower
+  - `pgd_page_vaddr` returns the p4d table pointed to by the entry
+- P4D / PML4 is similar
+  - `p4d_t` represents a p4d entry
+  - `p4d_alloc` allocates a p4d table for a va on demand
+    - if `pgd_none` (p4d table for the va is missing), alloc the p4d table and
+      `pgd_populate` to update pgd
+    - return `p4d_offset`
+  - `p4d_offset` returns the p4d entry for the va
+    - `&p4d[(va >> 39) & 0xff]`, although `p4d` must be looked up from `mm->pgd`
+  - `p4d_pgtable` returns the pud table pointed to by the entry
+- PUD / PDP is similar
+  - `pud_t` represents a pud entry
+- PMD / PD
+  - `pmd_t` represents a pmd entry
+  - `pmd_alloc` allocates a pmd table for a va on demand
+    - unlike upper tables, this inits a per-pmd-table spinlock rather than
+      sharing `mm->page_table_lock`
+  - `pmd_populate` takes a `struct page *` rather than a `pte_t *`
+  - `pmd_install` locks per-pmd lock before calling `pmd_populate`
+  - `pmd_pgtable` and `pmd_page_vaddr` return the pte table pointed to by the
+    entry
+- PTE / PT
+  - `pte_t` represents a pte entry
+  - `pte_alloc` allocates a pte table on demand
+    - similar to pmd, this inits a per-pte-table spinlock
+    - no va is specified
+    - returns an err code intead of `pte_t *`
+  - no `pte_offset`
+  - `pte_offset_map` returns the pte entry for a va
+  - no `pte_populate`
+  - `set_pte` sets the entry value to point to a page
+  - `set_ptes` sets contiguous entries to point to contiguous pages
 
 ## Page Fault
 
