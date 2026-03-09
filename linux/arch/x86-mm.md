@@ -144,10 +144,13 @@ X86 MM
 
 ## Paging Table
 
-- 4-level paging
-  - 48-bit virtual address and 46-bit physical address
-  - CR3 bit 51..12: PA to the 4KB-aligned PML4 (Page Map Level 4) table
-    - 512 64-bit entries called PML4Es
+- 5-level paging
+  - 57-bit virtual address and 52-bit physical address
+  - CR3 bit 51..12: PA to the 4KB-aligned PML5 (Page Map Level 5) table
+    - 512 64-bit entries called PML5Es
+  - VA bit 56..48: select one of the 512 PML5Es
+    - each PML5E contains a PA to a PML4 table
+    - there are 512 64-bit entries called PML5Es
   - VA bit 47..39: select one of the 512 PML4Es
     - each PML4E contains a PA to a PDP (page-directory-pointer) table
     - there are 512 64-bit entries called PDPEs
@@ -160,12 +163,6 @@ X86 MM
   - VA bit 20..12: select one of the 512 PTEs
     - each PTE contains a PA to a page
   - VA bit 11..0: 12-bit offset into the page
-- 5-level paging
-  - 57-bit virtual address and 52-bit physical address
-  - CR3 bit 51..12: PA to the 4KB-aligned PML5 (Page Map Level 5) table
-  - VA bit 56..48: select one of the 512 PML5Es
-    - each PML5E contains a PA to a PML4 table
-    - there are 512 64-bit entries called PML5Es
 - All entries at all levels have a similar (but different) format
   - bit 63..52: 12-bit for flags
     - bit 63 is NX (no execute)
@@ -177,6 +174,28 @@ X86 MM
     - bit 1 is writable
     - bit 0 is present
     - more
+- PGD / PML5
+  - `pgd_t` represents a pgd entry
+    - a pgd table is page-sized and consists of 512 pgd entries
+    - when `pgt_t *` points to the first entry of a table, we can treat it as
+      pointing to the entire table
+  - `pgd_alloc` allocates a pgd table
+    - `mm->pgd` points to the table
+    - when context-switch, cr3 is updated to `mm->pgd`
+  - `pgd_offset` returns the pgd entry for the va
+    - `&mm->pgd[(va >> 48) & 0xff]`
+  - `pgd_addr_end`
+  - `pgd_bad` checks if the entry has valid value
+  - `pgd_clear` clears the entry value to 0
+  - `pgd_clear_bad` clears the entry value to 0 after logging an error
+  - `pgd_leaf` checks if the entry is a hugepage (always false on x86)
+  - `pgd_none` returns true if the entry value is 0
+  - `pgd_none_or_clear_bad` returns true if the entry value is 0 or invalid
+  - `pgd_val` returns the entry value
+  - `pgd_present` returns true if `_PAGE_PRESENT` is set
+  - `pgd_populate` sets the entry value to point to a p4d table
+  - `pgd_addr_end` rounds va up to the boundary or the end
+    - `((va >> 48) + 1) << 48` or `end`, whichever is lower
 
 ## Page Fault
 

@@ -75,7 +75,8 @@ Kernel memory
 ## Page Faulting
 
 - the mm code for fault starts in `handle_mm_fault`
-- a `vm_fault` is set up; page table until pte is set up
+- a `vm_fault` is set up
+- page table until pte is set up
 - for true anonymous (`MAP_ANONYMOUS | MAP_PRIVATE`) vma, `do_anonymous_page`
   - prepare `vma->anon_vma`, which is not a vma at all btw
   - allocate a page from the buddy allocator
