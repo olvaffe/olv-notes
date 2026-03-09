@@ -1,5 +1,86 @@
-Linux MM
-========
+Linux MM Init
+=============
+
+## PID 0: `start_kernel`
+
+- x86 `setup_arch`
+  - `e820__memory_setup`
+    - `e820__memory_setup_default` typically has 3 or 4 ram entries
+      - `[0, ~640KB]`
+      - `[1MB, ~2GB]`
+      - `[4GB, ~REMAINING_RAM]`
+  - `trim_bios_range` updates e820 to reserve first 4KB, etc.
+  - `max_pfn` is set to `e820__end_of_ram_pfn`, which is last page
+  - `max_low_pfn` is set to `e820__end_of_low_ram_pfn`, which is last page before 4GB
+    - will be updated later
+  - `e820__memblock_setup` calls `memblock_add` for each e820 ram entry
+  - `init_mem_mapping` sets up page table for kernel linear map
+    - it also updates `max_low_pfn` to `max_pfn`
+  - `initmem_init` calls `x86_numa_init` to init numa
+    - without `CONFIG_NUMA`, all memblock ranges belong to node 0
+    - `numa_init`
+      - `dummy_numa_init` fakes node 0 for all physical ram
+      - `alloc_node_data` allocs `pg_data_t` and inits `NODE_DATA(nid)`
+  - `x86_init.paging.pagetable_init` is `paging_init`
+- `mm_core_init_early` calls `free_area_init`
+  - `arch_zone_limits_init` gets zone limits
+    - `ZONE_DMA` is capped by `MAX_DMA_PFN` (16MB)
+    - `ZONE_DMA32` is capped by `MAX_DMA32_PFN` (4GB)
+    - `ZONE_NORMAL` is capped by `max_pfn`
+  - `sparse_init` inits `mem_section` and `vmemmap`
+    - `vmemmap` is the `struct page` array
+  - zones are initialized according to zone limits
+  - `for_each_mem_pfn_range` loops over memblock ranges
+  - `for_each_node` loops over each node (only node 0)
+    - `free_area_init_node` fully inits `NODE_DATA(nid)`, which is `pg_data_t`
+    - `node_set_state` adds the nid to `N_MEMORY` and `N_NORMAL_MEMORY`
+  - `calc_nr_kernel_pages` inits `nr_kernel_pages`
+    - `for_each_free_mem_range` loops over memblock ranges that are not reserved
+  - `memmap_init` inits memmap (`struct page` array)
+    - `__init_single_page` inits a single `struct page`
+    - `init_unavailable_range` sets `PG_reserved` on holes
+      - `sparse_init` allocates `struct page` array in sections
+      - each section covers 128MB
+      - if a memblock range is not aligned, there are `struct page`s that do
+        not correspond to physical ram
+  - `set_high_memory` inits `high_memory` to point to end of ram
+- `mm_core_init`
+  - `build_all_zonelists` builds zone lists
+    - `check_highest_zone` updates `policy_zone` to `ZONE_NORMAL`
+  - `report_meminit` reports if pages are zeroed on alloc/free
+    - `mem auto-init: stack:all(zero), heap alloc:on, heap free:off`
+  - `memblock_free_all` frees pages from memblock to buddy
+
+## PID 1: `kernel_init`
+
+- `init_mm_internals` inits vmstats
+- `page_alloc_init_late`
+  - `mem_init_print_info` summaries mem info
+- initcalls
+- `free_initmem` frees kernel sections needed only for init
+- exec to userspace
+
+## NUMA Nodes
+
+- there is a `struct pglist_data *node_data[MAX_NUMNODES];` array
+  - one `pglist_data` for each node
+- a `pglist_data` has many fields
+  - `node_zones` are zones in this node
+  - `__lruvec` is lruvec in this node
+  - `vm_stat`
+    - there are `NR_VM_NODE_STAT_ITEMS` items
+
+## Zones
+
+- a `zone` has many fields
+  - `vm_stat`
+    - there are `NR_VM_ZONE_STAT_ITEMS` items
+
+## LRU
+
+- a `lruvec` has many fields
+  - `lists`
+    - there are `NR_LRU_LISTS` lists
 
 ## Page Flags
 

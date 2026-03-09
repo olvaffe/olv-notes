@@ -64,20 +64,28 @@ Kernel sparse
     - `SECTIONS_PER_ROOT` is 256
   - we need 128K roots
     - `NR_SECTION_ROOTS` is 128K
-- e820 typically has ~24 entries
+- e820 typically reports ~3 `System RAM` entries
+  - `[0, ~640KB]`, or after `trim_bios_range`, `[4KB, ~640KB]`
+  - `[1MB, ~2GB]`
+  - `[4GB, ~REMAINING_RAM]`
   - `memblock_add` adds a range for each entry
 - `start_kernel -> mm_core_init_early -> free_area_init -> sparse_init`
   - `memblocks_present`
     - it allocates `mem_section` array
       - each `mem_section[i]` is a root and will be allocated on demand
       - there are 128K roots thus the array is 1MB in size
-    - `memblocks_present` marks each of ~24 e820 entries as present
-      - each root (`mem_section[i]`) points to an array of sections
-        - the array is 4KB in size
+    - `memblocks_present` marks each of ~3 e820 entries as present
+      - each root (`mem_section[i]`) points to an array of 256 sections,
+        taking up 4KB
+      - with 32GB of system ram plus gaps/mmios, we need slightly more than
+        256 sections thus two roots
   - `sparse_init_nid`
-    - `pnum_begin` is the first present section (depending on e820 entries)
-    - `pnum_end` is the last present section (depending on e820 entries)
-    - `map_count` is the number of e820 entries
+    - `pnum_begin` is the first present section
+      - because first 640KB is ram, this is 0
+    - `pnum_end` is the last present section
+      - with 32GB ram + gaps/mmios, this is slightly more than 256
+    - `map_count` is the number of present sections
+      - roughly 256
     - `__populate_section_memmap` allocs memmap for each section
       - memmap is the `struct page` array for the section
       - it calls `vmemmap_populate` on x86
