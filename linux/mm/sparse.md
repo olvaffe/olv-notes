@@ -49,3 +49,38 @@ Kernel sparse
     - zone
     - last cpupid
     - page flags at the bottom bits
+
+## x86
+
+- 5-level paging supports 52-bit pa and 57-bit va
+  - 52-bit pa is divided into 27-bit sections
+    - `MAX_PHYSMEM_BITS` is 52
+    - `SECTION_SIZE_BITS` is 27
+    - `PAGES_PER_SECTION` is 32K
+  - there are 32M sections
+    - `SECTIONS_SHIFT` is 25
+    - `NR_MEM_SECTIONS` is 32M
+  - each root is 4KB and can hold 256 `mem_section`
+    - `SECTIONS_PER_ROOT` is 256
+  - we need 128K roots
+    - `NR_SECTION_ROOTS` is 128K
+- e820 typically has ~24 entries
+  - `memblock_add` adds a range for each entry
+- `start_kernel -> mm_core_init_early -> free_area_init -> sparse_init`
+  - `memblocks_present`
+    - it allocates `mem_section` array
+      - each `mem_section[i]` is a root and will be allocated on demand
+      - there are 128K roots thus the array is 1MB in size
+    - `memblocks_present` marks each of ~24 e820 entries as present
+      - each root (`mem_section[i]`) points to an array of sections
+        - the array is 4KB in size
+  - `sparse_init_nid`
+    - `pnum_begin` is the first present section (depending on e820 entries)
+    - `pnum_end` is the last present section (depending on e820 entries)
+    - `map_count` is the number of e820 entries
+    - `__populate_section_memmap` allocs memmap for each section
+      - memmap is the `struct page` array for the section
+      - it calls `vmemmap_populate` on x86
+        - this setups up page table such that `pfn_to_page` is `&vmemmap[pfn]`
+    - `sparse_init_early_section` inits a `mem_section`
+      - `ms->section_mem_map` points to the page array (plus flags)
