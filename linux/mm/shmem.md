@@ -3,6 +3,50 @@ Kernel shmem
 
 ## Overview
 
+- `shmem_init` always registers `tmpfs` and does a kernel mount for in-kernel
+  users
+  - with `CONFIG_TMPFS` (which implies `CONFIG_SHMEM`), `tmpfs` supports
+    swapping, user mounts, mount options, etc.
+  - with only `CONFIG_SHMEM`, `tmpfs` supports swapping but no user mounts
+    (`SB_NOUSER`)
+  - without `CONFIG_SHMEM`, `tmpfs` is the same as `ramfs`. It does not
+    support swapping but it supports user mounts.
+- some in-kernel users
+  - `rootfs` and `devtmpfs` are the same as `tmpfs` or `ramfs`, depending on
+    `CONFIG_TMPFS`
+  - shared anonymous mappings map shmem files
+  - shared `/dev/zero` mappings map shmem files
+  - memfd fds are shmem files
+  - drm makes heavy use of shmem
+
+## `CONFIG_TMPFS`
+
+- `CONFIG_TMPFS` enables user mounts, and relevant features, for `tmpfs`
+  - it implies `CONFIG_SHMEM`
+- `struct file_system_type shmem_fs_type`
+  - `shmem_init_fs_context` sets `SB_I_VERSION` for nfs
+  - `shmem_fs_parameters` provides mount options for user mounts
+- `struct fs_context_operations shmem_fs_context_ops`
+  - `shmem_parse_monolithic` parses legacy mount options as a string
+  - `shmem_parse_one` parses modern mount options individually
+  - `shmem_reconfigure` is for remount
+- `struct super_operations shmem_ops`
+  - `shmem_statfs` is used by `df`, etc.
+  - `shmem_show_options` shows options in `/proc/mounts`
+- `struct inode_operations shmem_dir_inode_operations`
+  - all dir ops are for user mounts
+  - we only need the root for kernel mounts
+- `struct file_operations shmem_file_operations`
+  - `shmem_file_llseek`
+  - `shmem_file_read_iter`
+  - `shmem_file_write_iter`
+  - `noop_fsync`
+  - `shmem_file_splice_read`
+  - `iter_file_splice_write`
+  - `shmem_fallocate`
+  - `generic_setlease`
+
+
 ## initialization and configs
 
 - call sequence
