@@ -121,3 +121,81 @@ Kernel memory
   `handle_pte_fault`, `do_linear_fault`, and `__do_fault`.
   - `vma->vm_ops->fault` is called to fault in the page.
   - The new page is returned through `vmf->page`.
+
+## Anonymous Mapping
+
+- when `mmap` calls down to `__mmap_new_vma` to create a new vma,
+  - `vm_area_alloc` inits `vma->vm_ops` to `vma_dummy_vm_ops`
+  - if there is a file, `file->f_op->mmap` can override
+  - if `VM_SHARED`, `shmem_zero_setup` overrides to `shmem_anon_vm_ops`
+  - else, `vma_set_anonymous` overrides to NULL
+- `vma_is_anonymous` checks for `vma->vm_ops`
+- when there is a fault, `handle_pte_fault` handles the fault
+  - if no `vmf->pte`, `do_anonymous_page` faults in a new folio
+  - if there is `vmf->pte` but not `pte_present`, `do_swap_page` swaps in
+- `do_anonymous_page` faults in a new page
+  - `pte_alloc` allocs the pte table on demand
+    - the pmd entry is updated to point to the pte table
+  - `vmf_anon_prepare` allocs `vma->anon_vma` on demand for rmap
+    - for a file-backed vma, rmap uses `vma->vm_file->f_mapping->i_mmap` to
+      track all vmas of the file
+    - for an anon vma, rmap allocs `vma->anon_vma` for the same purpose
+  - `alloc_anon_folio` allocs a folio
+  - `pte_offset_map_lock` returns the pte entry
+  - `folio_add_new_anon_rmap`
+    - it sets `PG_swapbacked`
+    - `__folio_set_anon` sets `folio->mapping` to `vma->anon_map`
+  - `folio_add_lru_vma` calls `folio_batch_move_lru` with `lru_add`
+    - the real add is usually deferred until the batch is drained
+    - `lru_add` adds the folio to `lruvec`
+    - it sets `PG_lru`
+  - `set_ptes` updates the pte entry to point to the folio
+- if `shrink_folio_list` decides to reclaim an anon folio,
+  - `folio_alloc_swap` calls down to `__swap_cache_add_folio`
+    - it sets `PG_swapcache`
+      - from this point on, even though the folio has no file backing and thus
+        is not managed by page cache, `folio_mapping` returns "swap cache", a
+        special page cache which uses swap as the backing
+    - `folio->swap` points to the swp entry
+    - the folio is now managed by "swap cache"
+  - `try_to_unmap` calls `try_to_unmap_one` on each vma where the folio is
+    mapped
+    - `get_and_clear_ptes` clears the pte entry
+    - because this is `folio_test_anon`, `swp_entry_to_pte` and `set_pte_at`
+      encode the swp entry in the pte entry
+      - the key is to ensure `_PAGE_PRESENT` (bit 0) is cleared
+  - if dirty, `pageout` writes back to the swap backing
+  - `__remove_mapping` calls `__swap_cache_del_folio` to delete the folio from
+    "swap cache"
+    - it clears `PG_swapcache`
+  - `free_unref_folios` frees the page back to buddy
+- `do_swap_page` faults in a page by swapping
+  - `softleaf_from_pte` decodes the pte entry back to softleaf entry of type
+    `SOFTLEAF_SWAP`
+  - if the folio has been swapped out from the "swap cache",
+    - `swapin_readahead` swaps it in again
+      - `swap_cache_alloc_folio` allocs the folio and adds it to lru
+    - the return code is changed from 0 (success without io) to
+      `VM_FAULT_MAJOR` (success with io)
+  - `pte_offset_map_lock` returns the pte entry
+  - `folio_add_anon_rmap_ptes` adds the folio to rmap
+  - `set_ptes` updates the pte entry to point to the folio
+- comparing to file-based mapping,
+  - `do_anonymous_page` becomes `do_fault`
+  - reclaim takes more or less the same path
+    - no need for `folio_alloc_swap` because there is already a page cache
+    - `try_to_unmap` does not encode swp entry in the pte entry
+  - `do_swap_page` also becomes `do_fault`
+- comparing to shmem-based mapping,
+  - `do_anonymous_page` becomes `do_fault -> shmem_fault`
+  - reclaim takes more or less the same path
+    - no need for `folio_alloc_swap` because there is already a page cache
+    - `try_to_unmap` does not encode swp entry in the pte entry
+    - if dirty, `pageout` calls `shmem_writeout` instead of `swap_writeout`
+      - `folio_alloc_swap` is called here to alloc swp entry
+      - `swp_to_radix_entry` encodes swp entry as xa value
+      - `shmem_delete_from_page_cache` replaces the folio by the encoded swp
+        entry in `mapping->i_pages`
+  - `do_swap_page` also becomes `do_fault -> shmem_fault`
+    - in this case, because `xa_is_value` returns true, `shmem_swapin_folio`
+      swaps in
