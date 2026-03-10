@@ -1,6 +1,42 @@
 Kernel swap
 ===========
 
+## Overview
+
+- `swap.c` is always enabled
+  - it provides helpers to add folios to lru lists or move folios between lru
+    lists
+  - it applies to both anonymous mapping and file-based mapping, and is not
+    specific to swap
+  - `folio_add_lru` adds a folio to lru
+  - `folio_mark_accessed` promotes a folio to the next state
+    - from low to high, there are 4 states
+      - inactive list
+      - inactive list, referenced/accessed
+      - active list
+      - active list, referenced/accessed
+    - each reclaim scan demotes a folio to the prev state
+- `swap_state.c` provides a special page cache, "swap cache", for anonymous
+  mappings
+  - file-based mappings get their pages from the files' page caches
+    - during reclaim, lru sync pages to the backing, deletes them from page
+      caches, and frees them
+  - anonymous mappings get their pages from buddy directly
+    - during reclaim, lru makes "swap cache" their temporary page caches. lru
+      then sync pages to swap, delete them from "swap cache", and frees them
+  - `__swap_cache_add_folio` and `swap_cache_del_folio` add/remove a folio
+    to/from "swap cache"
+  - `swapin_readahead` populates swap cache
+- `swapfile.c` provides special block devices as the backing for "swap cache"
+  - `swapon` and `swapoff` add/remove special block devices
+  - `folio_alloc_swap` and `folio_free_swap` alloc/free a swap entry for a
+    folio
+    - they call `__swap_cache_add_folio` and `swap_cache_del_folio`
+      automatically to update "swap cache"
+- `page_io.c` provides io helpers to access swap block devices
+  - `swap_writeout` writes folio data to swap
+  - `swap_read_folio` reads swap data to folio
+
 ## `do_swap_page`
 
 - when `handle_mm_fault` handles a page fault, if the pte has never been set
