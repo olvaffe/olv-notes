@@ -164,3 +164,38 @@ Kernel FAT
     - `fat_build_inode` builds an inode for the child
     - `d_splice_alias` inits `dentry->d_inode` and many other stuff
   - there is no vfat open callback
+
+## Page Cache and LRU
+
+- an `inode` is an in-memory representation of an on-disk file
+  - `alloc_inode` calls `fat_alloc_inode` to alloc a inode
+  - `inode->i_mapping` points to `inode->i_data`, which is `address_space`,
+    aka page cache, of the inode
+- fops uses the generic `generic_file_read_iter`, etc.
+  - `filemap_read`
+    - `filemap_get_pages` populates the page cache
+      - it calls `filemap_create_folio` if cache miss
+        - `filemap_alloc_folio` allocs a new folio
+        - `filemap_add_folio`
+          - `__filemap_add_folio` adds the folio to the page cache
+          - `folio_add_lru` adds the folio to the lru
+            - this is batched, but eventually `lruvec_add_folio` adds the
+              folio to one of the lru lists
+        - `filemap_read_folio` calls `fat_read_folio` to read from the disk
+    - `copy_folio_to_iter` copies the data from the page cache to the dst
+- on page reclaim, `shrink_inactive_list` reclaims an inactive list
+  - `isolate_lru_folios` moves folios off the global list to a local temp list
+  - `shrink_folio_list` reclaims the local temp list
+    - `try_to_unmap` unmaps a folio from all vmas
+      - this clears pte entries pointing to the folio
+      - if usersapce accesses the data via any of the vma at this point, it
+        results in a minor fault to map the folio in the vma and update the
+        pte entry
+    - `pageout` writes a dirty folio back to disk
+    - `__remove_mapping` removes a folio from the page cache
+      - if usersapce accesses the data via any of the vma at this point, it
+        results in a major fault to populate the page cache, map the new folio
+        in the vma, and update the pte entry
+    - `free_unref_folios` frees the folios to buddy
+  - `move_folios_to_lru` moves folios that fail to be reclaimed from the local
+    tmep list back to the global list
