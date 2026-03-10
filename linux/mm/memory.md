@@ -31,44 +31,85 @@ Kernel memory
   - `pgd_t`, `p4d_t`, `pud_t`, `pmd_t`, and `pte_t`
   - each type is arch-defined and represents an entry in a page table of the
     level
-  - it is common that, on a 64-bit cpu,
-    - all types are 64-bit
-    - all tables are `PAGE_SIZE`
-    - IOW, at each level, a table takes up a page and has `PAGE_SIZE / 8`
-      entries
-- `pgd_alloc` allocates a pgd table
-  - it returns `pgd_t *`, which is a pointer to an array of `pgd_t`
-  - while arch-specific, it is commont to allocate with
-    - `(pgd_t *)get_zeroed_page(GFP_PGTABLE_USER)`
-    - that is, a pgd table takes up a page
-  - also arch-specific, but a `pgd_t` commonly contains the address of a p4d
-    table
-    - a p4d table also takes up a page
-    - the address is thus page-aligned and the lower `PAGE_SHIFT` bits are
-      flags of the entry
-- `p4d_alloc` allocates a p4d table
-  - the goal is to allocate a p4d table for a va, and update a pgd entry to
-    point to the p4d table
-  - `pgd_offset(mm, va)` can be used to find the pgd entry for the va
-  - arch-specific `p4d_alloc_one` allocates the table
-    - again, `(p4d_t *)get_zeroed_page` suffices
-- `pud_alloc`, `pmd_alloc`, and `pte_alloc` work similarly
-  - just remember they each allocates a table (an array of entries) of the
-    corresponding level
-- given a mm and a va, we can walk the tables to find the pte entry for the va
-  - this is `follow_pte`
-  - `pgd_offset(mm, va)` returns the pgd entry containing the va
-  - `p4d_offset(pgd, va)` returns the p4d entry containing the va
-  - `pud_offset(p4d, va)` returns the pud entry containing the va
-  - `pmd_offset(pud, va)` returns the pmd entry containing the va
-  - `pte_offset_map(pmd, va)` returns the pte entry containing the va
-    - we need many pte tables and there was a time when we put pte tables in
-      highmem (`CONFIG_HIGHPTE`)
-    - that's why this function has a `_map` suffix, implying `kmap_atomic()`
+    - the entry value encodes the pa of the page table of the next level, or
+      the page in case of `pte_t`
+  - each page table consists of an array of entries
+  - a pointer to an entry (e.g., `pud_t *`) more commonly refer to a single
+    entry
+    - but sometimes, it points to the first entry of a table and refers to the
+      entire table
+- address translation
+  - given a va and a pgd
+  - the va is broken down into 5 indices and an offset
+  - each index identifies an entry in a page table and each entry identifies
+    the page table of th next level or the page
+    - `pgd[i]` identifies the p4d table
+    - `p4d[j]` identifies the pud table
+    - `pud[k]` identifies the pmd table
+    - `pmd[l]` identifies the pte table
+    - `pte[m]` identifies the page
+  - pa is thus `page + offset`
+- a typical 64-bit cpu
+  - all tables are `PAGE_SIZE` and are `PAGE_SIZE`-aligned
+  - all entry types are 64-bit
+    - a table is thus an array of `PAGE_SIZE / 8` entries
+  - all entry types share a similar format
+    - the lower N bits are the pa of the lower level page table or the page
+      - N is often 52, but may also be 46, 56, etc.
+    - because page table and page are `PAGE_SIZE`-aligned, the bottom bits are
+      repurposed for flags
+    - the highest `64 - N` bits are also flags
+  - when `PAGE_SIZE` is 4KB,
+    - each table is an array of 512 entries and requires 9-bit to index
+    - a va thus consists of `9 * 5 + 12 = 57` bits
+- page table allocation
+  - `pgd_alloc` allocates a pgd table and returns the pointer to the table
+    - there is a 1:1 relation between `mm_struct` and pgd tables
+  - `p4d_alloc` allocates a p4d table on demand and returns the pointer to the
+    p4d entry
+    - it takes a pgd entry and a va
+      - the pgd entry is from `pgd_offset(mm, va)`
+    - if missing, `__p4d_alloc` allocs a p4d table and updates the pgd entry to
+      point to the p4d table
+    - `p4d_offset(pgd, va)` returns the pointer to the p4d entry
+  - `pud_alloc` allocates a pud table on demand and returns the pointer to the
+    pud entry
+    - it takes a p4d entry and a va
+    - if missing, `__pud_alloc` allocs a pud table and updates the p4d entry to
+      point to the pud table
+    - `pud_offset(p4d, va)` returns the pointer to the pud entry
+  - `pmd_alloc` allocates a pmd table on demand and returns the pointer to the
+    pmd entry
+    - it takes a pud entry and a va
+    - if missing, `__pmd_alloc` allocs a pmd table and updates the pud entry
+      to point to the pmd table
+      - note that the pmd table has its own lock instead of sharing
+        `mm->page_table_lock`
+    - `pmd_offset(pud, va)` returns the pointer to the pmd entry
+  - `pte_alloc` allocates a pte table on demand and returns an error code
+    - it takes a pmd entry but no va
+    - if missing, `__pte_alloc` allocs a pte table and updates the pmd entry
+      to point to the pte table
+      - note that the pte table has its own lock instead of sharing
+        `mm->page_table_lock`
+- page table walk
+  - given a mm and a va, we can walk the tables to find the pte entry
+    - `pgd_offset(mm, va)` returns the pgd entry containing the va
+    - `p4d_offset(pgd, va)` returns the p4d entry containing the va
+    - `pud_offset(p4d, va)` returns the pud entry containing the va
+    - `pmd_offset(pud, va)` returns the pmd entry containing the va
+    - `pte_offset_map(pmd, va)` returns the pte entry containing the va
+  - legacy `CONFIG_HIGHPTE`
+    - there was a time when pte tables might be in highmem
+    - that's why `pte_offset_map` has a `_map` suffix, implying
+      `kmap_atomic()`
   - `pte_offset_map_lock` is a convenient function
-    - `pte_lockptr` returns `page->ptl`, where `page` is the page holding the
-      pte table
-      - `ptl` stands for page table lock
+    - `pte_lockptr` returns the spinlock for the pte table
+      - `pmd_page(pmd)` reads the pmd entry value to get the pa of the pte
+        table, and returns the page holding the pte table
+      - `page_ptdesc` casts `page` to `ptdesc`
+        - they have compatible physical layout
+      - `ptlock_ptr` returns `ptdesc->ptl`, the page table lock
     - the convenient function returns the pte entry and the page table lock,
       with the lock locked
 
