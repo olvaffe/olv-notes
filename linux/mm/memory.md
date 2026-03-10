@@ -152,10 +152,10 @@ Kernel memory
   - this matters most for pte tables because higher-level page tables are
     scarce
   - pgd is not freed here
-  - this allows the pages holding page tables to be reclaimed
+  - this frees the pages holding the (mostly pte) page tables
     - `munmap` does this via `unmap_region`
 - when a process dies,
-  - `exit_mmap` calls `unmap_vmas` to zap pgtables and calls `free_pgtables` to free
+  - `exit_mmap` calls `unmap_vmas` to zap and calls `free_pgtables` to free
   - `mm_free_pgd` frees the pgd table
 
 ## Page Faulting
