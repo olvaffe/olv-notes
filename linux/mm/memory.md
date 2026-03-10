@@ -112,6 +112,51 @@ Kernel memory
       - `ptlock_ptr` returns `ptdesc->ptl`, the page table lock
     - the convenient function returns the pte entry and the page table lock,
       with the lock locked
+- page table zap
+  - given a mm and a va (of a page),
+    - we can do page table talk to find the pte entry
+    - `vm_normal_page` returns the page pointed to by the pte entry
+    - `should_zap_folio` returns false for anon folio
+    - `clear_full_ptes` clears the pte entry
+    - `folio_remove_rmap_ptes` decrements the page's map count in rmap
+  - note how it only updates the pte entry
+    - it does not free any page table thus does not update higher-level page
+      table entries
+  - this allows the pages holding the data to be reclaimed
+    - `munmap` does this via `unmap_vmas`
+    - `ftruncate` does this via `unmap_mapping_range`
+    - `MADV_DONTNEED` does this via `zap_page_range_single_batched`
+- page table free
+  - given a mm and a page-aligned va range,
+    - we can do page table talk to find any entry of any level touched by the
+      va range
+    - for each pte table touched by the va range,
+      - `pmd_clear` clears the pmd entry
+      - `pte_free_tlb` frees the pte table
+      - this depends on zapping
+        - we must zap all pte entries such that the pages pointed to can be
+          reclaimed
+        - this then free the pte table and update the pmd entry
+    - for each pmd table fully covered by the va range,
+      - `pud_clear` clears the pud entry
+      - `pmd_free_tlb` frees the pmd table
+    - for each pud table fully covered by the va range,
+      - `p4d_clear` clears the p4d entry
+      - `pud_free_tlb` frees the pud table
+    - for each p4d table fully covered by the va range,
+      - `pgd_clear` clears the pgd entry
+      - `p4d_free_tlb` frees the p4d table
+    - for each p4d table fully covered by the va range,
+      - `pgd_clear` clears the pgd entry
+      - `p4d_free_tlb` frees the p4d table
+  - this matters most for pte tables because higher-level page tables are
+    scarce
+  - pgd is not freed here
+  - this allows the pages holding page tables to be reclaimed
+    - `munmap` does this via `unmap_region`
+- when a process dies,
+  - `exit_mmap` calls `unmap_vmas` to zap pgtables and calls `free_pgtables` to free
+  - `mm_free_pgd` frees the pgd table
 
 ## Page Faulting
 
