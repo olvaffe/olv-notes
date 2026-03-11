@@ -208,6 +208,7 @@ X86 MM
   - `p4d_pgtable` returns the pud table pointed to by the entry
 - PUD / PDP is similar
   - `pud_t` represents a pud entry
+  - `pud_leaf` checks if the pud entry is a hugepage (`_PAGE_PSE` bit)
 - PMD / PD
   - `pmd_t` represents a pmd entry
   - `pmd_alloc` allocates a pmd table for a va on demand

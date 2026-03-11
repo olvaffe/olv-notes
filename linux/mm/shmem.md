@@ -5,6 +5,7 @@ Kernel shmem
 
 - `shmem_init` always registers `tmpfs` and does a kernel mount for in-kernel
   users
+  - `start_kernel -> vfs_caches_init -> mnt_init -> shmem_init`
   - with `CONFIG_TMPFS` (which implies `CONFIG_SHMEM`), `tmpfs` supports
     swapping, user mounts, mount options, etc.
   - with only `CONFIG_SHMEM`, `tmpfs` supports swapping but no user mounts
@@ -153,6 +154,54 @@ Kernel shmem
   - `folio_mark_dirty` dirties the folio
     - because its backing in swap device is gone
 
+## `CONFIG_TRANSPARENT_HUGEPAGE`
+
+- this sections list changes enabled by `CONFIG_TRANSPARENT_HUGEPAGE`
+- cmdline options
+  - `__setup("thp_shmem=", setup_thp_shmem)`
+    - `huge_shmem_orders_*` defaults to 0
+  - `__setup("transparent_hugepage_tmpfs=", setup_transparent_hugepage_tmpfs)`
+    - `tmpfs_huge` config-time defauls to `SHMEM_HUGE_NEVER`
+  - `__setup("transparent_hugepage_shmem=", setup_transparent_hugepage_shmem)`
+    - `shmem_huge` config-time defaults to `SHMEM_HUGE_NEVER`
+- sysfs attrs
+  - `__ATTR_RW(shmem_enabled)`
+    - `shmem_huge` and `SHMEM_SB(shm_mnt->mnt_sb)->huge` are updated
+  - `__ATTR(shmem_enabled, 0644, thpsize_shmem_enabled_show, thpsize_shmem_enabled_store)`
+    - `huge_shmem_orders_*` are updated
+- `shmem_init`
+  - override `SHMEM_SB(shm_mnt->mnt_sb)->huge` to `shmem_huge`
+  - `huge_shmem_orders_inherit` defaults to `BIT(HPAGE_PMD_ORDER)` (2MB)
+- `struct fs_context_operations shmem_fs_context_ops`
+  - `shmem_get_tree` calls `shmem_fill_super`
+    - `sbinfo->huge` defauls to `tmpfs_huge`
+      - this is the only place `tmpfs_huge` is used
+      - `shmem_init` will override `sbinfo->huge` to `shmem_huge` for
+        `shm_mnt`
+- `struct super_operations shmem_ops`
+  - `shmem_unused_huge_count` is to reclaim shmem-specific internal caches
+  - `shmem_unused_huge_scan` is to reclaim shmem-specific internal caches
+- `struct file_operations shmem_file_operations`
+  - `shmem_get_unmapped_area` find an unused va range for the mapping. If
+    huge, it ensures that the range is huge-aligned.
+- `shmem_get_inode` calls `mapping_set_large_folios` if `sbinfo->huge`
+  - it informs vfs that shmem ops can handle hugepages
+  - e.g., when `mapping_large_folio_support`, `page_cache_ra_order` allocs
+    hugepages for readahead
+- `shmem_get_folio_gfp`
+  - `shmem_allowable_huge_orders` returns allowed orders
+  - `shmem_alloc_and_add_folio` potentially allocs a huge folio
+  - if the hugepage is larger than the inode size, add the inode to
+    `sbinfo->shrinklist`
+    - during reclaim, it can be splitted such that the unused pages can be
+      reclaimed
+- `shmem_swapin_folio`
+  - if swap readback fails to read back a hugepage, `shmem_split_large_entry`
+    splits a huge swp entry stored in the page cache into multiple regular swp
+    entries
+- `shmem_writeout`
+  - if inode size smaller than the hugepage, split before swap out
+
 ## In-Kernel Users
 
 - `shmem_file_setup` creates and opens an inode
@@ -163,59 +212,9 @@ Kernel shmem
     - this simply marks the file `FMODE_OPENED`
     - with `vfs_open`, `do_dentry_open` calls `f_op->open` before marking
       `FMODE_OPENED`
-- `shmem_read_folio_gfp` populates the page cache at the specified page index
-  - `filemap_get_entry` looks up the folio at the index
-  - `xa_is_value` returns true if the folio is swapped out
-    - during swap out, `shmem_writeout` calls `shmem_delete_from_page_cache`
-      to replace the folio by swp entry, a "value"
-    - `shmem_swapin_folio` swaps it back in
-  - if there is already a folio, todo
-  - else, `shmem_alloc_and_add_folio` allocs a folio and populates the page
-    cache
+- `shmem_read_folio_gfp` is a wrapper for `shmem_get_folio_gfp`
 
-## initialization and configs
-
-- call sequence
-  - `start_kernel`
-  - `vfs_caches_init`
-  - `mnt_init`
-  - `shmem_init`
-- `shmem_init` always registers a `file_system_type` named `tmpfs`, but the
-  implementation depends on configs
-  - it is always on because kernel uses this filesystem to manage shared
-    memory
-  - when `CONFIG_SHMEM` is not set, this filesystem calls into
-    `ramfs_init_fs_context` and is effectively the same as `ramfs`
-  - when `CONFIG_SHMEM` is set, this filesystem calls into
-    `shmem_init_fs_context` and is the (full or partial) `tmpfs` we know
-    - when `CONFIG_TMPFS` is not set, only enough fs features are implemented
-      to support managing shared memory
-    - only when `CONFIG_TMPFS` is set, a full-fledged fs is implemented
-
-## shmem
-
-- tmpfs is a pseudo-filesystem where files live on top of file page cache and
-  swap cache
-  - only when `CONFIG_TMPFS` is set, tmpfs gains many essential features to
-    meet userspace expectation
-  - on the other hand, there is always an internal mount known as shmem that
-    does not rely on `CONFIG_TMPFS` features
-- `shmem_file_setup` creates a file in shmem
-  - it creates a new inode in the mount
-  - it then createa a file for the new inode with `shmem_file_operations`
-- `shmem_aops` can migrate a page to swap
-- `shmem_file_operations`
-  - `get_unmapped_area` finds an available address range for mmap
-  - `mmap` sets `vma->vm_ops` to `shmem_vm_ops`
-- `shmem_vm_ops` handles page faults
-  - `map_pages` is a generic one that maps a couple more pages around in the
-    hope that those pages will get used soon
-  - `fault` calls `shmem_getpage_gfp`.  It finds a page from cache, from swap,
-    or it allocates.  The page is added to both the page cache and the swap
-    lru
-- `shmem_read_mapping_page` also calls `shmem_getpage_gfp`
-
-## tmpfs
+## User Mounts
 
 - `shmem_init` calls `register_filesystem` to register tmpfs
 - when userspace mounts an instance,
