@@ -21,28 +21,35 @@ Kernel shmem
 
 ## `CONFIG_TMPFS`
 
+- this sections list changes enabled by `CONFIG_TMPFS`
 - `CONFIG_TMPFS` enables user mounts, and relevant features, for `tmpfs`
   - it implies `CONFIG_SHMEM`
 - `struct file_system_type shmem_fs_type`
   - `shmem_init_fs_context` sets `SB_I_VERSION` for nfs
   - `shmem_fs_parameters` provides mount options for user mounts
 - `struct fs_context_operations shmem_fs_context_ops`
+  - `shmem_get_tree` calls `shmem_fill_super`
+    - it applies default options for user mounts
+    - it supports `shmem_export_ops`
+    - it sets `SB_NOSEC` to bypass `file_remove_privs` as an optimization
   - `shmem_parse_monolithic` parses legacy mount options as a string
   - `shmem_parse_one` parses modern mount options individually
   - `shmem_reconfigure` is for remount
+- `struct export_operations shmem_export_ops` is for nfs
 - `struct super_operations shmem_ops`
-  - `shmem_statfs` is used by `df`, etc.
+  - `shmem_statfs` is for `df`, etc.
   - `shmem_show_options` shows options in `/proc/mounts`
 - `struct inode_operations shmem_dir_inode_operations`
   - all dir ops are for user mounts
   - for kernel mounts, we need the dir inode for `/` but don't need dir ops
+- `struct inode_operations shmem_short_symlink_operations` is for symlinks
+- `struct inode_operations shmem_symlink_inode_operations` is also for
+  symlinks, where filename is stored in swappable page
 - `struct file_operations shmem_file_operations`
   - all fops except open/mmap are for user mounts
 - `struct address_space_operations shmem_aops`
   - `shmem_write_begin` is used by `shmem_file_write_iter` indirectly
   - `shmem_write_end` is used by `shmem_file_write_iter` indirectly
-- `struct vm_operations_struct shmem_vm_ops`
-- `struct vm_operations_struct shmem_anon_vm_ops`
 
 ## initialization and configs
 
