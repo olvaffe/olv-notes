@@ -35,17 +35,14 @@ Kernel shmem
   - `shmem_show_options` shows options in `/proc/mounts`
 - `struct inode_operations shmem_dir_inode_operations`
   - all dir ops are for user mounts
-  - we only need the root for kernel mounts
+  - for kernel mounts, we need the dir inode for `/` but don't need dir ops
 - `struct file_operations shmem_file_operations`
-  - `shmem_file_llseek`
-  - `shmem_file_read_iter`
-  - `shmem_file_write_iter`
-  - `noop_fsync`
-  - `shmem_file_splice_read`
-  - `iter_file_splice_write`
-  - `shmem_fallocate`
-  - `generic_setlease`
-
+  - all fops except open/mmap are for user mounts
+- `struct address_space_operations shmem_aops`
+  - `shmem_write_begin` is used by `shmem_file_write_iter` indirectly
+  - `shmem_write_end` is used by `shmem_file_write_iter` indirectly
+- `struct vm_operations_struct shmem_vm_ops`
+- `struct vm_operations_struct shmem_anon_vm_ops`
 
 ## initialization and configs
 
