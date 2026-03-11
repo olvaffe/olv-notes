@@ -51,7 +51,7 @@ Kernel shmem
   - `shmem_write_begin` is used by `shmem_file_write_iter` indirectly
   - `shmem_write_end` is used by `shmem_file_write_iter` indirectly
 
-## inode
+## `shmem_get_inode`
 
 - for root, `shmem_fill_super` calls `shmem_get_inode` with
   - `idmap` is `nop_mnt_idmap`
@@ -85,6 +85,73 @@ Kernel shmem
       - `inode->i_fop` to `shmem_file_operations`
       - `inode->i_mapping->a_ops` to `shmem_aops`
     - special sets `inode->i_op` to `shmem_special_inode_operations`
+
+## `shmem_get_folio_gfp`
+
+- `shmem_get_folio_gfp` is mostly called from
+  - `shmem_fault` with `SGP_CACHE` and `vmf`
+  - `shmem_read_folio_gfp` with `write_end` and `SGP_CACHE`
+  - if user mount,
+    - `shmem_write_begin` with `write_end` and `SGP_WRITE`
+    - `shmem_file_read_iter` with `SGP_READ`
+    - `shmem_fallocate` with `write_end` and `SGP_FALLOC`
+- `filemap_get_entry` looks up the folio at the file index in the page cache
+  - if cache hit, it returns the folio
+  - if cache miss, it returns NULL
+  - if swapped out, it returns "swp entry"
+    - `folio` is not a valid pointer but encoded swp entry
+    - `xa_is_value` returns true
+- if swapped out, `shmem_swapin_folio` takes care of the rest
+- if cache hit, we want to know if the folio is up-to-date
+  - if `folio_test_uptodate`, done
+  - otherwise, the folio was merely fallocated and still contains garbage
+  - but if `SGP_READ`, we can return NULL and let `shmem_file_read_iter` read
+    from the zero page
+- `shmem_alloc_and_add_folio` allocs a folio
+  - `shmem_alloc_folio` allocs a folio
+  - `PG_swapbacked` is set
+  - `shmem_add_to_page_cache` adds the folio to page cache
+  - `folio_add_lru` adds the folio to lru
+- if not `folio_test_uptodate`, clear the folio to zero and `folio_mark_uptodate`
+  - if `SGP_WRITE`, this is skipped as an optimization because caller might
+    overwrite the entire page
+
+## Swap
+
+- when `shrink_folio_list` reclaims a shmem folio, `pageout` calls
+  `shmem_writeout` to swap it out
+  - if not `folio_test_uptodate`, the page was merely fallocated and contains
+    garbage
+    - zero it now and `folio_mark_uptodate`
+  - `folio_alloc_swap` adds the folio to swap cache
+    - `__swap_cache_add_folio` inits `folio->swap` and sets `PG_swapcache`
+  - `shmem_swaplist` tracks all swapped inodes for `shmem_unuse`
+    - `swapoff` calls `shmem_unuse` before removing a swap dev
+  - `folio_dup_swap` increments the swp entry refcount
+    - from 0 to 1 if this is a new swp entry
+  - `shmem_delete_from_page_cache` deletes the folio from the page cache
+    - it replaces the folio by `swp_to_radix_entry` instead of NULL
+    - `xa_is_value` will return true and the value is encoded swp entry
+  - `swap_writeout` submits io to the swap device
+    - `AOP_WRITEPAGE_ACTIVATE` means errors and tells the caller to
+      re-activate the folio (move it to the active list)
+- when `shmem_get_folio_gfp` gets a shmem folio, if it is swapped out,
+  `shmem_swapin_folio` swaps it in
+  - `swap_cache_get_folio` looks up the folio in swap cache
+    - this happens only in the process of reclaim, after `shmem_writeout` adds
+      it to swap cache and before `__remove_mapping` removes it
+    - this is minor fault because no io is needed
+  - `shmem_swap_alloc_folio` or `shmem_swapin_cluster` reads in the data
+    - this becomes `VM_FAULT_MAJOR` due to io
+  - `folio_wait_writeback` waits for reclaim writeback
+    - this may happen with minor fault
+  - if the folio is in the wrong zone, `shmem_replace_folio` allocs a new
+    folio and copies the contents
+  - `shmem_add_to_page_cache` adds the folio to the page cache
+  - `folio_put_swap` decrements the swp entry refcount
+  - `swap_cache_del_folio` removes the folio from the swap cache
+  - `folio_mark_dirty` dirties the folio
+    - because its backing in swap device is gone
 
 ## In-Kernel Users
 

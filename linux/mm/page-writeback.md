@@ -11,8 +11,8 @@ Kernel Page Writeback
   `do_writepages`
 - `balance_dirty_pages_ratelimited` is called on paths that dirty pages, such
   as userspace `write`
-  - it uses to wb bandwidth measurement to decide if it should trigger
-    background writeback
+  - it uses wb bandwidth measurement to decide if it should trigger background
+    writeback
   - `wb_start_background_writeback` schedules `wb_workfn`
 - `wb_workfn`
   - `wb_do_writeback` writes back

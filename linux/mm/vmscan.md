@@ -65,8 +65,16 @@ Kernel vmscan
   - if `folio_test_anon` and `folio_test_swapbacked`, `add_to_swap` adds the
     folio to the swapcache
   - if `folio_mapped`, `try_to_unmap` unmaps the folio from all vmas
-  - if `folio_test_dirty`, `pageout` writes the dirty page back using
-    `writepage`
+  - if `folio_test_dirty`, `pageout` writes the dirty page back
+    - if file-backed, it returns `PAGE_ACTIVATE`
+      - actually, before `pageout` is called, `folio_is_file_lru` returns
+        true and it takes a slightly different path
+        - `folio_set_reclaim` sets `PG_reclaim`
+      - `folio_set_active` sets `PG_active`
+      - the folio is not reclaimed but will be re-added to the active list
+        - `wb_workfn` will writeback the dirty page at a later point
+    - if shmem-backed, `shmem_writeout`
+    - else (anonymous), `swap_writeout`
   - if the folio is in a page cache, and have no other references, removing it
     from the page cache and taking away the last references in
     `__remove_mapping`
