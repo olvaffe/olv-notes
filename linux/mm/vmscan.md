@@ -1,17 +1,21 @@
 Kernel vmscan
 =============
 
-## Reclaims
+## Overview
 
-- direct reclaim: when `__alloc_pages` fails to alloc pages, and
-  `___GFP_DIRECT_RECLAIM` is set, `__perform_reclaim` calls
-  `try_to_free_pages` to reclaim directly
-  - `do_try_to_free_pages` calls `shrink_zones` in a loop with decreasing
-    `sc->priority`
-  - `shrink_zones` calls `shrink_node` on each node
-- background reclaim: when `__alloc_pages` is called and
-  `__GFP_KSWAPD_RECLAIM` is set, `wake_all_kswapds` calls `wakeup_kswapd` to
-  potentially wake up `kswapd`
+- direct reclaim
+  - when `__alloc_pages` fails to alloc pages, and `___GFP_DIRECT_RECLAIM` is
+    set, direct reclaim is triggered
+  - `get_page_from_freelist` may call `node_reclaim` for light reclaim
+    - it calls `shrink_node` without `may_writepage` nor `may_unmap`
+  - `__alloc_pages_slowpath` may call `try_to_free_pages` for heavy reclaim
+    - `do_try_to_free_pages` calls `shrink_zones` in a loop with decreasing
+      `sc->priority`
+    - `shrink_zones` calls `shrink_node` on each node
+- background reclaim
+  - when `__alloc_pages` falls to `__alloc_pages_slowpath` and
+    `__GFP_KSWAPD_RECLAIM` is set, `wake_all_kswapds` calls `wakeup_kswapd` to
+    potentially wake up `kswapd`
   - when memory too low, `pgdat_balanced` returns false and `kswapd` is woken
     - `balance_pgdat` calls `kswapd_shrink_node` with decreasing `sc->priority`
     - `kswapd_shrink_node` calls `shrink_node`
@@ -19,67 +23,61 @@ Kernel vmscan
   - if mglru, `lru_gen_shrink_node` takes a different path
   - otherwise, `shrink_node_memcgs` shrinks
   - `shrink_lruvec` shrink lru lists
-    - `shrink_list` calls either
-      - `shrink_active_list` to move pages from the active list to the inactive list
-      - `shrink_inactive_list` to move pages from the inactive list to a temp list
-    - `shrink_folio_list` unmaps and free pages
-      - if the page is anonymous (no backing), `folio_alloc_swap` allocs space
-        in swap
-        - the page will be backed by swap cache
-        - `folio_test_swapcache` will return true
-        - `folio_mapping` will return `swap_address_space`
-      - if the page is mapped in vmas, `try_to_unmap` unmaps it from all vmas
-      - if the page is dirty, `pageout` writes back
-        - if the page is anonymous (no backing), it writes back to swap
-      - `__remove_mapping` calls `__filemap_remove_folio` to remove the page
-        from the page cache
-      - `free_unref_folios` frees pages back to buddy allocator
   - `shrink_slab` calls into shrinkers
-- `node_reclaim` is a fast path
-  - `may_writepage` is 0 by default
-  - `may_unmap` is 0 by default
-  - `may_swap` is 1
-  - `priority` is 4 (`NODE_RECLAIM_PRIORITY`)
-  - `shrink_node` is called to reclaim a node
-    - `shrink_lruvec` reclaims from the lru
-    - `shrink_slab` reclaims from the slab
-- `try_to_free_pages` is a slow path
-  - `may_writepage` is 1 by default
-  - `may_unmap` is 1
-  - `may_swap` is 1
-  - `priority` is 12 (`DEF_PRIORITY`)
-  - `shrink_zones` is called to reclaim zones
-    - it just calls `shrink_node` like in the fast path, with a more
-      aggressive `scan_control`
+
+## `shrink_lruvec`
+
 - `shrink_lruvec` reclaims pages in lru
   - `shrink_active_list` moves some folios from the specified active list to
     the corresponding inactive list
   - `shrink_inactive_list` reclaims folios on the specified inactive list
-    - it calls `isolate_lru_folios` to move some folios on the specified
-      inactive list (`LRU_INACTIVE_ANON` or `LRU_INACTIVE_FILE`) to a
-      temporary list and calls `shrink_folio_list` on the temp list to reclaim
+    - `isolate_lru_folios` moves some folios on the specified inactive list
+      (`LRU_INACTIVE_ANON` or `LRU_INACTIVE_FILE`) to a temporary list
+    - `shrink_folio_list` reclaims folios on the temp list
     - `move_folios_to_lru` moves those that are not reclaimed back to lru
-- `shrink_folio_list` reclaims the specified folios
+- `shrink_folio_list` unmaps and free folios
   - it locks the folio with `folio_trylock`
   - it checks `folio_evictable`
-  - if `folio_test_anon` and `folio_test_swapbacked`, `add_to_swap` adds the
-    folio to the swapcache
+  - `folio_check_references`
+    - `folio_referenced` walks all pte entries pointing to the folio
+      - it counts and clears reference (recently used) bit in the hw pte
+        entries
+    - `folio_test_clear_referenced` tests and clears sw `PG_referenced`
+      (recently used) bit
+    - if hw referenced, the folio is not reclaimed
+      - `FOLIOREF_ACTIVATE` promotes it to active list
+      - `FOLIOREF_KEEP` keeps it in inactive list
+  - if the page is anonymous (no backing), `folio_alloc_swap` allocs space in
+    swap
+    - the page will be temporarily backed by swap cache
+    - `folio_test_swapcache` will return true
+    - `folio_mapping` will return `swap_address_space`
   - if `folio_mapped`, `try_to_unmap` unmaps the folio from all vmas
-  - if `folio_test_dirty`, `pageout` writes the dirty page back
-    - if file-backed, it returns `PAGE_ACTIVATE`
-      - actually, before `pageout` is called, `folio_is_file_lru` returns
-        true and it takes a slightly different path
-        - `folio_set_reclaim` sets `PG_reclaim`
+  - if `folio_test_dirty`,
+    - if file-backed, `folio_set_reclaim` sets `PG_reclaim` and goto
+      `activate_locked`
       - `folio_set_active` sets `PG_active`
       - the folio is not reclaimed but will be re-added to the active list
         - `wb_workfn` will writeback the dirty page at a later point
-    - if shmem-backed, `shmem_writeout`
-    - else (anonymous), `swap_writeout`
-  - if the folio is in a page cache, and have no other references, removing it
-    from the page cache and taking away the last references in
-    `__remove_mapping`
-  - if all good, the folios are added to `free_folios` and are returned to the
-    buddy allocator in `free_unref_page_list`
+    - else, `pageout` writes the dirty folio back
+      - if shmem-backed, `shmem_writeout`
+      - else (anonymous), `swap_writeout` writes back to swap
+        - it is temporarily backed by swap cache
+  - `__remove_mapping` removes the folio from the page cache
+    - `refcount` is the expected refcount of the folio
+      - it is 2 for a regular page
+      - 1 from page cache: `__filemap_add_folio` calls `folio_ref_add`
+      - 1 from the reclaimer: `isolate_lru_folios` calls `folio_try_get`
+    - `folio_ref_freeze` cmpxchgs the folio refcount to 0
+    - if anonymous, `__swap_cache_del_folio` removes from swap cache
+      - note that we have freeze the folio refcount to 0
+      - unlike `swap_cache_del_folio`, `__swap_cache_del_folio` does not
+        decrement refcount
+    - else, `__filemap_remove_folio` removes from page cache
+      - unlike `filemap_remove_folio`, `__filemap_remove_folio` does not
+        decrement refcount
+  - if all good, the folio is added to `free_folios`
+  - `free_unref_folios` frees folios back to buddy allocator
 
 ## LRU
 
