@@ -217,8 +217,13 @@ Kernel memory
   - else, `vma_set_anonymous` overrides to NULL
 - `vma_is_anonymous` checks for `vma->vm_ops`
 - when there is a fault, `handle_pte_fault` handles the fault
+  - `vmf->pte` points to the pte entry and `vmf->orig_pte` is the entry value
+    - `vmf->pte` is NULL when the pte table is not allocated yet
+    - `vmf->pte` is also reset to NULL when the page is not allocated yet
+      (`pte_none(vmf->orig_pte)`)
   - if no `vmf->pte`, `do_anonymous_page` faults in a new folio
   - if there is `vmf->pte` but not `pte_present`, `do_swap_page` swaps in
+    - this happens when the folio is swapped out
 - `do_anonymous_page` faults in a new page
   - `pte_alloc` allocs the pte table on demand
     - the pmd entry is updated to point to the pte table
@@ -228,9 +233,10 @@ Kernel memory
     - for an anon vma, rmap allocs `vma->anon_vma` for the same purpose
   - `alloc_anon_folio` allocs a folio
   - `pte_offset_map_lock` returns the pte entry
-  - `folio_add_new_anon_rmap`
+  - `folio_add_new_anon_rmap` adds the folio to rmap
     - it sets `PG_swapbacked`
     - `__folio_set_anon` sets `folio->mapping` to `vma->anon_map`
+      - `folio_test_anon` will return true
   - `folio_add_lru_vma` calls `folio_batch_move_lru` with `lru_add`
     - the real add is usually deferred until the batch is drained
     - `lru_add` adds the folio to `lruvec`
@@ -240,20 +246,21 @@ Kernel memory
   - `folio_alloc_swap` calls down to `__swap_cache_add_folio`
     - it sets `PG_swapcache`
       - from this point on, even though the folio has no file backing and thus
-        is not managed by page cache, `folio_mapping` returns "swap cache", a
-        special page cache which uses swap as the backing
+        is not managed by any page cache, `folio_mapping` returns "swap
+        cache", a special page cache which uses swap as the backing
+      - `__remove_mapping` below will clear the bit shortly
     - `folio->swap` points to the swp entry
-    - the folio is now managed by "swap cache"
   - `try_to_unmap` calls `try_to_unmap_one` on each vma where the folio is
     mapped
     - `get_and_clear_ptes` clears the pte entry
     - because this is `folio_test_anon`, `swp_entry_to_pte` and `set_pte_at`
       encode the swp entry in the pte entry
       - the key is to ensure `_PAGE_PRESENT` (bit 0) is cleared
+      - upon fault, `do_swap_page` will swap in from the encoded swp entry
   - if dirty, `pageout` writes back to the swap backing
-  - `__remove_mapping` calls `__swap_cache_del_folio` to delete the folio from
-    "swap cache"
-    - it clears `PG_swapcache`
+  - `__remove_mapping` deletes the folio from the page cache
+    - `__swap_cache_del_folio` deletes the folio from "swap cache" and clears
+      `PG_swapcache`
   - `free_unref_folios` frees the page back to buddy
 - `do_swap_page` faults in a page by swapping
   - `softleaf_from_pte` decodes the pte entry back to softleaf entry of type
@@ -266,6 +273,23 @@ Kernel memory
   - `pte_offset_map_lock` returns the pte entry
   - `folio_add_anon_rmap_ptes` adds the folio to rmap
   - `set_ptes` updates the pte entry to point to the folio
+- when `munmap` calls down to `unmap_region` to unmap an anonymous mapping,
+  - `unmap_vmas` zaps pte entries
+    - it walks the page tables
+    - `zap_present_ptes` zaps a present pte entry
+      - `vm_normal_page` returns the page pointed to by the pte entry
+      - `should_zap_folio` returns true because `details->even_cows` is set
+      - `folio_remove_rmap_ptes` removes the folio from rmap
+      - `__tlb_remove_folio_pages` frees the folio
+  - `free_pgtables` frees page tables that are no longer needed
+  - `tlb_finish_mmu` performs the frees
+    - all frees are deferred until this point after tls is flushed
+    - `tlb_table_flush` frees page tables
+      - `__tlb_remove_table_free` calls `free_page`
+    - `tlb_batch_pages_flush` frees pages
+      - `free_pages_and_swap_cache` calls `folios_put_refs`
+        - `__page_cache_release` removes a folio from lru
+        - `free_unref_folios` frees pages
 - comparing to file-based mapping,
   - `do_anonymous_page` becomes `do_fault`
   - reclaim takes more or less the same path
