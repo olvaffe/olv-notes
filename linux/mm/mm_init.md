@@ -135,3 +135,41 @@ Linux MM Init
     temporarily use swapcache as the page cache, which enable them to be paged
     out
   - as such, it is set when the page is managed by swapcache
+
+## Page Refcounts
+
+- `alloc_page` and `__free_page`
+  - `alloc_page` allocs a page with refcount 1
+    - `alloc_frozen_pages_noprof` allocs a page with refcount 0
+    - `set_page_refcounted` sets refcount to 1
+  - `__free_page` frees a page with refcount 1
+    - `put_page_testzero` decrements refcount to 0
+    - `__free_frozen_pages` frees a page with refcount 0
+- `vm_operations_struct::fault`
+  - `filemap_fault`, the generic implementation
+    - `filemap_get_folio` returns a folio with incremented refcount
+    - `vmf->page` is the folio
+  - `do_fault`, the user
+    - `__do_fault` calls the callback to get `vmf->page`
+    - `finish_fault` assigns the folio to the pte entry, which is the owner
+    - on errors, `folio_put` decrements the refcount
+- `mm_struct::pgd`
+  - the pgd table, all intermediate levels of tables, and the leaf pages form
+    a tree
+  - all pages are owned by the tree
+  - `exit_mmap` frees all but the pgd table
+    - `unmap_vmas` frees leaf pages and clears pte tables
+    - `free_pgtables` frees all but the pgd table
+  - `mm_free_pgd` frees the pgd table
+- `filemap_add_folio` and `filemap_remove_folio`
+  - `filemap_add_folio` calls `__filemap_add_folio`
+    - `folio_ref_add` adds a ref
+  - `filemap_remove_folio` calls `filemap_free_folio`
+    - `folio_put_refs` removes a ref
+- `folio_add_file_rmap_ptes` and `folio_remove_rmap_ptes`
+  - they don't change refcount
+- `folio_add_lru`
+  - it does not change refcount
+  - when `folio_put` drops the last ref, `page_cache_release` calls
+    `lruvec_del_folio` automatically (but not atomically; the refcount is
+    decremented first)

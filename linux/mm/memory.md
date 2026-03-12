@@ -8,15 +8,17 @@ Kernel memory
     - it is mainly called from arch fault irq
     - it walks the page table and allocates them as needed
     - at the last level, `handle_pte_fault`
-      - if the pte is missing,
+      - if the pte entry is missing,
         - `do_fault` faults in the page from backing using `vma->vm_ops->fault`
         - `do_anonymous_page` allocs a new page for the anonymous mapping
-      - if the pte is not present,
+      - if the pte entry misses the present bit (swapped out),
         - `do_swap_page` pages in the page from swap
 - page table management
-  - `unmap_single_vma` zaps (tears down) page table for a vma
-    - `munmap` zaps and destroys vma
-    - `zap_page_range_single` zaps vma but does not destroy it
+  - `unmap_page_range` zaps a va range
+    - `clear_full_ptes` clears the pte entries
+    - `__tlb_remove_folio_pages` frees the leaf pages
+  - `free_pgtables` frees intermdeiate pgtables for a va range
+    - it depends on `unmap_page_range`
   - `copy_page_range` copies page table for `fork`
 - userspace memory mapping
   - `vm_insert_page` inserts a page to userspace page table, for mmap
@@ -116,7 +118,7 @@ Kernel memory
   - given a mm and a va (of a page),
     - we can do page table talk to find the pte entry
     - `vm_normal_page` returns the page pointed to by the pte entry
-    - `should_zap_folio` returns false for anon folio
+    - `should_zap_folio` returns false for anon folio unless `even_cows`
     - `clear_full_ptes` clears the pte entry
     - `folio_remove_rmap_ptes` decrements the page's map count in rmap
   - note how it only updates the pte entry
@@ -153,7 +155,7 @@ Kernel memory
     scarce
   - pgd is not freed here
   - this frees the pages holding the (mostly pte) page tables
-    - `munmap` does this via `unmap_region`
+    - `munmap` does this via `free_pgtables`
 - when a process dies,
   - `exit_mmap` calls `unmap_vmas` to zap and calls `free_pgtables` to free
   - `mm_free_pgd` frees the pgd table
