@@ -1,6 +1,12 @@
 Kernel Security
 ===============
 
+## LSM Hooks
+
+- `security_task_alloc` for `task_struct`
+- `security_inode_init_security` for `inode`
+- etc.
+
 ## SELinux
 
 - Mandatory Access Controls (MACs)
