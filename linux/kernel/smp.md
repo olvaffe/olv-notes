@@ -6,6 +6,7 @@ Kernel smp
 - `smp_init` is called by the boot cpu
   - `idle_threads_init` forks an idle thread (`swapper/n`) from `init_task`
     for each CPU.  PIDs are all 0.
+    - `copy_process` does not call `alloc_pid` when `pid` is `init_struct_pid`
   - `cpuhp_threads_init` registers `cpuhp_threads`
   - `bringup_nonboot_cpus` brings secondary CPUs from `CPUHP_OFFLINE` to
     `CPUHP_ONLINE`
