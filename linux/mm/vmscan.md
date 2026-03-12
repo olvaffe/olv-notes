@@ -68,6 +68,9 @@ Kernel vmscan
       - it is 2 for a regular page
       - 1 from page cache: `__filemap_add_folio` calls `folio_ref_add`
       - 1 from the reclaimer: `isolate_lru_folios` calls `folio_try_get`
+      - looks like lru does not own the folios:
+        `folio_add_lru`/`lruvec_add_folio` does not add a reference, and
+        `isolate_lru_folios` must use `folio_try_get`
     - `folio_ref_freeze` cmpxchgs the folio refcount to 0
     - if anonymous, `__swap_cache_del_folio` removes from swap cache
       - note that we have freeze the folio refcount to 0
