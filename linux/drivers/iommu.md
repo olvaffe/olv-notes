@@ -36,6 +36,13 @@ Kernel IOMMU
     devices
     - this is done because the iommu controller may be probed after other
       devices
+- `iommu_group` and `iommu_domain`
+  - when two devices share the same stream id and are indistinguishable by the
+    iommu, they belong to the same `iommu_group`
+  - an `iommu_domain` is a set of page tables
+  - an `iommu_domain` can be attached to multiple `iommu_group`s
+  - but an `iommu_group` can only have an attached `iommu_domain` at any time
+    - all devices in the group share the same domain
 
 ## Consumers
 
@@ -50,16 +57,16 @@ Kernel IOMMU
     - on platform bus, `platform_dma_configure` calls `of_dma_configure` which
       calls `of_iommu_configure`
     - on pci bus, `pci_dma_configure` behaves similarly
-    - `of_iommu_configure`
-      - looks for `iommus` or `iommu-map` OF props in the consumer device
-      - calls `iommu_fwspec_init` on the consumer device
-        - `dev_iommu_get` allocs `dev->iommu` on demand
-        - `dev_iommu_fwspec_set` sets `dev->iommu->fwspec`
-      - calls `iommu_ops_from_fwnode` to get ops from the controller
-      - calls `ops->of_xlate` on the consumer device
-        - the controller driver calls `dev_iommu_priv_set` to set
-          `dev->iommu->priv`
-      - calls `iommu_probe_device`
+- `of_iommu_configure`
+  - looks for `iommus` or `iommu-map` OF props in the consumer device
+  - calls `iommu_fwspec_init` on the consumer device
+    - `dev_iommu_get` allocs `dev->iommu` on demand
+    - `dev_iommu_fwspec_set` sets `dev->iommu->fwspec`
+  - calls `iommu_ops_from_fwnode` to get ops from the controller
+  - calls `ops->of_xlate` on the consumer device
+    - the controller driver calls `dev_iommu_priv_set` to set
+      `dev->iommu->priv`
+  - calls `iommu_probe_device`
 - `iommu_probe_device`
   - `iommu_init_device`
     - it calls `dev->bus->dma_configure` if necessary, which happens when
@@ -74,8 +81,10 @@ Kernel IOMMU
     - `iommu_setup_default_domain` sets up both
       - if the controller does not specify any default type,
         `iommu_def_domain_type` is used which is usually `IOMMU_DOMAIN_DMA_FQ`
-  - `iommu_setup_dma_ops`
+  - if `CONFIG_IOMMU_DMA`, `iommu_setup_dma_ops`
     - `dev->dma_iommu` is set to `iommu_is_dma_domain`
+    - because device drivers usually use dma api (`dma_alloc_*`), this enables
+      the dma api to internally translate to iommu api
   - `ops->probe_finalize`
 - `iommu_domain_alloc` allocates a `iommu_domain`
   - this loops through all devices on the bus and expects all devices share
