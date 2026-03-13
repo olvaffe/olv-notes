@@ -117,6 +117,29 @@ Kernel IOMMU
   - when the consumer accesses the contiguous iova range, it gets mapped to
     a scatterlist
 
+## `CONFIG_IOMMU_DMA`
+
+- dma-iommu is a transparent translation layer that translates dma api to
+  iommu api
+- during `iommu_probe_device`,
+  - `iommu_setup_default_domain` sets up the default domain for the group
+    - `iommu_get_default_domain_type` typically returns 0
+    - `iommu_group_alloc_default_domain` allocs using `iommu_def_domain_type`
+      - `iommu_def_domain_type` is typically `IOMMU_DOMAIN_DMA`
+    - `iommu_get_dma_cookie` creates a priv data for dma-iommu
+    - `iommu_create_device_direct_mappings` creates direct mappings for
+      reserved regions (if any) of each device
+    - `__iommu_group_set_domain_internal` updates the hw to use the domain
+      (page tables)
+  - `iommu_setup_dma_ops` sets `dev->dma_iommu` and calls
+    `iommu_dma_init_domain` to init the cookie (priv data)
+    - `iova_domain` is the va range allocator
+- dma-iommu operates on the default domain
+  - `iommu_get_dma_domain` returns `dev->iommu_group->default_domain`
+  - if two devices are in the same iommu group, and if one's driver uses
+    dma-iommu and the other's driver uses explicit iommu api, it will break
+    the first driver
+
 ## AMD
 
 - early init
