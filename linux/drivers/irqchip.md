@@ -1,6 +1,19 @@
 Kernel irqchip
 ==============
 
+## Controllers
+
+- `IRQCHIP_DECLARE` adds a `of_device_id` to `__irqchip_of_table`
+  - each `of_device_id` is a compat string / init function pair
+  - on arm64, `init_IRQ` calls `irqchip_init`
+    - `of_irq_init` loops over `__irqchip_of_table` and calls the init
+      functions of the matching strings
+- irqchip init function
+  - there is no `device`
+  - `irq_domain_create_tree` or `irq_domain_create_linear` creates a domain
+    with `irq_domain_ops`
+  - if root controller, `set_handle_irq` sets the root irq handler
+
 ## ARM Generic Interrupt Controller, version 3
 
 - GICv3 provides private peripheral interrupts (PPI), shared peripheral
