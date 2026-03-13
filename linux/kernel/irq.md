@@ -28,6 +28,42 @@ Kernel and IRQ
   - it wants to unmask the line asap
     - other devices may share the same line
 
+## Dummy Controller
+
+- it is easier to see what's going on if there is a dummy interrupt controller
+  between the root interrupt controller and the device
+- the driver of the dummy interrupt controller would look like
+  - `dummy_probe`
+    - `dummy_domain = irq_domain_create_linear(NULL, 1, &dummy_ops, NULL)`
+      - `dummy_ops.map` calls `irq_set_chip_and_handler(virq, &dummy_irq_chip, handle_simple_irq)`
+      - both `dummy_irq_chip` and `handle_simple_irq` are provided by irq core
+    - `root_virq = irq_create_mapping(root_domain, root_hwirq)`
+      - we are a client of the root controller
+      - we typically call `platform_get_irq_byname` instead, which looks
+        `root_domain` and `root_hwirq` up from dt
+    - `request_irq(root_virq, dummy_handler, ...)`
+      - `dummy_handler` looks like
+        `generic_handle_domain_irq(dummy_domain, dummy_hwirq); returns IRQ_HANDLED;`
+  - `dummy_remove`
+    - `free_irq(root_virq, ...)`
+    - `irq_dispose_mapping(dummy_virq)`
+    - `irq_domain_remove(dummy_domain)`
+- our client would use us like how we use the root controller
+  - when they calll `irq_create_mapping(dummy_doman, dummy_hwirq)`,
+    - irq core allocs a new `irq_desc` from a global pool and `virq` is the
+      index to the pool
+    - irq core also calls `dummy_ops.map`, which updates irq desc to
+      `dummy_irq_chip` and `handle_simple_irq`
+  - when they call `request_irq(dummy_virq, dev_handler, ...)`,
+    - irq core updates irq desc with their irq handler
+  - when they call `free_irq(dummy_virq, ...)`,
+    - irq core updates irq desc to remove their irq handler
+- when they assert an interrupt to us, we assert an interrupt to the root
+  controller; irq core calls `dummy_handler`
+  - `generic_handle_domain_irq` looks up the irq desc and calls
+    `handle_simple_irq` which ultimately calls `dev_handler`
+    - `dev_handler` acks the dev interrupt
+
 ## Initialization
 
 - modern archs define `CONFIG_SPARSE_IRQ`
