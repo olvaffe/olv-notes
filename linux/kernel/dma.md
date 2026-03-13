@@ -1,6 +1,18 @@
 Kernel and DMA
 ==============
 
+## DMA Mapping
+
+- it is about both mapping and allocation of pages for device accesses
+- It is an API a platform could implement, or not.
+  - `dma_map_*` allows us map a buffer/page/sg to get DMA-able address(es)
+  - `dma_alloc_*` allows us to allocate a buffer that is DMA-able.
+  - However, different archs have different means to start the transfer.  Some
+    might have no such mean.  The returned DMA-able address might have no use.
+- To use it, include `linux/dma-mapping.h`
+  - It will include `asm/dma-mapping.h` or `asm-generic/dma-mapping-broken.h`,
+    depending on whether the platform has `CONFIG_HAS_DMA`.
+
 ## `dma_alloc_attrs`
 
 - the goal is to allocate a coherent buffer for a device
@@ -58,6 +70,31 @@ Kernel and DMA
 
 ## `dma_map_*` and `dma_unmap_*`
 
+- these are called "streaming" apis
+  - Mapping a page involves finding the bus address, and flushing/invalidating
+    cpu cache.
+    - The bus address is usually `page_to_phys(page)`, which is checked against
+      device's dma mask.  It does not guarantee it is DMA'able.
+    - CPU should not touch a mapped page unless synched
+  - It relies on other means to start the transfer.
+  - `dma_unmap_page` should be called only after DMA is done.
+- for a single dma tranaction, we can
+  - `dma_map_page(dir)`
+  - start hw transction
+  - wait hw transction
+  - `dma_unmap_page(dir)`
+  - `dir` must be the same for map and unmap
+- for multiple dma tranactions, we can
+  - `dma_map_page(dir)`
+  - loop
+    - `dma_sync_single_for_device(dir)`
+      - can be skipped when `dir` is `DMA_FROM_DEVICE`, because there is no
+        cpu write
+    - start hw transction
+    - wait hw transction
+    - `dma_sync_single_for_cpu(dir)`
+  - `dma_unmap_page(dir)`
+  - `dir` must be the same for all calls
 - `dma_map_page_attrs` maps externally allocated, physically-contiguous,
   non-coherent pages for device dma access
   - if iommu, `iommu_dma_map_page`
@@ -100,6 +137,14 @@ Kernel and DMA
 - when a buffer is mapped for both cpu and device and is incoherent,
   `dma_sync_*` must be called before cpu and device access
 
+## `dma_mmap_*`
+
+- one can allocate coherent DMA buffer with `dma_alloc_coherent` (or
+  `dma_alloc_wc`)
+  - it is a piece of CPU/device coherent memory
+  - it returns both a virtual address for CPU and a `dma_addr_t`
+- `dma_mmap_coherent` (or `dma_mmap_wc`) can map it to user space
+
 ## Configs
 
 - every source file is optional
@@ -120,7 +165,7 @@ Kernel and DMA
     - arm but not x86
   - `obj-$(CONFIG_MMU)                       += remap.o`
     - arm and x86
-    - used by `CONFIG_IOMMU_DMA` to translate dma-api to iommu-api
+    - it uses `vmap` to map contiguous or non-contiguous pages for cpu access
 
 ## `CONFIG_OF_RESERVED_MEM`
 
@@ -159,80 +204,6 @@ Kernel and DMA
   - `dev->dma_iommu` is set if the iommu domain has `IOMMU_DOMAIN_DMA` or
     `IOMMU_DOMAIN_DMA_FQ`
 
-## Arch
-
-- before a device is to be probed by a driver, the bus system calls the
-  optional `dma_configure` op on the device
-  - pci and platform busses have the op
-    - `pci_bus_type` and `pci_dma_configure`
-    - `platform_bus_type` and `platform_dma_configure`
-  - at the end of the op, `arch_setup_dma_ops` is called to set up device dma
-    ops
-    - x86: NULL
-    - arm64: NULL
-    - arm: picks when the device is behind an iommu, pick `iommu_coherent_ops`
-      or `iommu_ops`; otherwise, pick `arm_coherent_dma_ops` or `arm_dma_ops`
-- when `dma_map_sg` is called, `get_dma_ops` returns the device's dma ops or
-  a global one returned by `get_arch_dma_ops`
-  - x86: NULL
-  - arm64: NULL
-  - arm: `arm_dma_ops` or NULL
-- Classic ARM with MMU/IOMMU
-  - when device is coherent, `dma_alloc_coherent` allocates with `alloc_pages`
-    - the virtual address from the linear map is returned for CPU
-    - the pages are mapped in IOMMU and `dma_addr_t` is returned
-    - when device is incoherent, the only difference is that the virtual
-      address is not from the linear map.  Instead, a UC or WC vmap is set up.
-    - because it uses FLATMEM memory model,j:
-
-## DMA Mapping
-
-- It is an API a platform could implement, or not.
-  - It allows us map a buffer/page/sg to get DMA-able address(es)
-  - It also allows us to allocate a buffer that is DMA-able.
-  - However, different archs have different means to start the transfer.  Some
-    might have no such mean.  The returned DMA-able address might have no use.
-- If it is implemented, the API is named like `dma_xxx_xxx`.
-- To use it, include `linux/dma-mapping.h`
-  - It will include `asm/dma-mapping.h` or `asm-generic/dma-mapping-broken.h`,
-    depending on whether the platform has `CONFIG_HAS_DMA`.
-- For drivers that include `linux/pci.h`, the header includes `asm/pci.h`,
-  which, on x86 or arm, includes `asm-generic/pci-dma-compat.h`, which gives PCI
-  version of the DMA Mapping API.
-
-## DMA Mapping: Streaming
-
-- `dma_map_page` and `dma_unmap_page` are used for DMA streaming.
-  - Mapping a page involves finding the bus address, and flushing/invalidating
-    cpu cache.
-  - The bus address is usually `page_to_phys(page)`, which is checked against
-    device's dma mask.  It does not guarantee it is DMA'able.
-  - CPU should not touch a mapped page.
-  - It relies on other means to start the transfer.
-  - `dma_unmap_page` should be called only after DMA is done.
-- A common scenario is
-  - a driver maps a page and pass it to deivce to receive a buffer
-  - irq, and the transfer is done.  the driver unmaps the page.
-    - `pci_dma_sync_single_for_cpu` and `pci_dma_sync_single_for_device` can be
-      used to check if the buffer is complete beforing unmapping.
-- for a single dma tranaction, we can
-  - `dma_map_page(dir)`
-  - start hw transction
-  - wait hw transction
-  - `dma_unmap_page(dir)`
-  - `dir` must be the same for map and unmap
-- for multiple dma tranactions, we can
-  - `dma_map_page(dir)`
-  - loop
-    - `dma_sync_single_for_device(dir)`
-      - can be skipped when `dir` is `DMA_FROM_DEVICE`, because there is no
-        cpu write
-    - start hw transction
-    - wait hw transction
-    - `dma_sync_single_for_cpu(dir)`
-  - `dma_unmap_page(dir)`
-  - `dir` must be the same for all calls
-
 ## Scatter-Gather
 
 - A `struct scatterlist` describes a contiguous memory range
@@ -258,29 +229,6 @@ Kernel and DMA
   - `sg_set_page` is called on each scallterlist to initialize `page_link` to
     point to the starting page of the chunk
 
-## DMA Mapping
-
-- `get_dma_ops` returns the `dma_map_ops` for a device
-  - it uses the device-specific ops if exist
-    - on arm, when the device is discovered through DT, `arch_setup_dma_ops`
-      is called.  When the device is connected to IOMMU, the call silently
-      sets up IOMMU for the device and installs a `dma_map_ops`
-  - otherwise, it calls `get_arch_dma_ops(dev->bus)`
-    - on x86 it is usually NULL unless there is intel/amd iommu
-    - on arm, it is non-NULL
-- one can allocate coherent DMA buffer with `dma_alloc_coherent` (or
-  `dma_alloc_wc`)
-  - it is a piece of CPU/device coherent memory
-  - it returns both a virtual address for CPU and a `dma_addr_t`
-  - `dma_mmap_coherent` (or `dma_mmap_wc`) can map it to user space
-- oen can also use the streaming API `dma_map_sg` and families with regular
-  pages
-  - it syncs for device on `dma_map`, and syncs for CPU on `dma_unmap`
-    - no-op on x86 and arm
-    - invalidate/flush CPU caches on arm64
-  - it can also be persistently mapped; then explicit flush/invalidate with
-    `dma_sync_sg_for_device`/`dma_sync_sg_for_cpu` is required
-
 ## swiotlb
 
 - 64-bit kernels with >4GB RAM normally require swiotlb
@@ -302,11 +250,25 @@ Kernel and DMA
 
 ## Allocation
 
+- before a device is to be probed by a driver, the bus system calls the
+  optional `dma_configure` op on the device
+  - pci and platform busses have the op
+    - `pci_bus_type` and `pci_dma_configure`
+    - `platform_bus_type` and `platform_dma_configure`
+  - at the end of the op, `arch_setup_dma_ops` is called to set up device dma
+    ops
+    - x86: NULL
+    - arm64: NULL
+    - arm: picks when the device is behind an iommu, pick `iommu_coherent_ops`
+      or `iommu_ops`; otherwise, pick `arm_coherent_dma_ops` or `arm_dma_ops`
 - device props
   - if `CONFIG_ARCH_HAS_DMA_OPS`, `get_dma_ops` returns `dev->dma_ops` or
     `get_arch_dma_ops`
     - `set_dma_ops` is barely called
     - `get_arch_dma_ops` typically returns null
+      - x86: NULL
+      - arm64: NULL
+      - arm: `arm_dma_ops` or NULL
     - this almost always returns null
   - if `CONFIG_IOMMU_DMA`, `use_dma_iommu` returns `dev->dma_iommu`
     - `iommu_probe_device` calls `iommu_setup_dma_ops` if there is iommu
@@ -316,10 +278,6 @@ Kernel and DMA
       behind an iommu
   - `dma_set_mask` sets `dev->dma_mask`
   - `dma_set_coherent_mask` sets `dev->coherent_dma_mask`
-- alloc wrappers
-  - `dma_alloc_coherent` calls `dma_alloc_attrs`
-  - `dma_alloc_wc` calls `dma_alloc_attrs`
-  - `dma_alloc_noncoherent` calls `dma_alloc_pages`
 - `dma_alloc_wc` calls `dma_alloc_attrs` with `DMA_ATTR_WRITE_COMBINE`
   - `get_dma_ops` returns `NULL` on modern archs, because they don't have
     `CONFIG_ARCH_HAS_DMA_OPS`
@@ -329,10 +287,10 @@ Kernel and DMA
     - they pick `dma_direct_alloc` or `iommu_dma_alloc` depending on whether
       `dev->dma_iommu` is true
   - `dma_direct_alloc`
-    - it seems to allocate contiguous pages
+    - it allocates contiguous pages
   - `iommu_dma_alloc` allocs through `CONFIG_IOMMU_DMA`
-    - it seems to allocate non-contiguous pages
-- when using dma iommu,
+    - it allocates non-contiguous pages and iommu-maps them
+- when using `CONFIG_IOMMU_DMA`,
   - `dma_alloc_pages` calls `dma_common_alloc_pages`
     - it tries `dma_alloc_contiguous` to alloc from cma first
       - otherwise, it `alloc_pages_node` which likely fail for large allocs
@@ -342,7 +300,3 @@ Kernel and DMA
       iommu to have a linear mapping
   - `dma_alloc_noncontiguous` calls `iommu_dma_alloc_noncontiguous` to alloc
     non-contiguous pages and sets up the iommu to have a linear mapping
-- when using direct dma
-  - `dma_alloc_pages` calls `dma_direct_alloc_pages`
-  - `dma_alloc_attrs` calls `dma_direct_alloc`
-  - `dma_alloc_noncontiguous` calls `dma_direct_alloc_pages`
