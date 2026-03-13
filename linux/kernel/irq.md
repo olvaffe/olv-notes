@@ -1,32 +1,23 @@
 Kernel and IRQ
 ==============
 
-## Flow
+## Root Interrupt Controller
 
-- when a device needs to be serviced, it assert an interrupt line
-- upon line assertion, irq controller latches the signal and raises a cpu
-  exception
-  - on x86, io apic receives the signal from the device, latches the signal,
-    and one of the per-core local apic forwards the signal to the cpu core
-- some cpu core handles the exception
-  - it enters irq context with irq disabled locally
-  - it asks the controller to mask out the line, such that the line cannot
-    trigger exception
-  - it asks the controller to ack the line, such that the controller can latch
-    another signal from another line
-  - it re-enables irq locally for nested irq (optional)
-  - it services the device such that the device no longer asserts the line
-    - this usually involves reading and acking device reqs, but real handling
-      of device reqs happen in bottom half
-  - it asks the controller to unmask the line
-    - the line may be asserted and raises another exception, if the device, or
-      another device sharing the line, has another request
-  - it exits irq context with irq enabled locally
-- the cpu core performs minimal work for exception handling for several reasons
-  - it wants to get back to normal operation asap
-    - there may be other exceptions to handle, or processes to run
-  - it wants to unmask the line asap
-    - other devices may share the same line
+- modern archs define `CONFIG_SPARSE_IRQ`
+  - `NR_IRQS` is not meaningful
+- `early_irq_init`
+  - if there are legacy irqs, it may pre-allocate some `struct irq_desc`s
+    - modern way allocs `irq_desc` on demand when the device driver enables irq
+  - `arch_early_irq_init`
+    - on x86, this creates the root irq domain, `x86_vector_domain`
+      - the chip is `lapic_controller`
+- `init_IRQ`
+  - on x86, `native_init_IRQ`
+  - on arm, `irqchip_init` scans OF/ACPI to init matching devices
+     - drivers are defined by `IRQCHIP_DECLARE` or `IRQCHIP_ACPI_DECLARE`
+     - `gic_of_init` creates the root irq domain, `gic_data.domain`
+       - the chip is `gic_chip`
+       - it also sets the root irq handler to `gic_handle_irq`
 
 ## Dummy Controller
 
@@ -64,18 +55,66 @@ Kernel and IRQ
     `handle_simple_irq` which ultimately calls `dev_handler`
     - `dev_handler` acks the dev interrupt
 
-## Initialization
+## Chained Controllers
 
-- modern archs define `CONFIG_SPARSE_IRQ`
-  - `NR_IRQS` is not meaningful
-- `early_irq_init` allocates some `struct irq_desc`
-  - this is arch-specific.  On arm64, none.
-- `init_IRQ` is also arch-specific
-   - it is expected to allocate per-cpu interrupt stacks and enables the irq
-     controller
-   - some archs use `irqchip_init`
-     - it scans OF and ACPI tables and matches devices
-     - drivers should use `IRQCHIP_DECLARE` or `IRQCHIP_ACPI_DECLARE`
+- cascaded interrupt controllers use so called chained handlers
+  - they do not use hierarchical irq domains
+- `irq_set_chained_handler` is called on the parent virq
+  - when the parent virq fires, the handler finds the child domain and reads
+    the child hwirq to call `generic_handle_domain_irq`
+
+## MSI and Hierarchical IRQ Domains
+
+- MSI is always hierarchical
+  - the msi controller provides the msi parent domain
+    - x86 calls `x86_create_pci_msi_domain` to create the msi parent domain
+      - `native_create_pci_msi_domain` returns `x86_vector_domain`
+        - that is, the msi parent domain is the same as the system root domain,
+          which is the local apic domain
+      - when a pci device is enumerated, `pcibios_device_add` sets the msi parent
+        domain to `x86_pci_msi_default_domain` which is `x86_vector_domain`
+    - arm calls `msi_create_parent_irq_domain` to create the msi parent domain
+      - `gic_of_init -> gic_init_bases -> its_init -> ... -> its_init_domain`
+        - the msi parent domain is a child of the system root domain
+      - when a pci device is enumerated, `pci_set_msi_domain` sets the msi parent
+        domain
+  - the msi devices provide the msi device domains
+    - when a pci driver probes a pci device, it calls
+      `msi_create_device_irq_domain` to create the msi device domain
+      - `pci_alloc_irq_vectors`, `pci_enable_msi`, etc. all call down to
+        `pci_create_device_domain` which calls `msi_create_device_irq_domain`
+        - the template is `pci_msix_template` or `pci_msi_template`
+- `msi_create_device_irq_domain`
+  - when a pci driver enables msi, this is called from
+    `pci_create_device_domain`
+  - the caller provides a template, such as `pci_msix_template`
+  - `pops->init_dev_msi_info`
+    - on x86, `x86_init_dev_msi_info`
+      - it sets `info->handler` to `handle_edge_irq`
+    - on arm, `its_init_dev_msi_info`
+- `msi_domain_alloc_irqs_all_locked`
+  - when a pci driver enables msi, this is called from
+    `pci_msi_setup_msi_irqs`
+  - `__msi_domain_alloc_irqs` calls `__irq_domain_alloc_irqs`
+    - `irq_domain_alloc_descs` allocs the `irq_desc`
+    - `irq_domain_alloc_irq_data` allocs the `irq_data` chain
+    - `irq_domain_alloc_irqs_hierarchy` calls `msi_domain_alloc`
+      - `irq_domain_alloc_irqs_parent` allocs from the parent domain
+        - on x86, `x86_vector_alloc_irqs`
+          - it inits the parent irq chip to `lapic_controller`
+        - on arm, `its_irq_domain_alloc`
+          - `its_irq_gic_domain_alloc` calls into the root domain
+            - `gic_irq_domain_alloc` inits the root irq chip to `gic_chip` and
+              the irq desc handler to `handle_fasteoi_irq`
+          - it inits the parent irq chip to `its_irq_chip`
+      - `msi_domain_ops_init`
+        - it sets the irq data chip to `info->chip`, which is from
+          `pci_msix_template`, etc.
+        - it sets irq desc handler to `info->handler`, which is
+          `handle_edge_irq` on x86
+
+## IRQ Domain
+
 - `struct irq_domain`
   - an irq controller driver should create one or more irq domains with
     `__irq_domain_add` or other helpers
@@ -124,9 +163,36 @@ Kernel and IRQ
   - `register_irq_proc` creates `/proc/irq/<irq>`
   - `register_handler_proc` creates `/proc/irq/<irq>/<action-name>`
 
+## HW Flow
+
+- when a device needs to be serviced, it assert an interrupt line
+- upon line assertion, irq controller latches the signal and raises a cpu
+  exception
+  - on x86, io apic receives the signal from the device, latches the signal,
+    and one of the per-core local apic forwards the signal to the cpu core
+- some cpu core handles the exception
+  - it enters irq context with irq disabled locally
+  - it asks the controller to mask out the line, such that the line cannot
+    trigger exception
+  - it asks the controller to ack the line, such that the controller can latch
+    another signal from another line
+  - it re-enables irq locally for nested irq (optional)
+  - it services the device such that the device no longer asserts the line
+    - this usually involves reading and acking device reqs, but real handling
+      of device reqs happen in bottom half
+  - it asks the controller to unmask the line
+    - the line may be asserted and raises another exception, if the device, or
+      another device sharing the line, has another request
+  - it exits irq context with irq enabled locally
+- the cpu core performs minimal work for exception handling for several reasons
+  - it wants to get back to normal operation asap
+    - there may be other exceptions to handle, or processes to run
+  - it wants to unmask the line asap
+    - other devices may share the same line
+
 ## HW Interrupt
 
-- some archs have a root irq handler that is set with `set_handle_irq`
+- some archs have a configurable root irq handler that is set with `set_handle_irq`
   - for example, when `gic_of_init` is called on arm64, it adds the irq domain
     and sets the root irq handler to `gic_handle_irq`
 - on interrupt exception, the arch-specific exception handler is called
