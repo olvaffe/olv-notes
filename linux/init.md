@@ -111,13 +111,12 @@ Kernel init
       `cpu_startup_entry(CPUHP_ONLINE)` enters `do_idle` loop
 - `do_idle` loop
   - the boot cpu runs `init_task` and is in an infinite loop calling `do_idle`
-  - if there is no other task, the boot cpu enters idle states
-  - if there is another task `schedule_idle` switches to the task
+  - if there is no other task, the boot cpu enters deeper and deeper idle states
+  - if there is another task, `schedule_idle` switches to the task
     - this changes the stack, and when the boot cpu returns from
-      `schedule_idle`, it jumps to the prior frame of the new stack (e.g.,
-      `kernel_init` of pid 1 during boot)
-  - when the other task switches back to `init_task` and returns, the boot cpu
-    jumps back to `do_idle` right after `schedule_idle`
+      `schedule_idle`, it jumps to the prior frame of the new stack
+  - when the other task switches back to `init_task`, the boot cpu is in
+    `do_idle` loop again
 
 ## PID 1: `kernel_init`
 
