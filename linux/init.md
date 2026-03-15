@@ -271,12 +271,28 @@ Kernel init
       - the idea is that a user can use the normal initcall to queue a work
         and use the sync variant to wait for it
 - `console_init` calls all `console_initcall`
-  - it is called early from `start_kernel` by pid 0
+  - this is called very early from `start_kernel` by pid 0 after irq is
+    enabled
+    - but still much later than earlycon
   - they call `register_console` to register consoles
 - `do_pre_smp_initcalls` calls all `early_initcall`
-  - it is called from `kernel_init_freeable` by pid 1 before `smp_init`
+  - this is called from `kernel_init_freeable` by pid 1 just before `smp_init`
+  - they are for stuff that secondary cpu bringup depends on, such as various
+    per-cpu kthreads
 - `do_initcalls` calls the rest
   - it is called from `kernel_init_freeable` by pid 1 almost last
+  - the goal is to provide sw (fs, ipc, futex, etc.) or hw (block, gpu)
+    services to userspace
+  - `pure_initcall` inits service data structs, params, etc.
+  - `core_initcall` inits core services that do not depend on other services
+  - `postcore_initcall` inits cores services that depend on other core services
+  - `arch_initcall` inits arch-specific hw services
+  - `subsys_initcall` inits various hw and sw subsystems
+  - `fs_initcall` is for any remaining service before `device_initcall`
+  - `rootfs_initcall` populates rootfs, which may provide device firmwares
+  - `device_initcall` registers drivers, probes devices, and scans for more
+    devices
+  - `late_initcall` is for any remaining service after `device_initcall`
 
 ## rootfs
 
