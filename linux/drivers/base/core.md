@@ -1,6 +1,35 @@
 Kernel Driver Core
 ==================
 
+## Early Drivers
+
+- early drivers do NOT use the driver model
+- why early drivers?
+  - scheduler must be working for pid 0 `start_kernel` to switch to pid 1
+    `kernel_init`
+    - this needs hw timer, which needs clk and irq
+  - console for debugging
+    - this needs serial, which also needs clk and irq
+    - there is an even earlier earlycon, which has no dependency
+- early earlycon drivers
+  - `setup_arch` calls `parse_early_param` to parse `earlycon` param, where
+    drivers are defined by `OF_EARLYCON_DECLARE`
+- early irqchip drivers
+  - x86 provides them from the arch code
+  - arm calls `irqchip_init`, where drivers are defined by `IRQCHIP_DECLARE`
+- early clk drivers
+  - arm calls `of_clk_init`, where drivers are defined by `CLK_OF_DECLARE`
+  - `CLK_OF_DECLARE_DRIVER` defines a driver that clears `OF_POPULATED`
+    - this allows the driver model to create a platform device for the node
+      later and allows a full-featured platform driver to take over
+- early timer drivers
+  - x86 provides them from the arch code
+  - arm calls `timer_probe`, where drivers are defined by `TIMER_OF_DECLARE`
+- early console drivers
+  - `start_kernel` calls `console_init`, where drivers are defined by
+    `console_initcall`
+  - full-featured driver-model drivers can take over later
+
 ## Initialization
 
 - `devices_init` is called from `driver_init` during driver subsystem init

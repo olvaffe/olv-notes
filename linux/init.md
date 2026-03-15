@@ -55,20 +55,25 @@ Kernel init
     - works can be queued but there is no worker yet
   - `rcu_init` inits rcu
   - `trace_init` inits tracing
-  - `early_irq_init` inits the irq subsystem, allocs some `irq_desc`, and
-    calls `arch_early_irq_init`
-  - `init_IRQ` inits all hw irqs
+  - `early_irq_init` early-inits the irq subsystem
+    - modern archs use `CONFIG_SPARSE_IRQ`
+    - they alloc `irq_desc` and increase `nr_irqs` dynamically
+      - `NR_IRQS` is the size of static `irq_desc` arary, which is not used
+      - legacy x86 may preallocate some irq descs
+    - `arch_early_irq_init` creates the root irq domain on x86
+  - `init_IRQ` inits hw interrupt controllers
+    - x86 provides irqchips from the arch code
+    - arm calls the generic `irqchip_init`
   - `tick_init` inits periodic kernel tick subsys
   - `timers_init` inits timer subsys
   - `hrtimers_init` inits high-resolution timer subsys
   - `softirq_init` inits softirq subsystem
   - `timekeeping_init` inits timekeeping (for `ktime_get*`)
-  - `time_init` registers clock sources
-    - on x86, it regs hpet and tsc
+  - `time_init` inits clock sources and clock event devices for sched
+    - x86 defers to `x86_late_time_init`
     - on arm, `of_clk_init` regs clks and `timer_probe` regs clock sources
-      - clk drivers use `CLK_OF_DECLARE`
-      - clock source drivers use `TIMER_OF_DECLARE` and `TIMER_ACPI_DECLARE`
   - `local_irq_enable` enables irq
+    - because console drivers might need irq
   - `console_init` inits console (for printk)
     - this calls `console_initcall` initcalls
     - vt's `con_init` prints `Console: colour dummy device 80x25` and calls
@@ -76,13 +81,14 @@ Kernel init
       - unless `keep_bootcon`, this also disables earlycon
   - `acpi_early_init` inits acpi
   - `late_time_init` is deferred `time_init`
-    - on x86, it points to `x86_late_time_init`
-  - `sched_clock_init` inits for `sched_clock`
+    - x86 `x86_late_time_init` regs hpet and tsc
+  - `sched_clock_init` inits for `sched_clock`, which is how scheduler gets
+    time
   - `calibrate_delay` computes BogoMIPS
   - `arch_cpu_finalize_init` late-inits the boot cpu
+    - `efi_enter_virtual_mode` tells efi to enter virtual mode
   - `pid_idr_init` inits pid allocator
-  - `anon_vma_init` inits anon vma allocator
-  - `efi_enter_virtual_mode` tells efi to enter virtual mode
+  - `anon_vma_init` inits `anon_vma` allocator
   - `fork_init` inits task allocator
   - `security_init` inits lsm
   - `net_ns_init` inits net
@@ -94,16 +100,19 @@ Kernel init
   - `cpuset_init` inits cpuset
   - `cgroup_init` inits cgroup
   - `acpi_subsystem_init` inits acpi again
-  - `rest_init` forks off two tasks and enters idle loop
-    - pid 1 runs `kernel_init`, which ultimately execs `/sbin/init`
-    - pid 2 runs `kthreadd`, which forks off kthreads in response to
-      `kthread_create`
-    - `cpu_startup_entry(CPUHP_ONLINE)` enters `do_idle` loop
+  - `rest_init` lets the scheduler take over
+    - it forks off pid 1 to run `kernel_init`, which ultimately execs
+      `/sbin/init`
+    - it forks off pid 2 to run `kthreadd`, which forks off kthreads in
+      response to `kthread_create`
+    - `schedule_preempt_disabled` calls the first `schedule`, to let the
+      scheduler take over and context-switch to pid 1/2
+    - when the scheduler switches back to pid 0,
+      `cpu_startup_entry(CPUHP_ONLINE)` enters `do_idle` loop
 - `do_idle` loop
   - the boot cpu runs `init_task` and is in an infinite loop calling `do_idle`
   - if there is no other task, the boot cpu enters idle states
-  - if there is another task (e.g., pid 1 during boot), `schedule_idle`
-    switches to the task
+  - if there is another task `schedule_idle` switches to the task
     - this changes the stack, and when the boot cpu returns from
       `schedule_idle`, it jumps to the prior frame of the new stack (e.g.,
       `kernel_init` of pid 1 during boot)
