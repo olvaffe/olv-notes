@@ -53,7 +53,8 @@ Kernel Time
   - `clocksource_jiffies`, rating 1
   - `clocksource_acpi_pm`, rating 200
   - `clocksource_tsc`, rating 300, `CLOCK_SOURCE_VALID_FOR_HRES`
-- on arm, `clocksource` is mostly provided by `drivers/clocksource`
+- on arm, `clocksource` is mostly provided by `drivers/clocksource` and is
+  typically `arch_sys_counter`
 - `clocksource_register_khz` registers a khz clocksource
   - `scale * freq` is the frequency of counter increments per second
   - `__clocksource_update_freq_scale` initializes `mult` and `shift` from
@@ -72,6 +73,7 @@ Kernel Time
 - on x86, the arch provides `sched_clock` using tsc
 - on arm, `CONFIG_GENERIC_SCHED_CLOCK` provides `sched_clock`
   - `sched_clock_register` registers a read callback for `sched_clock`
+    - the read callback is typically `arch_counter_get_cntvct`
   - if no better read callback is registered, it defaults to the jiffy-based
     `jiffy_sched_clock_read`
 
