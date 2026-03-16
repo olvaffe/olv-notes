@@ -267,3 +267,18 @@ Kernel Driver Core
   - if `fwnode_links_check_suppliers` returns a fwnode, it prints `wait for supplier <foo>`
     - this happens when `device_add` hasn't been called for the supplier dt
       node and thus the fwnode link hasn't been removed
+- 10 seconds after the last driver loaded,
+  - `deferred_probe_timeout_work_func` is called after
+    `driver_deferred_probe_timeout` (10s)
+  - `fw_devlink_drivers_done` relaxes devlinks where the supplier driver is
+    missing
+    - `dev->can_match` is true if any driver matches (not probes) the dev
+    - `FW_DEVLINK_FLAGS_PERMISSIVE` essentially means
+      `DL_FLAG_SYNC_STATE_ONLY` and allows `device_links_check_suppliers` to
+      ignore the link
+  - `driver_deferred_probe_trigger` probes all deferred devices one last time
+  - it prints a warning for remaining deferred devices
+  - `fw_devlink_probing_done` prints a warning for each devlink where the
+    consumer fails to probe
+    - `device_links_driver_bound` has called `dev_sync_state` on each dev
+      whose consumers have all been probed
