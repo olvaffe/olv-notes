@@ -212,27 +212,33 @@ Kernel Time
       `native_sched_clock` which uses tsc
     - on arm64, wall time is dummy and boot time is from generic `sched_clock`
     - boot time is zeroed if it is greater than wall time
-      - at this point, `wall_time + wall_to_mono = boot_offset`
+    - at this point, `wall_to_mono = boot_offset - wall_time`
   - `ntp_init` mainly provides `__do_adjtimex` which implements ntp time
     adjustment algorithm
   - `clocksource_default_clock` returns `clocksource_jiffies`
-  - `tk_setup_internals` sets up the clocksource
+  - `tk_setup_internals` sets up using `jiffies` clocksource
   - `tk_set_xtime`, `tk_set_wall_to_mono` and `timekeeping_update_from_shadow`
     update for the first time since boot
 - `update_wall_time` is called on ticks
   - `timekeeping_advance` reads the clocksource with `tk_clock_read`,
     calculates the delta since `cycle_last`, and applies the delta with
     `logarithmic_accumulation`
-    - `logarithmic_accumulation` accumulates one cycle at a time and updates
+    - `logarithmic_accumulation` accumulates a chunk of cycles at a time and
+      updates
       - `tk->tkr_mono.cycle_last`: to calculate delta next time
       - `tk->tkr_mono.xtime_nsec`: nanoseconds part of wall time
       - `tk->xtime_sec`: seconds part of wall time
       - and others
-  - `timekeeping_update_from_shadow` calls `tk_update_ktime_data` to update
-    fields used by ktime
-    - `tk->tkr_mono.base`: current base monotonic ktime in nanoseconds
-    - `tk->ktime_sec`: current monotonic ktime in seconds
-    - and others
+    - `timekeeping_adjust` makes adjustments for ntp
+    - `accumulate_nsecs_to_secs` accumulates nsecs to secs and handles leap
+      seconds
+    - `timekeeping_update_from_shadow` calls `tk_update_ktime_data` to update
+      fields used by ktime
+      - `tk->tkr_mono.base`: current base monotonic ktime in nanoseconds
+      - `tk->ktime_sec`: current monotonic ktime in seconds
+      - and others
+- `timekeeping_notify` is called when a better clocksource becomes available
+  - `change_clocksource` updates the tk core to use the new clocksource
 - `ktime_get` returns `CLOCK_MONOTONIC` in nanoseconds
   - `tk->tkr_mono.base` is in nanoseconds and was updated in the last tick
   - `timekeeping_get_ns` reads the clocksource and returns the delta since the
@@ -249,6 +255,22 @@ Kernel Time
 - `clock_gettime(CLOCK_REALTIME)` calls `posix_get_realtime_timespec` which
   calls `ktime_get_real_ts64`
   - this is similar to `ktime_get_ts64` but without `tk->wall_to_monotonic`
+- what to use for in-kernel users
+  - `sched_clock` reads raw cycles and converts to ns
+    - it might not be monotonic and might not be synchronized across cores
+  - `local_clock` is based on `sched_clock`
+    - it is monotonic but might not be synchronized across cores
+  - `ktime_get_raw` returns `CLOCK_MONOTONIC_RAW` in nanoseconds
+    - it is monotonic and global
+  - `ktime_get` returns `CLOCK_MONOTONIC` in nanoseconds
+    - it is monotonic, global, and adjusted by ntp
+- `ktime_get` variants
+  - `ktime_get{,_real,_boottime,_raw}` returns different `CLOCK_*`
+  - `ktime_get_coarse_*` returns the time at last `update_wall_time`
+  - `ktime_get_*_fast_ns` is NMI-safe version
+    - `read_seqcount_begin` is not NMI-safe
+    - `read_seqcount_latch` is NMI-safe
+  - `ktime_get{,_ns,_ts64}` returns in different formats
 
 ## NTP
 
