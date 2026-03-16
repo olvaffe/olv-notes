@@ -58,6 +58,11 @@ Kernel Time
   - `scale * freq` is the frequency of counter increments per second
   - `__clocksource_update_freq_scale` initializes `mult` and `shift` from
     `scale` and `freq`
+- `fs_initcall(clocksource_done_booting)`
+  - until this point, clocksources are registered but unused
+  - `clocksource_select`
+    - `clocksource_find_best` finds the best clocksource
+    - `timekeeping_notify` updates timekeeping clocksource
 
 ## `sched_clock`
 
@@ -159,16 +164,28 @@ Kernel Time
   - `CONFIG_NO_HZ_FULL` omits ticks on CPUs that are idle or have one runnable
     task
   - unless `CONFIG_HZ_PERIODIC`, `tick_handle_periodic` is only used briefly
-  - for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_handler` or the
-    high-resolution `hrtimer_interrupt` is used
+  - for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_lowres_handler`
+    or the high-resolution `hrtimer_interrupt` is used
     - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
     - `tick_sched_handle` calls `update_process_times`
-- in `NO_HZ`,
-  - on any interrupt enter, `tick_irq_enter` is called to see if tick is
-    disabled and needs to be re-enabled
-    - `tick_nohz_update_jiffies` is called to catch up
-  - on any interrupt exit, `tick_irq_exit` is called
-    - `tick_nohz_irq_exit`
+- `NO_HZ` impl
+  - both `NO_HZ` and `hrtimer` require oneshot mode
+  - idle thread `do_idle`
+    - `tick_nohz_idle_enter` sets `idle_entrytime` and marks
+      `TS_FLAG_IDLE_ACTIVE` 
+    - `tick_nohz_idle_stop_tick`
+      - `tick_nohz_next_event` find the next event
+      - `tick_nohz_stop_tick` stops tick until the next event
+    - `tick_nohz_idle_exit` when no longer idle
+      - `tick_nohz_idle_update_tick` calls `tick_nohz_restart_sched_tick` to
+        start tick
+  - `tick_handle_oneshot_broadcast` wakes up cpus that are in too deep idle
+    states
+    - `tick_do_broadcast` is called on cpus with expired `next_event`.  If it is
+      cpu-of-execution, its `tick_device->evtdev->event_handler` is called for the
+      rest, `tick_device->evtdev->broadcast` is called
+    - If there is un-expired event, `tick_broadcast_set_event` is called to
+      reprogram
 
 ## Timekeeping
 
@@ -232,6 +249,9 @@ Kernel Time
 ## hrtimer
 
 - the functionality is always compiled
+  - with `CONFIG_HIGH_RES_TIMERS`, high-res `clock_event_device` drives
+    hrtimer, and hrtimer drives tick
+  - without, `clock_event_device` drives tick, and tick drives hrtimer
 - time-related posix syscalls make use of hrtimer
   - `timer_create -> common_timer_create -> hrtimer_setup`
   - `timer_gettime -> common_timer_get -> common_hrtimer_remaining`
@@ -283,14 +303,10 @@ Kernel Time
   - it calls `tick_init_highres`, `tick_setup_sched_timer`, and `retrigger_next_event`
   - if hres is disabled, `tick_check_oneshot_change` calls
     `tick_nohz_switch_to_nohz`
-    - invokes `tick_switch_to_oneshot` with `event_handler`
-      `tick_nohz_handler`
-    - sets `nohz_mode` to `NOHZ_MODE_LOWRES`
-    - initializes `sched_timer` without activating (it is used to record
-      expiracy)
+    - invokes `tick_switch_to_oneshot` with `tick_nohz_lowres_handler`
+    - invokes `tick_setup_sched_timer` without `hrtimer`
 - `tick_init_highres`
-  - turns current cpu's `tick_device` to oneshot mode with `event_handler`
-    `hrtimer_interrupt`
+  - turns current cpu's `tick_device` to oneshot mode with `hrtimer_interrupt`
   - invokes `tick_broadcast_switch_to_oneshot` to turn broadcast event device
     to oneshot mode, with handler `tick_handle_oneshot_broadcast`
   - The next_event is set to `tick_next_period`
@@ -338,52 +354,3 @@ Kernel Time
   - `clocksource_done_booting`
   - `hpet_late_init`
   - `init_tsc_clocksource`
-
-## Old
-
-- `NO_HZ`
-  - periodic interrupt could be disabled when idle
-  - catch up jiffies when the system becomes busy again
-  - interrupts should also start again when the nearest timer expires
-  - it is easier to switch to oneshot mode and program to fire when the
-    nearest timer expires
-  - and with a `event_handler` which programs itself to emulate periodic
-    interrupt
-- `hrtimer`
-  - periodic interrupt no longer (accurate) enough
-  - oneshot interrupt for the next_event is needed
-  - a hrtimer which fires every jiffy is installed, which does what the old
-    mechanism does
-- IOW,
-  - both `NO_HZ` and `hrtimer` require oneshot mode
-  - `hrtimer` is more powerful than `NO_HZ`
-- `kernel/time/timer.c` is low-resolution timer
-- `kernel/time/hrtimer.c`
-  - timers that usually do not expire (e.g., timers to handle io timeout) can
-    keep using the low-resolution timer
-  - hrtimer unit is nanosecond
-  - timers are kept in a time-sorted, per-cpu, rb-tree
-  - not super high resolution due to softirq
-- Implementation
-  - during boot time (until `device_initcall`), the clocksource used is always
-    jiffies.
-  - after then (after `clocksource_done_booting`), `clocksource_select` checks
-    for a new timesource and switch to it
-- `tick_nohz_stop_sched_tick`
-  - invoked when cpu enters idle or `irq_exit`
-  - invokes `tick_nohz_start_idle` to update the status of `tick_sched`
-  - invokes `get_next_timer_interrupt` to get the jiffies of next timer or
-    hrtimer event
-  - if `next_jiffies` is more than one tick away, stop `tick_sched`
-  - `ts->last_tick` is set to last tick so that we can catch up when recovered
-  - start `sched_timer` in hires mode; otherwise, invokes `tick_program_event`
-  - `clock_event_device` could have a `max_delta_ns` for merely several
-    seconds.  timer may fire prematurely.
-- `tick_nohz_idle_restart_tick`
-  - invoked when cpu leaves idle
-- `tick_handle_oneshot_broadcast`
-  - `tick_do_broadcast` is called on cpus with expired `next_event`.  If it is
-    cpu-of-execution, its `tick_device->evtdev->event_handler` is called for the
-    rest, `tick_device->evtdev->broadcast` is called
-  - If there is un-expired event, `tick_broadcast_set_event` is called to
-    reprogram
