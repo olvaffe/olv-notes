@@ -81,6 +81,7 @@ Kernel Time
 
 - a `clock_event_device` is a device that can deliver an interrupt in the
   specified future periodically or one-shot
+  - periodic is worse because it is less flexible and the error accumulates
 - the main consumer is the tick subsystem
 - x86 Hardware
   - CMOS Clock.  Could be programmed to alarm.  IRQ 8.
