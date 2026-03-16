@@ -82,32 +82,23 @@ Kernel Time
 - a `clock_event_device` is a device that can deliver an interrupt in the
   specified future periodically or one-shot
   - periodic is worse because it is less flexible and the error accumulates
-- the main consumer is the tick subsystem
-- x86 Hardware
-  - CMOS Clock.  Could be programmed to alarm.  IRQ 8.
-  - TSC: Time Stamp Counter, starting Pentium.  Same freq as the CPU.
-  - PIT: Programmable Interval Timer.  Issue periodic irq on IRQ 0.  HZ ticks per second.
-  - CPU local timer.  Part of local APIC.  Interupt only a local CPU.
-  - HPET.  Registers are memory mapped.  Expect to replace PIT.  Interrupt ?.
-  - ACPI PMT.
-  - is clock event device per-cpu?  No spin lock needed when implementing one?
-    - yes?
-  - could a per-cpu clock event device also be a broadcast one at the same time?
-    - no?
-- examples of `clock_event_device` on x86
-  - hpet
-    - when `HPET_ID_LEGSUP` is set, hpet supports legacy replacement mode.
-      Channel 0 is in `HPET_MODE_LEGACY` to replace legacy 8254 (and RTC).
-      `timer_interrupt` calls its `event_handler`
-    - when `X86_FEATURE_ARAT` is set, no channel is in `HPET_MODE_CLOCKEVT`
-    - unused channels are put in `HPET_MODE_DEVICE`
-  - lapic, for each core
-  - `cat /proc/timer_list`
-    - On my 6-core amd laptop, i have 7 clock event devices
-    - a broadcast one, hpet, with `event_handler`
-      `tick_handle_oneshot_broadcast`
-    - two per-cpu ones, lapic, with `event_handler` `hrtimer_interrupt`
-    - acpi is checked and TSC could be marked unstable
+- the main consumer is the tick subsystem or hrtimer
+- examples of `clock_event_device` on x86 in boot order
+  - `hpet_legacy_clockevent_register`, rating 50
+    - because of `HPET_ID_LEGSUP` (legacy upgrade), it replaces
+      `i8253_clockevent`
+    - `timer_interrupt` is the irq handler
+    - because of `X86_FEATURE_ARAT`, there is no per-cpu hpet, rating 110
+      - which would use `hpet_msi_interrupt_handler` as the irq handler
+  - `lapic_clockevent`, rating 150
+    - because of `X86_FEATURE_ARAT`, it has rating 150 instead of 100
+    - `local_apic_timer_interrupt` is the irq handler
+- on arm, there are
+  - `arch_timer_evt`, rating 450
+    - `arch_timer_handler_virt` is the irq handler
+  - `ce_broadcast_hrtimer`, rating 0
+    - emulated broadcast timer based on hrtimer
+    - `broadcast_needs_cpu` keeps one cpu timer on to drive hrtimer
 - `clockevents_config_device` updates the struct
 - `clockevents_register_device` adds the struct to `clockevent_devices` list
   - `tick_check_new_device` adds the device as the per-cpu or broadcast tick
@@ -116,8 +107,6 @@ Kernel Time
 - `clockevents_switch_state` changes the state of the device
   - `CLOCK_EVT_STATE_PERIODIC` calls `set_state_periodic`
   - `CLOCK_EVT_STATE_ONESHOT` calls `set_state_oneshot`
-  - for hpet, `set_state_periodic` points to `hpet_clkevt_set_state_periodic`
-    - hpet interrupts are handled by `timer_interrupt`
 - whenever an interrupt is received, the device driver calls `event_handler`
   to feed the interrupt into kernel tick subsystem
 
@@ -128,39 +117,70 @@ Kernel Time
   - a `tick_device` is a wrapper to `clock_event_device`
   - there are per-cpu `tick_cpu_device`
   - there is a global `tick_broadcast_device`
-- broadcasting
-  - the tick subsystem prefers per-core `clock_event_device` 
-  - if there is no per-core clockevent dev, the subsystem uses whatever
-    clockevent dev as the broadcast device
-  - `tick_do_broadcast` calls arch-specific `tick_broadcast`
-    - on arm64, this sends `IPI_TIMER` to other cores
-  - `tick_receive_broadcast` is called when a core receives the broadcast
-    - on arm64, this is called when a core receives `IPI_TIMER`
+  - with `CONFIG_HIGH_RES_TIMERS`, it uses `clock_event_device` indirectly via
+    hrtimer
 - `tick_check_new_device` checks if a new clockevent dev is a better fit for
   the current cpu and switches to it for ticks
   - `tick_check_replacement`
     - clockevent dev can be cpu local or not, depending on its cpumask
     - non-local device could be treated as a local one if it can set irq
       affinity
-    - if a device is cpu local, and better than the current one, goes on
-  - if it is the first device, `tick_do_timer_cpu` is set to the cpu and the
-    mode is set to `TICKDEV_MODE_PERIODIC`
-  - `tick_setup_periodic` may switch the clockevent dev to
-    `CLOCK_EVT_STATE_PERIODIC` or `CLOCK_EVT_STATE_ONESHOT` regardless of
-    `TICKDEV_MODE_PERIODIC`, depending on what the clockevent dev is capable
-    - it can emulate one state using another anyway
-  - `clockevents_program_event` is called to arm the clockevent dev
+    - if a device is cpu local, and better than the current one, we will use
+      it as the new per-core clockevent dev
+      - else, `tick_install_broadcast_device` checks if it is better than the
+        current broadcast device
+  - `tick_setup_device` sets up per-core clockevent dev
+    - if it is the first device, mode is set to `TICKDEV_MODE_PERIODIC`
+    - `tick_setup_periodic` sets the handler to `tick_handle_periodic`
+      - it may switch the clockevent dev to `CLOCK_EVT_STATE_PERIODIC` or
+        `CLOCK_EVT_STATE_ONESHOT` regardless of `TICKDEV_MODE_PERIODIC`,
+        depending on what the clockevent dev is capable
+        - it can emulate one state using another anyway
 - `tick_handle_periodic` is called when the interrupt fires, and the mode is
   `TICKDEV_MODE_PERIODIC`
   - `tick_periodic` calls
     - `do_timer` increments `jiffies_64`
     - `update_wall_time` updates `timekeeper`
     - `update_process_times` charges 1 tick to the current process
-      - `run_local_timers` raises `TIMER_SOFTIRQ` and others
+      - `run_local_timers`
+        - `hrtimer_run_queues` drives hrtimers
+          - `tick_nohz_switch_to_nohz` potentially switch to low-res nohz mode
+          - `hrtimer_switch_to_hres` potentially switch to high-res nohz mode
+        - `raise_timer_softirq` raises `TIMER_SOFTIRQ` for wheel timers
       - `scheduler_tick` adds the tick to the scheduler
       - `run_posix_cpu_timers` checks if any userspace posix timer fires
   - `clockevents_program_event` arms the clockevent dev again if it is in
     `CLOCK_EVT_STATE_ONESHOT`
+- `tick_nohz_handler` is called when the interrupt fires, and the mode is
+  `TICKDEV_MODE_ONESHOT`
+  - this happens after `hrtimer_switch_to_hres` switches to high-res nohz mode
+    - if low-res nohz mode, `tick_nohz_lowres_handler` is used instead
+  - actually, when the interrupt fires, `hrtimer_interrupt` handles the
+    interrupt to drive hrtimers
+    - `tick_nohz_handler` is merely an hrtimer
+  - `tick_sched_do_timer`
+    - `tick_do_update_jiffies64` advances `jiffies_64`
+    - `update_wall_time` advances `timekeeper`
+  - `tick_sched_handle`
+    - `update_process_times` charges a tick to the current process
+- broadcasting
+  - if a per-core clockevent dev has `CLOCK_EVT_FEAT_C3STOP`, it sleeps when
+    the core enters C3 sleep
+  - the broadcast clockevent dev is responsible to wake up the core
+  - this interacts with cpuidle
+    - if cpuidle driver has any state with `CPUIDLE_FLAG_TIMER_STOP`,
+      `tick_broadcast_enable` enables the broadcast clockevent dev
+    - when `cpuidle_enter_state` enters a state with `CPUIDLE_FLAG_TIMER_STOP`,
+      - `tick_broadcast_enter` stops the per-core dev and starts the broadcast dev
+      - `tick_broadcast_exit` starts the per-core dev
+  - `tick_handle_periodic_broadcast` is the handler when periodic
+  - `tick_handle_oneshot_broadcast` is the handler when oneshot
+  - `tick_do_broadcast` wakes up a sleeping core
+    - x86 `lapic_timer_broadcast` sends `LOCAL_TIMER_VECTOR` ipi
+    - arm `tick_broadcast` sends `IPI_TIMER` ipi
+  - sleeping core wakes up to handle the ipi
+    - x86 `local_apic_timer_interrupt`
+    - arm `tick_receive_broadcast`
 - there are 3 tick modes
   - `CONFIG_HZ_PERIODIC` ticks periodically at constant rate
   - `CONFIG_NO_HZ_IDLE` omits ticks on idle CPUs
