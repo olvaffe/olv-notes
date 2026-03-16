@@ -1,6 +1,45 @@
 Kernel Time
 ===========
 
+## Overview
+
+- low-level mechanisms
+  - `clockevents.c` provides `clock_event_device`, a timer
+    - x86 mainly provides per-cpu `lapic` and global `hpet`
+    - arm mainly provides per-cpu `arch_sys_timer` and emulated global `bc_hrtimer`
+  - `clocksource.c` provides `clocksource`, a clock
+    - x86 mainly provides `tsc`, `hpet`, and `acpi_pm`
+    - arm mainly provides `arch_sys_counter`
+  - `sched_clock.c` provides a fast path to read the best clock, bypassing
+    `clocksource` when `CONFIG_GENERIC_SCHED_CLOCK` is enabled
+    - x86 provides `sched_clock` directly instead to read tsc
+    - arm calls `sched_clock_register` to register `arch_counter_get_cntvct`
+- tick and hrtimer
+  - `hrtimer.c` provides high-res timer to kernel and to userspace
+    - it is based on `clock_event_device`
+    - it calls `tick_program_event` to program `clock_event_device` indirectly
+    - on irq, `hrtimer_interrupt` fires expired hrtimers
+  - tick can be based on `clock_event_device` or hrtimer
+    - during early boot, `tick_handle_periodic` is still the irq handler
+      - `tick_periodic -> update_process_times -> run_local_timers ->
+        hrtimer_run_queues -> hrtimer_switch_to_hres`
+      - `tick_init_highres` switches to `hrtimer_interrupt` as the irq handler
+      - `tick_setup_sched_timer` sets up `tick_nohz_handler` as a hrtimer
+    - past early boot, when `hrtimer_interrupt` fires `tick_nohz_handler`,
+      - `tick_sched_do_timer` calls `tick_do_update_jiffies64` to update jiffies
+      - `tick_sched_handle` calls `update_process_times`
+- tick-based mechanisms
+  - `timer.c` provides tick-based timer to kernel
+    - it always fires at jiffy boundary
+  - `timekeeping.c` provides clocks to kernel and to userspace
+    - it inits `CLOCK_REALTIME` using rtc
+      - on x86, `read_persistent_clock64` returns cmos time
+      - with `CONFIG_RTC_HCTOSYS`, `rtc_hctosys` also sets the time
+    - it advances the clocks when tick calls `update_wall_time`
+    - it uses `clocksource`s to extrapolate the current time
+      - current time is "time at last tick" plus "hw cycles since last tick"
+    - it supports `adjtimex`, which is how userspace ntp daemon adjusts time
+
 ## `clocksource`
 
 - a `clocksource` is a counter that increments at a constant rate
