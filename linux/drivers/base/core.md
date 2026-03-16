@@ -151,64 +151,38 @@ Kernel Driver Core
 ## Device Link
 
 - <https://docs.kernel.org/driver-api/device_link.html>
-- device hierarchy forms a tree
-  - each child depends on its parent
-- device link turns device hierarchy into a DAG
-  - each consumer depends on its producer(s)
-- dt devlinks
-  - when `of_platform_default_populate_init` calls `device_add` to populate
-    the platform bus with dt devices, `fw_devlink_link_device` adds devlinks
-  - `fw_devlink_parse_fwtree` calls `add_links` cb, which points to
-    `of_fwnode_add_links`, to add fwnode links
-    - it checks dt node properties matched by `of_supplier_bindings` and adds
-      them as suppliers
-    - these properties are matched: `clocks`, `interconnects`, `mboxes`,
-      `power-domains`, `nvmem-cells`, `phys`, `pinctrl-*`, `pwms`, `resets`,
-      `leds`, `backlight`, `panel`, `*-supply`, `*-gpio`, etc.
-  - `__fw_devlink_link_to_consumers` and `__fw_devlink_link_to_suppliers`
-    adds devlinks
-    - as devlinks are added, `__fwnode_link_del` removes fwnode links
-- when `device_link_add` adds a devlink,
+  - device hierarchy forms a tree
+    - each child depends on its parent
+  - device link turns device hierarchy into a DAG
+    - each consumer depends on its producer(s)
+- `device_link_add` adds a devlink
+  - a `device_link` is also a `device`
+    - `link->supplier` points to the supplier
+    - `link->consumer` points to the consumer
+    - link name is `<supplier-bus:name>--<consumer-bus:name>`
+    - `link->status` depends on `supplier->links.status` and
+      `consumer->links.status`
+  - the new link is added to `supplier->links.consumers` and
+    `consumer->links.suppliers`
   - `device_reorder_to_tail` moves the consumer to the tail to ensure
     suppliers always come before consumers
     - `devices_kset_move_last` updates `devices_kset`
     - `device_pm_move_last` updates `dpm_list`
 - before a driver probes a dev, `really_probe` calls
   `device_links_check_suppliers` first to potentially defer the probe
-  - if `fwnode_links_check_suppliers` returns a fwnode, it prints `wait for supplier <foo>`
-    - this happens when `device_add` hasn't been called for the supplier dt
-      node and thus the fwnode link hasn't been removed
   - if a supplier on `dev->links.suppliers` is not ready, it prints `supplier <foo> not ready`
-- fwnode flags
-  - `FWNODE_FLAG_LINKS_ADDED`
-    - when `device_add` calls `fw_devlink_link_device`, the flag ensures
-      `add_links` is called only once for each fwnode to add fwnode
-      supplier/consumer links
-  - `FWNODE_FLAG_NOT_DEVICE`
-    - when `fw_devlink_create_devlink` adds a devlink, the flag causes the
-      parent device of the supplier to be used as the supplier
-  - `FWNODE_FLAG_INITIALIZED`
-    - some special drivers do not bind to their devices but instead set this flag
-  - `FWNODE_FLAG_NEEDS_CHILD_BOUND_ON_ADD`
-    - net mdio sets the flag to prevent `fw_devlink_create_devlink` from adding
-      devlink
-  - `FWNODE_FLAG_BEST_EFFORT`
-    - earlycon `stdout-path` sets the flag to prevent
-      `device_links_check_suppliers` from checking the supplier deps
-  - `FWNODE_FLAG_VISITED`
-    - when `fw_devlink_create_devlink` calls `__fw_devlink_relax_cycles` to find
-      dep cycles, the flag ensures each fwnode is visited once
 - `dev->links.status`
   - `DL_DEV_NO_DRIVER` is the initial status
   - when `really_probe` calls `device_links_check_suppliers`, the status
     becomes `DL_DEV_PROBING`
-  - if the driver probes, `driver_bound` calls `device_links_driver_bound` to
-    set the status to `DL_DEV_DRIVER_BOUND`
-  - if the driver does not probe, `device_links_no_driver` resets the status
+  - after the driver probes, `driver_bound` calls `device_links_driver_bound`
+    to set the status to `DL_DEV_DRIVER_BOUND`
+  - if the driver fails to probe, `device_links_no_driver` resets the status
     to `DL_DEV_NO_DRIVER`
   - when `device_release_driver_internal` unbinds a driver, the status becomes
-    `DL_DEV_UNBINDING`
-- devlink status
+    `DL_DEV_UNBINDING` after `device_links_busy` returns, and then becomes
+    `DL_DEV_NO_DRIVER` after `device_links_driver_cleanup` returns
+- `link->status`
   - `DL_STATE_NONE` means not tracked
   - `DL_STATE_DORMANT` means supplier is not ready (no driver bound)
   - `DL_STATE_AVAILABLE` means supplier is ready but consumer is not
@@ -219,7 +193,7 @@ Kernel Driver Core
     - if `DL_FLAG_STATELESS` (no tracking), the status is `DL_STATE_NONE`
     - otherwise, `device_link_init_status` sets the status based on
       consumer/supplier status
-- devlink flags
+- `link->flags`
   - `DL_FLAG_STATELESS` means explicit link lifetime management
   - `DL_FLAG_AUTOREMOVE_CONSUMER` means the link is auto-removed when the consumer
     driver unbinds
@@ -232,3 +206,64 @@ Kernel Driver Core
   - `DL_FLAG_SYNC_STATE_ONLY`
   - `DL_FLAG_INFERRED` means the link is auto-derived from dt
   - `DL_FLAG_CYCLE` means cyclic dep between consumer/supplier
+- `device_links_driver_bound` is called on a dev after a driver probes the dev
+  - for each devlink from the dev to its consumer,
+    - `link->status` transitions from `DL_STATE_DORMANT` to
+      `DL_STATE_AVAILABLE`
+    - if `DL_FLAG_AUTOPROBE_CONSUMER`, `driver_deferred_probe_add` the
+      consumer
+  - for each devlink from a supplier to this dev,
+    - `link->status` transitions from `DL_STATE_CONSUMER_PROBE` to
+      `DL_STATE_ACTIVE`
+  - `dev->links.status` transitions to `DL_DEV_DRIVER_BOUND`
+
+## `fw_devlink`
+
+- `fw_devlink` creates devlinks automatically based on fwnodes
+- `device_add` calls `fw_devlink_link_device` on each device
+  - `fw_devlink_parse_fwtree` calls `add_links` cb, which points to
+    `of_fwnode_add_links`, on the fwnode
+    - it checks dt node properties matched by `of_supplier_bindings`, which
+      consists of `clocks`, `interconnects`, `mboxes`, `power-domains`,
+      `nvmem-cells`, `phys`, `pinctrl-*`, `pwms`, `resets`, `leds`,
+      `backlight`, `panel`, `*-supply`, `*-gpio`, etc.
+    - this fwnode is the consumer
+    - `fwnode_link_add` adds an `fwnode_link`
+      - `link->supplier` points to the supplier
+      - `link->consumer` points to the consumer
+      - the link is added to `supplier->consumers` and `consumer->suppliers`
+  - `__fw_devlink_link_to_consumers` creates devlinks to consumers automatically
+    - for each consumer fwnode, if the consumer device has been added,
+      `fw_devlink_create_devlink` calls `device_link_add` for the
+      supplier-consumer device pair
+    - `__fwnode_link_del` removes fwnode links if they have been promoted to
+      devlinks
+  - `__fw_devlink_link_to_suppliers` creates devlinks to suppliers automatically
+    - for each supplier fwnode, if the supplier device has been added,
+      `fw_devlink_create_devlink` calls `device_link_add` for the
+      supplier-consumer device pair
+    - `__fwnode_link_del` removes fwnode links regardless whether they have
+      been promoted to devlinks
+- fwnode flags
+  - `FWNODE_FLAG_LINKS_ADDED`
+    - when `device_add` calls `fw_devlink_link_device`, the flag ensures
+      `add_links` is called only once for each fwnode to add fwnode
+      supplier/consumer links
+  - `FWNODE_FLAG_NOT_DEVICE`
+    - when `fw_devlink_create_devlink` adds a devlink, the flag causes the
+      parent device of the supplier to be used as the supplier
+  - `FWNODE_FLAG_INITIALIZED`
+    - early drivers do not bind to their devices but instead set this flag
+  - `FWNODE_FLAG_NEEDS_CHILD_BOUND_ON_ADD`
+    - net mdio sets the flag to prevent `fw_devlink_create_devlink` from adding
+      devlink
+  - `FWNODE_FLAG_BEST_EFFORT`
+    - earlycon `stdout-path` sets the flag to prevent
+      `device_links_check_suppliers` from checking the supplier deps
+  - `FWNODE_FLAG_VISITED`
+    - when `fw_devlink_create_devlink` calls `__fw_devlink_relax_cycles` to find
+      dep cycles, the flag ensures each fwnode is visited once
+- `device_links_check_suppliers` also checks for fw devlinks
+  - if `fwnode_links_check_suppliers` returns a fwnode, it prints `wait for supplier <foo>`
+    - this happens when `device_add` hasn't been called for the supplier dt
+      node and thus the fwnode link hasn't been removed
