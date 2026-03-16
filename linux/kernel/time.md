@@ -181,6 +181,9 @@ Kernel Time
   - sleeping core wakes up to handle the ipi
     - x86 `local_apic_timer_interrupt`
     - arm `tick_receive_broadcast`
+
+## `CONFIG_NO_HZ_IDLE`
+
 - there are 3 tick modes
   - `CONFIG_HZ_PERIODIC` ticks periodically at constant rate
   - `CONFIG_NO_HZ_IDLE` omits ticks on idle CPUs
@@ -188,27 +191,17 @@ Kernel Time
     task
   - unless `CONFIG_HZ_PERIODIC`, `tick_handle_periodic` is only used briefly
   - for `CONFIG_NO_HZ_IDLE` or `CONFIG_NO_HZ_FULL`, `tick_nohz_lowres_handler`
-    or the high-resolution `hrtimer_interrupt` is used
-    - `tick_sched_do_timer` updates `jiffies_64` and calls `update_wall_time`
-    - `tick_sched_handle` calls `update_process_times`
-- `NO_HZ` impl
+    or the high-resolution `hrtimer_interrupt` plus `tick_nohz_handler` is used
   - both `NO_HZ` and `hrtimer` require oneshot mode
-  - idle thread `do_idle`
-    - `tick_nohz_idle_enter` sets `idle_entrytime` and marks
-      `TS_FLAG_IDLE_ACTIVE` 
-    - `tick_nohz_idle_stop_tick`
-      - `tick_nohz_next_event` find the next event
-      - `tick_nohz_stop_tick` stops tick until the next event
-    - `tick_nohz_idle_exit` when no longer idle
-      - `tick_nohz_idle_update_tick` calls `tick_nohz_restart_sched_tick` to
-        start tick
-  - `tick_handle_oneshot_broadcast` wakes up cpus that are in too deep idle
-    states
-    - `tick_do_broadcast` is called on cpus with expired `next_event`.  If it is
-      cpu-of-execution, its `tick_device->evtdev->event_handler` is called for the
-      rest, `tick_device->evtdev->broadcast` is called
-    - If there is un-expired event, `tick_broadcast_set_event` is called to
-      reprogram
+- idle thread `do_idle`
+  - `tick_nohz_idle_enter` sets `idle_entrytime` and marks
+    `TS_FLAG_IDLE_ACTIVE`
+  - `tick_nohz_idle_stop_tick`
+    - `tick_nohz_next_event` find the next event
+    - `tick_nohz_stop_tick` stops tick until the next event
+  - `tick_nohz_idle_exit` when no longer idle
+    - `tick_nohz_idle_update_tick` calls `tick_nohz_restart_sched_tick` to
+      start tick
 
 ## Timekeeping
 
