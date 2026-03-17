@@ -184,6 +184,7 @@ Kernel KBuild
     - if arm64, `dtbs`, `Image.gz`
   - `modules_prepare` sets up for external modules
   - `tags` generates `tags`
+    - `make ALLSOURCE_ARCHS="arm64 x86" tags`
   - `kernelversion` prints `$KERNELVERSION`, such as `6.11.2`
   - `kernelrelease` prints `$KERNELRELEASE`, which is
     `$KERNELVERSION$CONFIG_LOCALVERSION$CONFIG_LOCALVERSION_AUTO`
