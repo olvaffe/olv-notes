@@ -57,32 +57,43 @@ Kernel vmalloc
   - `__get_vm_area_node`
     - `alloc_vmap_area` allocs a va
     - it allocs and returns a `vm_struct` pointing to the same range
-  - `vmap_pages_range` maps the pages into the range
+  - `vmap_pages_range` sets up pgtable
+    - `flush_cache_vmap` seems to be nop
+- `vunmap` unmaps a range
+  - `remove_vm_area`
+    - `find_unlink_vmap_area` finds the va and removes it from its node
+    - `free_unmap_vmap_area`
+      - `vunmap_range_noflush` zaps pgtable
+      - `free_vmap_area_noflush` adds the va to its node's lazy tree
+      - it may schedule `drain_vmap_area_work`
 
-## `vmalloc`
+## `vmalloc` and `vfree`
 
-- `__get_vm_area_node` creates a `vm_struct`
-  - `alloc_vmap_area` allocs a va
-  - `vm_struct` points to the same area as the va does
-- `__vmalloc_area_node`
-  - `vm_area_alloc_pages` allocates pages from the buddy allocator
-  - `vmap_pages_range` calls `vmap_range_noflush` to map the allocated pages
-- `get_vm_area` finds an unused area in `[VMALLOC_START, VMALLOC_END]`
-  - it allocates a `vmap_area` and a `vm_struct`
-  - `vmap_area` is used to find an unused area and is added to
-    `vmap_area_root`
-  - `vm_struct` is returned
-- `vmap_range_noflush` maps the specified va to the specified pa
-  - `addr` should be from `get_vm_area` 
-  - `pgd_offset_k` returns a pointer to the pgd entry
-    - it uses `init_mm` whose `pgd` is `swapper_pg_dir`
-  - it allocates page tables and updates entries at all levels
-- this can map physically uncontiguous pages to logically contiguous addresses
-- this can also be used to mmap physical mmio addresses to logical addresses
-
+- `vmalloc` allocs logically contiguous buffer
+  - `__get_vm_area_node` allocs a va and returns a vm
+  - `__vmalloc_area_node`
+    - `vm_area_alloc_pages` allocs pages
+    - `__vmap_pages_range` sets up pgtable
+- `vfree` a buffer
+  - `remove_vm_area` zaps the pgtable and moves the va to its node's lazy tree
+  - `__free_page` frees each page
 
 ## `ioremap`
 
-- if `CONFIG_GENERIC_IOREMAP`, `ioremap` calls the generic `ioremap_prot`
-- `get_vm_area_caller` finds an unused area
-- `ioremap_page_range` maps the mmio addrs into the area
+- on x86,
+  - `ioremap`
+    - `memtype_reserve`
+    - `get_vm_area_caller` allocs a va and returns a vm
+    - `memtype_kernel_map_sync`
+    - `ioremap_page_range` calls `vmap_page_range` to set up pgtable
+  - `iounmap`
+    - `find_vm_area` calls `find_vmap_area` and returns the vm
+    - `memtype_free`
+    - `remove_vm_area` zaps the pgtable and moves the va to its nodes' lazy
+      tree
+- on arm, `CONFIG_GENERIC_IOREMAP` is enabled
+  - `ioremap` calls `generic_ioremap_prot` with `PROT_DEVICE_nGnRE`
+    - `__get_vm_area_caller` allocs a va and returns a vm
+    - `ioremap_page_range` calls `vmap_page_range` to set up pgtable
+  - `iounmap` calls `generic_iounmap`
+    - it is just `vunmap`
