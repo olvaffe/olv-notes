@@ -721,8 +721,6 @@ Kernel defconfig
     - select `Intel SoundWire Master driver` if intel
     - select `Qualcomm SoundWire Master driver` if qcom
   - select `SOC (System On Chip) specific Drivers` if arm
-    - select `Broadcom SoC drivers` if rpi
-      - select `Raspberry Pi power domain driver`
     - select `MediaTek SoC drivers` if mtk
       - select `MediaTek CMDQ Support`
       - select `Mediatek Device APC Support`
@@ -745,6 +743,8 @@ Kernel defconfig
       - select `QCOM Interconnect Bandwidth Monitor driver`
     - select `Rockchip IO domain support` if rk3568
   - select `PM Domains` if arm
+    - select `Broadcom PM Domains` if rpi
+      - select `Raspberry Pi power domain driver`
     - select `SCMI performance domain driver` if qcom x1
     - select `MediaTek PM Domains` if mtk
     - select `Qualcomm PM Domains` if qcom
