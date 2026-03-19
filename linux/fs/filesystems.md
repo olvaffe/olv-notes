@@ -125,8 +125,6 @@ VFS
 - A file object represents an opened instance of an inode
 - there is `struct file_operations`
 
-## Directory Entry Cache (dcache)
-
 ## `anon_inodefs`
 
 - during kernel init, `anon_inode_init` mounts the filesystem
