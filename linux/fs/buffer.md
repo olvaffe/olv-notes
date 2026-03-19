@@ -29,3 +29,32 @@ Linux fs buffer
   - when the bio completes,
     - `end_bio_bh_io_sync` calls `end_buffer_async_write`
       - `folio_end_writeback` wakes up waiters
+
+## Buffer Cache and Page Cache
+
+- when fs calls `sb_bread` to read a block (for fs metadata), `bdev_getblk`
+  returns a bh associated with the bdev's page cache (aka buffer cache)
+  - `__getblk_slow` is the slowest path
+  - `grow_buffers`
+    - `__filemap_get_folio` allocs folio in `bdev->bd_mapping`
+    - `folio_alloc_buffers` allocs bh for the folio
+  - `find_get_block_common` calls `__find_get_block_slow` to return the bh
+- when `generic_file_read_iter` calls `filemap_read` to read a file,
+  - `filemap_create_folio` is one of the paths
+    - `filemap_alloc_folio` allocs folio in `filp->f_mapping`
+    - `filemap_read_folio` calls `a_ops->read_folio` which asks the fs to read
+      into the folio
+- `/proc/meminfo`
+  - `Buffers` is from `nr_blockdev_pages`
+    - it sums folios in each of the bdev's page cache
+  - `SwapCached` is `NR_SWAPCACHE`
+    - `__swap_cache_add_folio` and `__swap_cache_del_folio` update the stat
+    - that is, it counts folios in the special page cache for anon vma (aka
+      swap cache)
+  - `Cache` is `NR_FILE_PAGES` minus the two above
+    - `NR_FILE_PAGES`
+      - `__filemap_add_folio` and `__filemap_remove_folio` update the stat
+      - `__swap_cache_add_folio` and `__swap_cache_del_folio` update the stat
+      - `shmem_update_stats` updates the stat
+      - that is, it counts folios in regular page caches (for files and
+        bdevs), special page cache (for anon vma), and shmem
