@@ -1,6 +1,34 @@
 Linux hda
 =========
 
+## Overview
+
+- hda is a bus and a codec is a device on the bus
+- `sounds/hda`
+  - `codecs` contains codec drivers
+  - `common` provides `snd-hda-codec`
+    - controller drivers use
+      - `azx_bus_init` to create an hda bus
+      - `azx_probe_codecs` to probe codecs
+      - etc.
+    - codec drivers use
+      - `module_hda_codec_driver` to register a codec driver
+      - etc.
+  - `controllers` are controller drivers
+    - intel no longer uses `snd-hda-intel`
+    - amd uses `snd-hda-intel` for output but not input
+  - `core` provides `snd-hda-core` and `snd-hda-ext-core`
+    - it registers hda bus type, provides low-level hw communications, etc.
+- intel dsp with sof
+  - there is a dsp driver, such as `CONFIG_SND_SOC_SOF_PANTHERLAKE`
+  - if dsp supports hda, `CONFIG_SND_SOC_SOF_HDA_LINK` is like the hda
+    controller driver
+    - this is enough for gpu hdmi audio, which needs `core` but not `common`
+  - if there are hda codecs, `CONFIG_SND_SOC_SOF_HDA_AUDIO_CODEC` is like the
+    hda codec driver
+    - it selects `CONFIG_SND_SOC_HDAC_HDA` to adapt hda codec drivers for
+      asoc, which needs both `core` and `common`
+
 ## HD Audio
 
 - Intel High Definition Audio, developed by intel and codec suppliers in 2004
