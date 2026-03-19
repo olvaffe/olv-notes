@@ -212,13 +212,42 @@ Scheduler
 
 ## Wait Queue
 
-- `wait_event_interruptible` marks self `TASK_INTERRUPTIBLE` and keeps calling
-  `schedule` until the condition is true.  Then it sets itself back to
-  `TASK_RUNNING`.  `init_wait_entry` adds a `wait_queue_entry` with
-  `autoremove_wake_function` as the callback, which simply calls
-  `try_to_wake_up`
-- `wake_up_interruptible` calls the callback function, which calls
-  `try_to_wake_up`
+- basic usage
+  - `init_waitqueue_head` inits a queue
+  - when a thread needs to wait for a condition, `wait_event` on the queue
+  - when another thread changes the condition, `wake_up` on the queue
+- manual wait
+  - when a thread needs to wait for a condition,
+    - `init_waitqueue_entry` inits an entry
+    - `add_wait_queue` adds the entry to the queue
+    - loop
+      - `set_current_state` sets to `TASK_INTERRUPTIBLE` or `TASK_UNINTERRUPTIBLE`
+      - check for condition
+      - `schedule` sleeps
+      - check for condition
+    - `__set_current_state` sets to `TASK_RUNNING`
+    - `remove_wait_queue` removes the entry
+- `init_waitqueue_head` inits a `wait_queue_head`
+  - it consists of a spinlock and a list
+- `init_waitqueue_entry` inits a `init_waitqueue_entry`
+  - `flags` is 0
+  - `private` is the task
+  - `func` is `default_wake_function`, which calls `try_to_wake_up`
+- `add_wait_queue` adds an entry to a queue
+  - it locks the queue to add the entry to the list
+- `remove_wait_queue` removes an entry from a queue
+  - it locks the queue to delete the entry from the list
+- `wake_up` wakes up a queue
+  - it locks the queue
+  - it calls `func` of each entry with the lock held
+    - return values
+      - negative: stop immediately
+      - 0: not woken up
+      - 1: woken up
+    - if woken up, and is `WQ_FLAG_EXCLUSIVE`, stop immediately as well
+      - when N thread waits for an event, and only one thread is needed to
+        handle each event, they should set `WQ_FLAG_EXCLUSIVE`
+  - it unlocks the queue
 
 ## `completion`
 
