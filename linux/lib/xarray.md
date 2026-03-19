@@ -26,17 +26,30 @@ Kernel xarray
     - level 1: shift 6
     - ...
     - level 10: shift 60
+  - `xa->xa_head` points to the node of the current highest level
+    - if the highest index is less than 2^6, level 1
+    - if the highest index is less than 2^12, level 2
+    - ...
+    - if the highest index is less than 2^60, level 10
+    - that is, for small indices, the tree is no more than one or two levels
 - `xas_alloc` allocs a new `xa_node`
   - `node->shift` is the specified shift
   - `node->count` is the number of children nodes
   - `node->parent` is the parent node (level N+1)
   - `node->array` points back to the array
-- `xas_expand` grows the tree vertically
+- `xas_expand` grows the tree vertically as needed
   - if node `head` does not cover index `max`, `xas_alloc` allocs a node in
     the next level and updates `xa->xa_head` to point to the new node
-    - that is, for small indices, the tree is no more than one or two levles
   - updates `xas->xa_node` to point to the new highest node for the index
-
+- `xas_create` ensures necessary nodes for an index are allocated
+  - given the index, `slot` is the slot at level N and `entry` is the node at N-1
+    - if `entry` is NULL, `xas_alloc` allocs a new node and updates `slot`
+    - `xas_descend` returns the node at N-2
+      - `xas->xa_node` is set to the node at N-1
+      - `xas->xa_offset` is set to the offset at level N-1
 - `xa_store(xa, idx, obj, 0)` is like `xa[idx] = obj`
-  - `xas_create` creates a slot for storage
-    - 
+  - `xas_create` allocs all nodes for the index; when it returns,
+    - `xas->xa_node` is the parent node for the index
+    - `xas->xa_offset` is the slot offset for the index
+    - ret is the old value, `xas->xa_node->slots[xas->xa_offset]`
+
