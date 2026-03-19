@@ -1,6 +1,17 @@
 VFS Mount
 =========
 
+## Overview
+
+- a `fs_context` is a temp object used during mounting
+  - it collects mount options
+- a `vfsmount` represents a mount
+  - it has info to manipulate a fs
+    - `mnt_sb` is the super block
+    - `mnt_root` is the root dentry
+  - it lacks info about mountpoint, etc.
+    - it needs to be upcasted internal `struct mount` to access those info
+
 ## Initialization
 
 - `mnt_init` creates `fs_kobj`, `/sys/fs`
