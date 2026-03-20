@@ -219,6 +219,9 @@ Scheduler
     - `for_each_process` loops through all processes
     - `for_each_process_thread` loops through all threads of all tasks
     - this excludes `init_task` and idle threads
+  - for `/proc`, `proc_pid_readdir` calls `next_tgid` to loop through all pids
+    - because `init_task` and idle threads do not allocate pids from the
+      namespace, they are excluded
 - scheduler task tracking
   - scheduler uses rqs to tracks task
     - a task not on any rq is not visible to scheduler
