@@ -3,30 +3,49 @@ Reboot
 
 ## `reboot` syscall
 
-- does not imply `sync`
-- requires superuser
 - userspace should stop all services, unmount filesystems, etc. before making
   the syscall
-- if in pid namespace, this sends `SIGKILL` to pid 1 (and kernel will send
-  `SIGKILL` to all processes in the pid namespace)
-- `LINUX_REBOOT_CMD_SW_SUSPEND` is suspend-to-disk
-- for others, they first
-  - call notifiers registered with `register_reboot_notifier`
-  - call `shutdown` on all devices
-  - call `shutdown` of syscore ops registered with `register_syscore_ops`
-  - stop all other cpus and core hw (arch-specific)
-- after the steps above,
-  - `LINUX_REBOOT_CMD_HALT`
-    - on x86, it executes `hlt` instruction
-    - on arm64, it stays in a `while(1);` loop forever
-  - `LINUX_REBOOT_CMD_POWER_OFF`
-    - on x86, it calls `pm_power_off` which is `acpi_power_off` to cut the
-      power
-    - on arm64, it calls `pm_power_off` which can be anything
-      (e.g., `bcm2835_power_off` on raspberry pi)
-  - `LINUX_REBOOT_CMD_RESTART2`
-    - on x86, it tries various reboot methods, starting with the one specified
-      by `reboot=` or `BOOT_ACPI`.
-    - on arm64, it tries various restart handlers registered with
-      `register_restart_handler`
-
+  - it does not imply `sync`
+- it requires `CAP_SYS_BOOT`
+- if in pid namespace, `reboot_pid_ns` never returns
+  - this sends `SIGKILL` to pid 1 (and kernel will send `SIGKILL` to all
+    processes in the pid namespace)
+  - `do_exit` does not return
+- if `LINUX_REBOOT_CMD_SW_SUSPEND`, `hibernate` suspends to disk
+- if `LINUX_REBOOT_CMD_HALT`, `kernel_halt`
+  - `kernel_shutdown_prepare`
+  - `syscore_shutdown`
+  - prints `System halted`
+  - `machine_halt` is arch-specific
+    - on x86, `native_machine_halt` stops all other cpus and enters `hlt` loop
+    - on arm, it stops all others cpus and enters nop loop
+- if `LINUX_REBOOT_CMD_POWER_OFF`, `kernel_power_off`
+  - `kernel_shutdown_prepare`
+    - it calls all handlers registered with `register_reboot_notifier`
+    - `device_shutdown` calls `->shutdown` on all devices
+  - `do_kernel_power_off_prepare`
+    - it calls all `SYS_OFF_MODE_POWER_OFF_PREPARE` handlers
+  - `syscore_shutdown`
+    - it calls all handlers registered with `register_syscore`
+  - prints `Power down`
+  - `machine_power_off` is arch-specific
+    - on x86 and arm, they both stop all others cpus and call
+      `do_kernel_power_off`
+- if `LINUX_REBOOT_CMD_RESTART2`, `kernel_restart`
+  - `kernel_restart_prepare` is similar to `kernel_shutdown_prepare`
+  - `do_kernel_restart_prepare`
+    - it calls all `SYS_OFF_MODE_RESTART_PREPARE` handlers
+  - `syscore_shutdown`
+  - prints `Restarting system ...`
+  - `machine_restart` is arch-specific
+    - on x86, `native_machine_restart` stops all others cpus and call
+      `acpi_reboot`
+    - on arm, it stops all others cpus and call `do_kernel_restart`
+- `do_kernel_power_off` calls all `SYS_OFF_MODE_POWER_OFF` handlers
+  - on x86, `acpi_sleep_init` registers `acpi_power_off`
+  - on arm, it is board-dependent
+    - `bcm2835_power_off` on raspberry pi
+- `do_kernel_restart` calls all `SYS_OFF_MODE_RESTART` handlers and handlers
+  registered with `register_restart_handler`
+  - x86 does not use this
+  - on arm, it is board-dependent
