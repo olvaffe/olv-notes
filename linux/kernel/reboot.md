@@ -17,8 +17,9 @@ Reboot
   - `syscore_shutdown`
   - prints `System halted`
   - `machine_halt` is arch-specific
-    - on x86, `native_machine_halt` stops all other cpus and enters `hlt` loop
-    - on arm, it stops all others cpus and enters nop loop
+    - on x86, `native_machine_shutdown` stops other cpus and `stop_this_cpu`
+      enters `hlt` loop
+    - on arm, `smp_send_stop` stops others cpus and it enters nop loop
 - if `LINUX_REBOOT_CMD_POWER_OFF`, `kernel_power_off`
   - `kernel_shutdown_prepare`
     - it calls all handlers registered with `register_reboot_notifier`
@@ -38,14 +39,14 @@ Reboot
   - `syscore_shutdown`
   - prints `Restarting system ...`
   - `machine_restart` is arch-specific
-    - on x86, `native_machine_restart` stops all others cpus and call
-      `acpi_reboot`
-    - on arm, it stops all others cpus and call `do_kernel_restart`
+    - on x86, `native_machine_shutdown` stops others cpus and
+      `native_machine_emergency_restart` calls `acpi_reboot`
+    - on arm, `smp_send_stop` stops others cpus and it calls
+      `do_kernel_restart`
 - `do_kernel_power_off` calls all `SYS_OFF_MODE_POWER_OFF` handlers
-  - on x86, `acpi_sleep_init` registers `acpi_power_off`
-  - on arm, it is board-dependent
-    - `bcm2835_power_off` on raspberry pi
+  - on x86, `acpi_power_off` registered by `acpi_sleep_init` enters S5
+  - on arm, often `psci_sys_poweroff` calls `PSCI_0_2_FN_SYSTEM_OFF`
 - `do_kernel_restart` calls all `SYS_OFF_MODE_RESTART` handlers and handlers
   registered with `register_restart_handler`
   - x86 does not use this
-  - on arm, it is board-dependent
+  - on arm, often `psci_sys_reset` calls `PSCI_0_2_FN_SYSTEM_RESET`
