@@ -97,5 +97,7 @@ Kernel xarray
       indicating that the indices are unused
     - `xas_init_marks` flips this behavior and sets the bit instead of
       clearing
+    - NULL becomes `XA_ZERO_ENTRY`. This allows an index to be allocated
+      before an object is available.
   - it becomes a matter of calling `xas_find_marked` to find the next free
     index
