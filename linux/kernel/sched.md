@@ -210,6 +210,77 @@ Scheduler
   - `preempt_disable`
   - real locking
 
+## Run Queue
+
+- system task tracking
+  - there is statically-initialized `init_task`
+  - all other tasks are duplicated by `dup_task_struct`
+  - all processes are tracked in `init_task.tasks`
+    - `for_each_process` loops through all processes
+    - `for_each_process_thread` loops through all threads of all tasks
+    - this excludes `init_task` and idle threads
+- scheduler task tracking
+  - scheduler uses rqs to tracks task
+    - a task not on any rq is not visible to scheduler
+  - `init_idle` is called on `init_task` and idle threads
+    - `rq->curr` is set to `idle`
+    - `idle->on_rq` is set to `TASK_ON_RQ_QUEUED`
+  - `wake_up_new_task` is called on other newly created tasks
+- `__schedule` can remove a task from rq
+  - `prev` is `rq->curr`, the current running task
+  - if `!preempt` and `prev_state`, `try_to_block_task` tries to remove the
+    task from rq
+    - the condition means
+      - `__schedule` is called voluntarily, not by preemption
+      - the task state is not `TASK_RUNNING` (0)
+    - if the condition is false, `try_to_block_task` is not called and this
+      works like `yield`
+    - `dequeue_task` calls `dequeue_task_fair`
+      - `dequeue_entity` calls `__dequeue_entity` to erase the task from the
+        rb tree
+    - `__block_task` clears `p->on_rq`
+    - once removed, the task is never considered until `try_to_wake_up` adds
+      it back to rq
+  - `pick_next_task` picks the next task from rq
+    - it might pick the same task if `prev` is still on rq
+- `try_to_wake_up` (ttwu) can add a task to rq
+  - `p->__state` is set to `TASK_WAKING`
+  - `ttwu_queue` calls `ttwu_do_activate`
+    - `activate_task`
+      - `enqueue_task_fair` calls `__enqueue_entity` to add the task to the rb
+        tree
+      - `p->on_rq` is set to `TASK_ON_RQ_QUEUED`
+    - `ttwu_do_wakeup` sets `p->__state` to `TASK_RUNNING`
+- `__schedule` and `try_to_wake_up` are atomic against each other
+  - `try_to_wake_up` and `set_current_state` have big comments
+  - if `__schedule` goes before `try_to_wake_up`,
+    - after `__schedule` and if `try_to_block_task` is called,
+      - `p->__state != TASK_RUNNING`
+      - `p->on_rq == 0`
+    - after `try_to_wake_up`,
+      - `p->__state == TASK_RUNNING`
+      - `p->on_rq == 1`
+  - if `try_to_wake_up` goes before `__schedule`,
+    - after `try_to_wake_up`,
+      - `p->__state == TASK_RUNNING`
+      - `p->on_rq == 1`
+    - `__schedule` does not call `try_to_block_task`
+- voluntary sleep
+  - a task goes to sleep voluntarily via
+    - `while (true)`
+      - `set_current_state(TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE);`
+      - `if (condition) break;`
+      - `schedule();`
+    - `__set_current_state(TASK_RUNNING);`
+  - another task wakes it up via
+    - `condition = true`
+    - `try_to_wake_up()`
+  - the idea is for `schedule` to remove the task from rq and for
+    `try_to_wake_up` to add it back
+  - what if `schedule` and `try_to_wake_up` race, and `schedule` goes later
+    - `schedule` does not call `try_to_block_task`
+    - it exits the loop on next iteration
+
 ## Wait Queue
 
 - basic usage
