@@ -1,6 +1,16 @@
 Kernel Panic
 ============
 
+## Terms
+
+- `WARN` calls `report_bug` but not `die`
+- `BUG` calls `report_bug` and  `die`
+- `die`, aka oops, may or may not trigger `panic`
+  - it calls `panic` if the oops is too serious or if `CONFIG_PANIC_ON_OOPS`
+- `panic` never returns
+  - after printing the fatal errors, it loops forever or reboots after
+    `CONFIG_PANIC_TIMEOUT`
+
 ## `WARN` and `BUG`
 
 - archs typically define
@@ -35,8 +45,9 @@ Kernel Panic
     - prints `------------[ cut here ]------------`
     - prints `kernel BUG at ...`
     - returns `BUG_TRAP_TYPE_BUG`
-- `WARN` stops here
-- `BUG` goes on to call `die`, aka oops
+
+## `die`
+
 - x86 `die`
   - `oops_begin`
     - generic `oops_enter`
@@ -63,8 +74,6 @@ Kernel Panic
 
 ## `panic`
 
-- an oops (e.g., `BUG()`) may trigger `panic`
-  - `CONFIG_PANIC_ON_OOPS` or too severe
 - generic `panic`
   - prints `Kernel panic - not syncing: ...`
   - `kmsg_dump_desc` records the panic to pstore, drm, etc.
