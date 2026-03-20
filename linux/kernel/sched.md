@@ -327,21 +327,20 @@ Scheduler
   - `struct swait_queue_head wait` as the wait queue
     - the wait queue has a spinlock to protect itself and `done`
 - `init_completion` inits `done` to 0 and inits the wait queue
-- `complete` increments `done`
-  - `swake_up_locked` wakes up the first task
-- `wait_for_completion*` decrements `done`
+- `complete` increments `done` and wakes up the first task
+- `wait_for_completion*` waits for `done` and decrements it
   - they all call `__wait_for_common`, with these defaults
     - `action` is `schedule_timeout`
     - `timeout` is `MAX_SCHEDULE_TIMEOUT`
     - `state` is `TASK_UNINTERRUPTIBLE`
   - it calls `action` in a loop until `done > 0` or `timeout == 0`
+  - if `done > 0`, it decrements `done`
   - it returns remaining time (0 means timeout)
 - `try_wait_for_completion` decrements `done` without waiting
-  - it early returns with false if `done == 0`
+  - if `done == 0`, it early returns without decrementing
 - `completion_done` checks if `done != 0`
-- `complete_all` sets `done` to `UINT_MAX`
-  - `swake_up_all_locked` wakes up all tasks
-- `reinit_completion` re-inits `done` to 0, after `complete_all`
+- `complete_all` sets `done` to `UINT_MAX` and wakes up all tasks
+- `reinit_completion` re-inits `done` to 0, for use after `complete_all`
 
 ## man 7 sched
 
