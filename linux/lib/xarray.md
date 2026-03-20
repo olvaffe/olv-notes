@@ -32,6 +32,9 @@ Kernel xarray
     - ...
     - if the highest index is less than 2^66, first node at level 10
     - that is, for small indices, the tree height is like 1 or 2
+    - also, when the highest index is less than 2^0, `xa->xa_head` may point
+      to the entry directly rather than the current tree top
+      - this is just a minor detail
   - to traverse the tree, starting from the current tree top at `xa->xa_head`,
     - `node = &node->slots[(index >> node->shift) & 0x3f]` descends one level
 - `xa_state` is a temp variable used during tree traversal
@@ -99,7 +102,15 @@ Kernel xarray
       clearing
     - NULL becomes `XA_ZERO_ENTRY`. This allows an index to be allocated
       before an object is available.
-  - `xa` can also be initialized with `XA_FLAGS_ALLOC1`
-    - index 0 is not considered unused
   - it becomes a matter of calling `xas_find_marked` to find the next free
     index
+  - `xa` can also be initialized with `XA_FLAGS_ALLOC1`
+    - index 0 is not considered unused
+    - on first `xa_alloc` call,
+      - `xas_find_marked` sets `xas->xa_index` to 1 because `xa_marked`
+        returns false initially
+      - when `xas_create` calls `xas_expand` to grow the tree height, `head`
+        is forced `XA_ZERO_ENTRY` instead of `NULL`
+        - this forces `xas_expand` to grow
+        - it also calls `xa_mark_set` such that `xa_marked` no longer returns
+          false
