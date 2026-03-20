@@ -85,8 +85,17 @@ Kernel xarray
       entries in the node, it clears the bit in the parent entry as well
   - `xa_get_mark` returns true if the specified bit is set
   - `xas_find_marked` finds the next marked entry
+  - when `xas_create` creates missing nodes, marks are propagated to new nodes
+    following the rule
   - if an entry is NULL, the bits cannot be set
     - `xas_store` also calls `xas_init_marks` to clear all bits when the entry
       becomes NULL
 - `xa_alloc` traverses the tree and stores the entry at an unused index
   - `xa` must have been initialized with `XA_FLAGS_ALLOC`
+    - `xa_track_free` returns true
+    - `XA_FREE_MARK` is automatically set on all slots of new nodes,
+      indicating that the indices are unused
+    - `xas_init_marks` flips this behavior and sets the bit instead of
+      clearing
+  - it becomes a matter of calling `xas_find_marked` to find the next free
+    index
