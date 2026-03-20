@@ -3,17 +3,12 @@ Kernel xarray
 
 ## Overview
 
-- an `xarray` is an associative array that maps indices to pointers
-  - it is a modern implementation of radix tree
-- radix tree is deprecated
-  - `#define radix_tree_root xarray`
-  - `#define radix_tree_node xa_node`
-- idr is deprecated
-  - it wraps a `radix_tree_root`
-- ida is still in-use
-  - it wraps an `xarray`
+- an `xarray` is an associative array that maps indices to entries
+- radix tree can be replaced by xarray in many use cases
+- idr, built on top of radix tree, is deprecated by xarray
+- ida, built on top of xarray, is still in-use
 
-## Radix Tree
+## Internals
 
 - an `xarray` is a radix tree
   - the 64-bit index is divided into 6-bit (`XA_CHUNK_SHIFT`) chunks
@@ -80,3 +75,18 @@ Kernel xarray
     - the slot is `&xas->xa_node->slots[xas->xa_offset]`
   - the rest does `*slot = entry` to update the slot, but is complex due to
     `CONFIG_XARRAY_MULTI`
+- marks
+  - each slot has 3 bits that can be individually set/cleared
+    - `node->marks` is an array of `XA_MAX_MARKS` (3) bitmaps
+  - `xa_set_mark` sets a bit on an entry
+    - `xas_set_mark` sets the bit all the way up until tree top and the array
+  - `xa_clear_mark` clears a bit on an entry
+    - `xas_clear_mark` clears the bit, and if the bit is cleared for all
+      entries in the node, it clears the bit in the parent entry as well
+  - `xa_get_mark` returns true if the specified bit is set
+  - `xas_find_marked` finds the next marked entry
+  - if an entry is NULL, the bits cannot be set
+    - `xas_store` also calls `xas_init_marks` to clear all bits when the entry
+      becomes NULL
+- `xa_alloc` traverses the tree and stores the entry at an unused index
+  - `xa` must have been initialized with `XA_FLAGS_ALLOC`
