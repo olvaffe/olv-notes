@@ -36,3 +36,21 @@ Kernel Page Writeback
   - `wb_update_bandwidth` updates bdev wb stats to help throttle decision
 - explicit sync syscalls also call down to `filemap_fdatawrite_range` to call
   `do_writepages`
+
+## `backing_dev_info`
+
+- `backing_dev_info`
+  - `wb` is the root `bdi_writeback`, for bandwidth control
+  - with `CONFIG_CGROUP_WRITEBACK`, there is one `wb` per cg
+    - because each cg needs its bandwidth control
+- when a storage controller probes a storage device, `__alloc_disk_node` is called
+  - `bdi_alloc` allocates a `disk->bdi`
+  - `bdev_alloc` allocates `disk->part0`
+    - the bdev for part0 is an inode in `blockdev_superblock`
+    - `bdev->bd_disk` points to `disk`
+- when fs calls `get_tree_bdev` to parse super,
+  - `sb->s_bdi` points to `bdev->bd_disk->bdi`
+- given a folio,
+  - `inode_to_bdi(folio->mapping->host)` returns the bdi
+  - `inode_to_wb` returns the wb, which has two impls depending on
+    `CONFIG_CGROUP_WRITEBACK`
