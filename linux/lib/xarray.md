@@ -99,5 +99,7 @@ Kernel xarray
       clearing
     - NULL becomes `XA_ZERO_ENTRY`. This allows an index to be allocated
       before an object is available.
+  - `xa` can also be initialized with `XA_FLAGS_ALLOC1`
+    - index 0 is not considered unused
   - it becomes a matter of calling `xas_find_marked` to find the next free
     index
