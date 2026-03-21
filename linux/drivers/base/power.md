@@ -289,6 +289,8 @@ Device Power Management
   - this is mainly called from system suspend or shutdown, to prevent
     in-flight rpm ops
 - `pm_runtime_no_callbacks` removes sysfs `power/` (and skips drv rpm callbacks)
+  - this is called when the device has no rpm support or relies on its parent
+    for rpm (e.g., usb iface relies on its parent usb dev for rpm)
 - `pm_runtime_irq_safe` means that the drv will do rpm from atomic context
   - pm core will keep the parent resumed, and will keep spinlock held and irq
     disabled while calling drv callbacks
