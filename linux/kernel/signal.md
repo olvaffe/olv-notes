@@ -25,24 +25,42 @@ Signal
 
 ## Signal Handling
 
-- if the task is really woken up from sleep,  it will notice the pending
-  signals and process them first after being scheduled
-- if the task is running, it will be force-rescheduled
-
-## `EINTR`
-
-- `SYSCALL_DEFINE2(nanosleep, ...)` puts the current task into
-  `TASK_INTERRUPTIBLE` state in `do_nanosleep`
-  - it starts the timer and schedules the current task away
-  - but if a signal comes in before the timer expires, the task is woken up
-    and is back to `TASK_RUNNING`
-  - the caller of the syscall gets an `EINTR`
-
-## Miscs
-
-- eventfd
-- signalfd
-- timerfd
-- memfd
-- userfaultfd
-- pidfd
+- `__exit_to_user_mode_prepare` is called on various exit paths, such as
+  `syscall_exit_to_user_mode` or `irqentry_exit_to_user_mode`, to handle
+  signals
+  - `exit_to_user_mode_loop` handles various works
+  - if `_TIF_SIGPENDING`, `arch_do_signal_or_restart` handles signals
+    - it typically calls `get_signal` followed `handle_signal`
+- `get_signal` returns the next pending signal for handling
+  - `dequeue_synchronous_signal` or `dequeue_signal`
+    - it removes a `sigqueue` from `pending->list`
+    - if this is the last instance, it clears the bit from `pending->signal`
+    - `recalc_sigpending` clears `_TIF_SIGPENDING` if no more pending signal
+  - it looks up the action in `sighand`
+    - `SIG_IGN` ignores the signal and loop to dequeue the next
+    - `SIG_DFL` is the in-kernel default handling
+    - otherwise, it returns the dequeued signal to the caller
+- arch-specific `handle_signal` calls `setup_rt_frame` and `signal_setup_done`
+  - `setup_rt_frame` sets up a frame in the user stack, such that when we
+    return to userspace, we will return to the userspace signal handler; And
+    when the signal handler returns, it will jump back to kernel
+    - on arm, `setup_return`
+      - `regs->pc` is set to `ksig->ka.sa.sa_handler`
+      - `regs->sp` is set to `user->sigframe`
+      - `regs->regs[30]` (link reg) is set to `sigtramp` in VDSO
+        - `__kernel_rt_sigreturn` makes `rt_sigreturn` syscall
+    - on x86, `x64_setup_rt_frame`
+      - `regs->ip` is set to `ksig->ka.sa.sa_handler`
+      - `regs->sp` is set to `frame`
+      - the return addr is set to `ksig->ka.sa.sa_restorer`
+        - unlike arm, it is provided by userspace libc
+        - its job is to make `rt_sigreturn` syscall
+  - `signal_setup_done` calls `signal_delivered`
+- with the setup, we exit to userspace signal handler directly
+- when the userspace signal handler returns, it returns to a userspace
+  trampoline that calls `rt_sigreturn`
+- `SYSCALL_DEFINE0(rt_sigreturn)` is called after userspace signal handler
+  - on x86, `restore_sigcontext` restores `regs` from `frame->uc.uc_mcontext`
+  - on arm, `restore_sigframe` restores `regs` from `sf->uc.uc_mcontext`
+  - when the syscall returns, it returns to where the userspace was before
+    the signal
