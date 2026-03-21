@@ -255,23 +255,39 @@ Device Power Management
 
 ## Runtime PM APIs
 
+- `device_pm_init` inits pm and rpm for a device
+  - `device_pm_init_common` inits common fields in `dev->power`
+  - `device_pm_sleep_init` inits pm fields in `dev->power`
+  - `pm_runtime_init` inits rpm fields in `dev->power`
+    - `dev->power.runtime_status` is `RPM_SUSPENDED`
+    - `dev->power.last_status` is `RPM_INVALID`
+    - `dev->power.disable_depth` is 1
+    - the rest is default/zero
 - `pm_runtime_enable` and `pm_runtime_disable` enable/disable rpm for a device
-  - resume/suspend will return `-EACCES`
+  - resume/suspend will return `-EACCES` if `dev->power.disable_depth`
+  - they are called by drivers when rpm callbacks are ready
 - `pm_runtime_block_if_disabled` and `pm_runtime_unblock` block/unblock rpm
-  enable/disable
+  enable
   - `pm_runtime_enable` will result in a warning
+  - they are called from system suspend and resume respectively, to prevent
+    unexpected runtime enable during suspend
 - `pm_runtime_get_if_active` and `pm_runtime_get_if_in_use` keep active
   device active by incrementing usage
   - `pm_runtime_get_if_active` checks for `RPM_ACTIVE`
   - `pm_runtime_get_if_in_use` checks for both `RPM_ACTIVE` and current usage
+  - during autosuspend delay, the device is `RPM_ACTIVE` but usage is 0
 - `pm_runtime_forbid` and `pm_runtime_allow` are similar to
   `pm_runtime_get_sync` and `__pm_runtime_put_autosuspend`
   - forbid means keeping resumed and forbidding suspend
-  - the main difference is that userspace can toggle the same via sysfs
-    `power/control`
+  - they are called mainly when userspace toggles sysfs `power/control`
 - `pm_schedule_suspend` arms a timer to call `rpm_suspend`
-- `pm_runtime_barrier` blocks until concurrent op (from another thread) or
-  async op (from `RPM_ASYNC`) has completed
+- `pm_runtime_barrier` blocks until pending ops are completed or canceled
+  - if there is async resume, resume now
+  - timer for scheduled suspend and auto suspend is
+  - async op (`RPM_ASYNC`) is canceld
+  - concurrent op (from another thread) is waited
+  - this is mainly called from system suspend or shutdown, to prevent
+    in-flight rpm ops
 - `pm_runtime_no_callbacks` removes sysfs `power/` (and skips drv rpm callbacks)
 - `pm_runtime_irq_safe` means that the drv will do rpm from atomic context
   - pm core will keep the parent resumed, and will keep spinlock held and irq
