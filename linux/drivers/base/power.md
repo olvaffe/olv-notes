@@ -289,16 +289,22 @@ Device Power Management
   - this is mainly called from system suspend or shutdown, to prevent
     in-flight rpm ops
 - `pm_runtime_no_callbacks` removes sysfs `power/` (and skips drv rpm callbacks)
-  - this is called when the device has no rpm support or relies on its parent
+  - this is called when the device has no rpm support and relies on its parent
     for rpm (e.g., usb iface relies on its parent usb dev for rpm)
 - `pm_runtime_irq_safe` means that the drv will do rpm from atomic context
   - pm core will keep the parent resumed, and will keep spinlock held and irq
     disabled while calling drv callbacks
   - don't use it
-- `pm_runtime_set_memalloc_noio` sets `PF_MEMALLOC_NOIO` for drv callback allocs
+- `pm_runtime_set_memalloc_noio` sets `PF_MEMALLOC_NOIO` for allocs from drv
+  rpm callbacks
+  - this is called by storage drivers to avoid `io -> resume -> alloc -> io`
+    deadlock
 - `pm_runtime_get_suppliers` and `pm_runtime_put_suppliers` get/put
-  rpm-managed suppliers
+  all suppliers of the dev's from `DL_FLAG_PM_RUNTIME` devlinks
+  - this is called before `really_probe`
 - `pm_runtime_new_link` and `pm_runtime_drop_link` track supplier count
+  - `dev->power.links_count` is an optimization to avoid taking a lock only to
+    learn that `dev->links.suppliers` is empty
 - `pm_runtime_release_supplier` decrements supplier usage without suspend
 - `pm_suspend_ignore_children` ignores parent-childen relation
   - that is, don't resume parent when a child is resumed, etc.
