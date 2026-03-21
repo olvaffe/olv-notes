@@ -5,54 +5,61 @@ Device Power Management
 
 - <https://docs.kernel.org/driver-api/pm/types.html>
 - there are 23 ops
-- init/cleanup
-  - `prepare`
-  - `complete`
-- `SYSTEM_SLEEP_PM_OPS`, `LATE_SYSTEM_SLEEP_PM_OPS`, and
-  `NOIRQ_SYSTEM_SLEEP_PM_OPS`
-  - these depend on `CONFIG_PM_SLEEP`
-  - there are 6 ops, with early/late and noirq variants
-  - `suspend`
-  - `resume`
-  - `free`
-  - `thaw`
-  - `poweroff`
-  - `restore`
-- `RUNTIME_PM_OPS`
-  - these depend on `CONFIG_PM`
-  - `runtime_suspend`
-  - `runtime_resume`
-  - `runtime_idle` checks if the device is really idle (before
-    `runtime_suspend`)
-- suspend / resume call sequence
+  - init/cleanup
+    - `prepare`
+    - `complete`
+  - system suspend/resume/hibernate
+    - these depend on `CONFIG_PM_SLEEP`
+    - there are 6 ops, with early/late/noirq variants
+      - `suspend`
+      - `resume`
+      - `freeze`
+      - `thaw`
+      - `poweroff`
+      - `restore`
+  - runtime suspend/resume
+    - these depend on `CONFIG_PM`
+    - there are 3 ops
+      - `runtime_suspend`
+      - `runtime_resume`
+      - `runtime_idle`
+- `suspend_devices_and_enter` executes system suspend and resume
   - `prepare`
   - `suspend`
   - `suspend_late`
   - `suspend_noirq`
+  - system suspended
+  - system resumed
   - `resume_noirq`
   - `resume_early`
   - `resume`
   - `complete`
-- hibernation call sequence
+- `hibernation_snapshot` executes system image snapshot
   - `prepare`
   - `freeze`
   - `freeze_late`
   - `freeze_noirq`
-  - at this point, everything is stable and a system image can be created
+  - at this point, everything is stable and a system image is created
   - `thaw_noirq`
   - `thaw_early`
   - `thaw`
   - `complete`
-  - at this point, the system image can be saved
-  - `prepare`
-  - `poweroff`
-  - `poweroff_late`
-  - `poweroff_noirq`
-  - at this point, the system can be powered off/on
+- `power_down` executes system hibernation
+  - if `hibernation_platform_enter`,
+    - `prepare`
+    - `poweroff`
+    - `poweroff_late`
+    - `poweroff_noirq`
+  - if `kernel_power_off`,
+    - `dev->driver->shutdown` instead of `dev_pm_ops`
+  - at this point, the system is powered off
+- `hibernation_restore` executes system image restore
   - `prepare`
   - `freeze`
   - `freeze_late`
   - `freeze_noirq`
+  - at this point, everything is stable and a system image is restored
+  - it continues from where the system image was created in `swsusp_arch_suspend`
   - `restore_noirq`
   - `restore_early`
   - `restore`
@@ -117,50 +124,6 @@ Device Power Management
   `device_wakeup_disarm_wake_irqs` indirectly
   - it loops through all wakeup sources
   - `irq_set_irq_wake` disables the irq
-
-## Runtime PM
-
-- `struct dev_pm_ops`
-  - `SYSTEM_SLEEP_PM_OPS` sets callbacks for system suspend/resume
-    - the traditional pm
-    - to suspend/resume a device on system suspend/resume
-  - `RUNTIME_PM_OPS` sets callbacks for runtime suspend/resume
-    - to suspend/resume a device on depending on whether the device is in use
-- <https://docs.kernel.org/power/runtime_pm.html>
-  - `pm_runtime_resume` and `pm_request_resume` resumes a device
-    - `pm_runtime_resume` resumes the device before returning
-    - `pm_request_resume` just queues a resume request
-  - `pm_runtime_suspend` and `pm_schedule_suspend` suspends a device
-    - `pm_runtime_suspend` suspends the device before returning
-    - `pm_schedule_suspend` just queues a suspend request
-  - more commonly, use `pm_runtime_get_sync` and `pm_runtime_put_autosuspend`
-    - `pm_runtime_get_sync` increases the usage count and makes sure the
-      device is resumed before returning
-    - `pm_runtime_put_autosuspend` decreases the usage count and queues an
-      autosuspend request
-  - autosuspend
-    - like suspend, except there is a delay that is configurable by the driver
-      or the userspace
-    - `/sys/devices/.../power/autosuspend_delay_ms`, -1 to disable autosuspend
-  - e.g., msm uses autosuspend
-    - on init, sets the autosuspend delay to `DRM_MSM_INACTIVE_PERIOD` (66ms)
-    - on submit, if the submit queue becomes non-empty, `pm_runtime_get`
-    - on retire, if the submit queue becomes empty,
-      `pm_runtime_put_autosuspend`
-      - also calls `pm_runtime_mark_last_busy`
-- driver writer
-  - runtime pm assumes the device is suspended by default
-    - use `pm_runtime_set_active` if the assumption is incorrect
-  - during probe,
-    - `devm_pm_runtime_enable` enables runtime pm
-    - `pm_runtime_use_autosuspend` enables autosuspend
-      - `pm_runtime_set_autosuspend_delay` sets a delay
-  - using the device,
-    - `pm_runtime_resume_and_get` resumes the dev
-      - not `pm_runtime_get_sync` unless too lazy to error check
-    - `pm_runtime_mark_last_busy` updates the access time for autosuspend
-    - `pm_runtime_put_autosuspend` suspends the dev
-      - not `pm_runtime_put_sync` to avoid overhead of `rpm_idle`
 
 ## Runtime PM Internals
 
@@ -233,7 +196,7 @@ Device Power Management
 - `pm_runtime_work` executes `dev->power.request` async
   - it calls one of `rpm_idle`, `rpm_suspend`, and `rpm_resume`
 
-## Scheduled Suspend and Auto Suspend
+## Runtime Scheduled Suspend and Auto Suspend
 
 - `pm_schedule_suspend` schedules a suspend
   - if no delay, it simply calls `rpm_suspend(RPM_ASYNC)`
@@ -258,6 +221,7 @@ Device Power Management
 
 ## Runtime PM APIs
 
+- <https://docs.kernel.org/power/runtime_pm.html>
 - `device_pm_init` inits pm and rpm for a device
   - `device_pm_init_common` inits common fields in `dev->power`
   - `device_pm_sleep_init` inits pm fields in `dev->power`
@@ -363,3 +327,32 @@ Device Power Management
     rpm state if the dev is resumed on boot
 - `pm_runtime_use_autosuspend`, `pm_runtime_dont_use_autosuspend`, and
   `pm_runtime_set_autosuspend_delay` config auto-suspend
+
+## Driver Writer
+
+- hw probe
+  - runtime pm assumes the device is suspended by default
+    - use `pm_runtime_set_active` if the assumption is incorrect
+  - `devm_pm_runtime_enable` enables runtime pm
+    - it implies both `pm_runtime_dont_use_autosuspend` and
+      `pm_runtime_disable` on remove
+  - `pm_runtime_use_autosuspend` enables autosuspend
+    - `pm_runtime_set_autosuspend_delay` sets a delay
+- hw access
+  - `pm_runtime_resume_and_get` resumes the dev immediately (for reg access)
+    - not `pm_runtime_get_sync` unless too lazy to error check
+  - `pm_runtime_get` resumes the dev async (to kick hw)
+  - `pm_runtime_put_autosuspend` auto-suspends async
+    - not `pm_runtime_put` to avoid overhead of `rpm_idle`
+    - it implies `pm_runtime_mark_last_busy`
+- hw remove
+  - `pm_runtime_put_sync_suspend` suspends the dev immediately
+- autosuspend
+  - like suspend, except there is a delay that is configurable by the driver
+    or the userspace
+  - `/sys/devices/.../power/autosuspend_delay_ms`, -1 to disable autosuspend
+- e.g., msm uses autosuspend
+  - on init, sets the autosuspend delay to `DRM_MSM_INACTIVE_PERIOD` (66ms)
+  - on submit, if the submit queue becomes non-empty, `pm_runtime_get`
+  - on retire, if the submit queue becomes empty,
+    `pm_runtime_put_autosuspend`
