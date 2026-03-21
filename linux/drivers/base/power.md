@@ -332,26 +332,28 @@ Device Power Management
   - if rpm is disabled, the dev is considered resumed
 - `pm_runtime_mark_last_busy` updates `dev->power.last_busy` for auto-suspend
 - wrappers of `rpm_resume`, `rpm_suspend`, and `rpm_idle`
-  - no flags; these skip usage count
-    - `pm_runtime_idle` wraps `rpm_idle(0)`
-    - `pm_runtime_suspend` wraps `rpm_suspend(0)`
-    - `pm_runtime_autosuspend` wraps `rpm_suspend(RPM_AUTO)`
-    - `pm_runtime_resume` wraps `rpm_resume(0)`
-  - `RPM_ASYNC`; these skip usage count
-    - `pm_request_idle` wraps `rpm_idle(RPM_ASYNC)`
-    - `pm_request_autosuspend` wraps `rpm_suspend(RPM_ASYNC|RPM_AUTO)`
-    - `pm_request_resume` wraps `rpm_resume(RPM_ASYNC)`
-  - `RPM_GET_PUT` honors usage count
-    - `pm_runtime_get` increments usage before `rpm_resume(RPM_ASYNC)`
-    - `pm_runtime_get_sync` increments usage before `rpm_resume(0)`
-    - `pm_runtime_resume_and_get` increments usage before `rpm_resume(0)`
-      - unlike `pm_runtime_get_sync`, it decrements usage on errors
-    - `pm_runtime_put` decrements usage before `rpm_idle(RPM_ASYNC)`
-    - `pm_runtime_put_sync` decrements usage before `rpm_idle(0)`
-      - note that if this calls `rpm_suspend(RPM_AUTO)`
-    - `pm_runtime_put_sync_suspend` decrements usage before `rpm_suspend(0)`
-    - `pm_runtime_put_autosuspend` decrements usage before `rpm_suspend(RPM_ASYNC|RPM_AUTO)`
-    - `pm_runtime_put_sync_autosuspend` decrements usage before `rpm_suspend(RPM_AUTO)`
+  - immediate resume (might sleep)
+    - `pm_runtime_resume` calls `rpm_resume(0)`
+    - `pm_runtime_get_sync` calls `rpm_resume(0)` after incrementing usage
+      - usage incremented on resume failure, useful when caller does not error check
+    - `pm_runtime_resume_and_get` calls `rpm_resume(0)` after incrementing usage
+      - usage not incremented on resume failure, useful when caller does error check
+  - async resume (atomic safe)
+    - `pm_request_resume` calls `rpm_resume(RPM_ASYNC)`
+    - `pm_runtime_get` calls `rpm_resume(RPM_ASYNC)` after incrementing usage
+  - immediate suspend (might sleep)
+    - `pm_runtime_suspend` calls `rpm_suspend(0)`
+    - `pm_runtime_put_sync_suspend` calls `rpm_suspend(0)` after decrementing usage
+  - immediate auto suspend (might sleep, might delay)
+    - `pm_runtime_idle` calls `rpm_idle(0)`
+    - `pm_runtime_autosuspend` calls `rpm_suspend(RPM_AUTO)`
+    - `pm_runtime_put_sync` calls `rpm_idle(0)` after decrementing usage
+    - `pm_runtime_put_sync_autosuspend` calls `rpm_suspend(RPM_AUTO)` after decrementing usage
+  - async auto suspend (atomic safe, might delay)
+    - `pm_request_idle` calls `rpm_idle(RPM_ASYNC)`
+    - `pm_request_autosuspend` calls `rpm_suspend(RPM_ASYNC|RPM_AUTO)`
+    - `pm_runtime_put` calls `rpm_idle(RPM_ASYNC)` after decrementing usage
+    - `pm_runtime_put_autosuspend` calls `rpm_suspend(RPM_ASYNC|RPM_AUTO)` after decrementing usage
 - `pm_runtime_set_active` and `pm_runtime_set_suspended` update the
   resumed/suspended status without callbacks
   - when the hw is in a different status than what kernel pm assumes, these
