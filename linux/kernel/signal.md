@@ -1,25 +1,33 @@
 Signal
 ======
 
-## Signals
-
-- signal(7)
-- kill(2) sends a signal to a pid
-- `kernel/signal.c`
-  - adds a signal record (`sigqueue`) to the target's pending list
-    (`sigpending`)
-  - `signal_wake_up` to inform the target
-
 ## `kill`
 
-- `SYSCALL_DEFINE2(kill, ...)` wraps the signal in a `kernel_siginfo` and
-  eventually calls `__send_signal`
-  - it adds the siginfo to the `sigpending` list of the target task
-  - notifies the target's signalfd, if any, with `signalfd_notify`
-  - wakes up the target task with `signal_wake_up`
-    - if the task is really woken up from sleep,  it will notice the pending
-      signals and process them first after being scheduled
-    - if the task is running, it will be force-rescheduled
+- `SYSCALL_DEFINE2(kill, ...)`
+- `prepare_kill_siginfo` wraps the signal in a `kernel_siginfo`
+- `group_send_sig_info` sends the signal to a task
+  - `prepare_signal` checks if the signal is blocked or has side effects
+  - `pending` is set to per-thread `t->pending` or per-process
+    `t->signal->shared_pending`
+  - `legacy_queue` checks if the signal is already pending
+  - `sigqueue_alloc` allocs a `sigqueue`
+  - it adds the `sigqueue` to `pending->list`
+  - `signalfd_notify` notifies signalfd if any
+  - `sigaddset` sets the signal bit in `pending->signal`
+  - `complete_signal`
+    - it picks a task to handle the signal
+    - if fatal, injects `SIGKILL` to all threads and wakes them up
+    - else, `signal_wake_up` wakes up the target task
+      - it sets `TIF_SIGPENDING`
+      - `wake_up_state` calls `try_to_wake_up` to add it to rq
+        - if the task is already running, `kick_process` sends an ipi to force
+          a timely signal handling
+
+## Signal Handling
+
+- if the task is really woken up from sleep,  it will notice the pending
+  signals and process them first after being scheduled
+- if the task is running, it will be force-rescheduled
 
 ## `EINTR`
 
