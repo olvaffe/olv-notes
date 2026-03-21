@@ -64,3 +64,21 @@ Signal
   - on arm, `restore_sigframe` restores `regs` from `sf->uc.uc_mcontext`
   - when the syscall returns, it returns to where the userspace was before
     the signal
+
+## Syscall Interruption and Restart
+
+- when a syscall sleeps inside `wait_event_interruptible`, and another process
+  sends a signal,
+  - the other process calls `complete_signal` to wake up the sleeping process
+  - `prepare_to_wait_event` detects the signal and propagates `-ERESTARTSYS`
+  - the syscall fails with `-ERESTARTSYS`
+- on the exit path, `syscall_exit_to_user_mode` calls
+  `arch_do_signal_or_restart` to handle the signal
+  - if `SA_RESTART` is set for the signal,
+    - arm decrements `reg->pc` by 4 such that userspace re-executes `SVC`
+      instr after signal handling and returning to userspace
+    - x86 decrements `reg->ip` by 2 such that userspace re-executes `SYSCALL`
+      instr similarly
+  - if `SA_RESTART` is cleared for the signal,
+    - arm sets `regs->regs[0]` to `-EINTR` as the return value of the syscall
+    - x86 sets `reg->ax` to `-EINTR` similarly
