@@ -101,7 +101,7 @@ Device Power Management
       moves them to `dpm_list`
       - `device_complete` calls `dev->driver->pm->ops->complete`
 
-## Wakeup
+## System Wakeup
 
 - device driver
   - if the hw is capable of system wakeup, the driver calls
@@ -157,8 +157,10 @@ Device Power Management
       - `pm_runtime_set_autosuspend_delay` sets a delay
   - using the device,
     - `pm_runtime_resume_and_get` resumes the dev
+      - not `pm_runtime_get_sync` unless too lazy to error check
     - `pm_runtime_mark_last_busy` updates the access time for autosuspend
     - `pm_runtime_put_autosuspend` suspends the dev
+      - not `pm_runtime_put_sync` to avoid overhead of `rpm_idle`
 
 ## Runtime PM Internals
 
@@ -213,7 +215,7 @@ Device Power Management
   - if parent,
     - `rpm_idle(parent, RPM_ASYNC)` puts the parent to idle async
   - `rpm_suspend_suppliers` puts supplier to idle async
-- `rpm_idle` suspends a device after idle check and notification
+- `rpm_idle` auto-suspends a device after idle check and notification
   - `rpm_check_suspend_allowed` requires the usage to be zero and all children
     are suspended
   - `dev->power.runtime_status` remains at `RPM_ACTIVE`
@@ -224,9 +226,10 @@ Device Power Management
     - `pm_runtime_work` is scheduled
     - return 0
   - it calls `runtime_idle` callback
-    - the callback returns an error if the device is not really idle to skip
-      suspend
-  - unless already suspended or error, `rpm_suspend`
+    - the callback returns an error if the device is not really idle, which
+      causes the suspend to be skipped
+    - this is named "idle notification" somehow
+  - unless already suspended or error, `rpm_suspend(RPM_AUTO)` auto-suspends
 - `pm_runtime_work` executes `dev->power.request` async
   - it calls one of `rpm_idle`, `rpm_suspend`, and `rpm_resume`
 
@@ -306,10 +309,24 @@ Device Power Management
   - `dev->power.links_count` is an optimization to avoid taking a lock only to
     learn that `dev->links.suppliers` is empty
 - `pm_runtime_release_supplier` decrements supplier usage without suspend
+  - when `rpm_resume` is called on a consumer, `rpm_get_suppliers` is called
+    on all suppliers
+  - this is mainly called from `rpm_put_suppliers`, but is also explicitly
+    called when the devlink is to be removed
 - `pm_suspend_ignore_children` ignores parent-childen relation
-  - that is, don't resume parent when a child is resumed, etc.
+  - that is, don't resume parent when a child is resumed, allow a parent to
+    suspend with resumed children, etc.
+  - this is used when the parent has multiple functions as "virtual children"
+    and it can make better decision for the children by itself
 - `pm_runtime_get_noresume` and `pm_runtime_put_noidle` increment/decrement
-  usage
+  usage without resume/suspend
+  - `pm_runtime_get_noresume` is useful when
+    - dev is known resumed and it is cheaper than `pm_runtime_get`
+    - dev may be resumed or suspended, and we just want to block potential rpm
+      suspend to avoid conflict with system suspend, etc.
+    - dev is resumed on boot and we just want to fix the usage count
+    - internal `rpm_resume` cannot call `pm_runtime_get_sync` on the parent
+      but has to do increment and resume in two steps
 - `pm_runtime_active` and `pm_runtime_suspended` return true if dev is
   resumed/suspended
   - if rpm is disabled, the dev is considered resumed
@@ -331,12 +348,16 @@ Device Power Management
       - unlike `pm_runtime_get_sync`, it decrements usage on errors
     - `pm_runtime_put` decrements usage before `rpm_idle(RPM_ASYNC)`
     - `pm_runtime_put_sync` decrements usage before `rpm_idle(0)`
+      - note that if this calls `rpm_suspend(RPM_AUTO)`
     - `pm_runtime_put_sync_suspend` decrements usage before `rpm_suspend(0)`
-    - `pm_runtime_put_autosuspend` decrements usage before `rpm_suspend(RPM_ASYNC)`
-    - `pm_runtime_put_sync_autosuspend` decrements usage before `rpm_suspend(0)`
+    - `pm_runtime_put_autosuspend` decrements usage before `rpm_suspend(RPM_ASYNC|RPM_AUTO)`
+    - `pm_runtime_put_sync_autosuspend` decrements usage before `rpm_suspend(RPM_AUTO)`
 - `pm_runtime_set_active` and `pm_runtime_set_suspended` update the
   resumed/suspended status without callbacks
   - when the hw is in a different status than what kernel pm assumes, these
     update the status to match without calling to the callbacks
+  - e.g., instead of `pm_runtime_get_sync`, driver probe should do
+    `pm_runtime_set_active` and `pm_runtime_get_noresume` instead to fix the
+    rpm state if the dev is resumed on boot
 - `pm_runtime_use_autosuspend`, `pm_runtime_dont_use_autosuspend`, and
   `pm_runtime_set_autosuspend_delay` config auto-suspend
