@@ -7,7 +7,8 @@ Kernel remoteproc
   - to power on
   - to power off
   - to load fw
-  - nothing more
+    - the fw can support `RSC_VDEV`, which uses virtio as a transport and is
+      not about virtualization anymore
 - the fw seems to be standardized somewhat
   - must be in ELF32 or ELF64
 - a remote processor "driver"

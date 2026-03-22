@@ -18,6 +18,14 @@ Kernel Regulator
   - it is also common to have a PMIC attached to the SPI bus
     - a PMIC may be a MFD where some of the cells are regulators
 - regulator drivers call `devm_regulator_register` to register regulators
+- dt properties
+  - `regulator-always-on` translates to `rdev->constraints->always_on`
+    - `set_machine_constraints` enables the regulator and increments use count
+      - this way the regulator is never disabled
+  - `regulator-boot-on` translates to `rdev->constraints->boot_on`
+    - `set_machine_constraints` enables the regulator
+      - this way the regulator stays enabled during boot until a consumer
+        takes over or `regulator_late_cleanup` disables it
 
 ## Consumers
 

@@ -9,6 +9,9 @@ Linux rpmsg
   `rpmsg_endpoint`
   - this also have a `rpmsg_rx_cb_t` callback to handle responses
 - `rpmsg_send` sends a packet over the endpoint
+- virtio as a transport
+  - virtio seems to be used as the transport to get the msgs to remoteproc
+  - it is not about virtualization anymore
 
 ## Device
 

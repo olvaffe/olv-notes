@@ -107,7 +107,6 @@ Kernel MMC/SD/SDIO
 - `core/` is the core.
   - The core registers two buses: mmc and sdio
 - `host/` is the host drivers.
-- `card/` is the card drivers.
   - SDIO cards/devices have classes just like usb devices.
 
 ## Card Insersion
