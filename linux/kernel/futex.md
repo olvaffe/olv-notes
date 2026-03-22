@@ -83,4 +83,32 @@ Linux futex
   - `FUTEX_WAKE` wakes with the bucket lock held as well
     - if `FUTEX_WAKE` goes first, `FUTEX_WAIT` skips the wait because count is
       non-zero
-    - if `FUTEX_WAIT` goes first, `FUTEX_WAKE` wakes it up
+    - if `FUTEX_WAIT` goes first, it either skips the wait or `FUTEX_WAKE`
+      wakes it up
+
+## Userspace Condition Variable
+
+- a userspace cv can be implmented by a futex
+  - `typedef int cv;`
+  - `void cv_init(int *cv)`
+    - `atomic_set(cv, 0);`
+  - `void cv_wait(int *cv)`
+    - `FUTEX_WAIT(cv, atomic_load(cv));`
+  - `void cv_signal(int *cv)`
+    - `atomic_inc(cv);`
+    - `FUTEX_WAKE(cv, 1);`
+  - `void cv_broadcast(int *cv)`
+    - `atomic_inc(cv);`
+    - `FUTEX_WAKE(cv, INT_MAX);`
+- defense against spurious wakeup
+  - it is the caller's responsibility to re-check the condition to handle
+    spurious wakeup
+- defense against lost wakeup
+  - `FUTEX_WAIT` takes an expected value, which is the seqno before the wait
+    - it checks if the seqno is still the expected value before adding itself
+      to the bucket, with the bucket lock held
+  - `FUTEX_WAKE` wakes with the bucket lock held as well
+    - if `FUTEX_WAKE` goes first, `FUTEX_WAIT` skips the wait because seqno
+      has incremented
+    - if `FUTEX_WAIT` goes first, it either skips the wait or `FUTEX_WAKE`
+      wakes it up
