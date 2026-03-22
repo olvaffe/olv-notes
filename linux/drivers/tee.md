@@ -16,14 +16,14 @@ Kernel TEE
     - EL3: secure monitor (BL31)
 - <https://trustedfirmware-a.readthedocs.io/en/latest/design/firmware-design.html>
   - Cold boot
-    - BL1: AP Trusted ROM
+    - BL1: AP Trusted ROM (e.g., soc BootROM)
       - HW executes BL1 from trusted ROM at secure EL3
       - determination of boot path
       - arch init
       - plat init
       - load BL2 to trusted SRAM
       - pass control to BL2 at secure EL1
-    - BL2: Trusted Boot Firmware
+    - BL2: Trusted Boot Firmware (e.g., u-boot SPL and DDR training)
       - BL1 executes BL2 from trusted SRAM at secure EL1
       - arch init
       - plat init
@@ -34,7 +34,7 @@ Kernel TEE
         - load BL33 to non-secure memory
       - pass control back to BL1 by rasing an `SMC` with BL31 entrypoint 
       - BL1 passes control to BL31 at secure EL3
-    - BL31: EL3 Runtime Software
+    - BL31: EL3 Runtime Software (e.g., A-TF, and I think it runs off trusted region of RAM)
       - BL1 executes BL3 from trusted SRAM at secure EL3
       - arch init
       - plat init
@@ -42,10 +42,10 @@ Kernel TEE
         - PSCI
       - call into BL32 optionally
       - pass control to BL33 at non-secure EL2 or EL1
-    - BL32: Secure-EL1 Payload (optional)
+    - BL32: Secure-EL1 Payload (optional, e.g., OP-TEE)
       - typically, trusted os or op-tee running at secure EL1
       - can also be Hafnium at secure EL2
-    - BL33: Non-trusted Firmware
+    - BL33: Non-trusted Firmware (e.g., u-boot proper)
   - EL3 runtime services framework
     - EL0/EL1/EL2 can raise `SMC` that is handled by secure EL3
       - the requests follow SMCCC, SMC calling convention
