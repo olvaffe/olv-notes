@@ -56,6 +56,9 @@ Input subsystem
 
 ## Handler
 
+- an `input_handler` is a consumer of input events
+  - it can receive input events from multiple `input_device`s
+  - each `input_handle` represents a connecton to an `input_device`
 - a input event handler calls `input_register_handler` to register a handler
   - `id_table` and the `match` callback describe what devices the handler is
     interested in
@@ -89,42 +92,26 @@ Input subsystem
       - all future events are passed only to the evdev handler and not to
         other handlers
 
-## Structs
+## Event
 
-- `struct input_event`: time/type/code/value
-- `struct input_dev`: represent a input device.
-    - include evbit, keybit, relbit, absbit, mscbit, ledbit, sndbit, ffbit and swbit.
-    - scancode -> keycode map.
-    - another set of long arrays for tracking states: key, led, snd, sw
-    - first open calls ->open, last close calls ->close.  can also be notified about ->event (pcspkr)
-    - input device could be grabbed, only the grabbing handle receives events
-- `struct input_handler`: an interface of input device (evdev interface, blah)
-- `struct input_handle`: a handle connects handler and device.
-                       multiple devices might have the same interface.  There is one handler, but multiple handles.
-
-## event types
-
-- Types
-
-        EV_SYN		0x00
-        EV_KEY		0x01
-        EV_REL		0x02
-        EV_ABS		0x03
-        EV_MSC		0x04 /*misc */
-        EV_SW		0x05
-        EV_LED		0x11
-        EV_SND		0x12
-        EV_REP		0x14
-        EV_FF		0x15
-        EV_PWR		0x16
-        EV_FF_STATUS	0x17
-        EV_MAX		0x1f
-        EV_CNT		(EV_MAX+1)
-- a touch on the touchpad might generate (`BTN_TOUCH, ABS_X, ABS_Y,
-      ABS_PRESSURE, ABS_TOOL_WIDTH, BTN_TOOL_FINGER, BTN_LEFT, BTN_RIGHT, etc.`)
-      and a `EV_SYN` follows.
-- on the device side, (HW STATE -> series of EVENTS -> SYN)
-      on the handler side, (series of EVENTS -> SYN -> compose HW STATE)
+- types
+  - `EV_SYN`
+  - `EV_KEY`
+  - `EV_REL`
+  - `EV_ABS`
+  - `EV_MSC`
+  - `EV_SW`
+  - `EV_LED`
+  - `EV_SND`
+  - `EV_REP`
+  - `EV_FF`
+  - `EV_PWR`
+  - `EV_FF_STATUS`
+  - `EV_MAX`
+- a touch on the touchpad might generate
+  - `BTN_TOUCH`, `ABS_X`, `ABS_Y`, `ABS_PRESSURE`, `ABS_TOOL_WIDTH`,
+    `BTN_TOOL_FINGER`, `BTN_LEFT`, `BTN_RIGHT`, etc.
+  - and a `EV_SYN` follows
 
 ## Userspace
 
