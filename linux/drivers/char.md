@@ -8,3 +8,4 @@ Kernel char
   - floppy count and types
   - hd count and types
   - gfx type: EGA/VGA/CGA
+- `/proc/driver/nvram` shows user-readable info

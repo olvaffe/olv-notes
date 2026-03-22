@@ -3,6 +3,18 @@ Kernel clk
 
 ## Core
 
+- `struct clk_hw` represents a hw clk
+  - a clk driver calls `clk_hw_register` to register a `clk_hw`
+  - the core allocs a `clk_core` internally
+    - `core->hw` points to the `clk_hw`
+    - `hw->core` points to the `clk_core`
+  - it also allocs a `clk` at `hw->clk`
+    - this allows the clk driver to be a consumer of `clk_hw` itself
+- `struct clk` represents a consumer of a `clk_hw`
+  - a consumer calls `clk_get` to alloc a `clk`
+    - `clk->core` points to `clk_core` of the `clk_hw`
+    - `clk` is added to `core->clks`
+  - there can be multiple clks for the same `clk_hw`
 - `late_initcall_sync(clk_disable_unused)` disables unused clks
   - `clk_ignore_unused` disables the behavior
 
