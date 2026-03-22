@@ -102,8 +102,11 @@ Linux futex
   - `typedef int cv;`
   - `void cv_init(int *cv)`
     - `atomic_set(cv, 0);`
-  - `void cv_wait(int *cv)`
-    - `FUTEX_WAIT(cv, atomic_load(cv));`
+  - `void cv_wait(int *cv, mutex *mut)`
+    - `const int val = atomic_load(cv);`
+    - `mutex_unlock(mut)`
+    - `FUTEX_WAIT(cv, val);`
+    - `mutex_lock(mut)`
   - `void cv_signal(int *cv)`
     - `atomic_inc(cv);`
     - `FUTEX_WAKE(cv, 1);`
@@ -122,3 +125,6 @@ Linux futex
       has incremented
     - if `FUTEX_WAIT` goes first, it either skips the wait or `FUTEX_WAKE`
       wakes it up
+  - besides, these two sequences are atomic to each other
+    - signal: `mutex_lock -> update_cond -> cv_singal -> mutex_unlock`
+    - wait: `mutex_lock -> check_cond -> cv_wait (implies mutex_lock)`
