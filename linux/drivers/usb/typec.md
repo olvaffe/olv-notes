@@ -9,6 +9,14 @@ Kernel USB Type-C
   - get the port status
   - swap the port power role (to supply or to consume power)
   - swap the port data role (to be host or device)
+- types of hw controllers
+  - if the hw runs a FW and supports UCSI iface,
+    - kernel talks to the hw over UCSI
+  - if the hw is FW-less but supports TCPCI iface,
+    - kernel provides TCPM state machine and talks to the hw over TCPCI
+  - if the hw is FW-less aod does not support TCPCI iface,
+    - kernel provides TCPM state machine and talks to the hw over hw-specific
+      driver
 
 ## Type-C Port Controller Manager
 
