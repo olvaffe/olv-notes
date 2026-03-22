@@ -86,6 +86,16 @@ Linux futex
     - if `FUTEX_WAIT` goes first, it either skips the wait or `FUTEX_WAKE`
       wakes it up
 
+## Userspace Mutex
+
+- a userspace mutex without owner can be implemented by a futex
+  - it is essentially a binary semaphore, and is
+  - it is not considered a mutex academically
+- a userspace mutex with owner can also be implemented by a futex
+  - it gains an owner field to make sure only the owner can unlock
+  - rather than binary, the state can also be unlocked, locked, and contended
+    - this way we call `FUTEX_WAKE` when only contended
+
 ## Userspace Condition Variable
 
 - a userspace cv can be implmented by a futex
