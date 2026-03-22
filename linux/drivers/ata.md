@@ -18,6 +18,20 @@ Linux ata
 - an HBA can have
   - up to 32 ports, each can connect to a device or a multiplier
   - up to 32 slots, each holds a command
+- device hierarchy
+  - pci layer
+    - `pci_dev`, one per controller
+  - libata layer
+    - `ata_host`, one per `pci_dev`
+    - `ata_port`, one per port of `ata_host`
+    - `ata_device`, one per device of `ata_port`
+      - nowadays, there is only one device per port
+  - scsi layer
+    - `Scsi_Host`, one per `ata_port`
+    - `scsi_device` one per `ata_device`
+    - `scsi_disk` one per `scsi_device`
+  - block layer
+    - `gendisk`, one per `scsi_disk`
 - `module_pci_driver(ahci_pci_driver)` registers a pci driver
 - `ahci_init_one` probes a pci device
   - `ata_print_version_once` prints `version 3.0`
@@ -60,7 +74,7 @@ Linux ata
       - `ata_std_error_handler`
       - `ata_do_eh`
       - `ata_eh_recover`
-   - `ata_eh_recover` calls
+    - `ata_eh_recover` calls
       - `ata_eh_reset`
         - `ahci_postreset`
         - `ata_std_postreset`
