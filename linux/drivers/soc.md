@@ -20,6 +20,11 @@ Kernel SoC Drivers
     nvmem cells, `socinfo-data1` and `socinfo-data2`
   - it then uses the cell vals to identify the soc and exposes human-redable
     info via `/sys/devices/soc%d`
+- `CONFIG_MTK_SVS`
+  - the hw calculates optimal voltages for cpu and gpu based on calibration
+    data, current temperature, etc.
+  - the driver then calls `dev_pm_opp_adjust_voltage` to adjust opp voltages
+  - it seems to "undervolt" cpu and gpu to save power
 
 ## Qualcomm
 
