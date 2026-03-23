@@ -25,6 +25,33 @@ Kernel SoC Drivers
     data, current temperature, etc.
   - the driver then calls `dev_pm_opp_adjust_voltage` to adjust opp voltages
   - it seems to "undervolt" cpu and gpu to save power
+- `CONFIG_MTK_MMSYS` mutex user
+  - how `CONFIG_VIDEO_MEDIATEK_MDP3` uses mutex
+    - during probe, `mtk_mutex_get` gets `mtk_mutex` from the mutex device for
+      each pipeline
+      - it relies on dt to find the mutex device
+    - `mdp_cmdq_prepare` records cmds for a pipeline
+      - `mtk_mutex_prepare` enables clk
+      - `mdp_path_config_subfrm`
+        - `mdp_path_subfrm_require`
+          - `mtk_mutex_write_mod` sets the bits for used hw blocks
+          - `mtk_mutex_write_sof` sets SOF to single mode
+        - records cmds to write regs
+        - `mdp_path_subfrm_run`
+          - records cmds to clear SOF
+          - `mtk_mutex_enable_by_cmdq` records a cmd to enable mutex
+          - records cmds to wait and clear SOF
+        - records cmds to wait and clear EOF
+    - `mdp_handle_cmdq_callback` is called after cmdq completes
+      - `mtk_mutex_unprepare` disables clk
+  - it looks like the cmd sequence is
+    - `reg write -> clear SOF -> enable mutex -> wait and clear SOF -> wait and clear EOF`
+  - i guess
+    - reg write is to a shadow reg
+    - enable mutex sets SOF
+    - disable mutex commits reg write and sets EOF
+    - in single mode, enable mutex disables itself automatically
+    - in refresh/video mode, mutex is enabled/disabled upon frame start/end
 
 ## Qualcomm
 
