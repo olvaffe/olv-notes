@@ -14,6 +14,12 @@ Kernel SoC Drivers
   - dvfsrc can collect utilization from hw blocks and control their voltage
     and frequency automatically
   - it can also take sw input via `mtk_dvfsrc_send_request`
+- `CONFIG_MTK_SOCINFO`
+  - `CONFIG_NVMEM_MTK_EFUSE` creates a child device named `mtk-socinfo`
+  - this driver binds to the child device and expects the parent to have two
+    nvmem cells, `socinfo-data1` and `socinfo-data2`
+  - it then uses the cell vals to identify the soc and exposes human-redable
+    info via `/sys/devices/soc%d`
 
 ## Qualcomm
 
@@ -31,3 +37,10 @@ Kernel SoC Drivers
   - `CONFIG_UCSI_PMIC_GLINK` is the driver for `PMIC_GLINK_CLIENT_UCSI`
     - `pmic_glink_ucsi_probe` uses the soc glink api to talk to adsp fw
       - this is how we get type-c support on x1e
+
+## Rockchip
+
+- `CONFIG_ROCKCHIP_GRF`
+  - it sets some soc regs to sane defaults
+- `CONFIG_ROCKCHIP_IODOMAIN`
+  - it sets some io domain regs depending on whether the inputs are 1.8V or 3.3V
