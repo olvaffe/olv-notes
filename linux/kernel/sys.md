@@ -1,6 +1,29 @@
 Kernel sys
 ==========
 
+## Task SID/PGID/TGID and Shared Resources
+
+- if two tasks belong to the same session, they share these resources
+  - `task->signal->pids[PIDTYPE_SID]` points to the same pid
+  - `task->signal->tty` points to the same controlling tty
+    - unless the session leader forks a child and changes its own controlling tty
+- if two tasks belong to the same process group, they further share these resources
+  - `task->signal->pids[PIDTYPE_PGID]` points to the same pid
+- if two tasks belong to the same process (thread group), they further share
+  these resources
+  - `task->signal->pids[PIDTYPE_TGID]` points to the same pid
+  - `task->group_leader` points to the same task
+  - `task->signal` points to the same `signal_struct`
+    - it is overloaded with anything that is per-process
+  - `task->sighand` points to the same `sighand_struct`
+  - `task->mm` points to the same `mm_struct`
+  - `task->fs` points to the same `fs_struct`
+    - umask, pwd, chroot
+  - `task->files` points to the same `files_struct`
+    - this is open file table
+  - `task->nsproxy` points to the same `nsproxy`
+  - `task->real_cred` points to the same `cred`
+
 ## UTS name
 
 - UTS stands for UNIX Time-Sharing
@@ -98,7 +121,6 @@ Kernel sys
   - `task->signal->pids[PIDTYPE_TGID]`
   - `task->signal->pids[PIDTYPE_PGID]`
   - `task->signal->pids[PIDTYPE_SID]`
-    `task->group_leader->pids[PIDTYPE_SID].pid`
 - Just remember that the group leader of a task is the main thread of a
   process in the user space
 - A thread is a thread group leader (main thread) if
