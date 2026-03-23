@@ -194,10 +194,42 @@ ARM64
     Matrix Extension)
   - and various exceptions causing the userspace to be killed by `SIGILL`
 
-## CPU Info
+## CPU Info, Features, and Capabilities
 
-- `cpuinfo_store_boot_cpu` and `cpuinfo_store_cpu`
-  - they read various msr regs
+- cpu info, features, and capabilities
+  - per-cpu `cpuinfo_arm64` is collected from raw cpu msr regs
+  - global `arm64_ftr_regs` is initialized from per-cpu `cpuinfo_arm64`
+    - it is the common denominator of all `cpuinfo_arm64`
+  - global `system_cpucaps` is initialized from global `arm64_ftr_regs`
+    - it is sw-defined caps derived from hw-defined features
+- `smp_prepare_boot_cpu` init boot cpu info, features, and caps
+  - `cpuinfo_store_boot_cpu`
+    - `__cpuinfo_store_cpu` inits `cpuinfo_arm64` from various msr regs for
+      the boot cpu
+    - `init_cpu_features` inits `arm64_ftr_regs` array from `cpuinfo_arm64`
+  - `setup_boot_cpu_features`
+    - `init_cpucap_indirect_list` inits `cpucap_ptrs` array to point to
+      `arm64_features` and `arm64_errata`
+    - `setup_boot_cpu_capabilities`
+      - `update_cpu_capabilities` inits `system_cpucaps` and `boot_cpucaps`
+        bitmasks
+      - `enable_cpu_capabilities` enables supported cpu caps
+      - `apply_boot_alternatives` patches kernel code based on boot cpu caps
+- `secondary_start_kernel` inits secondary cpu info, features, and caps
+  - `cpuinfo_store_cpu`
+    - `__cpuinfo_store_cpu` inits `cpuinfo_arm64` from various msr regs for
+      the secondary cpu
+    - `update_cpu_features` updates `arm64_ftr_regs` array from
+      `cpuinfo_arm64`
+      - it updates it to safe values; that is, common denominator of all cpus
+- `smp_cpus_done` finalizes caps now that all cpus are brought up
+  - `setup_system_features`
+    - `setup_system_capabilities`
+      - `update_cpu_capabilities` updates `system_cpucaps`
+        - this sets `ARM64_ALWAYS_SYSTEM` and `system_capabilities_finalized`
+          will return true
+      - `apply_alternatives_all` patches kernel code based on system caps
+      - it prints detected caps to dmesg
 - when a cpu onlines, `cpuid_cpu_online` is called
   - midr and revid are available at
     `/sys/devices/system/cpu*/regs/identification`
