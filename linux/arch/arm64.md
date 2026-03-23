@@ -216,6 +216,9 @@ ARM64
       - `enable_cpu_capabilities` enables supported cpu caps
       - `apply_boot_alternatives` patches kernel code based on boot cpu caps
 - `secondary_start_kernel` inits secondary cpu info, features, and caps
+  - `check_local_cpu_capabilities`
+    - `update_cpu_capabilities` updates `system_cpucaps`
+      - mostly for errata
   - `cpuinfo_store_cpu`
     - `__cpuinfo_store_cpu` inits `cpuinfo_arm64` from various msr regs for
       the secondary cpu
