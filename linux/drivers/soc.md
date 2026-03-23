@@ -8,8 +8,6 @@ Kernel SoC Drivers
 - `CONFIG_MTK_DEVAPC`
   - mtk bus fabric provides trustzone support
   - unexpected access from master to slave triggers an irq
-      - select `MediaTek CMDQ Support`
-      - select `MediaTek DVFSRC Support`
 - `CONFIG_MTK_DVFSRC`
   - dvfsrc can collect utilization from hw blocks and control their voltage
     and frequency automatically
