@@ -63,6 +63,28 @@ systemd-resolved
     `resolvconf` to manage `/etc/resolv.conf`
 - `resolvectl --help`
 
+## Lookup Routing
+
+- routing rules
+  - names with synthetic records (e.g., `localhost`) are resolved locally
+  - signle-label names are resolved by llmnr, on ifaces with llmnr enabled
+  - signle-label names are resolved by dns after appending search domains
+  - multi-label names ending in `.local` are resolved by mdns, on ifaces with
+    mdns enabled
+  - multi-label names are resolved by dns
+    - if the multi-label names belong to some search domains, only the dns of
+      the best-matching search domain is queried
+    - otherwise, dns servers of `DNSDefaultRoute=yes` ifaces, and the global
+      dns server if configured, are queried
+    - if there is still no dns server, the compiled-in fallback dns server is
+      queried
+- if routing results in multiple answers, the first answer is used
+- imagine
+  - eth0: has a public dns and is default route
+  - wg0: has an internal dns and search domain `.internal`
+  - `foo` and `foo.internal` are resolved by internal dns
+  - all other names are resolved by public dns
+
 ## Names and Name Resolutions
 
 - POSIX functions
