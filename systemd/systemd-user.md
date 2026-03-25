@@ -10,8 +10,49 @@ systemd user sessions
 - `systemctl status user.slice`
   - a `user-$UID.slice` is created under `user.slice`
   - a `user@$UID.service` is started under `uiser-$UID.slice`
+  - a `session-c$ID.scope` is created under `uiser-$UID.slice`
+    - `login` is the first process
 - `man user@.service`
   - this starts `systemd --user` for the user
+
+## `pam_systemd`
+
+- `pam_sm_open_session` is the core entrypoint
+  - collect context
+    - `parse_argv` parses args
+      - class, type, desktop, etc.
+    - `acquire_user_record` acquires user record
+      - uid, gid, home, etc.
+    - `pam_get_item_many` gets std pam items
+      - tty, etc.
+    - `getenv_harder` gets items from `XDG_*` env
+  - `session_context_mangle` sanitizes context
+  - `register_session`
+    - calls `io.systemd.Login.CreateSession` method of `systemd-logind`
+      - `sd_varlink_callbo` blocks until a reply is received
+    - sets up env
+      - `XDG_SESSION_ID`, `XDG_SESSION_TYPE`, `XDG_SEAT`, etc.
+  - `setup_environment` sets up more env
+    - `HOME`, `XDG_RUNTIME_DIR`, etc.
+  - `apply_user_record_settings`
+    - umask, rlimit, `LANG`, etc.
+- `io.systemd.Login.CreateSession` asks `systemd-logind` to create a session
+  - `vl_method_create_session` calls `session_start`
+    - `user_start`
+      - `user_start_runtime_dir` starts the runtime dir job
+      - `user_start_service_manager` starts the service manager job
+    - `session_start_scope` starts the session scope job
+  - `session_send_create_reply` goes through only after `session_job_pending`
+    returns false
+    - `user-runtime-dir@$UID.service` has started
+    - `user@$UID.service` has started
+      - this happens after `systemd --user` reaches `basic.target`
+        - `manager_send_ready_on_basic_target` notifies ready
+    - `session-c$SID.scope` has started
+- IOW, by the time `pam_systemd` returns, the user manager has reached
+  `basic.target`
+  - `systemctl --user list-dependencies basic.target` lists paths, sockets,
+    and timers
 
 ## `systemd --user`
 
