@@ -67,3 +67,46 @@ UNIX
 - 1996, Open Group
   - merge of X/Open and COSE
   - controls POSIX and SUS
+
+## Power Off
+
+- power off process in early days
+  - `wall` sends messages to ask users to logout
+  - `touch /etc/nologin` blocks new logins
+  - `kill -TERM` followed by `kill -KILL` kills processes
+  - `sync; sync; sync` flushes buffers
+  - physically power off the device
+- 1975, Unix V6, `reboot` command
+  - instead of physically power off, `reboot` can be the last step to trap
+    back to the bootloader
+- 1980, 4BSD, `halt` command and `shutdown` script
+  - `halt` command flushes buffers and traps cpu to halt
+  - `shutdown` sends messages, touches nologin, kills processes, and `halt`
+  - they are both followed by physical poweroff
+    - `halt` is for immediate poweroff
+    - `shutdown` is for graceful poweroff
+- 1983, SVR1, `shutdown` command
+  - `shutdown` tells `init` to enter runlevel 1
+    - this stops all processes orderly and `sh`
+  - `shutdown -h ` tell `init` to enter runlevel 0
+    - this stops all processes orderly and `halt`
+  - `shutdown -r ` tell `init` to enter runlevel 6
+    - this stops all processes orderly and `reboot`
+- 1993, sysvinit 2.5, `poweroff` command
+  - `poweroff` command flushes buffers and asks APM to power off
+    - it was introduced much later after there was finally APM
+  - `shutdown -P` tell `init` to enter runlevel 0, but to `poweroff` instead
+    of `halt`
+- IOW, `shutdown` covers the whole process
+  - `halt` is the last step to halt the cpu
+  - `reboot` is the last step to reboot the machine
+  - `poweroff` is the last step to poweroff the machine
+- systemd
+  - `systemctl halt` enters `halt.target` after reaching `final.target`
+    - `systemd-shutdown` calls `reboot(LINUX_REBOOT_CMD_HALT)` to halt
+    - this halts the cpu and does not talk to acpi to reboot/poweroff
+  - `systemctl reboot` enters `reboot.target` after reaching `final.target`
+    - `systemd-shutdown` calls `reboot(LINUX_REBOOT_CMD_RESTART)` to reboot
+  - `systemctl poweroff` enters `poweroff.target` after reaching `final.target`
+    - `systemd-shutdown` calls `reboot(LINUX_REBOOT_CMD_POWER_OFF)` to poweroff
+  - `shutdown` defaults to `systemctl poweroff`
