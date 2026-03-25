@@ -282,3 +282,29 @@ Kernel KBuild
         - this gets exported symbols from the kernel build
         - `KBUILD_EXTRA_SYMBOLS` specifies additional `Module.symvers`
       - `-e` specifies an external module
+
+## Include Directories
+
+- default include dirs
+  - `scripts/Makefile.lib` has `$(LINUXINCLUDE)` in `c_flags`
+  - `LINUXINCLUDE`
+    - `-I$(srctree)/arch/$(SRCARCH)/include`
+    - `-I$(objtree)/arch/$(SRCARCH)/include/generated`
+    - `-I$(srctree)/include`
+    - `-I$(objtree)/include`
+    - `$(USERINCLUDE)`
+      - `-I$(srctree)/arch/$(SRCARCH)/include/uapi`
+      - `-I$(objtree)/arch/$(SRCARCH)/include/generated/uapi`
+      - `-I$(srctree)/include/uapi`
+      - `-I$(objtree)/include/generated/uapi`
+      - `-include $(srctree)/include/linux/compiler-version.h`
+      - `-include $(srctree)/include/linux/kconfig.h`
+- generated asm headers
+  - `include/asm-generic/Kbuild` lists `mandatory-y` headers
+  - `scripts/Makefile.asm-headers` invokes `cmd_wrap` to generate
+    `mandatory-y` headers that are missing
+    - these just wrap `asm-generic` headers
+- `include/generated/asm-offsets.h`
+  - there is `arch/$(SRCARCH)/kernel/asm-offsets.c`
+  - `Kbuild` translates it to `asm-offsets.s` and calls `filechk_offsets` from
+    `scripts/Makefile.lib` to generate the header
