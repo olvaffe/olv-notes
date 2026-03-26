@@ -170,11 +170,36 @@ CPU
       offset
       - every 2KB of memory share the same tag
       - every 64B goes to a different set
-- VIPT, virtually indexed and physicalled tagged
-  - Intel
-  - ARM I$
 - PIPT, physically indexed and physically tagged
   - ARM D$
+  - the cache only sees pa
+  - say va1 and va2 both map to pa
+    - the cache allocates a cl for pa
+    - access via va1 or va2 hits the same cl
+  - say va maps to pa1 and pa2 in two different mappings
+    - the cache allocates cl1 for pa1 and cl2 for pa2
+    - access via va hits the correct cl depending on the active mapping
+- VIVT, virtually indexed and virtually tagged
+  - no longer used on modern arch
+  - the cache only sees va
+  - say va1 and va2 both map to pa
+    - the cache allocates cl1 for va1 and cl2 for va2
+    - access via va1 or va2 hits cl1 or cl2 respectively
+      - require explicit flush/invalidate to be coherent
+  - say va maps to pa1 and pa2 in two different mappings
+    - the cache allocates a cl for va
+    - access via va hits the same cl regardless of the active mapping
+      - require explicit flush on mapping switch to prevent
+- VIPT, virtually indexed and physically tagged
+  - Intel
+  - ARM I$
+  - say va1 and va2 both map to pa
+    - same as VIVT and requires explicit flush/invalidate to be coherent
+  - say va maps to pa1 and pa2 in two different mappings
+    - the cache allocates a cl for va
+    - access via va hits the correct cl depending on the active mapping
+      - pa1 or pa2 is encoded into cl
+      - when the cache detects a mismatch, it evicts/refills cl automatically
 
 ## Power Dissipation
 

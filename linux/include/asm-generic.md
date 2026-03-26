@@ -1,0 +1,149 @@
+Linux asm-generic
+=================
+
+## Mandatory Headers
+
+- `asm/archrandom.h` provides TRNG
+  - `arch_get_random_*`
+  - x86: `rdrand`
+  - arm: `$RNDR`
+- `asm/atomic.h` provides atomic ops
+  - `arch_atomic_*`
+  - x86: `lock`
+  - arm: LSE, or older LL/SE
+- `asm/barrier.h` provides memory barriers
+  - `mb`, `smp_load_acquire`, `smp_store_release`, etc.
+  - x86: `mfence`, just compiler barrier, etc.
+  - arm: `dsb`, `ldar`, `stlr`, etc.
+- `asm/bitops.h` provides bitops
+  - `ffs`, `fls`, `ffz`, `hweight*`, `{test,set,clear,*}_bit`, etc.
+  - x86: `lock`
+  - arm: fall back to atomic
+- `asm/bug.h` provides warn/bug macros
+  - `WARN*`, `BUG*`
+  - x86: `ud2` triggers invalid op exception
+  - arm: `brk` triggers breakpoint exception
+- `asm/cacheflush.h` provides cache maintenance for mm (not for dma)
+  - `flush_cache_*` flushes caches on mapping changes for moronic VIVT, and is
+    nop on x86/arm
+  - `flush_icache_*` is obsoleted by `flush_dcache_*` and is nop on x86/arm
+  - `flush_dcache_*` flushes dcaches after writes
+    - it is for VIPT dcache, or for incoherent dcache/icache
+    - x86: nop
+    - arm: `__sync_cache_and_tags` flushes dcache and invalidates icache
+      lazily when a page was written to and is mapped for execution (that is,
+      JIT)
+- `asm/cfi.h` is for clang Control Flow Integrity support
+- `asm/checksum.h` provides ip packet checksum
+  - `csum_*`
+- `asm/compat.h` provides 32-on-64 compat
+- `asm/current.h` provides `current` macro
+    - x86: per-cpu` current_task`
+    - arm: `sp_el0`
+- `asm/delay.h` provides busy wait
+  - `ndelay` and `udelay`
+  - x86: `pause` in a busy loop
+  - arm: `yield` in a busy loop
+- `asm/device.h` defines extensions to `device` and `platform_device`
+  - empty on x86/arm
+- `asm/div64.h` provides 64-bit division
+  - `do_div` macro
+- `asm/dma.h` provides x86 isa dma support
+  - `request_dma` and `free_dma`
+  - x86: isa dma channel
+  - arm: always fails
+- `asm/dma-mapping.h` provides arch dma ops
+  - NULL on x86/arm
+- `asm/emergency-restart.h` provides `machine_emergency_restart`
+- `asm/exec.h` provides `arch_align_stack` to align user stack
+- `asm/ftrace.h` provides ftrace support
+  - `ftrace_regs`, `return_to_handler`, etc.
+- `asm/futex.h` provides atomic ops on uaddr for futex
+  - `futex_atomic_cmpxchg_inatomic` and `arch_futex_atomic_op_inuser`
+- `asm/hardirq.h` provides hardirq stat, error, etc.
+  - `irq_stat`, `ack_bad_irq`, `arch_nmi_{enter,exit}`, etc.
+- `asm/hw_irq.h` provides x86 root irq controller support
+- `asm/io.h` provides mmio/pio support
+  - `read*` and `write*` are for mmio
+    - x86: `mov` plus compiler barriers
+    - arm: `ldr` and `str` plus memory barriers
+  - `in*` and `out*` are for pio
+    - x86: `in` and `out` instrs
+    - arm: `read*` and `write*`
+  - `ioread*` and `iowrite*` pick mmio/pio automatically
+- `asm/irq.h` provides root irq controller support
+- `asm/irq_regs.h` saves/restores irq frame
+  - `get_irq_regs` and `set_irq_regs`
+- `asm/irq_work.h` provides irq work support
+  - `arch_irq_work_has_interrupt`
+  - x86: true
+  - arm: false
+- `asm/kdebug.h` provides oops helpers
+- `asm/kmap_size.h` is for highmem
+- `asm/kprobes.h` provides kprobe support
+- `asm/kvm_types.h` is related to kvm
+- `asm/linkage.h` defines function linkage between assembly and C
+  - `SYM_FUNC_START`, `__ALIGN`, etc.
+- `asm/local64.h` provides atomic ops on `local64_t`
+  - it translate to `local_t` on 64-bit arch
+- `asm/local.h` provides atomic ops on `local_t`
+  - it translate to `atomic_long_t`
+  - x86: same as atomic, except no need to `lock`
+  - arm: same as atomic
+- `asm/mmiowb.h` provides mmio write barrier
+  - nop on x86/arm
+- `asm/mmu_context.h` provides mm init and switch
+  - `init_new_context` (after fork), `switch_mm` (after context switch),
+    `activate_mm` (after exec), etc.
+- `asm/mmu.h` defines `mm_context_t` embedded in `mm_struct`
+- `asm/module.h` defines `mod_arch_specific` embedded in `module`
+- `asm/module.lds.h` extends module linker script
+- `asm/msi.h` defines `msi_alloc_info_t` and `msg_msg` extensions
+- `asm/pci.h` provides pci support
+  - `arch_can_pci_mmap_wc`
+- `asm/percpu.h` provides per-cpu storage and ops
+- `asm/pgalloc.h` provides pgtable routines
+  - `pgd_alloc`, `pgd_free`, `pgd_populate`, etc.
+  - `p4d_alloc_one`, `p4d_free`, `p4d_populate`, etc.
+  - `pud_alloc_one`, `pud_free`, `pud_populate`, etc.
+  - `pmd_alloc_one`, `pmd_free`, `pmd_populate`, etc.
+  - `pte_alloc_one`, `pte_free`, `set_pte`, etc.
+- `asm/preempt.h`
+  - `__preempt_count_add`, `preempt_count`, etc.
+  - x86: per-cpu `__preempt_count`
+  - arm: `current_thread_info()->preempt.count`
+- `asm/rqspinlock.h` provides spinlock for bpf programs
+- `asm/runtime-const.h` patches in const vals
+- `asm/rwonce.h` privodes rw once macros
+  - `READ_ONCE` and `WRITE_ONCE` dereference volatile
+- `asm/sections.h` defines kernel sections
+  - `_text`, `_stext`, `_etext`
+  - `_data`, `_sdata`, `_edata`
+  - etc.
+- `asm/serial.h` defines `BASE_BAUD` to 115200
+- `asm/shmparam.h` defines `SHMLBA` to `PAGE_SIZE`
+  - shm low-boundary align
+- `asm/simd.h` provides simd support
+  - `may_use_simd`
+- `asm/softirq_stack.h` handles softirq on softirq stack
+  - `do_softirq_own_stack`
+- `asm/switch_to.h` provides context switch support
+  - `switch_to`
+- `asm/timex.h` provides `get_cycles`
+  - x86: `rdtsc`
+  - arm: `cntvct_el0`
+- `asm/tlbflush.h` flushes mmu tlb
+  - `flush_tlb_mm`, etc.
+- `asm/topology.h` provides numa support
+- `asm/trace_clock.h` provides extra clocks for tracing
+- `asm/uaccess.h` provides uaddr access
+  - `access_ok`, `get_user`, `put_user`, `raw_copy_from_user`,
+    `raw_copy_to_user`, etc.
+- `asm/unwind_user.h` provides user stack unwind helper for perf
+- `asm/vermagic.h` defines `MODULE_ARCH_VERMAGIC` for vermagic
+- `asm/vga.h` is for legacy vga before fbdev
+- `asm/video.h` is for legacy vga with fbdev
+  - `pgprot_framebuffer`, `video_is_primary_device`, etc.
+- `asm/word-at-a-time.h` processes multile bytes at a time
+  - for `strnlen_user`, `strncpy_from_user`, etc.
+- `asm/xor.h` provides xor support for raid
