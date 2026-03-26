@@ -147,3 +147,46 @@ Linux asm-generic
 - `asm/word-at-a-time.h` processes multile bytes at a time
   - for `strnlen_user`, `strncpy_from_user`, etc.
 - `asm/xor.h` provides xor support for raid
+
+## Almost Mandatory Headers
+
+- `asm/cache.h` defines cache info
+  - `L1_CACHE_SHIFT`, etc.
+- `asm/elf.h` defines elf info
+- `asm/entry-common.h` is for common entry
+  - `arch_enter_*`, `arch_exit_*`, `arch_irqentry_exit_need_resched`
+- `asm/irqflags.h` enables/disables local irq
+  - `arch_local_irq_*`
+- `asm/mman.h` is for mman
+  - `arch_calc_vm_*`, `arch_validate_*`, etc.
+- `asm/page.h`
+  - `copy_page`, `clear_page`, etc.
+- `asm/pgtable.h` provides pgtable manipulation
+  - `pgd_*`
+  - `p4d_*`
+  - `pud_*`
+  - `pmd_*`
+  - `pte_*`
+- `asm/processor.h`
+  - `cpu_context`, `thread_struct`, etc.
+    - to save cpu state in `task_struct`
+- `asm/ptrace.h`
+  - `pt_regs`, etc.
+- `asm/set_memory.h`
+  - `set_memory_*`
+- `asm/smp.h`
+  - `raw_smp_processor_id`, etc.
+- `asm/sparsemem.h`
+  - `SECTION_SIZE_BITS`, `MAX_PHYSMEM_BITS`, etc.
+- `asm/spinlock.h`
+  - `arch_spin_lock`, `arch_spin_unlock`, etc.
+  - `qspinlock` is used on x86/arm
+- `asm/string.h`
+  - `memcpy`, `memset`, etc.
+- `asm/syscall.h`
+  - `syscall_get_nr`, `syscall_get_arguments`, etc.
+- `asm/thread_info.h`
+  - `thread_info`, etc.
+    - to save `TIF_*` flags, etc. in `task_struct`
+- `asm/vmalloc.h`
+  - `arch_vmap_*`, etc. for `CONFIG_HAVE_ARCH_HUGE_VMAP`
