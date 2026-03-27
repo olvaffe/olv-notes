@@ -63,8 +63,7 @@ Atomic
   - compiler barrier
     - `barrier` prevents compiler from reordering memory ops to cross the
       barrier
-      - it has almost no user
-    - use `READ_ONCE` and `WRITE_ONCE` instead
+    - `READ_ONCE` and `WRITE_ONCE`
       - they expand to volatile dereferences
       - not exactly a compiler barrier, but volatile memory ops must not
         - be reordered against other volatile memory ops
@@ -128,9 +127,15 @@ Atomic
 - `smp_wmb` expands to
   - x86: `barrier` because hw does not reorder stores
   - arm: `volatile("dmb ishst":::"memory")`
-- `smp_store_mb`
-- `smp_load_acquire`
-- `smp_store_release`
+- `smp_store_mb` expands to
+  - x86: `xchg` which implies `lock`
+  - arm: `WRITE_ONCE` followed by `__smp_mb`
+- `smp_load_acquire` expands to
+  - x86: `READ_ONCE` followed by `barrier`
+  - arm: `volatile("ldar ..."..."memory")`
+- `smp_store_release` expands to
+  - x86: `barrier` followed by `WRITE_ONCE`
+  - arm: `volatile("stlr ..."..."memory")`
 - `local_irq_disable`
   - x86: `volatile("cli":::"memory")`
   - arm: `barrier` followed by `msr` followed by another `barrier`
