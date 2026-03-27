@@ -1,6 +1,102 @@
 Atomic
 ======
 
+## Linux Kernel Memory Barriers
+
+- <https://www.kernel.org/doc/Documentation/memory-barriers.txt>
+- Abstract memory access model.
+  - within a single cpu,
+    - compiler might
+      - reorder/discard instructions
+      - replace memory accesses by register accesses (CSE)
+    - cpu might
+      - execute instructions out-of-order or speculatively
+      - merge/discard/reorder/buffer memory ops
+    - cache might load/store from the cache
+      - we don't cover cache maintenance here
+    - the only guarantee is, if memory op A depends on memory op B, A is
+      always ordered after B
+  - when interacting with other components connected via the memory bus, the
+    almost arbitrary memory op ordering becomes an issue
+    - between two cpus, an incorrect total memory op ordering can happen given
+      that each cpu can have an almost arbitrary memroy op ordering
+    - mmio regs might need to be accessed in a specific order, and arbitrary
+      memory op ordering is catastrophic
+    - again, cache in each component cacuses issues too, but we only talk
+      about memory ops on the memory bus here
+- What are memory barriers?
+  - a memory barrier imposes a partial ordering on memory ops from a cpu
+    - a write memory barrier ensures write ops before the barrier happen-before
+      write ops after the barrier
+    - a read memory barrier ensures read ops before the barrier happen-before
+      read ops after the barrier
+    - a general memory barrier ensures memory ops before the barrier
+      happen-before memory ops after the barrier
+  - acquire/release op
+    - an acquire op ensures memory ops after the acquire op happen-after the
+      acquire op
+    - a release op ensures memory ops before the release op happen-before the
+      release op
+    - critical section
+      - increment an atomic and then acquire
+      - here is the critical section
+      - release and then decrement the atomic
+  - a memory barrier _only_ imposes a partial ordering on memory ops from a
+    cpu
+    - when a cpu uses a general barrier to ensure its `a = 1` happens-before
+      its `b = 2`, the barrier has no effect on other components on the memory
+      bus
+    - if a second cpu has `if (b == 2) assert(a == 1)`, it might still hit
+      assertion failure
+      - a read barrier from the second cpu is still required to avoid the
+        assertion failure
+  - control dependency
+    - in `if (READ_ONCE(a)) READ_ONCE(b)`, while there is a control dependency
+      between load from `a` and load from `b`, the ordering is not guaranteed
+      - cpu might load from `b` speculatively
+    - in `if (READ_ONCE(a)) WRITE_ONCE(b, 1)`, the ordering is guaranteed
+      - cpu cannot store to `b` speculatively
+  - smp barrier pairing
+    - because a barrier only affects a cpu, two cpus should pair their
+      barriers to properly synchronize
+- Explicit kernel barriers.
+  - compiler barrier
+    - `barrier` prevents compiler from reordering memory ops to cross the
+      barrier
+      - it has no user
+    - use `READ_ONCE` and `WRITE_ONCE` instead
+      - they expand to volatile dereferences
+      - not exactly a compiler barrier, but volatile memory ops must not
+        - be reordered against other volatile memory ops
+        - be discarded
+        - be merged
+        - be splitted
+      - a non-volatile memory op can still be reordered against volatile or
+        non-volatile memory op
+  - memory barrier
+    - `mb`, `wmb`, and `rmb` imply `barrier`
+- Implicit kernel memory barriers.
+  - spinlock/mutex/semaphore lock/unlock
+    - they imply both acquire/release ops and `barrier`
+    - they are not one-way `barrier` because we don't want the compiler to
+      reorder `lock A; unlock A; lock B; unlock B` to `lock A; lock B; ...`,
+      which could lead to deadlock if another thread has `lock B; lock A`
+    - they are not `mb` either
+      - `write a; lock M; unlock M; write b` can be reordered to
+        `lock M; write b; write a; unlock M` by cpu
+      - `write a; unlock M; lock N; write b` can be reordered to
+        `lock N; write b; write a; unlock M` by cpu
+  - irq disable/enable
+    - they imply `barrier` but not `mb`
+  - sleep/wakeup
+    - sleep sequence
+      - `set_current_state` implies `mb` after state change
+      - `if (COND) break;`
+      - `schedule` implies `mb`
+    - wakeup sequence
+      - `COND = true;`
+      - `wake_up` implies `mb` before state change
+
 ## Memory Model
 
 - there are multiple CPUs and devices that share the memory system.
