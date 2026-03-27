@@ -143,6 +143,37 @@ Atomic
   - x86: `volatile("sti":::"memory")`
   - arm: `barrier` followed by `msr` followed by another `barrier`
 
+## C++ Memory Ordering
+
+- memory ordering
+  - `atomic_fetch_inc_relaxed` has `memory_order_relaxed`
+  - `atomic_fetch_inc_acquire` has `memory_order_acquire`
+  - `atomic_fetch_inc_release` has `memory_order_release`
+  - `atomic_fetch_inc` has `memory_order_seq_cst`
+  - kernel does not have `memory_order_acq_rel`
+- `memory_order_seq_cst` vs `memory_order_acq_rel`
+  - the instruction load-acquires, increments, and store-releases atomically
+  - the store does not translate to a memory op immediately but can be delayed
+    a bit by a "store buffer"
+  - with `memory_order_seq_cst`, it flushes the store buffer as a part of the
+    atomic operation
+    - a following instruction cannot generate a memory op that gets reordered
+      between the load-acquire/store-release
+  - with `memory_order_acq_rel`, it does not flush the store buffer
+    - a following instruction can generate a memory op that gets reordered
+      between the load-acquire/store-release
+- example
+  - `v1 = 0; v2 = 0;`
+  - cpu1: `fetch_inc v1; read v2;`
+  - cpu2: `fetch_inc v2; read v1;`
+  - with `memory_order_seq_cst`, at least one of the cpu reads 1
+    - cpu1 generates load v1, store v1, load v2
+    - cpu2 generates load v2, store v2, load v1
+    - whatever the total order is, at least one of the final loads returns 1
+  - with `memory_order_acq_rel`, it is possible that both cpus read 0
+    - cpu1 could generate load v1, load v2, store v1
+    - cpu2 could generate load v2, load v1, store v2
+
 ## x86 barriers
 
 - SFENCE
