@@ -63,7 +63,7 @@ Atomic
   - compiler barrier
     - `barrier` prevents compiler from reordering memory ops to cross the
       barrier
-      - it has no user
+      - it has almost no user
     - use `READ_ONCE` and `WRITE_ONCE` instead
       - they expand to volatile dereferences
       - not exactly a compiler barrier, but volatile memory ops must not
@@ -96,6 +96,47 @@ Atomic
     - wakeup sequence
       - `COND = true;`
       - `wake_up` implies `mb` before state change
+
+## Barrier Implementations
+
+- `barrier` expands to `__volatile__("": : :"memory")`
+  - `__volatile__` means there is side-effect and cannot be eliminated
+  - `""` means there is no cpu instruction
+  - `memory` means memory is clobbered
+    - it cannot be reodered against any memory op
+    - memory values cached in regs are invalidated
+- `READ_ONCE` and `WRITE_ONCE` expand to `volatile` dereferences
+- `mb` expands to
+  - x86: `volatile("mfence":::"memory")`
+  - arm: `volatile("dsb sy":::"memory")`
+- `rmb` expands to
+  - x86: `volatile("lfence":::"memory")`
+  - arm: `volatile("dsb ld":::"memory")`
+- `wmb` expands to
+  - x86: `volatile("sfence":::"memory")`
+  - arm: `volatile("dsb st":::"memory")`
+- `smp_mb` expands to
+  - unlike `mb`, which imposes ordering for all components on the memory bus,
+    `smb_mb` only imposes ordering for other cpus on the memory bus
+  - x86: `volatile("lock addl $0,-4(%%rsp)" ::: "memory", "cc")`
+    - atomic add of 0 to a dummy addr
+    - not nop because hw would reorder load/store
+  - arm: `volatile("dmb ish":::"memory")`
+- `smp_rmb` expands to
+  - x86: `barrier` because hw does not reorder loads
+  - arm: `volatile("dmb ishld":::"memory")`
+- `smp_wmb` expands to
+  - x86: `barrier` because hw does not reorder stores
+  - arm: `volatile("dmb ishst":::"memory")`
+- `smp_store_mb`
+- `smp_load_acquire`
+- `smp_store_release`
+- `local_irq_disable`
+  - x86: `volatile("cli":::"memory")`
+  - arm: `barrier` followed by `msr` followed by another `barrier`
+- `local_irq_enable`
+  - x86: `volatile("sti":::"memory")`
+  - arm: `barrier` followed by `msr` followed by another `barrier`
 
 ## x86 barriers
 
