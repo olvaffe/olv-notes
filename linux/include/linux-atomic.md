@@ -7,6 +7,7 @@ Atomic and Barrier
   memory bus without a lock
   - they enable lock-free algorithms when the other components are cpus
   - when the other components are non-cpus, non-cpus can't even take a lock
+  - locks are built on top of atomics and barriers
 - atomic ops on modern archs
   - `atomic_set` is atomic without special instr
     - it generates a store op which is always atomic
@@ -22,6 +23,7 @@ Atomic and Barrier
       completion and buf read
   - `smp_mb` and variants impose a partial order on memory ops from a cpu for
     all other cpus on the memory bus
+    - scheduler makes heavy use of these
   - `smp_load_acquire` and `smp_store_release` are one-way `smp_mb`
     - store-release marks shared data ready and releases them
     - lock-acquire checks data readiness and acquires them
