@@ -1,5 +1,33 @@
-Atomic
-======
+Atomic and Barrier
+==================
+
+## Overview
+
+- atomics and barriers allow a cpu to share data with other components on the
+  memory bus without a lock
+  - they enable lock-free algorithms when the other components are cpus
+  - when the other components are non-cpus, non-cpus can't even take a lock
+- atomic ops on modern archs
+  - `atomic_set` is atomic without special instr
+    - it generates a store op which is always atomic
+  - `atomic_read` is atomic without special instr
+    - it generates a load op which is always atomic
+  - the rest is RMW and requires special instrs to be atomic
+    - they generate a load op, modify the value, and generate a store op with
+      the cacheline locked
+- barriers
+  - `mb` and variants impose a partial order on memory ops from a cpu for all
+    other components on the memory bus
+    - e.g., `wmb` between buf write and dma initiation, `rmb` between dma
+      completion and buf read
+  - `smp_mb` and variants impose a partial order on memory ops from a cpu for
+    all other cpus on the memory bus
+  - `smp_load_acquire` and `smp_store_release` are one-way `smp_mb`
+    - store-release marks shared data ready and releases them
+    - lock-acquire checks data readiness and acquires them
+- `atomic_cmpxchg_acquire` and `atomic_cmpxchg_release` combine atomic cmpxchg
+  and one-way `smp_mb`
+  - they are the hw primitives used to implement locks
 
 ## Linux Kernel Memory Barriers
 
