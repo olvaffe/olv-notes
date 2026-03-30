@@ -433,17 +433,20 @@ Mesa PanVK
     `util_vma_heap_alloc(&dev->as.heap)`
 - `panvk_per_arch(create_device)` inits the vm
   - `user_va_start` is 32MB
-  - `user_va_end` is 4GB
-  - `device->as.heap` manages `[user_va_start, user_va_end)`
-    - by default, `util_vma_heap` allocs from the top
-    - with 4GB AS, bos start from `0xffffffff` and grow down
+  - `user_va_end` is `1 << 47`
+  - `low_va_end` is 4GB
+  - by default, `util_vma_heap` allocs from the top
+  - `device->as.heap` manages `[low_va_end, user_va_end)`
+    - with 47-bit AS, bos start from `0x7fffffffffff` and grow down
+  - `device->as.priv_heap` manages `[user_va_start, low_va_end)`
+    - with 32-bit AS, bos start from `0xffffffff` and grow down
   - `device->kmod.vm` is created with the same range
     - `vm_flags` does not include `PAN_KMOD_VM_FLAG_AUTO_VA`
       - if it did, kmod would init a `util_vma_heap` the same way
     - hw reports `mmu_features`
       - typically, there are 40 pa bits and 48 va bits
       - the 48 va space is shared by usersapce (bottom) and kernel space (top)
-      - because panvk asks for 4GB, the first 4GB is reserved for userspace
+      - because panvk asks for 47 bits, the first 47 bits is reserved for userspace
         and the kernel uses the rest
       - `panthor_vm_create_check_args` wants the start addr to be
         power-of-two and ends up with `1ull << 47`
