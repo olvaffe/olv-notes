@@ -371,3 +371,27 @@ Device Tree
         set them up
       - specify `clock-frequency` and `clock-controller@XXX` can be omitted
 - e.g., <https://lore.kernel.org/lkml/20251111112158.4.I5032910018cdd7d6be7aea78870d04c0dc381d6e@changeid/>
+
+## Physical Memory and Reserved Memory
+
+- arm64 `setup_arch`
+  - `setup_machine_fdt -> early_init_dt_scan -> early_init_dt_scan_nodes`
+    - `early_init_dt_scan_memory` scans `device_type = "memory"` nodes to add
+      physical memory as memblocks
+  - `arm64_memblock_init -> early_init_fdt_scan_reserved_mem`
+    - `fdt_scan_reserved_mem` scans `/reserved-memory` and calls
+      `__reserved_mem_reserve_reg` to reserve the child nodes from memblocks
+  - `unflatten_device_tree -> fdt_scan_reserved_mem_reg_nodes`
+    - it scans `/reserved-memory` again and calls `fdt_reserved_mem_save_node`
+      to to add the child nodes to `reserved_mem` array
+    - each child node has a compat and may have a "driver" to provide
+      `rmem->ops`
+      - `RESERVEDMEM_OF_DECLARE` declares a driver
+- if a device node has a `memory-region` property to reference a reserved
+  memory region, the device driver might call `of_reserved_mem_device_init` to
+  assign the rmem to the device
+  - `dma_alloc_attrs` will call `dma_alloc_from_dev_coherent` to allocate from
+    the rmem
+- else, if a device node is not behind iommu,
+  - `dma_alloc_attrs` will call down to `dma_alloc_contiguous` to allocate
+    from cma which is also a rmem
