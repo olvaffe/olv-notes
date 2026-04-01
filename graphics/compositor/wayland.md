@@ -80,23 +80,24 @@ Wayland
       - `<interface name="wp_presentation" version="2">`
       - `<interface name="wp_presentation_feedback" version="2">`
     - `<<protocol name="tablet_v2">`
-      - `<interface name="zwp_tablet_manager_v2" version="1">`
-      - `<interface name="zwp_tablet_seat_v2" version="1">`
-      - `<interface name="zwp_tablet_tool_v2" version="1">`
-      - `<interface name="zwp_tablet_v2" version="1">`
-      - `<interface name="zwp_tablet_pad_ring_v2" version="1">`
-      - `<interface name="zwp_tablet_pad_strip_v2" version="1">`
-      - `<interface name="zwp_tablet_pad_group_v2" version="1">`
-      - `<interface name="zwp_tablet_pad_v2" version="1">`
+      - `<interface name="zwp_tablet_manager_v2" version="2">`
+      - `<interface name="zwp_tablet_seat_v2" version="2">`
+      - `<interface name="zwp_tablet_tool_v2" version="2">`
+      - `<interface name="zwp_tablet_v2" version="2">`
+      - `<interface name="zwp_tablet_pad_ring_v2" version="2">`
+      - `<interface name="zwp_tablet_pad_strip_v2" version="2">`
+      - `<interface name="zwp_tablet_pad_group_v2" version="2">`
+      - `<interface name="zwp_tablet_pad_v2" version="2">`
+      - `<interface name="zwp_tablet_pad_dial_v2" version="2">`
     - `<protocol name="viewporter">`
       - `<interface name="wp_viewporter" version="1">`
       - `<interface name="wp_viewport" version="1">`
     - `<protocol name="xdg_shell">`
-      - `<interface name="xdg_wm_base" version="6">`
-      - `<interface name="xdg_positioner" version="6">`
-      - `<interface name="xdg_surface" version="6">`
-      - `<interface name="xdg_toplevel" version="6">`
-      - `<interface name="xdg_popup" version="6">`
+      - `<interface name="xdg_wm_base" version="7">`
+      - `<interface name="xdg_positioner" version="7">`
+      - `<interface name="xdg_surface" version="7">`
+      - `<interface name="xdg_toplevel" version="7">`
+      - `<interface name="xdg_popup" version="7">`
   - selected staging protocols
     - `<protocol name="alpha_modifier_v1">`
       - this allows a client to speicify the alpha for a surface
