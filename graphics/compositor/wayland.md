@@ -661,3 +661,40 @@ Wayland
       - they are indices into the format table
     - `tranche_done` marks the end of the current tranche
   - `done` marks the end of all events
+
+## Migration from X11 to Wayland
+
+- display
+  - gtk3 and gtk4 support multiple backends
+    - `GDK_BACKEND="wayland,x11"` tries wayland before x11, which is the
+      default
+    - gtk2 only supports x11
+  - qt5 and qt6 support multiple backends
+    - `QT_QPA_PLATFORM="wayland;xcb"` tries wayland before xcb, which is the
+      default on qt6
+    - apps might ship with their own qt versions and often lack wayland
+      backend
+  - sdl2 and sdl3 support multiple backends
+    - `SDL_VIDEODRIVER="wayland,x11"` tries wayland before x11, which is the
+      default on latest releases
+- input method
+  - x11 has outdated xim protocol
+    - `XMODIFIERS="@im=foo"` specifies the xim server
+  - wayland has experimental protocols
+    - there are input method protocols between compositor and im server
+      - `zwp_input_method_v1`: kwin, weston, fcitx5
+      - `zwp_input_method_v2`: wlroots, fcitx5
+      - mutter uses ibus dbus protocol
+    - there are text input protocols between compositor and app
+      - `zwp_text_input_v1`: kwin, weston
+      - `zwp_text_input_v2`: kwin, qt5/qt6
+      - `zwp_text_input_v3`: kwin, mutter, sway, gtk3/gtk4, qt6.8
+    - there are efforts to stabalize the protocols
+      - `xx_input_method_v1` is derived from `zwp_input_method_v2`
+      - `xx_text_input_v3` is derived from `zwp_text_input_v3`
+  - gtk supports ad-hoc gtk im modules
+    - `GTK_IM_MODULE="foo"` specifies the gtk im module
+    - no x11/wayland protocol dependency
+  - qt supports ad-hoc qt im modules
+    - `QT_IM_MODULE="foo"` specifies the qt im module
+    - no x11/wayland protocol dependency
