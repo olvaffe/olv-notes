@@ -10,28 +10,28 @@ Wayland
     - `<protocol name="wayland">`
     - `<interface name="wl_display" version="1">`
     - `<interface name="wl_registry" version="1">`
-    - `<interface name="wl_callback" version="1">`
-    - `<interface name="wl_compositor" version="6">`
+    - `<interface name="wl_callback" version="1" frozen="true">`
+    - `<interface name="wl_compositor" version="7">`
     - `<interface name="wl_shm_pool" version="2">`
     - `<interface name="wl_shm" version="2">`
-    - `<interface name="wl_buffer" version="1">`
-    - `<interface name="wl_data_offer" version="3">`
-    - `<interface name="wl_data_source" version="3">`
-    - `<interface name="wl_data_device" version="3">`
-    - `<interface name="wl_data_device_manager" version="3">`
+    - `<interface name="wl_buffer" version="1" frozen="true">`
+    - `<interface name="wl_data_offer" version="4">`
+    - `<interface name="wl_data_source" version="4">`
+    - `<interface name="wl_data_device" version="4">`
+    - `<interface name="wl_data_device_manager" version="4">`
     - `<interface name="wl_shell" version="1">`
       - deprecated by `xdg_shell`
     - `<interface name="wl_shell_surface" version="1">`
-    - `<interface name="wl_surface" version="6">`
+    - `<interface name="wl_surface" version="7">`
     - `<interface name="wl_seat" version="10">`
     - `<interface name="wl_pointer" version="10">`
     - `<interface name="wl_keyboard" version="10">`
     - `<interface name="wl_touch" version="10">`
     - `<interface name="wl_output" version="4">`
-    - `<interface name="wl_region" version="1">`
+    - `<interface name="wl_region" version="7">`
     - `<interface name="wl_subcompositor" version="1">`
     - `<interface name="wl_subsurface" version="1">`
-    - `<interface name="wl_fixes" version="1">`
+    - `<interface name="wl_fixes" version="2">`
 - <https://gitlab.freedesktop.org/wayland/wayland-utils.git>
   - the only utility is `wayland-info`
 - <https://gitlab.freedesktop.org/wayland/weston.git>
