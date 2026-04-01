@@ -141,7 +141,7 @@ Font
 
 - `gsettings set org.gnome.desktop.interface font-name "sans-serif 19"`
   - gtk gets its settings from multiple sources
-  - one of them is `org.freedesktop.portal.Settings`
+  - one of the sources is `org.freedesktop.portal.Settings`
   - `xdg-desktop-portal-gtk` monitors `org.gnome.desktop.*` gsettings and
     advertises via portal settings
 - other methods
@@ -151,6 +151,11 @@ Font
     ui and the text
   - there was `GDK_DPI_SCALE` that applies a fractional scale to just the text
     but it has been removed from gtk4
+
+## qt
+
+- `QT_SCALE_FACTOR` applies a fractional scale to both the ui and the text
+- `QT_FONT_DPI` overrides the default 96 dpi for text
 
 ## alacritty
 
