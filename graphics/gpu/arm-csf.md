@@ -448,13 +448,13 @@ ARM Mali CSF
   - `EXTRACT_EVENT` reqeusts extract event
     - gpu copies the bit to `CS_ACK` when the ring buffer is 75% or more empty
   - `IDLE_SYNC_WAIT` consider the CS idle when `SYNC_WAIT` stalls
-  - `IDLE_PROTM_PEND`
+  - `IDLE_PROTM_PEND` considers the CS idle when `PROTM_PEND` is set
   - `IDLE_EMPTY` consider the CS idle when when ring buffer is empty
   - `IDLE_RESOURCE_REQ` consider the CS idle when `REQ_RESOURCE` stalls
   - `IDLE_SHARED_SB_DEC`
   - `TILER_OOM` acks `TILER_OOM`
     - gpu toggles the bit in `CS_ACK` upon tiler oom
-  - `PROTM_PEND`
+  - `PROTM_PEND` acks `PROTM_PEND`
   - `FATAL` acks `FATAL`
     - gpu toggles the bit in `CS_ACK` upon unrecoverable err
   - `FAULT` acks `FAULT`
@@ -653,7 +653,18 @@ ARM Mali CSF
       - `VT_END` counter
       - `FRAG_END` counter
   - `NEXT_SB_ENTRY`
-  - `PROT_REGION`
+  - `PROT_REGION` enters protected mode for the following N instructions
+    - it toggles `CS_ACK.PROTM_PEND` and triggers irq
+    - it halts the command stream
+    - after host driver toggles `GLB_REQ.PROTM_ENTER`,
+      - it suspends all command streams
+      - it enters protected mode
+      - it resumes only command streams with `CS_ACK.PROTM_PEND` to execute
+        the following N instructions
+      - it performs fast gpu reset to exit protected mode
+      - it resumes all command streams
+      - it toggles `GLB_ACK.PROTM_EXIT` and triggers irq
+    - host driver toggles `GLB_REQ.PROTM_EXIT`
   - `REQ_RESOURCE` requests resources for idvs/tiler/fragment/compute
   - `RUN_COMPUTE` initiates compute job
   - `RUN_COMPUTE_INDIRECT` initiates indirect compute job
