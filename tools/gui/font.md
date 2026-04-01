@@ -176,7 +176,9 @@ Font
 
 ## chrome
 
-- it respects `Xft.dpi`, but not working on wayland
-  - I am using `--ozone-platform=wayland --gtk-version=4`
-- current solution
-  - Settings -> Appearance -> Page zoom -> 150%
+- chrome uses gtk but behaves different than regular gtk apps
+  - ui elements respects `font-name`
+  - omnibox ignores `font-name`
+  - blink ignores `font-name`
+- but it always respects `text-scaling-factor`
+  - on x11, it also respects `Xft.dpi`
