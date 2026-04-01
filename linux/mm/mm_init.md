@@ -22,6 +22,10 @@ Linux MM Init
       - `dummy_numa_init` fakes node 0 for all physical ram
       - `alloc_node_data` allocs `pg_data_t` and inits `NODE_DATA(nid)`
   - `x86_init.paging.pagetable_init` is `paging_init`
+- arm `setup_arch -> early_init_dt_scan -> early_init_dt_scan_nodes`
+  - `early_init_dt_scan_memory` parses nodes with `device_type = "memory"`
+    - `early_init_dt_add_memory_arch` adds a memblock
+  - `early_init_dt_check_for_usable_mem_range` parses extra ranges
 - `mm_core_init_early` calls `free_area_init`
   - `arch_zone_limits_init` gets zone limits
     - `ZONE_DMA` is capped by `MAX_DMA_PFN` (16MB)
