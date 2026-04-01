@@ -672,6 +672,7 @@ Wayland
   - qt5 and qt6 support multiple backends
     - `QT_QPA_PLATFORM="wayland;xcb"` tries wayland before xcb, which is the
       default on qt6
+    - qt4 only supports x11
     - apps might ship with their own qt versions and often lack wayland
       backend
   - sdl2 and sdl3 support multiple backends
@@ -688,13 +689,19 @@ Wayland
     - there are text input protocols between compositor and app
       - `zwp_text_input_v1`: kwin, weston
       - `zwp_text_input_v2`: kwin, qt5/qt6
-      - `zwp_text_input_v3`: kwin, mutter, sway, gtk3/gtk4, qt6.8
+      - `zwp_text_input_v3`: kwin, mutter, sway, gtk3/gtk4, qt6.7
     - there are efforts to stabalize the protocols
       - `xx_input_method_v1` is derived from `zwp_input_method_v2`
       - `xx_text_input_v3` is derived from `zwp_text_input_v3`
-  - gtk supports ad-hoc gtk im modules
-    - `GTK_IM_MODULE="foo"` specifies the gtk im module
-    - no x11/wayland protocol dependency
-  - qt supports ad-hoc qt im modules
-    - `QT_IM_MODULE="foo"` specifies the qt im module
-    - no x11/wayland protocol dependency
+  - gtk3 and gtk4 support multiple backends
+    - `GTK_IM_MODULE=wayland` uses `zwp_text_input_v3`, which is the default
+      on wayland
+    - there are also im-server-specific backends that do not depend on
+      x11/wayland protocols
+  - qt5 and qt6 support multiple backends
+    - `QT_IM_MODULE=wayland` uses `zwp_text_input_v3` (qt6.7) or
+      `zwp_text_input_v2`, which is the default on wayland
+    - `QT_IM_MODULES=wayland;foo` tries wayland before foo (qt6.7)
+    - there are bugs between qt 6.7 to 6.8.1 for `zwp_text_input_v3`
+    - there are also im-server-specific backends that do not depend on
+      x11/wayland protocols
