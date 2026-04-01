@@ -137,14 +137,20 @@ Font
   - `pango_cairo_context_set_resolution` is used instead
     - otherwise, by default, it is 96dpi
 
-## gnome
+## gtk
 
-- `gsettings set org.gnome.desktop.interface text-scaling-factor 1.5`
-  - this scales the text and is an accessibility setting
-- there is `GDK_SCALE` that applies an integral scale to both the ui and the
-  text, but it is x11-only
-- there was also `GDK_DPI_SCALE` that aplpies a fractional scale to just the
-  text which has been removed
+- `gsettings set org.gnome.desktop.interface font-name "sans-serif 19"`
+  - gtk gets its settings from multiple sources
+  - one of them is `org.freedesktop.portal.Settings`
+  - `xdg-desktop-portal-gtk` monitors `org.gnome.desktop.*` gsettings and
+    advertises via portal settings
+- other methods
+  - `gsettings set org.gnome.desktop.interface text-scaling-factor 1.5`
+    - this scales the text and is an accessibility setting
+  - there is x11-only `GDK_SCALE` that applies an integral scale to both the
+    ui and the text
+  - there was `GDK_DPI_SCALE` that applies a fractional scale to just the text
+    but it has been removed from gtk4
 
 ## alacritty
 
