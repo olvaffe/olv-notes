@@ -1,6 +1,116 @@
 Kernel vmstat
 =============
 
+## Overview
+
+- hierarchy
+  - x86 `x86_numa_init` or arm `arch_numa_init` inits numa
+    - `alloc_node_data` allocs a per-node `pg_data_t`
+  - `free_area_init` inits per-node `pg_data_t`
+    - `free_area_init_core` inits `pgdat->node_zones`
+- there are 5 categories
+  - `vm_stat_item`
+    - `NR_DIRTY_*`
+    - `NR_MEMMAP_*`
+  - `node_stat_item`
+    - `NR_*`
+    - `WORKINGSET_*`
+    - `PGPROMOTE_*`
+    - `PGDEMOTE_*`
+  - `zone_stat_item`
+    - `NR_*`
+    - `WORKINGSET_*`
+    - `PGPROMOTE_*`
+    - `PGDEMOTE_*`
+  - `numa_stat_item`
+    - `NUMA_*`
+  - `vm_event_item`
+    - `PG*`
+    - `PGSTEAL_*`
+    - `PGSCAN_*`
+    - `SLABS_*`
+    - `KSWAPD_*`
+    - `PAGE*`
+    - `DROP_*`
+    - `OOM_*`
+    - `NUMA_*`
+    - `PGMIGRATE_*`
+    - `THP_*`
+    - `COMPACT*`
+    - `KCOMPACTD_*`
+    - `HTLB_*`
+    - `CMA_*`
+    - `UNEVICTABLE_*`
+    - `BALLOON_*`
+    - `NR_TLB_*`
+    - `SWAP_*`
+    - `SWP*`
+    - `KSM_*`
+    - `COW_*`
+    - `ZSWP*`
+    - `DIRECT_MAP_*`
+    - `VMA_LOCK_*`
+    - `KSTACK_*`
+- `vm_stat_item`
+  - storage
+    - global `nr_memmap_boot_pages`
+    - global `nr_memmap_pages`
+  - these modify global storage directly
+    - `memmap_boot_pages_add`
+    - `memmap_pages_add`
+  - `global_dirty_limits` computes dirty thresholds on the fly
+- `node_stat_item`
+  - storage
+    - global `vm_node_stat`
+    - per-node `pgdat->vm_stat`
+    - per-node per-cpu `pgdat->per_cpu_nodestats[cpu].vm_node_stat_diff`
+      - this appears temporary and will be folded into global and per-node
+        storage
+  - these modify per-node per-cpu storage directly
+    - `__mod_node_page_state`
+    - `__inc_node_state`
+    - `__dec_node_state`
+    - `mod_node_state`
+    - more
+  - these modify global and per-node storage directly
+    - `node_page_state_add`
+    - more
+- `zone_stat_item`
+  - storage
+    - global `vm_zone_stat`
+    - per-zone `zone->vm_stat`
+    - per-zone per-cpu `zone->per_cpu_zonestats[cpu].vm_stat_diff`
+      - this appears temporary and will be folded into global and per-zone
+        storage
+  - these modify per-zone per-cpu storage directly
+    - `__mod_zone_page_state`
+    - `__inc_zone_state`
+    - `__dec_zone_state`
+    - `mod_zone_state`
+    - more
+  - these modify global and per-zone storage directly
+    - `zone_page_state_add`
+    - more
+- `numa_stat_item`
+  - storage
+    - global `vm_numa_event`
+    - per-zone `zone->vm_numa_event`
+    - per-zone per-cpu `zone->per_cpu_zonestats[cpu].vm_numa_event`
+      - this appears temporary and will be folded into global and per-zone
+        storage
+  - these modify per-zone per-cpu storage directly
+    - `__count_numa_event`
+    - `__count_numa_events`
+  - these modify global and per-zone storage directly
+    - `zone_numa_event_add` modifies per-zone and global stats
+- `vm_event_item`
+  - storage
+    - per-cpu `vm_event_states`
+  - these modify per-cpu storage directly
+    - `count_vm_event`
+    - `count_vm_events`
+  - `all_vm_events` sums all cpus on the fly
+
 ## `/proc/vmstat`
 
 - `zone_stat_item`
