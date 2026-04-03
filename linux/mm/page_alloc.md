@@ -1,6 +1,41 @@
 Kernel buddy alloc
 ==================
 
+## Initialization
+
+- `memblock_free_all` hands pages over to buddy
+  - `free_unused_memmap` is nop on x86/arm
+  - `reset_all_zones_managed_pages` resets `zone->managed_pages`
+  - `free_low_memory_core_early`
+    - `memmap_init_reserved_pages` marks pages in reserved regions as
+      `PG_reserved`
+    - `__free_memory_core` hands pages in each non-reserved region to buddy
+      - `memblock_free_pages` calls `__free_pages_core`
+        - it clears `PG_reserved` and refcount
+        - it increments `zone->managed_pages`
+        - `__free_pages_ok`
+  - `totalram_pages_add` updates stats
+- `free_initmem` hands more pages over to buddy
+  - these are pages for kernel `__init` section
+  - `free_reserved_area` calls `free_reserved_page` to hand over
+
+## Page Free
+
+- `__free_pages_ok`
+  - `__free_pages_prepare` sanitizes `struct page` struct
+  - `free_one_page -> split_large_buddy`
+    - `pageblock_order` is typically 2MB, size of huge pages
+    - it splits the range to be no more than `pageblock_order`, because there
+      is no benefit
+    - `get_pfnblock_migratetype` gets the migration type
+    - it calls `__free_one_page`
+- `__free_one_page`
+  - `account_freepages` updates `NR_FREE_PAGES` and more
+  - it merges the page with its buddy, to defragment
+  - `set_buddy_order` sets the final order
+  - `__add_to_free_list` adds the page to `zone->free_area` and increments
+    `area->nr_free`
+
 ## page alloc
 
 - pages are allocated with `alloc_page` or `alloc_pages`
