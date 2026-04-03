@@ -63,7 +63,8 @@ Kernel vmstat
   - these modify global storage directly
     - `memmap_boot_pages_add`
     - `memmap_pages_add`
-  - `global_dirty_limits` computes dirty thresholds on the fly
+  - getters
+    - `global_dirty_limits` computes dirty thresholds on the fly
 - `node_stat_item`
   - storage
     - global `vm_node_stat`
@@ -80,6 +81,10 @@ Kernel vmstat
   - these modify global and per-node storage directly
     - `node_page_state_add`
     - more
+  - getters
+    - `node_page_state` and `node_page_state_pages` read per-node storage
+    - `global_node_page_state` and `global_node_page_state_pages` read global
+      storage
 - `zone_stat_item`
   - storage
     - global `vm_zone_stat`
@@ -96,6 +101,11 @@ Kernel vmstat
   - these modify global and per-zone storage directly
     - `zone_page_state_add`
     - more
+  - getters
+    - `zone_page_state` reads per-zone storage
+    - `global_zone_page_state` reads global storage
+    - `sum_zone_node_page_state` sums per-zone stats for a node
+    - `zone_page_state_snapshot` sums per-zone stat and per-zone per-cpu stats
 - `numa_stat_item`
   - storage
     - global `vm_numa_event`
@@ -108,13 +118,40 @@ Kernel vmstat
     - `__count_numa_events`
   - these modify global and per-zone storage directly
     - `zone_numa_event_add` modifies per-zone and global stats
+  - getters
+    - `zone_numa_event_state` reads per-zone storage
+    - `global_numa_event_state` reads global storage
+    - `sum_zone_numa_event_state` sums per-zone stats for a node
 - `vm_event_item`
   - storage
     - per-cpu `vm_event_states`
   - these modify per-cpu storage directly
     - `count_vm_event`
     - `count_vm_events`
-  - `all_vm_events` sums all cpus on the fly
+  - getters
+    - `all_vm_events` sums all cpus on the fly
+
+## Stat Folding
+
+- kernel makes decisions based on `node_stat_item` and `zone_stat_item`
+  - for fast reading, they are folded
+  - on the other hand, `vm_event_item` is consumed by userspace via
+    `/proc/vmstat` and is summed on the fly
+- `node_stat_item`
+  - when `pgdat->per_cpu_nodestats` is updated, if `vm_node_stat_diff` exceeds
+    `stat_threshold`, it calls `node_page_state_add` to fold the stat to
+    global and per-node storage
+  - when a cpu goes offline, `cpu_vm_stats_fold` folds
+  - when nohz stops ticking, `quiet_vmstat` calls `refresh_cpu_vm_stats` to
+    fold
+  - every `sysctl_stat_interval` (1s), `vmstat_update` calls
+    `refresh_cpu_vm_stats` to fold
+- `zone_stat_item`
+  - when `zone->per_cpu_zonestat` is updated, if `vm_stat_diff` exceeds
+    `stat_threshold`, it calls `zone_page_state_add` to fold the stat to
+    global and per-node storage
+  - same as in `node_stat_item`, `cpu_vm_stats_fold`, `quiet_vmstat`, and
+    `vmstat_update` fold too
 
 ## `/proc/vmstat`
 
