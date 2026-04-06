@@ -180,6 +180,11 @@ Kernel vmstat
   - `sparse_init_nid` calls `memmap_boot_pages_add` to increment the counter
     for each section
 
+## `numa_stat_item`
+
+- buddy allocator calls `zone_statistics` to update the stats
+- it counts whether a page is allocated from the preferred numa node or not
+
 ## `vm_event_item`
 
 - `PGPGIN` / `pgpgin`
