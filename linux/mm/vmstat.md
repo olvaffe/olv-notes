@@ -180,6 +180,31 @@ Kernel vmstat
   - `sparse_init_nid` calls `memmap_boot_pages_add` to increment the counter
     for each section
 
+## `zone_stat_item`
+
+- `NR_FREE_PAGES`
+  - as pages are allocated from or freed to the buddy allocator, it calls
+    `account_freepages` to count free pages
+- `NR_FREE_PAGES_BLOCKS`
+- `NR_ZONE_LRU_BASE`
+  - this is the base enum for lru lists
+    - `NR_ZONE_INACTIVE_ANON`
+    - `NR_ZONE_ACTIVE_ANON`
+    - `NR_ZONE_INACTIVE_FILE`
+    - `NR_ZONE_ACTIVE_FILE`
+    - `NR_ZONE_UNEVICTABLE`
+  - as page caches allocate/free pages, or as pages are moved between lru
+    lists, `update_lru_size` updates page counts on each list
+- `NR_ZONE_WRITE_PENDING`
+  - as pages are dirtied, `folio_account_dirtied` updates the count
+- `NR_MLOCK`
+  - as pages are `mlock`ed, `mlock_folio` updates the count
+- `NR_ZSPAGES`
+  - zram/zswap calls `zs_malloc` which updates the count
+- `NR_FREE_CMA_PAGES`
+  - cma calls `init_cma_reserved_pageblock` to free cma pages to buddy, and
+    uses buddy to manage cma pages
+
 ## `numa_stat_item`
 
 - buddy allocator calls `zone_statistics` to update the stats
