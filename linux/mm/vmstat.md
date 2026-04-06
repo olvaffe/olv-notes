@@ -163,6 +163,23 @@ Kernel vmstat
   - it collects global `vm_stat_item`
   - it calls `all_vm_events` to collect global `vm_event_item`
 
+## `vm_stat_item`
+
+- `NR_DIRTY_THRESHOLD` and `NR_DIRTY_BG_THRESHOLD`
+  - `global_dirty_limits` computes the thresholds on the fly
+    - `global_dirtyable_memory` returns number of pages that can be dirty
+      - it sums `NR_FREE_PAGES`, `NR_INACTIVE_FILE`, and `NR_ACTIVE_FILE`
+      - that is, free pages in buddy, or pages allocated by page cache
+    - threasholds are derived from `vm_dirty_ratio` (20%) or
+      `dirty_background_ratio` (10%)
+- `NR_MEMMAP_PAGES`
+  - these are pages reserved for `struct page` array after boot, as a result
+    of memory hotplug, etc.
+- `NR_MEMMAP_BOOT_PAGES`
+  - these are pages reserved for `struct page` array during boot
+  - `sparse_init_nid` calls `memmap_boot_pages_add` to increment the counter
+    for each section
+
 ## `vm_event_item`
 
 - `PGPGIN` / `pgpgin`
