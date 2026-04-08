@@ -10,52 +10,10 @@ Kernel vmstat
     - `free_area_init_core` inits `pgdat->node_zones`
 - there are 5 categories
   - `vm_stat_item`
-    - `NR_DIRTY_*`
-    - `NR_MEMMAP_*`
   - `node_stat_item`
-    - `NR_*`
-    - `WORKINGSET_*`
-    - `PGPROMOTE_*`
-    - `PGDEMOTE_*`
   - `zone_stat_item`
-    - `NR_FREE_*`
-    - `NR_ZONE_*`
-    - `NR_MLOCK`
-    - `NR_ZSPAGES`
   - `numa_stat_item`
-    - `NUMA_*`
   - `vm_event_item`
-    - `PGPG*`
-    - `PSWP*`
-    - `PGALLOC_*`
-    - `ALLOCSTALL_*`
-    - `PGSCAN_SKIP_*`
-    - `PG*`
-    - `PGSTEAL_*`
-    - `PGSCAN_*`
-    - `SLABS_*`
-    - `KSWAPD_*`
-    - `PAGE*`
-    - `DROP_*`
-    - `OOM_*`
-    - `NUMA_*`
-    - `PGMIGRATE_*`
-    - `THP_*`
-    - `COMPACT*`
-    - `KCOMPACTD_*`
-    - `HTLB_*`
-    - `CMA_*`
-    - `UNEVICTABLE_*`
-    - `BALLOON_*`
-    - `NR_TLB_*`
-    - `SWAP_*`
-    - `SWP*`
-    - `KSM_*`
-    - `COW_*`
-    - `ZSWP*`
-    - `DIRECT_MAP_*`
-    - `VMA_LOCK_*`
-    - `KSTACK_*`
 - `vm_stat_item`
   - storage
     - global `nr_memmap_boot_pages`
@@ -180,6 +138,72 @@ Kernel vmstat
   - `sparse_init_nid` calls `memmap_boot_pages_add` to increment the counter
     for each section
 
+## `node_stat_item`
+
+- `NR_LRU_BASE`
+  - this is the base enum for lru lists
+    - `NR_INACTIVE_ANON`
+    - `NR_ACTIVE_ANON`
+    - `NR_INACTIVE_FILE`
+    - `NR_ACTIVE_FILE`
+    - `NR_UNEVICTABLE`
+  - as page caches allocate/free pages, or as pages are moved between lru
+    lists, `update_lru_size` updates page counts on each list
+- `NR_SLAB_RECLAIMABLE_B` and `NR_SLAB_UNRECLAIMABLE_B`
+  - slab calls `account_slab` to update the counters
+- `NR_ISOLATED_ANON` and `NR_ISOLATED_FILE`
+  - during reclaim, `shrink_inactive_list` isolates pages and updates the
+    counters
+- `WORKINGSET_*`
+- `NR_ANON_MAPPED`, `NR_FILE_MAPPED`, `NR_FILE_PMDMAPPED`, `NR_ANON_THPS`, and
+  `NR_SHMEM_PMDMAPPED`
+  - as pages are added to rmap, these counters are updated
+- `NR_FILE_PAGES`
+  - as pages are allocated for page cache, shmem, swap cache, this counter is
+    updated
+- `NR_FILE_DIRTY`
+  - as pages are marked dirty, `folio_account_dirtied` updates the counter
+- `NR_WRITEBACK`
+  - between `__folio_start_writeback` and `__folio_end_writeback`
+- `NR_SHMEM` and `NR_SHMEM_THPS`
+  - as pages are allocated for shmem, these are updated
+- `NR_FILE_THPS`
+  - as pages are allocated for page cache, this counter is updated
+- `NR_VMSCAN_WRITE`
+  - reclaim `writeout`
+- `NR_VMSCAN_IMMEDIATE`
+  - pages prioritized for reclaim after writeback
+- `NR_DIRTIED`
+  - pages dirtied
+- `NR_WRITTEN`
+  - pages written back
+- `NR_THROTTLED_WRITTEN`
+  - pages written back while reclaim is throttled
+- `NR_KERNEL_MISC_RECLAIMABLE`
+  - unused
+- `NR_FOLL_PIN_ACQUIRED` and `NR_FOLL_PIN_RELEASED`
+  - gup
+- `NR_KERNEL_STACK_KB`
+  - every task allocates `THREAD_SIZE` for kernel stack
+- `NR_PAGETABLE`
+  - number of pages used for pgtables
+- `NR_SECONDARY_PAGETABLE`
+  - number of pages used for nested or iommu pgtables
+- `NR_IOMMU_PAGES`
+  - number of pages used for iommu pgtables
+- `NR_SWAPCACHE`
+  - number of pages in swap cache
+- `PGPROMOTE_*`
+  - pages promoted to a faster memory tier
+- `PGDEMOTE_*`
+  - pages demoted to a slower memory tier
+- `NR_HUGETLB`
+  - explicit huge pages
+- `NR_BALLOON_PAGES`
+  - pages owned by balloon (e.g., kvm guest balloon driver)
+- `NR_KERNEL_FILE_PAGES`
+  - pages for page cache of fake kernel file
+
 ## `zone_stat_item`
 
 - `NR_FREE_PAGES`
@@ -193,8 +217,8 @@ Kernel vmstat
     - `NR_ZONE_INACTIVE_FILE`
     - `NR_ZONE_ACTIVE_FILE`
     - `NR_ZONE_UNEVICTABLE`
-  - as page caches allocate/free pages, or as pages are moved between lru
-    lists, `update_lru_size` updates page counts on each list
+  - `update_lru_size` updates node stats and zone stats at the same time. See
+    `NR_LRU_BASE`.
 - `NR_ZONE_WRITE_PENDING`
   - as pages are dirtied, `folio_account_dirtied` updates the count
 - `NR_MLOCK`
