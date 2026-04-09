@@ -1,6 +1,36 @@
 Kernel cgroup
 =============
 
+## Overview
+
+- `cgroup.c`
+  - `struct cgroup_root` represents a cgroup hierarchy
+    - there is a single hierarchy, `cgrp_dfl_root`, in v2
+  - `struct cgroup` represents a cgroup
+    - there is a `struct cgroup` embedded in `struct cgroup_root`
+  - `struct css_set` represents the state of a cgroup
+    - there is 1:1 between `struct cgroup` and `struct css_set` in v2
+    - `find_css_set` allocs `css_set` on demand
+    - `init_css_set.dfl_cgrp` points to `cgrp_dfl_root.cgrp`
+  - `init_task` belongs to the root cgroup
+    - `init_task.cgroups` points to `init_css_set`
+- `rstat.c`
+  - after a stat is updated, `css_rstat_updated` adds `css->rstat_cpu` to
+    `ss->lhead` to mark it dirty
+  - before a stat is read, `css_rstat_flush` folds the per-cpu counters into
+    the cgroup counter
+    - `css_rstat_updated_list`
+      - `css_process_update_tree` builds an update tree from `ss->lhead` list
+      - it flattens the update tree to an ordered list
+    - `cgroup_base_stat_flush` folds the stat
+- `namespace.c`
+  - `copy_cgroup_ns` returns the old cgroup ns or allocs a new one depending
+    on `CLONE_NEWCGROUP`
+    - the new cgroup ns treats the task's cgroup as the root cgroup
+- `freezer.c`
+  - when userspace writes to `cgroup.freeze`, `cgroup_freeze` freezes all
+    processes in the cgroup hierarchy
+
 ## Userspace
 
 - <https://docs.kernel.org/admin-guide/cgroup-v2.html>
