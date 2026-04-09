@@ -145,3 +145,56 @@ Kernel cgroup
   - Competition Between Inner Nodes and Threads
   - Other Interface Issues
   - Controller Issues and Remedies
+
+## cgroup2 filesystem
+
+- `mkdir $CHILD` calls `cgroup_mkdir`
+  - `cgroup_create` creates a new `cgroup`
+    - `kernfs_create_dir_ns` creates the dir
+  - `css_populate_dir` populates the dir
+- `echo +foo > $CHILD/cgroup.subtree_control` calls
+  `cgroup_subtree_control_write`
+  - it updates `cgrp->subtree_control`
+  - `cgroup_apply_control`
+    - `cgroup_apply_control_enable`
+      - it calls `css_create` on demand for childrend
+      - `css_populate_dir` populates the child dirs
+- `echo $PID > $CHILD/cgroup.procs` calls `cgroup_procs_write`
+  - `cgroup_procs_write_start` returns the task
+  - `cgroup_migrate` migrates the task to the new cgroup
+
+## Controller
+
+- a `struct cgroup_subsys` represents a controller
+- callbacks
+  - hierarchy lifecycle
+    - when a controller is enabled for a cgroup, `css_create` calls
+      - `ss->css_alloc` to alloc a css
+      - `ss->css_online` to enable the css
+    - when a controller is disabled for a cgroup, `kill_css` calls
+      - `ss->css_offline` to disable the css
+      - `ss->css_free` to free the css
+  - task migration
+    - when a task is migrated to a cgroup, `cgroup_migrate_execute` calls
+      - `ss->can_attach` to check
+      - `ss->attach` to migrate
+  - task lifecycle
+    - before a task is forked, `cgroup_can_fork` calls
+      - `ss->can_fork` to check
+    - after a task is forked, `cgroup_post_fork` calls
+      - `ss->fork` to check
+    - after a task exits, `cgroup_task_exit` calls
+      - `ss->exit` to exit
+    - after a task is released, `cgroup_task_release` calls
+      - `ss->release` to release
+- `CONFIG_CGROUP_PIDS`
+  - `pids_css_alloc` allocs a `pids_cgroup`
+  - `pids_css_free` frees the `pids_cgroup`
+  - `pids_can_attach`
+    - `pids_charge` increments the new css recursively
+    - `pids_uncharge` decrements the old css recursively
+  - `pids_cancel_attach` is the opposite of `pids_can_attach`
+  - `pids_can_fork`
+    - `pids_try_charge` tries to increment the css recursively
+  - `pids_cancel_fork` calls `pids_uncharge`
+  - `pids_release` also calls `pids_uncharge`
