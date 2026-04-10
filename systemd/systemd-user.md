@@ -39,9 +39,11 @@ systemd user sessions
 - `io.systemd.Login.CreateSession` asks `systemd-logind` to create a session
   - `vl_method_create_session` calls `session_start`
     - `user_start`
-      - `user_start_runtime_dir` starts the runtime dir job
-      - `user_start_service_manager` starts the service manager job
-    - `session_start_scope` starts the session scope job
+      - `user_start_runtime_dir` starts `user-runtime-dir@$UID.service`
+      - `user_start_service_manager` starts `user@$UID.service`
+    - `session_start_scope` starts `session-c$SID.scope`
+    - in all cases, the slice is set to `user-$UID.slice`
+      - this tells systemd to create `/user.slice/user-$UID.slice` on demand
   - `session_send_create_reply` goes through only after `session_job_pending`
     returns false
     - `user-runtime-dir@$UID.service` has started
@@ -107,3 +109,42 @@ systemd user sessions
     - prop `ID_SEAT`: if set, specifies the seat the device is assigned to
     - prop `ID_AUTOSEAT`, if 1, the device creates a new seat
     - prop `ID_FOR_SEAT`: seat id can be `seatID_FOR_SEAT`
+
+## graphical session
+
+- upon successful auth, `login` opens a session and forks a shell
+  - before returning control to `login` to fork a shell, `pam_systemd` asks
+    logind to create a "session"
+    - `/user.slice/user-$UID.slice`
+      - `session-c$SID.scope`
+        - `login` is moved into this scope
+      - `user@$UID.service`
+        - `init.scope`
+          - `systemd --user` is moved into this scope
+          - it starts `default.target`
+        - `session.slice`
+          - user services are in this slice by default
+        - `app.slice`
+  - forked shell will be in `session-c$SID.scope`
+- there should be
+  - `sway-session.target`
+    - `BindsTo=graphical-session.target`
+    - `Requires=sway-session-pre.target`
+    - `Requires=sway.service`
+  - `sway-session-pre.target`
+    - `BindsTo=graphical-session-pre.target`
+    - `Requires=sway-pre.service`
+  - `sway-pre.service`
+    - `PartOf=graphical-session-pre.target`
+    - `Before=graphical-session-pre.target`
+    - it should export
+      - `SSH_AUTH_SOCK`
+      - `XDG_CURRENT_DESKTOP`
+  - `sway.service`
+    - `PartOf=graphical-session.target`
+    - it should export
+      - `XDG_SESSION_TYPE`
+      - `SWAYSOCK`
+      - `WAYLAND_DISPLAY`
+      - `DISPLAY`
+- the shell starts and waits `sway-session.target`
