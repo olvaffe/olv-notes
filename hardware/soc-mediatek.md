@@ -1350,6 +1350,32 @@ MediaTek SoCs
     - `gpufreq_power_control` sends `CMD_POWER_CONTROL` to gpueb
   - `mtk_notify_gpu_power_change`
 
+## MT8196 GPU DVFS
+
+- kbase calls `ged_dvfs_gpu_clock_switch_notify` to inform power state
+  - it starts `g_HT_hwvsync_emu` timer at `GED_DVFS_TIMER_TIMEOUT` (16.6ms)
+  - it calls `ged_dvfs_run` with `GED_DVFS_TIMER_BACKUP` and
+    `GED_DVFS_SET_BOTTOM_COMMIT` immediately
+- `ged_sw_vsync_check_cb` is called when the timer fires
+  - `ged_dvfs_cal_gpu_utilization_ex` gets gpu utilization
+    - `ged_dvfs_cal_gpu_utilization_ex_fp` points to
+      `mtk_common_cal_gpu_utilization_ex`
+      - it queries utilization from kbase
+  - `mtk_get_dvfs_loading_mode` returns `LOADING_ACTIVE`
+    - `mtk_get_dvfs_loading_mode_fp` points to `ged_get_dvfs_loading_mode`
+  - it queues `ged_notify_sw_sync_work_handle`
+    - policy state is `POLICY_STATE_INIT`
+      - it seems to never change
+    - it calls `ged_dvfs_run` with `GED_DVFS_TIMER_BACKUP` and
+      `GED_DVFS_LOADING_BASE_COMMIT`
+- `ged_dvfs_run`
+  - `ged_dvfs_cal_gpu_utilization_ex` gets gpu utilization from kbase
+  - `mtk_bandwidth_update` updates qos
+  - `ged_dvfs_policy` picks the new freq based on the current loading
+  - `ged_dvfs_gpu_freq_commit` commits the new freq
+    - `ged_dvfs_gpu_freq_commit_fp` points to `mtk_common_ged_dvfs_commit`
+      - `gpufreq_commit` commits the freq
+
 ## MT8196 AP Firmware
 
 - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/refs/heads/main/sys-boot/>
