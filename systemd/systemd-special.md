@@ -200,7 +200,8 @@ systemd special
       - its consumers only have `After=network.target`
     - the idea is, when there are N providers and M consumers,
       - `systemctl start network.target` pulls in no producer
-      - consumers does not pull in providers either
+        - in fact, passive target units have `RefuseManualStart=yes`
+      - consumers do not pull in providers either
       - the passive target merely defines an order for the providers and
         consumers
       - providers and consumers are pulled in via other means
