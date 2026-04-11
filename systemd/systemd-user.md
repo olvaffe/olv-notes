@@ -148,3 +148,7 @@ systemd user sessions
       - `WAYLAND_DISPLAY`
       - `DISPLAY`
 - the shell starts and waits `sway-session.target`
+- `systemd-xdg-autostart-generator` generates service units
+  - `PartOf=graphical-session.target`
+  - `After=graphical-session.target`
+  - symlinked by `xdg-desktop-autostart.target.wants`
