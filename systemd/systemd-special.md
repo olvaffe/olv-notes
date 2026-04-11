@@ -182,18 +182,28 @@ systemd special
 
 - `man systemd.special`
 - active and passive target units
-  - they are optional and must be pulled in by their producers (passive) or
-    consumers (active)
   - `network-online.target` is an active target unit
-    - producers have `WantedBy=network-online.target` and `Before=network-online.target`
-    - consumers have `Wants=network-online.target` and `After=network-online.target`
-    - when a consumer is enabled, it wants producers and is blocked by
-      producers
+    - `systemctl list-dependencies network-online.target` lists providers
+      - its providers have `WantedBy=network-online.target` and
+        `Before=network-online.target`
+    - `systemctl list-dependencies --reverse network-online.target` lists
+      consumers
+      - its consumers have `Wants=network-online.target` and
+        `After=network-online.target`
+    - the idea is, when there are N providers and M consumers,
+      - `systemctl start network-online.target` pulls in providers
+      - consumers also pull in providers automatically
   - `network.target` is a passive target unit
-    - producers have `Wants=network.target` and `Before=network.target`
-    - consumers have `After=network.target`
-    - when a producer is enabled, it blocks consumers
-      - otherwise consumers proceed without the producer
+    - `systemctl list-dependencies --reverse network.target` list providers
+      - its producers have `Wants=network.target` and `Before=network.target`
+    - `systemctl list-dependencies network.target` is empty
+      - its consumers only have `After=network.target`
+    - the idea is, when there are N providers and M consumers,
+      - `systemctl start network.target` pulls in no producer
+      - consumers does not pull in providers either
+      - the passive target merely defines an order for the providers and
+        consumers
+      - providers and consumers are pulled in via other means
 - targets
   - `basic.target`
   - `bluetooth.target`
