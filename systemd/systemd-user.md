@@ -129,18 +129,18 @@ systemd user sessions
 - there should be
   - `sway-session.target`
     - `BindsTo=graphical-session.target`
-    - `Requires=sway-session-pre.target`
-    - `Requires=sway.service`
-  - `sway-session-pre.target`
-    - `BindsTo=graphical-session-pre.target`
     - `Requires=sway-pre.service`
+    - `Requires=sway.service`
   - `sway-pre.service`
-    - `PartOf=graphical-session-pre.target`
     - `Before=graphical-session-pre.target`
+    - `Wants=graphical-session-pre.target`
     - it should export
       - `SSH_AUTH_SOCK`
       - `XDG_CURRENT_DESKTOP`
   - `sway.service`
+    - `After=graphical-session-pre.target`
+    - `Before=graphical-session.target`
+    - `Wants=graphical-session.target`
     - `PartOf=graphical-session.target`
     - it should export
       - `XDG_SESSION_TYPE`
