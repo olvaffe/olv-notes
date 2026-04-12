@@ -70,3 +70,11 @@ systemd-cryptsetup
       when the uki is booted
 - <https://0pointer.net/blog/brave-new-trusted-boot-world.html> describes the
   concepts
+
+## `systemd-tpm2-generator`
+
+- if uefi advertises tpm support, it generates
+  `/run/systemd/generator/sysinit.target.wants/tpm2.target` to wait for
+  `/dev/tpm0`
+- if kernel lacks tpm driver, add `systemd.tpm2_wait=0` to kernel cmdline to
+  disable the behavior
