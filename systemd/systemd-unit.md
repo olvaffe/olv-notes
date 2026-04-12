@@ -3,8 +3,60 @@ Systemd Unit Configuration
 
 ## Units
 
-- a unit file encodes information about a service, socket, device, mount,
-  automount, swap, target, path, timer, etc.
+- `man systemd` UNITS section
+- there are 11 unit types
+  - `man systemd.service` starts and controls daemons and the processes they
+    consist of
+  - `man systemd.socket` encapsulates local IPC or network sockets in the
+    system, useful for socket-based activation
+  - `man systemd.target` is useful to group units, or provide well-known
+    synchronization points during boot-up
+  - `man systemd.device` exposes kernel devices in systemd and may be used to
+    implement device-based activation
+  - `man systemd.mount` controls mount points in the file system
+  - `man systemd.automount` provides automount capabilities, for on-demand
+    mounting of file systems as well as parallelized boot-up
+  - `man systemd.timer` is useful for triggering activation of other units
+    based on timers
+  - `man systemd.swap` is very similar to mount units and encapsulate memory
+    swap partitions or files of the operating system
+  - `man systemd.path` may be used to activate other services when file system
+    objects change or are modified
+  - `man systemd.slice` may be used to group units which manage system
+    processes (such as service and scope units) in a hierarchical tree for
+    resource management purposes
+  - `man systemd.scope` is similar to service units, but manage foreign
+    processes instead of starting them as well
+- unit states
+  - `active` means started, bound, plugged in, etc.
+  - `inactive` means stopped, unbound, unplugged, etc.
+  - `failed` is similar to `inactive`, but the unit failed in some way
+    (process returned error code on exit, crashed, an operation timed out, or
+    after too many restarts)
+  - `activating` means changing from `inactive` to `active`
+  - `deactivating` means changing from `active` to `inactive`
+  - `maintenance` means `inactive` and a maintenance operation is in progress
+  - `reloading` means `active` and it is reloading its configuration
+  - `refreshing` means `active` and a new mount is being activated in its namespace
+- `man systemd.special` documents units that have special semantics
+- dependencies
+  - ordering (e.g., `After=`) and requirement (e.g., `Wants=`) dependencies
+    are orthogonal
+- jobs
+  - unit state changes are encapsulated as jobs
+  - jobs execute in parallel unless there are ordering dependencies
+- on boot, systemd activates `default.target` which is often a symlink to
+  `graphical.target`
+- systemd places processes into individual per-unit cgroups
+- systemd has a minimal transaction system
+  - upon a request, systemd builds a transaction that satisfies all
+    requirement and ordering dependencies
+  - it then merges the transaction with outstanding jobs
+  - this is done independent of units' current states
+    - e.g., an activating job is added even if a unit is already active
+    - the execution of the activating job is nop
+    - but the transaction still satisfies all dependencies of the activating
+      job
 - common options
   - `man systemd.unit` documents the `[Unit]` and `[Install]` sections common
     to all unit files
@@ -14,20 +66,16 @@ Systemd Unit Configuration
     to several sections
   - `man systemd.directives` lists which options are documented in which man
     pages
-- `man systemd.automount` documents the `[Automount]` section
-- `man systemd.device` documents the `[Device]` section
-  - there is no device-specific options
-- `man systemd.mount` documents the `[Mount]` section
-- `man systemd.path` documents the `[Path]` section
-- `man systemd.scope` documents the `[Scope]` section
-- `man systemd.service` documents the `[Service]` section
-- `man systemd.socket` documents the `[Socket]` section
-- `man systemd.slice` documents the `[Slice]` section
-  - there is no slice-specific options
-- `man systemd.swap` documents the `[Swap]` section
-- `man systemd.target` documents the `[Target]` section
-  - there is no target-specific options
-- `man systemd.timer` documents the `[Timer]` section
+
+## `systemd.generator`
+
+- after systemd loads configs and before it loads unit files, systemd invokes
+  all generators
+  - this gives generators a chance to generate unit files to
+    - system: `/run/systemd/generator`
+    - user: `$XDG_RUNTIME_DIR/systemd/generator`
+- this happens on `systemd daemon-reload` as well
+  - the old generated unit files are cleaned up
 
 ## Old SysVinit (`/sbin/init`)
 
@@ -57,16 +105,6 @@ Systemd Unit Configuration
   - `S02ssh` starts sshd
   - `S05gdm3` starts gdm3
   - more
-
-## `systemd.generator`
-
-- after systemd loads configs and before it loads unit files, systemd invokes
-  all generators
-  - this gives generators a chance to generate unit files to
-    - system: `/run/systemd/generator`
-    - user: `$XDG_RUNTIME_DIR/systemd/generator`
-- this happens on `systemd daemon-reload` as well
-  - the old generated unit files are cleaned up
 
 ## namespaces
 
