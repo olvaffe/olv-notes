@@ -29,6 +29,64 @@ Systemd Unit Configuration
   - there is no target-specific options
 - `man systemd.timer` documents the `[Timer]` section
 
+## Old SysVinit (`/sbin/init`)
+
+- <https://codeberg.org/thejessesmith/sysvinit>
+- PID 1
+- it parses `/etc/inittab`
+  - usually, it runs scripts in `/etc/rcS.d` and `/etc/rc2.d`.  Then runs
+    `getty` for `tty[1-6]`
+- `rcS.d`
+  - `S01mountkernfs.sh` mounts `/run`, `/proc`, `/sys`, etc.
+  - `S02udev` makes sure `/dev` is mounted as devtmpfs and starts udev
+  - `S03mountdevsubfs.sh` mounts `/run/shm`, `/dev/pts`, etc.
+  - `S05keyboard-setup` runs `setupcon` to set up kernel keymap
+    - It is a script that runs `loadkeys`
+    - This is an early setup for, say, checkroot failure interaction
+  - `S07checkroot.sh` remounts `/` according to `/etc/fstab`
+  - `S08kmod` load modules listed in `/etc/modules`
+  - `S10mountall.sh` mounts all fs listed in `/etc/fstab`
+  - `S13procps` runs `sysctl` for settings listed in `/etc/sysctl.conf`
+  - `S15networking` runs `ifup`, which reads `/etc/network/interfaces`
+  - `S19console-setup` run `setupcon`
+  - more
+- `rc2.d`
+  - `S01binfmt-support` updates kernel binfmt database
+  - `S01rsyslog` starts syslogd
+  - `S02dbus` starts system-wise dbus
+  - `S02ssh` starts sshd
+  - `S05gdm3` starts gdm3
+  - more
+
+## `systemd.generator`
+
+- after systemd loads configs and before it loads unit files, systemd invokes
+  all generators
+  - this gives generators a chance to generate unit files to
+    - system: `/run/systemd/generator`
+    - user: `$XDG_RUNTIME_DIR/systemd/generator`
+- this happens on `systemd daemon-reload` as well
+  - the old generated unit files are cleaned up
+
+## namespaces
+
+- systemd makes use of linux namespaces
+- `lsns -t mnt`
+  - `systemd-udevd` is configured `PrivateMounts=yes`
+  - `systemd-logind`, `colord`, `ntpd`, and `upowerd` are configured
+    `PrivateTmp=yes`
+  - `bluetoothd`, `NetworkManager` are configured `ProtectSystem=yes`
+  - `irqbalance` is configured `ReadOnlyPaths=/`
+- `lsns -t net`
+  - `rtkit-daemon` is configured `PrivateNetwork=yes`
+- `lsns -t user`
+  - `upowerd` is configured `PrivateUsers=yes`
+- `lsns -t uts`
+  - `systemd-udevd` and `systemd-logind` are configured `ProtectHostname=yes`
+- ipc, pid, cgroup, time
+  - no used by systemd on my system
+  - but chrome makes use of net, user, pid
+
 ## `[Unit]` Section
 
 - `Wants=`: if this unit gets started, other units listed are also started;
