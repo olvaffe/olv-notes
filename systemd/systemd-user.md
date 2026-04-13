@@ -126,6 +126,46 @@ systemd user sessions
           - user services are in this slice by default
         - `app.slice`
   - forked shell will be in `session-c$SID.scope`
+- `graphical-session.target` design goal
+  - ordering: `before services -> graphical-session.target -> after sevices`
+    - before services have `Before=graphical-session.target`
+    - after services have `After=graphical-session.target`
+    - compositor is one of the before services
+  - grouping
+    - both before and after services have `PartOf=graphical-session.target`
+      such that they go down with `graphical-session.target`
+  - it has
+    - `RefuseManualStart=true` because it is kind of passive and does not pull
+      in services
+    - `StopWhenUnneeded=yes` such that it goes down with
+      `concrete-session.target`
+  - `concrete-session.target` pulls in both before and after services
+    - it has `BindsTo=graphical-session.target` such that it goes down with
+      `graphical-session.target`
+    - it has `Wants=` for all before and after services
+      - they are drop-ins in `concrete-session.target.wants`
+  - the login shell starts and waits `concrete-session.target`
+- `systemd-xdg-autostart-generator` generates service units
+  - `PartOf=graphical-session.target`
+  - `After=graphical-session.target`
+  - symlinked by `xdg-desktop-autostart.target.wants`
+  - it is just like after services
+  - `concrete-session.target` can pull it in
+- `graphical-session-pre.target` design goal
+  - ordering: `early services -> graphical-session-pre.target -> before services`
+  - otherwise similar to `graphical-session.target`
+  - `concrete-session.target` pull in early services
+- gnome ordering
+  - `gnome-session-pre.target`
+    - session monitor is up
+  - `gnome-session-manager.target`
+    - session manager is up
+  - `gnome-session-initialized.target`
+    - shell is up
+  - `gnome-session-basic-services.target`
+    - essential services are up
+  - `gnome-session.target`
+    - all services are up
 - there should be
   - `sway-session.target`
     - `BindsTo=graphical-session.target`
@@ -133,22 +173,16 @@ systemd user sessions
     - `Requires=sway.service`
   - `sway-pre.service`
     - `Before=graphical-session-pre.target`
-    - `Wants=graphical-session-pre.target`
     - it should export
       - `SSH_AUTH_SOCK`
       - `XDG_CURRENT_DESKTOP`
   - `sway.service`
     - `After=graphical-session-pre.target`
     - `Before=graphical-session.target`
-    - `Wants=graphical-session.target`
     - `PartOf=graphical-session.target`
     - it should export
       - `XDG_SESSION_TYPE`
       - `SWAYSOCK`
       - `WAYLAND_DISPLAY`
       - `DISPLAY`
-- the shell starts and waits `sway-session.target`
-- `systemd-xdg-autostart-generator` generates service units
-  - `PartOf=graphical-session.target`
-  - `After=graphical-session.target`
-  - symlinked by `xdg-desktop-autostart.target.wants`
+  - the shell starts and waits `sway-session.target`
