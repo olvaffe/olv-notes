@@ -22,3 +22,13 @@ Android libgraphicsenv
   - `setLayerPaths` and `setDebugLayers*` are called from java to set up app
     debugging layers, if any
 
+## ANGLE
+
+- `GraphicsEnvironment.java`
+  - `getDriverForPackage`
+    - if `ANGLE_GL_DRIVER_ALL_ANGLE`, return `angle`
+    - else check `ANGLE_GL_DRIVER_SELECTION_PKGS` and
+      `ANGLE_GL_DRIVER_SELECTION_VALUES`
+  - `shouldUseAngle` returns true when `getDriverForPackage` returns `angle`
+  - `getAngleDebugPackage` returns `ANGLE_DEBUG_PACKAGE`
+  - `setAngleInfo` passes angle info to native code

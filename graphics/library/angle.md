@@ -179,16 +179,24 @@ ANGLE
     #5  EGL_Initialize
     #6  eglInitialize
 
-## Android
+## Features
 
-- `GraphicsEnvironment.java`
-  - `getDriverForPackage`
-    - if `ANGLE_GL_DRIVER_ALL_ANGLE`, return `angle`
-    - else check `ANGLE_GL_DRIVER_SELECTION_PKGS` and
-      `ANGLE_GL_DRIVER_SELECTION_VALUES`
-  - `shouldUseAngle` returns true when `getDriverForPackage` returns `angle`
-  - `getAngleDebugPackage` returns `ANGLE_DEBUG_PACKAGE`
-  - `setAngleInfo` passes angle info to native code
+- `eglGetDisplay -> egl::GetDisplay -> Display::GetDisplayFromNativeDisplay -> Display::setupDisplayPlatform`
+  - `mState.featureOverrides` is initialized from
+    `EGL_FEATURE_OVERRIDES_ENABLED_ANGLE` and
+    `EGL_FEATURE_OVERRIDES_DISABLED_ANGLE` attrs
+- `eglInitialize -> egl::Initialize -> Display::initialize`
+  - `DisplayVkXcb::initialize -> DisplayVk::initialize -> Renderer::initialize -> Renderer::setupDevice`
+    - `enableDeviceExtensions` calls `initFeatures` to init features
+      - `ApplyFeatureOverrides` overrides features from
+        - `ANGLE_FEATURE_OVERRIDES_ENABLED`
+        - `ANGLE_FEATURE_OVERRIDES_DISABLED`
+        - `debug.angle.feature_overrides_enabled`
+        - `debug.angle.feature_overrides_disabled`
+      - `ANGLE_FEATURE_CONDITION` enables/disables features unless they have
+        been overridden
+  - `initializeFrontendFeatures` inits frontend features
+    - `Renderer::initializeFrontendFeatures`
 
 ## Dispatch
 
