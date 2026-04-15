@@ -620,6 +620,20 @@ DisplayHardware:
     - it has the medium `workDuration` to reduce jank
   - `late` is used for hw composition during static state
     - it has the smallest `workDuration` to reduce input latency
+- `MessageQueue::scheduleFrame` arms the `VSYNC-sf` alarm
+  - `VSyncCallbackRegistration::schedule -> VSyncDispatchTimerQueue::schedule
+    -> VSyncDispatchTimerQueueEntry::schedule`
+  - it determines `nextVsyncTime` and works out the rest
+    - `nextReadyTime = nextVsyncTime - timing.readyDuration`
+    - `nextWakeupTime = nextReadyTime - timing.workDuration`
+    - `timing.readyDuration` is typically 0
+  - it calls `MessageQueue::vsyncCallback` with the expected timeline
+    - wakeup/start time, which is when sf should wake up
+    - ready/end time, which is when sf should present
+    - vsync/present time, which is when the frame shows up on screen
+  - as for actual timeline
+    - `SurfaceFlinger::commit` calls `setSfWakeUp`
+    - `SurfaceFlinger::onCompositionPresented` calls `setSfPresent`
 
 ## Perfetto
 
