@@ -583,3 +583,68 @@ DisplayHardware:
 
 - U defaults to `SKIA_GL_THREADED`
   - `debug.renderengine.backend` can override
+
+## VSync
+
+- `SurfaceFlinger::onComposerHalVsync` is the hw vsync callback
+  - `HWComposer::onVsync` validates and maps the vsync to display
+  - `Scheduler::addResyncSample` feeds the vsync to the scheduler
+    - `getVsyncSchedule` returns the `VsyncSchedule` for the display
+    - `VsyncSchedule::addResyncSample` calls `VSyncReactor::addHwVsyncTimestamp`
+      - `addVsyncTimestampLocked` calls `VSyncPredictor::addVsyncTimestamp`
+        - `VSyncPredictor` predicts future vsyncs even when hw vsyncs are
+          disabled to save power
+  - if refresh rate changes, `Scheduler::modulateVsync` is called with
+    `VsyncModulator::onRefreshRateChangeCompleted`
+- `Scheduler::registerDisplayInternal` calls `promotePacesetterDisplay`
+  - `applyNewVsyncSchedule`
+    - `MessageQueue::onNewVsyncSchedule` registers `MessageQueue::vsyncCallback`
+    - `EventThread::onNewVsyncSchedule` registers `EventThread::onVsync`
+    - `vsyncSchedule->getDispatch` is `VSyncDispatchTimerQueue`
+      - `mTimeKeeper` is a `scheduler::Timer` which uses `timerfd`
+- `MessageQueue::vsyncCallback` is called on `VSYNC-sf` when timer alarms
+  - `mVsync` toggles `VSYNC-sf` counter
+  - `MessageQueue::Handler::dispatchFrame` sends a msg
+  - it wakes up the main thread `SurfaceFlinger::run -> Schedule::run -> MessageQueue::waitMessage`
+    - `MessageQueue::Handler::handleMessage` calls `Scheduler::onFrameSignal`
+- `EventThread::onVsync` is called on `VSYNC-app` when timer alarms
+  - `mVsyncTracer` toggles `VSYNC-app` counter
+  - it pushes a `DISPLAY_EVENT_VSYNC` event to `mPendingEvents`
+  - it wakes up `EventThread::threadMain` to call `dispatchEvent` to dispatch
+    the event to apps
+- `adb shell dumpsys SurfaceFlinger --vsync`
+  - `VSYNC-sf` and `VSYNC-app` are `workDuration` before the next vsync
+  - `earlyGpu` is used for gpu composition
+    - it has the largest `workDuration`
+  - `early` is used for hw composition during state change
+    - it has the medium `workDuration` to reduce jank
+  - `late` is used for hw composition during static state
+    - it has the smallest `workDuration` to reduce input latency
+
+## Perfetto
+
+- from `VSYNC-sf` to gpu completion
+  - `Timer::threadMain` calls `VSyncDispatchTimerQueue::timerCallback`
+    - `MessageQueue::vsyncCallback` calls `MessageQueue::Handler::dispatchFrame`
+  - `SurfaceFlinger::run` calls `MessageQueue::Handler::handleMessage`
+    - `Scheduler::onFrameSignal`
+      - `FrameTargeter::beginFrame`
+      - `SurfaceFlinger::commit` applies pending transactions, latches
+        buffers, updates layer hierarchy, etc.
+      - `SurfaceFlinger::composite` calls `CompositionEngine::present` to
+        composite and present a frame
+        - `Output::prepareFrame`
+          - `Display::chooseCompositionStrategy` chooses gpu and/or hwc
+          - `Display::applyCompositionStrategy` applies the strategy
+        - if gpu,
+          - `Output::dequeueRenderBuffer` dequeues
+          - `Output::composeSurfaces` calls `RenderEngineThreaded::drawLayers`
+          - `RenderSurface::queueBuffer` queues
+            - `Surface::queueBuffers` traces `GPU completion`
+            - `LegacyFramebufferSurface::advanceFrame` sets the buffer as
+              hwc client target
+        - `Display::presentFrame` presents to hwc
+  - `RenderEngineThreaded::threadMain` calls the `drawLayers` lambda
+    - `RenderEngine::updateProtectedContext`
+    - `SkiaRenderEngine::drawLayersInternal`
+      - `trace` traces `RE Completion`
