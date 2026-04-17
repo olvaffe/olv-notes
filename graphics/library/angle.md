@@ -253,6 +253,31 @@ ANGLE
   - `rx::ContextVk::flushCommandsAndEndRenderPassImpl`
   - `rx::vk::RenderPassCommandBufferHelper::endRenderPass`
 
+## `GL_KHR_blend_equation_advanced`
+
+- if `VK_EXT_rasterization_order_attachment_access` and
+  `rasterizationOrderColorAttachmentAccess`,
+  - `supportsRasterizationOrderAttachmentAccess` is set
+  - `supportsShaderFramebufferFetch` is set
+  - `GL_EXT_shader_framebuffer_fetch` is advertised
+- if `VK_EXT_blend_operation_advanced`,
+  - `supportsBlendOperationAdvanced` is set
+  - otherwise, `emulateAdvancedBlendEquations` is set if not on intel
+  - `GL_KHR_blend_equation_advanced` is advertised if either is set
+
+## GLES 3.2
+
+- vk `Renderer::getMaxSupportedESVersion`
+  - `GetRequiredGLES32ExtensionList` has a list of required extensions for 3.2
+  - panvk lacks xfb support and requires
+    `pan_force_enable_shader_atomics=true` before v13
+
+## `angle_end2end_tests`
+
+- `autoninja -C out/android angle_end2end_tests`
+  - `angle_test_enable_system_egl = true` to use system angle driver
+- `./out/android/angle_end2end_tests --force-main-user --gtest_filter=SimpleStateChangeTest*`
+
 ## Traces
 
 - <https://chromium.googlesource.com/angle/angle/+/HEAD/src/tests/restricted_traces/README.md>
@@ -360,22 +385,3 @@ ANGLE
       - normally thousands of gl calls and hundreds of draw calls
     - `ResetReplay` to reset all GL states back to the initial states
       - this is for looping back to the first frame
-
-## `GL_KHR_blend_equation_advanced`
-
-- if `VK_EXT_rasterization_order_attachment_access` and
-  `rasterizationOrderColorAttachmentAccess`,
-  - `supportsRasterizationOrderAttachmentAccess` is set
-  - `supportsShaderFramebufferFetch` is set
-  - `GL_EXT_shader_framebuffer_fetch` is advertised
-- if `VK_EXT_blend_operation_advanced`,
-  - `supportsBlendOperationAdvanced` is set
-  - otherwise, `emulateAdvancedBlendEquations` is set if not on intel
-  - `GL_KHR_blend_equation_advanced` is advertised if either is set
-
-## GLES 3.2
-
-- vk `Renderer::getMaxSupportedESVersion`
-  - `GetRequiredGLES32ExtensionList` has a list of required extensions for 3.2
-  - panvk lacks xfb support and requires
-    `pan_force_enable_shader_atomics=true` before v13
