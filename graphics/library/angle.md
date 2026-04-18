@@ -17,6 +17,7 @@ ANGLE
   - `sudo ./build/install-build-deps.sh`
   - `gn gen out/Debug`
   - `autoninja -C out/Debug`
+    - or specify `angle` as the target to build only `group("angle")`
 - default gn args
   - note that `build` is a separate git repo
   - debuggability
