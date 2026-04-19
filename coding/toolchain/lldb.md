@@ -22,7 +22,10 @@ lldb
 ## `target` command
 
 - `target create <executable>` creates a target
-- `target modules list` lists modules (executable and shared libraries)
+- `target modules`
+  - `list` lists current modules (executable and shared libraries)
+  - `search-path add` is the module maps
+    - e.g., it maps `/` to symbol sysroot
 
 ## `process` command
 
@@ -41,3 +44,5 @@ lldb
 - `settings append <var> <vals>` appends space-separated vals to variable
 - `target` variables
   - `target.exec-search-paths` is the search paths for executable
+  - `target.source-map` is the source file maps
+    - e.g., it maps "" to source root
