@@ -364,8 +364,9 @@ Kernel defconfig
       - select `Rockchip GPIO support` if rk
   - select `Board level reset or power off` if qcom x1
     - select `Qualcomm power-on driver`
-  - select `Power Sequencing support` if qcom x1
-    - select `Qualcomm WCN family PMU driver`
+  - select `Power Sequencing support` if arm
+    - select `Qualcomm WCN family PMU driver` if qcom x1
+    - select `PCIe M.2 connector power sequencing driver` if mt8195, depending on `SERIAL_DEV_BUS`
   - select `Power supply class support`
     - select `Qualcomm PMIC GLINK battery manager support` if qcom x1, depending on `QCOM_PMIC_GLINK`
     - select `SBS Compliant gas gauge` if needed
