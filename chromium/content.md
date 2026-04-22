@@ -55,3 +55,20 @@ Chromium content
   - `gpu/ipc` defines the `GpuInit` class
     - `service/gpu_init.cc` defines `GpuInit::InitializeAndStartSandbox`
 
+## WebUI
+
+- <https://chromium.googlesource.com/chromium/src/+/main/docs/webui_explainer.md>
+- `chrome:` protocol
+  - `chrome://about`
+  - `chrome://version`
+  - `chrome://gpu`
+  - `chrome://policy`
+  - `chrome://flags`
+  - more
+- `chrome://gpu`
+  - `RegisterContentWebUIConfigs` registers `GpuInternalsUIConfig` to handle
+    `chrome://gpu`
+  - when the url is requested, `config->CreateWebUIController` creates a
+    `GpuInternalsUI`
+  - `GpuInternalsUI` loads resources (html) from
+    `content/browser/resources/gpu`
