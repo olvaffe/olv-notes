@@ -436,6 +436,37 @@ DRM panthor
     - drivers might take `dma_resv_lock` and alloc on regular paths
     - if fence signaling path takes `dma_resv_lock`, it leads to deadlock
   - we pre-allocate on prep and defers freeing to cleanup
+- lifetime of `panthor_vma` and `drm_gpuvm_bo`
+  - `panthor_vm_prepare_{map,unmap,sync_only}_op_ctx` preps an op ctx
+    - `panthor_vm_op_ctx_prealloc_vmas` preallocs vmas
+    - `drm_gpuvm_bo_create` and `drm_gpuvm_bo_obtain_prealloc` prealloc a vm
+      bo or return an existing vm bo
+  - `panthor_vm_exec_op` executes the op
+    - gpuvm calls `panthor_gpuva_sm_step_{map,remap,unmap}`
+    - `panthor_vm_op_ctx_get_vma` and `panthor_vma_link` steal a preallocated
+      vma, link it to the vm bo
+    - `panthor_vma_unlink` unlinks an existing vma from the vm bo and frees
+      the vma
+    - `drm_gpuvm_bo_put_deferred` drops the vm bo immediately, if it is not
+      needed anymore
+      - this appears redundant
+  - `panthor_vm_cleanup_op_ctx` cleans up the op ctx
+    - `drm_gpuvm_bo_put_deferred` drops the vm bo
+      - it does not `dma_resv_lock` and defers the free, which makes it safe
+        on fence signaling path
+    - unused preallocated vmas are freed
+    - `drm_gpuvm_bo_deferred_cleanup` frees the vm bo
+      - it calls `dma_resv_lock` and frees the vm bo, which is not safe on
+        fence signaling path
+  - for a sync op, prep/exec/cleanup happen synchronously
+  - for an async op,
+    - `panthor_vm_bind_job_create` preps synchronously
+    - `panthor_vm_bind_run_job` execs later on vm workqueue
+      - this is on fence signaling path
+    - `panthor_vm_bind_free_job` happens even later on vm workqueue
+      - this is on fence signaling path
+      - it queues cleanup on `panthor_cleanup_wq`
+        - this is not on fence signaling path
 
 ## GEM
 
