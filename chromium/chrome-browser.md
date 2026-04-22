@@ -1,6 +1,17 @@
 Chromium chrome/browser
 =======================
 
+## Memory Metrics
+
+- `RecordMemoryMetricsAfterDelay` schedules `RecordMemoryMetrics`
+- `ProcessMemoryMetricsEmitter::FetchAndEmitProcessMemoryMetrics` collects
+  metrics
+  - `MemoryInstrumentation::RequestGlobalDump`
+    - each process, such as gpu process, calls
+      `ClientProcessImpl::RequestOSMemoryDump`
+      - `OSMetrics::FillOSMemoryDump` dumps `/proc/<pid>/status`
+  - `ProcessMemoryMetricsEmitter::ReceivedMemoryDump`
+
 ## Feedback Report
 
 - `chrome/browser/ui/webui/ash/config/chrome_web_ui_configs_chromeos.cc`
