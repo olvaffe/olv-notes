@@ -931,6 +931,8 @@ Kernel defconfig
   - select `Generic Kernel Debugging Instruments`
     - select `Magic SysRq key`
     - select `Debug Filesystem`
+  - select `Lock Debugging (spinlocks, mutexes, etc...)`
+    - select `Lock debugging: detect incorrect freeing of live locks` if desired
   - select `Tracers`
     - deselect `Automount tracefs on debugfs`
     - select `Kernel Function Tracer` if desired
