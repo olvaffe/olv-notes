@@ -52,3 +52,48 @@ DRM GPUVM
       - `drm_gpuva_init_from_op` inits `drm_gpuva`
       - `drm_gpuva_insert` adds the `drm_gpuva` to `gpuvm->rb.tree`
     - `drm_gpuva_link` adds the `drm_gpuva` to `vm_bo->list.gpuva`
+
+## Locking
+
+- `drm_gem_object`
+  - `resv` can point to local `_resv` or `vm->r_obj->resv`
+    - if an obj is exclusive to a vm, set `obj->resv` to `vm->r_obj->resv`
+  - `gpuva.list` is the list of per-vm `drm_gpuvm_bo`
+    - it ensure each obj has a unique vm bo in each vm
+    - it is protected by `resv` by default
+  - `gpuva.lock` is unsed by default
+- `drm_gpuvm`
+  - `rb.tree` is the rb tree of `drm_gpuva`
+    - it is protected by a driver mutex
+  - `rb.list` is the list of `drm_gpuva` sorted by start va
+    - it is protected by a driver mutex
+  - `r_obj` is the dummy obj for `obj->resv`
+  - `extobj.list` is the list of external `drm_gpuvm_bo`
+    - that is, `vm_bo->obj->resv != vm->r_obj->resv`
+    - it is protected by `extobj.lock` by default
+  - `extobj.lock` protectes `extobj.list` by default
+  - `evict.list` is the list of evicted `drm_gpuvm_bo`
+    - it is protected by `evict.lock` by default
+  - `evict.lock` protectes `evict.list` by default
+  - `bo_defer` is the list of defer-destroyed `drm_gpuvm_bo`
+    - it requires `DRM_GPUVM_IMMEDIATE_MODE`
+- `drm_gpuvm_bo`
+  - `list.gpuva` is the list of `drm_gpuva`
+    - it is protected by `obj->resv` by default
+  - `entry.gem` is for `obj->gpuva.list`
+  - `entry.extobj` is for `vm->extobj.list`
+  - `entry.evict` is for `vm->evict.list`
+  - `entry.bo_defer` is for `vm->bo_defer`
+- `drm_gpuva`
+  - `rb.node` is for `vm->rb.tree`
+  - `rb.entry` is for `vm->rb.list`
+  - `gem.entry` is for `vm_bo->list.gpuva`
+- if `DRM_GPUVM_RESV_PROTECTED`, `vm->extobj.lock` and `vm->evict.lock` become
+  unused
+  - driver must lock `vm->r_obj->resv` externally to protect `vm->extobj.list`
+    and `vm->evict.list`
+  - see `drm_gpuvm_resv_protected` and `drm_gpuvm_resv_assert_held`
+- if `DRM_GPUVM_IMMEDIATE_MODE`, `obj->gpuva.lock` replaces `obj->resv` to
+  protect `obj->gpuva.list`, `vm_bo->list.gpuva`, and `vm->bo_defer`
+  - see `drm_gpuvm_immediate_mode` and how `drm_gem_gpuva_assert_lock_held`
+    changes its behavior
