@@ -131,12 +131,14 @@ dma-buf
   - it allocates a new inode from the fs
   - and it allocates a new file for the inode
 
-## producers and consumers
+## dma-buf producers and consumers
 
 - producers call `dma_buf_export` to export their buffers as dma-bufs
-  - `drivers/accel/habanalabs`
-    - ioctl `HL_MEM_OP_EXPORT_DMABUF_FD`
-  - `drivers/dma-buf/heaps`
+  - `drivers/accel`
+    - amdxdna `AMDXDNA_CREATE_BO` ioctl
+    - habanalabs `HL_MEM_OP_EXPORT_DMABUF_FD` ioctl
+    - ivpu `IVPU_BO_CREATE_FROM_USERPTR` ioctl
+  - `drivers/dma-buf/heaps` and `drivers/tee/tee_heap.c`
     - ioctl `DMA_HEAP_IOCTL_ALLOC`
   - `drivers/dma-buf/udmabuf`
     - ioctl `UDMABUF_CREATE`
