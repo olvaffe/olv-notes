@@ -47,3 +47,22 @@ Kernel namei
       - `f->f_mapping` is `inode->i_mapping`
       - `f->f_op` is `inode->i_fop`
       - `f->f_op->open` opens the inode
+
+## `d_path`
+
+- `d_path` is the opposite of `filename_lookup`
+- it is used to when kernel needs the filename of a dentry
+  - `/proc/<pid>/fd`
+  - `/proc/<pid>/maps`, indirecly via `seq_path`
+  - etc.
+- if the dentry is deleted, it appends ` (deleted)`
+- if the (pseudo) fs provides `dentry_operations::d_name`, it returns the
+  result instead
+  - socket `sockfs_dname` returns `socket:[ino]`
+  - pipe `pipefs_dname` returns `pipe:[ino]`
+  - dmabuf `dmabuffs_dname` returns `/dmabuf:<name>`, where name is from
+    `DMA_BUF_SET_NAME` ioctl
+  - anon inode `anon_inodefs_dname` returns `anon_inode:<name>`, where name is
+    specified by `anon_inode_getfile`, etc.
+  - simple `simple_dname` returns `/<name> (deleted)`, where name is specified
+    by `alloc_file_pseudo`
