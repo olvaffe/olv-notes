@@ -25,3 +25,17 @@ Linux dentry cache
     - these dentries are known as alises
     - aliases are valid for files but invalid for dirs
     - `d_splice_alias` avoids dir aliases
+
+## dentry lifetime
+
+- `d_alloc` allocs a dentry with the specified name
+  - `dentry->d_op->d_init`, which is very rare
+- `dput` calls `__dentry_kill` if it decides to destroy
+  - `dentry->d_op->d_prune`, which is very rare
+  - `dentry->d_op->d_iput`, which is very rare
+    - it falls back to `iput`
+  - `dentry->d_op->d_release`, which is very rare
+- how `fput` leads to `d_put`
+  - `fput -> __fput`
+    - `file->f_op->release`
+    - `dput`
