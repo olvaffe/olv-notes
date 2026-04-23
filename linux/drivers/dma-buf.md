@@ -28,232 +28,6 @@ dma-buf
 - sync-file in 2016 by Collabora
   - cross-device explicit fencing was made possible
 
-## dma-fence
-
-- `struct dma_fence` has
-  - `lock` for a spinlock to protect `cb_list`
-    - it is locked to protect `cb_list` in
-      - `dma_fence_add_callback`
-      - `dma_fence_remove_callback`
-      - `dma_fence_signal` and `dma_fence_signal_timestamp`
-    - it is locked in many more functions, but all of them accesses `cb_list`
-      - as a result, it is locked in cbs, in several ops, and is often locked
-        beyond `cb_list` access
-  - `ops` for impl-defined ops
-      - `get_driver_name`, unlocked
-      - `get_timeline_name`, unlocked
-      - `enable_signaling`, locked
-      - `signaled`, unlocked
-      - `wait`, unlocked, deprecated by `dma_fence_default_wait`
-      - `release`, unlocked, default to `dma_fence_free`
-      - `fence_value_str`, locked
-      - `timeline_value_str`, locked
-      - `set_deadline`, unlocked
-  - a union of
-    - `cb_list` for a list of callbacks to be invoked when the fence signals
-      - valid from `dma_fence_init` until `dma_fence_signal`
-    - `timestamp` to indicate when it was signaled
-      - valid from `dma_fence_signal` until `dma_fence_release`
-    - `rcu` for use with `kfree_rcu`
-      - valid after `dma_fence_release`
-      - dma-fence is designed to be RCU-protected
-        - A writer can `dma_fence_put` without `synchronize_rcu`.  This is
-          because when the last reference is dropped, the fence is freed with
-          `kfree_rcu`
-        - on the other hand, a reader might get a fence with `refcount==0`.
-          It must call `dma_fence_get_rcu` to make sure the fence is usable.
-  - `context` for the fence context
-  - `seqno` for the seqno of the fence in the fence context
-  - `flags` for its internal status
-    - `DMA_FENCE_FLAG_SIGNALED_BIT` indicates fence is already signaled
-    - `DMA_FENCE_FLAG_TIMESTAMP_BIT` indicates fence has a valid timestamp
-      - this is needed because there is a small window where `cb_list` is
-        saved away and `timestamp` becomes valid in the union
-    - `DMA_FENCE_FLAG_ENABLE_SIGNAL_BIT` indicates signaling is enabled
-      - dma-fence may not signal timely.  To get that behavior, which may
-        require enabling IRQ, one of these should be called
-        - `dma_fence_add_callback`
-        - `dma_fence_wait*`
-        - `dma_fence_enable_sw_signaling`
-    - more impl-defined flags
-  - `refcount` for refcount
-  - `error` to indicate an error in the associated operation
-    - it must be set before signaling
-- `dma_fence_get_stub` returns a fence that is already signaled
-- `dma_fence_context_alloc` allocs fence contexts (u64 ids)
-- `dma_fence_wait` and `dma_fence_wait_timeout` wait for a fence
-  - `dma_fence_enable_sw_signaling` enables signaling (irq if necessary)
-  - `dma_fence_default_wait`
-    - it early returns in several cases
-      - the fence is already signaled
-      - the wait is interruptible and there is a pending process signal
-      - timeout is 0
-    - otherwise, it adds a `dma_fence_default_wait_cb` to `cb_list` and enters
-      a sleep loop until the fence is signaled or interrupted
-      - `dma_fence_default_wait_cb` is responsible for waking up self
-- `dma_fence_wait_any_timeout` waits for multiple fences
-- when the associated operation completes, driver calls `dma_fence_signal*` to
-  signal the fence
-  - the lock is locked or already locked
-  - it saves `cb_list` on stack
-    - remember that `cb_list` and `timestamp` are in a union
-  - it sets `timestamp` and `DMA_FENCE_FLAG_TIMESTAMP_BIT`
-    - check `dma_fence_timestamp` out to see why the bit is needed
-  - it loops through `cb_list`, reinits the cb nodes, and invokes cbs
-- fence cross-driver contract
-  - fences must complete in a reasonable time
-    - if the associated operation runs forever, there must be a timeout
-  - fence timeout is impl-defined
-    - it could be a fixed timeout, or it could be a mix of forward progress
-      and dynamic timeout
-  - driver should annotate all code leading to `dma_fence_signal` with
-    `dma_fence_begin_signalling` and `dma_fence_end_signalling`
-    - this detects potential deadlock around `dma_fence_wait`
-  - driver is allowed to `dma_fence_wait` while holding `dma_resv_lock`
-    - this means all code leading to `dma_fence_signal` must not
-      `dma_resv_lock`
-  - driver is allowed to `dma_fence_wait` from shrinker
-    - this means all code leading to `dma_fence_signal` must not
-      allocate with `GFP_KERNEL`
-  - driver is allowed to `dma_fence_wait` from their
-    `mmu_interval_notifier_ops` (for userptr)
-    - this means all code leading to `dma_fence_signal` must not
-      allocate with `GFP_NOFS` or `GFP_NOIO`, but only `GFP_ATOMIC`
-
-## dma-resv
-
-- `struct dma_resv` has
-  - `lock` protects `fences`
-    - only for writers; readers are lockfree
-  - `fences`
-    - `rcu`
-    - `num_fences` is array size
-    - `max_fences` is array capacity
-    - `table` is an array of `dma_fence` and usage
-      - usage is stored in lower bits (`DMA_RESV_LIST_MASK`) of the pointer
-        - `DMA_RESV_USAGE_KERNEL` the associated op is for kernel mm
-        - `DMA_RESV_USAGE_WRITE` the associated op is userspace write
-        - `DMA_RESV_USAGE_READ` the associated op is userspace read
-        - `DMA_RESV_USAGE_BOOKKEEP` the associated op is not implicitly fenced
-        - the enums are ordered such that the lower ones "implies" the higher
-          ones
-        - for a driver that does not support implicit fencing,
-          `DMA_RESV_USAGE_BOOKKEEP` is the only usage
-- `dma_resv_init` inits an dma-resv
-  - `ww_mutex_init` inits `obj->lock`
-  - `RCU_INIT_POINTER` inits `obj->fences`
-- `dma_resv_lock` locks the dma-resv
-  - `ww_mutex_lock` locks `obj->lock`
-  - this is a `ww_mutex` because the gpu driver needs to lock dma-resv of all
-    bos for a submit
-  - only writers lcok dma-resv; readers are lockfree
-- `dma_resv_reserve_fences` ensures storage
-  - it early returns if there is enough storage
-  - `dma_resv_list_alloc` allocs new storage
-  - it copies existing fences, if any, from old storage to new storage
-    - it calls `dma_fence_is_signaled`, which can signal the fence, and drops
-      signaled fence
-- `dma_resv_add_fence` adds a fence
-  - the fence should not be `dma_fence_is_container`
-  - it checks if it can replace an existing fence
-    - if the new fence is later in the same fence context than an existing
-      fence, and has a stronger usage, it can replace the existing fence
-    - it also calls `dma_fence_is_signaled`
-  - otherwise, it appends the fence
-  - this function cannot fail because it is called from a point of no failure
-    - `dma_resv_reserve_fences` must have been called to ensure storage
-- `dma_resv_replace_fences` replaces all fences in the specified context
-- `dma_resv_copy_fences` replaces all fences in dst by those in src
-- `dma_resv_get_fences` returns all fences matching (or lower than) the usage
-  in dma-resv
-- `dma_resv_get_singleton` returns a fence representing all fences in dma-resv
-  - if dma-resv has more than 1 fence, they are wrapped in `dma_fence_array`
-- `dma_resv_wait_timeout` calls `dma_fence_wait_timeout` on all fences
-  matching (or lower than) the usage
-- reader iterator
-  - `dma_resv_iter_begin` (partially) inits `dma_resv_iter`
-  - `dma_resv_iter_first_unlocked` returns the first fence
-    - `dma_resv_iter_restart_unlocked` inits the rest of `dma_resv_iter`
-    - `dma_resv_iter_walk_unlocked` updates `cursor->fence` to the next fence
-      - only fences of the same usage or lower, and is unsignaled, is returned
-  - `dma_resv_iter_next_unlocked` returns the next fence
-    - it works the same way as `dma_resv_iter_first_unlocked`, except that it
-      calls `dma_resv_iter_restart_unlocked` only if there is a writer racing
-      with us
-  - `dma_resv_iter_end`
-  - `dma_resv_for_each_fence_unlocked` is a convenient macro
-- writer iterator
-  - `dma_resv_iter_begin`
-  - `dma_resv_iter_first` inits the rest of `dma_resv_iter` and calls
-    `dma_resv_iter_next`
-  - `dma_resv_iter_next` returns the next iterator
-    - there is no concern of writer racing because it is locked
-  - `dma_resv_iter_end`
-  - `dma_resv_for_each_fence` is a convenient macro
-
-## dma-fence Containers
-
-- `dma_fence_array`
-  - it is a fence which consists of a fixed-size array of fences
-    - the fence may be on a different timeline because the underlying fences
-      may be from different timelines
-  - this is used by `sync_file`
-- `dma_fence_chain`
-  - it is a fence that wraps another fence and supports chaining
-  - this is used by timeline syncobj
-    - the syncobj is itself a timeline (rather a point on another timeline)
-    - the timeline consists of discrete fences, which are points on the
-      timeline, and are managed with a dma-fence-chain
-    - userspace can
-      - userspace can advance the seqno of the timeline
-        - appends a signaled fence with the desired seqno to the chain
-      - userspace can query the seqnos of the points
-        - get seqnos of the fences
-      - userspace can wait until the timeline reaches a certain seqno
-        - wait for fences before the seqno to signal
-
-## sync-file
-
-- a `struct file` backed by anonymous inode that wraps a dma-fence
-- it enables userspace to operate on the dma-fence using `poll`, `ioctl`, as
-  well as transferring the dma-fence to another process
-- it is possible to create a sync-file by merging two sync-files.  The new
-  sync-file wraps a dma-fence-array.
-
-## sw-sync
-
-- `CONFIG_SW_SYNC` creates `/sys/kernel/debug/sync`
-  - `sw_sync` supports ioctls to create dma-fences
-  - `info` dumps `sync_timeline_list_head` and `sync_file_list_head`
-    - `sync_timeline_list_head` is only used by `sw_sync`
-    - `sync_file_list_head` is unused
-- `sw_sync_debugfs_fops`
-  - `sw_sync_debugfs_open` associates a `sync_timeline` with the file
-    - `context` is from `dma_fence_context_alloc`
-    - `name` is from `get_task_comm`
-    - `pt_list` is a list of all `sync_pt` sorted by seqnos
-    - `pt_tree` is an rb tree to help find the right spot to insert a new
-      `sync_pt` to `pt_list`
-  - `sw_sync_ioctl`
-    - `SW_SYNC_IOC_CREATE_FENCE` creates a `sync_pt` and a `sync_file`
-      - `sync_pt_create` create a `sync_pt`, which is a subclass of
-        `dma_fence` with a userspace-specified 32-bit seqno
-        - the `sync_pt` is added to `pt_list`, which is sorted by seqnos
-      - `sync_file_create` creates a `sync_file` to wrap `sync_pt`
-    - `SW_SYNC_IOC_INC` increments `sync_timeline`
-      - `sync_timeline_signal` increments the timeline value
-        - all `sync_pt` with seqnos less than or equal to the timeline value
-          are signaled and removed
-  - `sw_sync_debugfs_release` signals all remaining `sync_pt` before freeing
-    the timeline
-- `timeline_fence_ops` is the `dma_fence_ops` for `sync_pt`
-  - `timeline_fence_get_driver_name` returns `sw_sync`
-  - `timeline_fence_get_timeline_name` returns the name of `sync_timeline`,
-    which is the comm name
-  - `timeline_fence_signaled` returns true if the timeline value is greater
-    than or equal to the fence seqno
-  - `timeline_fence_release` frees the `sync_pt`
-
 ## dma-buf
 
 - Introduction
@@ -348,7 +122,237 @@ dma-buf
     might move anytime
     - the importer will be notified by `dma_buf_attach_ops::move_notify`
 
-## dma-buf heap
+## `dmabuf` filesystem
+
+- in kernel init, `dma_buf_init` is called
+  - it mounts `dmabuf` fs
+- when `dma_buf_export` is called to export a driver allocation,
+  - it allocates a `struct dma_buf`
+  - it allocates a new inode from the fs
+  - and it allocates a new file for the inode
+
+## producers and consumers
+
+- producers call `dma_buf_export` to export their buffers as dma-bufs
+  - `drivers/accel/habanalabs`
+    - ioctl `HL_MEM_OP_EXPORT_DMABUF_FD`
+  - `drivers/dma-buf/heaps`
+    - ioctl `DMA_HEAP_IOCTL_ALLOC`
+  - `drivers/dma-buf/udmabuf`
+    - ioctl `UDMABUF_CREATE`
+  - `drivers/gpu/drm`
+    - ioctl `DRM_IOCTL_PRIME_HANDLE_TO_FD`
+  - `drivers/media/common/videobuf2`
+    - ioctl `VIDIOC_EXPBUF`
+    - ioctl `DMX_EXPBUF`
+  - `drivers/misc/fastrpc`
+    - ioctl `FASTRPC_IOCTL_ALLOC_DMA_BUFF`
+  - `drivers/virtio/virtio_dma_buf`
+    - used by drm/virtio
+  - `drivers/xen`
+    - ioctl `IOCTL_GNTDEV_DMABUF_EXP_FROM_REFS`
+- consumers call `dma_buf_attach` to add themselves to the attachment
+  lists of dma-bufs
+  - `drivers/accel/ivpu` and `drivers/accel/qaic`
+    - they are just drm drivers; see below
+  - `drivers/gpu/drm`
+    - ioctl `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+  - `drivers/media/common/videobuf2`
+    - ioctl `VIDIOC_QBUF`
+  - `drivers/media/platform/nvidia/tegra-vde`
+    - ioctl `VIDIOC_*`
+  - `drivers/misc/fastrpc`
+    - ioctl `FASTRPC_IOCTL_*`
+  - `drivers/virtio/virtio_dma_buf`
+    - used by drm/virtio
+  - `drivers/xen`
+    - ioctl `IOCTL_GNTDEV_DMABUF_IMP_TO_REFS`
+
+## dma-fence
+
+- `struct dma_fence` has
+  - `lock` for a spinlock to protect `cb_list`
+    - it is locked to protect `cb_list` in
+      - `dma_fence_add_callback`
+      - `dma_fence_remove_callback`
+      - `dma_fence_signal` and `dma_fence_signal_timestamp`
+    - it is locked in many more functions, but all of them accesses `cb_list`
+      - as a result, it is locked in cbs, in several ops, and is often locked
+        beyond `cb_list` access
+  - `ops` for impl-defined ops
+      - `get_driver_name`, unlocked
+      - `get_timeline_name`, unlocked
+      - `enable_signaling`, locked
+      - `signaled`, unlocked
+      - `wait`, unlocked, deprecated by `dma_fence_default_wait`
+      - `release`, unlocked, default to `dma_fence_free`
+      - `fence_value_str`, locked
+      - `timeline_value_str`, locked
+      - `set_deadline`, unlocked
+  - a union of
+    - `cb_list` for a list of callbacks to be invoked when the fence signals
+      - valid from `dma_fence_init` until `dma_fence_signal`
+    - `timestamp` to indicate when it was signaled
+      - valid from `dma_fence_signal` until `dma_fence_release`
+    - `rcu` for use with `kfree_rcu`
+      - valid after `dma_fence_release`
+      - dma-fence is designed to be RCU-protected
+        - A writer can `dma_fence_put` without `synchronize_rcu`.  This is
+          because when the last reference is dropped, the fence is freed with
+          `kfree_rcu`
+        - on the other hand, a reader might get a fence with `refcount==0`.
+          It must call `dma_fence_get_rcu` to make sure the fence is usable.
+  - `context` for the fence context
+  - `seqno` for the seqno of the fence in the fence context
+  - `flags` for its internal status
+    - `DMA_FENCE_FLAG_SIGNALED_BIT` indicates fence is already signaled
+    - `DMA_FENCE_FLAG_TIMESTAMP_BIT` indicates fence has a valid timestamp
+      - this is needed because there is a small window where `cb_list` is
+        saved away and `timestamp` becomes valid in the union
+    - `DMA_FENCE_FLAG_ENABLE_SIGNAL_BIT` indicates signaling is enabled
+      - dma-fence may not signal timely.  To get that behavior, which may
+        require enabling IRQ, one of these should be called
+        - `dma_fence_add_callback`
+        - `dma_fence_wait*`
+        - `dma_fence_enable_sw_signaling`
+    - more impl-defined flags
+  - `refcount` for refcount
+  - `error` to indicate an error in the associated operation
+    - it must be set before signaling
+- `dma_fence_get_stub` returns a fence that is already signaled
+- `dma_fence_context_alloc` allocs fence contexts (u64 ids)
+- `dma_fence_wait` and `dma_fence_wait_timeout` wait for a fence
+  - `dma_fence_enable_sw_signaling` enables signaling (irq if necessary)
+  - `dma_fence_default_wait`
+    - it early returns in several cases
+      - the fence is already signaled
+      - the wait is interruptible and there is a pending process signal
+      - timeout is 0
+    - otherwise, it adds a `dma_fence_default_wait_cb` to `cb_list` and enters
+      a sleep loop until the fence is signaled or interrupted
+      - `dma_fence_default_wait_cb` is responsible for waking up self
+- `dma_fence_wait_any_timeout` waits for multiple fences
+- when the associated operation completes, driver calls `dma_fence_signal*` to
+  signal the fence
+  - the lock is locked or already locked
+  - it saves `cb_list` on stack
+    - remember that `cb_list` and `timestamp` are in a union
+  - it sets `timestamp` and `DMA_FENCE_FLAG_TIMESTAMP_BIT`
+    - check `dma_fence_timestamp` out to see why the bit is needed
+  - it loops through `cb_list`, reinits the cb nodes, and invokes cbs
+- fence cross-driver contract
+  - fences must complete in a reasonable time
+    - if the associated operation runs forever, there must be a timeout
+  - fence timeout is impl-defined
+    - it could be a fixed timeout, or it could be a mix of forward progress
+      and dynamic timeout
+  - driver should annotate all code leading to `dma_fence_signal` with
+    `dma_fence_begin_signalling` and `dma_fence_end_signalling`
+    - this detects potential deadlock around `dma_fence_wait`
+  - driver is allowed to `dma_fence_wait` while holding `dma_resv_lock`
+    - this means all code leading to `dma_fence_signal` must not
+      `dma_resv_lock`
+  - driver is allowed to `dma_fence_wait` from shrinker
+    - this means all code leading to `dma_fence_signal` must not
+      allocate with `GFP_KERNEL`
+  - driver is allowed to `dma_fence_wait` from their
+    `mmu_interval_notifier_ops` (for userptr)
+    - this means all code leading to `dma_fence_signal` must not
+      allocate with `GFP_NOFS` or `GFP_NOIO`, but only `GFP_ATOMIC`
+
+## dma-fence Containers
+
+- `dma_fence_array`
+  - it is a fence which consists of a fixed-size array of fences
+    - the fence may be on a different timeline because the underlying fences
+      may be from different timelines
+  - this is used by `sync_file`
+- `dma_fence_chain`
+  - it is a fence that wraps another fence and supports chaining
+  - this is used by timeline syncobj
+    - the syncobj is itself a timeline (rather a point on another timeline)
+    - the timeline consists of discrete fences, which are points on the
+      timeline, and are managed with a dma-fence-chain
+    - userspace can
+      - userspace can advance the seqno of the timeline
+        - appends a signaled fence with the desired seqno to the chain
+      - userspace can query the seqnos of the points
+        - get seqnos of the fences
+      - userspace can wait until the timeline reaches a certain seqno
+        - wait for fences before the seqno to signal
+
+## dma-resv
+
+- `struct dma_resv` has
+  - `lock` protects `fences`
+    - only for writers; readers are lockfree
+  - `fences`
+    - `rcu`
+    - `num_fences` is array size
+    - `max_fences` is array capacity
+    - `table` is an array of `dma_fence` and usage
+      - usage is stored in lower bits (`DMA_RESV_LIST_MASK`) of the pointer
+        - `DMA_RESV_USAGE_KERNEL` the associated op is for kernel mm
+        - `DMA_RESV_USAGE_WRITE` the associated op is userspace write
+        - `DMA_RESV_USAGE_READ` the associated op is userspace read
+        - `DMA_RESV_USAGE_BOOKKEEP` the associated op is not implicitly fenced
+        - the enums are ordered such that the lower ones "implies" the higher
+          ones
+        - for a driver that does not support implicit fencing,
+          `DMA_RESV_USAGE_BOOKKEEP` is the only usage
+- `dma_resv_init` inits an dma-resv
+  - `ww_mutex_init` inits `obj->lock`
+  - `RCU_INIT_POINTER` inits `obj->fences`
+- `dma_resv_lock` locks the dma-resv
+  - `ww_mutex_lock` locks `obj->lock`
+  - this is a `ww_mutex` because the gpu driver needs to lock dma-resv of all
+    bos for a submit
+  - only writers lcok dma-resv; readers are lockfree
+- `dma_resv_reserve_fences` ensures storage
+  - it early returns if there is enough storage
+  - `dma_resv_list_alloc` allocs new storage
+  - it copies existing fences, if any, from old storage to new storage
+    - it calls `dma_fence_is_signaled`, which can signal the fence, and drops
+      signaled fence
+- `dma_resv_add_fence` adds a fence
+  - the fence should not be `dma_fence_is_container`
+  - it checks if it can replace an existing fence
+    - if the new fence is later in the same fence context than an existing
+      fence, and has a stronger usage, it can replace the existing fence
+    - it also calls `dma_fence_is_signaled`
+  - otherwise, it appends the fence
+  - this function cannot fail because it is called from a point of no failure
+    - `dma_resv_reserve_fences` must have been called to ensure storage
+- `dma_resv_replace_fences` replaces all fences in the specified context
+- `dma_resv_copy_fences` replaces all fences in dst by those in src
+- `dma_resv_get_fences` returns all fences matching (or lower than) the usage
+  in dma-resv
+- `dma_resv_get_singleton` returns a fence representing all fences in dma-resv
+  - if dma-resv has more than 1 fence, they are wrapped in `dma_fence_array`
+- `dma_resv_wait_timeout` calls `dma_fence_wait_timeout` on all fences
+  matching (or lower than) the usage
+- reader iterator
+  - `dma_resv_iter_begin` (partially) inits `dma_resv_iter`
+  - `dma_resv_iter_first_unlocked` returns the first fence
+    - `dma_resv_iter_restart_unlocked` inits the rest of `dma_resv_iter`
+    - `dma_resv_iter_walk_unlocked` updates `cursor->fence` to the next fence
+      - only fences of the same usage or lower, and is unsignaled, is returned
+  - `dma_resv_iter_next_unlocked` returns the next fence
+    - it works the same way as `dma_resv_iter_first_unlocked`, except that it
+      calls `dma_resv_iter_restart_unlocked` only if there is a writer racing
+      with us
+  - `dma_resv_iter_end`
+  - `dma_resv_for_each_fence_unlocked` is a convenient macro
+- writer iterator
+  - `dma_resv_iter_begin`
+  - `dma_resv_iter_first` inits the rest of `dma_resv_iter` and calls
+    `dma_resv_iter_next`
+  - `dma_resv_iter_next` returns the next iterator
+    - there is no concern of writer racing because it is locked
+  - `dma_resv_iter_end`
+  - `dma_resv_for_each_fence` is a convenient macro
+
+## `CONFIG_DMABUF_HEAPS`
 
 - system heap
   - `system_heap_create` calls `dma_heap_add` to create `system` heap
@@ -394,52 +398,51 @@ dma-buf
     - `fd_flags` can only have `O_CLOEXEC` and `O_ACCMODE` (r/w)
     - `heap_flags` must be 0
 
-## udmabuf
+## `CONFIG_SW_SYNC`
+
+- do not use
+  - dma-fence must be signaled in finite time
+  - sw-sync is signaled by userspace and improper use can deadlock the kernel
+- `CONFIG_SW_SYNC` creates `/sys/kernel/debug/sync`
+  - `sw_sync` supports ioctls to create dma-fences
+  - `info` dumps `sync_timeline_list_head` and `sync_file_list_head`
+    - `sync_timeline_list_head` is only used by `sw_sync`
+    - `sync_file_list_head` is unused
+- `sw_sync_debugfs_fops`
+  - `sw_sync_debugfs_open` associates a `sync_timeline` with the file
+    - `context` is from `dma_fence_context_alloc`
+    - `name` is from `get_task_comm`
+    - `pt_list` is a list of all `sync_pt` sorted by seqnos
+    - `pt_tree` is an rb tree to help find the right spot to insert a new
+      `sync_pt` to `pt_list`
+  - `sw_sync_ioctl`
+    - `SW_SYNC_IOC_CREATE_FENCE` creates a `sync_pt` and a `sync_file`
+      - `sync_pt_create` create a `sync_pt`, which is a subclass of
+        `dma_fence` with a userspace-specified 32-bit seqno
+        - the `sync_pt` is added to `pt_list`, which is sorted by seqnos
+      - `sync_file_create` creates a `sync_file` to wrap `sync_pt`
+    - `SW_SYNC_IOC_INC` increments `sync_timeline`
+      - `sync_timeline_signal` increments the timeline value
+        - all `sync_pt` with seqnos less than or equal to the timeline value
+          are signaled and removed
+  - `sw_sync_debugfs_release` signals all remaining `sync_pt` before freeing
+    the timeline
+- `timeline_fence_ops` is the `dma_fence_ops` for `sync_pt`
+  - `timeline_fence_get_driver_name` returns `sw_sync`
+  - `timeline_fence_get_timeline_name` returns the name of `sync_timeline`,
+    which is the comm name
+  - `timeline_fence_signaled` returns true if the timeline value is greater
+    than or equal to the fence seqno
+  - `timeline_fence_release` frees the `sync_pt`
+
+## `CONFIG_SYNC_FILE`
+
+- a `struct file` backed by anonymous inode that wraps a dma-fence
+- it enables userspace to operate on the dma-fence using `poll`, `ioctl`, as
+  well as transferring the dma-fence to another process
+- it is possible to create a sync-file by merging two sync-files.  The new
+  sync-file wraps a dma-fence-array.
+
+## `CONFIG_UDMABUF`
 
 - create a dma-buf that wraps ranges of memfds from userspace
-
-## producers and consumers
-
-- producers call `dma_buf_export` to export their buffers as dma-bufs
-  - `drivers/accel/habanalabs`
-    - ioctl `HL_MEM_OP_EXPORT_DMABUF_FD`
-  - `drivers/dma-buf/heaps`
-    - ioctl `DMA_HEAP_IOCTL_ALLOC`
-  - `drivers/dma-buf/udmabuf`
-    - ioctl `UDMABUF_CREATE`
-  - `drivers/gpu/drm`
-    - ioctl `DRM_IOCTL_PRIME_HANDLE_TO_FD`
-  - `drivers/media/common/videobuf2`
-    - ioctl `VIDIOC_EXPBUF`
-    - ioctl `DMX_EXPBUF`
-  - `drivers/misc/fastrpc`
-    - ioctl `FASTRPC_IOCTL_ALLOC_DMA_BUFF`
-  - `drivers/virtio/virtio_dma_buf`
-    - used by drm/virtio
-  - `drivers/xen`
-    - ioctl `IOCTL_GNTDEV_DMABUF_EXP_FROM_REFS`
-- consumers call `dma_buf_attach` to add themselves to the attachment
-  lists of dma-bufs
-  - `drivers/accel/ivpu` and `drivers/accel/qaic`
-    - they are just drm drivers; see below
-  - `drivers/gpu/drm`
-    - ioctl `DRM_IOCTL_PRIME_FD_TO_HANDLE`
-  - `drivers/media/common/videobuf2`
-    - ioctl `VIDIOC_QBUF`
-  - `drivers/media/platform/nvidia/tegra-vde`
-    - ioctl `VIDIOC_*`
-  - `drivers/misc/fastrpc`
-    - ioctl `FASTRPC_IOCTL_*`
-  - `drivers/virtio/virtio_dma_buf`
-    - used by drm/virtio
-  - `drivers/xen`
-    - ioctl `IOCTL_GNTDEV_DMABUF_IMP_TO_REFS`
-
-## `dmabuf` filesystem
-
-- in kernel init, `dma_buf_init` is called
-  - it mounts `dmabuf` fs
-- when `dma_buf_export` is called to export a driver allocation,
-  - it allocates a `struct dma_buf`
-  - it allocates a new inode from the fs
-  - and it allocates a new file for the inode
