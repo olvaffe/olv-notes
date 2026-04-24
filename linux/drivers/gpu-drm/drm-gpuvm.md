@@ -16,6 +16,48 @@ DRM GPUVM
 - 2024.03: panthor merged with `VM_BIND`
 - 2025.07: msm gained `VM_BIND` support
 
+## How a Driver Uses GPUVM
+
+- assume an op that
+  - waits N syncobjs
+  - operates on gem objs
+  - signals M syncobjs
+- create a job for the op
+  - `drm_sched_job_init` inits the job
+  - `drm_sched_job_add_syncobj_dependency` adds each of the N syncobj to wait
+    as deps
+  - collect M syncobjs to signal
+    - `drm_syncobj_find` looks up the syncobj
+    - if timeline, `dma_fence_chain_alloc` allocs a fence chain
+- lock gem objs
+  - `drm_exec_init` with `DRM_EXEC_IGNORE_DUPLICATES`
+  - `drm_exec_until_all_locked` is the retry loop
+    - `drm_gpuvm_prepare_vm` locks `vm->r_obj->resv`
+    - `drm_gpuvm_prepare_objects` locks extobjs
+    - `drm_exec_retry_on_contention` retries on contention
+  - no pinning needed with gpuvm
+- queue the job atomically
+  - `drm_sched_job_arm` arms the job and inits the out-fence
+    - `job->s_fence->finished` is the out-fence
+  - point of no return
+    - the out-fence must signal in finite time
+    - all preps that can fail should happen before this
+  - in fact, it can still fail until the out-fence is used
+    - if the out-fence has no user, it is harmless to not push the job and
+      signal the out-fence
+  - `drm_gpuvm_resv_add_fence` adds the out-fence with
+    `DMA_RESV_USAGE_BOOKKEEP`
+    - this happens before `drm_sched_entity_push_job` to avoid a window where
+      an obj is accessed by gpu without an associated fence
+  - `drm_sched_entity_push_job` pushes the job
+    - this transfer the job to the scheduler
+    - the job will run after all deps are satisfied
+- signal M syncobjs
+  - if timeline, `drm_syncobj_add_point`
+  - if binary, `drm_syncobj_replace_fence`
+- unlock gem objs
+  - `drm_exec_fini` unlocks all
+
 ## Basics
 
 - `drm_gpuvm` is the gpu va manager
