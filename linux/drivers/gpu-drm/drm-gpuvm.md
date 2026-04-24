@@ -16,47 +16,89 @@ DRM GPUVM
 - 2024.03: panthor merged with `VM_BIND`
 - 2025.07: msm gained `VM_BIND` support
 
-## How a Driver Uses GPUVM
+## Typical Driver Flows
 
-- assume an op that
-  - waits N syncobjs
-  - operates on gem objs
-  - signals M syncobjs
-- create a job for the op
-  - `drm_sched_job_init` inits the job
-  - `drm_sched_job_add_syncobj_dependency` adds each of the N syncobj to wait
-    as deps
-  - collect M syncobjs to signal
-    - `drm_syncobj_find` looks up the syncobj
-    - if timeline, `dma_fence_chain_alloc` allocs a fence chain
-- lock gem objs
-  - `drm_exec_init` with `DRM_EXEC_IGNORE_DUPLICATES`
-  - `drm_exec_until_all_locked` is the retry loop
-    - `drm_gpuvm_prepare_vm` locks `vm->r_obj->resv`
-    - `drm_gpuvm_prepare_objects` locks extobjs
-    - `drm_exec_retry_on_contention` retries on contention
-  - no pinning needed with gpuvm
-- queue the job atomically
-  - `drm_sched_job_arm` arms the job and inits the out-fence
-    - `job->s_fence->finished` is the out-fence
-  - point of no return
-    - the out-fence must signal in finite time
-    - all preps that can fail should happen before this
-  - in fact, it can still fail until the out-fence is used
-    - if the out-fence has no user, it is harmless to not push the job and
-      signal the out-fence
-  - `drm_gpuvm_resv_add_fence` adds the out-fence with
-    `DMA_RESV_USAGE_BOOKKEEP`
-    - this happens before `drm_sched_entity_push_job` to avoid a window where
-      an obj is accessed by gpu without an associated fence
-  - `drm_sched_entity_push_job` pushes the job
-    - this transfer the job to the scheduler
-    - the job will run after all deps are satisfied
-- signal M syncobjs
-  - if timeline, `drm_syncobj_add_point`
-  - if binary, `drm_syncobj_replace_fence`
-- unlock gem objs
-  - `drm_exec_fini` unlocks all
+- exec job or vm job submission
+  - assume an exec op or vm op that waits N syncobjs and signals M syncobjs
+  - create a job for the op
+    - `drm_sched_job_init` inits the job
+    - if vm op,
+      - if vm map op,
+        - prealloc unique per-vm vm bo (`drm_gpuvm_bo`)
+          - `drm_gpuvm_bo_create` creates a new vm bo
+          - `drm_gpuvm_bo_obtain_prealloc` ensures a unique vm bo
+        - prealloc pgtables
+        - prealloc obj pages
+        - if extobj, `drm_gpuvm_bo_extobj_add`
+      - prealloc vmas (`drm_gpuva`)
+    - `drm_sched_job_add_syncobj_dependency` adds each of the N syncobj to wait
+      as deps
+    - collect M syncobjs to signal
+      - `drm_syncobj_find` looks up the syncobj
+      - if timeline, `dma_fence_chain_alloc` allocs a fence chain
+  - lock gem objs
+    - `drm_exec_init` with `DRM_EXEC_IGNORE_DUPLICATES`
+    - `drm_exec_until_all_locked` is the retry loop
+      - `drm_gpuvm_prepare_vm` locks `vm->r_obj->resv`
+      - if exec op, `drm_gpuvm_prepare_objects` locks extobjs
+      - if vm map op, `drm_exec_prepare_obj` locks the obj to be mapped
+      - `drm_exec_retry_on_contention` retries on contention
+    - if exec op, `drm_gpuvm_validate` validates (swaps in) evicted objs
+      - no pinning needed with gpuvm
+      - instead, driver validates evicted objs
+        - swaps in pages
+        - restores gpu pgtable
+        - `drm_gpuvm_bo_evict(vm_bo, false)` marks non-evicted
+  - queue the job atomically
+    - `drm_sched_job_arm` arms the job and inits the out-fence
+      - `job->s_fence->finished` is the out-fence
+    - point of no return
+      - the out-fence must signal in finite time
+      - all preps that can fail should happen before this
+    - in fact, it can still fail until the out-fence is used
+      - if the out-fence has no user, it is harmless to not push the job and
+        signal the out-fence
+    - `drm_gpuvm_resv_add_fence` adds the out-fence with
+      `DMA_RESV_USAGE_BOOKKEEP`
+      - this happens before `drm_sched_entity_push_job` to avoid a window where
+        an obj is accessed by gpu without an associated fence
+    - `drm_sched_entity_push_job` pushes the job
+      - this transfer the job to the scheduler
+      - the job will run after all deps are satisfied
+  - signal M syncobjs
+    - if timeline, `drm_syncobj_add_point`
+    - if binary, `drm_syncobj_replace_fence`
+  - unlock gem objs
+    - `drm_exec_fini` unlocks all
+- vm job execution
+  - if vm map op, `drm_gpuvm_sm_map` calls step map/unmap/remap
+  - if vm unmap op, `drm_gpuvm_sm_unmap` calls step unmap/remap
+  - step map
+    - set up pgtables
+    - grab a preallocated vma
+    - `drm_gpuva_map` adds vma to vm
+    - `drm_gpuva_link` adds vma to vm bo
+  - step unmap
+    - tear down pgtables
+    - `drm_gpuva_unmap` removes vma from vm
+    - `drm_gpuva_unlink_defer` or `drm_gpuva_unlink` removes vma from vm bo
+      - if vm job execution is on fence signaling path, it must not destroy
+        obj because some drivers can hold `obj->resv` on their obj destroy
+      - but `drm_gpuva_unlink` might destroy the vm bo, which in turn might
+        destroy the obj; `drm_gpuva_unlink_defer` to the rescue
+    - free vma
+  - step remap consists of a step unmap and one or two step map
+- vm job cleanup
+  - if vm map op, `drm_gpuvm_bo_put_deferred` derefs the preallocated unique
+    per-vm vm bo
+  - `drm_gpuvm_bo_deferred_cleanup` destroys defer-destroyed vm bos
+    - this must not be on the fence signaling path
+- shrinker reclaim
+  - `drm_gem_for_each_gpuvm_bo` loops through each vm bo
+    - `drm_gpuvm_prepare_vm` locks each vm
+    - `drm_gpuvm_bo_evict(vm_bo, true)` marks evicted
+    - `drm_gpuvm_bo_for_each_va` loops through each vma
+      - tear down pgtables
 
 ## Basics
 
@@ -98,6 +140,7 @@ DRM GPUVM
 ## Locking
 
 - `drm_gem_object`
+  - `refcount` is refcount
   - `resv` can point to local `_resv` or `vm->r_obj->resv`
     - if an obj is exclusive to a vm, set `obj->resv` to `vm->r_obj->resv`
   - `gpuva.list` is the list of per-vm `drm_gpuvm_bo`
@@ -105,6 +148,7 @@ DRM GPUVM
     - it is protected by `resv` by default
   - `gpuva.lock` is unsed by default
 - `drm_gpuvm`
+  - `kref` is refcount
   - `rb.tree` is the rb tree of `drm_gpuva`
     - it is protected by a driver mutex
   - `rb.list` is the list of `drm_gpuva` sorted by start va
@@ -120,6 +164,7 @@ DRM GPUVM
   - `bo_defer` is the list of defer-destroyed `drm_gpuvm_bo`
     - it requires `DRM_GPUVM_IMMEDIATE_MODE`
 - `drm_gpuvm_bo`
+  - `kref` is refcount
   - `list.gpuva` is the list of `drm_gpuva`
     - it is protected by `obj->resv` by default
   - `entry.gem` is for `obj->gpuva.list`
@@ -127,6 +172,7 @@ DRM GPUVM
   - `entry.evict` is for `vm->evict.list`
   - `entry.bo_defer` is for `vm->bo_defer`
 - `drm_gpuva`
+  - no refcount
   - `rb.node` is for `vm->rb.tree`
   - `rb.entry` is for `vm->rb.list`
   - `gem.entry` is for `vm_bo->list.gpuva`

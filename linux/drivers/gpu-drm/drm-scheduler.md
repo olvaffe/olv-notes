@@ -178,6 +178,17 @@ DRM Scheduler
     - `drm_sched_rq_add_entity` adds the entity to `rq->entities`
     - `drm_sched_rq_update_fifo_locked` adds the entity to `rq->rb_tree_root`
     - `drm_sched_wakeup` queues `drm_sched_run_job_work`
+- notes on `drm_sched_job_arm` and `drm_sched_entity_push_job`
+  - they are two separate steps only to give driver a chance to add
+    `job->s_fence->finished` to `obj->resv`
+    - we must ensure the fence is in `obj->resv` before the job runs
+  - they must be called atomically
+    - jobs must be pushed in armed order
+  - they must both be called to ensure `job->s_fence->finished` signals in
+    finite time
+    - well, if `job->s_fence->finished` is not used anywhere, no one cares if
+      it signals at all
+    - some drivers arm without push on certain errors
 
 ## Job Execution
 
