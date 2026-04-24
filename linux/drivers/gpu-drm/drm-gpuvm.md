@@ -24,11 +24,10 @@ DRM GPUVM
     - `drm_sched_job_init` inits the job
     - if vm op,
       - if vm map op,
-        - prealloc unique per-vm vm bo (`drm_gpuvm_bo`)
-          - `drm_gpuvm_bo_create` creates a new vm bo
-          - `drm_gpuvm_bo_obtain_prealloc` ensures a unique vm bo
+        - `drm_gpuvm_bo_obtain_locked` preallocs unique per-vm vm bo
+          (`drm_gpuvm_bo`)
         - prealloc pgtables
-        - prealloc obj pages
+        - prealloc obj pages and sgt
         - if extobj, `drm_gpuvm_bo_extobj_add`
       - prealloc vmas (`drm_gpuva`)
     - `drm_sched_job_add_syncobj_dependency` adds each of the N syncobj to wait
@@ -182,6 +181,90 @@ DRM GPUVM
     and `vm->evict.list`
   - see `drm_gpuvm_resv_protected` and `drm_gpuvm_resv_assert_held`
 - if `DRM_GPUVM_IMMEDIATE_MODE`, `obj->gpuva.lock` replaces `obj->resv` to
-  protect `obj->gpuva.list`, `vm_bo->list.gpuva`, and `vm->bo_defer`
+  protect `obj->gpuva.list` and `vm_bo->list.gpuva`
   - see `drm_gpuvm_immediate_mode` and how `drm_gem_gpuva_assert_lock_held`
     changes its behavior
+- locking during exec job or vm job submission
+  - prealloc unique per-vm vm bo
+    - `drm_gpuvm_bo_obtain_locked` creates vm bo and updates `obj->gpuva.list`
+      - it expects `obj->resv` to be locked
+    - alternative, if `DRM_GPUVM_IMMEDIATE_MODE`,
+      - `drm_gpuvm_bo_create` creates a new vm bo
+      - `drm_gpuvm_bo_obtain_prealloc` ensures a unique vm bo
+        - it locks `obj->gpuva.lock`
+    - `drm_gpuvm_bo_extobj_add` adds the vm bo to `vm->extobj.list`
+      - it locks `vm->extobj.lock` by default
+      - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+        locked instead
+  - lock gem objs
+    - `drm_gpuvm_prepare_vm` locks `vm->r_obj->resv`
+    - `drm_gpuvm_prepare_objects` locks extobjs
+      - it locks `vm->extobj.lock` by default
+      - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+        locked instead
+    - `drm_gpuvm_validate` validates evicted objs
+      - it locks `vm->evict.lock` by default
+      - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+        locked instead
+      - `ops->vm_bo_validate` calls `drm_gpuvm_bo_evict(vm_bo, false)`
+        - it locks `vm->evict.lock` by default
+        - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+          locked instead
+  - after the job is armed and there is an out-fence,
+    - `drm_gpuvm_resv_add_fence` adds the out-fence to each `obj->resv`
+      - it expects all gem jobs to be locked
+  - unlock gem objs
+    - `drm_exec_fini` unlocks all
+- locking during vm job execution
+  - driver holds an external lock for the entire job execution
+  - step map
+    - `drm_gpuva_map` adds vma to vm and updates `vm->rb.{tree,list}`
+      - it expects an external lock
+    - `drm_gpuva_link` adds vma to vm bo and updates `vm_bo->list.gpuva`
+      - it expects `obj->resv`, or `obj->gpuva.lock` if
+        `DRM_GPUVM_IMMEDIATE_MODE`, to be locked
+  - step unmap
+    - `drm_gpuva_unmap` removes vma from vm and updates `vm->rb.{tree,list}`
+      - it expects an external lock
+    - `drm_gpuva_unlink` removes vma from vm bo and updates `vm_bo->list.gpuva`
+      - it expects `obj->resv`, or `obj->gpuva.lock` if
+        `DRM_GPUVM_IMMEDIATE_MODE`, to be locked
+    - `drm_gpuva_unlink_defer` removes vma from vm bo and updates `vm_bo->list.gpuva`
+      - it requires `DRM_GPUVM_IMMEDIATE_MODE` abd locks `obj->gpuva.lock`
+- locking during vm job cleanup
+  - `drm_gpuvm_bo_put` destroys the bo if refcount reaches 0
+    - it updates `vm->extobj.list` if extobj
+      - it locks `vm->extobj.lock` by default
+      - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+        locked instead
+    - it updates `vm->evict.list` if evicted
+      - it locks `vm->evict.lock` by default
+      - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+        locked instead
+    - it updates `obj->gpuva.list`
+      - it expects `obj->resv`, or `obj->gpuva.lock` if
+        `DRM_GPUVM_IMMEDIATE_MODE`, to be locked
+  - `drm_gpuvm_bo_put_deferred` defer-destroys the bo if refcount reachs 0
+    - it requires `DRM_GPUVM_IMMEDIATE_MODE` and locks `obj->gpuva.lock`
+      - it updates `vm->extobj.list` only when possible
+      - it updates `vm->evict.list` only when possible
+      - it updates `obj->gpuva.list`
+    - it updates `vm->bo_defer`
+      - it is a lockless list
+  - `drm_gpuvm_bo_deferred_cleanup` destroys defer-destroyed vm bos
+    - if `DRM_GPUVM_RESV_PROTECTED`, it locks `vm->r_obj->resv`
+      - it updates `vm->extobj.list` now
+      - it updates `vm->evict.list` now
+- shrinker reclaim
+  - `drm_gem_lru_scan` locks `obj->resv`
+  - if `DRM_GPUVM_IMMEDIATE_MODE`, the shrink callback locks `obj->gpuva.lock`
+  - `drm_gem_for_each_gpuvm_bo` loops through `obj->gpuva.list`
+    - it locks each `vm->r_obj->resv`
+      - note how we lock `obj->resv, obj->gpuva.lock, vm->r_obj->resv` in order
+        - in job submission, we lock `vm->r_obj->resv, obj->resv` in order
+        - the order is inversed and can deadlock if not careful
+      - `drm_gpuvm_bo_evict(vm_bo, true)` marks evicted and udpates `vm->evict.list`
+        - it locks `vm->evict.lock` by default
+        - if `DRM_GPUVM_RESV_PROTECTED`, it expects `vm->r_obj->resv` to be
+          locked instead
+      - `drm_gpuvm_bo_for_each_va` loops through `vm_bo->list.gpuva`
