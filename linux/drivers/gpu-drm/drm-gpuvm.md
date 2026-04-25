@@ -184,6 +184,10 @@ DRM GPUVM
   protect `obj->gpuva.list` and `vm_bo->list.gpuva`
   - see `drm_gpuvm_immediate_mode` and how `drm_gem_gpuva_assert_lock_held`
     changes its behavior
+  - in older kernels, there was no `DRM_GPUVM_IMMEDIATE_MODE` nor
+    `obj->gpuva.lock`
+    - there was `drm_gem_gpuva_set_lock` which allowed the driver to specify
+      an external lock that served the same purpose as `obj->gpuva.lock`
 - locking during exec job or vm job submission
   - prealloc unique per-vm vm bo
     - `drm_gpuvm_bo_obtain_locked` creates vm bo and updates `obj->gpuva.list`
