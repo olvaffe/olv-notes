@@ -151,7 +151,7 @@
       Defaults !tty_tickets
       Defaults timestamp_timeout=180
 - `cros_sdk` to enter chroot
-- "export BOARD=<BOARD-NAME>"
+- `export BOARD=<BOARD-NAME>`
 - switch kernel branch, if needed
 - `USE="kgdb vtconsole" ./build_packages --board=${BOARD}`
 - `./build_image \
@@ -171,7 +171,7 @@
     - binary packages can be found under /build/$BOARD/packages
     - before it builds, it invokes `update_chroot --toolchain_boards $BOARD`
       - `Updating cross-compilers` invokes `cros_setup_toolchains` to update
-      	chroot toolchains
+        chroot toolchains
       - `Bootstrapping depot_tools`
       - `Rebuilding Portage cache`
       - `Updating the SDK` builds chroot `virtual/target-sdk` and `world`
@@ -263,33 +263,38 @@
   - `cros_portage_upgrade --upgrade --board=amd64-generic:arm-generic <package-name>`
   - manual
     - add new ebuild
-    - change KEYWORDS to "*"
-    - ebuild <package-name>.ebuild
-    - egencache --update --repo <chromiumos|portage-stable> <package-name>
+    - change KEYWORDS to `"*"`
+    - `ebuild <package-name>.ebuild`
+    - `egencache --update --repo <chromiumos|portage-stable> <package-name>`
 
 ## Debug
 
 - On DUT
-  - PORT=1234
+  - `PORT=1234`
   - use ssh forwarding
-    - ssh -L $PORT:localhost:$PORT
+    - `ssh -L $PORT:localhost:$PORT`
     - or allow debug port if blocked
-      - iptables -A INPUT -p tcp --dport $PORT -j ACCEPT
-      - iptables -L INPUT
-  - gdbserver :$PORT <program>
+      - `iptables -A INPUT -p tcp --dport $PORT -j ACCEPT`
+      - `iptables -L INPUT`
+  - `gdbserver :$PORT <program>`
 - On host
-  - $TARGET-gdb \
+  - gdb
+
+    ```bash
+    $TARGET-gdb \
        -ex "set sysroot /build/$BOARD" \
        -ex "set solib-absolute-prefix /build/$BOARD" \
        -ex "set debug-file-directory /build/$BOARD/usr/lib/debug" \
        -ex "set directories $SRC_DIRS" \
        -ex "target remote :$PORT"
-  - libs being developed needs to be copied to /build/$BOARD for $TARGET-gdb to pick them up?
-    - $TARGET-objcopy --only-keep-debug $lib /build/$BOARD/usr/lib/debug/usr/lib/$lib.debug
-    - $TARGET-objcopy --strip-debug \
+    ```
+
+  - libs being developed needs to be copied to `/build/$BOARD` for `$TARGET-gdb` to pick them up?
+    - `$TARGET-objcopy --only-keep-debug $lib /build/$BOARD/usr/lib/debug/usr/lib/$lib.debug`
+    - `$TARGET-objcopy --strip-debug \
         --add-gnu-debuglink=/build/$BOARD/usr/lib/debug/usr/lib/$lib.debug \
-        $lib /build/$BOARD/usr/lib/$lib
-    - scp /build/$BOARD/usr/lib/$lib $DUT:/usr/lib/$lib
+        $lib /build/$BOARD/usr/lib/$lib`
+    - `scp /build/$BOARD/usr/lib/$lib $DUT:/usr/lib/$lib`
 
 ## amd64-generic
 
@@ -297,6 +302,8 @@
   - note that test or dev images are required
   - `cros_vm --start --board amd64-generic`
   - or,
+
+    ```bash
     $ qemu-system-x86_64 \
         -cpu SandyBridge,-invpcid,-tsc-deadline,check,vmx=on \
         -accel kvm -smp 4 -m 8G \
@@ -307,9 +314,10 @@
         -netdev user,id=my-net,hostfwd=tcp::2222-:22 \
         -device virtio-rng \
         -usb -device usb-tablet
-   - or
-     - create a qcow2 first
-       `qemu-img create -f qcow2 -b chromiumos_test_image.bin -F raw cros.qcow2`
+    ```
+
+  - or create a qcow2 first
+    - `qemu-img create -f qcow2 -b chromiumos_test_image.bin -F raw cros.qcow2`
 - profile inheritance tree
   - ordering is depth-first, left-to-right
   - `overlays/overlay-amd64-generic/profiles/base/parent`

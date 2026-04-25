@@ -28,7 +28,7 @@
     - for EC/AP, each board provides its `virtual/chromeos-firmware` that
       depends on `chromeos-base/chromeos-firmware-$BOARD`
       - `chromeos-base/chromeos-firmware-$BOARD/files/srcuris` are uris for
-      	the EC/AP firmwares
+       the EC/AP firmwares
 - to flash GSC, use `gsctool` on dut or host
   - `gsctool -f` to get the running firmware version
   - `gsctool -b <cr50-firmware>` to check the firmware version

@@ -134,13 +134,13 @@
     - `tflite::gpu::cl::AllocateTensorMemory` calls `clCreateBuffer`
       - there are two buffer of size 2359296 (`512*288*4*4`)
   - `tflite::gpu::cl::InferenceRunnerImpl::Run`
-      - `CopyFromExternalObject` calls `clEnqueueWriteBuffer` and
+    - `CopyFromExternalObject` calls `clEnqueueWriteBuffer` and
         `clEnqueueNDRangeKernel`
-      - `RunWithoutExternalBufferCopy` calls `clEnqueueNDRangeKernel` 27 times
+    - `RunWithoutExternalBufferCopy` calls `clEnqueueNDRangeKernel` 27 times
         and `clFlush`
-      - `CopyToExternalObject` calls `clEnqueueNDRangeKernel` and
+    - `CopyToExternalObject` calls `clEnqueueNDRangeKernel` and
         `clEnqueueReadBuffer`
-      - `WaitForCompletion` calls `clFinish`
+    - `WaitForCompletion` calls `clFinish`
 
 ## `tast.power.*`
 
@@ -293,7 +293,7 @@
 
 - flow
   - restart ui
-  - log in as cros.gaia.testing.13@gmail.com
+  - log in as <cros.gaia.testing.13@gmail.com>
   - opt in to play store
   - wait for arc to init
   - sign out
@@ -371,7 +371,7 @@
     - `noiseCancellation: true,`
 - flow
   - restart ui
-  - log in as crosuicujtest1@gmail.com
+  - log in as <crosuicujtest1@gmail.com>
   - disable play store
   - wait for cpu cooldown
   - create a window and create a meet

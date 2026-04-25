@@ -82,7 +82,7 @@
     - `ServiceImpl::ConfigureNetwork` sets up guest network
     - `ServiceImpl::Mount` mounts specified images
       - `/dev/vda`, which is ro raw ext4 image `vm_tools.img`, to
-      	`/opt/google/cros-containers`
+       `/opt/google/cros-containers`
     - `ServiceImpl::Mount9P` mounts 9p
     - `ServiceImpl::StartTermina`
       - mount `/dev/vdb`, which is rw raw btrfs image, to `/mnt/stateful`

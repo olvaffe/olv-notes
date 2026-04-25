@@ -75,13 +75,13 @@
     - `client_fd` and `sv[1]` are the second socketpair
       - `client_fd` is the fd of the wayland connection to the child
       - `sv[1]` is the fd of of they wayland connection that the child
-      	connects to
+       connects to
     - `ctx.wm_fd` and `wm[1]` are the third socketpair
       - it is the X connection between sommelier and Xwayland
       - sommelier is the window manager (client) of Xwayland
     - `ds[0]` and `ds[1]` are the fourth socketpair
       - it is an ad-hoc connection between sommelier and Xwayland for
-      	out-of-band events such as Xwayland-is-ready
+       out-of-band events such as Xwayland-is-ready
 - `./sommelier -X xdpyinfo`
   - this forks `Xwayland` first
   - when Xwayland is ready, it forks `xdpyinfo` in
@@ -118,7 +118,6 @@
   - it should work and use virgl
 - `./sommelier -X --glamor --drm-device=/dev/dri/renderD128 glxgears`
   - ???
-
 
 ## Run
 
