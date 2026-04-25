@@ -126,7 +126,6 @@
         distinguish between pxe 1.0 and binl (microsoft?)
     - else, this is a dhcpv4-only offer
 
-
 ## Secure Boot
 
 - there should be a security module acting as root-of-trust to verify the uefi

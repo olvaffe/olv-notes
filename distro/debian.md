@@ -34,6 +34,7 @@
   - 13, trixie, 6.12
 - `/etc/apt/sources.list.d/debian.sources`
 
+    ```
     Types: deb
     URIs: https://deb.debian.org/debian/
     Suites: trixie
@@ -45,6 +46,7 @@
     Suites: trixie-security
     Components: main non-free-firmware
     Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+    ````
 
 ## Freeze Policy
 

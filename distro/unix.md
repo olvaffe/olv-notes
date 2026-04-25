@@ -87,9 +87,9 @@
 - 1983, SVR1, `shutdown` command
   - `shutdown` tells `init` to enter runlevel 1
     - this stops all processes orderly and `sh`
-  - `shutdown -h ` tell `init` to enter runlevel 0
+  - `shutdown -h` tell `init` to enter runlevel 0
     - this stops all processes orderly and `halt`
-  - `shutdown -r ` tell `init` to enter runlevel 6
+  - `shutdown -r` tell `init` to enter runlevel 6
     - this stops all processes orderly and `reboot`
 - 1993, sysvinit 2.5, `poweroff` command
   - `poweroff` command flushes buffers and asks APM to power off

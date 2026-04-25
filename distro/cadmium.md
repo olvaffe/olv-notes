@@ -133,4 +133,3 @@
   - set root passwd
   - install fw, base, and ui packages
 - done
-

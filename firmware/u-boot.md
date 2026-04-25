@@ -122,7 +122,7 @@
       - `arch/arm/dts/rockchip-u-boot.dtsi`
       - `mkimage` packs `rockchip-tpl` (the ddr blob from rkbin) and
         `u-boot-spl` (`spl/u-boot-spl.bin`) into `idbloader.img`
-         - this is to be flashed to sector 0x40, mandated by the bootrom
+        - this is to be flashed to sector 0x40, mandated by the bootrom
       - `u-boot.itb` is u-boot proper
         - this is to be flashed to sector 0x4000, because
           `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000` for
@@ -348,7 +348,6 @@
     Arch kernel
     - probably just a loglevel issue?
   - login takes ~20 seconds for some unknown reason
-
 
 ## Code Flow: armv8
 
@@ -634,7 +633,7 @@
 ## FIT Image
 
 - <https://fitspec.osfw.foundation/>
-- 2. Flattened Image Tree (FIT) Format
+- Flattened Image Tree (FIT) Format
   - in the device tree world, `.dts` is compiled to `.dtb` which can be
     parsed into `fdt`
   - in the fit world, `.its` is compiled to `.itb` which can be parsed
@@ -680,7 +679,7 @@
       - `compatible` is the root compatible string of `fdt`
         - e.g., `rk3588s-orangepi-5.dts` has `xunlong,orangepi-5`
     - child nodes: `signature-N`
-- 3. Flattened Image Tree (FIT) Usage
+- Flattened Image Tree (FIT) Usage
   - Load a FIT into memory
     - this loads the FIT image
     - in the case external data is used, the data loaded is small-ish
