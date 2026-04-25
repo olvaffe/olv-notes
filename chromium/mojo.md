@@ -41,4 +41,3 @@
     `::scoped_refptr<::media::VideoFrame>` are convertible
   - the conversion uses `video_frame_mojom_traits.cc`'s `data` and `Read`
     methods
-

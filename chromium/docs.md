@@ -23,7 +23,7 @@
   - `build_with_chromium = true`
     - this is defined in `build/config/gclient_args.gni` generated from `DEPS`
   - defaults can be seen with `gn args out/Default --list`
-    -  `is_official_build = false` and `is_debug = !is_official_build`
+    - `is_official_build = false` and `is_debug = !is_official_build`
       - these control the optimization levels: debug, release, and official
         - official build is very slow to build
         - debug build is very slow to run
@@ -171,7 +171,7 @@
     - this is a minimal browser mainly to develop `content`
   - `//fuchsia_web` provides Fuchsia's `WebEngine`
   - `//ios` provides chrome browser on ios
-      - note that chrome on ios uses webkit rather than `//content`
+    - note that chrome on ios uses webkit rather than `//content`
   - `//weblayer` is `WebEngine`
     - this is a wrapper of `//content` and some browser extras
     - this is how apps embed chrome

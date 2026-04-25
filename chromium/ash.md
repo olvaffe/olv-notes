@@ -51,4 +51,3 @@
   `OneCopyRasterBufferProvider::RasterBufferImpl::Playback`
   - `GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource` calls
     `BeginRasterCHROMIUM`, `RasterCHROMIUM`, and `EndRasterCHROMIUM`
-

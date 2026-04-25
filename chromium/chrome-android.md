@@ -11,4 +11,3 @@
   - `ui/gl/gl_switches.cc`
     - `kDefaultANGLEVulkan` is `FEATURE_DISABLED_BY_DEFAULT`
     - `kVulkanFromANGLE` is `FEATURE_DISABLED_BY_DEFAULT`
-
