@@ -3,8 +3,7 @@
 This introduction describes the key functionalities of platform graphics
 components.  It is only to give an overview.  Always read the source code.
 
-`libhardware`
--------------
+## `libhardware`
 
 The source code of `libhardware` is located at `hardware/libhardware`.  It
 mainly provides
@@ -34,8 +33,7 @@ Once loaded, modules cannot be unloaded.  The only method provided by
 `open` opens a device.  `id` is a module-specific device name.  For example,
 it should be `gpu0` for `gralloc`.
 
-`gralloc`
----------
+## `gralloc`
 
 The `gralloc` module manage graphics buffers.  The interface is defined by
 `hardware/libhardware/include/hardware/gralloc.h`.  It mainly provides
@@ -81,8 +79,7 @@ The definition of `buffer_handle_t` is
 Since `int`s and `fd`s can both be serialized, this allows `buffer_handle_t`
 to be sent to another process.
 
-`hwcomposer`
-------------
+## `hwcomposer`
 
 The `hwcomposer` module manages displays and display overlay planes.  The
 interface is defined by `hardware/libhardware/include/hardware/hwcomposer.h`.
@@ -130,8 +127,7 @@ callbacks
  - vsync callback that is invoked when a vsync event happens on a display
  - invalidate callback that is invoked to request a new frame be presented
 
-`libutils` and Smart Pointers
------------------------------
+## `libutils` and Smart Pointers
 
 Headers for `libutils` are located at `system/core/include/utils`.
 `libutils`, among others, provides strong and weak pointers.
@@ -152,8 +148,7 @@ requires the managed objects to be derived from `RefBase`.  The trick played
 by `RefBase` is to `new` a `weakref_type` in its constructor and let `wp`
 manage the `weakref_type`.  This `weakref_type` can outlive `RefBase`.
 
-`libui`
--------
+## `libui`
 
 The source code of `libui` can be found at
 `frameworks/native/{libs,include}/ui`.  It provides some useful utility
@@ -176,8 +171,7 @@ work with `gralloc`: allocate new graphics buffers, reallocate graphics
 buffers, import graphics buffers from another process, etc.  `GraphicBuffer`
 is also flattenable.
 
-Binder and Service Manager
---------------------------
+## Binder and Service Manager
 
 Binder is an IPC mechanism used for for in-process and cross-process RPC.
 Every remote call is a transaction.  The transaction data consists of a plain
@@ -213,8 +207,7 @@ Remotable objects can register themselves to service manager using well-known
 names such as `SurfaceFlinger`.  Users of such remotable objects can use the
 well-known names to look up the handles of remotable objects.
 
-`libbinder`
------------
+## `libbinder`
 
 The source code of `libbinder` can be found at
 `frameworks/native/{libs,include}/binder`.  At the lowest level, it provides
@@ -277,8 +270,7 @@ a local process, and there is no thread ready to serve it, `libbinder` would
 spawn a new thread, capped at like 15 threads per process.  Methods of `Foo`
 are called by those threads.
 
-`libgui`
---------
+## `libgui`
 
 The source code of `libgui` can be found at
 `frameworks/native/{libs,include}/gui`.  `libgui` mainly defines the
@@ -325,8 +317,7 @@ locally.  The scenario is, for example, to put decoded video frames into the
 producer end and feed them to GLES pipeline on the consumer end through
 `EGLImage`s.
 
-`libGLESv*`
------------
+## `libGLESv*`
 
 The source code of `libGLESv*` can be found at
 `frameworks/native/opengl/libs/GLES2`.  `libGLESv*` provides dispatch
@@ -346,8 +337,7 @@ efficient.  The returned pointer is set up by `libEGL` during
 In reality, the stubs are actually written in assembly instead of the slower C
 shown here.
 
-`libEGL`
---------
+## `libEGL`
 
 The source code of `libEGL` can be found at
 `frameworks/native/opengl/libs/EGL`.  `libEGL` manages vendor EGL/GLES driver
@@ -381,15 +371,13 @@ drivers gone, I am not entirely sure about the value of dispatch stubs.
 There also appears to be dead code here and there.  For example,
 `GL_EXT_debug_marker` could be removed since GLTrace is deprecated.)
 
-SurfaceFlinger
---------------
+## SurfaceFlinger
 
 The source code of `SurfaceFlinger` can be found at
 `frameworks/native/services/surfaceflinger`.  It uses everything from above to
 composite windows/surfaces/layers and display the final results.
 
-Command Line Tools
-------------------
+## Command Line Tools
 
 The source code of `start` and `stop` is located at `system/core/toolbox`.
 They speak with `init` (pid 1) over system properties and start/stop init

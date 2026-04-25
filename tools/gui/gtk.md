@@ -111,8 +111,7 @@ signals are synchronous.
 g_object_unref (destroy, finalize, whatever) is asynchronous.
 
 
-PROPERTY
----------------
+## PROPERTY
 
 xxx_set_property
 {
