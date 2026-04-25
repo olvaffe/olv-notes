@@ -12,17 +12,17 @@ mainly provides
 
 to `dlopen` hardware modules.  Given `id`, `hw_get_module` searches for
 
- - `<id>.<ro.product.board>.so`
- - `<id>.<ro.board.platform>.so`
- - `<id>.default.so`
- - more names
+- `<id>.<ro.product.board>.so`
+- `<id>.<ro.board.platform>.so`
+- `<id>.default.so`
+- more names
 
 in `/{system,vendor}/lib{64,}/hw`.  For example, to search for `gralloc`
 module on angler, it will try
 
- - `gralloc.angler.so`
- - `gralloc.msm8994.so`
- - `gralloc.default.so`
+- `gralloc.angler.so`
+- `gralloc.msm8994.so`
+- `gralloc.default.so`
 
 Once loaded, modules cannot be unloaded.  The only method provided by
 `hw_module_t` is
@@ -86,18 +86,18 @@ interface is defined by `hardware/libhardware/include/hardware/hwcomposer.h`.
 
 An overlay plane can have many states:
 
- - Z-order, which planes occulde which planes
- - geometry, position and size of a plane on the display
- - visible region, region visible on the display and occuldes other planes
- - transform, rotations and flips
- - source crop, a rectangle of pixel data that will be read and scaled to fill
+- Z-order, which planes occulde which planes
+- geometry, position and size of a plane on the display
+- visible region, region visible on the display and occuldes other planes
+- transform, rotations and flips
+- source crop, a rectangle of pixel data that will be read and scaled to fill
    the plane
- - colorspace, how pixel values are interpreted
- - sideband stream, such as TV signal input
- - blend mode, how a plane blends with or occuldes other planes
- - plane alpha
- - solid color
- - composition type, use pixel data, sideband stream, or the solid color
+- colorspace, how pixel values are interpreted
+- sideband stream, such as TV signal input
+- blend mode, how a plane blends with or occuldes other planes
+- plane alpha
+- solid color
+- composition type, use pixel data, sideband stream, or the solid color
 
 Once all states of all active overlay planes of a display have been
 programmed, the client is expected to validate them.  If the module cannot
@@ -122,10 +122,10 @@ to a remote display, etc.
 The asynchronous nature of the module also requires a client to register three
 callbacks
 
- - hotplug callback that is invoked when a physical display is
+- hotplug callback that is invoked when a physical display is
    connected/disconnected
- - vsync callback that is invoked when a vsync event happens on a display
- - invalidate callback that is invoked to request a new frame be presented
+- vsync callback that is invoked when a vsync event happens on a display
+- invalidate callback that is invoked to request a new frame be presented
 
 ## `libutils` and Smart Pointers
 
@@ -154,9 +154,9 @@ The source code of `libui` can be found at
 `frameworks/native/{libs,include}/ui`.  It provides some useful utility
 classes:
 
- - `Point` for 2D integer coordinates `(x, y)`
- - `Rect` for 2D rectangles `(left, top, right, bottom)`
- - `Region` is a vector of `Rect`s
+- `Point` for 2D integer coordinates `(x, y)`
+- `Rect` for 2D rectangles `(left, top, right, bottom)`
+- `Region` is a vector of `Rect`s
 
 All of them are flattenable, meaning they can be serialized to a buffer, sent
 to another process, and deserialized.
@@ -343,9 +343,9 @@ The source code of `libEGL` can be found at
 `frameworks/native/opengl/libs/EGL`.  `libEGL` manages vendor EGL/GLES driver
 by looking for
 
- - `libEGL.so`
- - `libGLESv1_CM.so`, and
- - `libGLESv2.so`
+- `libEGL.so`
+- `libGLESv1_CM.so`, and
+- `libGLESv2.so`
 
 in `/{vendor,system}/lib{64,}/egl`.  There was a time that there could be
 multiple vendor drivers, mainly for hardware-accelerated driver and

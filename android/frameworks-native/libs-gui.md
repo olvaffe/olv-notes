@@ -88,6 +88,6 @@
   - `BLASTBufferQueueTest::setUpProducer` sets up and returns
     `BBQBufferQueueProducer` owned by `BLASTBufferQueue`
   - `BufferQueueProducer::dequeueBuffer` and
-    `BufferQueueProducer::requestBuffer `dequeues a `GraphicBuffer`
+    `BufferQueueProducer::requestBuffer` dequeues a `GraphicBuffer`
   - `BufferQueueProducer::queueBuffer` queues a `GraphicBuffer`
   - `Transaction().apply(true)` applies the batched transaction
