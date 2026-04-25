@@ -137,6 +137,7 @@
   closeTransaction, or relayoutWindow, or performLayoutAndPlaceSurfacesLocked.
 
 ## WindowManagerService.WindowState
+
 - mChildWindows stores a window's sub-windows
 - a WS always has a mToken, but might not have mAppToken
 - mBaseLayer, mSubLayer, mLayer, mAnimLayer, mLastLayer
@@ -174,6 +175,7 @@
 -
 
 ## WindowManagerService.KeyWaiter
+
 - A key waiter waits on a single input event
 - before an input event can be dispatched,
     1. target window must be found
@@ -241,7 +243,6 @@
 - calls launchHomeFromHotKey, which  mContext.startActivity(mHomeIntent); and sendCloseSystemWindows();
 - ... performResume -> getWindow().makeActive()
 - decor.setVisibility(View.VISIBLE);
-
 
 ## what would happen if a window is resized
 

@@ -1,5 +1,8 @@
-Application Fundamentals
-- http://developer.android.com/guide/topics/fundamentals.html
+# Android View
+
+## Application Fundamentals
+
+- <http://developer.android.com/guide/topics/fundamentals.html>
 - Every .apk is an app, has its own process, user id.
 - an app has components, which falls in 4 category: Activity, Service, BroadcastReceiver, and ContentProvider
 - when some component(s) of an app is needed by another app, it is launched
@@ -16,10 +19,11 @@ Application Fundamentals
 - components of two or more apps could be configured to run in on process.
 - component creation is done and system calls to the component are dispatched by the main thread of the process.
 
-android.view
+## android.view
+
 - Window: local abstract base class for a top-level window look and behavior
           policy.  setContentView to set a view.
-	  The only implementation is PhoneWindow, which implementation the
+   The only implementation is PhoneWindow, which implementation the
           decorations we seen on the screen, with ViewGroup in the root.
 - ViewRoot: Talk to wm service.  the top level view is local Window's decor.
 - View: widget.  view start drawing after it receives onAttachedToWindow.
@@ -35,7 +39,8 @@ android.view
 - a view is attached/disattached to IWindow, which always has a Surface, but might be invalid.
   attachInfo.mWindowToken is the IWindow.asBinder().
 
-Client <-> WM
+## Client <-> WM
+
 - This is MY GUESS!!
 - IWindow, IWindowManager, and IWindowSession for IPC to ViewRoot.W,
   WindowManagerService and WindowManagerService.Session.
@@ -61,7 +66,8 @@ Client <-> WM
   is add()ed to session.  The layout request will make performTraversals be called later.
 - In performTraversals, session->relayout is called and surface is created by wm service.
 
-android.view.ViewRoot
+## android.view.ViewRoot
+
 - ViewRoot is not a View, but it implements ViewParent.
 - A ViewRoot implements the needed protocol between View and
   WindowManagerService through its mWindow (of class ViewRoot.W)
@@ -85,34 +91,16 @@ android.view.ViewRoot
 - ViewRoot traces transparent region, the region that won't be drawn by its view.
   This region is setTransparentRegion to WMS.
 
-ViewRoot DEBUG_LAYOUT
-- Measuring com.android.internal.policy.impl.MidWindow$DecorView@984ae0d8 in display 800x600...
-  Laying out com.android.internal.policy.impl.MidWindow$DecorView@984ae0d8 to (800, 600)
-  relayout: frame=[0,0][800,600] content=[0,25][0,0] visible=[0,25][0,0] surface=Surface(native-token=136659088)
-- Measuring com.android.server.status.StatusBarView@985532b0 in display 800x25...
-  Laying out com.android.server.status.StatusBarView@985532b0 to (800, 25)
-- Measuring com.android.internal.policy.impl.MidWindow$DecorView@98575f70 in display 800x600...
-  Resizing Handler{9857a8f0}: w=720 h=190 coveredInsets=[0,0][0,0] visibleInsets=[0,0][0,0] reportDraw=true
-  relayout: frame=[40,217][760,407] content=[0,0][0,0] visible=[0,0][0,0] surface=Surface(native-token=136590328)
-  Laying out com.android.internal.policy.impl.MidWindow$DecorView@98575f70 to (720, 190)
-  Measuring com.android.internal.policy.impl.MidWindow$DecorView@98575f70 in display 800x600...
-  Laying out com.android.internal.policy.impl.MidWindow$DecorView@98575f70 to (720, 190)
-- menu is a window too
-  Measuring com.android.internal.policy.impl.MidWindow$DecorView@9e85ab58 in display 800x600...
-  Resizing Handler{9e7f8ba0}: w=800 h=77 coveredInsets=[0,0][0,0] visibleInsets=[0,0][0,0] reportDraw=true
-  relayout: frame=[0,523][800,600] content=[0,0][0,0] visible=[0,0][0,0] surface=Surface(native-token=136592936)
-  Laying out com.android.internal.policy.impl.MidWindow$DecorView@9e85ab58 to (800, 77)
-  Measuring com.android.internal.policy.impl.MidWindow$DecorView@9e85ab58 in display 800x600...
-  Laying out com.android.internal.policy.impl.MidWindow$DecorView@9e85ab58 to (800, 77)
+## android.view.Window
 
-android.view.Window
 - other parts can call win.setCallback to gives it a callback
 - callbacks, usually being set to activity itself
   onCreatePanelView: if this returns null...
   onCreatePanelMenu: PhoneWindow will create a default menu for you and let you know
   onPreparePanel:
 
-android.view.SurfaceView
+## android.view.SurfaceView
+
 - a view with its own surface
 - a subwindow of its ViewRoot (see onAttachedToWindow and TYPE_APPLICATION_MEDIA)
 - negotiate with WMS itself
@@ -123,7 +111,8 @@ android.view.SurfaceView
   layout type is set to TYPE_APPLICATION_MEDIA
   layout token is set to viewroot attached window token
 
-android.view.View
+## android.view.View
+
 - when a view is asked to draw on a canvas,
   1. draw background
   2. save layers (optional)
@@ -133,7 +122,8 @@ android.view.View
   6. draw decorations (calls onDrawScrollBars)
 - view is asked to draw when invalidated?
 
-android.view.animation
+## android.view.animation
+
 - Animation is done by asking its transformation at certain time and apply the transformation
 - View animation is done by view.startAnimation(a).  With an animation installed,
   its parent ViewGroup will animate the view (for simple animation?).

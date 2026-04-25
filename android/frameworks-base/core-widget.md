@@ -1,19 +1,24 @@
-ArrayAdapter<T>
-- ArrayAdapter<T> extends BaseAdapter and more
+# Android Widget
+
+## `ArrayAdapter<T>`
+
+- `ArrayAdapter<T>` extends BaseAdapter and more
 - BaseAdapter is an abtract class implementing SpinnerAdapter and more
 - SpinnerAdapter is an interface extending Adapter
 
-Spinner
+## Spinner
+
 - Spinner extends AbsSpinner and implements OnClickListener so that it
   can be AlertDialog's listener.
-- AbsSpinner is an abstract class extending AdapterView<SpinnerAdapter>
-- AdapterView<T> extends ViewGroup
+- AbsSpinner is an abstract class extending `AdapterView<SpinnerAdapter>`
+- `AdapterView<T>` extends ViewGroup
 - performClick is overridden.  Adapter set earlier is wrapped so that it can be
   passed to AlertDialog.Builder.  An alert dialog is shown.
 - After an item is selected in alert dialog, spinner setSelection the item and
   dismisses the dialog.  If selection changes, requestLayout and invalidate.
 
-Adapter
+## Adapter
+
 - is an interface for a set of data to be displayed
 - has getView to return a View of an item
 - ListAdapter for data expected to be displayed in a vertically scrolling list
@@ -21,17 +26,20 @@ Adapter
 - e.g. Spinner's drop-down menu invokes getDropDownView of a SpinnerAdapter;
        while its one-item menu invokes getView.
 
-ArrayAdapter<T> revisited
+## `ArrayAdapter<T>` revisited
+
 - it stores a List of items
 - it implements adapter interface by returning a TextView when
   being getView.
 
-AdapterView<T>
+## `AdapterView<T>`
+
 - extends ViewGroup
 - helps caches views returned by an adapter
 - has the notion of position, used for current position or position changed
 
-Dialog
+## Dialog
+
 - in ctor,
   mContext = new ContextThemeWrapper(ctx)
   mWindowManager = (WindowManager)context.getSystemService("window");

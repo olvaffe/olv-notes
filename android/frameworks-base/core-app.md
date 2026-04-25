@@ -77,21 +77,8 @@
 - `GLES20TextureLayer` is used by `TextureView`.  `GLES20RenderLayer` is used
   by all other views
 
-package
-- jarsigner -keystore ~/.android/debug.keystore <apk-file> androiddebugkey, password android
+## ActivityManagerService
 
-beagle
-- sudo cp ~/google/mydroid/out/target/product/eee_701/system/app/Firefox.apk /data/app/org.unk.firefox.apk
-- cp mplayer, qxxx.flv
-- mkfs.fat /dev/mmcblp0p1
-- mke2fs /dev/mmcblp0p2
-- mmcinit
-- fatload mmc 0 0x80300000 uImage.bin
-- setenv bootargs console=ttyS2,115200n8 noinitrd root=/dev/mmcblk0p2
-  video=omapfb:mode:1280x720@50 init=/init rootfstype=ext2 rw rootdelay=1 nohz=off
-- bootm 0x80300000
-
-ActivityManagerService
 - AMS: ActivityManagerService
   AT: ActivitiyThread (or ApplicationThread)
   IAM: IActivityManager
@@ -122,7 +109,8 @@ ActivityManagerService
   AMS.attachApplicationLocked -> AMS.realStartActivityLocked ->
   AMS IAT.scheduleLaunchActivity and r's state set to RESUMED (coz andResume always true)
 
-Activity lifecycles
+## Activity lifecycles
+
 - first time launch (onCreate, onStart, onResume):
   AMS IAT.scheduleLaunchActivity -> SCHEDULE_LAUNCH_ACTIVITY_TRANSACTION ->
   AT.onTransact -> AT.scheduleLaunchActivity and queue msg ->
@@ -151,7 +139,8 @@ Activity lifecycles
   AT IAM.activityDestroyed -> ... -> AMS.activityDestroyed ->
   removeActivityFromHistoryLocked -> remove HR from history and WMS, set STATE DESTROYED.
 
-new process
+## new process
+
 - ActivityManager calls Process.start() spawns a new process to run
   android.app.ActivityThread::main().  Process.start() -> startViaZygote() ->
   zygoteSendArgsAndGetPid() to ask zygote to spawn
@@ -178,7 +167,8 @@ new process
   com.android.internal.os.ZygoteInit.main(ZygoteInit.java:540)
   dalvik.system.NativeStart.main(Native Method)
 
-Threads
+## Threads
+
 - the main thread is loopping, reading from MessageQueue
 - messages are dispatchMessage to target Handler, and handleMessage is called
 - ???
@@ -189,19 +179,22 @@ Threads
   the IBinder and calls ApplicationThread's scheduleDestroyActivity, and sends
   H.DESTROY_ACTIVITY to the message queue.
 
-android.app.ActivityThread
+## android.app.ActivityThread
+
 - prepareMainLooper: a thread-local new Looper and a new Queue are created
 - ActivityThread is created (an object, not a thread) and attach()ed
 - main thread is into loop() to parse Queue.
 - after attaching, an IApplicationThread is ATTACH_APPLICATION_TRANSACTION to activity manager
 
-android.app.Activity
+## android.app.Activity
+
 - extends ContextThemeWrapper
 - has an android.view.Window
 - a context is attached in attach(), which is a new ApplicationContext()
   created by ActivityThread.
 
-context
+## context
+
 - in Activity.attach, a Window is ctor with activity itself
 - a Window's decor is ctor with Window's context.
 - in Activity.handleResumeActivity, the window's decor is addView to WM
