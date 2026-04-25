@@ -25,7 +25,7 @@
   - introduced NEON, Thumb-2, and VFPv2
   - ARM11, 2002
 
-# Application profile
+## Application profile
 
 - ARMv7-A
   - Cortex-A8, 2005

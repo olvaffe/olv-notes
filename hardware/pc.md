@@ -1,5 +1,4 @@
-PC
-==
+# PC
 
 ## Computer
 

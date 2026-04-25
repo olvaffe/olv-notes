@@ -259,8 +259,12 @@
   - `eax` specifies the leaf (category)
   - for some leaves, `ecx` specifies the subleaves
 - `cpuid.h`
-  - `for (unsigned int i = 0; i <= __get_cpuid_max(0, NULL); i++)`
-  - `  if (__get_cpuid(i, ...)) ...;`
+
+  ```c
+  for (unsigned int i = 0; i <= __get_cpuid_max(0, NULL); i++)
+    if (__get_cpuid(i, ...)) ...;
+  ```
+
 - `eax=0x0`: Highest Function Parameter and Manufacturer ID
   - it returns the highest leaf in `eax`
   - it returns the manufacturer id in `ebx`, `edx`, and `ecx`, 12 chars in

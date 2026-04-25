@@ -700,7 +700,7 @@
   - `jpeg-decoder` is `mediatek,mt8196-jpgdec`
   - `jpeg-encoder` is `mediatek,mt8196-jpgenc`
 - memory
-  - `memory-controller@10236000 ` is `mediatek,mt8196-dramc`
+  - `memory-controller@10236000` is `mediatek,mt8196-dramc`
     - dram controller
   - `nsmpu: nsmpu@1046f00`, `ssmpu: ssmpu@1056f000`, and more are `mediatek,smpu`
     - smpu controller

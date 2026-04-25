@@ -113,7 +113,7 @@
   - 2023, G3x Gen2, 4nm, Adreno A32 (based on Adreno 740)
   - 2025, G3 Gen3, 4nm, Adreno A33
 
-## Qualcomm Modem/WiFi/BT?
+## Qualcomm Coprocessors
 
 - subsystems
   - WPSS, WCNSS, wifi/bt
@@ -303,12 +303,12 @@
         - `resin`, `qcom,pmk8350-resin`, `CONFIG_INPUT_PM8941_PWRKEY`
       - `pwm`, `qcom,pmk8550-pwm`, `CONFIG_LEDS_QCOM_LPG`
       - `rtc@6100`, `qcom,pmk8350-rtc`, `CONFIG_RTC_DRV_PM8XXX`
-   - `spmi@c42d000/pmic@1`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+    - `spmi@c42d000/pmic@1`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
       - `gpio@8800`, `qcom,pm8550-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
       - `led-controller@ee00`, `qcom,spmi-flash-led`, `CONFIG_LEDS_QCOM_FLASH`
       - `pwm`, `qcom,pm8350c-pwm`, `CONFIG_LEDS_QCOM_LPG`
       - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
-   - `spmi@c42d000/pmic@2`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
+    - `spmi@c42d000/pmic@2`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
       - `gpio@8800`, `qcom,pm8550ve-gpio`, `CONFIG_PINCTRL_QCOM_SPMI_PMIC`
       - `temp-alarm@a00`, `qcom,spmi-temp-alarm`, `CONFIG_QCOM_SPMI_TEMP_ALARM`
     - `spmi@c42d000/pmic@3`, `qcom,spmi-pmic`, `CONFIG_MFD_SPMI_PMIC`
@@ -468,7 +468,7 @@
     - `qcom/sc7180-trogdor/modem-nolte/qdsp6sw.mbn`
   - `net-misc/rmtfs` ebuild
     - depends on `net-libs/libqrtr`
-     - there is no `USE=qrtr_ns` and `qrtr-ns` is not enabled
+      - there is no `USE=qrtr_ns` and `qrtr-ns` is not enabled
     - upstart config does
       - `mkdir -p /var/lib/rmtfs/boot`
       - `touch modem_fsc modem_fsg modem_fs1 modem_fs2` in it

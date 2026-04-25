@@ -59,11 +59,11 @@
           also feed the result to the decode stage for the following add
     - branch prediction
       - when a branching instruction hits the execute stage and results in a
-      	jump, the processor needs to throw away the instructions in the fetch
-      	and decode stages
+        jump, the processor needs to throw away the instructions in the fetch
+        and decode stages
       - for a deeply pipelined processor, they are wasted works
       - modern processor speculates (i.e., guesses) where to go next before
-      	fetching with >95% prediction accuracy
+        fetching with >95% prediction accuracy
   - out-of-order execution
   - superscalar
   - it is so hard that it does not scale
@@ -76,8 +76,8 @@
     - prefetching
     - latency hiding: run multiple instruction streams in a single core
       - In GPU world, a core has a limited number of registers (sRAM).  The
-      	number of registers for each stream is known.  It can determine how
-      	many streams are allowed in this single core.
+        number of registers for each stream is known.  It can determine how
+        many streams are allowed in this single core.
   - memory bandwidth limited
     - when a program is optimized for throughput, the memory bandwidth is
       usually the bottleneck
