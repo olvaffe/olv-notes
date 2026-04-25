@@ -1,5 +1,4 @@
-X Modesetting Driver
-====================
+# X Modesetting Driver
 
 ## Atomic
 

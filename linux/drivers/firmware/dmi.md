@@ -1,5 +1,4 @@
-Kernel DMI
-==========
+# Kernel DMI
 
 ## SMBIOS
 

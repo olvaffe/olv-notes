@@ -1,5 +1,4 @@
-Media Formats
-=============
+# Media Formats
 
 ## Video Compressions
 

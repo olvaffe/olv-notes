@@ -1,5 +1,4 @@
-Linux ipc
-=========
+# Linux ipc
 
 ## System V IPC
 

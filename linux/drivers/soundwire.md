@@ -1,5 +1,4 @@
-Kernel SoundWire
-================
+# Kernel SoundWire
 
 ## Hardware Interfaces
 

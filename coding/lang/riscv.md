@@ -1,5 +1,4 @@
-RISC-V
-======
+# RISC-V
 
 ## Overview
 

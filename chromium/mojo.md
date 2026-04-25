@@ -1,5 +1,4 @@
-Chromium Mojo
-=============
+# Chromium Mojo
 
 ## Mojo
 

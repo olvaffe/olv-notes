@@ -1,5 +1,4 @@
-Kernel vmalloc
-==============
+# Kernel vmalloc
 
 ## Initialization
 

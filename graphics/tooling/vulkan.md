@@ -1,5 +1,4 @@
-Vulkan Loader
-=============
+# Vulkan Loader
 
 ## Build
 

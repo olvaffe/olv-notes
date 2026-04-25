@@ -1,5 +1,4 @@
-ACPI Button
-===========
+# ACPI Button
 
 ## Power Button
 

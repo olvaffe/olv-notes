@@ -1,5 +1,4 @@
-ACPI sleep
-==========
+# ACPI sleep
 
 ## ACPI Power States
 

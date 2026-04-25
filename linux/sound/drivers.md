@@ -1,5 +1,4 @@
-Linux sound
-===========
+# Linux sound
 
 ## Generic Drivers
 

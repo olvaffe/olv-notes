@@ -1,5 +1,4 @@
-IGT GPU Tools
-=============
+# IGT GPU Tools
 
 ## Build
 

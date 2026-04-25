@@ -1,5 +1,4 @@
-Zstandard
-=========
+# Zstandard
 
 ## zstd command line
 

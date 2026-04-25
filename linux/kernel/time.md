@@ -1,5 +1,4 @@
-Kernel Time
-===========
+# Kernel Time
 
 ## Overview
 

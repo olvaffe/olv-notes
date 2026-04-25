@@ -1,5 +1,4 @@
-Doxygen
-=======
+# Doxygen
 
 ## Documentation
 

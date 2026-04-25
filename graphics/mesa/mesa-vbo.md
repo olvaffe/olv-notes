@@ -1,5 +1,4 @@
-Mesa and Its VBO Context
-========================
+# Mesa and Its VBO Context
 
 ## Dispatch
 

@@ -1,5 +1,4 @@
-Citra
-=====
+# Citra
 
 ## Custom Firmware (CFW)
 

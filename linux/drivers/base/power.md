@@ -1,5 +1,4 @@
-Device Power Management
-=======================
+# Device Power Management
 
 ## `struct dev_pm_ops`
 

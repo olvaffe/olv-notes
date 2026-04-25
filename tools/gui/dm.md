@@ -1,5 +1,4 @@
-Display Manager
-===============
+# Display Manager
 
 ## GDM
 

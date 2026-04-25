@@ -1,5 +1,4 @@
-Mesa and Its Main Context
-=========================
+# Mesa and Its Main Context
 
 ## Mesa Code Flow
 

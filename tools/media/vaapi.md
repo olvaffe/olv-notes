@@ -1,5 +1,4 @@
-VA-API
-======
+# VA-API
 
 ## Hardware Acceleration
 

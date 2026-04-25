@@ -1,5 +1,4 @@
-Linux pipe
-==========
+# Linux pipe
 
 ## Pipes
 

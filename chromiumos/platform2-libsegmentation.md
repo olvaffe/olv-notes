@@ -1,5 +1,4 @@
-Platform2 libsegmentation
-=========================
+# Platform2 libsegmentation
 
 ## override device info
 

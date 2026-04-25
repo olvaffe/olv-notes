@@ -1,5 +1,4 @@
-libplacebo
-==========
+# libplacebo
 
 ## Overview
 

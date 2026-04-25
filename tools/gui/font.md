@@ -1,5 +1,4 @@
-Font
-====
+# Font
 
 ## Popular Open Fonts
 

@@ -1,5 +1,4 @@
-Kernel misc
-===========
+# Kernel misc
 
 ## EEPROM
 

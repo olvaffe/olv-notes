@@ -1,5 +1,4 @@
-coreboot
-========
+# coreboot
 
 ## Build System
 

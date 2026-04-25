@@ -1,5 +1,4 @@
-Android Audio
-=============
+# Android Audio
 
 ## `frameworks/base/media/`
 

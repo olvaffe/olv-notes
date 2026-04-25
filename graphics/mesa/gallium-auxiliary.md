@@ -1,5 +1,4 @@
-Gallium Auxiliary
-=================
+# Gallium Auxiliary
 
 ## Threaded Context
 

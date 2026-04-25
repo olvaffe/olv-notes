@@ -1,5 +1,4 @@
-Kernel vmstat
-=============
+# Kernel vmstat
 
 ## Overview
 

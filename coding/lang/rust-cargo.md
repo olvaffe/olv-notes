@@ -1,5 +1,4 @@
-The Cargo Book
-==============
+# The Cargo Book
 
 ## Introduction
 

@@ -1,5 +1,4 @@
-FIDO
-====
+# FIDO
 
 ## Overview
 

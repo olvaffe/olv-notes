@@ -1,5 +1,4 @@
-Math
-====
+# Math
 
 ## Header Inclusion
 

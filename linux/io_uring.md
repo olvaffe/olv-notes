@@ -1,5 +1,4 @@
-`io_uring`
-==========
+# `io_uring`
 
 ## Introduction
 

@@ -1,5 +1,4 @@
-Linux ALSA USB
-==============
+# Linux ALSA USB
 
 ## Initialization
 

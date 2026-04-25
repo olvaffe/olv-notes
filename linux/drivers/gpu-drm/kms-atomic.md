@@ -1,5 +1,4 @@
-DRM atomic modesetting
-======================
+# DRM atomic modesetting
 
 ## Atomic Modesetting Purpose
 

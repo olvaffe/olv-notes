@@ -1,5 +1,4 @@
-Kernel init
-===========
+# Kernel init
 
 ## PID 0: `start_kernel`
 

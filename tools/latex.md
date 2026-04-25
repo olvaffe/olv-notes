@@ -1,5 +1,4 @@
-LaTex
-=====
+# LaTex
 
 ## Hello World
 

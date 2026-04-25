@@ -1,5 +1,4 @@
-Linux V4L2
-==========
+# Linux V4L2
 
 ## Core
 

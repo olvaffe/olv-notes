@@ -1,5 +1,4 @@
-Linux rpmsg
-===========
+# Linux rpmsg
 
 ## Device
 

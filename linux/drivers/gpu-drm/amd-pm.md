@@ -1,5 +1,4 @@
-DRM AMD PM
-==========
+# DRM AMD PM
 
 ## SMU
 

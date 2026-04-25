@@ -1,5 +1,4 @@
-Android BT
-==========
+# Android BT
 
 ## System Services
 

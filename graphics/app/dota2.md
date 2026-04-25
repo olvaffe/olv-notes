@@ -1,5 +1,4 @@
-Dota 2
-======
+# Dota 2
 
 ## Benchmark
 

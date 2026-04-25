@@ -1,5 +1,4 @@
-Imagination PowerVR
-===================
+# Imagination PowerVR
 
 ## History
 

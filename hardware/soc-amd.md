@@ -1,5 +1,4 @@
-AMD CPUs
-========
+# AMD CPUs
 
 ## CPU uArchs
 

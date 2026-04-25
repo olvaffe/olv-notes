@@ -1,5 +1,4 @@
-Mesa and DRI
-============
+# Mesa and DRI
 
 ## DRI interface
 

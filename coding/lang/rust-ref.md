@@ -1,5 +1,4 @@
-The Rust Reference
-==================
+# The Rust Reference
 
 ## Chapter 2. Lexical structure
 

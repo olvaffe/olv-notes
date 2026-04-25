@@ -1,5 +1,4 @@
-Kernel xarray
-=============
+# Kernel xarray
 
 ## Overview
 

@@ -1,5 +1,4 @@
-Linux THP
-=========
+# Linux THP
 
 ## Transparent Huge Pages (THP)
 

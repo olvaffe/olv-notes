@@ -1,5 +1,4 @@
-Kernel TTY Serial
-=================
+# Kernel TTY Serial
 
 ## HW
 

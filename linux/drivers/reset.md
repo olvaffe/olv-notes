@@ -1,5 +1,4 @@
-Kernel Reset Controller
-=======================
+# Kernel Reset Controller
 
 ## Controller
 

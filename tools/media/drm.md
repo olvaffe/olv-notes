@@ -1,5 +1,4 @@
-Digital Rights Management
-=========================
+# Digital Rights Management
 
 ## Technologies
 

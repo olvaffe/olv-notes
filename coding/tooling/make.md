@@ -1,5 +1,4 @@
-GNU Make
-========
+# GNU Make
 
 ## Chapter 1. Overview of make
 

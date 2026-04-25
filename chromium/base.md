@@ -1,5 +1,4 @@
-Chromium Base
-=============
+# Chromium Base
 
 ## Switches, Features, and Flags
 

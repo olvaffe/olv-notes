@@ -1,5 +1,4 @@
-Qualcomm Adreno
-===============
+# Qualcomm Adreno
 
 ## History
 

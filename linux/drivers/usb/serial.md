@@ -1,5 +1,4 @@
-Kernel USB Serial
-=================
+# Kernel USB Serial
 
 ## Core
 

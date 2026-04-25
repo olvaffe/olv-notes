@@ -1,5 +1,4 @@
-Kernel PM Domain
-================
+# Kernel PM Domain
 
 ## Core
 

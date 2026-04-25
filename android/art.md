@@ -1,5 +1,4 @@
-Android Runtime
-===============
+# Android Runtime
 
 ## Using NDK for JNI
 

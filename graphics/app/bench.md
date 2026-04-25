@@ -1,5 +1,4 @@
-GPU Benchmarks
-==============
+# GPU Benchmarks
 
 ## glmark2
 

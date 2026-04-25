@@ -1,5 +1,4 @@
-DRM msm display
-===============
+# DRM msm display
 
 ## DT
 

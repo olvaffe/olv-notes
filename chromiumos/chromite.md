@@ -1,5 +1,4 @@
-CrOS chromite
-=============
+# CrOS chromite
 
 ## `depot_tools`
 

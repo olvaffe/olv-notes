@@ -1,5 +1,4 @@
-MediaTek SoCs
-=============
+# MediaTek SoCs
 
 ## Series
 

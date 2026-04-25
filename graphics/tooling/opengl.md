@@ -1,5 +1,4 @@
-Open GL (ES) Helpers
-====================
+# Open GL (ES) Helpers
 
 ## glvnd
 

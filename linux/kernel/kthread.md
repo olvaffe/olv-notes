@@ -1,5 +1,4 @@
-Linux kthread
-=============
+# Linux kthread
 
 ## What are these kthreads?
 

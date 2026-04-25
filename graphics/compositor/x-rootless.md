@@ -1,5 +1,4 @@
-X Rootless
-==========
+# X Rootless
 
 ## Input Driver
 

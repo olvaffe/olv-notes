@@ -1,5 +1,4 @@
-OpenCL CTS
-==========
+# OpenCL CTS
 
 ## Build
 

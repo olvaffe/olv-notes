@@ -1,5 +1,4 @@
-Qualcomm SoC
-============
+# Qualcomm SoC
 
 ## SoC: Discontinued
 

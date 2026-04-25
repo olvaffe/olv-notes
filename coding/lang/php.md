@@ -1,5 +1,4 @@
-PHP
-===
+# PHP
 
 ## Installation
 

@@ -1,5 +1,4 @@
-Kernel SPI
-==========
+# Kernel SPI
 
 ## Controller Driver
 

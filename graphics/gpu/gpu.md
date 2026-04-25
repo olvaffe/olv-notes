@@ -1,5 +1,4 @@
-GPU
-===
+# GPU
 
 ## CPU vs. GPU
 

@@ -1,5 +1,4 @@
-Linux binfmt
-============
+# Linux binfmt
 
 ## ELF
 

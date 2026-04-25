@@ -1,5 +1,4 @@
-Chromium Browser
-================
+# Chromium Browser
 
 ## Build for Linux
 

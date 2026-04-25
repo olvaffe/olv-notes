@@ -1,5 +1,4 @@
-minijail
-========
+# minijail
 
 ## Main Functions
 

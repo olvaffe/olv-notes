@@ -1,5 +1,4 @@
-Kernel attr
-===========
+# Kernel attr
 
 ## `getattr`
 

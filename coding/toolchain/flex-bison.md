@@ -1,5 +1,4 @@
-Bison
-=====
+# Bison
 
 ## Parser
 

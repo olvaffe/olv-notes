@@ -1,5 +1,4 @@
-Kernel sys
-==========
+# Kernel sys
 
 ## Task SID/PGID/TGID and Shared Resources
 

@@ -1,5 +1,4 @@
-Rockchip SoCs
-=============
+# Rockchip SoCs
 
 ## Products
 

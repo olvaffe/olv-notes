@@ -1,5 +1,4 @@
-HW Diagnosis
-============
+# HW Diagnosis
 
 ## CPU: `turbostat`
 

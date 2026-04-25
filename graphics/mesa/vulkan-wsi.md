@@ -1,5 +1,4 @@
-Mesa Vulkan WSI
-===============
+# Mesa Vulkan WSI
 
 ## Overview
 

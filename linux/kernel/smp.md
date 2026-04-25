@@ -1,5 +1,4 @@
-Kernel smp
-==========
+# Kernel smp
 
 ## Boot
 

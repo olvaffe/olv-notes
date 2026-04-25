@@ -1,5 +1,4 @@
-Kernel TEE
-==========
+# Kernel TEE
 
 ## OP-TEE
 

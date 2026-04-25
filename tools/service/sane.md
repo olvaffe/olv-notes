@@ -1,5 +1,4 @@
-SANE
-====
+# SANE
 
 ## Overview
 

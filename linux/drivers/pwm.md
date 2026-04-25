@@ -1,5 +1,4 @@
-Kernel PWM
-==========
+# Kernel PWM
 
 ## PWM Driver
 

@@ -1,5 +1,4 @@
-Linux DRM Rockchip
-==================
+# Linux DRM Rockchip
 
 ## RK3588
 

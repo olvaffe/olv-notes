@@ -1,5 +1,4 @@
-Bitops
-======
+# Bitops
 
 # Includes
 

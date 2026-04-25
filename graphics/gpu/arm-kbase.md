@@ -1,5 +1,4 @@
-ARM Mali kbase
-==============
+# ARM Mali kbase
 
 ## Overview
 

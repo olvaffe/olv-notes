@@ -1,5 +1,4 @@
-apitrace
-========
+# apitrace
 
 ## Build
 

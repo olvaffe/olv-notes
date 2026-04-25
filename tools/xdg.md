@@ -1,5 +1,4 @@
-XDG Specs
-=========
+# XDG Specs
 
 ## XDG Base Directory Specification
 

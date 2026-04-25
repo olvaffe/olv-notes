@@ -1,5 +1,4 @@
-Linux VFS inode
-===============
+# Linux VFS inode
 
 ## Overview
 

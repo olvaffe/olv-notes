@@ -1,5 +1,4 @@
-Linux Notifier
-==============
+# Linux Notifier
 
 ## Blocking Notifier
 

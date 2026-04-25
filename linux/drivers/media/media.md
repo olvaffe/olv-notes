@@ -1,5 +1,4 @@
-Linux Media Subsystem
-=====================
+# Linux Media Subsystem
 
 ## Overview
 

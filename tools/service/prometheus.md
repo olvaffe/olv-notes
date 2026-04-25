@@ -1,5 +1,4 @@
-Prometheus
-==========
+# Prometheus
 
 ## Node Exporter
 

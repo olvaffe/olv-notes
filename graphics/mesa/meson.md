@@ -1,5 +1,4 @@
-Mesa meson
-==========
+# Mesa meson
 
 ## Dependencies
 

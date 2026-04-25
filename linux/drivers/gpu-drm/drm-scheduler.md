@@ -1,5 +1,4 @@
-DRM Scheduler
-=============
+# DRM Scheduler
 
 ## Overview
 

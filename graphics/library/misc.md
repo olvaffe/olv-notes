@@ -1,5 +1,4 @@
-Misc Graphics Libraries
-=======================
+# Misc Graphics Libraries
 
 ## Windowing
 

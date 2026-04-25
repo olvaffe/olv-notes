@@ -1,5 +1,4 @@
-V4L videobuf2
-=============
+# V4L videobuf2
 
 ## `struct vb2_mem_ops`
 

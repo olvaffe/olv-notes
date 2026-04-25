@@ -1,5 +1,4 @@
-Device Tree
-===========
+# Device Tree
 
 ## Devicetree Specification
 

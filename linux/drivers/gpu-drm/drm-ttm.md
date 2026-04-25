@@ -1,5 +1,4 @@
-Kernel DRM TTM
-==============
+# Kernel DRM TTM
 
 ## TTM, using amdgpu as an example
 

@@ -1,5 +1,4 @@
-systemd user sessions
-=====================
+# systemd user sessions
 
 ## Overview
 

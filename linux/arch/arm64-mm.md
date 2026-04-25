@@ -1,5 +1,4 @@
-ARM64 MM
-========
+# ARM64 MM
 
 ## ARM MM
 

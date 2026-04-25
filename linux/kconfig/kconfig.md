@@ -1,5 +1,4 @@
-Kernel Kconfig
-==============
+# Kernel Kconfig
 
 ## Overview
 

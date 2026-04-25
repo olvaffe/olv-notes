@@ -1,5 +1,4 @@
-Kernel SysRq
-============
+# Kernel SysRq
 
 ## Initialization
 

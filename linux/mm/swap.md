@@ -1,5 +1,4 @@
-Kernel swap
-===========
+# Kernel swap
 
 ## Overview
 

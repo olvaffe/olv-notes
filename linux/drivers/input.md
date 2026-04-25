@@ -1,5 +1,4 @@
-Input subsystem
-===============
+# Input subsystem
 
 ## Driver
 

@@ -1,5 +1,4 @@
-Kernel exec
-===========
+# Kernel exec
 
 ## `kernel_execve`
 

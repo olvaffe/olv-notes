@@ -1,5 +1,4 @@
-Kernel platform device
-======================
+# Kernel platform device
 
 ## Platform Bus
 

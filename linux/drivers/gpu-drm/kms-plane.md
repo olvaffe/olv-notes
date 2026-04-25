@@ -1,5 +1,4 @@
-DRM plane
-=========
+# DRM plane
 
 ## `struct drm_plane_funcs`
 

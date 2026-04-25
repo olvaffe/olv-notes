@@ -1,5 +1,4 @@
-Chromium components/exo
-=======================
+# Chromium components/exo
 
 ## GPU and EXO
 

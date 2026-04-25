@@ -1,5 +1,4 @@
-wlroots
-=======
+# wlroots
 
 ## Initialization
 

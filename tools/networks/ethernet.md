@@ -1,5 +1,4 @@
-Ethernet
-========
+# Ethernet
 
 ## Standards
 

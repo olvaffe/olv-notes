@@ -1,5 +1,4 @@
-`drm_syncobj`
-=============
+# `drm_syncobj`
 
 ## Background
 

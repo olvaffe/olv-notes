@@ -1,5 +1,4 @@
-Kernel NLS
-==========
+# Kernel NLS
 
 ## API
 

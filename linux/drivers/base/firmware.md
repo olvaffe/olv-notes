@@ -1,5 +1,4 @@
-Kernel and Firmware
-===================
+# Kernel and Firmware
 
 ## Initialization
 

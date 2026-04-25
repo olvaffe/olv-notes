@@ -1,5 +1,4 @@
-Linux DRM Bridge
-================
+# Linux DRM Bridge
 
 ## `struct drm_bridge_funcs`
 

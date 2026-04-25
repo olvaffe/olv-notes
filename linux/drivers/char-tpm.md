@@ -1,5 +1,4 @@
-Kernel TPM
-==========
+# Kernel TPM
 
 ## TCG (Trusted Computing Group) Specifications
 

@@ -1,5 +1,4 @@
-Kernel IO
-=========
+# Kernel IO
 
 ## `ioremap`
 

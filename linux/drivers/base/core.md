@@ -1,5 +1,4 @@
-Kernel Driver Core
-==================
+# Kernel Driver Core
 
 ## Early Drivers
 

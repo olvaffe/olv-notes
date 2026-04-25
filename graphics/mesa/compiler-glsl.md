@@ -1,5 +1,4 @@
-Mesa GLSL
-=========
+# Mesa GLSL
 
 ## `GL_ARB_vertex_program` and `GL_ARB_fragment_program`
 

@@ -1,5 +1,4 @@
-Linux pinctrl
-=============
+# Linux pinctrl
 
 ## Controller
 

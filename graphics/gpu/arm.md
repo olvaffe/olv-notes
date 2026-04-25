@@ -1,5 +1,4 @@
-ARM Mali
-========
+# ARM Mali
 
 ## History
 

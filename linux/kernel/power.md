@@ -1,5 +1,4 @@
-Kernel power
-============
+# Kernel power
 
 ## Configs
 

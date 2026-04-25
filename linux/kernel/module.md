@@ -1,5 +1,4 @@
-Kernel module
-=============
+# Kernel module
 
 ## Module
 

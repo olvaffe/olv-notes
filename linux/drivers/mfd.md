@@ -1,5 +1,4 @@
-Linux MFD
-=========
+# Linux MFD
 
 ## Usage
 

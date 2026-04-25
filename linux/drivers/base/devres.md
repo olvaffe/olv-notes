@@ -1,5 +1,4 @@
-Kernel and devres
-=================
+# Kernel and devres
 
 ## Overview
 

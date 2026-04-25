@@ -1,5 +1,4 @@
-Chromium `third_party/blink`
-============================
+# Chromium `third_party/blink`
 
 ## GPU and WebGL
 

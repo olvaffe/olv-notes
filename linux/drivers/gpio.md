@@ -1,5 +1,4 @@
-Kernel GPIO
-===========
+# Kernel GPIO
 
 ## GPIO Controller
 

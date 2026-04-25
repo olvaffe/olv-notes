@@ -1,5 +1,4 @@
-Android SDK
-===========
+# Android SDK
 
 ## SDK/NDK
 

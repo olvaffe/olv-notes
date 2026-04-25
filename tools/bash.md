@@ -1,5 +1,4 @@
-Bash
-====
+# Bash
 
 ## Options
 

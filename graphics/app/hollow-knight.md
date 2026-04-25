@@ -1,5 +1,4 @@
-Hollow Knight
-=============
+# Hollow Knight
 
 ## System Analysis
 

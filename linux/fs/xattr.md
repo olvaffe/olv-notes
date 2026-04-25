@@ -1,5 +1,4 @@
-Linux VFS xattr
-===============
+# Linux VFS xattr
 
 ## Extended Attributes
 

@@ -1,5 +1,4 @@
-Kernel proc
-===========
+# Kernel proc
 
 ## `/proc/meminfo`
 

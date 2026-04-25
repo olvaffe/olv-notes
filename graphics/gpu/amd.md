@@ -1,5 +1,4 @@
-AMD
-===
+# AMD
 
 ## GPU uArchs
 

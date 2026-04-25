@@ -1,5 +1,4 @@
-Bluetooth
-=========
+# Bluetooth
 
 ## Basics
 

@@ -1,5 +1,4 @@
-GitLab CI
-=========
+# GitLab CI
 
 ## CI/CD YAML syntax reference
 

@@ -1,5 +1,4 @@
-Linux net drivers
-=================
+# Linux net drivers
 
 ## soc ethernet driver
 

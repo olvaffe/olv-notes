@@ -1,5 +1,4 @@
-Kernel USB Type-C
-=================
+# Kernel USB Type-C
 
 ## A Type-C Port Needs a Driver?
 

@@ -1,5 +1,4 @@
-Kernel ACPI Scan
-================
+# Kernel ACPI Scan
 
 ## `acpi_device`
 

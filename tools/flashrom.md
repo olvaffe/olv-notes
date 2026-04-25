@@ -1,5 +1,4 @@
-Flashrom
-========
+# Flashrom
 
 ## Programmer
 

@@ -1,5 +1,4 @@
-Mecurial
-========
+# Mecurial
 
 ## Tutorial
 

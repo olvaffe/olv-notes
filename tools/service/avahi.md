@@ -1,5 +1,4 @@
-Avahi
-=====
+# Avahi
 
 ## Zeroconf
 

@@ -1,5 +1,4 @@
-QEMU virtio-gpu
-===============
+# QEMU virtio-gpu
 
 ## Overview
 

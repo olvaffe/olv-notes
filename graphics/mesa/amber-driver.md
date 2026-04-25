@@ -1,5 +1,4 @@
-Mesa and Its Driver
-===================
+# Mesa and Its Driver
 
 ## mesa/drivers/ and mesa/
 

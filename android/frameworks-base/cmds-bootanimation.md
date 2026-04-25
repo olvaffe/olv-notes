@@ -1,5 +1,4 @@
-BootAnimation
-=============
+# BootAnimation
 
 ## Overview
 

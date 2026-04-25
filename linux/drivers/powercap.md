@@ -1,5 +1,4 @@
-Kernel Powercap
-===============
+# Kernel Powercap
 
 ## RAPL
 

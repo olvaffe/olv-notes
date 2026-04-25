@@ -1,5 +1,4 @@
-Kernel IIO
-==========
+# Kernel IIO
 
 ## Core
 

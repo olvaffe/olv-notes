@@ -1,5 +1,4 @@
-Kernel CMA
-==========
+# Kernel CMA
 
 ## `CONFIG_CMA`
 

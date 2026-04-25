@@ -1,5 +1,4 @@
-Kernel sparse
-=============
+# Kernel sparse
 
 ## memory model
 

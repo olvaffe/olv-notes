@@ -1,5 +1,4 @@
-Kernel PTY
-==========
+# Kernel PTY
 
 ## PTY
 

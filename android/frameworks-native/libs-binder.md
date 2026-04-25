@@ -1,5 +1,4 @@
-Android Binder
-==============
+# Android Binder
 
 ## IPC Overview
 

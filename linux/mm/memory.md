@@ -1,5 +1,4 @@
-Kernel memory
-=============
+# Kernel memory
 
 ## Overview
 

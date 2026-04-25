@@ -1,5 +1,4 @@
-CrOS Autotest
-=============
+# CrOS Autotest
 
 ## Overview
 

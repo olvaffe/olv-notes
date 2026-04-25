@@ -1,5 +1,4 @@
-Android Test
-============
+# Android Test
 
 ## `Android.bp`
 

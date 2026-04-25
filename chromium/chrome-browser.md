@@ -1,5 +1,4 @@
-Chromium chrome/browser
-=======================
+# Chromium chrome/browser
 
 ## Versioning
 

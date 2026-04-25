@@ -1,5 +1,4 @@
-CMake
-=====
+# CMake
 
 ## Use
 

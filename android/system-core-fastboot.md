@@ -1,5 +1,4 @@
-Android fastboot
-================
+# Android fastboot
 
 ## Overview
 

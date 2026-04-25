@@ -1,5 +1,4 @@
-Linux thunderbolt
-=================
+# Linux thunderbolt
 
 ## Thunderbolt
 

@@ -1,5 +1,4 @@
-Kernel RTC
-==========
+# Kernel RTC
 
 ## Driver
 

@@ -1,5 +1,4 @@
-Electricity
-===========
+# Electricity
 
 ## Overview
 

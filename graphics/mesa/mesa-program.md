@@ -1,5 +1,4 @@
-Mesa Vertex and Fragment Programs
-=================================
+# Mesa Vertex and Fragment Programs
 
 ## Example
 

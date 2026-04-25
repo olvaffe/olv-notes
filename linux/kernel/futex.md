@@ -1,5 +1,4 @@
-Linux futex
-===========
+# Linux futex
 
 ## Overview
 

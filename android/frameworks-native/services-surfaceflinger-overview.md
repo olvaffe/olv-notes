@@ -1,5 +1,4 @@
-Light Introduction to Android Platform Graphics Internals
-=========================================================
+# Light Introduction to Android Platform Graphics Internals
 
 This introduction describes the key functionalities of platform graphics
 components.  It is only to give an overview.  Always read the source code.

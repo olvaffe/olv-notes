@@ -1,5 +1,4 @@
-Homelab
-=======
+# Homelab
 
 ## Distro
 

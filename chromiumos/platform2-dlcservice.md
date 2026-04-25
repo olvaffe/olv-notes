@@ -1,5 +1,4 @@
-Platform2 dlcservice
-====================
+# Platform2 dlcservice
 
 ## DLC
 

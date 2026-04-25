@@ -1,5 +1,4 @@
-Kernel Panic
-============
+# Kernel Panic
 
 ## Terms
 

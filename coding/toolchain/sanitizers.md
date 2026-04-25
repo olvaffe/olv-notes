@@ -1,5 +1,4 @@
-Sanitizers
-==========
+# Sanitizers
 
 ## ASAN
 

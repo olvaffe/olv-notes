@@ -1,5 +1,4 @@
-Kernel MMC/SD/SDIO
-==================
+# Kernel MMC/SD/SDIO
 
 ## History
 

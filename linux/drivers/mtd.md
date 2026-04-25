@@ -1,5 +1,4 @@
-Kernel MTD
-==========
+# Kernel MTD
 
 ## Flash Memory
 

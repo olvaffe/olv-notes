@@ -1,5 +1,4 @@
-X Composite Extension
-=====================
+# X Composite Extension
 
 ## Accompanying extensions
 

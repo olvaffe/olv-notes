@@ -1,5 +1,4 @@
-Kernel CPU
-==========
+# Kernel CPU
 
 ## Boot CPU
 

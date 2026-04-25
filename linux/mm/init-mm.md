@@ -1,5 +1,4 @@
-Linux `init_mm`
-===============
+# Linux `init_mm`
 
 ## Overview
 

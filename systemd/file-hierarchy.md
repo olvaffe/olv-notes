@@ -1,5 +1,4 @@
-Filesystem Hierarchy
-====================
+# Filesystem Hierarchy
 
 ## systemd
 

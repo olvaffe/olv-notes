@@ -1,5 +1,4 @@
-Kernel LEDs
-===========
+# Kernel LEDs
 
 ## Core
 

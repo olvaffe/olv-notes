@@ -1,5 +1,4 @@
-Kernel char
-===========
+# Kernel char
 
 ## `/dev/nvram`
 

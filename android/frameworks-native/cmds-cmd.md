@@ -1,5 +1,4 @@
-Android `cmd`
-=============
+# Android `cmd`
 
 ## Usage
 

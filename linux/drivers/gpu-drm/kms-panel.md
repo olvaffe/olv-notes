@@ -1,5 +1,4 @@
-DRM Panel
-=========
+# DRM Panel
 
 ## Common Resolutions
 

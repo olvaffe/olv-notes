@@ -1,5 +1,4 @@
-DRM framebuffer
-===============
+# DRM framebuffer
 
 ## DRM formats
 

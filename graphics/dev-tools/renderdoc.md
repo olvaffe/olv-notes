@@ -1,5 +1,4 @@
-RenderDoc
-=========
+# RenderDoc
 
 ## Build
 

@@ -1,5 +1,4 @@
-Programming
-===========
+# Programming
 
 ## A new project
 

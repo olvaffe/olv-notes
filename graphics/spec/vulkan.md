@@ -1,5 +1,4 @@
-Vulkan
-======
+# Vulkan
 
 ## History
 

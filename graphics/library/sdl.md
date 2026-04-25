@@ -1,5 +1,4 @@
-SDL
-===
+# SDL
 
 ## Build
 

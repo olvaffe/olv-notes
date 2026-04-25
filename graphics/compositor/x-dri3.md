@@ -1,5 +1,4 @@
-X DRI3 Extension
-================
+# X DRI3 Extension
 
 ## History
 

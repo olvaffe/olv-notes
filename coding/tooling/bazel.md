@@ -1,5 +1,4 @@
-Bazel
-=====
+# Bazel
 
 ## Getting Started
 

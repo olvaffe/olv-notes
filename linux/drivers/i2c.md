@@ -1,5 +1,4 @@
-I2C
-===
+# I2C
 
 ## Adapters and Clients
 

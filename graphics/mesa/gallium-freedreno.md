@@ -1,5 +1,4 @@
-Mesa Freedreno
-==============
+# Mesa Freedreno
 
 ## `fd_device` and `fd_pipe`
 

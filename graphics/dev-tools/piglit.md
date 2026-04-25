@@ -1,5 +1,4 @@
-Piglit
-======
+# Piglit
 
 ## Build
 

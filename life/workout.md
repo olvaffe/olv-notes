@@ -1,5 +1,4 @@
-Workout
-=======
+# Workout
 
 ## Skeletal Muscles
 

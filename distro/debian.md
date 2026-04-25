@@ -1,5 +1,4 @@
-Debian
-======
+# Debian
 
 ## stable releases
 

@@ -1,5 +1,4 @@
-systemd-resolved
-================
+# systemd-resolved
 
 ## systemd-resolved
 

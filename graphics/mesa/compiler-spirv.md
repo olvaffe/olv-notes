@@ -1,5 +1,4 @@
-Mesa SPIR-V
-===========
+# Mesa SPIR-V
 
 ## `spirv_to_nir`
 

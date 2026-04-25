@@ -1,5 +1,4 @@
-Platform2 ARC
-=============
+# Platform2 ARC
 
 ## `session_manager`
 

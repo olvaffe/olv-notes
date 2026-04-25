@@ -1,5 +1,4 @@
-Kernel USB Mass Storage
-=======================
+# Kernel USB Mass Storage
 
 ## Overview
 

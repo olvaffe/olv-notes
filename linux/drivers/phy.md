@@ -1,5 +1,4 @@
-Kernel PHY
-==========
+# Kernel PHY
 
 ## PHY driver
 

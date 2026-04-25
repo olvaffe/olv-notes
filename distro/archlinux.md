@@ -1,5 +1,4 @@
-Arch Linux
-==========
+# Arch Linux
 
 ## Installation
 

@@ -1,5 +1,4 @@
-fwupd
-=====
+# fwupd
 
 ## Usage
 

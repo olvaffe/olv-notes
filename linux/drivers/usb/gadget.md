@@ -1,5 +1,4 @@
-USB Gadget
-==========
+# USB Gadget
 
 ## `CONFIG_USB_GADGET`
 

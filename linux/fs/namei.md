@@ -1,5 +1,4 @@
-Kernel namei
-============
+# Kernel namei
 
 ## Path Resolution
 

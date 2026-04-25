@@ -1,5 +1,4 @@
-GRUB
-====
+# GRUB
 
 ## bootloader
 

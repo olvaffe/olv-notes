@@ -1,5 +1,4 @@
-Kernel fwnode
-=============
+# Kernel fwnode
 
 ## Overview
 

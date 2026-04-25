@@ -1,5 +1,4 @@
-WireGuard
-=========
+# WireGuard
 
 ## Overview
 

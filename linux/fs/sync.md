@@ -1,5 +1,4 @@
-Kernel VFS sync
-===============
+# Kernel VFS sync
 
 ## Syscalls
 

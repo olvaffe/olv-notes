@@ -1,5 +1,4 @@
-ARM64
-=====
+# ARM64
 
 ## Bootloader
 

@@ -1,5 +1,4 @@
-Android SurfaceFlinger
-======================
+# Android SurfaceFlinger
 
 ## Native Activity
 

@@ -1,5 +1,4 @@
-Linux scsi
-==========
+# Linux scsi
 
 ## Specs
 

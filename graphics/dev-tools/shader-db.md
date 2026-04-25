@@ -1,5 +1,4 @@
-Mesa shader-db
-==============
+# Mesa shader-db
 
 ## GL
 

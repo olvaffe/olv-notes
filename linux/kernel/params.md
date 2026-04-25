@@ -1,5 +1,4 @@
-Kernel params
-=============
+# Kernel params
 
 ## Parameters
 

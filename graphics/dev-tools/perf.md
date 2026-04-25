@@ -1,5 +1,4 @@
-GPU Performance Analysis
-========================
+# GPU Performance Analysis
 
 ## GPU Top
 

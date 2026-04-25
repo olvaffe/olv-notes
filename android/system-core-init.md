@@ -1,5 +1,4 @@
-Android System Overview
-=======================
+# Android System Overview
 
 ## Generic Boot Partition
 

@@ -1,5 +1,4 @@
-Direct3D
-========
+# Direct3D
 
 ## Specs
 

@@ -1,5 +1,4 @@
-DRM encoder
-===========
+# DRM encoder
 
 ## `struct drm_encoder_funcs`
 

@@ -1,5 +1,4 @@
-Mesa CI
-=======
+# Mesa CI
 
 ## `gitlab-ci.yml`
 

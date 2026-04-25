@@ -1,5 +1,4 @@
-IPv6
-====
+# IPv6
 
 ## IPv4 Addresses
 

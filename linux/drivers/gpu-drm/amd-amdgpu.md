@@ -1,5 +1,4 @@
-DRM amdgpu
-==========
+# DRM amdgpu
 
 ## Config
 

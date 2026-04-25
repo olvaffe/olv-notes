@@ -1,5 +1,4 @@
-DOCSIS
-======
+# DOCSIS
 
 ## Standards
 

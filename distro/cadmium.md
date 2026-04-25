@@ -1,5 +1,4 @@
-Cadmium
-=======
+# Cadmium
 
 ## Dependencies
 

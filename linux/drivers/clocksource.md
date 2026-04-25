@@ -1,5 +1,4 @@
-Kernel Clock Source
-===================
+# Kernel Clock Source
 
 ## Basics
 

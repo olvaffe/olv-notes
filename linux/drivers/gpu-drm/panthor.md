@@ -1,5 +1,4 @@
-DRM panthor
-===========
+# DRM panthor
 
 ## Initialization
 

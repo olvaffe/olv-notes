@@ -1,5 +1,4 @@
-Machine Learning
-================
+# Machine Learning
 
 ## Background
 

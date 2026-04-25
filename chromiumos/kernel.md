@@ -1,5 +1,4 @@
-Chrome OS Kernel
-================
+# Chrome OS Kernel
 
 ## Kernel
 

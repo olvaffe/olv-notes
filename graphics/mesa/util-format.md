@@ -1,5 +1,4 @@
-Mesa Formats
-============
+# Mesa Formats
 
 ## Public Formats
 

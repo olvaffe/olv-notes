@@ -1,5 +1,4 @@
-Mesa and Its swrast Context
-===========================
+# Mesa and Its swrast Context
 
 ## swrast
 

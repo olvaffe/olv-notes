@@ -1,5 +1,4 @@
-LLVM TableGen
-=============
+# LLVM TableGen
 
 ## Overview
 

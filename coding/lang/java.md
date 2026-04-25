@@ -1,5 +1,4 @@
-Java
-====
+# Java
 
 ## Release History
 

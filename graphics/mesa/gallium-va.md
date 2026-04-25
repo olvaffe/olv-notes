@@ -1,5 +1,4 @@
-Mesa and VAAPI
-==============
+# Mesa and VAAPI
 
 ## Quick Basics
 

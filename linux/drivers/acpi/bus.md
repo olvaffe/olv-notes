@@ -1,5 +1,4 @@
-Kernel ACPI Bus
-===============
+# Kernel ACPI Bus
 
 ## Initialization
 

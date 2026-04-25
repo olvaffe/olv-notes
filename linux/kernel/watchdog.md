@@ -1,5 +1,4 @@
-Kernel Watchdog
-===============
+# Kernel Watchdog
 
 ## Overview
 

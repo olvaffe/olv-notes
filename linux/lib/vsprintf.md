@@ -1,5 +1,4 @@
-Kernel vsprintf
-===============
+# Kernel vsprintf
 
 ## Formatting
 

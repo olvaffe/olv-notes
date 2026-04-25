@@ -1,5 +1,4 @@
-Kernel and auxiliary
-====================
+# Kernel and auxiliary
 
 ## Overview
 

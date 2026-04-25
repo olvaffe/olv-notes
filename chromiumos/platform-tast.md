@@ -1,5 +1,4 @@
-CrOS Tast
-=========
+# CrOS Tast
 
 ## Overview
 

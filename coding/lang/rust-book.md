@@ -1,5 +1,4 @@
-The Rust Programming Language
-=============================
+# The Rust Programming Language
 
 ## Chapter 1. Getting Started
 

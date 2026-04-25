@@ -1,5 +1,4 @@
-WiFi
-====
+# WiFi
 
 ## Standards
 

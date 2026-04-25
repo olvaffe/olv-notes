@@ -1,5 +1,4 @@
-findutils
-=========
+# findutils
 
 ## Overview
 

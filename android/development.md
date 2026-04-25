@@ -1,5 +1,4 @@
-Android Development
-===================
+# Android Development
 
 ## `scripts/lldbclient.py`
 

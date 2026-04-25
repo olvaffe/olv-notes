@@ -1,5 +1,4 @@
-Mesa DRM Shim
-=============
+# Mesa DRM Shim
 
 ## Build and Use
 

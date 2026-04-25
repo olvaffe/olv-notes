@@ -1,5 +1,4 @@
-Atomic and Barrier
-==================
+# Atomic and Barrier
 
 ## Overview
 

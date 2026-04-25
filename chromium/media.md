@@ -1,5 +1,4 @@
-Chromium Media
-==============
+# Chromium Media
 
 ## Life of a WebRTC Frame
 

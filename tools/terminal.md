@@ -1,5 +1,4 @@
-Terminal
-========
+# Terminal
 
 ## DEC Terminals and Emulators
 

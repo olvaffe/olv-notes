@@ -1,5 +1,4 @@
-ioquake3
-========
+# ioquake3
 
 ## Build System
 

@@ -1,5 +1,4 @@
-Reboot
-======
+# Reboot
 
 ## `reboot` syscall
 

@@ -1,5 +1,4 @@
-Platform2 init
-==============
+# Platform2 init
 
 ## Boot
 

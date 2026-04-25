@@ -1,5 +1,4 @@
-CUPS
-====
+# CUPS
 
 ## Overview
 

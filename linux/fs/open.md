@@ -1,5 +1,4 @@
-Kernel open
-===========
+# Kernel open
 
 ## `SYSCALL_DEFINE1(chroot)`
 

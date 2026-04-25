@@ -1,5 +1,4 @@
-OpenGL
-======
+# OpenGL
 
 ## Specs
 

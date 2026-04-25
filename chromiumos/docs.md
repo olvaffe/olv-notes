@@ -1,5 +1,4 @@
-Chrome OS SDK
-=============
+# Chrome OS SDK
 
 ## New Device
 

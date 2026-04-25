@@ -1,5 +1,4 @@
-Rust
-====
+# Rust
 
 ## Installation
 

@@ -1,5 +1,4 @@
-Kernel and softirq
-==================
+# Kernel and softirq
 
 ## softirq
 

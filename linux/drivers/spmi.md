@@ -1,5 +1,4 @@
-Kernel SPMI
-===========
+# Kernel SPMI
 
 ## Spec
 

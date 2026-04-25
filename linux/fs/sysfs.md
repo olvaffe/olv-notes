@@ -1,5 +1,4 @@
-Kernel sysfs
-============
+# Kernel sysfs
 
 ## kernfs
 

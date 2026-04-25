@@ -1,5 +1,4 @@
-Kernel SoC Drivers
-==================
+# Kernel SoC Drivers
 
 ## MediaTek
 

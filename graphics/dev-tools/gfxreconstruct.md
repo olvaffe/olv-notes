@@ -1,5 +1,4 @@
-GFXReconstruct
-==============
+# GFXReconstruct
 
 ## Build
 

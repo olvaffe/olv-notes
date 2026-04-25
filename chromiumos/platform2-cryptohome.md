@@ -1,5 +1,4 @@
-Platform2 cryptohome
-====================
+# Platform2 cryptohome
 
 ## Before User Login
 

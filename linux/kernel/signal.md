@@ -1,5 +1,4 @@
-Signal
-======
+# Signal
 
 ## `kill`
 

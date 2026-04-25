@@ -1,5 +1,4 @@
-Khronos Data Format
-===================
+# Khronos Data Format
 
 ## Specs
 

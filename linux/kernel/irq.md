@@ -1,5 +1,4 @@
-Kernel and IRQ
-==============
+# Kernel and IRQ
 
 ## Root Interrupt Controller
 

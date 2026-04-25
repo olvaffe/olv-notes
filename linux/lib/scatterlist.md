@@ -1,5 +1,4 @@
-Kernel scatterlist
-==================
+# Kernel scatterlist
 
 ## `struct scatterlist`
 

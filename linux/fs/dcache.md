@@ -1,5 +1,4 @@
-Linux dentry cache
-==================
+# Linux dentry cache
 
 ## Overview
 

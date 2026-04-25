@@ -1,5 +1,4 @@
-Kernel Mailbox
-==============
+# Kernel Mailbox
 
 ## Controllers
 

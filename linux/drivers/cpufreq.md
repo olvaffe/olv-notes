@@ -1,5 +1,4 @@
-Kernel cpufreq
-==============
+# Kernel cpufreq
 
 ## cpufreq
 

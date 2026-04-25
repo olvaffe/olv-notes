@@ -1,5 +1,4 @@
-3D Techniques
-=============
+# 3D Techniques
 
 ## Super Resolution
 

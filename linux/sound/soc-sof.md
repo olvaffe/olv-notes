@@ -1,5 +1,4 @@
-Kernel ASoC SOF
-===============
+# Kernel ASoC SOF
 
 ## SOF (Sound Open Firmware)
 

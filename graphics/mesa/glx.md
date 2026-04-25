@@ -1,5 +1,4 @@
-Mesa and GLX
-============
+# Mesa and GLX
 
 ## Spec
 

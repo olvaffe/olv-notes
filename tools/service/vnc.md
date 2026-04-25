@@ -1,5 +1,4 @@
-VNC
-===
+# VNC
 
 ## History
 

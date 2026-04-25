@@ -1,5 +1,4 @@
-Intel CPUs
-==========
+# Intel CPUs
 
 ## CPU uArchs
 

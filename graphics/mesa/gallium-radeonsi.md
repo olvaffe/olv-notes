@@ -1,5 +1,4 @@
-Gallium Radeon SI
-=================
+# Gallium Radeon SI
 
 ## `GL_RENDERER`
 

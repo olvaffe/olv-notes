@@ -1,5 +1,4 @@
-Stop Machine
-============
+# Stop Machine
 
 ## What
 

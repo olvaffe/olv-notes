@@ -1,5 +1,4 @@
-Kernel EFI
-==========
+# Kernel EFI
 
 ## x86
 

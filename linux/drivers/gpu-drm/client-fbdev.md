@@ -1,5 +1,4 @@
-Kernel DRM Client
-=================
+# Kernel DRM Client
 
 ## DRM Client
 

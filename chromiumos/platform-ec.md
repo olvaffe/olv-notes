@@ -1,5 +1,4 @@
-Chrome OS EC Firmware
-=====================
+# Chrome OS EC Firmware
 
 ## EC (Embedded Controller)
 

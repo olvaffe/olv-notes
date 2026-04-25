@@ -1,5 +1,4 @@
-Chromium components/viz
-=======================
+# Chromium components/viz
 
 ## GPU and viz
 

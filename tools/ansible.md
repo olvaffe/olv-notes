@@ -1,5 +1,4 @@
-Ansible
-=======
+# Ansible
 
 ## Puppet
 

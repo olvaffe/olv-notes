@@ -1,5 +1,4 @@
-Kernel ASoC Intel
-=================
+# Kernel ASoC Intel
 
 ## ASoC: Intel
 

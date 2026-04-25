@@ -1,5 +1,4 @@
-PGP
-===
+# PGP
 
 ## History
 

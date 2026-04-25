@@ -1,5 +1,4 @@
-Mesa and EGL
-============
+# Mesa and EGL
 
 ## Thread Safety
 

@@ -1,5 +1,4 @@
-ARM Processors
-==============
+# ARM Processors
 
 ## Classic Profile
 

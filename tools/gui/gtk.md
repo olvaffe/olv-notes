@@ -1,5 +1,4 @@
-GTK+
-====
+# GTK+
 
 ## Overview
 

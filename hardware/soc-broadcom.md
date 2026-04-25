@@ -1,5 +1,4 @@
-Broadcom SoC
-============
+# Broadcom SoC
 
 ## Raspberry Pi History
 

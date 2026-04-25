@@ -1,5 +1,4 @@
-Linux MM Init
-=============
+# Linux MM Init
 
 ## PID 0: `start_kernel`
 

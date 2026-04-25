@@ -1,5 +1,4 @@
-Yocto Project
-=============
+# Yocto Project
 
 ## Overview
 

@@ -1,5 +1,4 @@
-Locking
-=======
+# Locking
 
 ## Synchronizations
 

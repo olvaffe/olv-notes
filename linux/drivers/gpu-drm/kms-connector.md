@@ -1,5 +1,4 @@
-DRM connector
-=============
+# DRM connector
 
 ## `struct drm_connector_funcs`
 

@@ -1,5 +1,4 @@
-dEQP
-====
+# dEQP
 
 ## Build
 

@@ -1,5 +1,4 @@
-Platform2 Camera
-================
+# Platform2 Camera
 
 ## Overview
 

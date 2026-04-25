@@ -1,5 +1,4 @@
-Android Kernel
-==============
+# Android Kernel
 
 ## Overview
 

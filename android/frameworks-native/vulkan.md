@@ -1,5 +1,4 @@
-Android vulkan
-==============
+# Android vulkan
 
 ## Initialization
 

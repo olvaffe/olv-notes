@@ -1,5 +1,4 @@
-Linux VFS `seq_file`
-====================
+# Linux VFS `seq_file`
 
 ## Overview
 

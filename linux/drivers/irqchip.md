@@ -1,5 +1,4 @@
-Kernel irqchip
-==============
+# Kernel irqchip
 
 ## Controllers
 

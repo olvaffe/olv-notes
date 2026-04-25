@@ -1,5 +1,4 @@
-Mesa PanVK Compiler
-===================
+# Mesa PanVK Compiler
 
 ## Environment Variables
 

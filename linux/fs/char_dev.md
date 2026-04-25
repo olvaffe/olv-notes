@@ -1,5 +1,4 @@
-Character Devices
-=================
+# Character Devices
 
 ## Overview
 

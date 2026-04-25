@@ -1,5 +1,4 @@
-Kernel pstore
-=============
+# Kernel pstore
 
 ## Overview
 

@@ -1,5 +1,4 @@
-Mesa Vulkan Runtime
-===================
+# Mesa Vulkan Runtime
 
 ## Vulkan Handles
 

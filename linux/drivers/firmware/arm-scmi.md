@@ -1,5 +1,4 @@
-Kernel ARM SCMI
-===============
+# Kernel ARM SCMI
 
 ## ARM SCMI
 

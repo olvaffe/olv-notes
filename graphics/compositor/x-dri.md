@@ -1,5 +1,4 @@
-X DRI Extension
-===============
+# X DRI Extension
 
 ## History
 

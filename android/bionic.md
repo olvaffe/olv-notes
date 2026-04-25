@@ -1,5 +1,4 @@
-Android Bionic
-==============
+# Android Bionic
 
 ## process lifetime
 

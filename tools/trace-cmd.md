@@ -1,5 +1,4 @@
-trace-cmd
-=========
+# trace-cmd
 
 ## Basic Usage
 

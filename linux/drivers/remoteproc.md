@@ -1,5 +1,4 @@
-Kernel remoteproc
-=================
+# Kernel remoteproc
 
 ## Overview
 

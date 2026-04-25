@@ -1,5 +1,4 @@
-systemd-journald
-================
+# systemd-journald
 
 ## Overview
 

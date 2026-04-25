@@ -1,5 +1,4 @@
-`VK_LAYER_MESA_overlay`
-=======================
+# `VK_LAYER_MESA_overlay`
 
 ## How does it work?
 

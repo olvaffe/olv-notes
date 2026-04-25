@@ -1,5 +1,4 @@
-Linux bluetooth driver
-======================
+# Linux bluetooth driver
 
 ## HCI over UART
 

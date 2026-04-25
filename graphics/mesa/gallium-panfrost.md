@@ -1,5 +1,4 @@
-Gallium Panfrost
-================
+# Gallium Panfrost
 
 ## Source Files
 

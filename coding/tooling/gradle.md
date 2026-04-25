@@ -1,5 +1,4 @@
-Gradle
-======
+# Gradle
 
 ## Tutorial
 

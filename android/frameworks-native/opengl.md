@@ -1,5 +1,4 @@
-Android EGL / OpenGL ES
-=======================
+# Android EGL / OpenGL ES
 
 ## Loader
 

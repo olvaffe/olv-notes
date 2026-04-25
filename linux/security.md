@@ -1,5 +1,4 @@
-Kernel Security
-===============
+# Kernel Security
 
 ## LSM Hooks
 

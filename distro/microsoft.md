@@ -1,5 +1,4 @@
-Microsoft
-=========
+# Microsoft
 
 ## Windows Installation
 

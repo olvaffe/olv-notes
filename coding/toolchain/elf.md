@@ -1,5 +1,4 @@
-ELF
-===
+# ELF
 
 ## History
 

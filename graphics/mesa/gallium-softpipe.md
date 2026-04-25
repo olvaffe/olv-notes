@@ -1,5 +1,4 @@
-Gallium softpipe
-================
+# Gallium softpipe
 
 ## `egl_softpipe.so`
 

@@ -1,5 +1,4 @@
-Enlightenment
-=============
+# Enlightenment
 
 ## EFL
 

@@ -1,5 +1,4 @@
-Kernel Generic Entry
-====================
+# Kernel Generic Entry
 
 ## Boot Entries
 

@@ -1,5 +1,4 @@
-DRM panfrost
-===========
+# DRM panfrost
 
 ## PM
 

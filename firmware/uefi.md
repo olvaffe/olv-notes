@@ -1,5 +1,4 @@
-UEFI
-====
+# UEFI
 
 ## TianoCore EDK II
 

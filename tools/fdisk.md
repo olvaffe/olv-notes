@@ -1,5 +1,4 @@
-fdisk
-=====
+# fdisk
 
 ## Partitioning
 

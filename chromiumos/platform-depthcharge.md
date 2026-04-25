@@ -1,5 +1,4 @@
-Chrome OS AP Firmware
-=====================
+# Chrome OS AP Firmware
 
 ## AP firmware (BIOS)
 

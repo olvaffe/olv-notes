@@ -1,5 +1,4 @@
-HID
-===
+# HID
 
 ## `hid-generic`
 

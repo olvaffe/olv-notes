@@ -1,5 +1,4 @@
-ARM Mali CSF
-============
+# ARM Mali CSF
 
 ## HW
 

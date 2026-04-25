@@ -1,5 +1,4 @@
-Kernel devfreq
-==============
+# Kernel devfreq
 
 ## devfreq
 

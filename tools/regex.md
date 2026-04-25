@@ -1,5 +1,4 @@
-Regular Expression
-==================
+# Regular Expression
 
 ## RE 101
 

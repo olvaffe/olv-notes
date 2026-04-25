@@ -1,5 +1,4 @@
-Kernel buddy alloc
-==================
+# Kernel buddy alloc
 
 ## Initialization
 

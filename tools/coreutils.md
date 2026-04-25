@@ -1,5 +1,4 @@
-coreutils
-=========
+# coreutils
 
 ## Overview
 

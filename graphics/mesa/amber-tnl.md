@@ -1,5 +1,4 @@
-Mesa and TNL Context
-====================
+# Mesa and TNL Context
 
 ## `draw_prims`
 

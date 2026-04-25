@@ -1,5 +1,4 @@
-Gentoo
-======
+# Gentoo
 
 ## Portage
 

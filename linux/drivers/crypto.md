@@ -1,5 +1,4 @@
-Kernel Crypto Device
-====================
+# Kernel Crypto Device
 
 ## AMD CCP
 

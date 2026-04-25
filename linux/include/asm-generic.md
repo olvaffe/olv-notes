@@ -1,5 +1,4 @@
-Linux asm-generic
-=================
+# Linux asm-generic
 
 ## Mandatory Headers
 

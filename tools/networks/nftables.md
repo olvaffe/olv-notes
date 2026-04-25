@@ -1,5 +1,4 @@
-nftables
-========
+# nftables
 
 ## Overview
 

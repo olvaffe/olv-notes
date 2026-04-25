@@ -1,5 +1,4 @@
-Window Manager
-==============
+# Window Manager
 
 ## AMS and WMS
 

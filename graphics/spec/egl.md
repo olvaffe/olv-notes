@@ -1,5 +1,4 @@
-EGL
-===
+# EGL
 
 ## Specs
 

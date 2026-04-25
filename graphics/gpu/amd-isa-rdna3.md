@@ -1,5 +1,4 @@
-RDNA3 Instruction Set Architecture
-==================================
+# RDNA3 Instruction Set Architecture
 
 ## Chapter 1. Introduction
 

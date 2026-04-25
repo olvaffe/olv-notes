@@ -1,5 +1,4 @@
-DRM AMD Display
-===============
+# DRM AMD Display
 
 ## Overview
 

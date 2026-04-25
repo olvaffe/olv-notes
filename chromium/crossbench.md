@@ -1,5 +1,4 @@
-Chromium crossbench
-===================
+# Chromium crossbench
 
 ## Usage
 

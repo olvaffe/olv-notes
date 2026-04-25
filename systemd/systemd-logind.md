@@ -1,5 +1,4 @@
-systemd-logind
-==============
+# systemd-logind
 
 ## Overview
 

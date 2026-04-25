@@ -1,5 +1,4 @@
-Kernel exit
-===========
+# Kernel exit
 
 ## `exit_group` syscall
 

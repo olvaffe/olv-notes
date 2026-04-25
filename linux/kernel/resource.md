@@ -1,5 +1,4 @@
-Kernel Resource
-===============
+# Kernel Resource
 
 ## `iomem_resource`
 

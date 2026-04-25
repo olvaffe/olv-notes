@@ -1,5 +1,4 @@
-Kernel cpuidle
-==============
+# Kernel cpuidle
 
 ## Basics
 

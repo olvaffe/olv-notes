@@ -1,5 +1,4 @@
-Chromium cc
-===========
+# Chromium cc
 
 ## Frame Metrics
 

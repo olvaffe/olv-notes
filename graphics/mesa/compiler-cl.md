@@ -1,5 +1,4 @@
-Mesa CLC
-========
+# Mesa CLC
 
 ## OpenCL Compiler
 

@@ -1,5 +1,4 @@
-DRM File
-========
+# DRM File
 
 ## Overview
 

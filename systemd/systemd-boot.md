@@ -1,5 +1,4 @@
-systemd-boot
-============
+# systemd-boot
 
 ## The Boot Loader Specification
 

@@ -1,5 +1,4 @@
-Linux ALSA Core
-===============
+# Linux ALSA Core
 
 ## Overview
 

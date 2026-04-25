@@ -1,5 +1,4 @@
-Kernel Driver Bus
-=================
+# Kernel Driver Bus
 
 ## Initialization
 

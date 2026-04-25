@@ -1,5 +1,4 @@
-Kernel trace
-============
+# Kernel trace
 
 ## Initialization
 

@@ -1,5 +1,4 @@
-Kernel ACPI
-===========
+# Kernel ACPI
 
 ## Overview
 

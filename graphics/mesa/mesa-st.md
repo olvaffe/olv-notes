@@ -1,5 +1,4 @@
-Mesa and Gallium
-================
+# Mesa and Gallium
 
 ## Idea
 

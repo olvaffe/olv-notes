@@ -1,5 +1,4 @@
-Mesa and glapi
-==============
+# Mesa and glapi
 
 ## mesa/glapi/
 

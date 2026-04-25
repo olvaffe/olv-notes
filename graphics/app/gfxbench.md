@@ -1,5 +1,4 @@
-GFXBench
-========
+# GFXBench
 
 ## Build
 

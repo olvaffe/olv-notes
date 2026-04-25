@@ -1,5 +1,4 @@
-CPU
-===
+# CPU
 
 ## Worst Designs
 

@@ -1,5 +1,4 @@
-Autotools
-=========
+# Autotools
 
 ## Autotools
 

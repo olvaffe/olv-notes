@@ -1,5 +1,4 @@
-Kernel Thermal
-==============
+# Kernel Thermal
 
 ## Thermal Driver
 

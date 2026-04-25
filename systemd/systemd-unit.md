@@ -1,5 +1,4 @@
-Systemd Unit Configuration
-==========================
+# Systemd Unit Configuration
 
 ## Units
 

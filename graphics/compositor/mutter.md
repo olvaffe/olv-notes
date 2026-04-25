@@ -1,5 +1,4 @@
-Mutter
-======
+# Mutter
 
 ## Gnome Shell
 

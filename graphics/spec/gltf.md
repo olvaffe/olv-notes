@@ -1,5 +1,4 @@
-glTF
-====
+# glTF
 
 ## Specs
 

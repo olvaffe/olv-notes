@@ -1,5 +1,4 @@
-Chromium GPU
-============
+# Chromium GPU
 
 ## GPU and Initialization
 

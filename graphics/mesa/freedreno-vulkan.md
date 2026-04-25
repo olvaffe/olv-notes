@@ -1,5 +1,4 @@
-Mesa Turnip
-===========
+# Mesa Turnip
 
 ## Device Identification
 

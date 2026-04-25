@@ -1,5 +1,4 @@
-OBS Studio
-==========
+# OBS Studio
 
 ## Build
 

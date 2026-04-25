@@ -1,5 +1,4 @@
-SMTP
-====
+# SMTP
 
 ## SMTP
 

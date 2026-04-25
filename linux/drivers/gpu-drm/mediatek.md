@@ -1,5 +1,4 @@
-Linux DRM Mediatek
-==================
+# Linux DRM Mediatek
 
 ## MT8196 DT
 

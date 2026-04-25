@@ -1,5 +1,4 @@
-Kernel TTY IO
-=============
+# Kernel TTY IO
 
 ## Overview
 

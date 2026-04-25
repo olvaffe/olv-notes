@@ -1,5 +1,4 @@
-Allwinner SoCs
-==============
+# Allwinner SoCs
 
 ## Chipsets
 

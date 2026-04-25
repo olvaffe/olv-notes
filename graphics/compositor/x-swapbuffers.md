@@ -1,5 +1,4 @@
-Swap Buffers
-============
+# Swap Buffers
 
 ## Non-fullscreen copying
 

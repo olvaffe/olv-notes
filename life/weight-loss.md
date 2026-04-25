@@ -1,5 +1,4 @@
-Weight Loss
-===========
+# Weight Loss
 
 ## Concepts
 

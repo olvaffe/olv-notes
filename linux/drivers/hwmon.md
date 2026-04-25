@@ -1,5 +1,4 @@
-Kernel hwmon
-============
+# Kernel hwmon
 
 ## Core
 

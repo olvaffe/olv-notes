@@ -1,5 +1,4 @@
-SELinux
-=======
+# SELinux
 
 ## Setup
 

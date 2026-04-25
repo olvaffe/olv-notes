@@ -1,5 +1,4 @@
-Android CTS
-===========
+# Android CTS
 
 ## Build
 

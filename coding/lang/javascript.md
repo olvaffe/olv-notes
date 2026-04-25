@@ -1,5 +1,4 @@
-JavaScript
-==========
+# JavaScript
 
 ## Node.js
 

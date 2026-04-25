@@ -1,5 +1,4 @@
-Kernel Platform Drivers
-=======================
+# Kernel Platform Drivers
 
 ## `CONFIG_CHROME_PLATFORMS`
 

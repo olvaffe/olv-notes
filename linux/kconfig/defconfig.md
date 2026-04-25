@@ -1,5 +1,4 @@
-Kernel defconfig
-================
+# Kernel defconfig
 
 ## Config: Pre-Device Drivers
 

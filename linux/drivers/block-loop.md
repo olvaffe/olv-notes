@@ -1,5 +1,4 @@
-Kernel Block Devices
-====================
+# Kernel Block Devices
 
 ## loop
 

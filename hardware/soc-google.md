@@ -1,5 +1,4 @@
-Google Tensor
-=============
+# Google Tensor
 
 ## SoCs
 

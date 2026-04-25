@@ -1,5 +1,4 @@
-Kernel ASoC AMD
-===============
+# Kernel ASoC AMD
 
 ## ASoC: AMD
 

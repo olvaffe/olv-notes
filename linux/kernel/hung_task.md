@@ -1,5 +1,4 @@
-Kernel Hung Task
-================
+# Kernel Hung Task
 
 ## `CONFIG_DETECT_HUNG_TASK`
 

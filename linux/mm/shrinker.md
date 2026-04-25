@@ -1,5 +1,4 @@
-Kernel Shrinker
-===============
+# Kernel Shrinker
 
 ## Overview
 

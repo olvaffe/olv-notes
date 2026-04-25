@@ -1,5 +1,4 @@
-Android Docs
-============
+# Android Docs
 
 ## Android Releases
 

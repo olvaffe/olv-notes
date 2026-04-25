@@ -1,5 +1,4 @@
-Platform2 Crash Reporter
-========================
+# Platform2 Crash Reporter
 
 ## Crash Reporter
 

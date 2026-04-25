@@ -1,5 +1,4 @@
-Android ADB
-===========
+# Android ADB
 
 ## `/init`
 

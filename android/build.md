@@ -1,5 +1,4 @@
-Android Build System
-====================
+# Android Build System
 
 ## Get Started
 

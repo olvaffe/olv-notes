@@ -1,5 +1,4 @@
-GNU Toolchain
-=============
+# GNU Toolchain
 
 ## gcc
 

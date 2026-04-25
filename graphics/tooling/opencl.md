@@ -1,5 +1,4 @@
-OpenCL Apps
-===========
+# OpenCL Apps
 
 ## Loaders
 

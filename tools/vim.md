@@ -1,5 +1,4 @@
-Vim
-===
+# Vim
 
 ## Files
 

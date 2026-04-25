@@ -1,5 +1,4 @@
-Docker
-======
+# Docker
 
 ## Get started
 

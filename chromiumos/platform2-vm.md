@@ -1,5 +1,4 @@
-Platform2 vm
-============
+# Platform2 vm
 
 ## Crostini Overview
 

@@ -1,5 +1,4 @@
-Linux Interconnect
-==================
+# Linux Interconnect
 
 ## Controllers
 

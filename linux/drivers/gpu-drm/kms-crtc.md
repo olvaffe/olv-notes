@@ -1,5 +1,4 @@
-DRM crtc
-========
+# DRM crtc
 
 ## `struct drm_crtc_funcs`
 

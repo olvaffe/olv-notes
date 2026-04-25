@@ -1,5 +1,4 @@
-SPIR-V
-======
+# SPIR-V
 
 ## Links
 

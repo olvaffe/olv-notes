@@ -1,5 +1,4 @@
-Linux NUMA
-==========
+# Linux NUMA
 
 ## Initialization
 

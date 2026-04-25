@@ -1,5 +1,4 @@
-Kernel clk
-==========
+# Kernel clk
 
 ## Core
 

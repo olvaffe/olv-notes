@@ -1,5 +1,4 @@
-DRM radeon
-==========
+# DRM radeon
 
 ## Radeon and DMA
 

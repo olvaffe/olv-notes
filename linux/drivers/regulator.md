@@ -1,5 +1,4 @@
-Kernel Regulator
-================
+# Kernel Regulator
 
 ## Core
 

@@ -1,5 +1,4 @@
-SPIR-V Apps
-===========
+# SPIR-V Apps
 
 ## Links
 
