@@ -60,6 +60,7 @@
 - a `.network` file can be added to `/etc/systemd/network` to manage a network
   - it normally contains
 
+    ```ini
       [Match]
       Name=eth0
       # or match by type: ether, wlan, etc.
@@ -75,6 +76,8 @@
       IPv6AcceptRA=yes
       # add to brdige
       Bridge=br0
+    ```
+
 - a network is configured only after the matching link is ready
   - automatic for wired
   - manual for wireless
@@ -100,6 +103,7 @@
   link
   - it normally contains
 
+    ```ini
       [NetDev]
       # bridge
       Name=br0
@@ -112,6 +116,8 @@
       Kind=veth
       [Peer]
       Name=veth0peer
+    ```
+
 - see <iproute2.md> for manual setup
 - a network can be further configured using a `.network` file
 - Does a bridge need an IP? It depends.

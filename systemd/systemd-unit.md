@@ -139,7 +139,6 @@
   - on stop, other units are stopped before this unit
 - `After=`: the opposite of `Before=`
 
-
 ## `[Install]` Section
 
 - `[Install]` is not used by `systemd`, but by `systemctl` for enable/disable

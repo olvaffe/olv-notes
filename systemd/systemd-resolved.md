@@ -1,6 +1,6 @@
 # systemd-resolved
 
-## systemd-resolved
+## Overview
 
 - systemd-resolved is mainly a service that provides name resolutions to local
   apps
