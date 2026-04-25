@@ -22,8 +22,8 @@
 ## EGL Java binding
 
 - `com.google.android.gles_jni.EGLImpl` has
-   - `native private static void _nativeClassInit();`
-   - `static { _nativeClassInit(); }`
+  - `native private static void _nativeClassInit();`
+  - `static { _nativeClassInit(); }`
 - `com_google_android_gles_jni_EGLImpl.cpp` has
   - `register_com_google_android_gles_jni_EGLImpl` that calls
     `android::AndroidRuntime::registerNativeMethods` to register native methods

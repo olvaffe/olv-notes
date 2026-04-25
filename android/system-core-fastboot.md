@@ -47,9 +47,9 @@
     - choose `Apply update from ADB`
     - `adb sideload ota_file.zip` on the host
   - `payload.bin` consists of blobs that can be extracted to individual files
-      - <https://chromium.googlesource.com/aosp/platform/system/update_engine/+/HEAD/README.md#update-payload-file-specification>
-      - blobs are filesystem images, etc.
-      - google for scripts
+    - <https://chromium.googlesource.com/aosp/platform/system/update_engine/+/HEAD/README.md#update-payload-file-specification>
+    - blobs are filesystem images, etc.
+    - google for scripts
 - <https://developers.google.com/android/images>
   - steps
     - enable `OEM unlocking`

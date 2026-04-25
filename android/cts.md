@@ -93,7 +93,7 @@
 - `CtsGpuToolsHostTestCases`
 - `CtsOpenGLTestCases`
 - `CtsVideoTestCases`
--  this seems like a good starting point for skyrim
+- this seems like a good starting point for skyrim
   - `cheets_CTS_T.internal.x86.CtsCameraTestCases.camerabox.front`
     - `CtsCameraTestCases`, 18.5m
   - `CtsDeqpTestCases`
@@ -158,7 +158,7 @@
   - compares the readback buffer to the reference buffer
 - minigbm on grunt sees these allocations
   - `amdgpu_create_bo_linear(1048576, 1, 0x20203852, 0x2a00)`
-    - `R8  `
+    - `R8`
     - `SW_READ_OFTEN | SW_WRITE_OFTEN | HW_VIDEO_DECODER`
   - `amdgpu_create_bo_linear(1048576, 1, 0x20203852, 0x2a00)`
   - `amdgpu_create_bo_linear(1048576, 1, 0x20203852, 0x2a00)`

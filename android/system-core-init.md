@@ -211,7 +211,8 @@
       name after spawned
   - for details, see `Process::startViaZygote`
 
-- Below are old notes
+## Old
+
 - Class `Process`, `ZygoteConnection`, `ZygoteInit` and `RuntimeInit`
   - Call `Process::start` to start a new process (or thread if no zygote)
   - It sends `--runtime-init --setuid=xxx --setgid=xxx` to zygote.
@@ -254,7 +255,7 @@
   com.android.server.SystemServer
 - zygote prints "Accepting command socket connections" and enters runSelectLoopMode.
   For each connection, a ZygoteConnection is created and its runOnce is called.
-- zygote does not use binder! (see /proc/<pid>/fd)
+- zygote does not use binder! (see `/proc/<pid>/fd`)
   Thus, it does not call ProcessState!
 - In activity manager's (part of system server) processNextBroadcast, it checks
   the existence of target process.  If no one exists, it calls
@@ -291,34 +292,8 @@
   BC_ACQUIRE object's pointer
   BC_REQUEST_DEATH_NOTIFICATION the object's pointer
 
-- linux kernel
-  - no glibc, no standard utilities
-  - alarm
-  - ashmem: android shell memory driver
-  - binder: open binder based ipc driver
-  - power management
-  - low memory killer
-- native libraries
-  - bionic c: small, no locales
-  - webkit, opencore, sqlite
-  - surface flinger: system-wide composer
-    - sufaces passed as buffers via binder
-    - can use opengl es and 2d hw accel. for its compositions
-    - double buffering using page-flip
-  - audio flinger
-  - HAL (which are dlopen("/system/lib/libxxx.so") at runtime)
-- dalvik
-  - core libraries
-- app framework (provide java lang, in jni)
-  - activity manager: launcher
-  - package manager: apk
-  - window manager: z-order of windows
-  - resource manager: image, audio
-  - content providers: contacts, etc.
-  - view system: widgets like button, table, frame, etc.
-  - hw services: LocationService, TelephonyService, BluetoothService, WiFi Service, USB Service, Sensor Service
+## physiology
 
-physiology
 - kernel -> init -> usbd, adbd, debuggerd, rild (radio interface layer)
 - then zygote
   - every app runs in its own process, and we do not want cold start of VM
@@ -337,12 +312,13 @@ physiology
   - system server
 - finally, zygote is asked to spawn HOME process
 
-layer interaction
+## layer interaction
+
 - app -> runtime service -(JNI)-> native service binding -(dlopen)-> hal -> kernel
   - e.g., app -> location manager service, gps location provider -(JNI)-> gps location provider -(dlopen)-> libgps.so -> kernel
 
+## APK
 
-APK
 - a APK provides components, like activities or content provider, which are run in one process
 - a task (an application) is a collections of activities, which may span processes.
 - an activity is a concrete class
@@ -352,13 +328,12 @@ APK
 - each apk is given an unique ID (user id is per apk, not per user)
 - only init, zygote, and runtime run as root
 
-BINDER
+## BINDER
+
 - binder binds kernel and a process
 - PROCESS: binder -> parcel -> parcelable (an interface a class could impl.) -> bundle, custom objects
 - a parcelable is a class which can  marshal its to state to something binder could handle -- namely, a parcel
 - bundle are typesafe containers of primitives
-
-==============
 
 ## Create Android Chroot
 
@@ -397,22 +372,6 @@ BINDER
   - `__libc_preinit` is one of them
 - after the linker loads the executable and all libraries, it jumps to
   `_start` of the executable.  `_start` calls `__libc_init` in bionic
-
-## init
-
-- this gives us properties, logcat, adb, etc.
-- to make `systemd-nspawn` happy,
-  - `touch <chroot>/system/etc/os-release`
-  - `ln -sf /system <chroot>/usr`
-  - `ln -sf /system/bin <chroot>/sbin`
-  - `mkdir -p <chroot>/mkdir -p <chroot>/{tmp,run,var,var/log}`
-  - `sudo cp /etc/localtime chroot/system/etc`
-- `systemd-nspawn -bnUD <chroot>`
-  - this does not work
-  - `init` has first stage init and second stage init
-  - first stage init is hardcoded and is hard to fool
-  - maybe we can get lucky by skipping the first stage?
-- maybe starting logd and adbd manually.  Not sure about properties.
 
 ## GSI image
 
