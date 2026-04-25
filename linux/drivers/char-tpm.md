@@ -139,7 +139,7 @@
     - e.g., the firwware measures the bootloader to pcr-4; the vlaue may
       change after bootloader update
   - pcr-5 is for Boot Manager Code Configuration and Data (for use by the Boot
-    Manager Code) and GPT/Partition Table 
+    Manager Code) and GPT/Partition Table
     - e.g., the firwware measures the bootloader config and the partition
       table to pcr-5; the vlaue may change after partition table change
   - pcr-6 is for Host Platform Manufacturer Specific

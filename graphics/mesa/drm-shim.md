@@ -29,7 +29,7 @@
   - `drm_shim_fd_register` remembers the fd and creates a `struct shim_fd`.
     The struct has a hash table of GEM handles.
 - intercepted `ioctl`
-  - if it is a fd registerd with `drm_shim_fd_register`, drm-shim handles the ioctl 
+  - if it is a fd registerd with `drm_shim_fd_register`, drm-shim handles the ioctl
 - when a bo is created,
   - `drm_shim_bo_init` assigns an offset in the memfd-backed heap
   - `drm_shim_bo_get_handle` assigns a gem handle to the bo and manages the bo

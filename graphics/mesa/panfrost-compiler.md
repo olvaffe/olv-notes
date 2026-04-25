@@ -76,7 +76,7 @@
   - if fs, `nir_lower_io_to_vector`
   - `nir_lower_io_to_temporaries` lowers io vars to temps, and initial/final
     copies from/to the original io vars
-  - `nir_lower_indirect_derefs` lowers indirect dererfs 
+  - `nir_lower_indirect_derefs` lowers indirect dererfs
     - when an array is dynamically indexed, it is replaced by a binary search
       of the real index
   - `nir_opt_copy_prop_vars` copy propogates for variables
@@ -681,7 +681,7 @@
     - `blend.bifrost_blend_desc` is an embedded 64-bit `MALI_INTERNAL_BLEND`
   - `pan_shader_preprocess` is the standard compiler prepass
     - `bifrost_nir_lower_load_output` lowers `nir_intrinsic_load_output` (fb
-      fetch) to 
+      fetch) to
       - `nir_load_rt_conversion_pan`
       - `nir_load_converted_output_pan`
   - `GENX(pan_inline_rt_conversion)` lowers

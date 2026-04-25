@@ -65,7 +65,7 @@
   - `amdgpu_device_ip_early_init` discovers the ip blocks
     - if older like `CHIPSET_STONEY`
       - `family` is set to `AMDGPU_FAMILY_CZ`
-      - `vi_set_ip_blocks` adds some ip blocks 
+      - `vi_set_ip_blocks` adds some ip blocks
     - if newer like `CHIP_RENOIR`, `amdgpu_discovery_set_ip_blocks` calls
       `amdgpu_discovery_reg_base_init` to discover the ip blocks
     - `amdgpu_get_bios` reads bios to `adev->bios` from various possible
@@ -492,7 +492,7 @@
     - mark `aper_base`/`aper_size` WC with MTRR
     - init `TTM_PL_VRAM` of size `real_vram_size`
     - init `TTM_PL_TT` of size the smaller of `mc_vram_size` and 75% of system
-      ram 
+      ram
       - because GART is 512MB, GPU can only see 512MB of it at any point
   - enable GART and others
     - allocate from VRAM a BO to hold the GART table

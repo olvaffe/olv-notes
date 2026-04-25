@@ -185,7 +185,7 @@
     - `pacman -U $pkg.tar.xz`
   - `pacman -R` remove a package from the local database
   - `pacman -T` tests if a package is in the local database
-  - `pacman -D` manipulates the local database 
+  - `pacman -D` manipulates the local database
 - sync database operations
   - `pacman -S`
   - `pacman -F` queries the sync files database

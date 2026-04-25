@@ -193,7 +193,7 @@
   `swapBuffers`, `unlockAndPost` is immediately followed by `lock`.
   `bindDrawSurface` is then called to update buffer info (offset change caused
   by flipping).
-- 
+-
 
 ## Java bindings
 

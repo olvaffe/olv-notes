@@ -46,7 +46,7 @@
       ECHO)
   - `xf86BusConfig`
     - `xf86CallDriverProbe`
-    - `xf86platformProbeDev` 
+    - `xf86platformProbeDev`
     - `probeSingleDevice`
     - `doPlatformProbe`
     - `ms_platform_probe`

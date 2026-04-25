@@ -32,11 +32,11 @@
     A_append = "5" -> setVar('A_append', '5') -> setVarFlags('A', 'append', ['5'])
     A_append = "6" -> setVar('A_append', '6') -> setVarFlags('A', 'append', ['5', '6'])
     A[dirs] = "${D}" -> setVarFlags('A', 'dirs', '${D}')
-    
+
     A_${PN} = "7" -> setVar('A_${PN}', '7') -> setVarFlags('A_${PN}', 'content', '7'), seen override but not used
     					-> usually followed by expandKey, and ${PN} is expanded
-    
-    
+
+
     Two classes, A, B.  A has nothing.  B inherits A.
     In B, EXPORT_FUNCTIONS do_package ->
     do_package calls B_do_package, which calls A_do_pacakge

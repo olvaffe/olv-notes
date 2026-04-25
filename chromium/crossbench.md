@@ -71,7 +71,7 @@
   - `determineCanvasSize` adds a class to `<body>` depending on the screen
     width
     - `window.matchMedia` queries the screen width
-      - <https://en.wikipedia.org/wiki/Media_queries> 
+      - <https://en.wikipedia.org/wiki/Media_queries>
     - `document.body.classList.add` adds the class
     - CSS picks the size for `frame-container`
       - `small` is 568x320

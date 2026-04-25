@@ -24,7 +24,7 @@
   - Large language models, AI era (2020–present)
 - <https://en.wikipedia.org/wiki/Timeline_of_machine_learning>
   - 1950s: machine learning pioneered
-  - 1960s: probabilistic inference with bayesian methods 
+  - 1960s: probabilistic inference with bayesian methods
   - 1970s: ai winter
   - 1980s: backpropagation, reinforcement learning
   - 1990s: Support-vector machines (SVMs), recurrent neural networks (RNNs)

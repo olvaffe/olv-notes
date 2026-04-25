@@ -308,7 +308,7 @@
   - `BUFFER_USAGE_VIDEO_DECODER` to `BO_USE_HW_VIDEO_DECODER`
   - `BUFFER_USAGE_GPU_DATA_BUFFER` to `BO_USE_GPU_DATA_BUFFER`
   - `BUFFER_USAGE_FRONT_RENDERING` to `BO_USE_FRONT_RENDERING`
-- android common formats and flags 
+- android common formats and flags
   - surfaceflinger
     - all layers have `GraphicBuffer::USAGE_HW_TEXTURE` consumer usage
       - also `GraphicBuffer::USAGE_HW_COMPOSER`

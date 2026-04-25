@@ -59,7 +59,7 @@
 - to define tracepoints, create a header that
   - defines `CREATE_TRACE_POINTS`
   - defines `TRACE_SYSTEM`
-  - include `linux/tracepoint.h`  
+  - include `linux/tracepoint.h`
   - `DEFINE_EVENT` defines a tracepoint
     - it expands to `DECLARE_TRACE` which expands to `__DECLARE_TRACE`
       - this defines `trace_##name` as an inline function

@@ -62,7 +62,7 @@
     - has a pipe texture as its storage, when `glTexImageXD` or the likes is
       called.  This pipe texture is allocated by `st_texture_create`.
       It is allocated by the pipe screen and the storage is normally a pipe
-      buffer. 
+      buffer.
     - has many st texture images.  The storage of an image comes from the
       object's pipe texture or malloc.  The data might be client buffer or pack
       from a PBO.
@@ -213,8 +213,8 @@
           - draw vertex element/buffer state
           - a list of fetch indices we received as an input
      - run the vertex shader
-     - cliptest, 
-     - clip coord calculation 
+     - cliptest,
+     - clip coord calculation
      - viewport transformation
      - if necessary, run the primitive pipeline, passing it:
           - a linear array of vertex_header vertices constructed here
@@ -296,7 +296,7 @@
   - fs outputs are `FRAG_RESULT_DEPTH`, etc. (total ~6)
 - fs inputs are parsed and `stfp->input_to_slot` stores how to map frag input to
   TGSI slot.  When translating,
-  - 
+  -
 
 ## Flush
 

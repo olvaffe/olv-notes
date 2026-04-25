@@ -35,7 +35,7 @@
   first.  It will propogate the state changes into the setup context and clear
   `llvmpipe->dirty`.
   - If any resource is mapped for write, `LP_NEW_SAMPLER_VIEW` is set to notify
-    the llvmpipe context. 
+    the llvmpipe context.
   - the vertex info is recalculated.
   - if the fragment pipeline needs to change, a new variant is installed into
     the setup context.
@@ -44,7 +44,7 @@
 - Just before the setup context starts rasterization, `lp_setup_update_state` is
   called to clear `lp->dirty`, the dirty state of the setup context.
   - the scene is flushed if the size exceeds the limit
-  - 
+  -
 
 ## scene and rast
 
@@ -100,7 +100,7 @@
 - For each bin, it calls `lp_rast_tile_begin` to get the pointers to the color
   buffers and depth buffer.  It calls `llvmpipe_get_texture_tile` to get the
   pointers, storing them in `color_tiles` and `depth_tile`
-- Then each command of a bin is executed in order. 
+- Then each command of a bin is executed in order.
 
 ## Rasterization of a triangle
 
@@ -114,7 +114,7 @@
     `Ax + By + Cz = D`.  Or, `z = A'x + B'y + C'`, which is exactly `a0`,
     `dadx`, and `dady`.
     - `(A, B, C)` is `cross(v0v1, v0v2)`
-  - `LP_INTERP_CONSTANT` emits the attr of the provoking vertex 
+  - `LP_INTERP_CONSTANT` emits the attr of the provoking vertex
   - `LP_INTERP_FACING` emits `(bool, 0, 0, 0)` where bool is true when the
     primitive is front facing
   - `LP_INTERP_PERSPECTIVE` calculates perspective-correct `a0, dadx, and dady`

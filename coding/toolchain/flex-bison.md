@@ -81,9 +81,9 @@
 - Actions
   - `input()` or `yyinput()` reads the next char in the input stream
     - `#define YY_NO_INPUT` to kill the function if not used
-  - `ECHO` copies yytext to the scanner's output. 
+  - `ECHO` copies yytext to the scanner's output.
   - `BEGIN` followed by the name of a start condition places the scanner in
-    the corresponding start condition (see below). 
+    the corresponding start condition (see below).
   - `REJECT`
 - misc macros
   - `YY_USER_INIT` is executed once before any scan action

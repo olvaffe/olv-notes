@@ -692,7 +692,7 @@
       - EQAA can be enabled with apps knowing about it
       - in radv, `numFrags` is always equal to `numSamples`
   - on GFX9, it calls `Gfx9Lib::HwlGetPreferredSurfaceSetting`
-    - `ADDR2_SWMODE_SET` is mapped from `ADDR2_BLOCK_SET` 
+    - `ADDR2_SWMODE_SET` is mapped from `ADDR2_BLOCK_SET`
       - `Gfx9LinearSwModeMask` from `linear`
       - `Gfx9Blk256BSwModeMask` from `micro`
       - `Gfx9Blk4KBSwModeMask` from `macroThin4KB`
@@ -735,7 +735,7 @@
           - all levels smaller than 256 bytes are aligned to `Block256_2d`
         - the layout of each level is saved to `pMipInfo`
         - `offset` is incremented after each level
-        - `mipPitch` and `mipHeight` are reduced in half after each level 
+        - `mipPitch` and `mipHeight` are reduced in half after each level
       - `Gfx9Lib::GetMipStartPos` computes the starting position of each
         level
         - mip1+ is on the right of mip0 when `ADDR_MAJOR_Y`

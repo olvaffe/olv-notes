@@ -280,7 +280,7 @@
   - `bootm` boots an app image
   - `bootp` boots from pxe
   - `bootflow scan -bl` boots boot flows
-    - this only considers 
+    - this only considers
     - `-l` lists boot flows as they are discovered
     - `-b` boots boot flows as they are discovered
 - `coninfo` prints console info

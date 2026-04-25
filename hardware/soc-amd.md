@@ -138,7 +138,7 @@
     - U is 18W-28W (thin and light)
     - C is 18W-28W (chromebook)
     - e is 9W (fanless variant of U)
-- Ryzen 7 PRO 5850U 
+- Ryzen 7 PRO 5850U
   - product family (Ryzen 7)
     - 3 entry level
     - 5 mid-range

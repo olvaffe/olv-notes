@@ -372,7 +372,7 @@
           is typically a gpu L2 flush
       - this is because `VK_ACCESS_HOST_WRITE_BIT` in src access mask and in
         dst access mask generates memory domain operations in opposite
-        directions 
+        directions
         - we typically can not encode cpu cache flush into the cmdbuf
         - but we can encode gpu L2 invalidate/flush into the cmdbuf
     - a visibility operation makes writes available to a domain become visible
@@ -664,12 +664,12 @@
       - the first sync scope is all commands in the `srcSubpass` subpass in
         `srcStageMask` stages
         - if `srcSubpass` is `VK_SUBPASS_EXTERNAL`, all commands
-          happened-before `vkCmdBeginRenderPass2` 
+          happened-before `vkCmdBeginRenderPass2`
       - the first access scope is `srcStageMask`
       - the second sync scope is all commands in the `dstSubpass` subpass in
         `dstStageMask` stages
         - if `dstSubpass` is `VK_SUBPASS_EXTERNAL`, all commands
-          happen-after `vkCmdEndRenderPass2` 
+          happen-after `vkCmdEndRenderPass2`
       - the second access scope is `dstStageMask`
     - there are also implicit subpass dependencies from/to
       `VK_SUBPASS_EXTERNAL`, if none is specified
@@ -720,7 +720,7 @@
     - an (active) render pass still cannot span multiple primary cmdbufs, but
       a suspended render pass can span multiple primary or secondary cmdbufs
       - `VkSubmitInfo2` has VUIDs to prevent a render pass to span multiple
-        submits 
+        submits
 - 8.1. Render Pass Objects
   - `VkRenderPass` describes a rendering pass abstractly; no image but only their
     formats, etc.
@@ -1225,8 +1225,8 @@
 - 12.5. Image Views
   - a `VkImageView` can be created fro a `VkImage`
     - `VkImageViewType` and `VkImageType` can differ under conditions
-      - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD` 
-      - `VK_IMAGE_VIEW_TYPE_xD_ARRAY` is always compatible with `VK_IMAGE_TYPE_xD` 
+      - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD`
+      - `VK_IMAGE_VIEW_TYPE_xD_ARRAY` is always compatible with `VK_IMAGE_TYPE_xD`
       - `VK_IMAGE_VIEW_TYPE_CUBE` and `VK_IMAGE_VIEW_TYPE_CUBE_ARRAY` are
         compatible with `VK_IMAGE_TYPE_2D` if
         - `imageCubeArray` feature is supported and enabled
@@ -1792,7 +1792,7 @@
       perf queries
     - `allowCommandBufferQueryCopies` supports `vkCmdCopyQueryPoolResults` for
       perf queries
-  - `vkAcquireProfilingLockKHR` and `vkReleaseProfilingLockKHR` 
+  - `vkAcquireProfilingLockKHR` and `vkReleaseProfilingLockKHR`
     - to avoid counter value reset due to device suspend, the profiling lock
       must be held
     - strangely, it must be held before `vkBeginCommandBuffer`
@@ -2583,7 +2583,7 @@
   - a reference is an object that a particular agent can use to access a set
     of memory locations
   - on the host, a reference is a cpu va
-  - on the device, a reference is 
+  - on the device, a reference is
     - a descriptor
     - a gpu va
     - more

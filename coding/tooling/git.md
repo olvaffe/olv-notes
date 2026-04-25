@@ -112,7 +112,7 @@
   - `repo` is a single-file python script
   - `_FindRepo` finds `.repo/repo/main.py` in the cwd and in the parent dirs
     - if that fails, it prompts for `repo init`
-  - `repo init` calls `_Init` 
+  - `repo init` calls `_Init`
     - it creates `.repo`
     - `_Clone` and `_Checkout` clones
       `https://gerrit.googlesource.com/git-repo` to `.repo/repo`

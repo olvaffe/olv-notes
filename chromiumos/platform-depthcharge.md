@@ -158,7 +158,7 @@
         - this reboots the device
   - crossystem variables
     - `devsw_boot` means devloper mode in depthcharge
-      - it is true after entering developer mode 
+      - it is true after entering developer mode
     - `cros_debug` means developer mode in userspace
       - it is true when `/proc/cmdline` has `cros_debug`
       - dev/test images are built with `--force_developer_mode` , which sets

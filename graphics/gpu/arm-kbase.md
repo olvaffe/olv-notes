@@ -281,7 +281,7 @@
     - if `KBASE_MCU_OFF`, `kbase_csf_firmware_trigger_reload` reboots the fw
     - if `KBASE_MCU_PEND_ON_RELOAD`, it checks for boot complete and
       `kbase_csf_firmware_global_reinit`
-    - if `KBASE_MCU_ON_GLB_REINIT_PEND`, it checks for glb init complete and 
+    - if `KBASE_MCU_ON_GLB_REINIT_PEND`, it checks for glb init complete and
     - if `KBASE_MCU_ON_HWCNT_ENABLE`, nothing
     - if `KBASE_MCU_ON`, done
   - when `kbase_pm_is_mcu_desired` returns false, it transitions from

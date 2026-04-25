@@ -77,7 +77,7 @@
   - bandwidth
   - modulation
   - code rate
-- let's do the math again for 802.11ac 
+- let's do the math again for 802.11ac
   - within the 160 MHz bandwidth, there are 512 subcarriers
   - of the 512 subcarriers, 484 are transmitting signals
   - of the 484 subcarriers, 468 are for data

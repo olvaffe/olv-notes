@@ -250,7 +250,7 @@ define these classes:
         virtual int method1(int val);
         ...;
     };
-     
+
     // a class that is the opposite BnFoo: it flattens call arguments into a
     // Parcel and unflattens call results out of a Parcel
     class BpFoo : public BpInterface<IFoo> {

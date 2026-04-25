@@ -191,7 +191,7 @@
   - gateway: usually a link-local address
   - prefix delegation: a network that the client can use
     - IPS router will route all traffic sent to the network to the client
-- with the information at hand, the client (home router) can 
+- with the information at hand, the client (home router) can
   - use SLAAC to configure its address
     - or, if an address is assigned by DHCPv6, use that address
   - use Router Advertisement to configure its clients (home devices)

@@ -74,7 +74,7 @@
   - `Busy%` is derived from `MSR_MPERF`
   - `Bzh_MHz` is derived from both `MSR_APERF` and `MSR_MPERF`
   - `TSC_MHz` shows `rdtsc`
-  - `IRQ` and `NMI` show `/proc/interrupts` 
+  - `IRQ` and `NMI` show `/proc/interrupts`
   - `SMI` shows `MSR_SMI_COUNT`
   - `CPU%c1`, `CPU%c6`, and `CPU%c7` show `MSR_CORE_Cx_RESIDENCY`
   - `CoreTmp` shows `MSR_IA32_THERM_STATUS`

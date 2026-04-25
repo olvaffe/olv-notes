@@ -31,7 +31,7 @@
         - load BL31 to trusted SRAM
         - load optional BL32 to secure memory
         - load BL33 to non-secure memory
-      - pass control back to BL1 by rasing an `SMC` with BL31 entrypoint 
+      - pass control back to BL1 by rasing an `SMC` with BL31 entrypoint
       - BL1 passes control to BL31 at secure EL3
     - BL31: EL3 Runtime Software (e.g., A-TF, and I think it runs off trusted region of RAM)
       - BL1 executes BL3 from trusted SRAM at secure EL3

@@ -20,7 +20,7 @@
   - `pdfdetach` lists or extracts embedded files (attachments)
   - `pdfattach` adds embedded files
 - signatures
-  - `pdfsig` verifies signatures or signs 
+  - `pdfsig` verifies signatures or signs
 - pages
   - `pdfseparate` extracts pages
   - `pdfunite` combines pages

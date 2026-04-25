@@ -276,7 +276,7 @@
 - `GLESiface`
   - called from EGL
   - `createGLESContext` is called in `eglCreateContext`
-  - `initContext` is called when a 
+  - `initContext` is called when a
   - `deleteGLESContext`
   - `flush`
   - `finish`

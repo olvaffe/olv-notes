@@ -88,7 +88,7 @@
 - an advanced media device has many seemingly unrelated devices, such as
   video capture, microphone, video output, video encode, etc.
 - some of the devices have dependencies on each other
-- MC api provides userspace a way to query and configure device topology 
+- MC api provides userspace a way to query and configure device topology
 
 ## Consumer Electronics Control Devices
 

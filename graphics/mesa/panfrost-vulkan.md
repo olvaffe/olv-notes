@@ -577,7 +577,7 @@
   - `DRM_FORMAT_MOD_ARM_AFRC(mode)`
     - bit 0..3: coding unit for plane 0
       - compress every N bytes to a fixed compressed size
-    - bit 4..7: coding unit for plane 1 and 2 
+    - bit 4..7: coding unit for plane 1 and 2
     - bit 8: SCANOUT, uses scanline layout rather than rotated layout
 - each rt has a `MALI_RENDER_TARGET`
   - `pan_emit_rt` emits the descriptor

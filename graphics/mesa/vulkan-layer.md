@@ -8,7 +8,7 @@
   - on `vkCmdBindPipeline`, it increments `pipeline_graphics` or
     `pipeline_compute`
 - device stats
-  - on `vkQueueSubmit`, it increments `submit` 
+  - on `vkQueueSubmit`, it increments `submit`
   - it also accumulates all cmd buf stats in the device
 - swapchain stats
   - on `vkAcquireNextImageKHR`, it increments `acquire` and accumulates

@@ -7,7 +7,7 @@
     /**
      - \brief BRIEF DESCRIPTION
      -        BRIEF DESCRIPTION CONTINUED
-     - 
+     -
      - DETAILED DESCRIPTION.
      -/
 - To put a descript after memebers, use `/**< ... */`

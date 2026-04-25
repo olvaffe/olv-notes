@@ -96,7 +96,7 @@
 - `glCreateShader` creates a `struct gl_shader`
 - `glCompileShader` invokes `_slang_compile`
   - A program has parameters, varyings, and attributes
-  - 
+  -
 - `glCreateProgram` creates a `struct gl_shader_program`
 - `glLinkProgram` invokes `_slang_link`
 - A shader object is a `struct gl_shader` and is created by
@@ -205,7 +205,7 @@
 - When running a vs, inputs, outputs and constants are supplied.
   - The inputs should fit the declarations.  Both the number and
     order should fit.
-  - `tgsi_exec_machine_run` is called to start processing.  It works on 
+  - `tgsi_exec_machine_run` is called to start processing.  It works on
     4 vertices at a time.
 - The outputs of vs is post-processed and emitted to hw.  The pipe driver calls
   `draw_find_vs_output` to know the order of the outputs and builds a

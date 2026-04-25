@@ -24,7 +24,7 @@
   - AGP aperture is a continuous range above TOM (top-of-memory), specified by a
     base and a size (`APBASEHI`+`APBASELO` and `APSIZE`)
   - GART translates a GPU access to an address in the aperture to an physical
-    address below TOM.  The table is located at `GARTHI`+`GARTLO` 
+    address below TOM.  The table is located at `GARTHI`+`GARTLO`
 - Cards on PCIe use the same concept;  But they are programmed differently
 - GPU has a MC (memory controller) too
   - MC is usually programmed to reserve a range for VRAM

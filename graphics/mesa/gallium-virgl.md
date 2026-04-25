@@ -159,7 +159,7 @@
   - calls `ttm_bo_reserve` to lock the reservation object
   - calls `ttm_bo_validate` to move the BO to the right heap
   - calls `virtio_gpu_cmd_transfer_from_host_3d` to queue a DMA
-  - calls `reservation_object_add_excl_fence` to add the DMA fence 
+  - calls `reservation_object_add_excl_fence` to add the DMA fence
   - calls `ttm_bo_unreserve` to unlock the reservation object
 - `VIRTGPU_TRANSFER_TO_HOST`
   - similar to `VIRTGPU_TRANSFER_FROM_HOST`
@@ -352,7 +352,7 @@
     the context
   - creates a memfd, mmaps it, and sends the fd to the client
   - calls `virgl_renderer_resource_attach_iov` to attach the iov to the
-    resource 
+    resource
 - `VCMD_TRANSFER_PUT2`
   - calls `virgl_renderer_transfer_write_iov` to copy from the attached memfd
     iov to the resource

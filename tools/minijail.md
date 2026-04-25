@@ -31,7 +31,7 @@
   - `seccomp(SECCOMP_SET_MODE_FILTER, ...)`
   - requires `CAP_SYS_ADMIN` or `PR_SET_NO_NEW_PRIVS`
     - the latter is to prevent an unpriviledged process from execing an suid
-      executable with a malicious filter 
+      executable with a malicious filter
 
 ## `minijail_fork`
 

@@ -252,7 +252,7 @@
 ## x86 atomic.h
 
 - inline assembly
-  - asm(assembler template 
+  - asm(assembler template
         : output operands
         : input operands
         : list of clobbered registers);

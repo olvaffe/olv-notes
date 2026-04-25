@@ -5,7 +5,7 @@
     STEAM="$HOME/.steam/steam"
     RT="$STEAM/ubuntu12_32/steam-runtime/run.sh"
     DOTA="$STEAM/steamapps/common/dota 2 beta"
-    
+
     "$RT" "$DOTA"/game/dota.sh \
 	+engine_experimental_drop_frame_ticks 1 \
 	+@panorama_min_comp_layer_dimension 0 \

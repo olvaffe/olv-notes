@@ -58,7 +58,7 @@
 - Window State
   - `SDL_MinimizeWindow` calls `Wayland_MinimizeWindow`
     - `xdg_toplevel_set_minimized`
-    - note that minimized is not a state of `xdg_shell` 
+    - note that minimized is not a state of `xdg_shell`
   - `SDL_MaximizeWindow` calls `Wayland_MaximizeWindow`
     - `xdg_toplevel_set_maximized`
     - it also sets `SDL_WINDOW_MAXIMIZED`

@@ -279,7 +279,7 @@
     - `methods`/`events`:  methods/events of the interface.  Each of them is
       described by a `struct wl_message`, which consists of the name and the
       signature
-  - everything must be described by an interface, including `struct wl_display` 
+  - everything must be described by an interface, including `struct wl_display`
 - Objects
   - an object is represented by a `struct wl_object`
   - an object consists of an interface, an implementation, and an id.
@@ -366,7 +366,7 @@
   - A native pixmap is created instead of a SHM buffer
     - `pix = wl_egl_pixmap_create(w, h, vis, 0)`
   - `egl_surface = eglCreatePixmapSurface(...)` is called so that GL instead of
-    CPU can be used for rendering 
+    CPU can be used for rendering
     - `eglMakeCurrent` should work
     - `img = eglCreateImageKHR(..., EGL_NATIVE_PIXMAP_KHR, pix, NULL)`,
       `glEGLImageTargetTexture2DOES`, and render-to-texture should work too,

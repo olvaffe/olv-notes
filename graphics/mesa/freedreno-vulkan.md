@@ -166,7 +166,7 @@
     - boith `PIPE_FORMAT_*_SINT` and `PIPE_FORMAT_*_SSCALED` are mapped to
       `FMT6_*_SINT`
     - there is a bit in `A6XX_VFD_DECODE_INSTR` that is based on
-      `vk_format_is_int` 
+      `vk_format_is_int`
   - both `PIPE_FORMAT_*_UNORM` and `PIPE_FORMAT_*_SRGB` are mapped to `FMT6_*_UNORM`
   - `PIPE_FORMAT_A8_UNORM` is mapped to `FMT6_8_UNORM` for texturing and
     `FMT6_A8_UNORM` for rendering
@@ -371,7 +371,7 @@
   - because we need to reset the states for each tile
 - `draw_epilogue_cs`
   - for queries
-- barriers 
+- barriers
   - barriers are combined and deferred
   - they go to `draw_cs` in `tu_emit_cache_flush_renderpass` normally
   - in some cases, they go to `cs` in `tu_emit_cache_flush`
@@ -749,7 +749,7 @@
     - only `flush_bits` is updated when inspecting the second scope
   - once we work out `pending_flush_bits` and `flush_bits`, we can remove the
     duplicated bits from `pending_flush_bits`.  We do not emit commands right
-    away because we like to defer until we must emit 
+    away because we like to defer until we must emit
     - this is good because we have to assume the worst (sysmem rendering) when
       outside of the render pass.  We can skip flushes if the second scope
       ends up using gmem rendering?
@@ -957,7 +957,7 @@
 
 ## Const Register File
 
-- drivers use `CP_LOAD_STATE6_GEOM/FRAG` to load data into the register file 
+- drivers use `CP_LOAD_STATE6_GEOM/FRAG` to load data into the register file
   - `CP_LOAD_STATE6_0_DST_OFF` and `CP_LOAD_STATE6_0_NUM_UNIT` are in vec4's
   - type is `ST6_CONSTANTS`, to load into the const register file
   - `SS6_DIRECT` if data is in the pkt payload; `SS6_INDIRECT` if data is at

@@ -399,7 +399,7 @@ the sizeof(long) actually varies between the targets we care about.
     operation
     - any read or write in the current thread cannot be reordered after this
       store
-      - `mtx_unlock` implies a release operation 
+      - `mtx_unlock` implies a release operation
     - all writes in the current thread are visible in other threads that
       acquire the same atomic variable
     - all writes in the current thread that has a data dependency on the
@@ -417,7 +417,7 @@ the sizeof(long) actually varies between the targets we care about.
   - a floating-point format is specified by
     - a base, `b`, which is either 2 or 10
     - a precision, `p`, which is the number of digits
-    - an exponent range from `emin` to `emax`, where `emin = 1 - emax` 
+    - an exponent range from `emin` to `emax`, where `emin = 1 - emax`
   - a positive number is `D.DDDD * 10^e`
     - `D.DDDD` is called significand, coefficient, mantissa, fraction, etc.
     - `e` is called exponent

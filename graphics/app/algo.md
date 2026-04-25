@@ -154,7 +154,7 @@
   - when reuse, assume all semaphores have been waited
     - caller must wait for a fence paired with the pool
 - command buffer pool
-  - consists of 
+  - consists of
     - a VkCommandPool
     - a dynamic array of primary VkCommandBuffer
     - a dynamic array of secondary VkCommandBuffer

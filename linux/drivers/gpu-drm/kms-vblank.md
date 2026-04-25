@@ -50,7 +50,7 @@
   - `DRM_EVENT_CRTC_SEQUENCE`, in response to `DRM_IOCTL_CRTC_QUEUE_SEQUENCE`
 - `drmWaitVBlank`
   - there is a counter for the number of vblanks since the system booted
-  - `_DRM_VBLANK_ABSOLUTE` waits until the counter matches the specified number 
+  - `_DRM_VBLANK_ABSOLUTE` waits until the counter matches the specified number
   - `_DRM_VBLANK_RELATIVE:` waits for the number of vblanks specified
   - `_DRM_VBLANK_SECONDARY` selects whether crtc 0 or 1 should be used
   - `_DRM_VBLANK_NEXTONMISS` waits for next vblank if the specified one is

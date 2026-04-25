@@ -349,7 +349,7 @@
       - `loader_get_driver_for_fd` queries the driver name
       - `get_driver_descriptor` looks up `drm_driver_descriptor` from a
         statically-defined `driver_descriptors` array
-        - the descriptors are defined via `DRM_DRIVER_DESCRIPTOR` 
+        - the descriptors are defined via `DRM_DRIVER_DESCRIPTOR`
       - it also sets `pipe_loader_ops` to `pipe_loader_drm_ops`
     - `pipe_loader_create_screen` creates the pipe screen
       - `pipe_loader_drm_create_screen`

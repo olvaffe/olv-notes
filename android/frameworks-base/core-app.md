@@ -115,7 +115,7 @@ ActivityManagerService
   AMS.startProcessLocked -> unmanaged process
 - manage a process:
   AT.attach -> AT IAM.attachApplication -> ATTACH_APPLICATION_TRANSACTION ->
-  AMS.onTransact -> AMS.attachApplication -> AMS.attachApplicationLocked -> 
+  AMS.onTransact -> AMS.attachApplication -> AMS.attachApplicationLocked ->
   AMS IAT.bindApplication -> BIND_APPLICATION_TRANSACTION -> AT.onTransact ->
   AT.bindApplication and queue msg -> AT.handleBindApplication -> callApplicationOnCreate
 - schedule launch (create, start and resume an activity):
@@ -130,7 +130,7 @@ Activity lifecycles
   load classes, inst.callActivityOnCreate, activity.performStart
   Also in AT.handleLaunchActivity, handleResumeActivity is called to resume.
 - onPause:
-  AMS.startPausingLocked -> AMS IAT.schedulePauseActivity -> 
+  AMS.startPausingLocked -> AMS IAT.schedulePauseActivity ->
   SCHEDULE_PAUSE_ACTIVITY_TRANSACTION -> AT.schedulePauseActivity ->
   AT.handlePauseActivity -> AT.performPauseActivity (calls onPause) and
   AT IAM.activityPaused -> ACTIVITY_PAUSED_TRANSACTION -> AMS.onTransact ->
@@ -145,7 +145,7 @@ Activity lifecycles
   AT.performStopActivityInner (calls onStop), AT.updateVisibility, and
   AT IAM.activityStopped -> ... -> set HR state STOPPED
 - onRestart: happens only on ActivityGroup or TabActivity
-- onDestroy: 
+- onDestroy:
   AMS.destroyActivityLocked -> AMS IAT.scheduleDestroyActivity and set
   HR state DESTROYING -> ... -> AT.handleDestroyActivity ->
   AT IAM.activityDestroyed -> ... -> AMS.activityDestroyed ->

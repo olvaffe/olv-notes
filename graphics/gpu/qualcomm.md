@@ -154,7 +154,7 @@
   - when idle, SQE executes `waitin` waiting for packets to arrive at ROQ
   - ROQ peaks the packets and put them onto different ROQ queues
     - RB
-    - IB1 
+    - IB1
     - IB2
     - MRB (memory read)
     - SDS (set draw state)
@@ -305,7 +305,7 @@
     - `emu_get_control_reg`
     - they emulate SQE internal registers and only a few are used/known
       - accessed using `cread` and `cwrite` instructions
-      - 0x0xx: 
+      - 0x0xx:
       - 0x1xx: scratch space
   - 8-bit Pipe Register Space
     - `struct emu_pipe_regs`
@@ -455,7 +455,7 @@
     - one or more `CP_INDIRECT_BUFFER_PFE`
     - write fence seqno to `CP_SCRATCH_REG(2)` (for hang debug)
     - `CP_EVENT_WRITE(CACHE_FLUSH_TS)` w/ interrupt and writing seqno to
-      `msm_rbmemptrs::fence` 
+      `msm_rbmemptrs::fence`
 - more `a630_sqe.fw`
   - `fxn08` is essentially `CP_WAIT_FOR_ME`
   - `fxn09` writes some bits of `$13` to control reg `0x0a01`
@@ -707,7 +707,7 @@
 
 - `GRAS_BIN_CONTROL`: bin w/h and flags
 - `GRAS_VS_CL_CNTL`: clip masks
-- `GRAS_VS_LAYER_CNTL`: writes layer/view 
+- `GRAS_VS_LAYER_CNTL`: writes layer/view
 - `GRAS_DS_CL_CNTL`: same but for ds
 - `GRAS_DS_LAYER_CNTL`: same but for ds
 - `GRAS_GS_CL_CNTL`: same but for gs
@@ -761,7 +761,7 @@
 - `RB_STENCILMASK`: stencil mask
 - `RB_STENCILREF`: stencil ref
 - `RB_STENCILWRMASK`: stencil writemask
-- `RB_DEPTH_BUFFER_*`: format, pitch, layer, bo addr, gmem offset 
+- `RB_DEPTH_BUFFER_*`: format, pitch, layer, bo addr, gmem offset
   - `RB_DEPTH_BUFFER_INFO` controls format
   - `RB_DEPTH_BUFFER_PITCH` controls pitch
   - `RB_DEPTH_BUFFER_ARRAY_PITCH` controls layer pitch
@@ -936,7 +936,7 @@
       - i doubt this
     - tiling and UBWC can be format-dependent.  We can't always reinterpret
       between compatible formats
-  - ALWAYS resolve samples 
+  - ALWAYS resolve samples
     - I guess its shader does not use txf
     - cannot be used when want to copy samples
 - it uses these GRAS states

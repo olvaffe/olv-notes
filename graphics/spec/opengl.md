@@ -308,7 +308,7 @@
   samplers and resource views
   - A resource view is a view of a resource, with swizzling and etc.  It can be
     accessed directly in the shader.  There can be up to hundreds of slots for
-    resource views.  
+    resource views.
   - A sampler can be used to sample a resource view.  It can be used to access
     a resource view indirectly in the shader, with filtering and etc.  There may
     be only a dozen fo slots for samplers.
@@ -378,7 +378,7 @@
   - nearest sampling
     - given `(s, t, r)`
     - wrap mode is applied first on it
-    - let `(u, v, w)` be `(s * 2^n, t * 2^m, r * 2^l)` 
+    - let `(u, v, w)` be `(s * 2^n, t * 2^m, r * 2^l)`
     - `i` is `[u]` if `s < 1`; or `i` is `2^n - 1` if `s = 1`
     - no border is sampled
   - linear sampling
@@ -527,52 +527,52 @@
 - Effective Drawing
 
     A mesh is described by a vertex buffer, an index buffer, and many primitive
-    
+
       struct primitive {
         GLenum mode;
-    
+
         GLsizei num_vertices;
         GLsizei offset;
       };
-    
+
       for each prim:
           glDrawElements(prim->mode, prim->num_vertices, GL_UNSIGNED_SHORT, prim->offset);
-    
+
     The number of vertices is fixed.  For effective drawing, we can only reduce
     the number of indices and primitives.
 
     Now some primitives may share the same shape, but with differen position or
     size.  Two such primitives differ in the vertices, and their indices have a
     constant displacement.  Thus, we can have
-    
+
       struct primitive {
         GLenum mode;
-    
+
         GLsizei num_vertices;
         GLsizei offset;
         GLint basevertex;
       };
-    
+
       for each prim:
           glDrawElementsBaseVertex(prim->mode, prim->num_vertices, GL_UNSIGNED_SHORT, prim->offset, prim->basevertex);
-    
+
     with two such primitives share the same "offset" but different "basevertex".
-    
+
     More often than usual, the mode of the primitives does not change that much.
     It makes sense to merge pritimives to save the calling overhead
-    
+
       struct primitive {
         GLenum mode;
         GLsizei prim_count;
-    
+
         GLsizei *num_vertices;
         GLsizei *offsets;
         GLint *basevertices;
       };
-    
+
       for each prim:
           glMutlDrawElementsBaseVertex(prim->mode, prim->num_vertices, GL_UNSIGNED_SHORT, prim->offsets, prim->prim_count, prim->basevertex);
-    
+
     However, the saving of the calling overhead is not big enough (Only in
     st_draw_vbo, not in the driver).  There is also an additional cost now that
     some fields of a primitive are dynamically allocated.  Another way to

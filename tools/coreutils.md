@@ -14,7 +14,7 @@
   - `id`, `who`
   - `ln`, `mkdir`, `mkfifo`, `mknod`, `mktemp` `cp`, `dd`, `mv`, `rm`,
     `rmdir`, `touch`,
-  - `ls`, `stat`, 
+  - `ls`, `stat`,
   - `nice`
   - `sha256sum`
   - `sleep`

@@ -53,7 +53,7 @@
 - completeResumeLocked:
   setFocusedActivityLocked: calls WMS.setFocusedApp
   HR.resumeKeyDispatchingLocked: calls WMS.resumeKeyDispatching on itself
-  ensureActivitiesVisibleLocked: 
+  ensureActivitiesVisibleLocked:
   WMS.executeAppTransition
 - start new activity: a look at WMS for what startActivityLocked did
   prepareAppTransition:
@@ -171,7 +171,7 @@
                    if effect, add dim and/or blur under the window
 - closeTransaction
 - inform client window resized
-- 
+-
 
 ## WindowManagerService.KeyWaiter
 - A key waiter waits on a single input event
@@ -245,11 +245,11 @@
 
 ## what would happen if a window is resized
 
-- 
+-
 
 ## what would happen if another activity is started
 
-- 
+-
 
 ## surface transaction
 

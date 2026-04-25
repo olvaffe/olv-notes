@@ -336,7 +336,7 @@
   vblank
 - when events are delivered, drm fd becomes readable
 - `drmHandleEvent` can read events from drm fd
-  
+
 ## `proptest`
 
 - it is to demonstrate `drmModeGetResources`, `drmModeObjectGetProperties`,

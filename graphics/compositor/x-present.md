@@ -24,7 +24,7 @@
   - SBC, Swap Buffer Counter
     - associated with the window and
     - incremented at the completion of each buffer swap (e.g., copy to
-      frontbuffer completed or hardware register that swaps written) 
+      frontbuffer completed or hardware register that swaps written)
   - `glXGetSyncValuesOML` queries the current values of all three counters
   - `glXGetMscRateOML` returns vblank frequency in hertz
   - `glXSwapBuffersMscOML` performs a buffer swap at the target MSC

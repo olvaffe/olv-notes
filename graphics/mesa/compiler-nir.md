@@ -421,23 +421,23 @@
           decl_var shader_in INTERP_MODE_NONE float vFillColor@2 (VARYING_SLOT_VAR0.w, 0, 0)
           decl_var shader_out INTERP_MODE_NONE vec4 gl_FragColor (FRAG_RESULT_COLOR, 0, 0)
           decl_function main (0 params)
-          
+
           impl main {
                   decl_var  INTERP_MODE_NONE vec4 out@gl_FragColor-temp
                   decl_var  INTERP_MODE_NONE vec4 in@vFillColor-temp
                   decl_var  INTERP_MODE_NONE vec4 gl_FragColor@3
                   block block_0:
                   /* preds: */
-                  vec1 32 ssa_48 = deref_var &vFillColor (shader_in float) 
+                  vec1 32 ssa_48 = deref_var &vFillColor (shader_in float)
                   vec1 32 ssa_49 = intrinsic load_deref (ssa_48) (0) /* access=0 */
-                  vec1 32 ssa_50 = deref_var &vFillColor@0 (shader_in float) 
+                  vec1 32 ssa_50 = deref_var &vFillColor@0 (shader_in float)
                   vec1 32 ssa_51 = intrinsic load_deref (ssa_50) (0) /* access=0 */
-                  vec1 32 ssa_52 = deref_var &vFillColor@1 (shader_in float) 
+                  vec1 32 ssa_52 = deref_var &vFillColor@1 (shader_in float)
                   vec1 32 ssa_53 = intrinsic load_deref (ssa_52) (0) /* access=0 */
-                  vec1 32 ssa_54 = deref_var &vFillColor@2 (shader_in float) 
+                  vec1 32 ssa_54 = deref_var &vFillColor@2 (shader_in float)
                   vec1 32 ssa_55 = intrinsic load_deref (ssa_54) (0) /* access=0 */
                   vec4 32 ssa_56 = vec4 ssa_49, ssa_51, ssa_53, ssa_55
-                  vec1 32 ssa_6 = deref_var &gl_FragColor (shader_out vec4) 
+                  vec1 32 ssa_6 = deref_var &gl_FragColor (shader_out vec4)
                   intrinsic store_deref (ssa_6, ssa_56) (15, 0) /* wrmask=xyzw */ /* access=0 */
                   /* succs: block_1 */
                   block block_1:

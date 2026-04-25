@@ -88,7 +88,7 @@
     - `875 * 16 * (8 * 32) / 8 / 1024` = 448 GB/s
 - HBM
   - 3D-stacked SDRAM dies with very high data path width
-    - A DRAM die has two 128-bit channels 
+    - A DRAM die has two 128-bit channels
     - A 4-Hi die (4 1-Hi dies stacked) has 8 128-bit channels
   - HBM: 2n-prefetch @ 500 MHz
     - with four 4-hi dies, the total width is `4 * 4 * 2 * 128 = 4096`
@@ -96,7 +96,7 @@
   - HBM2: 4n-prefetch @ 500 MHz
     - with four 8-hi dies, the total width is `4 * 8 * 2 * 128 = 8192`
     - `500 * 4 * 8192 / 8 / 1024` = 2000 GB/s
- 
+
 ## Mobile GPU Power Budget
 
 - depends on heat dissipation

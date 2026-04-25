@@ -36,7 +36,7 @@
 - Take a look at `i915`.  `i915InvalidateState` is called when updating the
   states.  Components like `swrast`, `swrast_setup`, `vbo`, and `tnl` are
   updated.
-- There are 3 places the states are stored and should be synchronized. 
+- There are 3 places the states are stored and should be synchronized.
   - MESA, the states are updated by user
   - DRIVER, the states are updated by MESA when `InvalidateState`.
   - HW, the states are updated by DRIVER.
@@ -203,7 +203,7 @@
   - Binding makes `ctx->{Draw,Read}Buffer` pointing to the new FBOs.
 - One of the attachments is `strut gl_renderbuffer`.
   - `glGenRenderbuffersEXT` to generate, `glBindRenderbufferEXT` to bind.
-  - It is created at binding time by `ctx->Driver.NewRenderbuffer`. 
+  - It is created at binding time by `ctx->Driver.NewRenderbuffer`.
   - Binding makes `ctx->CurrentRenderbuffer` pointing to the new rb.
   - It is bound so that storage can be specified by `glRenderbufferStorageEXT`.
 - The other of the attachments is `struct gl_texture_object`.

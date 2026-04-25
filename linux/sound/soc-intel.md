@@ -110,7 +110,7 @@
       - `sof_machine_check` calls `snd_sof_machine_select` which calls
         `hda_machine_select`
         - it ends up in `hda_generic_machine_select` and selects
-          `snd_soc_acpi_intel_hda_machines` 
+          `snd_soc_acpi_intel_hda_machines`
   - there are these subdevices and drivers
     - `dmic-codec` is on the platform bus and with `dmic_driver`
     - `ehdaudio0D0` is on the hdaudio bus and with `realtek_driver`

@@ -636,7 +636,7 @@
   - `beginDynamicRender`
   - `m_vk.cmdBindVertexBuffers`
   - `m_vk.cmdBindPipeline`
-  - `draw` draws 2 triangles 
+  - `draw` draws 2 triangles
     - `vertexCount` is 6
     - `firstVertex` is 2
   - `endDynamicRender`
@@ -2167,7 +2167,7 @@
     - this invokes the fs for "0.5" of the samples
       - in this case, the spec requires at least `max(ceil(4 * 0.5),1) = 2`
         invocations
-    - for each invocation, only the active sample is set in `gl_SampleMaskIn` 
+    - for each invocation, only the active sample is set in `gl_SampleMaskIn`
 - `gl_SampleMaskIn`
   - Bit n of element w in the array is set if and only if the sample numbered
     32w + n is considered covered for this fragment shader invocation.
@@ -2217,7 +2217,7 @@
             gl_Position = a_position;
             v_color = u_color;
     }
-    
+
     in mediump vec4 v_color;
     layout(location = 0) out mediump vec4 fragColor;
     void main (void)

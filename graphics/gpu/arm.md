@@ -299,11 +299,11 @@
     - position shading fetches and transforms only positions
     - tiler clips/culls and stores
       - transformed positions
-      - polyton list 
+      - polyton list
     - varying shading fetches attributes and stores varyings
     - fraghment shading reads back
       - transformed positions
-      - polyton list 
+      - polyton list
       - varyings
   - it is beneficial to have two packed buffers, one for positions and one for
     attributes

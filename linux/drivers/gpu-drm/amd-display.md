@@ -37,7 +37,7 @@
   - `convert_tiling_flags_to_modifier` converts tiling to modifiers
 - `add_gfx9_modifiers`
   - `TILE_VERSION` is `AMD_FMT_MOD_TILE_VER_GFX9`
-  - `TILE` is 
+  - `TILE` is
     - `AMD_FMT_MOD_TILE_GFX9_64K_D_X`
     - `AMD_FMT_MOD_TILE_GFX9_64K_D`
     - `AMD_FMT_MOD_TILE_GFX9_64K_S_X` (raven only)

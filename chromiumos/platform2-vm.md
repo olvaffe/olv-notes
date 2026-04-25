@@ -73,7 +73,7 @@
 - maitred
   - `Init::Setup()`
     - mounts `/proc`, `/sys`, `/tmp`, `/mnt/external`, `/run`, `/dev/shm`,
-      `/dev/pts`, `/var`, `/sys/fs/cgroup`, 
+      `/dev/pts`, `/var`, `/sys/fs/cgroup`,
     - starts `vm_syslog` and `vshd`
   - starts grpc server
     - controlled by host `maitred_client`

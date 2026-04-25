@@ -45,7 +45,7 @@
     - `dpu_bind`
     - `dp_display_bind`
     - `dsi_bind`
- 
+
 ## ioctls
 
 - `DRM_IOCTL_MSM_GET_PARAM`
@@ -394,7 +394,7 @@
       - `MSM_SUBMIT_CMD_CTX_RESTORE_BUF`: emit `CP_INDIRECT_BUFFER_PFE` to execute
         _if_ the last submit is from a different opened drm file
       - `MSM_SUBMIT_CMD_IB_TARGET_BUF`: ignored (except reloc was applied in a prior step)
-  - `msm_gpu_retire` is triggered by the irq requested by `msm_gpu_submit` 
+  - `msm_gpu_retire` is triggered by the irq requested by `msm_gpu_submit`
     - it wakes up `retire_worker`
       - `update_fences` calls `msm_update_fence` with all completed submission fences
       - for each completed submission, its `msm_gem_submit` is freed
@@ -489,7 +489,7 @@
   - `/d/dri/<minor>/encoder<id>`
 - `_dpu_plane_init_debugfs` adds
   - `/d/dri/<minor>/plane<id>`
-   
+
 ## cffdump
 
 - an rd dump consists of sections

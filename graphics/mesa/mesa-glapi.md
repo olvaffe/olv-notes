@@ -164,7 +164,7 @@
   don't know what a DRI driver may support, it should never return `NULL`.  In
   case there is no static dispatch, a stub is generated.  The stub will be later
   updated by the DRI driver.
-  - The stub calls the function at offset `~0` in the dispatch table 
+  - The stub calls the function at offset `~0` in the dispatch table
   - `~0` is later replaced by the real offset.
   - See `add_function_name`.
 - For each extension, `driInitExtensions` is called.  It `_glapi_add_dispatch`

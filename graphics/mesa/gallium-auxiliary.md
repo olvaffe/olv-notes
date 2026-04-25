@@ -56,7 +56,7 @@
 
 ## TGSI: vertex
 
-- Generally in `draw_pt_arrays`, nothing is forced or bypassed.  This means 
+- Generally in `draw_pt_arrays`, nothing is forced or bypassed.  This means
   fetch-shade-pipeline get hit a lot, with or without `PT_PIPELINE`.
   - shading happens before pipeline.  pipeline only gets to see the outputs of
     the shader.

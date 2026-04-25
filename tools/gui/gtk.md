@@ -95,7 +95,7 @@ gtk_im_multicontext_{new,set_client_window,filter_keypress,focus_in,get_preedit_
 
 ## gvfs and gio
 
-- a replacement for gnome-vfs built into glib 
+- a replacement for gnome-vfs built into glib
 - gio is the API, and gvfs is the implementation (with daemons, and etc.)
 
 ## GDBus
@@ -139,7 +139,7 @@ xxx_ooo_get
 Having ooo as property, we have
 
 - a generic way to set ooo -> themeable!
-- 
+-
 
 
 ---------------

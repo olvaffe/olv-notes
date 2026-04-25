@@ -356,13 +356,13 @@
     cpp = toolchain_prefix + 'g++'
     strip = toolchain_prefix + 'strip'
     pkgconfig = '/usr/bin/pkg-config'
-    
+
     [built-in options]
     c_args = common_flags + []
     c_link_args = common_flags + []
     cpp_args = common_flags + []
     cpp_link_args = common_flags + []
-    
+
     [properties]
     pkg_config_libdir = '/usr/lib32/pkgconfig:/usr/share/pkgconfig'
 

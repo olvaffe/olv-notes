@@ -138,17 +138,17 @@ if (size <= n_entries) { /* this check is abnormal */
 - Graduate
   - Computing Theory
     - Computational Complexity
-  - Information Theory and Coding Techniques 
+  - Information Theory and Coding Techniques
     - multimedia
-  - Parallel Programming 
-  - Digital Image Processing 
+  - Parallel Programming
+  - Digital Image Processing
   - Machine Learning
   - Digital Speech Processing
-  - Natural Language Processing 
-  - Advanced Computer Architecture 
-  - Real-times Systems 
-  - Artificial Intelligence 
-  - Computer Graphics 
+  - Natural Language Processing
+  - Advanced Computer Architecture
+  - Real-times Systems
+  - Artificial Intelligence
+  - Computer Graphics
 - old
   - Sophomre Fall: Assembly Language
   - Junior Spring: Compiler Design

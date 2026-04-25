@@ -30,7 +30,7 @@
 - http://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf (how NVIDIA does it in their tgsi equivalent),
 - http://developer.amd.com/gpu_assets/Intermediate_Language_Specification--Stream_Processor.pdf (how AMD does it in their tgsi equivalent),
 - http://llvm.org/devmtg/2009-10/OpenCLWithLLVM.pdf (generic presentation about how Apple did their OpenCL Clang integration)
-- http://llvm.org/docs/CodeGenerator.html (how LLVM code generators work) 
+- http://llvm.org/docs/CodeGenerator.html (how LLVM code generators work)
 
 ## Chapter 1. Introduction
 
@@ -236,7 +236,7 @@
         `cl_khr_fp16`)
     - Other Built-in Data Types
       - `image1d_t`, `image1d_buffer_t`, `image1d_array_t`
-      - 8 variants of `image2d_t` 
+      - 8 variants of `image2d_t`
         - all combinations of `array`, `depth`, and `msaa`
       - `image3d_t`
       - `sampler_t`

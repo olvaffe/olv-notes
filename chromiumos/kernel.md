@@ -236,7 +236,7 @@
 ## Linux Distro: Deploy
 
 - on dut
-- deploy modules 
+- deploy modules
   - `sudo tar xkf Image.modules.tar.gz --no-same-owner -C /`
   - `depmod -a <version>`
 - deploy kernel
@@ -398,7 +398,7 @@
     - `cros-ec-pchg` if peripheral chargers
     - `cros-ec-chardev`, `cros-ec-debugfs`, and `cros-ec-sysfs`
 - `CONFIG_KEYBOARD_CROS_EC` provides `cros-ec-keyb` platform driver
-  - it supports a few special keys such as 
+  - it supports a few special keys such as
     - power, volume, brightness, screen lock
     - lid, tablet switch
 - `CONFIG_I2C_CROS_EC_TUNNEL` provides `cros-ec-i2c-tunnel` platform driver

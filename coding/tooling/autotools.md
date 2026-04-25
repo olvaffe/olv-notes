@@ -27,13 +27,13 @@
 - meaing of arguments passed to `AC_INIT`
 
         AC_INIT(PACKAGE-NAME, VERSION, BUG-REPORT, [TARNAME])
-        
+
         #define PACKAGE_NAME "PACKAGE_NAME"
         #define PACKAGE_VERSION "VERSION"
         #define PACKAGE_BUGREPORT "BUG-REPORT"
         #define PACKAGE_TARNAME (default to PACKAGE_NAME with "GNU " prefix stripped)
         #define PACKAGE_STRING "PACKAGE_NAME VERSION"
-        
+
         #define PACKAGE "PACKAGE_TARNAME"
         #define VERSION "PACKAGE_VERSION"
 
@@ -43,7 +43,7 @@
 
         LDADD: target is linked to specified libs
         LIBADD: target depends on specified libs
-        
+
         when target == PROGRAM, use LDADD
         when target == LIBRARY, use LIBADD
 - user configurable variables and am variants
@@ -64,7 +64,7 @@
   - Following is the contents of `ltmain.sh`, adjusted for different shells
 - when `--mode==link`, options no listed in `libtool --mode=link --help` are
   ignored. (not true, because some other options are also passed)
-- 
+-
 
 ## cross-compiling
 

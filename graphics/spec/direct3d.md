@@ -102,15 +102,15 @@
   - SV are such as primitive id, vertex id, instance id
 - API reference
 
-    IAGetIndexBuffer  
-    IAGetInputLayout    
-    IAGetPrimitiveTopology  
-    IAGetVertexBuffers  
+    IAGetIndexBuffer
+    IAGetInputLayout
+    IAGetPrimitiveTopology
+    IAGetVertexBuffers
 
-    IASetIndexBuffer    
-    IASetInputLayout    
-    IASetPrimitiveTopology  
-    IASetVertexBuffers  
+    IASetIndexBuffer
+    IASetInputLayout
+    IASetPrimitiveTopology
+    IASetVertexBuffers
 
 ## Vertex-Shader Stage
 
@@ -119,15 +119,15 @@
 - see vertex stages
 - API reference
 
-    VSGetConstantBuffers        
-    VSGetSamplers   
-    VSGetShader     
-    VSGetShaderResources    
+    VSGetConstantBuffers
+    VSGetSamplers
+    VSGetShader
+    VSGetShaderResources
 
-    VSSetConstantBuffers    
-    VSSetSamplers   
-    VSSetShader     
-    VSSetShaderResources    
+    VSSetConstantBuffers
+    VSSetSamplers
+    VSSetShader
+    VSSetShaderResources
 
 ## Geometry-Shader Stage
 
@@ -142,8 +142,8 @@
   disabled while SO is on
 - API reference
 
-    SOGetTargets    
-    SOSetTargets    
+    SOGetTargets
+    SOSetTargets
 
 ## Rasterizer Stage
 
@@ -166,13 +166,13 @@
   - cull none, front, or back
 - API reference
 
-    RSGetScissorRects   
-    RSGetState  
-    RSGetViewports  
+    RSGetScissorRects
+    RSGetState
+    RSGetViewports
 
-    RSSetScissorRects   
-    RSSetState  
-    RSSetViewports  
+    RSSetScissorRects
+    RSSetState
+    RSSetViewports
 
 ## Pixel-Shader Stage
 
@@ -196,13 +196,13 @@
   - use the pixel shader for this
 - API reference
 
-    OMGetBlendState 
-    OMGetDepthStencilState  
-    OMGetRenderTargets  
+    OMGetBlendState
+    OMGetDepthStencilState
+    OMGetRenderTargets
 
-    OMSetBlendState 
-    OMSetDepthStencilState  
-    OMSetRenderTargets  
+    OMSetBlendState
+    OMSetDepthStencilState
+    OMSetRenderTargets
 
 ## Shader Stages
 

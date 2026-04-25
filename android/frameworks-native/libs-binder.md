@@ -119,7 +119,7 @@ mmap
 
 binder_proc
 - has binder_thread(s), binder_node(s), binder_ref(s), binder_buffer(s)
-- has binder_work(s) on todo, 
+- has binder_work(s) on todo,
 - has delivered_death
 
 /proc/binder
@@ -185,7 +185,7 @@ binder_transaction
     struct binder_node *target_node = NULL;
     struct list_head *target_list;
     wait_queue_head_t *target_wait;
-- target_thread is set if replying or 
+- target_thread is set if replying or
 - struct binder_transaction *t;
 
 
@@ -296,7 +296,7 @@ Parcel
 - writeWeakBinder and readWeakBinder promotes wp to sp and same as above.
 - readXXXBinder needs to convert a handle to a BpBinder.
   It calls ProcessState::get{Strong,Weak}ProxyForHandle.
-  
+
 ProcessState
 - opens and mmaps /dev/binder
 - caches handle (BINDER_TYPE_HANDLE) to BpBinder mappings in mHandleToObject.
@@ -354,4 +354,4 @@ binder class hierarchy
 IBinder
 - implemented by Binder and BinderProxy
 - remote -> BinderProxy::transact -> BpBinder::transact -> write to /dev/binder
-- 
+-

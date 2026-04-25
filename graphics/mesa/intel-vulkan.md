@@ -399,7 +399,7 @@
   - `STATE_BASE_ADDRESS::BindlessSurfaceStateBaseAddress` is set to the va of
     the pool
   - `anv_bindless_state_for_binding_table` converts the offset of the surface
-    state 
+    state
     - from the offset to `bindless_surface_state_pool` to offset to
       `internal_surface_state_pool`
 
@@ -484,7 +484,7 @@
       `ISL_FORMAT_PLANAR_420_8`
     - `nir_vk_lower_ycbcr_tex` lowers the sampling
       - to sample all planes
-      - to reconstruct chroma samples 
+      - to reconstruct chroma samples
       - to convert colorspaces
   - for `VK_FORMAT_G8B8G8R8_422_UNORM` and `VK_FORMAT_B8G8R8G8_422_UNORM`,
     they get mapped to hw `ISL_FORMAT_YCRCB_NORMAL` and

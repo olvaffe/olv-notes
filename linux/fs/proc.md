@@ -19,7 +19,7 @@
 - `Buffers`
   - this shows `nr_blockdev_pages`, which is the amount of pagecache used for
     block devices (rather than files)
-  - that is, pagecache used for direct blkdev io 
+  - that is, pagecache used for direct blkdev io
     - e.g., when an fs accesses superblocks such as in `find / -name whatever`
 - `Cached`
   - this shows the amount of pagecache used for files

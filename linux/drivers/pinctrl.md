@@ -12,7 +12,7 @@
     - these child nodes have `compatible` and are bound by a gpio driver
   - child nodes to group the pins
     - e.g., we want to use two pins for uart
-      - the uart is called a "function" and is controlled by `pinmux_ops` 
+      - the uart is called a "function" and is controlled by `pinmux_ops`
       - we could use pin 0,1 or pin 2,3, etc. for the uart function
       - each of the possibilities is called a "group" and is controlled by
         `pinctrl_ops`

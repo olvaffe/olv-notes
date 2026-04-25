@@ -90,7 +90,7 @@
   - `XCreateWindow` takes visual while `glXCreateWindow` takes fbconfig (and a
     window).
   - The latter enables `glXCreatePbuffer`.
-- 
+-
 
 ## mesa/glx/x11/drisw_glx.c as an example
 - when loader driCreateScreen, load swrast_dri.so and looks for `__DRI_DRIVER_EXTENSIONS`.
@@ -216,7 +216,7 @@
   get the `GLXPixmap`.  `glXBindTexImageEXT` is called on the `GLXPixmap` to
   bind it as a texture.
 - When `Pixmap` is updated, how is it reflected in `GLXPixmap`?
-  - 
+  -
 - A thought about `EGLImage`.  For a client api, `EGLImage` is
   `struct _EGLImage { struct pipe_surface *surface; };`.  The pipe surface is
   filled by an EGL driver.  Given a `Pixmap`, suppose it has an associated

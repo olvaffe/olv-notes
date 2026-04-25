@@ -647,7 +647,7 @@
     "is-implemented-in-terms-of" a list.
 - private inheritance means "is-implemented-in-terms-of" (item 39)
   - no software design meaning, but software impl meaning
-  - you want private inheritance, instead of compoisition, so that you can 
+  - you want private inheritance, instead of compoisition, so that you can
     access the protected members or redefine virtual functions.
   - but a better approach is to have a private nested class that publicly
     inherits the base class, and use composition

@@ -34,7 +34,7 @@
 
 ## `cros` CLI
 
-- `bin/cros` is a symbolic link to `scripts/wrapper3.py` 
+- `bin/cros` is a symbolic link to `scripts/wrapper3.py`
   - many under `bin/` are symlinks to `scripts/wrapper3.py`
 - when invoked as `cros`, `scripts/wrapper3.py` finds `scripts/cros.py` and
   calls the `main` function

@@ -384,8 +384,8 @@
   - <https://chromium.googlesource.com/chromium/src/+/main/testing/android/docs/gtest_implementation.md>
     - `gclient sync` clones `testing` from chromium
     - it builds an apk containing
-      - one or more `.so` 
-      - one or more `.dex` 
+      - one or more `.so`
+      - one or more `.dex`
       - a manifest file containing `<instrument>` and `<activity>`
 - angle trace internals
   - an angle trace consists of a `.so` and a data file

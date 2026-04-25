@@ -218,7 +218,7 @@
   - swiotlb allocates 64MB of memory pool from memblock
   - when a device cannot DMA-access a page, `dma_map_sg` falls back to
     `swiotlb_tbl_map_single`.  swiotlb allocates a bounce (shadow) page from
-    its pool and return the dma address to the shadow page 
+    its pool and return the dma address to the shadow page
   - in `dma_unmap_sg` or `dma_sync_sg_for_*`, swiotlb transparently memcpy's
     between the real page and the shadow page
 

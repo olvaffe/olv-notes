@@ -310,7 +310,7 @@
     - `SBASE` SGPR-pair which provides a base address
     - `OFFSET` offset
   - `S_LOAD_DWORD`  Read 1 dword from scalar data cache
-  - `S_LOAD_DWORDX4` 
+  - `S_LOAD_DWORDX4`
   - `S_BUFFER_LOAD_B32` Read 1 dword from scalar data cache.
 - 12.7. VOP2 Instructions
   - `V_ADD_U32`
@@ -337,7 +337,7 @@
 - 12.16. MIMG Instructions
 - 12.17. EXPORT Instructions
   - `EXP` Transfer vertex position, vertex parameter, pixel color, or pixel
-    depth information to the output buffer. 
+    depth information to the output buffer.
 - 12.18.1. Flat Instructions
 - 12.18.2. Scratch Instructions
 - 12.18.3. Global Instructions

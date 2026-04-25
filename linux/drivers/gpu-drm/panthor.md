@@ -594,7 +594,7 @@
   - the fw is considered booted after a `JOB_INT_GLOBAL_IF` irq is received
 - `panthor_fw_init_ifaces`
   - each interface consists of control, input, and output regions
-    - control is for iface props and is read-only 
+    - control is for iface props and is read-only
     - input is written by host and is read-write
     - output is written by mcu and is read-only
   - `panthor_fw_global_iface`

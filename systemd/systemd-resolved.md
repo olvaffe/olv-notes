@@ -53,7 +53,7 @@
   - a symlink to `/run/systemd/resolve/resolv.conf`
     - it lists the upstream DNS server and allows systemd-resolved to be
       bypassed
-  - externally-maintained 
+  - externally-maintained
     - systemd-resolved becomes a consumer and parses the file for upstream DNS
       server
 - when systemd-networkd receives DNS servers from the DHCP server, it tells

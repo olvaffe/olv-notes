@@ -26,7 +26,7 @@
 - It has a `BluetoothAudioGateway` and it calls `mAg.start` and `mAg.stop` when
   bt is on or off.
   - When started, it spawns a thread and listens on several sockets for incoming
-    HSP and HFP connections.  
+    HSP and HFP connections.
   - When a connection initiated by the device is made, it notifies the handler,
     which is `mIncomingConnectionHandler` of `BluetoothHeadsetService`.
 - A connection initiated by user to the device is handled by

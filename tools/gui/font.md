@@ -106,7 +106,7 @@
     - `_XftDefaultInit` initializes more defaults from `XGetDefault`, X
       resource db
       - `Xft.scale` for fc `scale`
-      - `Xft.dpi` for fc `dpi` 
+      - `Xft.dpi` for fc `dpi`
       - and more
     - if `Xft.dpi` is not set, it uses `DisplayHeight() * 25.4 / DisplayHeightMM()`
     - with `scale`, `dpi`, and `size` known, `FcDefaultSubstitute` calculates

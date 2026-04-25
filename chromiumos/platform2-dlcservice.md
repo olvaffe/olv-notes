@@ -7,7 +7,7 @@
   build
 - `dlcservice` is a daemon providing D-Bus api to chrome and other system
   daemons
-  - it can be requested to download and mount DLCs 
+  - it can be requested to download and mount DLCs
 - a DLC package can be created by inheriting `dlc.eclass` in ebuild
 
 ## Paths

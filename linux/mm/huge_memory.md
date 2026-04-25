@@ -11,7 +11,7 @@
 - split and collapse
   - split downgrades a hugepage to individual normal pages
     - it involves updating ptes to point to individual pages
-    - downgrade enables memory reclaim 
+    - downgrade enables memory reclaim
   - collapse upgrades individual normal pages to a hugepage
     - `khugepaged` scans for good candidates in the background, and once a
       candidate is found

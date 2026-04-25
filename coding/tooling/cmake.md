@@ -17,7 +17,7 @@
   - these are more global and should be used with care
     - `add_compile_definitions`
     - `add_compile_options`
-    - `add_link_options` 
+    - `add_link_options`
     - these should not be used
       - `add_definitions`
       - `include_directories`
@@ -79,19 +79,19 @@
 - `arm64.cmake`
     set(toolchain_prefix "/usr/bin/aarch64-linux-gnu-")
     set(sysroot "...")
-    
+
     set(ENV{PKG_CONFIG_SYSROOT_DIR} "${sysroot}")
     set(ENV{PKG_CONFIG_LIBDIR} "${sysroot}/usr/lib/pkgconfig:${sysroot}/usr/share/pkgconfig")
-    
+
     set(CMAKE_SYSTEM_NAME "Linux")
     set(CMAKE_SYSTEM_PROCESSOR "aarch64")
-    
+
     set(CMAKE_SYSROOT "${sysroot}")
     set(CMAKE_STAGING_PREFIX "...")
 
     set(CMAKE_C_COMPILER "${toolchain_prefix}gcc")
     set(CMAKE_CXX_COMPILER "${toolchain_prefix}g++")
-    
+
     set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
     set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
     set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

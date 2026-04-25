@@ -170,7 +170,7 @@
           descriptor is available
         - when `VIRTQ_DESC_F_AVAIL` and `VIRTQ_DESC_F_USED` agree, the
           descriptor is used (or free)
-        - when the driver counter and the device counter agree, 
+        - when the driver counter and the device counter agree,
     - a buffer consists of zero or more read-only physically contiguous
       elements followed by zero or more write-only physically contiguous
       - there is at least one element
@@ -319,13 +319,13 @@
 
 ## PCI transport
 
-- a PCI virtio device has an IRQ for config space change 
+- a PCI virtio device has an IRQ for config space change
 - it also has per-vq IRQs for the virtqueues
   - or a global virtqueue IRQ for legacy devices
 
 ## virtio devices
 
- - commonly implemented as PCI devices 
+ - commonly implemented as PCI devices
  - `virtqueue` is the fundemental building block for bulk data transport
  - there are three common ways to process `virtqueue` operations
    - by the userspace hypervisor/VMM itself
@@ -333,7 +333,7 @@
      - Using the information from KVM, VMM
        - tells vhost the memory mapping of the device
        - registers to vhost a "kick" eventfd, which is for `guest->host`
-       	 notification known as ioeventfd 
+       	 notification known as ioeventfd
        - registers to vhost a "call" eventfd, which is for `host->guest`
        	 notification known as irqfd
    - by another process (vhost-user)

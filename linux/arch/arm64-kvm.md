@@ -100,7 +100,7 @@
     `kvm_handle_guest_abort` is called
     - `kvm_pgtable_stage2_map` sets up stage-2 mapping
 - `KVM_RUN` ioctl
-  - `kvm_arch_vcpu_ioctl_run` 
+  - `kvm_arch_vcpu_ioctl_run`
     - `kvm_arm_vcpu_enter_exit` calls `__kvm_vcpu_run`
       - two variants depending on whether VHE or nVHE/hVHE
 

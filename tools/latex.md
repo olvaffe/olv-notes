@@ -8,7 +8,7 @@
     \documentclass[12pt]{article}
     \begin{document}
     Hello world!
-    $Hello world!$ %math mode 
+    $Hello world!$ %math mode
     \end{document}
 - `pdflatex hello-world.tex`
 

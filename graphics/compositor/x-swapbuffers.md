@@ -60,7 +60,7 @@
       - sends `DRM_EVENT_FLIP_COMPLETE`
       - event `drm_vblank_event`
 - Latency: minimal (presented next vsync after swap buffers)
- 
+
 ## Composited
 
 - app swap buffers

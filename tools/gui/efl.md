@@ -91,7 +91,7 @@
 struct _Evas_Smart_Class /** a smart object class */
 {
    const char *name; /** the string name of the class */
-   
+
    int version;
 
    /* "add" is object constructor (see evas_object_smart_add) */
@@ -99,7 +99,7 @@ struct _Evas_Smart_Class /** a smart object class */
 
    void  (*del)         (Evas_Object *o);
    void  (*move)        (Evas_Object *o, Evas_Coord x, Evas_Coord y);
-   void  (*resize)      (Evas_Object *o, Evas_Coord w, Evas_Coord h); 
+   void  (*resize)      (Evas_Object *o, Evas_Coord w, Evas_Coord h);
    void  (*show)        (Evas_Object *o); // FIXME: DELETE ME
    void  (*hide)        (Evas_Object *o); // FIXME: DELETE ME
    void  (*color_set)   (Evas_Object *o, int r, int g, int b, int a); // FIXME: DELETE ME

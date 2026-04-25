@@ -234,7 +234,7 @@
 
 ## ARM
 
-- 
+-
 
 ## Security Hardening
 

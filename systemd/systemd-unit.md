@@ -318,7 +318,7 @@
 
 - `man systemd.scope`
 - scopes manage externally-created processes
-  - contrary to processes created by service units 
+  - contrary to processes created by service units
 - `systemctl status init.scope` has pid1, which is externally-created
 - `[Scope]`
   - `OOMPolicy=` specifies the oom policy

@@ -25,7 +25,7 @@
   - it can also has `build:baz --dah`, which is used when `--config=baz` is
     specified
 - <https://bazel.build/docs/configurable-attributes>
-  - `BUILD` has `select({"cond1": val1, "cond2": val2})` 
+  - `BUILD` has `select({"cond1": val1, "cond2": val2})`
   - it also defines the conditions
     - `config_setting(name = "cond1", values = ...)`
     - this means, `cond1` is selected when cmdline matches `values`

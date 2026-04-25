@@ -70,7 +70,7 @@
     - `r(lambda)` is the intensities of the red light after normalization
     - `g(lambda`) and `b(lambda)` are similar
   - repeating the same experiement for different test lights, we get three
-    color matching functions `r`, `g`, and `b` 
+    color matching functions `r`, `g`, and `b`
     - these functions can have negative values at certain wavelengths, meaning
       the only way to match those wavelengths in the experiments was to light
       the left half of the screen with some amount of the r/g/b lights

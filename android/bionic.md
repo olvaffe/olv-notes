@@ -114,7 +114,7 @@
 ## Android `bionic`
 
 - All executables are built with `-nostdlib` and bionic's `crt*`
-- `crtbegin_dynamic.S` calls `__libc_init` to initialize bionic and 
+- `crtbegin_dynamic.S` calls `__libc_init` to initialize bionic and
   call program's `main`
   - it also defines `.preinit_array` and `.init_array` to be called by the
     linker.  Specifically, `__libc_preinit` will be called

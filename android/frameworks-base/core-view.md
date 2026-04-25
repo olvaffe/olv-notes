@@ -71,7 +71,7 @@ android.view.ViewRoot
 - Through the use of session, ViewRoot asks for relayout, pending keys, setInsets, etc.
 - Through the use of mWindow, WMS notifies resized, dispatch{Key,Pointer,Trackball},
   visibility, focus change, and asks for debug info.
-- Through ViewRoot's public functions, the its View asks for traversal, etc. 
+- Through ViewRoot's public functions, the its View asks for traversal, etc.
 - The main function is performTraversals.  Most events modify the state and schedule
   traversal.  Traversals means ask the View for the measured size and negotiate with
   WMS.  Ask View to layout according to the size allocated by WMS.  Ask the View to draw.

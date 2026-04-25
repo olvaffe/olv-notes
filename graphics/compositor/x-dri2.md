@@ -91,7 +91,7 @@
   - `drmModeAddFB` is called on the current back
   - `drmModeRmFB` will be called on the current front after flip
   - `drmModePageFlip` is called
-- `radeon_dri2_flip_event_handler` is called after the flip happened 
+- `radeon_dri2_flip_event_handler` is called after the flip happened
 - root pixmap
   - `RADEONScreenInit_KMS`
   - GC op is mapped to exa operations

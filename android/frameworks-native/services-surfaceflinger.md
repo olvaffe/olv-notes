@@ -122,7 +122,7 @@
   - a `VirtualDisplaySurface` is created for each virtual display
 - `beginFrame` is called when SF is about to render a new frame
 - `prepareFrame` is called after SF knows whether client composition is
-  necessary 
+  necessary
 - `compositionComplete` is called after all layers are rendered (but before SF calls `eglSwapBuffers`)
 - `advanceFrame` is called after all layers are rendered (and after SF calls `eglSwapBuffers`)
 - `onFrameCommitted` is called after the new frame is presented/posted
@@ -130,7 +130,7 @@
   - `beginFrame`, `prepareFrame`, and `compositionComplete` are no-ops
   - `advanceFrame` acquires the next buffer in BQ and makes it the client
     target in HWC.  If the buffer is different from the previous one, the
-    previous one is marked as pending release. 
+    previous one is marked as pending release.
   - `onFrameCommitted` releases the previous buffer.  It gets the present
     fence from HWC and associates the fence with the previous buffer.  This
     way, the previous buffer is not reused until the fence is signaled.
@@ -181,7 +181,7 @@
   - this enables and clears timestats, for fps and etc.
   - one can periodically `-dump -clear` to dump and clear the stats
 
-## Frame Trace View 
+## Frame Trace View
 
 - this is Unity on ARCVM
 - frame pacing depends on vsyncs
@@ -250,7 +250,7 @@
 - OpenGL ES: `libGLESv1_CM.so`, stubs call into hooks
 - EGL: libEGL.so, dlopen libhgl.so or libagl.so to get hooks and call into hooks
 - libhgl.so or libagl.so: Real libraries defining gl and egl functions
-- 
+-
 
     typedef struct egl_native_window_t*     EGLNativeWindowType;
     typedef struct egl_native_pixmap_t*     EGLNativePixmapType;
@@ -504,7 +504,7 @@ DisplayHardware:
 - `drawWithOpenGL`
   - framebuffer has no alpha channel; layers use pre-multiplied alpla
   - `needsBlending` returns true if the pixel format has alpha channel
-  - 
+  -
 
 ## DisplayHardware
 

@@ -92,7 +92,7 @@
       - the vm has memory now but still no cpu
   - `create_irq_chip` points to `create_kvm_kernel_irq_chip`
     - `ioctl(KVM_CREATE_IRQCHIP)`
-      - in-kernel virtual ioapic, virtual pic (two PICs, nested), 
+      - in-kernel virtual ioapic, virtual pic (two PICs, nested),
     - `ioctl(KVM_CREATE_PIT2)`
       - in-kernel PIT timer
     - there is `create_kvm_split_irq_chip` to emulate the devices in userspace

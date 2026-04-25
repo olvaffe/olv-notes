@@ -386,7 +386,7 @@
 - `TracingMuxerImpl`
   - `Initialize`, for each backend, calls `ConnectProducer` (e.g.,
     `SystemTracingBackend::ConnectProducer`) to create an endpoint and wraps
-    it in a `TracingMuxerImpl::ProducerImpl` 
+    it in a `TracingMuxerImpl::ProducerImpl`
   - for system backend, this connects to the system-wide producer socket.
   - `ProducerIPCClientImpl::OnServiceRequest` is called for requests from the
     service.  It calls back to `TracingMuxerImpl::ProducerImpl` for things

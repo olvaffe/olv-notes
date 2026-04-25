@@ -1228,7 +1228,7 @@
 
 ## `panvk_cs_subqueue_context`
 
-- `panvk_cs_subqueue_context` stores persistent subqueue states 
+- `panvk_cs_subqueue_context` stores persistent subqueue states
   - `syncobjs` is the current subqueue seqno
     - `init_subqueue` inits it to 1
     - it is incremented after a job complete

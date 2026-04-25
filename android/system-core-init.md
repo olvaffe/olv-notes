@@ -265,7 +265,7 @@
 
 - zygote calls SystemServer::main -> load libandroid_servers.so, init1 -> system_init
 - system_init
-  SurfaceFlinger::instantiate, 
+  SurfaceFlinger::instantiate,
   if simulator:
     AudioFlinger::instantiate
     MediaPlayerService::instantiate
@@ -273,7 +273,7 @@
   "starting Android runtime"
   AndroidRuntime::getRuntime
   "starting Android services"
-  runtime->callStatic("com/android/server/SystemServer", "init2"): 
+  runtime->callStatic("com/android/server/SystemServer", "init2"):
 - SystemServer::init2 -> ServerThread::run, and a bunch of services started
 - when in zygoteInit, (app_process's) onZygoteInit is called.  This is the
   first time ProcessState is used and it opens /dev/binder.
@@ -429,4 +429,4 @@ BINDER
   - `umount tmp`
   - `mkdir chroot/usr`
     - this makes systemd-nspawn happy
-- 
+-

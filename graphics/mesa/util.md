@@ -102,7 +102,7 @@
       - `MESA_PROCESS_NAME`
       - `program_invocation_name`
   - sample xml
-  
+
       <driconf>
         <device>
           <application>

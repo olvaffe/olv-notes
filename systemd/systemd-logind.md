@@ -63,7 +63,7 @@
 
 - a `Device` is created for udev device that belongs to a seat
   - udev `71-seat.rules` tags `seat` to `sound`, `input`, `drm`, and other
-    devices 
+    devices
   - it also tags `master-of-seat` to `drm`
 - `manager_dispatch_device_udev` is a monitor that is called for each udev
   device tagged with `seat`

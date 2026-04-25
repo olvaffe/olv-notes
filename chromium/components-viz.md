@@ -73,7 +73,7 @@
     - with capture time of 33ms and a queue of 3 captures, a capture completes
       99ms later after scheduled
   - `cros_camera_service`: `Capture request` wakes up to
-    - `CameraClient::RequestHandler::WriteStreamBuffers` 
+    - `CameraClient::RequestHandler::WriteStreamBuffers`
     - `CameraDeviceAdapter::Notify`
       - this wakes up `DefaultCaptureR` which wakes up `EffectsGlThread`
     - `CameraDeviceAdapter::ProcessCaptureResult`

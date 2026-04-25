@@ -9,7 +9,7 @@
 - given a new dongle,
   - let's assume the computer initiates scan/pair/connect
   - the computer scans to discover the dongle
-    - the dongle must be discoverable 
+    - the dongle must be discoverable
   - the computer pairs with the dongle
     - the computer must be pairable
     - the dongle must be pairable
@@ -238,7 +238,7 @@
         `device_resolved_drivers` on all added devices
         - `dev_probe` calls `probe_service` which calls
           `btd_profile::device_probe`
-          - e.g., it points to `input_device_register` for the input profile 
+          - e.g., it points to `input_device_register` for the input profile
     - `load_connections` sends `MGMT_OP_GET_CONNECTIONS` to get connected
       devices
       - for each connection, it looks up or creates a device of the addr
@@ -397,7 +397,7 @@
 ## Stack
 
 - `L2CAP` stands for Logical Link Control and Adaption Protocol
-  - layered over link controller protocol 
+  - layered over link controller protocol
 - `RFCOMM`, `TCS`, and `SDP` are immediately above `L2CAP`
 - `PPP`, `AT-COMMAND`, and `OBEX` are immediately above `RFCOMM`
 - `SCO` and `ACL` are above baseband and below `Link Manager`
