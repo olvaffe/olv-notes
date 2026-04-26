@@ -4,12 +4,15 @@
 
 - brief description and detailed description
 
+  ```c
     /**
-     - \brief BRIEF DESCRIPTION
-     -        BRIEF DESCRIPTION CONTINUED
-     -
-     - DETAILED DESCRIPTION.
-     -/
+      * \brief BRIEF DESCRIPTION
+      *        BRIEF DESCRIPTION CONTINUED
+      *
+      * DETAILED DESCRIPTION.
+      */
+  ```
+
 - To put a descript after memebers, use `/**< ... */`
 - The documentation of global functions, variables, typedefs, and enums will
   only be included in the output if the file they are in is documented as well.

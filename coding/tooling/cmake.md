@@ -143,7 +143,7 @@
   - `-DANDROID_PLATFORM=android-$MINSDKVERSION`
     - default to the lowest version supported by the NDK release
   - `-DANDROID_STL=$STL`
-    - `c++_shared`, `c++_static	`, `none`
+    - `c++_shared`, `c++_static`, `none`
     - it gets translated to `CMAKE_ANDROID_STL_TYPE`
   - `-DANDROID_CCACHE=ccache`
     - it gets translated to `CMAKE_C_COMPILER_LAUNCHER` and

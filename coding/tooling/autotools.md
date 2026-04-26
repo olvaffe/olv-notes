@@ -1,6 +1,6 @@
 # Autotools
 
-## Autotools
+## Overview
 
 - <https://www.gnu.org/software/m4/>
   - macro processor
@@ -89,4 +89,3 @@
   - `linux`
 - os
   - `winnt4.0`, `elf`, `coff`, `gnu`, `gnueabi`, `eabi`, `android`
-
