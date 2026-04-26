@@ -157,7 +157,7 @@
         - `5` is directory
         - `6` is FIFO special
       - `char linkname[100]; /* 157 */`
-      - `char magic[6];      /* 257 */` is `ustar `
+      - `char magic[6];      /* 257 */` is `ustar`
       - `char version[2];    /* 263 */` is ` `
       - `char uname[32];     /* 265 */` is the user name
       - `char gname[32];     /* 297 */` is the group name

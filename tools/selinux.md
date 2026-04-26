@@ -24,7 +24,7 @@
   - `define(interface, ...)` expands `interface`, which is used in `.if`
   - `define(gen_require, ...)` expands `gen_require`, which puts the arg in a
     `require { ... }` block
-     - this tells `checkpolicy` to import stuff from another file
+    - this tells `checkpolicy` to import stuff from another file
   - `define(gen_user, ...)` expands `gen_user` to `user ...` to declare a user
   - `define(gen_context, ...)` expands `gen_context` to the arg
 - `.if` defines interfaces

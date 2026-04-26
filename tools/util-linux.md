@@ -52,7 +52,7 @@
     - `eval_issue_file` parses `/etc/issue`
     - `do_prompt` prompts for login name
       - `print_issue_file` prints `/etc/issue`
-      - it prints `<hostname> login: `
+      - it prints `<hostname> login:`
     - reads login name
   - calls `tcsetattr` to set the line for `login`
   - `execv`s `login -- <username>`

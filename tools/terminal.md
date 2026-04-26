@@ -288,18 +288,24 @@
 - experiment
   - open a terminal and
 
+    ```bash
     $ tty
     /dev/pts/0
     $ stty -F /dev/pts/0
     speed 38400 baud; line = 0;
     -brkint -imaxbel iutf8
+    ```
+
   - open a second terminal and
 
+    ```bash
     $ stty -F /dev/pts/0
     speed 38400 baud; line = 0;
     lnext = <undef>; discard = <undef>; min = 1; time = 0;
     -brkint -icrnl -imaxbel iutf8
     -icanon -echo
+    ```
+
   - bash uses readline for line editing
     - that puts the tty into the raw mode to handle ascii codes as keys are
       pressed
