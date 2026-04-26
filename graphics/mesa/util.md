@@ -98,11 +98,12 @@
     - this returns the merged XML string, which can be used by GUI app
 - `driParseConfigFiles`
   - `driParseConfigFiles` also uses `execname` is from
-      - `MESA_DRICONF_EXECUTABLE_OVERRIDE`
-      - `MESA_PROCESS_NAME`
-      - `program_invocation_name`
+    - `MESA_DRICONF_EXECUTABLE_OVERRIDE`
+    - `MESA_PROCESS_NAME`
+    - `program_invocation_name`
   - sample xml
 
+    ```xml
       <driconf>
         <device>
           <application>
@@ -113,6 +114,8 @@
           </engine>
         </device>
       </driconf>
+    ```
+
   - `optConfStartElem` and `optConfEndElem` are the element handlers
   - when `<device>` is parsed,
     - `parseDeviceAttr` parses the attributes

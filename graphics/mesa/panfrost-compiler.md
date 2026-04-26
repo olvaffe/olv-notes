@@ -163,9 +163,9 @@
       - the instr has a static set, a static binding, and a dynamic index
       - `shader_desc_idx` translates the set/binding to a u32
         - the higher 8 bits are for set
-         - `panvk_per_arch(cmd_prepare_shader_res_table)` reserves the first set
-           for driver internal set
-         - as such, the set number is offset by one
+          - `panvk_per_arch(cmd_prepare_shader_res_table)` reserves the first set
+             for driver internal set
+          - as such, the set number is offset by one
         - the lower 24 bits are for hw descriptor idx in the set
       - the returned vec3 consists of
         - comp 0 is the u32 for the static set/binding

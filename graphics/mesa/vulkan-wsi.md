@@ -139,7 +139,7 @@
     - call `wsi_wl_image_init` for each image
       - create a `wsi_image` using `wsi_create_native_image`
       - create a `wl_buffer` using `zwp_linux_buffer_params_v1` or
-      	`wl_drm_create_prime_buffer`
+       `wl_drm_create_prime_buffer`
   - `wsi_wl_swapchain_destroy`
     - call `wl_buffer_destroy` and `wsi_destroy_image` for each image
     - call the common `wsi_swapchain_finish`
@@ -159,12 +159,12 @@
       supported
     - call `x11_image_init` for each image
       - create a `wsi_image` using `wsi_create_native_image` or
-      	`wsi_create_prime_image`
+       `wsi_create_prime_image`
       - create an `xcb_pixmap_t` using `xcb_dri3_pixmap_from_buffers_checked`
-      	or `xcb_dri3_pixmap_from_buffer_checked` from the `wsi_image`
+       or `xcb_dri3_pixmap_from_buffer_checked` from the `wsi_image`
       - create a `xshmfence` on a shm
       - create a xsync fence using `xcb_dri3_fence_from_fd` from the
-      	`xshmfence`
+       `xshmfence`
   - `x11_swapchain_destroy`
     - call `x11_image_finish` for each image
     - call the common `wsi_swapchain_finish`
@@ -175,11 +175,11 @@
     - if all busy, call `x11_handle_dri3_present_event` to handle x present
       events
       - when a present is handled by copying in the server, the server
-      	triggers the fence and sends the idle notify immediately
-      	- the GPU copying might still be going on!
+       triggers the fence and sends the idle notify immediately
+        - the GPU copying might still be going on!
       - whe a present is handled by flipping in the server, the server
-      	triggers the fence and sends the idle notify for the prior pixmap (I
-      	guess)
+       triggers the fence and sends the idle notify for the prior pixmap (I
+       guess)
   - `x11_queue_present`
     - mark the image busy and call `xcb_present_pixmap`
 - helpers
@@ -247,12 +247,12 @@
       - `XCB_PRESENT_OPTION_ASYNC` is not set (unless xwayland)
       - this gives mailbox mode
       - the fence wait makes sure the image can be flipped without being
-      	blocked by implicit fencing in the kernel driver
+       blocked by implicit fencing in the kernel driver
   - `VK_PRESENT_MODE_FIFO_KHR` and `VK_PRESENT_MODE_FIFO_RELAXED_KHR`
     - require both acqure/present queues
     - `x11_acquire_next_image` pulls from the acquire queue
       - if empty, it blocks until the wsi thread pushes a new image to the
-      	acquire queue after `XCB_PRESENT_EVENT_IDLE_NOTIFY`
+       acquire queue after `XCB_PRESENT_EVENT_IDLE_NOTIFY`
     - `x11_queue_present` adds the image to the present queue
     - the wsi thread pulls the first image in the present queue and presents
       - `target_msc` is set to next vsync
@@ -287,9 +287,9 @@
     - the present queue thread
       - pulls the image from the present queue
       - calls `x11_present_to_x11_dri3` to increment `sent_image_count`, sets
-      	image `present_queued`, and calls `xcb_present_pixmap`
+       image `present_queued`, and calls `xcb_present_pixmap`
       - waits until `XCB_PRESENT_EVENT_COMPLETE_NOTIFY` which clears
-      	`present_queued`
+       `present_queued`
   - from perfetto
     - app thread is blocked in `vkAcquireNextImageKHR`
     - `wl_surface::frame` callback wakes up sommelier
@@ -300,7 +300,7 @@
     - present queue thread handles the idle event and wakes up app thread with
       `wsi_queue_push`
       - app thread renders and `vkQueuePresentKHR` to add the next frame to
-      	the present queue
+       the present queue
       - app thread calls `vkAcquireNextImageKHR` and is blocked
     - present queue thread handles the complete event and exits the wait loop
     - present queue thread pulls the last frame from the present queue and

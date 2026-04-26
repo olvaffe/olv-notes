@@ -153,7 +153,7 @@
     - a `fd_perfcntr_counter` is a hw sampler that counts an event at a fixed
       rate
       - e.g., we can program a `fd_perfcntr_counter` to count
-      	`PERF_CP_ALWAYS_COUNT` event
+       `PERF_CP_ALWAYS_COUNT` event
       - this gives us gpu ticks
     - a `Countable` uses a `fd_perfcntr_counter` to count a
       `fd_perfcntr_countable`
