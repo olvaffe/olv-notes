@@ -26,11 +26,11 @@
     - at the 4th frame, the first image bo is reused
       - Mesa inserts `vkWaitForFences` to wait for the 1st frame
       - without this or other form of throttling, the app can get greatly
-      	ahead of X11
+       ahead of X11
       - indeed, when the wait is removed, the game queues frames much faster
-      	than the GPU can renderer, creating a huge latency visually.  Once in
-      	a while, `vkQueuePresent` takes ~100ms (blocked in the kernel driver?)
-      	waiting for the rendering to catch up.
+       than the GPU can renderer, creating a huge latency visually.  Once in
+       a while, `vkQueuePresent` takes ~100ms (blocked in the kernel driver?)
+       waiting for the rendering to catch up.
   - when it wakes up, it wakes other threads
     - one of the unnamed thread
     - the main thread

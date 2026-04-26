@@ -131,7 +131,6 @@
   - gstreamer
     - `GST_DEBUG=4`
 
-
 ## Using runtime and proton directly
 
 - use runtime directly

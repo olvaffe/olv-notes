@@ -85,7 +85,7 @@
     back to big gl
   - if `ES3`, `FindOGLX.cmake` finds egl/gles instead
 
-## GFXBench
+## Experiment
 
 - results
   - `elapsed_time`, total time in animation?

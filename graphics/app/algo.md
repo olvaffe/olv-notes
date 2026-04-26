@@ -179,8 +179,8 @@
     - alternatively, and more commonly, we can do nothing
       - for the same material across frames, its VkDescriptorSet is the same
       - we can cache VkDescriptorSet and use
-	(VkDescriptorLayout, VkWriteDescriptorSet) as the key to look up the
-	VkDescriptorSet
+        `(VkDescriptorLayout, VkWriteDescriptorSet)` as the key to look up the
+        `VkDescriptorSet`
       - this treats the VkDescriptorSet as a per-material one
       - normally, only UBO varies per-frame.  By allowing the UBO binding of
         the VkDescriptorSet to vary, the VkDescriptorSet can be treated as a
@@ -189,7 +189,7 @@
     - one for each VkDescriptorLayout
     - one for each thread (to be lock-free)
 
-## Model Rendering
+## Model Rendering Again
 
 - a model is described by
   - a mesh
@@ -283,8 +283,8 @@
       - this will be needed for VkWriteDescriptorSet and others
     - build a `set -> vector<resource>` mapping
       - for each set, create a VkDescriptorSetLayout
-	- each resource needing a descriptor is converted to a
-	  VkDescriptorSetLayoutBinding
+        - each resource needing a descriptor is converted to a
+          `VkDescriptorSetLayoutBinding`
     - create a VkPipelineLayout from the VkDescriptorSetLayout
   - to create its VkPipeline
     - loop over VS inputs to setup VkPipelineVertexInputStateCreateInfo and to
@@ -338,7 +338,7 @@
     - bind the VkBuffer to (set=0, binding=1)
     - PipelineLayout
       - inspect shader source code and get all resources (var name, set,
-      	binding)
+       binding)
   - vkCmdEndRenderPass
   - vkEndCommandBuffer
 
