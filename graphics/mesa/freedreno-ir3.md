@@ -113,8 +113,8 @@
         - `ir3_a4xx.c` is a4xx backend
         - `ir3_a6xx.c` is a6xx backend
         - `ir3_image.c` is for ibo/ssbo related stuff
-	- `ir3_delay.c` is used by `ir3_sched`, `ir3_postsched`, and
-	  `ir3_legalize` for nop-delays
+        - `ir3_delay.c` is used by `ir3_sched`, `ir3_postsched`, and
+          `ir3_legalize` for nop-delays
       - ir3 passes are applied
         - `ir3_remove_unreachable.c`
         - `ir3_array_to_ssa.c`
@@ -132,7 +132,7 @@
         - `ir3_lower_parallelcopy.c`
       - `ir3_postsched.c` schedules instructions post-RA
       - `ir3_lower_subgroups.c` lowers  `OPC_MACRO_*` that are
-      	subgroup-related
+       subgroup-related
       - `ir3_legalize.c`
         - it also lowers `OPC_DSXPP_MACRO`
       - `ir3_legalize.c`
@@ -176,7 +176,7 @@
 - `ir3_compile_shader_nir`
   - `setup_input` lowers `nir_intrinsic_load_input` to `OPC_META_INPUT`
     - `ir3_legalize` will discard most meta instructions including
-    	`OPC_META_INPUT`
+     `OPC_META_INPUT`
   - `create_sysval_input`
   - `setup_output` lowers `nir_intrinsic_store_output` to nothing
 - `ir3_shader_variant`
@@ -195,16 +195,16 @@
   - `ir3_nir_lower_to_explicit_output` initializes `output_loc` and
     `output_size`
     - it uses `shader_io_get_unique_index` to map `gl_varying_slot` to byte
-    	offsets
+     offsets
     - `output_size` is in dwords (e.g., 2 out's have 8 dwords)
     - `store_output` is lowered to `store_shared_ir3`
   - system values
     - `SYSTEM_VALUE_TCS_HEADER_IR3` is written to
-    	`VARYING_SLOT_TCS_HEADER_IR3`
+     `VARYING_SLOT_TCS_HEADER_IR3`
     - `SYSTEM_VALUE_REL_PATCH_ID_IR3` is written to
-    	`VARYING_SLOT_REL_PATCH_ID_IR3`
+     `VARYING_SLOT_REL_PATCH_ID_IR3`
     - `SYSTEM_VALUE_GS_HEADER_IR3` is written to
-    	`VARYING_SLOT_GS_HEADER_IR3`
+     `VARYING_SLOT_GS_HEADER_IR3`
     - `SYSTEM_VALUE_PRIMITIVE_ID` is written to `VARYING_SLOT_PRIMITIVE_ID`
 
 ## IR3 HS/DS IOs
@@ -311,7 +311,7 @@
     - `ir3_nir_lower_ubo_loads` can potentially lower it to
       `nir_intrinsic_load_uniform`
       - `ir3_nir_lower_preamble` can further lower it to
-      	`nir_intrinsic_copy_ubo_to_uniform_ir3`
+       `nir_intrinsic_copy_ubo_to_uniform_ir3`
     - otherwise, `nir_lower_ubo_vec4` lowers it to
       `nir_intrinsic_load_ubo_vec4`
 - `emit_instructions`

@@ -534,7 +534,6 @@
   - Or, it is possible to view the two buffers together as a server native
     pixmap.  When the EGLImage is bound, the pixmap is locked.  No swapping.
 
-
 ## Lifetime
 
 - Surfaces and contexts are resources of a display

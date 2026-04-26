@@ -75,7 +75,7 @@
     - it allocates `62*4/6` to att 1 and `62*2/6` to att 2
       - that is, it allocates 41 blocks to att 1 and 21 blocks to att 2
       - ot, it allocates `41*8192/4` and `21*8192/2` pixels for att 1 and 2
-      	respectively
+       respectively
     - `pass->gmem_pixels` is set to the max numbers of pixels that can fit
       gmem for this render pass
 - Mesa `tu_tiling_config_update_tile_layout`
@@ -150,7 +150,7 @@
       `PIPE_FORMAT_A1B5G5R5_UNORM`
     - `FMT6_1_5_5_5_UNORM` and its swaps make no sense
       - I guess it expands (MSB R5 G5 B5 A1 LSB) into (MSB A8 R8 G8 B8 LSB)
-      	first
+       first
       - with that, WXYZ returns the correct color
       - WZYX swaps R and B
 - some pipe formats are used only internally by certain drivers
@@ -185,12 +185,12 @@
     - `PIPE_FORMAT_Z16_UNORM` is mapped to `FMT6_16_UNORM`
     - `PIPE_FORMAT_Z24X8_UNORM` is mapped to `FMT6_Z24_UNORM_S8_UINT`
       - this is the mapping in the format table, and is only used for
-      	texturing
+       texturing
       - for blitting, `tu6_base_format` forces `FMT6_8_8_8_8_UNORM` and
-      	adjusts the clear value; if ubwc, forces
-      	`FMT6_Z24_UNORM_S8_UINT_AS_R8G8B8A8`
+       adjusts the clear value; if ubwc, forces
+       `FMT6_Z24_UNORM_S8_UINT_AS_R8G8B8A8`
       - this should be because the 2d engine cannot do 24-bit but uses
-      	`R2D_UNORM8`
+       `R2D_UNORM8`
     - `PIPE_FORMAT_X24S8_UINT` is mapped to `FMT6_8_8_8_8_UINT`
       - this can be returned by `tu_format_for_aspect`
     - `PIPE_FORMAT_Z24_UNORM_S8_UINT` is mapped to `FMT6_Z24_UNORM_S8_UINT`
@@ -282,7 +282,7 @@
     - `struct tu_descriptor_pool` itself
     - `struct tu_descriptor_set` times `maxSets`
       - if `VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT` is set, this
-      	becomes `struct tu_descriptor_pool_entry` array
+       becomes `struct tu_descriptor_pool_entry` array
     - dynamic descriptors
   - descriptors are 16 or 32 dwords
     - depending on the type, the effective size is smaller.  The rest is
@@ -441,7 +441,7 @@
     - `BLIT` event is preferred but requires 16x4 alignment
     - `r2d_ops` is used unless msaa
       - `SP_PS_2D_SRC` needs iova of the source; apparently gmem is mapped and
-      	has iova as well
+       has iova as well
     - `r3d_ops` appears to have bugs..
 
 ## sysmem and gmem rendering
@@ -557,17 +557,17 @@
     - `gmem_load` in `vkCmdBeginRenderPass2`
       - use `cmd->draw_cs`
       - `CP_EVENT_WRITE(BLIT)` in `tu_load_gmem_attachment` for each
-      	`VK_ATTACHMENT_LOAD_OP_LOAD`
+       `VK_ATTACHMENT_LOAD_OP_LOAD`
     - `gmem_clear` in `vkCmdBeginRenderPass2`
       - use `cmd->draw_cs`
       - `CP_EVENT_WRITE(BLIT)` in `tu_emit_clear_gmem_attachment` for each
-      	`VK_ATTACHMENT_LOAD_OP_CLEAR`
+       `VK_ATTACHMENT_LOAD_OP_CLEAR`
     - `gmem_clear` again in `vkCmdClearAttachments`
       - use `cmd->draw_cs` too
     - `gmem_store` in `vkCmdNextSubpass2`
       - use `cmd->draw_cs`
       - `CP_EVENT_WRITE(BLIT)` (mostly), `CP_BLIT` or `CP_DRAW_INDX_OFFSET` in
-      	`tu_store_gmem_attachment` for each `pResolveAttachments`
+       `tu_store_gmem_attachment` for each `pResolveAttachments`
     - `gmem_store` again in `vkCmdEndRenderPass2`
       - use `cmd->tile_store_cs` this time
     - `binning_ib` in `vkCmdEndRenderPass2`
@@ -576,7 +576,7 @@
     - `draw_ib_gmem` in `vkCmdEndRenderPass2`
       - use `cmd->cs`
       - entire `cmd->draw_cs` and `cmd->tile_store_cs` in `tu6_render_tile`
-      	for each tile
+       for each tile
 
 ## `VkPipelineStageFlagBits2`
 
@@ -1087,7 +1087,7 @@
   - to identify `tu6_render_tile`
     - search forward for `CP_SET_MARKER`
       - we should see `RM6_GMEM` which is the beginning of
-      	`tu6_emit_tile_select`
+       `tu6_emit_tile_select`
     - search forward again for `CP_SET_MARKER`
       - we should see `RM6_ENDVIS` which is after the draw cs
     - it should be followed by a short IB
