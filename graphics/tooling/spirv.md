@@ -126,6 +126,7 @@
 
 - <https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide>
 - table
+
   | GLSL declaration                | HLSL declaration                      | SPIRV-Cross             | Vulkan concept                      |
   | ------------------------------- | ------------------------------------- | ----------------------- | ----------------------------------- |
   | `sampler2D`                     | N/A                                   | `sampled_images`        | `COMBINED_IMAGE_SAMPLER`            |

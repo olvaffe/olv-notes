@@ -297,13 +297,13 @@
   - get dispatch table and jump, except for those who return dispatchable
     objects and `vkGetDeviceProcAddr`
   - `vkGetDeviceQueue` and `vkAllocateCommandBuffers`
-     - they return dispatchable objects
-     - set up device dispatch tables additionally after dispatching
-       - otherwise, "dispatch table and jump" will crash
+    - they return dispatchable objects
+    - set up device dispatch tables additionally after dispatching
+      - otherwise, "dispatch table and jump" will crash
   - `vkCreateDevice`
-     - device dispatch table needs to be set up additionally
-     - memory for device dispatch table is owned by device
-     - initialize to the results of device's `vkGetDeviceProcAddr` calls
+    - device dispatch table needs to be set up additionally
+    - memory for device dispatch table is owned by device
+    - initialize to the results of device's `vkGetDeviceProcAddr` calls
   - `vkGetDeviceProcAddr`
     - return loader's versions for `vkGetDeviceQueue`,
       `vkAllocateCommandBuffers` and itself
@@ -345,14 +345,14 @@
   - get dispatch table and jump, except for those who return dispatchable
     objects or `vkGetDeviceProcAddr` or `vkEnumerateDeviceLayerProperties`
   - `vkGetDeviceQueue` and `vkAllocateCommandBuffers`
-     - they return dispatchable objects
-     - set up device dispatch tables additionally after dispatching
-       - otherwise, "dispatch table and jump" will crash
+    - they return dispatchable objects
+    - set up device dispatch tables additionally after dispatching
+      - otherwise, "dispatch table and jump" will crash
   - `vkCreateDevice`
-     - set up chaining
-     - device dispatch table needs to be set up additionally
-     - memory for device dispatch table is owned by device
-     - initialize to the results of device's `vkGetDeviceProcAddr` calls
+    - set up chaining
+    - device dispatch table needs to be set up additionally
+    - memory for device dispatch table is owned by device
+    - initialize to the results of device's `vkGetDeviceProcAddr` calls
   - `vkGetDeviceProcAddr`
     - return loader's versions for `vkGetDeviceQueue`,
       `vkAllocateCommandBuffers`, itself, and
