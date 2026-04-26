@@ -57,7 +57,7 @@
   - `swapper_pg_dir`
   - `idmap_pg_dir`
   - `tramp_pg_dir`
-- the kernel image header starts with` b primary_entry` to jump to
+- the kernel image header starts with `b primary_entry` to jump to
   `primary_entry`
 - `init_kernel_el`
   - loads `INIT_SCTLR_EL1_MMU_OFF` to `SCTLR_EL1` to disable MMU

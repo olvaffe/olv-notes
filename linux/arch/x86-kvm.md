@@ -49,4 +49,3 @@
   - In EPT (extended page table, used by KVM), MTRR is ignored and EPT bits
     5:3 replace MTRR (0: UC, 1: WC, 4: WT, 5 WP, 6: WB)
     - `vmx_get_mt_mask`
-
