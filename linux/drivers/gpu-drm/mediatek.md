@@ -90,7 +90,7 @@
 - platform device
   - `of_platform_default_populate` creates platform devices from dt devices
     - `setup_pdev_dma_masks` sets `pdev->dev.coherent_dma_mask` and
-      `pdev->dev.dma_mask ` to 32 bits
+      `pdev->dev.dma_mask` to 32 bits
     - `of_platform_device_create_pdata` overrides `dev->dev.coherent_dma_mask`
       to the same 32 bits
 - pre-probe

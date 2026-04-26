@@ -435,7 +435,7 @@
       - `amdgpu/psp_13_0_8_ta.bin`
       - `amdgpu/psp_13_0_8_toc.bin`
     - `psp_hw_start` starts the hw
-        - `psp_load_toc` loads toc
+      - `psp_load_toc` loads toc
     - ta fw seems to consists of multiple binaries
       - `psp_ras_initialize`
       - `psp_hdcp_initialize`
@@ -673,9 +673,9 @@
   - `hang_limit` is `amdgpu_job_hang_limit`
     - default is 0
   - `timeout` is shared `adev->xxx_timeout`
-     - default timeout for compute is 60s (or unlimited on older kernels) and
-       10s for others
-     - can be changed via `amdgpu.lockup_timeout=...`
+    - default timeout for compute is 60s (or unlimited on older kernels) and
+      10s for others
+    - can be changed via `amdgpu.lockup_timeout=...`
   - `timeout_wq` is shared `adev->reset_domain->wq`
   - `score` is per-ring `ring->sched_score`
     - usually NULL unless newer VCN rings

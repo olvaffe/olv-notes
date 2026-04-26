@@ -279,10 +279,10 @@
 - ioctls
   - `MSM_GEM_NEW`
     - `msm_ioctl_gem_new` takes a size and a flags
-       - it kzallocs `a msm_gem_object`, which is also a `drm_gem_object`
-       - the gem object is added to the device's private `inactive_list`
-       - `drm_gem_object_init` is called to set up filp
-       - `drm_gem_handle_create` is called and the handle is the id into file's private `object_idr`
+      - it kzallocs `a msm_gem_object`, which is also a `drm_gem_object`
+      - the gem object is added to the device's private `inactive_list`
+      - `drm_gem_object_init` is called to set up filp
+      - `drm_gem_handle_create` is called and the handle is the id into file's private `object_idr`
   - `DRM_IOCTL_GEM_CLOSE`
     - `drm_gem_handle_delete` is called and it deletes the handle in file's private `object_idr`
     `- drm_gem_object_release_handle` is called

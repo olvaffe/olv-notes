@@ -41,7 +41,7 @@
         (well-defined enum name, 64-bit enum id)
       - for `DRM_MODE_PROP_BITMASK` is similar to `DRM_MODE_PROP_ENUM`
       - for `DRMO_MODE_PROP_BLOB`, values are an array of 32-bit blob ids that
-      	can be passed to `DRM_IOCTL_MODE_GETPROPBLOB`
+        can be passed to `DRM_IOCTL_MODE_GETPROPBLOB`
   - remember that these are property infos; the current value is returned by
     `DRM_IOCTL_MODE_OBJ_GETPROPERTIES`
 - for example, a `DRM_MODE_OBJECT_PLANE` object has a property `type`

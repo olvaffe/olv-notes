@@ -9,7 +9,7 @@
 - userspace submits `drm_sched_job` to `drm_sched_entity`
   - this dynamically moves the entity to the runqueue of the best
     `drm_gpu_scheduler`
-   - e.g., when the hw has multiple compute rings, it picks the least busy one
+    - e.g., when the hw has multiple compute rings, it picks the least busy one
 - when `drm_gpu_scheduler` schedules a job to hw ring, it picks a job that has
   the highest priority and has all deps resolved
 - high-level job flow

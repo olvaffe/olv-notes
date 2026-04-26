@@ -302,8 +302,8 @@
 ## DRM core and /dev and /sys
 
 - sysfs
-  - for a PCI device, there is a `pci_dev at
-    `/sys/devices/pci<domain>:<bus>/<domain>:<bus>:<device>.<function>
+  - for a PCI device, there is a `pci_dev` at
+    `/sys/devices/pci<domain>:<bus>/<domain>:<bus>:<device>.<function>`
   - driver probe calls `drm_dev_init` to add one primary device and one render
     device under the root device.  They are in the `drm` class, which result in
     - `/sys/.../drm/card<minor>`

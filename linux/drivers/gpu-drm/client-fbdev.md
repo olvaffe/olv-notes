@@ -10,7 +10,7 @@
   - it requires the drm dev to support `DRIVER_MODESET` and `dumb_create`
   - `drm_client_modeset_create` creates `client->modesets`
     - there is a `drm_mode_set` for each crtc
-   - `drm_client_open` opens the primary node as `client->file`
+  - `drm_client_open` opens the primary node as `client->file`
 - `drm_client_register` register a `drm_client_dev`
   - this add the client to `dev->clientlist` and calls
     `client->funcs->hotplug` to simulate a display hotplug event
