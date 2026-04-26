@@ -186,8 +186,8 @@
   - see VS
   - `set_shader_images`
     - `CP_LOAD_STATE6_FRAG(offset=slot, SB6_FS_TEX, ST6_CONSTANTS, direct)` for use by imageLoad
-    - `CP_LOAD_STATE6_FRAG(offset=slot, SB6_SSBO, ST6_2, direct) `for use by imageStore
-    - `CP_LOAD_STATE6_FRAG(SB6_FS_SHADER) `to describe image dimensions
+    - `CP_LOAD_STATE6_FRAG(offset=slot, SB6_SSBO, ST6_2, direct)` for use by imageStore
+    - `CP_LOAD_STATE6_FRAG(SB6_FS_SHADER)` to describe image dimensions
 - RB (render buffer?)
   - `set_blend_color`
     - `REG_WRITE(RB_BLEND_RED_F32)` and friends in draw IB

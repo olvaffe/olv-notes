@@ -7,18 +7,19 @@
   - `XVisualInfo`, on the other hand, is the tuplet of
     `(screen, depth, visual)`.
 
-## xserver/hw/xfree86/dixmods/glxmodule.c:
+## xserver/hw/xfree86/dixmods/glxmodule.c
+
 - dlsym glxModuleData for setup function
 - GlxPushProvider `__glXDRISWRastProvider`, `__glXDRIProvider`,
   `__glXDRI2Provider`
 - LoadExtension, calling GlxExtensionInit
 
 ## xserver/glx/
+
 - each provider screenProbe all screens
 - register ext., with dispatch `__glXDispatch`
 - `__GLX(DRI)screen` is associated with Screen
 - `CALL_xxx` -> where is xxx defined?
-
 
 ## xserver/hw/xfree86/dri2/
 
@@ -93,6 +94,7 @@
 -
 
 ## mesa/glx/x11/drisw_glx.c as an example
+
 - when loader driCreateScreen, load swrast_dri.so and looks for `__DRI_DRIVER_EXTENSIONS`.
 - loader make sure `__DRI_CORE` and `__DRI_SWRAST` are supported
 - loader uses `__DRI_SWRAST`'s createNew{Screen,Drawable}
@@ -216,7 +218,6 @@
   get the `GLXPixmap`.  `glXBindTexImageEXT` is called on the `GLXPixmap` to
   bind it as a texture.
 - When `Pixmap` is updated, how is it reflected in `GLXPixmap`?
-  -
 - A thought about `EGLImage`.  For a client api, `EGLImage` is
   `struct _EGLImage { struct pipe_surface *surface; };`.  The pipe surface is
   filled by an EGL driver.  Given a `Pixmap`, suppose it has an associated
@@ -250,13 +251,13 @@
 
 ## DRI3
 
- - on-screen render area is called Window in X11
- - off-screen render area is called Pixmap in X11
- - internally, they are all just Pixmap (because of compositor?)
- - for windows, mesa allocates buffers and use DRI3PixmapFromBuffer to create
+- on-screen render area is called Window in X11
+- off-screen render area is called Pixmap in X11
+- internally, they are all just Pixmap (because of compositor?)
+- for windows, mesa allocates buffers and use DRI3PixmapFromBuffer to create
    Pixmaps for presentation
- - for pixmaps, the server allocates buffers and Mesa uses
+- for pixmaps, the server allocates buffers and Mesa uses
    DRI3PixmapFromBuffer to get the buffers
- - in Xwayland, a Pixmap is created by allocating `gbm_bo` or importing
+- in Xwayland, a Pixmap is created by allocating `gbm_bo` or importing
    dma-bufs.  The `gbm_bo` is wrapped in a `wl_buffer`
-   - in virtio, that is `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`
+  - in virtio, that is `DRM_IOCTL_VIRTGPU_RESOURCE_CREATE`

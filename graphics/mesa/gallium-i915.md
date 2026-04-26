@@ -16,4 +16,3 @@
   - `struct drm_api` allows wrapping a GEM object in a `pipe_texture`
     - i915 pipe driver provides `i915_texture_blanket_intel`
     - Given the GEM object and the stride, it is wrapped in a `pipe_texture`.
-

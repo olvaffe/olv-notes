@@ -155,10 +155,10 @@
     - for ycbcr, it might or might not be chained depending on the driver
     - that is format planes; modifiers might require memory planes
       - when they do, each `pipe_resource` in the chain might have a second or
-      	even third bo for the metadata
+       even third bo for the metadata
         - which drivers?
       - drivers tend to limit modifiers to non-planar format to avoid
-      	plane explosion
+       plane explosion
 - `gbm_bo_create_with_modifiers`
   - `__DRIimageExtension::createImageWithModifiers` to create a `__DRIimage`
   - `pipe_screen::resource_create_with_modifiers` to create a `pipe_resource`

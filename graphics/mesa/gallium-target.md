@@ -65,7 +65,7 @@
   not be defined by every pipe and st.  Thus, one cannot put random winsys,
   pipe, and st together.
 
-## Impl.
+## Impl
 
 - Initialization
   - winsys should create a `struct pipe_winsys`, which is used for buffer
