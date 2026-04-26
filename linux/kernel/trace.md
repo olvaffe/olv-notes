@@ -142,7 +142,7 @@
 - when the trace is printed, `print_syscall_enter` or `print_syscall_exit`
   prints the formatted line
 
-## Tracepoints
+## sysfs
 
 - `cd /sys/kernel/debug/tracing`
   - for help, `cat README`

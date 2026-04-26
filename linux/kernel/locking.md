@@ -1,4 +1,4 @@
-# Locking
+# Kernel Locking
 
 ## Synchronizations
 
