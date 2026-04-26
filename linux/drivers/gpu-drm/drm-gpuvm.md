@@ -181,6 +181,12 @@
   - see `drm_gpuvm_resv_protected` and `drm_gpuvm_resv_assert_held`
 - if `DRM_GPUVM_IMMEDIATE_MODE`, `obj->gpuva.lock` replaces `obj->resv` to
   protect `obj->gpuva.list` and `vm_bo->list.gpuva`
+  - the goal is to allow immediate `drm_gpuva_link` and `drm_gpuva_unlink`
+    calls during vm map/unmap op which can be on the fence signaling path
+    - `obj->resv` cannot be locked on the fence signaling path
+    - because mem alloc is not allowed on the fence signaling path, a
+      corollary is that mem alloc is not allowed while holding
+      `obj->gpuva.lock`
   - see `drm_gpuvm_immediate_mode` and how `drm_gem_gpuva_assert_lock_held`
     changes its behavior
   - in older kernels, there was no `DRM_GPUVM_IMMEDIATE_MODE` nor
