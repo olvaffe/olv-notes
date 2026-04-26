@@ -42,7 +42,6 @@
       piont to `tnl->clipspace.vertex_buf`.
   - `Driver.Render.Finish` is caled.
 
-
 ## Textures
 
 - `_swrast_write_rgba_span` calls `shade_texture_span` to apply shader or
@@ -53,10 +52,10 @@
   - The fetch function points to `TexFormat`'s fetch function.
   - It access `gl_texutre_image->Data` directly.
 
-## swrast
+## swrast again
 
 - User pixel inputs are always converted and/or expanded to RGBA, 4 floats
-- For TexImage*, they are converted to internalFormat.
+- For `TexImage*`, they are converted to internalFormat.
 - For DrawPixels, they are converted to fixed-point, just like vertices' color.
 - Vertices' color is converted to fixed-point in final color processing, before
   passing to the rasterization.

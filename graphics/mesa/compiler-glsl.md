@@ -60,8 +60,9 @@
 
 - Code snippet
 
-    char * my_fragment_shader_source;
-    char * my_vertex_shader_source;
+  ```c
+    char *my_fragment_shader_source;
+    char *my_vertex_shader_source;
 
     // Get Vertex And Fragment Shader Sources
     my_fragment_shader_source = GetFragmentShaderSource();
@@ -93,6 +94,8 @@
 
     // Use The Program Object Instead Of Fixed Function OpenGL
     glUseProgramObjectARB(my_program);
+  ```
+
 - `glCreateShader` creates a `struct gl_shader`
 - `glCompileShader` invokes `_slang_compile`
   - A program has parameters, varyings, and attributes
@@ -250,7 +253,6 @@
     - the old backend is used for FP with MESA IR
     - there is plan to translate ARB programs to GLSL IR
 
-
 ## Optimizations
 
 - `glCompileShader` compiles the shader source and calls
@@ -340,7 +342,6 @@
     - same to all fragment shaders
   - `ctx->Driver.LinkShader = _mesa_ir_link_shader` is called.  The IRs are
     lowered and a `gl_program` is created from each `gl_shader`
-
 
 ## GLSL2 AST
 

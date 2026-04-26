@@ -278,7 +278,7 @@
   - `nir_link_opt_varyings` replaces `in_color.w` by 1.0
     - it knows VS writes 1.0 for W
   - `nir_lower_io_to_vector` undoes scalarization of `in_color`
-     - it knows there is no need to load `in_color.w` now
+    - it knows there is no need to load `in_color.w` now
 - postprocess
   - lower inputs
     - for each input var,
@@ -291,14 +291,14 @@
       - `load_const(0.0)`
       - `intrinsic load_barycentric_pixel`
       - `intrinsic load_interpolated_input` w/ base set to
-      	`var->data.driver_location`
+       `var->data.driver_location`
   - lower outputs
     - for each output var,
       `var->data.driver_location = var->data.location`
     - `nir_lower_io(nir, nir_var_shader_out, type_size_vec4, ...)` finds the
       `store_deref` and replaces it by
-       - `load_const(0.0)`
-       - `intrinsic store_output` w/ base set to `var->data.driver_location`
+      - `load_const(0.0)`
+      - `intrinsic store_output` w/ base set to `var->data.driver_location`
   - `nir_opt_dce` removes dead code
   - `nir_opt_cse` removes common subexpressions
     - e.g., removes all but one `load_const(0.0)`

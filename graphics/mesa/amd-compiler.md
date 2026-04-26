@@ -260,7 +260,7 @@
     - the returned vec3 is replaced by `(set_ptr, binding_ptr, stride)`
   - `visit_load_vulkan_descriptor` lowers `nir_intrinsic_load_vulkan_descriptor`
     - the returned vec3 is replaced by `(set_ptr, binding_ptr, 0)`
-  - `load_buffer_descriptor` lowers` nir_intrinsic_store_ssbo`
+  - `load_buffer_descriptor` lowers `nir_intrinsic_store_ssbo`
     - `convert_pointer_to_64_bit` returns the 64b addr of the descriptor
       - `address32_hi` is `0xffff8000`
     - `nir_load_smem_amd` loads the descriptor

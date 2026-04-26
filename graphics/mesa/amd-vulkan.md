@@ -892,9 +892,9 @@
       - `R_0286E0_SPI_BARYC_CNTL`
       - `R_028A4C_PA_SC_MODE_CNTL_1`
   - `minSampleShading` to `min_sample_shading`
-      - it uses `rasterization_samples` and `color_samples` to determine the
+    - it uses `rasterization_samples` and `color_samples` to determine the
         sample count
-      - then `util_next_power_of_two(ceilf(sample_count * min_sample_shading))`
+    - then `util_next_power_of_two(ceilf(sample_count * min_sample_shading))`
   - `pSampleMask` to `sample_mask`
     - `radv_emit_sample_mask` emits the sample mask
   - `alphaToCoverageEnable` to `alpha_to_coverage_enable`

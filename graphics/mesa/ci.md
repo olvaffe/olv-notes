@@ -115,7 +115,10 @@
     - it executes `executorctl` to dispatch the job to DUT
     - the DUT is netbooted, starts the container, and `B2C_TEST_SCRIPT`
       - <https://mupuf.pages.freedesktop.org/valve-infra/>
-    - `deqp-runner run
+    - deqp-runner
+
+      ```bash
+      deqp-runner run
          --deqp /deqp/external/vulkancts/modules/vulkan/deqp-vk
          --output /builds/mesa/mesa/results
          --caselist /tmp/case-list.txt
@@ -130,6 +133,7 @@
          --deqp-surface-type=pbuffer
          --deqp-gl-config-name=rgba8888d24s8ms0
          --deqp-visibility=hidden`
+      ```
 
 ## `panfrost-g610-vk`
 
@@ -158,7 +162,7 @@
   - `.lava-rk3588-rock-5b`
   - `.panfrost-vk-rules`
 - `parallel` runs a job multiple times in parallel
-    - `CI_NODE_INDEX` and `CI_NODE_TOTAL` are set
+  - `CI_NODE_INDEX` and `CI_NODE_TOTAL` are set
 - `variables`
   - `DEQP_FRACTION` is fraction of deqp tests to run
   - `FDO_CI_CONCURRENT` is number of deqp-runners per dut
