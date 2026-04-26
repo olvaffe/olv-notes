@@ -24,7 +24,6 @@
       (that is, it measures the power input)
 - `sudo turbostat -q -i 1 -S -s Avg_MHz,CoreTmp,PkgTmp,GFXMHz,PkgWatt,CorWatt,GFXWatt,RAMWatt,SysWatt`
 
-
 ## Core
 
 - `powercap_register_control_type` registers a control type

@@ -73,6 +73,7 @@
 ## Old
 
 NAND:
+
 - page: 256 or 512 bytes (or bigger), readable and programmable
 - block: 4KB, 8KB or 16KB (or bigger), erasable and programmable
 - address and data on the same bus; slow random read; uncapable of random write

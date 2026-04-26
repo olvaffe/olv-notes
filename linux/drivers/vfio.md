@@ -25,4 +25,3 @@
 - it seems people want this now
   - the real driver supports mdev and emulates it as a virtio device
   - the benefit is that the guest only needs virtio drivers
-

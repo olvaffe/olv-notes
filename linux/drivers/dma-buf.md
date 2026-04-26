@@ -1,4 +1,4 @@
-# dma-buf
+# Kernel dma-buf
 
 ## History
 
@@ -181,15 +181,15 @@
       - as a result, it is locked in cbs, in several ops, and is often locked
         beyond `cb_list` access
   - `ops` for impl-defined ops
-      - `get_driver_name`, unlocked
-      - `get_timeline_name`, unlocked
-      - `enable_signaling`, locked
-      - `signaled`, unlocked
-      - `wait`, unlocked, deprecated by `dma_fence_default_wait`
-      - `release`, unlocked, default to `dma_fence_free`
-      - `fence_value_str`, locked
-      - `timeline_value_str`, locked
-      - `set_deadline`, unlocked
+    - `get_driver_name`, unlocked
+    - `get_timeline_name`, unlocked
+    - `enable_signaling`, locked
+    - `signaled`, unlocked
+    - `wait`, unlocked, deprecated by `dma_fence_default_wait`
+    - `release`, unlocked, default to `dma_fence_free`
+    - `fence_value_str`, locked
+    - `timeline_value_str`, locked
+    - `set_deadline`, unlocked
   - a union of
     - `cb_list` for a list of callbacks to be invoked when the fence signals
       - valid from `dma_fence_init` until `dma_fence_signal`

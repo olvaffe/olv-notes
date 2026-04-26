@@ -108,7 +108,7 @@
       vt console
       - `fb_con` is the vt console ops
 
-## fbdev
+## VT
 
 - In kernel, a fbdev is a VT driver.  That is how VT draws characters on screen.
 - The first thing to do is to switch to a new VT and ask the VT not to draw to

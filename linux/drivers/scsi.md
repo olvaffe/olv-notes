@@ -34,7 +34,7 @@
     - `blk_get_request` returns a request from the request queue
     - the scsi command is filled in to the request
     - `blk_execute_rq` executes and waits the request
-  -  the request is eventually queued by `scsi_queue_rq`
+  - the request is eventually queued by `scsi_queue_rq`
     - when the `scsi_host` was set up, `scsi_mq_setup_tags` set up
       `blk_mq_tag_set` to use `scsi_queue_rq`
     - `scsi_cmnd` is extraced from the request and dispatched by

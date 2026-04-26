@@ -207,7 +207,7 @@
     - `__pci_mmcfg_init`
       - `pci_mmcfg_reject_broken` checks if the mmconfig is reserved in E820
       - `pci_mmcfg_arch_init` ioremaps the region and sets `raw_pci_ext_ops`
-      	to `&pci_mmcfg`
+        to `&pci_mmcfg`
 - `acpi_init` is a subsys initcall
   - `acpi_pci_root_init` is called from `acpi_scan_init`.  It adds
     `pci_root_handler` as a scan handler.
@@ -349,11 +349,11 @@
       - `irq_set_msi_desc_off` updates `msi_desc`
       - `irq_domain_activate_irq` activates the irq
         - it recursively activates the irq domains from the root
-	- `x86_vector_activate` updates `vector_irq` that `do_IRQ` uses to
-	  look up irq desc
-	- `intel_irq_remapping_activate` updates vt-d irte (Interrupt
-	  Remapping Table Entry)
-        - `msi_domain_activate` calls `pci_msi_domain_write_msg`
+    - `x86_vector_activate` updates `vector_irq` that `do_IRQ` uses to
+      look up irq desc
+    - `intel_irq_remapping_activate` updates vt-d irte (Interrupt
+      Remapping Table Entry)
+      - `msi_domain_activate` calls `pci_msi_domain_write_msg`
   - `pci_intx_for_msi` disables interrupt pin
   - `pci_msi_set_enable` enables MSI
 - `request_irq`

@@ -38,4 +38,3 @@
     to DVFSRC
     - DVFSRC driver is provided by `CONFIG_MTK_DVFSRC` under
       `drivers/soc/mediatek`
-
