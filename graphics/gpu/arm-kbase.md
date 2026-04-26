@@ -529,7 +529,7 @@
     `POWER_MANAGEMENT_CALLBACKS`
 - cros patches the platform api
   - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/2f938fe02a0ee350010831313b58c32bd9027cb7>
-  - the platform driver `of_match_table ` is set to platform-defined
+  - the platform driver `of_match_table` is set to platform-defined
     `kbase_dt_ids`
   - there is `kbdev->funcs` initialized from platform-defined match data, or
     `POWER_MANAGEMENT_CALLBACKS` and `PLATFORM_FUNCS`

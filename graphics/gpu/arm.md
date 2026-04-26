@@ -244,7 +244,7 @@
       - one load/store pipeline w/ L1
       - one texture pipeline w/ L1
       - one or more arithmetic pipelines
-	- 128-bit SIMD (4 fp32 or 8 fp16 or 16 i8)
+        - 128-bit SIMD (4 fp32 or 8 fp16 or 16 i8)
     - thread retire
   - more fixed-function parts
     - late zs tester

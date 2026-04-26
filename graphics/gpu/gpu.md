@@ -31,7 +31,7 @@
   - some threads are interleaved
   - on some implementations, max threads depends on the instruction stream.
     - when an instruction stream uses only half of the registers, there can be
-      8192*2 threads concurrently.
+      `8192*2` threads concurrently.
 - Fermi (2010)
   - a core has 2 CUs and 32 EUs; each EU can interleave 48 instruction streams
   - there are 15 cores: `15*32*48` = 23040 threads!
@@ -59,12 +59,12 @@
     edges are cycle/2 apart
 - DDR SDRAM transfers data on leading and trailing edges
 - Internal Clock Rate / prefetch buffer size / External Clock Rate
-  - SDR :  66-133 MHz /  1n / internal*1
-  - DDR : 100-200 MHz /  2n / internal*2/2 (divide by two because of two edges)
-  - DDR2: 100-200 MHz /  4n / internal*4/2
-  - DDR3: 100-266 MHz /  8n / internal*8/2
-  - DDR4: 200-400 MHz /  8n / internal*8/2
-  - DDR5: 200-400 MHz / 16n / internal*16/2
+  - SDR :  66-133 MHz /  1n / `internal*1`
+  - DDR : 100-200 MHz /  2n / `internal*2/2` (divide by two because of two edges)
+  - DDR2: 100-200 MHz /  4n / `internal*4/2`
+  - DDR3: 100-266 MHz /  8n / `internal*8/2`
+  - DDR4: 200-400 MHz /  8n / `internal*8/2`
+  - DDR5: 200-400 MHz / 16n / `internal*16/2`
 - LPDDR
   - same as DDR
 - GDDR
@@ -77,12 +77,12 @@
   - GDDR6 : 16n-prefetch @ 875-1000 Mhz
 - DIMMs have a 64-bit data path
   - stack eight 8-bit chips together to provide 64-bit
-  - SDR : 133 *  1 * 64 / 8 / 1024 =  1.0 GB/s
-  - DDR : 200 *  2 * 64 / 8 / 1024 =  3.2 GB/s
-  - DDR2: 200 *  4 * 64 / 8 / 1024 =  6.4 GB/s
-  - DDR3: 200 *  8 * 64 / 8 / 1024 = 12.8 GB/s
-  - DDR4: 400 *  8 * 64 / 8 / 1024 = 25.6 GB/s
-  - DDR5: 400 * 16 * 64 / 8 / 1024 = 51.2 GB/s
+  - SDR : `133 *  1 * 64 / 8 / 1024 =  1.0 GB/s`
+  - DDR : `200 *  2 * 64 / 8 / 1024 =  3.2 GB/s`
+  - DDR2: `200 *  4 * 64 / 8 / 1024 =  6.4 GB/s`
+  - DDR3: `200 *  8 * 64 / 8 / 1024 = 12.8 GB/s`
+  - DDR4: `400 *  8 * 64 / 8 / 1024 = 25.6 GB/s`
+  - DDR5: `400 * 16 * 64 / 8 / 1024 = 51.2 GB/s`
 - GPU uses various data path widths
   - Radeon RX 5700 XT is 875MHz GDDR6, eight 32-bit channels,
     - `875 * 16 * (8 * 32) / 8 / 1024` = 448 GB/s
@@ -286,7 +286,7 @@
     - master accesses inside the aperture depends on `ita_coh` and
       `gart_entry_coh`
       - when `gart_entry_coh` is set, `ita_coh` (read-only, core-logic cap)
-      	decides the coherency
+       decides the coherency
       - when `gart_entry_coh` is unset, coherency is undefined
 - In PCI-e, GART is implemented by the graphics device using the VRAM, not by
   the core-logic
