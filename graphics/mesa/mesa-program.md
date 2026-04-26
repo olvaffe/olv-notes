@@ -4,6 +4,7 @@
 
 - Snippet
 
+  ```c
     const GLchar src[] = "
     !!ARBfp1.0
     TEMP R0;
@@ -27,6 +28,7 @@
     glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 1,
                                  0.0, 0.0, 1.0, 1.0);
     glRectf(x1, y1, x2, y2);
+  ```
 
 - `glGenProgramARB` creates a `struct gl_program` lazily
   - created with `st_new_program`
@@ -102,6 +104,7 @@
 
 - `_mesa_parse_arb_fragment_program` translates the example snippet into
 
+  ```text
     # Fragment Program/Shader 1
     0: MOV TEMP[0], STATE[0];
     1: SUB TEMP[0], TEMP[0], CONST[1];
@@ -109,6 +112,7 @@
     3: MUL TEMP[0], TEMP[0], CONST[3];
     4: MOV OUTPUT[2], TEMP[0];
     5: END
+  ```
 
 - the parser is written in bison, `program_parse.y`
 - MESA IR is an editable representation
@@ -117,6 +121,7 @@
 
 - `st_translate_fragment_program` translates the above MESA IR into
 
+  ```text
     FRAG
     PROPERTY FS_COLOR0_WRITES_ALL_CBUFS 1
     DCL OUT[0], COLOR
@@ -130,5 +135,6 @@
     3: MUL TEMP[0], TEMP[0], IMM[0].yyyy
     4: MOV OUT[0], TEMP[0]
     5: END
+  ```
 
 - `_mesa_remove_output_reads` to replace output reading by temp reading

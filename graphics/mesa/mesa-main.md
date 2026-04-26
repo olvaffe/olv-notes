@@ -241,7 +241,6 @@
     `_mesa_enable_extension` and add dispatches to those not statically
     dispatched.
 
-
 ## Texture Object (sec. 3.8)
 
 - A texture object stores two categories of states
@@ -278,7 +277,6 @@
   - All texture images might share a single buffer.  There is usually a hw
     restriction that a texture object corresponds to a single buffer.  The
     mipmap set should store their data in that single buffer.
-
 
 ## Mesa Formats
 

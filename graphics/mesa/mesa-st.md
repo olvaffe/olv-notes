@@ -206,23 +206,21 @@
   is called.  `pt` stands for pass-through.  `fse` stands for fetch-shade-emit.
 - The frontend might be `varray` or `vcache`.  The middle-end might be one of
   the middle-ends initialized in `draw_pt_init`.
-- Quote `draw_pt_fetch_emit.c`
-
-    The responsibilities of a middle end are to:
-     - perform vertex fetch using
-          - draw vertex element/buffer state
-          - a list of fetch indices we received as an input
-     - run the vertex shader
-     - cliptest,
-     - clip coord calculation
-     - viewport transformation
-     - if necessary, run the primitive pipeline, passing it:
-          - a linear array of vertex_header vertices constructed here
-          - a set of draw indices we received as an input
-     - otherwise, drive the hw backend,
-          - allocate space for hardware format vertices
-          - translate the vertex-shader output vertices to hw format
-          - calling the backend draw functions.
+- Quote `draw_pt_fetch_emit.c`: The responsibilities of a middle end are to:
+  - perform vertex fetch using
+    - draw vertex element/buffer state
+    - a list of fetch indices we received as an input
+  - run the vertex shader
+  - cliptest,
+  - clip coord calculation
+  - viewport transformation
+  - if necessary, run the primitive pipeline, passing it:
+    - a linear array of vertex_header vertices constructed here
+    - a set of draw indices we received as an input
+  - otherwise, drive the hw backend,
+    - allocate space for hardware format vertices
+    - translate the vertex-shader output vertices to hw format
+    - calling the backend draw functions.
 - The middle end fecthes the vertices, process them, and emit them.
   - fetch can be done with the help of `draw_pt_fetch.c`.  Each fetched vertex
     will have `struct vertex_header` prepended.  The fetched format will be
@@ -295,8 +293,7 @@
   - fs inputs are `FRAG_ATTRIB_WPOS`, varying, etc. (total ~28)
   - fs outputs are `FRAG_RESULT_DEPTH`, etc. (total ~6)
 - fs inputs are parsed and `stfp->input_to_slot` stores how to map frag input to
-  TGSI slot.  When translating,
-  -
+  TGSI slot.  When translating
 
 ## Flush
 
