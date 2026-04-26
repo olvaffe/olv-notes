@@ -68,7 +68,7 @@
   - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
   - remember to unset `debug.vulkan.layers`
 
-## GFXReconstruct
+## Internals
 
 - replay `vkCreateDevice`
   - `Application::Run`

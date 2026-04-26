@@ -16,7 +16,7 @@
 - THIS DOES NOT WORK.  USE REMOTE SERVER INSTEAD.
 - build qt
   - `wget https://download.qt.io/archive/qt/5.15/5.15.3/single/qt-everywhere-opensource-src-5.15.3.tar.xz`
-  - `PKG_CONFIG_LIBDIR=... ../configure -extprefix `pwd`/aaa -opensource
+  - `PKG_CONFIG_LIBDIR=... ../configure -extprefix $PWD/aaa -opensource
        -confirm-license -release -static -xplatform linux-aarch64-gnu-g++
        -sysroot <sysroot> -opengl es2 -xcb-xlib -xcb -nomake tests
        -nomake examples -nomake tools -skip qtwebengine -skip qtwebglplugin`
@@ -274,7 +274,7 @@
       - `ResourceRecord::AddChunk` adds the chunk to the record
       - `VulkanResourceManager::AddDeviceMemory` tracks the mem
   - app `vkBindBufferMemory` is pretty regular
-      - note that the memory is marked dirty for initial contents
+    - note that the memory is marked dirty for initial contents
   - app `vkMapMemory`
     - `hooked_vkMapMemory` is defined by `HookDefine6(VkResult, vkMapMemory, ...)`
     - `WrappedVulkan::vkMapMemory`
