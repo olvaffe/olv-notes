@@ -150,7 +150,6 @@
   - It is also possible to give template parameters default values
     `template <class T=unsigned char, int N=10> class array { T buf[N]; };`
 
-
 ## Class
 
 - class is a struct whose members are private by default.
@@ -245,7 +244,7 @@
     definitions.
   - The solution is to add `virtual` to parent's `do_something()`.
   - In such case, both parent and child are called polymorphic classes.
-- If a virtual function does not have a implementation, and instead, has ` = 0`
+- If a virtual function does not have a implementation, and instead, has `= 0`
   appended, it becomes pure virtual function.
   - A class with at least one pure virtual function is called an abstract base
     class.  It cannot be instanciated.
@@ -421,10 +420,12 @@
   - As the choice of containers may change and it is not realistic to write
     container-independent code, do this (item 2)
 
+    ```cpp
     class Obj { ... };
     // typedefs that allow the container type to be more easily changed
     typedef std::vector<Obj> ObjContainer;
     typdef ObjContainer::iterator ObjIterator;
+    ```
 
   - typedefs also save lots of typings (item 2)
   - objects in containers are copy in, copy out mostly.  Make copy cheap and

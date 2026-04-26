@@ -63,17 +63,19 @@
 
 ## signness
 
+```c
 signed pros:
 
 int size = sizeof(entry) * n_entries;
 if (size <= 0) { /* this check is not abnormal */
-	return;
+ return;
 }
 
 unsigned size = sizeof(entry) * n_entries;
 if (size <= n_entries) { /* this check is abnormal */
-	return;
+ return;
 }
+```
 
 ## Design Patterns: Visitor Pattern
 
@@ -153,112 +155,3 @@ if (size <= n_entries) { /* this check is abnormal */
   - Sophomre Fall: Assembly Language
   - Junior Spring: Compiler Design
   - Senior Fall: Database Systems
-
-## old
-
-Every source file should know
-
-1. what does it interface
-2. what interface does it have
-
-That means, I should know what I expect to use this file _and_ what is the
-underlying component (hw, device node, library, etc.) capable of.  The
-interface it has should be easy to use, but not over worked, which is a sign of
-bad modeling.  There is nothing wrong if the underlying component is part of
-the interface.  It depends on the need.  When this is resolved (it is an
-incremental process), I could move on to implementation stage.
-
-Having a good understanding of 1 and 2, I should know what functions from the
-underlying component are needed and what are not.  See, this is the process of
-transforming one thing to another which is more suitable for the need.  It is
-not uncommon only a small subset of the functions is needed.
-
-A good implementation should
-
-3. have a layer which guarantees direct and faithful calls to needed functions
-   of the underlying component.
-
-Usually, not every function is directly usable.  None is directly usable if we
-are writing a driver.  But one should note that no smart things are _allowed_
-in this layer.  Faithful is important.  Above this layer, we could implement
-the interface we want to provide.  Note that it is perfectly legal part of this
-layer is part of the interface.
-
-For whole project, two things are important
-
-4. Logging mechanism
-5. Statistics
-
-An example.  Say we have an application, app.  We are writing aaa.c,
-interfacing component bbb (could be another source file, a hardware, or a
-library).  The interface is like:
-
-#ifndef _AAA_H_
-#define _AAA_H_
-
-#if DEPEND_ON_WHAT_I_NEED
-#include <bbb.h>
-#endif
-
-void app_aaa_do_something(void);
-void app_aaa_another_thing(void);
-
-/* these are allowed */
-extern int app_aaa_global_variable;
-void _app_aaa_ugly_hack(void); /* unless this is a public header.. */
-
-/* both could be part of the thin layer in 3! */
-void app_aaa_yet_another(void);
-void app_aaa_do_bbb(void);
-
-#endif /* _AAA_H_ */
-
-Underscore is for functions that are not well-considered.  Global functions
-could have underscore (and they are called hacks).  Static functions might or
-might not have underscore.  It is about the maturity of the function, not the
-scope.  But one should be more careful when writing a library.  Underscore'ed
-global functions should at least not in the public headers.
-
-aaa.c:
-
-#include "aaa.h"
-
-int app_aaa_global_variable;
-
-void app_aaa_do_something(void)
-{
-}
-
-static void app_aaa_helper(void)
-{
-}
-
-void app_aaa_another_thing(void)
-{
-}
-
-void _app_aaa_ugly_hack(void)
-{
-}
-
-/* these are in thin layer */
-void app_aaa_yet_another(void)
-{
-}
-
-void app_aaa_do_bbb(void)
-{
-}
-
-/* more thin layer stuff; static this time */
-static void bbb_yoyo(void)
-{
-}
-
-static void bbb_yeye(void)
-{
-}
-
-static void _bbb_whatever(void)
-{
-}

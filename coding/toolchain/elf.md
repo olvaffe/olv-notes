@@ -8,7 +8,7 @@
   - there is also `Mach-O` used on macos/ios
 - `ELF` superceded `COFF` in SysV 5
 
-## ELF
+## ELF Format
 
 - An ELF file starts with ELF header at file offset 0
   - `e_type`, `ET_DYN` for relocatable and `ET_EXEC` for fixed-address

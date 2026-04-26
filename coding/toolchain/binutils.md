@@ -111,6 +111,6 @@
     base version
     - only `foo` is public
 
-## binutils
+## ARM32 EABI
 
 - GNU EABI == no eabi, EABI4 == EABI5 == eabi

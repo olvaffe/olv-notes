@@ -364,8 +364,8 @@
       - roughly
         - `let mut iter = std::iter::IntoIterator::into_iter(expr);`
         - `while let Some(val) = std::iter::Iterator::next(&mut iter) {`
-        - `  let pattern = val;`
-        - `  block;`
+          - `let pattern = val;`
+          - `block;`
         - `}`
       - note that `IntoIterator::into_iter` takes ownership
     - loop labels: `'label:`

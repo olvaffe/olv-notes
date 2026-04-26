@@ -1,5 +1,4 @@
-C
-=
+# C
 
 ## C23
 
@@ -160,38 +159,38 @@ C
 - <https://en.cppreference.com/w/c/header>
   - note that POSIX and glibc add stuff to the std headers as well
 - commonly used
-  - `assert.h`	Conditionally compiled macro that compares its argument to zero
-  - `ctype.h`	Functions to determine the type contained in character data
-  - `errno.h`	Macros reporting error conditions
-  - `inttypes.h`	Format conversion of integer types
-  - `limits.h`	Ranges of integer types
-  - `locale.h`	Localization utilities
-  - `math.h`	Common mathematics functions
-  - `signal.h`	Signal handling
-  - `stdalign.h`	alignas and alignof convenience macros
-  - `stdarg.h`	Variable arguments
-  - `stdatomic.h`	Atomic operations
-  - `stdbit.h`	Macros to work with the byte and bit representations of types
-  - `stdbool.h`	Macros for boolean type
-  - `stddef.h`	Common macro definitions
-  - `stdint.h`	Fixed-width integer types
-  - `stdio.h`	Input/output
-  - `stdlib.h`	General utilities: memory management, program utilities, string conversions, random numbers, algorithms
-  - `string.h`	String handling
-  - `threads.h`	Thread library
-  - `time.h`	Time/date utilities
+  - `assert.h` Conditionally compiled macro that compares its argument to zero
+  - `ctype.h` Functions to determine the type contained in character data
+  - `errno.h` Macros reporting error conditions
+  - `inttypes.h` Format conversion of integer types
+  - `limits.h` Ranges of integer types
+  - `locale.h` Localization utilities
+  - `math.h` Common mathematics functions
+  - `signal.h` Signal handling
+  - `stdalign.h` alignas and alignof convenience macros
+  - `stdarg.h` Variable arguments
+  - `stdatomic.h` Atomic operations
+  - `stdbit.h` Macros to work with the byte and bit representations of types
+  - `stdbool.h` Macros for boolean type
+  - `stddef.h` Common macro definitions
+  - `stdint.h` Fixed-width integer types
+  - `stdio.h` Input/output
+  - `stdlib.h` General utilities: memory management, program utilities, string conversions, random numbers, algorithms
+  - `string.h` String handling
+  - `threads.h` Thread library
+  - `time.h` Time/date utilities
 - less used
   - `complex.h` Complex number arithmetic
   - `fenv.h`    Floating-point environment
-  - `float.h`	Limits of floating-point types
-  - `iso646.h`	Alternative operator spellings
-  - `setjmp.h`	Nonlocal jumps
-  - `stdckdint.h`	macros for performing checked integer arithmetic
-  - `stdnoreturn.h`	noreturn convenience macro
-  - `tgmath.h`	Type-generic math (macros wrapping math.h and complex.h)
-  - `uchar.h`	UTF-16 and UTF-32 character utilities
-  - `wchar.h`	Extended multibyte and wide character utilities
-  - `wctype.h`	Functions to determine the type contained in wide character data
+  - `float.h` Limits of floating-point types
+  - `iso646.h` Alternative operator spellings
+  - `setjmp.h` Nonlocal jumps
+  - `stdckdint.h` macros for performing checked integer arithmetic
+  - `stdnoreturn.h` noreturn convenience macro
+  - `tgmath.h` Type-generic math (macros wrapping math.h and complex.h)
+  - `uchar.h` UTF-16 and UTF-32 character utilities
+  - `wchar.h` Extended multibyte and wide character utilities
+  - `wctype.h` Functions to determine the type contained in wide character data
 
 ## Locale
 
@@ -325,7 +324,7 @@ the sizeof(long) actually varies between the targets we care about.
     - CPU1 might reorder the stores
     - the memory coherency system might reorder the stores
       - e.g., the two stores hits two cachelines of CPU1 local cache, but
-      	flushed in the wrong order
+       flushed in the wrong order
   - CPU1 must insert a store barrier between the two stores to ensure the
     correct order
   - let's say CPU1 does the right thing and does
@@ -336,7 +335,7 @@ the sizeof(long) actually varies between the targets we care about.
     - CPU2 does not reorder the loads also because of data dependency
     - however, the memory coherency system might reorder the loads
       - e.g., the first load hits the memory and the second load hits CPU2
-      	local cache because of the lack of local cache invalidation
+       local cache because of the lack of local cache invalidation
   - CPU2 must insert a data dependency barrier between the two loads to ensure
     the correct order
   - more often, the two loads have no data dependency.  CPU2 must insert a
@@ -352,7 +351,7 @@ the sizeof(long) actually varies between the targets we care about.
       reorder because of data dependency
     - but the memory coherency system can still reorder
       - e.g., the memory coherency system can reorder in ways of CPU local
-      	cache flush/invalidation
+       cache flush/invalidation
   - load barrier: loads before or after the barrier cannot be reordered across
     the barrier
   - general barrier: memory accesses (both stores and loads) before or after
@@ -372,10 +371,10 @@ the sizeof(long) actually varies between the targets we care about.
     - no reads or writes in the current thread with data dependency on the
       atomic variable can be reordered before this load
       - seems pointless because reodering in compiler or CPU is not allowed
-      	because of data dependency
+       because of data dependency
       - this is about memory coherency system reordering
-	- e.g., it may invalidate the cacheline used by a load following the
-	  barrier
+        - e.g., it may invalidate the cacheline used by a load following the
+          barrier
     - writes with data dependency in other threads that release the
       same atomic variable are visible in the current thread
     - example

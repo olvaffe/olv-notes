@@ -43,8 +43,8 @@
         - `libc++.a` and `libc++.so*` from `libcxx`
         - `libc++abi.a` and `libc++abi.so*` from `libcxxabi`
     - `libexec`
-        - `{analyze,intercept}-{cc,c++}` from `clang`
-        - `{ccc,c++}-analyzer` from `clang`
+      - `{analyze,intercept}-{cc,c++}` from `clang`
+      - `{ccc,c++}-analyzer` from `clang`
   - the compiler supports
     - `x86_64-unknown-linux-gnu`
     - `i686-unknown-linux-gnu`
@@ -133,7 +133,6 @@
   - inline, noreturn, readnone
 - inline assembly
   - `module asm "blah"`
-
 
 ## LLVM Tutorial
 

@@ -1,5 +1,4 @@
-Go
-==
+# Go
 
 ## Installation
 
