@@ -1218,10 +1218,10 @@
           - `VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL`
           - IOW, must use depth
       - `pStencilAttachment`'s image view must include a stencil component
-          - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
-          - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
-          - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
-          - IOW, must use stencil
+        - `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL`
+        - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
+        - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
+        - IOW, must use stencil
 - 12.5. Image Views
   - a `VkImageView` can be created fro a `VkImage`
     - `VkImageViewType` and `VkImageType` can differ under conditions
@@ -1331,7 +1331,7 @@
       - can only be depth, stencil, or both aspects if depth/stencil formats
         - must be a single bit when used in a descriptor set
         - is ignored and assume to be both aspects when used as a framebuffer
-        	attachment
+         attachment
   - `vkCmdClearColorImage`, `vkCmdClearDepthStencilImage`, `vkCmdSetEvent2`,
     `vkCmdWaitEvents2`, `vkCmdPipelineBarrier2`, `vkCmdWaitEvents`, and
     `vkCmdPipelineBarrier`

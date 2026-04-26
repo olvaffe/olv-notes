@@ -203,7 +203,6 @@
   - some are client states
 - 2.6. Objects and the Object Model
 
-
 ## Chapter 3. Dataflow Model
 
 ## Chapter 4. Event Model

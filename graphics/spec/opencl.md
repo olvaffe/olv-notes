@@ -27,10 +27,10 @@
   - <https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_Ext.html>
     - this defines all `cl_khr_*` extensions
   - <https://registry.khronos.org/OpenCL/specs/3.0-unified/html/OpenCL_Env.html>
-- http://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf (how NVIDIA does it in their tgsi equivalent),
-- http://developer.amd.com/gpu_assets/Intermediate_Language_Specification--Stream_Processor.pdf (how AMD does it in their tgsi equivalent),
-- http://llvm.org/devmtg/2009-10/OpenCLWithLLVM.pdf (generic presentation about how Apple did their OpenCL Clang integration)
-- http://llvm.org/docs/CodeGenerator.html (how LLVM code generators work)
+- <http://www.nvidia.com/content/CUDA-ptx_isa_1.4.pdf> (how NVIDIA does it in their tgsi equivalent),
+- <http://developer.amd.com/gpu_assets/Intermediate_Language_Specification--Stream_Processor.pdf> (how AMD does it in their tgsi equivalent),
+- <http://llvm.org/devmtg/2009-10/OpenCLWithLLVM.pdf> (generic presentation about how Apple did their OpenCL Clang integration)
+- <http://llvm.org/docs/CodeGenerator.html> (how LLVM code generators work)
 
 ## Chapter 1. Introduction
 
@@ -350,7 +350,7 @@
           errors
         - essentially, this means `a * b + c` can be replaced by
           `fma(a, b, c)`
-          - note that `-cl-mad-enable` allows `a * b + c ` to be replaced by
+          - note that `-cl-mad-enable` allows `a * b + c` to be replaced by
             `mad(a, b, c)`
     - integer functions
       - `abs`, `mad24`, etc.
