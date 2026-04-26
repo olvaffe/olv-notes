@@ -43,7 +43,7 @@
       front buffer is requred for a Window, the fake front buffer is also
       returned
     - each buffer is allocated by server and returned as a GEM flink name
-    - in practice, all we care about is DRI2BufferFakeFrontLeft` and
+    - in practice, all we care about is `DRI2BufferFakeFrontLeft` and
       `DRI2BufferBackLeft`; `DRI2BufferFrontLeft` is used with
       `DRI2CopyRegion`
   - request made by client driver

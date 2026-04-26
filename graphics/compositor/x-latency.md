@@ -124,55 +124,55 @@
     - if there is nothing to do, it sleeps
     - after it wakes up, it calls `WakeupHandler`
 - Example (glxgears on host)
-  - +0us:   input IRQ (i8042)
-  - +136us: X wake up to send the input event
-  - +356us: glxgears wake up
-  - +421us: glxgears handles the input event
-  - +436us: glxgears calls GL
-  - +738us: glxgears swap buffers (which flushes) to present the frame on next msc
-  - +905us: X wake up and waits for the next vsync
+  - `+0us`:   input IRQ (i8042)
+  - `+136us`: X wake up to send the input event
+  - `+356us`: glxgears wake up
+  - `+421us`: glxgears handles the input event
+  - `+436us`: glxgears calls GL
+  - `+738us`: glxgears swap buffers (which flushes) to present the frame on next msc
+  - `+905us`: X wake up and waits for the next vsync
   - some time later
-  - +0us: vsync IRQ (i915)
-  - +63us: X wake up again to copy from app buffer to scanout buffer
+  - `+0us`: vsync IRQ (i915)
+  - `+63us`: X wake up again to copy from app buffer to scanout buffer
   - new content shows up tear-free
 - Example (glxgears in guest, traced in guest, on a different host than above)
-  - +   0us: input IRQ (i8042)
-  - + 180us: X wake up to send the input event
-  - + 341us: glxgears wake up
-  - + 380us: glxgears handles the input event
-  - + 395us: glxgears calls GL
-  - + 516us: glxgears swap buffers (which flushes) to present the frame on next msc
-  - + 723us: X wake up (no wait for vsync because virtio-gpu does not support
+  - `+   0us`: input IRQ (i8042)
+  - `+ 180us`: X wake up to send the input event
+  - `+ 341us`: glxgears wake up
+  - `+ 380us`: glxgears handles the input event
+  - `+ 395us`: glxgears calls GL
+  - `+ 516us`: glxgears swap buffers (which flushes) to present the frame on next msc
+  - `+ 723us`: X wake up (no wait for vsync because virtio-gpu does not support
       it)
-  - + 821us: X submits copy
-  - +1663us: X submits copy returns
+  - `+ 821us`: X submits copy
+  - `+1663us`: X submits copy returns
     - it take a while because `virtqueue_kick` (`vp_notify` specifically)
       writes to the notification register.  If host has pending works for us,
       they are fired before the write returns
-  - +1719us: X flushes resource (dirty fb)
+  - `+1719us`: X flushes resource (dirty fb)
 - Example (glxgears in guest, traced in host)
-  - +   0us: input IRQ (i8042)
-  - + 151us: X wake up to send the input event
+  - `+   0us`: input IRQ (i8042)
+  - `+ 151us`: X wake up to send the input event
   - after a while
-  - +   0us: qemu wake up
+  - `+   0us`: qemu wake up
     - qemu wakes up every `GUI_REFRESH_INTERVAL_DEFAULT` (30) ms, or
       `SDL2_REFRESH_INTERVAL_BUSY` (10) ms.
-  - + 287us: qemu `handle_keydown`
-  - + 313us: qemu generates an input IRQ for the guest
-  - +1561us: guest notifies host about glxgears GPU command with MMIO write
-  - +1782us: qemu process guest glxgears GPU command
-  - +2253us: guest notifies host about X copy GPU command with MMIO write
-  - +3250us: qemu `i915_request_add` for the guest glxgears
-  - +3794us: qemu generates a cmd done IRQ (qemu polls GL sync every 10ms)
-  - +4116us: qemu process guest X GPU command
-  - +4482us: guest notifies host about `RESOURCE_FLUSH` GPU command with
-             MMIO write
-  - +4723us: qemu `i915_request_add` for the guest X
-             (no IRQ is generated in the captured timeframe)
-  - +5565us: qemu process guest `RESOURCE_FLUSH` GPU command
-  - +5988us: qemu `i915_request_add` to blit from guest scanout to window
-  - +6230us: X wake up
-  - +7089us: X `i915_request_add` to copy
+  - `+ 287us`: qemu `handle_keydown`
+  - `+ 313us`: qemu generates an input IRQ for the guest
+  - `+1561us`: guest notifies host about glxgears GPU command with MMIO write
+  - `+1782us`: qemu process guest glxgears GPU command
+  - `+2253us`: guest notifies host about X copy GPU command with MMIO write
+  - `+3250us`: qemu `i915_request_add` for the guest glxgears
+  - `+3794us`: qemu generates a cmd done IRQ (qemu polls GL sync every 10ms)
+  - `+4116us`: qemu process guest X GPU command
+  - `+4482us`: guest notifies host about `RESOURCE_FLUSH` GPU command with
+               MMIO write
+  - `+4723us`: qemu `i915_request_add` for the guest X
+               (no IRQ is generated in the captured timeframe)
+  - `+5565us`: qemu process guest `RESOURCE_FLUSH` GPU command
+  - `+5988us`: qemu `i915_request_add` to blit from guest scanout to window
+  - `+6230us`: X wake up
+  - `+7089us`: X `i915_request_add` to copy
   - Note that qemu produces a new frame every 30ms-ish and creates noises
   - Note that guest fences are translated to GPU commands on guest kernel 5.2
     or older.  That creates noises.
@@ -183,58 +183,58 @@
       - call glamor block handler
       - glFlush
   - glxgears
-    - +0us: virtio-wl irq
-    - +488us: sommilier wake up
+    - `+0us`: virtio-wl irq
+    - `+488us`: sommilier wake up
       - it `VIRTWL_IOCTL_RECV`, demarshal the data to wayland traffic to a
-      	socket, read the wayland traffic, and send it to X
-    - +721us: sommilier sends the wayland traffic to X
-    - +920us: X wake up and enter `socket_handler` to read wl events and send
+        socket, read the wayland traffic, and send it to X
+    - `+721us`: sommilier sends the wayland traffic to X
+    - `+920us`: X wake up and enter `socket_handler` to read wl events and send
               X events
-    - +1617us: X enters block handlers and glamor `glFlush`
+    - `+1617us`: X enters block handlers and glamor `glFlush`
       - twice!
-    - +1787us: glxgears wake up
-    - +2238us: glxgears queues a GPU command
-    - +4090us: X wake up again and flips
-    - +4281us: sommilier wake up
+    - `+1787us`: glxgears wake up
+    - `+2238us`: glxgears queues a GPU command
+    - `+4090us`: X wake up again and flips
+    - `+4281us`: sommilier wake up
       - `sl_host_surface_attach`, it seems
-        - +6574us: `DRM_IOCTL_PRIME_FD_TO_HANDLE`
-        - +6627us: `DRM_VIRTGPU_WAIT`
-        - +6634us: `DRM_IOCTL_GEM_CLOSE`
-    - +6975us: sommilier `VIRTWL_IOCTL_SEND`
+        - `+6574us`: `DRM_IOCTL_PRIME_FD_TO_HANDLE`
+        - `+6627us`: `DRM_VIRTGPU_WAIT`
+        - `+6634us`: `DRM_IOCTL_GEM_CLOSE`
+    - `+6975us`: sommilier `VIRTWL_IOCTL_SEND`
 - Example (glxgears in crosvm, traced in host)
   - idle (guest X wakes up every second)
-    - +0us  : vcpu thread wake up
-    - +248us: vgpu wake up
-    - +355us: i915 execbuffer
-    - +769us: vcpu again
-    - +893us: vgpu again
-    - +978us: i915 again
+    - `+0us`: vcpu thread wake up
+    - `+248us`: vgpu wake up
+    - `+355us`: i915 execbuffer
+    - `+769us`: vcpu again
+    - `+893us`: vgpu again
+    - `+978us`: i915 again
   - glxgears
-    - +0us    : irq (i8042)
-    - +180us  : chrome evdev thread wake up
-    - +263us  : chrome main thread wake up (exo?)
-    - +576us  : crosvm wl thread wake up
-    - +686us  : virtio-wl irq generated in host
-    - +1072us : virtio-wl irq acked by guest
+    - `+0us`: irq (i8042)
+    - `+180us`: chrome evdev thread wake up
+    - `+263us`: chrome main thread wake up (exo?)
+    - `+576us`: crosvm wl thread wake up
+    - `+686us`: virtio-wl irq generated in host
+    - `+1072us`: virtio-wl irq acked by guest
     - guest doing its work
-    - +7453us : virtio-gpu wake up
-    - +7503us : virtio-gpu execbuf (dummy for X)
-    - +8068us : virtio-gpu execbuf (dummy for X)
-    - +8394us : virtio-gpu execbuf (for glxgears)
-    - +8677us : virtio-wl mmio (`guest->host` notification)
-    - +8684us : crosvm wl thread wake up
-    - +8702us : chrome main thread wake up
-      - +8794us: chrome io thread wake up
+    - `+7453us`: virtio-gpu wake up
+    - `+7503us`: virtio-gpu execbuf (dummy for X)
+    - `+8068us`: virtio-gpu execbuf (dummy for X)
+    - `+8394us`: virtio-gpu execbuf (for glxgears)
+    - `+8677us`: virtio-wl mmio (`guest->host` notification)
+    - `+8684us`: crosvm wl thread wake up
+    - `+8702us`: chrome main thread wake up
+      - `+8794us`: chrome io thread wake up
       - it wakes up ChildIOT in chrome gpu process
-    - +8908us : chrome gpu process wake up
-    - +8956us : chrome main thread wake up
-    - +10962us: chrome gpu process wake up
-    - +11009us: chrome gpu process execbuffer
-    - +11194us: virtio-gpu execbuf (?)
-    - +11364us: chrome DrmThread wake up
-    - +11396us: `DRM_IOCTL_MODE_ATOMIC`
-    - +11445us: `i915_pipe_update_start`
-    - +11455us: `i915_pipe_update_end`
+    - `+8908us`: chrome gpu process wake up
+    - `+8956us`: chrome main thread wake up
+    - `+10962us`: chrome gpu process wake up
+    - `+11009us`: chrome gpu process execbuffer
+    - `+11194us`: virtio-gpu execbuf (?)
+    - `+11364us`: chrome DrmThread wake up
+    - `+11396us`: `DRM_IOCTL_MODE_ATOMIC`
+    - `+11445us`: `i915_pipe_update_start`
+    - `+11455us`: `i915_pipe_update_end`
     - some time later: vblank and flip complete
 - Interesting events
   - input: irq -> server -> client

@@ -6,7 +6,7 @@
   - `I915_GEM_EXECBUFFER2`
     - event `dma_fence_init`
       - this execbuffer allocates a `i915_request`, which is associated with a
-      	`dma_fence`.
+        `dma_fence`.
     - event `i915_request_queue`
       - we are about to queue the request to the HW ring buffer
     - event `i915_request_add`
@@ -36,20 +36,20 @@
   - `DRM_IOCTL_MODE_ATOMIC` -> non-blocking `intel_atomic_commit`
     - `intel_atomic_prepare_commit`
       - calls `intel_prepare_plane_fb` and adds the BO implicit fence that
-      	will be waited for
-      	* the first time a BO is used for scanout, `intel_plane_pin_fb` calls
-      	  `i915_gem_object_pin_to_display_plane` which calls
-      	  `i915_gem_object_set_cache_level` which calls
-      	  `i915_gem_object_wait`.  The commit becomes blocking.
-      	* also in `i915_gem_object_pin_to_display_plane` for the first time,
-      	  `__i915_gem_object_flush_for_display` clflushes and adds a fence
-      	* they are gone after the first use
+        will be waited for
+        - the first time a BO is used for scanout, `intel_plane_pin_fb` calls
+          `i915_gem_object_pin_to_display_plane` which calls
+          `i915_gem_object_set_cache_level` which calls
+          `i915_gem_object_wait`.  The commit becomes blocking.
+        - also in `i915_gem_object_pin_to_display_plane` for the first time,
+          `__i915_gem_object_flush_for_display` clflushes and adds a fence
+        - they are gone after the first use
     - `drm_atomic_helper_setup_commit` makes sure the previous flip has
       completed, otherwise returns EBUSY
   - `intel_atomic_commit_tail` is called in a wq because of non-blocking
     - it waits the BO first in `intel_atomic_commit_fence_wait`
       - because of the issue in `intel_plane_pin_fb`, it waits for `clflush`
-      	worker
+        worker
     - it waits for the previous flip to complete
       - no-op because of `drm_atomic_helper_setup_commit`
     - it writes to the double-buffered registers

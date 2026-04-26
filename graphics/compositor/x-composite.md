@@ -7,7 +7,7 @@
     - bounding region is the real-estate of the window in the parent window
     - clip region is the renderable region within the bounding region
       - the diff between bounding/clip regions is called the border, for
-      	things such as window shadows
+        things such as window shadows
     - input region is the region that takes inputs
 - Damage Extension, for dirty pixel tracking
   - we will need it to repaint a window

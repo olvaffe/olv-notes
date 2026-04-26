@@ -108,7 +108,7 @@
     - I believe things fail down later when some other extensions are not
       supported.  For example,
       - `eglMakeCurrent` is always called with `EGL_NO_SURFACE`.  It fails
-      	without `EGL_KHR_surfaceless_context`.
+        without `EGL_KHR_surfaceless_context`.
 - `wlr_gles2_renderer_create` creates `wlr_renderer`
   - these extensions are required
     - `GL_EXT_texture_format_BGRA8888`
@@ -562,10 +562,9 @@
   - it calls `wlr_xwayland_create` unless xwayland is disabled
   - it calls `wlr_backend_start` to start the backend
     - this creates a X11 window and calls `wlr_x11_output_create` to create
-    	a global
+      a global
 - `server_run`
   - this calls `wl_display_run` to enter the mainloop
-
 
 ## vkms
 

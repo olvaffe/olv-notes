@@ -103,5 +103,5 @@
     - starting the server in ssh still gives an error
       - `xf86OpenConsole: Cannot open virtual console 1 (Permission denied)`
       - this is because, when starting in tty, logind chowns /dev/tty1 for the
-      	server
+        server
       - `TakeControl` method of `org.freedesktop.login1.Session`
