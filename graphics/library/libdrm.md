@@ -415,7 +415,7 @@
 - protocols such as DRI3 give the DRI loader an opened fd
 - `drmGetDevice2` can return a `drmDevicePtr` for the fd
   - it works similar to `drmGetDevices2`, except it drops all but the only
-    device having the matching <major>:<minor>
+    device having the matching `<major>:<minor>`
 - the DRI loader uses the DRM device to pick the driver
   - it uses the PCI id and a built-in table to find the DRI driver name
   - it falls back to `drmGetVersion` to use the kernel driver name

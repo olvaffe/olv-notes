@@ -344,9 +344,9 @@
   - by default, `ANGLEPerfTest::run`
     - `calibrateStepsToRun` because `mStepsToRun` is 0
       - it wants to decide how many steps (frames) take
-      	`mTrialTimeLimitSeconds` seconds
+        `mTrialTimeLimitSeconds` seconds
       - it runs for `mTrialTimeLimitSeconds` for `gWarmupTrials` times, and
-      	adjust number of steps to run
+        adjust number of steps to run
     - it then runs the test for `mTrialTimeLimitSeconds` / `mStepsToRun`
       (which ever reaches first), and repeat for `gTestTrials` times
   - note that `TracePerfTest::getStepAlignment` returns trace frame count
@@ -359,7 +359,7 @@
     - calls `ANGLEPerfTest::runTrial` to warm up
       - `gWarmupTrials` is 3 and `gCalibrationTimeSeconds` is 1.0 by default
       - it keeps `ANGLERenderTest::step` and `TracePerfTest::drawBenchmark`
-      	until `gCalibrationTimeSeconds` is reached
+        until `gCalibrationTimeSeconds` is reached
       - and repeat above for `gWarmupTrials` times
       - each step draws a frame of the trace
 - outputs
@@ -407,7 +407,7 @@
   - the trace `.so`
     - `SetupReplay`
       - `InitReplay` calls `InitializeReplay` to load the binary tarball and
-      	initialize global variables in the fixture
+        initialize global variables in the fixture
       - `SetupReplayContextShared` initializes GL states in a shared context?
       - `SetupReplayContext1`  initializes GL states in the game context
     - `ReplayContext1Frame1` replays a frame
