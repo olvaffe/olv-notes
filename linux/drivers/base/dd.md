@@ -33,7 +33,7 @@
   - `driver_sysfs_remove` undoes `driver_sysfs_add`
   - `pm_runtime_put_sync` suspends the dev
   - `device_remove` calls `drv->remove`
-  - ` dev->bus->dma_cleanup` undoes `dev->bus->dma_configure`
+  - `dev->bus->dma_cleanup` undoes `dev->bus->dma_configure`
   - `device_unbind_cleanup`
   - `device_links_driver_cleanup` advertises the dev-drv unbound to producers,
     etc.

@@ -1,4 +1,4 @@
-# USB
+# Kernel USB
 
 ## USB
 
@@ -47,14 +47,13 @@
   - Gen 4x1: 40Gbit/s
   - Gen 4x2: 80Gbit/s (two lanes)
 - Power
-  - Low Power: 5V * 0.1A = 0.5W
-  - High Power: up to 5V * 0.5A = 2.5W
-  - Low Power SuperSpeed: 5V * 0.15A = 0.75W
-  - High Power SuperSpeed: up to 5V * 0.9A = 4.5W
-  - Two-Lane SuperSpeed (3.2 Gen2x2): up to 5V * 1.5A = 7.5W
-  - BC 1.2: 5V * 1.5A = 7.5W
-  - USB-C: 5V * 1.5A = 7.5W
-           5V * 3A = 15W
+  - Low Power: `5V * 0.1A = 0.5W`
+  - High Power: up to `5V * 0.5A = 2.5W`
+  - Low Power SuperSpeed: `5V * 0.15A = 0.75W`
+  - High Power SuperSpeed: up to `5V * 0.9A = 4.5W`
+  - Two-Lane SuperSpeed (3.2 Gen2x2): up to `5V * 1.5A = 7.5W`
+  - BC 1.2: `5V * 1.5A = 7.5W`
+  - USB-C: `5V * 1.5A = 7.5W` and `5V * 3A = 15W`
 - USB Type-A
   - USB 1.0 and 2.0 has 4 pins: VBUS, D-, D+, and GND
   - USB 3.0 has 9 pins: 4 pins plus RX-, RX+, TX-, TX+, GND

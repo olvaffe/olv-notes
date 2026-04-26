@@ -35,7 +35,7 @@
 - `fbmem_init` is called during subsys init.  But there is no fbdev yet.
 - `sysfb_init` adds a "efi-framebuffer" platform device
 - `efifb_probe` calls `register_framebuffer` to registers the fbdev
-   - fbcon takes over the vt consoles from dummycon
+  - fbcon takes over the vt consoles from dummycon
 - `drm_fb_helper_initial_config` called by i915 to register "inteldrmfb"
   - `do_remove_conflicting_framebuffers` unregisters efifb first
   - inteldrmfb takes over
@@ -69,7 +69,7 @@
 - other key combinations are handled similarly
   - Ctrl-S / Ctrl-Q sends 0x13 / 0x11 to stop / start tty
 
-## Input from keyboard:
+## Input from keyboard
 
 - keyboard.c:
   - k_handler, fn_handler, kbd_table for each console (kbd_struct, interfacing vt), kbd_handler (input_handler, interfacing input layer)
@@ -93,18 +93,20 @@
 - there is a type, because certain key combinations have special effect
 
 kernel:
+
 - When 0x1e is mapped to 0, press a gives
   atkbd.c: Unknown key pressed (translated set 2, code 0x1e on isa0060/serio0)
 - SysRq -> 0xe0 0x2a 0xe0 0x37 -> 255 99 -> ATKBD_KEY_NULL KEY_SYSRQ
 - the position of 'y' provides scan code 0x15, which is mapped to KEY_Y, which could be y or z depending on keymaps
 
 xkb:
+
 - different driver produces different keycodes, which makes keycode meaningless
 - need a corresponding XkbKeyCode for each driver to map keycode to symbolic name
 - symbolic name is used in the rest of xkb to map to keysym
 
-
 atkbd.c:
+
 - perform scan code to keycode mapping (modifiable by setkeycodes and getkeycodes)
 - atkbd_set_device_attrs sets device attr, which includes max scancode, etc.
 - input_default_setkeycode
@@ -113,7 +115,7 @@ press 'A' -> scan code of A -> keycode KEY_A -> keysym 0x61, type letter
 -> conv_8bit_to_uni -> output utf8 if kbdmode == VT_UNICODE
                     -> output the result of conv_uni_to_8bit if not
 
-## Output to VT:
+## Output to VT
 
 - console_codes(4)
 - fonts have 256 or 512 glyphs, indicated by vc->vc_hi_font_mask

@@ -1,6 +1,6 @@
 # Kernel PTY
 
-## PTY
+## Userspace
 
 - TTY stands for teletype terminal
 - PTY stands for pseudo TTY, or pseudoterminal
@@ -25,7 +25,7 @@
   - writes to the slave (by the shell) are received by the master (by the
     terminal emulator)
 
-## PTY
+## Kernel
 
 - `/dev/ptmx` has `tty_fops` as its `file_operations` with `open` overriden
 - when `/dev/ptmx` is opened, the driver checks if `/dev/pts` is mounted as

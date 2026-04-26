@@ -164,7 +164,6 @@ buffer is queued again through VIDIOC_QBUF.
 See SOC_CAMERA in Kconfig or pxa_camera.c/sh_mobile_ceu_camera.c for more
 info on soc host and mt9* on soc device.
 
-
 SOC CAMERA
 A device is registered through soc_camera_device_register:
 
@@ -188,6 +187,5 @@ VIDIOC_QUERYCTRL -> soc_camera_queryctrl
 VIDIOC_G_CONTROL -> soc_camera_g_ctrl -> (device get_control)
 VIDIOC_G_CHIP_IDENT -> soc_camera_g_chip_ident -> (device get_chip_id)
 VIDIOC_STREAMON -> soc_camera_streamon -> (device start_capture)
-
 
 ? -> soc_camera_s_fmt_vid_cap -> (host try_bus_param) -> (host try_fmt_cap) \> (device query_bus_param) /> (host set_fmt_cap) \> (device set_fmt_cap) /> (host set_bus_param) \> (device query_bus_param) /> (device set_bus_param)
