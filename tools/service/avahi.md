@@ -61,7 +61,6 @@
       yields all services
   - `avahi-browse -atr` lists all services
 
-
 ## UPnP
 
 - <http://www.zeroconf.org/ZeroconfAndUPnP.html>

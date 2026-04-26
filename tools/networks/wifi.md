@@ -72,7 +72,7 @@
 - 64-QAM has 6 bits per symbol (log2(64))
 - code rate (k/n)
   - for every n bits, only k bits are useful
-- with code rate 3/4, the maximum bitrate is 54 MBit/s (12M * 6 * 3/4)
+- with code rate 3/4, the maximum bitrate is 54 MBit/s (`12M * 6 * 3/4`)
 - 802.11g bitrate vary depending on
   - bandwidth
   - modulation
@@ -85,7 +85,7 @@
   - 256-QAM => 8 bits per symbol
   - code rate 5/6
   - 4 spatial streams
-  - 468 / 3.6 * 8 * 5 / 6 * 4 = 3466.7
+  - `468 / 3.6 * 8 * 5 / 6 * 4 = 3466.7`
 - what are the differences between 802.11g and 802.11ac?
   - higher bandwidth meaning more subcarriers
   - shorter guard internal meaning higher symbol rate
@@ -334,11 +334,14 @@
 - quick connect
   - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
 
+    ```text
       ctrl_interface=DIR=/run/wpa_supplicant
       network={
         ssid="<ssid>"
         psk="<password>"
       }
+    ```
+
   - `chmod 600`
   - `systemctl enable --now wpa_supplicant@<iface>`
 - operation modes

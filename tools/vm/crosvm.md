@@ -115,7 +115,7 @@
     - for each virtio device,
       - another socket is created for MSI request/response
       - VirtioPciDevice is created to wrap the virtio device and the MSI
-      	socket
+       socket
     - a `XhciController` is created
   - `generate_pci_root`
     - this creates a pci root and adds all devices to it

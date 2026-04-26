@@ -17,9 +17,9 @@
     - it also supports several input and output protocols
     - `ffmpeg -formats` and `ffmpeg -protocols` list them
   - `libavdevice` provides input/output devices such as v4l2, alsa, opengl, etc.
-      - `ffmpeg -devices` list them
+    - `ffmpeg -devices` list them
   - `libavfilter` provides filters for audio and video streams
-      - `ffmpeg -filters` list them
+    - `ffmpeg -filters` list them
 - `ffmpeg <options> <inputs> <outputs>`
   - `<options>` are global options
   - `<inputs>` are arbitrary number of inputs and input options
@@ -102,7 +102,7 @@
 
 - config.mak decides which files to compile
   config.h helps decide what goes into allformats.c
-- mplayer -lavfdopts format=help <somefile> to list supported formats
+- `mplayer -lavfdopts format=help <somefile>` to list supported formats
 
 ## libavcodec
 

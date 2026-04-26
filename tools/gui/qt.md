@@ -1,5 +1,4 @@
-Qt
-==
+# Qt
 
 ## `QApplication`
 

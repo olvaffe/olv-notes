@@ -88,7 +88,7 @@
     - it finds the font that best matches the user pattern
     - it calls `FcFontRenderPrepare` merge the font and the user pattern
       - the result is automatically passed to `FcConfigSubstituteWithPat` with
-      	`FcMatchFont`
+       `FcMatchFont`
   - when `--sort` or `--all` is specified, it calls `FcFontSort` instead
 - Language has higher priority than family
   - `fc-match ":lang=us"`

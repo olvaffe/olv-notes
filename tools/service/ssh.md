@@ -20,8 +20,8 @@
 - client and server encrypts all messages using the agreed cipher and secrete
   key
 - server authenticate client - `PubkeyAuthentication` uses client pubkey to authenticate client
-    - server encrypts a challenge using client pubkey
-    - client decrypts the challenge using client privkey
+  - server encrypts a challenge using client pubkey
+  - client decrypts the challenge using client privkey
   - `PasswordAuthentication` uses client password to authenticate client
   - `HostbasedAuthentication` is similar to `PubkeyAuthentication`, except the
     key is per-host not per-client (e.g., all users on the same host can connect)

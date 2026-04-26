@@ -456,7 +456,7 @@
     `ipv4_addr`
   - `nft add element <family> <table> foo { 192.168.0.10 }` adds an ipv4 addr
   - `ip saddr @foo accept` accepts a packet when saddr is in the set
-   - set specification
+  - set specification
     - `type`
       - `ipv4_addr` for ipv4 addr
       - `ipv6_addr` for ipv6 addr
@@ -512,7 +512,7 @@
   - `nft_dynset_eval` evaluates the dynamic add/update
   - if `NFT_DYNSET_OP_UPDATE`, it refreshes the timeout
 
-# `nft list sets`
+## `nft list sets`
 
 - `nft_ctx_new` opens a socket for `NETLINK_NETFILTER`
 - `nft_run_cmd_from_buffer` runs `list sets`

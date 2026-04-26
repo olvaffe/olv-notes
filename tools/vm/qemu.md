@@ -510,7 +510,7 @@
 
 ## virtio-input
 
-- `-device virtio-keyboard-pci` and ` -device virtio-mouse-pci`
+- `-device virtio-keyboard-pci` and `-device virtio-mouse-pci`
   - when devices are added to the machine, the options add the desired PCI devices
   - each of them own a `virtio-{keyboard,mouse}-device`
   - they register input handlers with `qemu_input_handler_register`

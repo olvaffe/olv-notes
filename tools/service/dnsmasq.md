@@ -33,6 +33,7 @@
 - PXE relies on DHCP (with PXE-specific vendor info) and TFTP
 - example
 
+  ```bash
     dnsmasq --no-daemon \
             --bind-interfaces \
             --listen-address 192.168.0.1
@@ -42,4 +43,6 @@
             --pxe-service=0,"Raspberry Pi Boot" \
             --enable-tftp \
             --tftp-root <path>
+  ```
+
 - make sure `<path>` is accessible by nobody or specify `--user`
