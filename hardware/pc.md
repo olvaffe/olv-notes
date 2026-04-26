@@ -90,16 +90,16 @@
       the worst sku can just be manufacturing variances
 - what is a good deal?
   - 9600X
-    - 6C@3.9GHz - 480KB/6MB/32MB - 65W - x1.00 (perf base)
+    - 6C @3.9GHz - 480KB/6MB/32MB - 65W - x1.00 (perf base)
     - $200 - x1.00 (price base)
   - 9700X
-    - 8C@3.8GHz - 640KB/6MB/32MB - 65W, x1.30 plus bigger L1
+    - 8C @3.8GHz - 640KB/6MB/32MB - 65W, x1.30 plus bigger L1
     - $270, x1.35
   - 9900X
-    - 12C@4.4GHz - 640KB/12MB/64MB - 120W, x2.25 plus bigger L1/L2/L3
+    - 12C @4.4GHz - 640KB/12MB/64MB - 120W, x2.25 plus bigger L1/L2/L3
     - $380, x1.90
   - 9950X
-    - 16C@4.3GHz - 1280KB/16MB/64MB - 170W, x2.94 plus bigger L1/L2/L3
+    - 16C @4.3GHz - 1280KB/16MB/64MB - 170W, x2.94 plus bigger L1/L2/L3
     - $550, x2.75
 - Ryzen 7 9700X
   - <https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-5-9600x.html>
@@ -909,7 +909,7 @@
   - `Advanced -> AMD PBS -> Graphics Features`
     - `D3Cold Support -> Enabled` (optional, does not appear to help)
   - `Monitor -> Q-Fan Tuning`
-    - cpu: 20%@55, 40%@65, 80%@75, 100%@85
+    - cpu: 20% @55, 40% @65, 80% @75, 100% @85
   - `Boot -> Secure Boot -> OS Type -> Windows UEFI mode`
 - mb coil whine
   - it appears to happen when cpu draws less than 20W
@@ -1001,8 +1001,8 @@
 - power from outlet
   - poweroff: 1.7W
   - suspend: 2.2W
-  - idle: 32-36W (ddr5 6000@1.35V)
-    - without expo: 27-31W (ddr5 4800@1.1V)
+  - idle: 32-36W (ddr5 6000 @1.35V)
+    - without expo: 27-31W (ddr5 4800 @1.1V)
   - stressed: 125W
   - dgpu: 38-42W
     - without output: 36-40W (D3hot)

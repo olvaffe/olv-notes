@@ -55,11 +55,14 @@
 - `MakeProgram`
   - for `float_long` test case, the kernel is something like
 
+    ```c
     __kernel void test_implicit_float_long( __global long *src, __global float *dest )
     {
        size_t i = get_global_id(0);
        dest[i] =  src[i]; // or with explicit convert_float
     }
+    ```
+
 - `InitData` initializes input data
   - for `float_long` test case,
     - `init_long` generates various bit patterns

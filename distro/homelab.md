@@ -97,14 +97,14 @@
     - 1Gb ethernet port x2 (for uplink and downlink)
 - potential routers
   - Netgate 1100
-    - Marvell Armada 3720LP, A53 x2@1.2G
+    - Marvell Armada 3720LP, A53 x2 @ 1.2G
     - 1GB DDR4
     - 8GB eMMC
     - Marvell 88E6141, 1GbE x3
     - 3.48W idle
     - 927Mbps (forwarding) , 607Mbps (firewall)
   - Netgate 2100
-    - Marvell Armada 3720LP, A53 x2@1.2G
+    - Marvell Armada 3720LP, A53 x2 @ 1.2G
     - 4GB DDR4
     - 8GB eMMC
     - Marvell 88E6141, 1GbE x4
@@ -112,7 +112,7 @@
     - 4W idle
     - 2.2Gbps (forwarding) , 964Mbps (firewall)
   - OpenWrt One
-    - MediaTek MT7981B, A53 x2@1.3G
+    - MediaTek MT7981B, A53 x2 @ 1.3G
     - 1GB DDR4
     - 256MB NAND
       - 16MB NOR (for recovery)
@@ -122,19 +122,19 @@
     - 4.7W idle
     - 940Mbps
   - NanoPi R3S
-    - Rockchip RK3566, A55 x4@1.8G
+    - Rockchip RK3566, A55 x4 @ 1.8G
     - 2GB DDR4
     - 32GB eMMC
     - RTL8211F, 1GbE x1
       - another RTL8111H, 1GbE x1
   - NanoPi R5S-LTS
-    - Rockchip RK3568B2, A55 x4@2G
+    - Rockchip RK3568B2, A55 x4 @ 2G
     - 2GB/4GB DDR4
     - 8GB/32GB eMMC
     - RTL8211F, 1GbE x1
       - another RTL8125BG, 2.5GbE x2
   - Radxa E25
-    - Rockchip RK3568, A55 x4@2G
+    - Rockchip RK3568, A55 x4 @ 2G
     - 2GB/4GB/8GB DDR4
     - 8GB/16GB/32GB eMMC
 - software setup
@@ -269,7 +269,7 @@
     - the client is only capable of MCS 7 and 800ns GI
 - omada wifi6
   - EAP610: 1201+574Mbps, 1Gbps PoE, 11W
-    - v2: IPQ6018 (A53@1.8G x4), ram 512MB, flash 128MB
+    - v2: IPQ6018 (A53 @ 1.8G x4), ram 512MB, flash 128MB
     - v3: MT7621 (MIPS1004Kc@880M x2), ram 256MB, flash 16MB
     - EAP613: no power adapter
     - EAP620 HD: more concurrent clients, 14.9W

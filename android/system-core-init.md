@@ -323,7 +323,9 @@
 - a task (an application) is a collections of activities, which may span processes.
 - an activity is a concrete class
 - starting up: onCreate, onStart/onRestart, onResume (has focus)
-- normal exec: onFreeze (likely to be shutdown, e.g., user is filling in a form, onFreeze should save what the user has filled, but should not commit to db), onPause (no longer has focus, commit)
+- normal exec: onFreeze (likely to be shutdown, e.g., user is filling in a
+  form, onFreeze should save what the user has filled, but should not commit
+  to db), onPause (no longer has focus, commit)
 - shutting down: onStop/onDestroy, usually not to be called
 - each apk is given an unique ID (user id is per apk, not per user)
 - only init, zygote, and runtime run as root

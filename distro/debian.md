@@ -34,7 +34,7 @@
   - 13, trixie, 6.12
 - `/etc/apt/sources.list.d/debian.sources`
 
-    ```
+    ```text
     Types: deb
     URIs: https://deb.debian.org/debian/
     Suites: trixie
@@ -340,7 +340,7 @@
     - `vi debian/rules`
       - `#!/usr/bin/make -f`
       - `%:`
-      - `	dh $@`
+        - `dh $@`
     - `chmod +x debian/rules`
 - build source and binary packages
   - `dpkg-buildpackage --no-sign`

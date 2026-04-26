@@ -11,7 +11,8 @@
 - Context.startService to start a service with intent, and the serivce's onStart is called;
   or Context.bindService to bind a service with intent, and the service's onBind is called.
 - Context.send{,Ordered,Sticky}Broadcast to broadcast an intent, and all interested broadcast receivers' onReceive is called.
-- .apk has AndroidManifest.xml, and others.  AndroidManifest.xml is used by android to, among others, learn about a package's components.
+- .apk has AndroidManifest.xml, and others.  AndroidManifest.xml is used by
+  android to, among others, learn about a package's components.
 - components not listed in manifest are never run???
 - manifest should also list intent-filters, otherwise, it won't receive any intent, unless it is dedicated for the app.
 - a task is a stack of activities.  the bottom activity is usually started by app launcher.

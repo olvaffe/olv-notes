@@ -8,25 +8,25 @@
   - Core: Broadwell, 14nm, x2, 2.2GHz boosted to 2.7GHz
   - TDP: 15W
   - RAPL metrics
-    - `stress -c 4`: pkg 12.5W (core 11W@2.5GHz), dram 1W
-    - `ninja`: pkg 14.5W (core 12.5W@2.5GHz), dram 1.5W
-    - shadertoy: pkg 15W (core 1W@1.0GHz, uncore 5W), dram 1W
+    - `stress -c 4`: pkg 12.5W (core 11W @2.5GHz), dram 1W
+    - `ninja`: pkg 14.5W (core 12.5W @2.5GHz), dram 1.5W
+    - shadertoy: pkg 15W (core 1W @1.0GHz, uncore 5W), dram 1W
     - `ninja` plus shadertoy
-      - first 20s: pkg 25W (core 21W@2.2GHz, uncore 1.5W), dram 1.5W
-      -      then: pkg 15W (core 10W@1.2GHz, uncore 1.5W), dram 1.5W
+      - first 20s: pkg 25W (core 21W @2.2GHz, uncore 1.5W), dram 1.5W
+      -      then: pkg 15W (core 10W @1.2GHz, uncore 1.5W), dram 1.5W
 - Core i7-1185G7
   - <https://www.intel.com/content/www/us/en/products/sku/208664/intel-core-i71185g7-processor-12m-cache-up-to-4-80-ghz-with-ipu/specifications.html>
   - Core: Willow Cove, 10nm, x4, 3.0GHz boosted to 4.8GHz
   - TDP: 28W
   - RAPL metrics
     - `ninja`
-      - 0..5s: pkg 35W (core 32W@3.3GHz)
-      -  then: pkg 15W (core 12W@2.2GHz)
-    - shadertoy: pkg 22W (core 2W@0.8GHz, uncore 17W@1.35GHz)
+      - 0..5s: pkg 35W (core 32W @3.3GHz)
+      - then: pkg 15W (core 12W @2.2GHz)
+    - shadertoy: pkg 22W (core 2W @0.8GHz, uncore 17W @1.35GHz)
     - `ninja` plus shadertoy
-      -  0..5s: pkg 36W (core 15W@2.5GHz, uncore 17W@1.35GHz)
-      - 6..10s: pkg 26W (core 9W@2.2GHz, uncore 14W@1.35GHz)
-      -   then: pkg 15W (core 5W@1.3GHz, uncore 6W@1.35GHz)
+      - 0..5s: pkg 36W (core 15W @2.5GHz, uncore 17W @1.35GHz)
+      - 6..10s: pkg 26W (core 9W @2.2GHz, uncore 14W @1.35GHz)
+      - then: pkg 15W (core 5W @1.3GHz, uncore 6W @1.35GHz)
 - Core Ultra 5 135U
   - <https://www.intel.com/content/www/us/en/products/sku/237328/intel-core-ultra-5-processor-135u-12m-cache-up-to-4-40-ghz/specifications.html>
   - Core: 4nm, x2 (1.6GHz boosted to 4.4GHz), x8 (1.1GHz boosted to 3.6GHz), x2 (0.7GHz boosted to 2.1GHz)
@@ -34,11 +34,11 @@
   - RAPL metrics
     - `stress-ng -c 14`
       - 0..60s: pkg 30W (core 26W)
-      -   then: pkg 15W (core 12W)
+      - then: pkg 15W (core 12W)
     - shadertoy: pkg 15W (core 0.5W, uncore 9.5W)
     - `stress-ng -c 14` plus shadertoy
       - 0..30s: pkg 34W (core 24W, uncore 6W)
-      -   then: pkg 15W (core 8.5W, uncore 3W)
+      - then: pkg 15W (core 8.5W, uncore 3W)
 
 ## Memory
 

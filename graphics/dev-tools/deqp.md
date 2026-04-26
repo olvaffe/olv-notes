@@ -745,6 +745,7 @@
 - `FSRTestCase::initPrograms` initializes shaders
   - `comp`
 
+    ```c
     layout(set = 0, binding = 1) uniform utexture2DArray colorTex;
     layout(set = 0, binding = 2, std430) buffer Block0 { uvec4 b[]; } colorbuf;
     layout(set = 0, binding = 4, std430) buffer Block1 { float b[]; } depthbuf;
@@ -760,8 +761,11 @@
           depthbuf.b[idx] = texelFetch(depthTex, ivec3(gl_GlobalInvocationID.xyz), i).x;
        }
     }
+    ```
+
   - `frag`
 
+    ```c
     layout(location = 0) out uvec4 col0;
     layout(set = 0, binding = 0) buffer Block { uint counter; } buf;
     layout(set = 0, binding = 3) uniform usampler2D tex;
@@ -786,8 +790,11 @@
         col0.w = (fragSize.y << 26) | (fragSize.x << 20) | (implicitDerivY << 14) | (implicitDerivX << 8) | 4;
       gl_FragDepth = float(instanceIndex) / float(81);
     }
+    ```
+
   - `vert`
 
+    ```c
     layout(push_constant) uniform PC {
             int shadingRate;
     } pc;
@@ -806,6 +813,8 @@
       readbackok = 1;
       zero = 0;
     }
+    ```
+
   - `frag_simple`
   - `vert_simple`
 - `FSRTestCase::createInstance` creates a `FSRTestInstance`
@@ -1622,6 +1631,7 @@
 - `RobustnessExtsTestCase::checkSupport` checks for test requirements
 - `RobustnessExtsTestCase::initPrograms` initializes the shaders
 
+  ```c
     uvec4 abs(uvec4 x) { return x; }
     int smod(int a, int b) { if (a < 0) a += b*(abs(a)/b+1); return a%b; }
     int refData[4] = {305419896, 591751049, 878082192, 1164413185};
@@ -1673,6 +1683,8 @@
       ivec4 color = (accum != ivec4(0)) ? ivec4(0,0,0,0) : ivec4(1,0,0,1);
       imageStore(image0_0, ivec2(gl_LaunchIDEXT.xy), color);
     }
+  ```
+
 - `RobustnessExtsTestCase::createInstance` creates a
   `RobustnessExtsTestInstance`
 - `RobustnessExtsTestInstance::iterate`
