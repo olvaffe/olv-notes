@@ -190,7 +190,7 @@
 - `rmem_cma_setup` requires the rmem to have `reusable`
   - `cma_init_reserved_mem` wraps the rmem in a `cma` and adds the cma to
     `cma_areas` array
-  -  when `rmem_cma_device_init` is called, `dev->cma_area` is set to the cma
+  - when `rmem_cma_device_init` is called, `dev->cma_area` is set to the cma
      area
 
 ## `CONFIG_IOMMU_DMA`

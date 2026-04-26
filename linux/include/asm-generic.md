@@ -37,8 +37,8 @@
   - `csum_*`
 - `asm/compat.h` provides 32-on-64 compat
 - `asm/current.h` provides `current` macro
-    - x86: per-cpu` current_task`
-    - arm: `sp_el0`
+  - x86: per-cpu`current_task`
+  - arm: `sp_el0`
 - `asm/delay.h` provides busy wait
   - `ndelay` and `udelay`
   - x86: `pause` in a busy loop

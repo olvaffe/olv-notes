@@ -54,7 +54,7 @@
   - `/proc/<pid>/fd`
   - `/proc/<pid>/maps`, indirecly via `seq_path`
   - etc.
-- if the dentry is deleted, it appends ` (deleted)`
+- if the dentry is deleted, it appends `(deleted)`
 - if the (pseudo) fs provides `dentry_operations::d_name`, it returns the
   result instead
   - socket `sockfs_dname` returns `socket:[ino]`

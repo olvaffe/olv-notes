@@ -63,20 +63,20 @@
       parent user namespace.
     - One of the following two cases applies:
       - Either the writing process has the CAP_SETUID (CAP_SETGID) capability
-      	in the parent user namespace.
-	- No further restrictions apply: the process can make mappings to
-	  arbitrary user IDs (group IDs) in the parent user namespace.
-	- i.e., use suid `newuidmap` (`newgidmap`)
+        in the parent user namespace.
+    - No further restrictions apply: the process can make mappings to
+      arbitrary user IDs (group IDs) in the parent user namespace.
+    - i.e., use suid `newuidmap` (`newgidmap`)
       - Or otherwise all of the following restrictions apply:
-	- The data written to `uid_map` (`gid_map`) must consist of a single
-	  line that maps the writing process's effective user ID (group ID) in
-	  the parent user namespace to a user ID (group ID) in the user
-	  namespace.
-	- The writing process must have the same effective user ID as the
-	  process that created the user namespace.
-	- In the case of `gid_map`, use of the setgroups(2) system call must
-	  first be denied by writing "deny" to the /proc/[pid]/setgroups file
-	  (see below) before writing to gid_map.
+    - The data written to `uid_map` (`gid_map`) must consist of a single
+      line that maps the writing process's effective user ID (group ID) in
+      the parent user namespace to a user ID (group ID) in the user
+      namespace.
+    - The writing process must have the same effective user ID as the
+      process that created the user namespace.
+    - In the case of `gid_map`, use of the setgroups(2) system call must
+      first be denied by writing "deny" to the /proc/[pid]/setgroups file
+      (see below) before writing to gid_map.
 - `man pid_namespaces`
   - The first process created in a new namespace (i.e., the process created
     using `clone(2)` with the `CLONE_NEWPID` flag, or the first child created

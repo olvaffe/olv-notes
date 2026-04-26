@@ -104,13 +104,13 @@
   object, such as create/lookup/link/unlink/...
 - `statx` returns the attrs of a inode
 - an inode can be in one of the following types
-  _ `S_IFSOCK`, socket
-  _ `S_IFLNK`, symbolic link
-  _ `S_IFREG`, regular file
-  _ `S_IFBLK`, block device
-  _ `S_IFDIR`, directory
-  _ `S_IFCHR`, character device
-  _ `S_IFIFO`, FIFO
+  - `S_IFSOCK`, socket
+  - `S_IFLNK`, symbolic link
+  - `S_IFREG`, regular file
+  - `S_IFBLK`, block device
+  - `S_IFDIR`, directory
+  - `S_IFCHR`, character device
+  - `S_IFIFO`, FIFO
   - filesystems use different `inode_operations` for inodes of different types
 
 ## Address Space

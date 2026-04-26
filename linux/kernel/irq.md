@@ -13,10 +13,10 @@
 - `init_IRQ`
   - on x86, `native_init_IRQ`
   - on arm, `irqchip_init` scans OF/ACPI to init matching devices
-     - drivers are defined by `IRQCHIP_DECLARE` or `IRQCHIP_ACPI_DECLARE`
-     - `gic_of_init` creates the root irq domain, `gic_data.domain`
-       - the chip is `gic_chip`
-       - it also sets the root irq handler to `gic_handle_irq`
+    - drivers are defined by `IRQCHIP_DECLARE` or `IRQCHIP_ACPI_DECLARE`
+    - `gic_of_init` creates the root irq domain, `gic_data.domain`
+      - the chip is `gic_chip`
+      - it also sets the root irq handler to `gic_handle_irq`
 
 ## Dummy Controller
 

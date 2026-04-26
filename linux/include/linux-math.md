@@ -1,4 +1,4 @@
-# Math
+# Math Header
 
 ## Header Inclusion
 
@@ -22,9 +22,9 @@
         - `BITS_PER_LONG` is not in uapi
           - 64 if 64-bit kernel; 32 otherwise
       - `uapi/asm-generic/int-ll64.h`
-         - typedefs `__{s,u}{8,16,32,64}` such as `__u32`
+        - typedefs `__{s,u}{8,16,32,64}` such as `__u32`
       - `asm-generic/int-ll64.h`
-         - typedefs `{s,u}{8,16,32,64}` such as `u32`
+        - typedefs `{s,u}{8,16,32,64}` such as `u32`
     - `uapi/linux/posix_types.h`
       - `uapi/asm-generic/posix_types.h`
         - typedefs `__kernel_{long,ulong,pid,uid,gid,size,off,...}_t`

@@ -18,4 +18,3 @@
 - there can be multiple readers and multiple writers
   - semantics unclear
 - work exactly like pipe internally
-

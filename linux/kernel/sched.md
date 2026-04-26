@@ -96,12 +96,12 @@
     - when the two CPUs do not share LLC (i.e., in different packages), the
       idle CPU will mark the task `TASK_RUNNING` in `sched_ttwu_pending`
       - unless the idle CPU polls the need-resched flag, an IPI is sent to wake
-      	up the idle CPU, which will call `scheduler_ipi`
+       up the idle CPU, which will call `scheduler_ipi`
     - otherwise, the calling CPU marks the task `TASK_RUNNING` directly for
       the idle CPU.  Unless the idle CPU polls the need-resched flag, an IPI
       is also sent to wake it up.
   - the idle CPU exits idle state and returns from `cpuidle_idle_call`
-    -  because `need_resched` is true, it calls `schedule_idle` to
+    - because `need_resched` is true, it calls `schedule_idle` to
        context-switch to the task
   - the CPU context-switches back to `swapper/<cpuid>`
     - when the running task calls `schedule`, and there is no runnable task,
