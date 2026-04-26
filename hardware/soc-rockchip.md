@@ -536,8 +536,7 @@
     - VAD (Voice Activity Detection)
   - `i2s0_8ch: i2s@fe470000` and `i2s1_8ch: i2s@fe480000`
   - `i2s2_2ch: i2s@fe490000` and `i2s3_2ch: i2s@fe4a0000`
-  - `i2s4_8ch: i2s@fddc0000`, `i2s5_8ch: i2s@fddf0000`, and `i2s9_8ch:
-    i2s@fddfc000`
+  - `i2s4_8ch: i2s@fddc0000`, `i2s5_8ch: i2s@fddf0000`, and `i2s9_8ch: i2s@fddfc000`
     - what are these?
   - `rockchip_i2s_probe` probes 2-channel i2s devices
   - `rockchip_i2s_tdm_probe` probes 8-channel i2s devices

@@ -185,8 +185,8 @@
   - It enters `exec_tex` of tgsi for texture lookup.
   - `get_samples` of the sampler points to `sp_get_samples_fragment`.  It
     returns `QUAD_SIZE` samples, currently 4.  The softpipe implementation uses
-    a cached tile to transfer 64x64 (It takes `64 * 64 * 4 * sizeof(float) =
-    64KB`) texels at a time.  The transfer uses a pipe transfer.
+    a cached tile to transfer 64x64 (It takes `64 * 64 * 4 * sizeof(float) = 64KB`)
+    texels at a time.  The transfer uses a pipe transfer.
   - There is a helper function called `pipe_get_tile_rgba`.  It transfers the
     texels and unpacks it from pipe texture format to rgba.
 

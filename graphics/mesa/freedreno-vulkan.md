@@ -323,8 +323,8 @@
   - to handle wait-before-signal, the runtime might reorder the submits
 - `tu_queue_submit`
   - each `tu_cs` has a list of `tu_cs_entry`, which are regions of `tu_bo`s
-  - all `tu_cs_entry` from all `tu_cmd_buffer::cs`s are collected into `struct
-    tu_queue_submit`
+  - all `tu_cs_entry` from all `tu_cmd_buffer::cs`s are collected into
+    `struct tu_queue_submit`
   - `DRM_MSM_GEM_SUBMIT` submits them to the kernel
 
 ## Fences and Semaphores

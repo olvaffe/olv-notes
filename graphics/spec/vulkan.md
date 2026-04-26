@@ -927,8 +927,7 @@
         - without the flag, all dispatched subgroups will have the fixed size
           of `subgroupSize`
         - with the flag, all dispatched subgroups (even from the same dispatch
-          command) will have sizes between `[minSubgroupSize,
-          maxSubgroupSize]`
+          command) will have sizes between `[minSubgroupSize, maxSubgroupSize]`
         - this is the default for spirv 1.6 and the flag is effectively
           deprecated
       - `VK_PIPELINE_SHADER_STAGE_CREATE_REQUIRE_FULL_SUBGROUPS_BIT` requires

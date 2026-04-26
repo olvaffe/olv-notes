@@ -287,8 +287,7 @@
     - the struct can point to some "in" data that is write-only to the device
       and is used for device response
   - the buffer is added to the vring
-    - the "out" and "in" data must be described as an array of `struct
-      scatterlist *`
+    - the "out" and "in" data must be described as an array of `struct scatterlist *`
     - `virtqueue_add_sgs` adds the data to the vring
       - for "out" only vq, `virtqueue_add_outbuf` can be used
       - for "in" only vq, `virtqueue_add_inbuf` can be used

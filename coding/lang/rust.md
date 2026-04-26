@@ -226,8 +226,7 @@
     - also `Debug` and `Display`
   - implements `std::fmt::*` such as `std::fmt::LowerHex` for bitflag types
   - takes `T: Read` or `T: Write` params by values
-    - it will work with `T` or `&mut T`, as std implements the trait for `&mut
-      T`
+    - it will work with `T` or `&mut T`, as std implements the trait for `&mut T`
 - Chapter 3. Macros
 - Chapter 4. Documentation
 - Chapter 5. Predictability

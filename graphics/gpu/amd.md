@@ -276,11 +276,9 @@
   - cull rate is `engine count * array count * 2 * mhz = 2*2*2*1905 = 15240`
   - output rate is 7620 mtris/s
 - the rasterizer can output up to 16 pixels per clock
-  - output rate is `engine count * array count * 16 * mhz = 2*2*16*1905 =
-    121920` mpixels/s
+  - output rate is `engine count * array count * 16 * mhz = 2*2*16*1905 = 121920` mpixels/s
 - flops are
-  - `engine count * array count * cu count * simd count * simd width * fma =
-     2 * 2 * 5 * 4 * 32 * 2 = 5120` flops/cycle
+  - `engine count * array count * cu count * simd count * simd width * fma = 2 * 2 * 5 * 4 * 32 * 2 = 5120` flops/cycle
   - 9.753 tflops/s
 
 ## GCN

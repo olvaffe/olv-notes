@@ -292,8 +292,8 @@
     - tile memory
     - tile writeback
 - geometry pipeline
-  - instead of 'shade -> assembly -> clip/cull`
-  - it does 'assembly -> position shade -> clip/cull -> varying shade`
+  - instead of `shade -> assembly -> clip/cull`
+  - it does `assembly -> position shade -> clip/cull -> varying shade`
   - specifically,
     - tiler fetches indices for primitive assembly
     - position shading fetches and transforms only positions

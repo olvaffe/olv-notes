@@ -109,8 +109,8 @@
   - It is to be noted that barycentric interpolation is linear.  To see why,
     expand the areas using the area formula.  The interpoloated value at
     (x, y) can thus be expressed as `a0 + dadx * x + dady * y`
-  - Let `v0 = (x0, y0, z0), v1 = (x1, y1, z1), v2 = (x2, y2, z2), where z's
-    stand for attribute values at v's`.  Then these vertices are on the plane
+  - Let `v0 = (x0, y0, z0), v1 = (x1, y1, z1), v2 = (x2, y2, z2)`, where z's
+    stand for attribute values at v's.  Then these vertices are on the plane
     `Ax + By + Cz = D`.  Or, `z = A'x + B'y + C'`, which is exactly `a0`,
     `dadx`, and `dady`.
     - `(A, B, C)` is `cross(v0v1, v0v2)`

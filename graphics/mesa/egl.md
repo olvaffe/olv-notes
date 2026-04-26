@@ -258,8 +258,8 @@
   destroy the st framebuffer.
 - In its `MakeCurrent`, `st_make_current` is called.
 - Finally in its `SwapBuffers`,
-  - `st_get_framebuffer_surface` is called to get the back left `struct
-    pipe_surface` of the st framebuffer.
+  - `st_get_framebuffer_surface` is called to get the back left `struct pipe_surface`
+    of the st framebuffer.
   - `st_notify_swapbuffers` is called to notify the st framebuffer.
   - Using the surface's visual and GC, an `XImage` is created to upload the
     contents to xserver.

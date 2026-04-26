@@ -236,11 +236,9 @@
   - `layout(location = loc) uniform float v` in GLSL becomes
     `float v = rootTable[UNIFORM_OFFSET + loc]`
   - `glActiveTexture(GL_TEXTURE0 + loc); glBindTexture(GL_TEXTURE_2D, tex)`
-    becomes `memcpy(&rootTable[TEXTURE_OFFSET + TEXTURE_SIZE * loc,
-    texParamsAndAddr, TEXTURE_SIZE)`
+    becomes `memcpy(&rootTable[TEXTURE_OFFSET + TEXTURE_SIZE * loc, texParamsAndAddr, TEXTURE_SIZE)`
   - `layout(location = loc) sampler2D tex; vec4 color = texture(tex, texcoord);`
-    becomes `vec4 color = sample(&rootTable[TEXTURE_OFFSET + TEXTURE_SIZE *
-    loc, texcoord)`
+    becomes `vec4 color = sample(&rootTable[TEXTURE_OFFSET + TEXTURE_SIZE * loc, texcoord)`
   - It is also possible to have infinite levels of indirection
     `rootTable[N] = secondaryTable`
 - Vulkan

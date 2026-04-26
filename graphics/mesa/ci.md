@@ -132,7 +132,7 @@
          --deqp-surface-height=256
          --deqp-surface-type=pbuffer
          --deqp-gl-config-name=rgba8888d24s8ms0
-         --deqp-visibility=hidden`
+         --deqp-visibility=hidden
       ```
 
 ## `panfrost-g610-vk`

@@ -32,9 +32,8 @@
   - it generates `foo.bin.S` using `filechk_fwbin` macro
     - `incbin` is used to include `/lib/firmware/foo.bin`
     - a `struct builtin_fw` is emitted in `.builtin_fw` section
-  - the ld script has `FW_LOADER_BUILT_IN_DATA` to collect all `struct
-    builtin_fw` into an array denoted by `__start_builtin_fw` and
-    `__end_builtin_fw`
+  - the ld script has `FW_LOADER_BUILT_IN_DATA` to collect all `struct builtin_fw`
+    into an array denoted by `__start_builtin_fw` and `__end_builtin_fw`
 - `firmware_request_builtin` goes through the `builtin_fw` array to find a
   match
   - the data is a direct pointer to the embedded firmware binary; no

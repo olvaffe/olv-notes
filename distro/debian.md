@@ -46,7 +46,7 @@
     Suites: trixie-security
     Components: main non-free-firmware
     Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
-    ````
+    ```
 
 ## Freeze Policy
 

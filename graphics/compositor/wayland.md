@@ -534,8 +534,8 @@
   - a `cairo_t` is created to draw the surface
   - flush and destry the surface
   - finally, invoke `window_flush`
-    - the `struct wl_buffer` of the cairo surface is attached to the `struct
-      wl_surface`.  The `struct wl_surface` is mapped (shown).
+    - the `struct wl_buffer` of the cairo surface is attached to the
+      `struct wl_surface`.  The `struct wl_surface` is mapped (shown).
 - Misc
   - `window_set_user_data` to associate user data with a window
   - `display_get_display` to return the `struct wl_display`
