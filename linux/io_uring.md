@@ -106,7 +106,7 @@
     - returns an fd referencing to the new `io_uring` instance
     - `params` is in/out
       - `sq_entries` and `cq_entries` are out, and specify the real sizes of
-      	SQ and CQ
+       SQ and CQ
       - `flags`, `sq_thread_cpu`, and `sq_thread_idle` are ins
       - `sq_off` and `cq_off` are outs
     - `mmap(fd, IORING_OFF_SQ_RING)` maps the SQ ring, with various fields at
@@ -115,20 +115,19 @@
       - `mmap(fd, IORING_OFF_SQES)` maps the sqe array
     - `mmap(fd, IORING_OFF_CQ_RING)` maps the CQ ring, with various fields at
       offsets specified by `params->cq_off`
-  - `int io_uring_enter(unsigned int fd, unsigned int to_submit,
-         unsigned int min_complete, unsigned int flags, sigset_t sig)`
-     - `to_submit` is the number of sqes available on SQ
-     - `min_complete` has different meanings depending on `fd` and `flags`
-       - first of all, `min_complete` is ignored when `IORING_ENTER_GETEVENTS`
-       	 is not set
-       - when `IORING_ENTER_GETEVENTS` is set, and `fd` was not created with
-       	 `IORING_SETUP_IOPOLL`, it waits until there are `min_complete` cqes
-       - when `IORING_ENTER_GETEVENTS` is set, and `fd` was created with
-       	 `IORING_SETUP_IOPOLL`
-       	 - `min_complete == 0` tells kernel to poll and adds cqes for completed
-       	   requests immediately
-	 - `min_complete != 0` tells kernel to wait until there is at least
-	   one cqe in CQ
+  - `int io_uring_enter(unsigned int fd, unsigned int to_submit, unsigned int min_complete, unsigned int flags, sigset_t sig)`
+    - `to_submit` is the number of sqes available on SQ
+    - `min_complete` has different meanings depending on `fd` and `flags`
+      - first of all, `min_complete` is ignored when `IORING_ENTER_GETEVENTS`
+        is not set
+      - when `IORING_ENTER_GETEVENTS` is set, and `fd` was not created with
+        `IORING_SETUP_IOPOLL`, it waits until there are `min_complete` cqes
+      - when `IORING_ENTER_GETEVENTS` is set, and `fd` was created with
+        `IORING_SETUP_IOPOLL`
+        - `min_complete == 0` tells kernel to poll and adds cqes for completed
+          requests immediately
+    - `min_complete != 0` tells kernel to wait until there is at least
+      one cqe in CQ
   - sqes are executed in parallel and can complete out-of-order, unless some
     flags are set
     - when `IOSQE_IO_DRAIN` is set, the sqe is not started until all prior
@@ -153,9 +152,9 @@
     - kernel parses the sqes and schedules ios
     - `io_submit_sqes`
       - `smp_load_acquire(&rings->sq.tail)` in `io_sqring_entries` to work out
-      	the number of sqes
+       the number of sqes
       - `smp_store_release(&rings->sq.head, ctx->cached_sq_head)` in
-      	`io_commit_sqring` to update head
+       `io_commit_sqring` to update head
   - the userspace release is paired with the kernel acquire
     - writing of sqes in userspace happens before userspace release
     - reading of sqes in kernel happens after kernel acquire
@@ -167,7 +166,7 @@
     - kernel is requested to wait for `min_complete` cqes
     - `io_cqring_wait`
       - `smp_rmb()` before `READ_ONCE(rings->cq.head)` in `io_cqring_events`
-      	to get the current number of cqes
+       to get the current number of cqes
     - `io_req_complete` is called when a sqe has completed
       - `io_get_cqring` returns a cqe to be filled in
         - there is "an implicit barrier through a control-dependency"

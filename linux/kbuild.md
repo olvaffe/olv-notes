@@ -254,7 +254,7 @@
     - it allows users to invoke `make` to build the ext mod
     - `KDIR ?= /lib/modules/$(uname -r)/build`
     - `default:`
-    - ` $(MAKE) -C $(KDIR) M=$$PWD`
+    - `$(MAKE) -C $(KDIR) M=$$PWD`
   - there is a separate `Kbuild` to build the external module
     - `obj-m := foo.o`
     - `foo-y := foo-core.o foo-plat.o`

@@ -46,7 +46,7 @@
   - there must be a guest driver for each virtio device
 - There must be a userspace component (so not exactly a type-1 hypervisor)
   - qemu
-  - kvmtool, https://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git/
+  - kvmtool, <https://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git/>
   - crosvm
   - novm
 
@@ -211,11 +211,11 @@
     - the memory type is from `vmx_get_mt_mask`
       - the guest page table defines the PAT memory type
       - the (host-managed `gpa->hpa`) ept page table defines the EPT memory
-      	type
+       type
       - When "Ignore PAT" is set, EPT memory type is used; otherwise, the
-      	weaker of the two is used.
+       weaker of the two is used.
       - right now, `VMX_EPT_IPAT_BIT` is set and the EPT memory type is set to
-      	`MTRR_TYPE_WRBACK`
+       `MTRR_TYPE_WRBACK`
 - On ARM, when the guest accesses a gpa in the region for the first time
   - it triggers an abort and is handled by `kvm_handle_guest_abort`
   - gpa, also known as ipa or intermediate physical address, can be read from
