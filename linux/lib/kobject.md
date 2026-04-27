@@ -1,17 +1,5 @@
 # Kernel kobject
 
-## `struct kref`
-
-- an `atomic_t` is a typedef'ed struct with one member, `int`
-  - use `atomic_*` such as `atomic_inc` to access an `atomic_t`
-- a `refcount_t` is a typedef'ed struct with one member, `atomic_t`
-  - use `refcount_*` such as `refcount_inc` to access a `refcount_t`
-  - it prints warnings when the refcount saturates or underflows
-  - it uses relaxed memory ordering
-- a `kref` is a struct with one member, `refcount_t`
-  - use `kref_*` such as `kref_get` to access a `kref`
-  - it has a few `kref_put_*` variants for ease of use
-
 ## `struct kobject`
 
 - <https://docs.kernel.org/core-api/kobject.html>
