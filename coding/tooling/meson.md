@@ -317,6 +317,7 @@
 - `meson --cross-file <cross_file.txt>`
 - target 64-bit arm
 
+  ```meson
     [constants]
     toolchain_prefix = '/usr/bin/aarch64-linux-gnu-'
     sysroot = '...'
@@ -344,8 +345,11 @@
     cpu_family = 'aarch64'
     cpu = 'aarch64'
     endian = 'little'
+  ```
+
 - target 32-bit x86
 
+  ```meson
     [constants]
     toolchain_prefix = '/usr/bin/'
     common_flags = ['-m32']
@@ -371,8 +375,11 @@
     cpu_family = 'x86'
     cpu = 'i686'
     endian = 'little'
+  ```
+
 - target 32-bit arm
 
+  ```meson
     [constants]
     toolchain_prefix = '/usr/bin/arm-linux-gnueabihf-'
     sysroot = '...'
@@ -400,5 +407,7 @@
     cpu_family = 'arm'
     cpu = 'armv7a'
     endian = 'little'
+  ```
+
 - x86-64
   - both `cpu_family` and `cpu` are `x86_64`
