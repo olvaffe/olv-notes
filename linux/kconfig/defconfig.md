@@ -930,8 +930,15 @@
   - select `Generic Kernel Debugging Instruments`
     - select `Magic SysRq key`
     - select `Debug Filesystem`
-  - select `Lock Debugging (spinlocks, mutexes, etc...)`
-    - select `Lock debugging: detect incorrect freeing of live locks` if desired
+    - select `Undefined behaviour sanity checker` if desired
+  - select `Memory Debugging` if desired
+    - select `Kernel memory leak detector`
+    - select `Enable shrinker debugging support`
+    - select `Enable memory allocation profiling`
+    - select `KASAN: dynamic memory safety error detector`
+      - select `KASAN mode (Hardware Tag-Based KASAN)` if arm
+  - select `Lock Debugging (spinlocks, mutexes, etc...)` if desired
+    - select `Lock debugging: detect incorrect freeing of live locks`
   - select `Tracers`
     - deselect `Automount tracefs on debugfs`
     - select `Kernel Function Tracer` if desired
