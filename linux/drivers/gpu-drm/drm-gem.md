@@ -120,6 +120,45 @@
     - `ttm_bo_vm_fault` pins and faults in pages while adjusting prot per-page
   - dma-buf: standard `ttm_bo_mmap`
 
+## LRU for Shrinker
+
+- `drm_gem_lru`
+  - `lru->lock` is an external mutex because driver tends to share it between
+    multiple lru lists
+  - `lru->count` is the total number of pages of the bos
+  - `lru->list` is the list of bos
+    - these are weak pointers
+- `drm_gem_object`
+  - `obj->lru` points to the current lru list, if any
+  - `obj->lru_node` is for `lru->list`
+- during init, `drm_gem_lru_init` inits an lru list
+- after bo state change, `drm_gem_lru_move_tail` moves bo to an lru list
+  - if `obj->lru`, `drm_gem_lru_remove_locked` removes it from the old lru list
+  - it adds the obj to the new lru list
+- during reclaim, `drm_gem_lru_scan` scans an lru list
+  - params
+    - `nr_to_scan` is number of pages to scan
+      - well, the loop condition obviously treats it as `nr_to_free`
+    - `remaining` is incremented by the number of pages that are scanned but
+      are not reclaimed
+    - `shrink` is the callback
+    - `ticket` can be useful when `shrink` locks more objs
+  - loop
+    - it locks the lru list to steal the first obj
+      - `drm_gem_lru_move_tail_locked` moves the obj to a temp list
+      - `kref_get_unless_zero` promotes the weak obj to strong obj
+    - it locks `obj->resv` to reclaim
+      - if `shrink` successfully reclaims an obj,
+        - `freed` is incremented
+        - it expects `shrink` to have moved the obj to yet another lru list
+      - else
+        - if the obj is not moved at all, `remaining` is incremented
+  - after the loop, it moves bos that are still on the temp list to the
+    end of original lru list
+    - those bos are scanned but not reclaimed, and they deserve to be moved to
+      the tail
+  - it returns the number of pages that are reclaimed
+
 ## `drm_gem_shmem`
 
 - public interface
