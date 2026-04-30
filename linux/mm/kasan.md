@@ -32,3 +32,9 @@
     - we can find the real va: `PAGE_OFFSET + (page - vmemmap) * PAGE_SIZE`
     - `page_kasan_tag` returns the tag stored in `page->flags`
     - `__tag_set` encodes the tag in va
+- when slab allocator calls `allocate_slab` to allocate from buddy allocator,
+  - because it is a buddy allocation, a tag is generated and stored/encoded in
+    both mte and `page->flags`
+  - `kasan_poison_slab` then calls
+    - `page_kasan_tag_reset` to reset `page->flags` to `KASAN_TAG_KERNEL`
+    - `kasan_poison` stores `KASAN_SLAB_REDZONE` to mte
