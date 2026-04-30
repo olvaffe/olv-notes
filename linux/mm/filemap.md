@@ -1,6 +1,6 @@
 # Kernel filemap
 
-## page cache
+## `address_space` (page cache)
 
 - where is the page cache?
   - every `struct inode` has `i_mapping` that points to `i_data`
@@ -37,6 +37,52 @@
   - `generic_file_mmap_prepare` or (legacy) `generic_file_mmap` is for mmap fop
     - they use `generic_file_vm_ops` for vm ops, which obviously fault in
       folios from page cache
+
+## `filemap_get_pages`
+
+- `filemap_get_pages` populates page cache for an inode incrementally
+  - an inode represents a physical file in the linear `[0, size)` range
+  - page cache is an array of folios to shadow the physical file
+  - `[index, last_index]` is the range to populate
+  - it returns 0 as long as there is at least one folio in `fbatch`
+- `filemap_get_read_batch` returns folios that are already in the cache
+  - they may be up-to-date or not
+- if there is no folio in the cache, `page_cache_sync_ra` populates page cache
+  using readahead
+  - `ra_alloc_folio` allocs a folio and adds it to page cache
+  - `read_pages` calls `aops->readahead` to issue read io
+  - there is no io wait
+- if there is still no folio, `filemap_create_folio` populates page cache
+  synchronously
+  - `filemap_alloc_folio` allocs a folio
+  - `filemap_add_folio` adds the folio to page cache
+  - `filemap_read_folio` issues a read io and waits for it
+    - `mapping->a_ops->read_folio` issues the read io
+    - `folio_wait_locked_killable` waits for the io
+- if `folio_test_readahead` tests true for the last folio, `filemap_readahead`
+  triggers background readahead to populate page cache speculatively
+  - `page_cache_async_ra` is similar to `page_cache_sync_ra`
+  - they both alloc folios, issue read ios, and do not wait
+- if `folio_test_uptodate` tests false for the last folio,
+  `filemap_update_page` ensure the folio is up-to-date synchronously
+  - `folio_trylock` locks the folio for io
+    - if there is an in-flight io already, trylock fails
+  - `filemap_read_folio` issues a read io and waits for it
+  - `folio_unlock` unlocks the folio after io completion
+
+## No Write Counterpart to `filemap_get_pages`
+
+- writing is completely different from `filemap_get_pages`
+- it typically calls `filemap_get_folio` with `FGP_WRITEBEGIN` to return a
+  folio
+  - `filemap_get_entry` looks up the existing folio in page cache
+  - if there is no folio yet,
+    - `filemap_alloc_folio` allocs a folio
+    - `filemap_add_folio` adds the folio to page cache
+  - `FGP_WRITEBEGIN` implies
+    - `FGP_LOCK`, which causes `folio_lock` to lock and thus wait on in-flight
+      ios
+    - `FGP_STABLE`, which causes `folio_wait_stable` to wait for writeback
 
 ## folio
 
