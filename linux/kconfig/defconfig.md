@@ -208,7 +208,7 @@
   - select `Misc devices`
     - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
-    - select `NT synchronization primitive emulation` if desired
+    - select `NT synchronization primitive emulation` if desired (for wine)
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
       - select `SPD EEPROMs on DDR4 memory modules` if needed (for ddr4)
@@ -890,6 +890,11 @@
     - select `Diffie-Hellman operations on retained keys`
   - select `Enable different security models`
   - select `Landlock support` (for pacman)
+  - select `Kernel hardening options` if desired
+    - select `Memory initialization`
+      - select `Enable heap memory zeroing on allocation by default`
+    - select `Hardening of kernel data structures`
+      - select `Trigger a BUG when data corruption is detected`
 - select `Cryptographic API`
   - select `Block ciphers` if iwd
     - select `AES (Advanced Encryption Standard)`
@@ -937,8 +942,13 @@
     - select `Enable memory allocation profiling`
     - select `KASAN: dynamic memory safety error detector`
       - select `KASAN mode (Hardware Tag-Based KASAN)` if arm
+  - select `Debug Oops, Lockups and Hangs` if desired
+    - select `Panic on Oops`
   - select `Lock Debugging (spinlocks, mutexes, etc...)` if desired
+    - select `Lock debugging: prove locking correctness`
     - select `Lock debugging: detect incorrect freeing of live locks`
+  - select `Debug kernel data structures` if desired
+    - select `Debug linked list manipulation`
   - select `Tracers`
     - deselect `Automount tracefs on debugfs`
     - select `Kernel Function Tracer` if desired

@@ -144,6 +144,7 @@
     - `init_irq_proc` creates `/proc/irq`
     - `do_initcalls` runs all initcalls
       - this includes `rootfs_initcall` which populates rootfs
+  - `kunit_run_all_tests` runs all built-in kunit tests
   - `console_on_rootfs` opens `/dev/console` and makes it fd 0, 1, 2
   - if there is no `/init` (no initramfs), `prepare_namespace` mounts the root
     device to `/`, overriding rootfs
