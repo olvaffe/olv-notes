@@ -186,6 +186,8 @@
     respectively
   - note that with dynamic partitions (`super.img`), dlkm can also be flashed
     through fastbootd
+- `--nokmi_symbol_list_strict_mode --nokmi_symbol_list_violations_check --notrim`
+  - these may be handy during debug to avoid symbol issues
 
 ## Kernel Partitions
 
