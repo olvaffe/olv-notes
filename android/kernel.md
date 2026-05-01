@@ -100,7 +100,7 @@
     - make goals is `_GKI_X86_64_MAKE_GOALS`, which is equivalent to
       `make bzImage modules`
   - the kernel config file is `common/arch/arm64/configs/gki_defconfig`
-    - `tools/bazel run //common:kernel_aarch64_abi_update` to update
+    - `tools/bazel run //common:kernel_aarch64_config -- menuconfig` to update
   - the output is `bazel-bin/common/kernel_aarch64/`
     - kernel image, modules, symbols, etc.
 - `tools/bazel build //common:kernel_aarch64_dist`
