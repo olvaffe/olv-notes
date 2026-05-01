@@ -50,49 +50,73 @@
   - `pte_offset_kernel` returns the pte entry for the va
   - `ptep_get_and_clear` clears the pte entry
 
+## `vm_struct`
+
+- `vm_struct` is a thin wrapper for `vmap_area`
+- `get_vm_area` creates a `vm_struct`
+  - it allocs the struct
+  - `alloc_vmap_area` creates a `vmap_area`
+    - `va->vm` points to the vm
+    - `vm->addr` and `vm->size` point to the va region
+- after vm creation, the caller
+  - might set `vm->pages`
+    - for vmalloc, `vm->pages` is the allocated pages
+    - for vmap, `vm->pages` is NULL unless `VM_MAP_PUT_PAGES`
+  - might call `vmap_pages_range` to map pages
+- `find_vm_area` looks up a vm from addr
+  - `find_vmap_area` looks up the va
+  - it returns `va->vm`
+- `remove_vm_area` isolates a vm for freeing
+  - `find_unlink_vmap_area` looks up and isolates the va
+  - `free_unmap_vmap_area` zaps pgtable and frees the va
+    - `vunmap_range_noflush` zaps pgtable
+    - `free_vmap_area_noflush` lazy-frees the va
+      - it may schedule `drain_vmap_area_work`
+  - it returns the vm
+- `free_vm_area` calls `remove_vm_area` and frees the vm
+
 ## `vmap` and `vunmap`
 
 - `vmap` maps physically non-contiguous pages to logically contiguous range
-  - `__get_vm_area_node`
-    - `alloc_vmap_area` allocs a va
-    - it allocs and returns a `vm_struct` pointing to the same range
+  - `__get_vm_area_node` creates a `vm_struct`
   - `vmap_pages_range` sets up pgtable
     - `flush_cache_vmap` seems to be nop
 - `vunmap` unmaps a range
-  - `remove_vm_area`
-    - `find_unlink_vmap_area` finds the va and removes it from its node
-    - `free_unmap_vmap_area`
-      - `vunmap_range_noflush` zaps pgtable
-      - `free_vmap_area_noflush` adds the va to its node's lazy tree
-      - it may schedule `drain_vmap_area_work`
+  - `remove_vm_area` isolates the vm for freeing
+  - it frees the vm
 
 ## `vmalloc` and `vfree`
 
 - `vmalloc` allocs logically contiguous buffer
-  - `__get_vm_area_node` allocs a va and returns a vm
+  - `__get_vm_area_node` creates a `vm_struct`
   - `__vmalloc_area_node`
     - `vm_area_alloc_pages` allocs pages
     - `__vmap_pages_range` sets up pgtable
 - `vfree` a buffer
-  - `remove_vm_area` zaps the pgtable and moves the va to its node's lazy tree
+  - `remove_vm_area` isolates the vm for freeing
   - `__free_page` frees each page
+  - it frees the vm
 
-## `ioremap`
+## `generic_ioremap_prot` and `generic_iounmap`
 
+- `generic_ioremap_prot` maps a region for mmio
+  - `__get_vm_area_caller` creates a `vm_struct`
+  - `area->phys_addr` is set to the pa
+  - `ioremap_page_range` sets up pgtable
+    - `find_vm_area` looks up the vm
+    - `vmap_page_range` sets up pgtable
+- `generic_iounmap` simply calls `vunmap`
+- on arm, `CONFIG_GENERIC_IOREMAP` is enabled
+  - `ioremap` calls `generic_ioremap_prot` with `PROT_DEVICE_nGnRE`
+  - `iounmap` calls `generic_iounmap`
 - on x86,
   - `ioremap`
     - `memtype_reserve`
-    - `get_vm_area_caller` allocs a va and returns a vm
+    - `get_vm_area_caller` creates a `vm_struct`
     - `memtype_kernel_map_sync`
-    - `ioremap_page_range` calls `vmap_page_range` to set up pgtable
+    - `ioremap_page_range` sets up pgtable
   - `iounmap`
-    - `find_vm_area` calls `find_vmap_area` and returns the vm
+    - `find_vm_area` looks up the vm
     - `memtype_free`
-    - `remove_vm_area` zaps the pgtable and moves the va to its nodes' lazy
-      tree
-- on arm, `CONFIG_GENERIC_IOREMAP` is enabled
-  - `ioremap` calls `generic_ioremap_prot` with `PROT_DEVICE_nGnRE`
-    - `__get_vm_area_caller` allocs a va and returns a vm
-    - `ioremap_page_range` calls `vmap_page_range` to set up pgtable
-  - `iounmap` calls `generic_iounmap`
-    - it is just `vunmap`
+    - `remove_vm_area` isolates the vm for freeing
+    - it frees the vm
