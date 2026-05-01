@@ -38,3 +38,22 @@
   - `kasan_poison_slab` then calls
     - `page_kasan_tag_reset` to reset `page->flags` to `KASAN_TAG_KERNEL`
     - `kasan_poison` stores `KASAN_SLAB_REDZONE` to mte
+- vmalloc allocator
+  - when `vmap` maps, `kasan_unpoison_vmalloc` is called with `KASAN_VMALLOC_PROT_NORMAL`
+    - it is nop and there is no tagging
+    - it relies on buddy allocator page tagging instead
+  - when `vunmap` unmap, `kasan_poison_vmalloc`
+    - it is also nop
+  - when `vmalloc` allocates,
+    - the pages are allocated with `__GFP_SKIP_KASAN` and `__GFP_SKIP_ZERO`
+      - they skip buddy allocator page tagging
+    - `kasan_unpoison_vmalloc` is called with `KASAN_VMALLOC_PROT_NORMAL`,
+      `KASAN_VMALLOC_VM_ALLOC`, and potentially `KASAN_VMALLOC_INIT`
+      - `kasan_random_tag` generates a tag
+      - `set_tag` encodes the tag in va
+      - `kasan_unpoison` stores the tag in mte
+      - if the alloc size is not page-aligned, `kasan_poison` stores
+        `KASAN_TAG_INVALID` in mte for the redzone
+      - `unpoison_vmalloc_pages` calls `page_kasan_tag_set` to store tag in
+        `page->flags`
+        - this is for `vmalloc_to_page`
