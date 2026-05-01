@@ -100,21 +100,34 @@
 - `__swap_cache_del_folio` removes the folio from swap cache
   - `__remove_mapping` has called `folio_ref_freeze` to set folio refcount to 0
 
-## `do_swap_page`
+## Swap In
 
-- swapping in happens in `do_swap_page`
-  - `swap_cache_get_folio` tries to get the folio from the swapcache
-  - if readback is required, `swap_readpage` or `swapin_readahead` perform the
-    readback
-- `swap_writepage` and `swap_readpage` submit bios
-- when `handle_mm_fault` handles a page fault, if the pte has never been set
-  up, `do_pte_missing` allocs the page and points pte to the page
-- if the pte exists, but `pte_present` returns false, `do_swap_page` swaps the
-  page in
-- `pte_to_swp_entry` converts `pte_t` to `swp_entry_t`
-- `swap_cache_get_folio` looks up the page from swapcache
-- on swapcache miss, `swapin_readahead` swaps in the page with RA
-  - this is considered a major page fault
+- after swap out,
+  - the swp entry refers to the storage where the folio contents are saved
+  - all pte entries for the folio have been replaced by encoded swp entry
+    - `pte_present` returns false for the encoded swp entry
+  - the swp entry has a refcount that is the number of replaced pte entries
+- `do_swap_page` is called by `handle_pte_fault` to handle a page fault
+  - `softleaf_from_pte` converts `pte_t` to `swp_entry_t`
+  - `swap_cache_get_folio` looks up the page from swap cache
+  - `swapin_readahead` swaps in a folio with RA, if the original folio has
+    been dropped from swap cache
+    - this is considered a major page fault
+  - `folio_lock_or_retry` locks the folio
+    - if there is in-flight read bio to update the folio, this acquires the
+      lock after the read io completes
+  - `arch_swap_restore` can be used to restore the arm mte tag
+  - `folio_ref_add` increments the refcount
+  - `set_ptes` updates pte entry
+- `swapin_readahead` typically call `swap_vma_readahead` to allocate a folio
+  and emit a read bio
+  - `swap_vma_ra_win` determines the number of folios to readahead
+  - `swap_cache_alloc_folio` allocates a folio
+    - `swap_cache_get_folio` returns the folio from the swap cache, if exists
+    - `folio_alloc_mpol` allocates a new folio
+    - `__swap_cache_prepare_and_add` adds the new folio to swap cache
+  - `swap_read_folio` calls `swap_read_folio_bdev_async` to submit read bio
+    - it does not wait for completion
 
 ## Userspace
 
