@@ -52,15 +52,53 @@
   - if all good, `__remove_mapping` removes the folio from the swap cache and
     `free_unref_folios` frees the folio to buddy
     - this happens later in another call, when the folio is no longer dirty
-- comparing to file-based mapping,
+- in the case of file-based mapping,
   - no `folio_alloc_swap` because a folio is always in page cache
   - `try_to_unmap` is the same
   - does not trigger extra writeback for dirty folio, but rely on regular
     writeback
   - `__remove_mapping` and `free_unref_folios` are the same
-- `folio_alloc_swap`
-- `swap_writeout`
-- `__swap_cache_del_folio`
+- `folio_alloc_swap` adds a folio to the swap cache
+  - `swap_alloc_fast` calls `alloc_swap_scan_cluster` to allcoate an swp entry
+    from `percpu_swap_cluster`
+  - `swap_alloc_slow` locks `swap_avail_lock` and calls
+    `cluster_alloc_swap_entry` to allocate an swp entry from `swap_avail_head`
+    - `alloc_swap_scan_list` calls `alloc_swap_scan_cluster` as well
+  - `alloc_swap_scan_cluster` loops through all possible ranges
+    - `cluster_scan_range` checks if a range is available
+    - `__swap_cluster_alloc_entries` calls `__swap_cache_add_folio` to add the
+      folio
+      - `__swap_table_set` marks the swp entry used
+      - `folio_ref_add` increments refcount now that the folio is managed by
+        the swap cache
+      - `folio_set_swapcache` marks the `PG_swapcache`
+      - `folio->swap` is set to the swp entry
+      - `NR_FILE_PAGES` and `NR_SWAPCACHE` stats are increments
+- `try_to_unmap` calls `try_to_unmap_one` to unmap the folio from pgtables
+  - `get_and_clear_ptes` clears the pte entry to 0
+  - `folio_dup_swap` increments the refcount of the swp entry
+    - this is the number of pte entries who values are replaced by swp entries
+  - `swp_entry_to_pte` encodes swp entry as a pte entry val
+    - specifically, the present bit is cleared and `pte_present` is false
+  - `set_pte_at` sets the pte entry to the val
+  - now that the folio is unmapped, accessing the foilo results in page fault
+    - before swap out, it is minor fault because the folio is still in swap cache
+    - after swap out, it is major fault
+- `swap_writeout` writes a dirty folio to storage asynchronously
+  - `folio_free_swap` returns true if the dirty folio does not need writeout
+    - `folio_maybe_swapped` checks if the swp entry refcount is non-zero
+      - see `folio_dup_swap` above: refcount is the number of pte entries that
+        reference the swp entry
+      - refcount is 0 when, for example, the process has freed the folio
+    - instead of writeout, `swap_cache_del_folio` removes the folio from the
+      swap cache
+  - `arch_prepare_to_swap` can be used to save the arm mte tag
+  - if `is_folio_zero_filled`, `swap_zeromap_folio_set` marks so in swp entry
+    than writeout
+  - `__swap_writepage` calls `swap_writepage_bdev_async` to submit write bio
+    - it does not wait for completion
+- `__swap_cache_del_folio` removes the folio from swap cache
+  - `__remove_mapping` has called `folio_ref_freeze` to set folio refcount to 0
 
 ## `do_swap_page`
 
