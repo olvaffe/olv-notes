@@ -38,16 +38,30 @@
 
 ## Swap Out
 
-- swapping out appears to happen in `shrink_folio_list`
-  - pages on the anon lru list can be swapped out
-    - pages on the file lru list can be written to the fs rather than swapped
-      out
-  - `add_to_swap` moves a folio to the swapcache
-    - the folio is no longer owned by the pagecache of the anon file but by
-      the swapcache
-  - `pageout` calls `writepage` to write a dirty folio back to the backing
-    storage
-  - `folio_free_swap` removes the folio from the swapcache
+- `shrink_folio_list` can swap out an anon folio in an anon mapping
+  - if the anon folio is not in sway cache yet, `folio_alloc_swap` adds the
+    folio to the swap cache
+    - the folio is obviously dirty when this happens
+  - if the anon folio is still mapped in any pgtable, `try_to_unmap` unmaps it
+    from pgtables
+    - the folio refcount typically drop to 2, 1 from swap cache and 1 from the
+      folio list
+  - if the anon folio is dirty, `swap_writeout` issues a write io
+    - because the folio is dirty before io completion, it is not reclaimed
+      immediately
+  - if all good, `__remove_mapping` removes the folio from the swap cache and
+    `free_unref_folios` frees the folio to buddy
+    - this happens later in another call, when the folio is no longer dirty
+- comparing to file-based mapping,
+  - no `folio_alloc_swap` because a folio is always in page cache
+  - `try_to_unmap` is the same
+  - does not trigger extra writeback for dirty folio, but rely on regular
+    writeback
+  - `__remove_mapping` and `free_unref_folios` are the same
+- `folio_alloc_swap`
+- `swap_writeout`
+- `__swap_cache_del_folio`
+
 ## `do_swap_page`
 
 - swapping in happens in `do_swap_page`
