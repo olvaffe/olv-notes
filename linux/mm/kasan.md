@@ -57,3 +57,30 @@
       - `unpoison_vmalloc_pages` calls `page_kasan_tag_set` to store tag in
         `page->flags`
         - this is for `vmalloc_to_page`
+- kernel tags
+  - `KASAN_TAG_KERNEL` (0xff) is the match-all pointer tag
+  - `KASAN_TAG_INVALID` (0xfe) is the poison memory tag
+  - `[KASAN_TAG_MIN, KASAN_TAG_MAX]` are valid pointer/memory tags
+  - all generic magics are mapped to `KASAN_TAG_INVALID`
+    - `KASAN_PAGE_FREE`
+    - `KASAN_PAGE_REDZONE`
+    - `KASAN_SLAB_REDZONE`
+    - `KASAN_SLAB_FREE`
+    - `KASAN_VMALLOC_INVALID`
+- arm64
+  - hw
+    - all mte tags are 0 on boot
+      - it does not look like kernel poisons mte on bott
+    - `stg` (store tag) extracts tag (bit 59:56) from va, translates va to pa,
+      and stores tag to mte location corresponding to the pa
+    - `stgm` stores multiple tags
+    - `stzg` stores tag in mte and zeros mem
+    - `irg` generates a random tag
+      - `mte_cpu_setup` inits `SYS_GCR_EL1` to `KERNEL_GCR_EL1`, which limits
+        the range to `[KASAN_TAG_MIN, KASAN_TAG_MAX]` (0x0 to 0xd)
+  - `kasan_unpoison` and `kasan_poison` both call `mte_set_mem_tag_range`
+    - `kasan_unpoison` extracts tag from va
+    - `kasan_poison` uses caller-specified tag
+      - it is always mapped to `KASAN_TAG_INVALID`
+    - `mte_set_mem_tag_range` stores lower lower 4 bits of tag to mte,
+      optionally zeros the memory
