@@ -41,6 +41,10 @@
   - `trace-cmd show -p` shows events
   - `trace-cmd stop` stops tracing
   - or, `trace-cmd stream -e drm -e dma_fence` to start/show/stop
+- event filter
+  - `trace-cmd stream -e irq:irq_handler_entry -f 'name == "amdgpu"'`
+    - this writes to `/sys/kernel/tracing/events/irq/irq_handler_entry/filter`
+    - fields are from `/sys/kernel/tracing/events/irq/irq_handler_entry/format`
 - function graph tracer
   - `trace-cmd record -p function_graph -g common_nsleep --max-graph-depth 5 -F sleep 1`
     - `-p` enables the specified tracer
