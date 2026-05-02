@@ -1,5 +1,103 @@
 # DRM panthor
 
+## Hello Triangle Function Graph
+
+- `trace-cmd record -p function_graph -l :mod:panthor --max-graph-depth 4`
+- `vkCreateInstance`
+  - `panthor_open`
+  - `panthor_ioctl_dev_query`s
+    - `panthor_device_resume`
+      - `panthor_devfreq_resume`
+      - `panthor_pwr_resume`
+      - `panthor_gpu_resume`
+      - `panthor_mmu_resume`
+      - `panthor_fw_resume`
+        - `panthor_vm_active` enables fw vm
+        - `panthor_fw_start` starts fw
+          - irq `panthor_job_irq_threaded_handler` marks `ptdev->fw->booted`
+      - `panthor_sched_resume` queues `tick_work`
+- `vkCreateDevice`
+  - `panthor_ioctl_vm_create`
+    - `panthor_vm_pool_create_vm -> panthor_vm_create` creates a vm
+  - `panthor_ioctl_bo_create`s
+    - `panthor_gem_create_with_handle -> panthor_gem_create` creates a bo
+  - `panthor_ioctl_vm_bind`s
+    - `panthor_vm_bind_exec_sync_op` binds a bo to vm
+      - `panthor_vm_bind_prepare_op_ctx -> panthor_vm_prepare_map_op_ctx`
+      - `panthor_vm_exec_op -> panthor_gpuva_sm_step_map`
+      - `panthor_vm_cleanup_op_ctx`
+  - `panthor_ioctl_bo_mmap_offset`s
+  - `panthor_mmap`s
+    - exception `panthor_gem_fault` handles faults
+  - `panthor_ioctl_tiler_heap_create`
+  - `panthor_ioctl_group_create`
+    - `panthor_kernel_bo_create`
+    - `panthor_kernel_bo_vmap`
+  - `panthor_mmio_vm_fault`
+  - `panthor_ioctl_group_submit` submits a setup job
+- `vkQueueSubmit`
+  - `panthor_ioctl_group_submit`
+    - `panthor_job_create`
+    - `panthor_submit_ctx_collect_jobs_signal_ops`
+    - `panthor_vm_prepare_mapped_bos_resvs`
+    - `panthor_submit_ctx_add_deps_and_arm_jobs`
+    - `panthor_submit_ctx_push_jobs`
+      - `drm_sched_entity_push_job` queues `drm_sched_run_job_work`
+    - `panthor_submit_ctx_cleanup`
+  - wq `drm_sched_run_job_work`
+    - `queue_run_job`
+      - `prepare_job_instrs`
+      - `copy_instrs_to_ringbuf`
+      - `group_schedule_locked`
+        - `sched_resume_tick` queues `tick_work`
+    - `dma_fence_add_callback` adds `drm_sched_job_done_cb`
+  - wq `tick_work`
+    - `tick_ctx_init`
+    - `tick_ctx_pick_groups_from_list`
+    - `tick_ctx_apply`
+      - to start or resume a csg,
+        - `group_bind_locked`
+        - `csg_slot_prog_locked`
+        - `csgs_upd_ctx_queue_reqs`
+    - `tick_ctx_cleanup`
+  - when `SYNC_ADD64.system_scope` after job executes, irq
+    `panthor_job_irq_threaded_handler`
+    - `panthor_sched_report_fw_events` queues `process_fw_events_work`
+  - wq `process_fw_events_work`
+    - `sched_process_csg_irq_locked`
+      - `cs_slot_process_irq_locked`
+      - `csg_slot_sync_update_locked` (thanks to `SYNC_ADD64.system_scope`)
+        - it queues `group_sync_upd_work` and `sync_upd_work`
+      - `panthor_fw_ring_csg_doorbells`
+  - wq `group_sync_upd_work`
+    - `queue_check_job_completion`
+      - `dma_fence_signal_locked` calls `drm_sched_job_done_cb`
+        - `drm_sched_job_done` queues `drm_sched_free_job_work`
+  - wq `sync_upd_work`
+  - wq `drm_sched_free_job_work`
+    - `queue_free_job`
+- `vkDestroyDevice`
+  - `panthor_ioctl_vm_bind`s
+    - `panthor_vm_bind_exec_sync_op` unbinds a bo from vm
+      - `panthor_vm_bind_prepare_op_ctx -> panthor_vm_prepare_unmap_op_ctx`
+      - `panthor_vm_exec_op -> panthor_gpuva_sm_step_unmap`
+      - `panthor_vm_cleanup_op_ctx`
+  - `panthor_gem_free_object`s
+  - `panthor_ioctl_group_destroy`
+    - `panthor_group_destroy` queues `group_term_work`
+  - `panthor_ioctl_tiler_heap_destroy`
+  - `panthor_ioctl_vm_destroy`
+- `vkDestroyInstance`
+  - `panthor_postclose`
+- auto-suspend
+  - `panthor_device_suspend`
+    - `panthor_sched_suspend` suspends csgs
+    - `panthor_fw_suspend -> panthor_fw_stop` stops the mcu
+    - `panthor_mmu_suspend`
+    - `panthor_gpu_suspend`
+    - `panthor_pwr_suspend`
+    - `panthor_devfreq_suspend`
+
 ## Initialization
 
 - `module_init(panthor_init)`
