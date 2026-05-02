@@ -41,6 +41,15 @@
   - `trace-cmd show -p` shows events
   - `trace-cmd stop` stops tracing
   - or, `trace-cmd stream -e drm -e dma_fence` to start/show/stop
+- function graph tracer
+  - `trace-cmd record -p function_graph -g common_nsleep --max-graph-depth 5 -F sleep 1`
+    - `-p` enables the specified tracer
+    - `-g` filters by the specified function and the nested functions
+    - `--max-graph-depth` limits the depth of nested functions
+    - `-F` filters by the specified executable
+  - `trace-cmd record -p function_graph -l ':mod:i915' --max-graph-depth 3`
+    - `-l` filters by the specified functions
+      - `:mod:<mod>` matches all functions in the specified module
 
 ## Commands
 

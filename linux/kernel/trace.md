@@ -144,7 +144,7 @@
 
 ## sysfs
 
-- `cd /sys/kernel/debug/tracing`
+- `cd /sys/kernel/tracing/tracing`
   - for help, `cat README`
   - clear trace: `echo > trace`
   - enable a tracepoint: `echo 1 > events/power/cpu_frequency/enable`
@@ -152,4 +152,15 @@
   - stop tracing: `echo 0 > tracing_on`
   - get trace: `cat trace`
 - list all events
-  - `find /sys/kernel/debug/tracing/events -type d`
+  - `find /sys/kernel/tracing/tracing/events -type d`
+- `/sys/kernel/tracing/set_ftrace_filter`
+  - `ftrace_filter_write -> ftrace_regex_write -> ftrace_process_regex`
+  - if there is no `:<cmd>:`, `ftrace_match_records` matches the string
+    - during boot or module load, `ftrace_process_locs` adds records
+      - `ftrace_allocate_pages` allocs the storage
+    - `ftrace_match_record` matches a record against the string
+    - `enter_record` adds a matched record to hash
+  - if there is `:<cmd>:`
+    - `ftrace_mod_callback` handles `:mod:`
+      - `ftrace_match_records` matches against all records belonging to the
+        module
