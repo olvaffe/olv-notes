@@ -53,6 +53,13 @@
     - `dma_fence_add_callback` adds `drm_sched_job_done_cb`
   - wq `tick_work`
     - `tick_ctx_init`
+      - `csgs_upd_ctx_queue_reqs` adds `CSG_STATUS_UPDATE` req
+      - `csgs_upd_ctx_apply_locked`
+        - `panthor_fw_update_reqs` updates req regs
+        - `panthor_fw_ring_csg_doorbells` notifies fw
+        - `panthor_fw_csg_wait_acks` waits fw
+        - `csg_slot_sync_queues_state_locked` handles `CSG_STATUS_UPDATE`
+          - it updates `group->idle_queues` and `group->blocked_queues`
     - `tick_ctx_pick_groups_from_list`
     - `tick_ctx_apply`
       - to start or resume a csg,
@@ -74,6 +81,9 @@
       - `dma_fence_signal_locked` calls `drm_sched_job_done_cb`
         - `drm_sched_job_done` queues `drm_sched_free_job_work`
   - wq `sync_upd_work`
+    - if `group->blocked_queues`, `panthor_queue_eval_syncwait` vmaps bo,
+      evaluates syncwait on cpu, and potentially clears
+      `group->blocked_queues`
   - wq `drm_sched_free_job_work`
     - `queue_free_job`
 - `vkDestroyDevice`
