@@ -84,3 +84,21 @@
       - it is always mapped to `KASAN_TAG_INVALID`
     - `mte_set_mem_tag_range` stores lower lower 4 bits of tag to mte,
       optionally zeros the memory
+- userspace pages
+  - they are allocated with `GFP_HIGHUSER_MOVABLE`
+    - `inode_init_always_gfp` sets the flag such that page cache (for real
+      files and shmems) uses it
+    - `alloc_anon_folio` uses it to allocate anon folios
+    - `do_swap_page` uses it for swap-in folios in swap cache
+  - `GFP_HIGHUSER_MOVABLE` expands to `GFP_USER|__GFP_MOVABLE|__GFP_SKIP_KASAN`
+  - because of `__GFP_SKIP_KASAN`,
+    - `post_alloc_hook` calls `page_kasan_tag_reset` to force page tags to
+      `KASAN_TAG_KERNEL`
+      - `page_address` will be match-all and kasan is disabled
+      - this is necessary because, when kernel writes back or swaps out user
+        pages, it needs to access the contents
+    - the memory tags are not changed
+      - they remain `KASAN_PAGE_FREE` which expands to `KASAN_TAG_INVALID`
+  - when anon pages are mmaped with `PROT_MTE`,
+    - memory tags are zeroed
+    - userspace manages pointer tags and memory tags
