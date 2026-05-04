@@ -228,3 +228,40 @@
 - this is to prevent DoS
   - an untrusted reader cannot starve the writer by keeping acquiring the
     spinlock
+
+## lockdep
+
+- e.g., `inode->i_lock`
+  - each `file_system_type` has `i_lock_key` of type `lock_class_key`
+  - each `inode` has `i_lock` of type `spinlock_t`
+    - each `spinlock_t` has `dep_map` of type `lockdep_map`
+  - when `inode_init_always_gfp` inits an inode,
+    - `lockdep_set_class(&inode->i_lock, &sb->s_type->i_lock_key)`
+      - all locks of all inodes of the same fs type have the same class
+  - `spin_lock` calls `lock_acquire`
+    - `register_lock_class` is called on demand
+      - it adds a `lock_class` to global `classhash_table`
+      - `lock_class_key` is the key to the lock class
+    - it adds the lock to `curr->held_locks`, which is an array tracking all
+      held locks in locking order
+    - `validate_chain` validates `curr->held_locks` (when `CONFIG_PROVE_LOCKING=y`)
+      - `check_deadlock` checks if a lock of the same class is held
+      - `check_prevs_add` validates and updates the lock graph
+        - the class tracks the lock graph
+        - if this is a new lock path, this is added to the graph
+        - else, this is validated against the graph
+  - `spin_unlock` calls `lock_release`
+    - it removes the lock from `curr->held_locks`
+  - `lockdep_is_held` tests if a lock is held (when `CONFIG_LOCKDEP=y`)
+    - it looks up in `curr->held_locks`
+- `fs_reclaim_acquire` and `fs_reclaim_release`
+  - reclaim has some potential deadlock paths
+    - `fs lock; alloc -> direct reclaim -> fs writeback -> fs lock again`
+    - `shrinker lock; alloc -> direct reclaim -> shrink -> shrinker lock again`
+  - `__fs_reclaim_map` is a static lockdep map
+    - it uses itself as the class key
+    - note how `register_lock_class` never accesses the class key but only
+      uses the pointer as the hash key
+  - because the locking paths are not traversed until recliam, we typically
+    train lockdep about the paths during init
+    - see how `validate_chain` validates and updates the lock graph
