@@ -93,6 +93,7 @@
     - instead of writeout, `swap_cache_del_folio` removes the folio from the
       swap cache
   - `arch_prepare_to_swap` can be used to save the arm mte tag
+    - only applies `PROT_MTE` mappings, where pages have `PG_mte_tagged`
   - if `is_folio_zero_filled`, `swap_zeromap_folio_set` marks so in swp entry
     than writeout
   - `__swap_writepage` calls `swap_writepage_bdev_async` to submit write bio

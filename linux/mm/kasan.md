@@ -102,6 +102,7 @@
   - when anon pages are mmaped with `PROT_MTE`,
     - memory tags are zeroed
     - userspace manages pointer tags and memory tags
+  - `PG_mte_tagged` is tied to `PROT_MTE`
 - init
   - `early_param("kasan", early_kasan_flag)`
     - `kasan_arg` defaults to `KASAN_ARG_DEFAULT`
