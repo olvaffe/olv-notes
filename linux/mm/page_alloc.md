@@ -54,6 +54,11 @@
   - when a pte is taken down in `zap_pte_range`, `page_remove_rmap` is called
     to reduce `_mapcount`.  The referernce to the page is transferred to tlb
     in `__tlb_remove_page`
+- `prep_new_page` preps a newly allocated page
+  - `post_alloc_hook` sanitizes the page
+  - if `__GFP_COMP`, `prep_compound_page` preps for compound page
+  - `alloc_contig_frozen_range_noprof` may skip `prep_new_page` and call the
+    underlying `post_alloc_hook` when not `__GFP_COMP`
 
 ## GFP Flags
 
