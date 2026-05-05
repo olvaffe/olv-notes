@@ -102,3 +102,18 @@
   - when anon pages are mmaped with `PROT_MTE`,
     - memory tags are zeroed
     - userspace manages pointer tags and memory tags
+- init
+  - `early_param("kasan", early_kasan_flag)`
+    - `kasan_arg` defaults to `KASAN_ARG_DEFAULT`
+  - `arly_param("kasan.mode", early_kasan_mode)`
+    - `kasan_arg_mode` defaults to `KASAN_ARG_MODE_DEFAULT`
+  - `early_param("kasan.vmalloc", early_kasan_flag_vmalloc)`
+    - `kasan_arg_vmalloc` defaults to `KASAN_ARG_VMALLOC_DEFAULT`
+  - `kasan_init_hw_tags`
+    - it bails unless
+      - `system_supports_mte`
+      - `kasan_arg != KASAN_ARG_OFF`
+    - `kasan_enable` enables kasan
+    - it prints `KernelAddressSanitizer initialized (hw-tags, ...)`
+  - `kasan_enabled` and `kasan_hw_tags_enabled` return true after
+    `kasan_enable`
