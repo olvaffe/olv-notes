@@ -159,6 +159,38 @@
   - `exit_mmap` calls `unmap_vmas` to zap and calls `free_pgtables` to free
   - `mm_free_pgd` frees the pgd table
 
+## Types of Faults
+
+- `handle_mm_fault` handles all faults
+  - `hugetlb_fault` handles hugetlb (not thb) faults
+  - `__handle_mm_fault` handles non-hugetlb faults
+- `__handle_mm_fault`
+  - `create_huge_pud` handles pud thb (1GB) missing faults
+  - `wp_huge_pud` handles pud thb write faults
+    - for cow, it always splits and falls down
+  - `create_huge_pmd` handles pmd thb (2MB) missing faults
+  - `wp_huge_pmd` handles pmd thb write faults
+    - for cow, `do_huge_pmd_wp_page` almost always splits and falls down
+  - `handle_pte_fault` handles pte faults
+- `handle_pte_fault`
+  - `do_pte_missing` handles missing faults
+    - `do_anonymous_page` handles anon mapping
+      - anon mapping is always private
+      - "shared anon mapping" is shmem file mapping
+    - `do_fault` handles file mapping
+      - `do_read_fault` handles file read faults
+        - it has an optimization to map pages around to avoid future faults
+      - `do_cow_fault` handles private file faults
+        - it faults in the file page and makes a copy
+      - `do_shared_fault` handles the rest file faults
+        - it simply faults in the file page
+  - `do_swap_page` handles anon swapped-out faults
+    - this is real anon mapping, not "shared anon mapping" which uses shmem
+    - it faults in from swap device to swap cache first
+    - `do_wp_page` handles write faults (see below)
+  - `do_wp_page` handles write faults
+    - `wp_page_reuse` to reuse or `wp_page_copy` to cow
+
 ## Page Faulting
 
 - the mm code for fault starts in `handle_mm_fault`
