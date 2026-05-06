@@ -169,6 +169,7 @@
   - `wp_huge_pud` handles pud thb write faults
     - for cow, it always splits and falls down
   - `create_huge_pmd` handles pmd thb (2MB) missing faults
+    - `do_huge_pmd_anonymous_page` handles anony mapping
   - `wp_huge_pmd` handles pmd thb write faults
     - for cow, `do_huge_pmd_wp_page` almost always splits and falls down
   - `handle_pte_fault` handles pte faults
@@ -187,6 +188,7 @@
   - `do_swap_page` handles anon swapped-out faults
     - this is real anon mapping, not "shared anon mapping" which uses shmem
     - it faults in from swap device to swap cache first
+    - `folio_test_anon` returns true only after `folio_add_new_anon_rmap`
     - `do_wp_page` handles write faults (see below)
   - `do_wp_page` handles write faults
     - `wp_page_reuse` to reuse or `wp_page_copy` to cow
