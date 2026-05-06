@@ -130,6 +130,85 @@
   - `swap_read_folio` calls `swap_read_folio_bdev_async` to submit read bio
     - it does not wait for completion
 
+## Shmem vs Anon
+
+- allocation on fault
+  - shmem: `handle_mm_fault` calls down to `shmem_fault`
+    - `shmem_get_folio_gfp` calls `shmem_alloc_and_add_folio`
+      - `shmem_alloc_folio` allocates the folio
+      - `shmem_add_to_page_cache` adds the folio to page cache
+  - anon: `handle_mm_fault` calls down to `do_anonymous_page` or
+    `do_huge_pmd_anonymous_page`
+    - `alloc_anon_folio` allocates the folio
+    - the folio is owned by pgtables
+- first reclaim on memory pressure
+  - shmem: `shrink_folio_list` calls `try_to_unmap` and `shmem_writeout`
+    - `try_to_unmap` unmaps the folio from all vmas
+      - `try_to_unmap_one` unmaps from a vma
+        - it clears the pte entry
+    - `shmem_writeout`
+      - `folio_alloc_swap` allocs an swp entry and adds the folio to swap cache
+      - `shmem_delete_from_page_cache` replaces the page by the swp entry in page cache
+        - swap cache is the last owner of the folio
+      - `swap_writeout` submits write bio to swap device
+  - anon: `shrink_folio_list` calls `folio_alloc_swap`, `try_to_unmap`, and
+    `swap_writeout`
+    - `folio_alloc_swap` allocs an swp entry and adds the folio to swap cache
+    - `try_to_unmap` unmaps the folio from all vmas
+      - `try_to_unmap_one` unmaps from a vma
+        - `swp_entry_to_pte` encodes swp entry in pte val
+        - `set_pte_at` updates the pte entry with the pte val
+      - swap cache is the last owner of the folio
+    - `swap_writeout` submits write bio
+- second reclaim after bio completion
+  - shmem and anon: `shrink_folio_list`
+    - `__remove_mapping`
+      - `folio_ref_freeze` freezes refcount to 0
+      - `__swap_cache_del_folio` removes the folio from swap cache without
+        decrementing refcount
+    - `free_unref_folios` frees pages
+- swap in on fault
+  - shmem: `handle_mm_fault` calls down to `shmem_fault`
+    - `shmem_get_folio_gfp` calls `shmem_swapin_folio`
+      - `swap_cache_get_folio` looks up the folio in swap cache
+        - this can happen if the second reclaim hasn't occurred
+      - if zram, `shmem_swap_alloc_folio` allocs a new folio for swap cache
+        - `shmem_alloc_folio` allocs the folio
+        - `swapin_folio`
+          - `__swap_cache_prepare_and_add` adds the folio to swap cache
+          - `swap_read_folio` calls `swap_read_folio_bdev_sync` to submit and
+            wait read bio
+      - if ssd, `shmem_swapin_cluster` calls `swap_cluster_readahead` to
+        populate swap cache
+        - `swap_cache_alloc_folio`
+          - `folio_alloc_mpol` allocs a folio
+          - `__swap_cache_prepare_and_add` adds the folio to swap cache
+        - `swap_read_folio` calls `swap_read_folio_bdev_async` to submit read
+          bio without waiting
+      - `folio_lock` waits for the read bio if async
+      - `shmem_add_to_page_cache` adds the folio to page cache
+      - `swap_cache_del_folio` removes the folio from swap cache
+  - anon: `handle_mm_fault` calls down to `do_swap_page`
+    - `swap_cache_get_folio` looks up the folio in swap cache
+      - this can happen if the second reclaim hasn't occurred
+    - if zram,
+      - `alloc_swap_folio` calls `vma_alloc_folio` to allocate
+      - `swapin_folio`
+        - `__swap_cache_prepare_and_add` adds the folio to swap cache
+        - `swap_read_folio` calls `swap_read_folio_bdev_sync` to submit and
+          wait read bio
+    - if ssd, `swapin_readahead` calls `swap_vma_readahead` to populate swap
+      cache
+      - `swap_cache_alloc_folio`
+        - `folio_alloc_mpol` allocs a folio
+        - `__swap_cache_prepare_and_add` adds the folio to swap cache
+      - `swap_read_folio` calls `swap_read_folio_bdev_sync` to submit read
+        bio without waiting
+    - `folio_lock_or_retry` waits for the read bio if async
+    - `set_ptes` updates the pte entry
+    - if `should_try_to_free_swap`, `folio_free_swap` removes the folio from
+      swap cache
+
 ## Userspace
 
 - `swapon` syscall adds a swap device/file
