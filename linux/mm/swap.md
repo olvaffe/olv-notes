@@ -129,6 +129,8 @@
     - `__swap_cache_prepare_and_add` adds the new folio to swap cache
   - `swap_read_folio` calls `swap_read_folio_bdev_async` to submit read bio
     - it does not wait for completion
+  - unlike `swap_vma_readahead`, `swap_cluster_readahead` swaps in a cluster
+    which might include pages from other vmas
 
 ## Shmem vs Anon
 
@@ -182,6 +184,8 @@
         populate swap cache
         - `swap_cache_alloc_folio`
           - `folio_alloc_mpol` allocs a folio
+            - because a cluster might have pages for other mappings, we might
+              end up allocating pages for other mappings using our gfp flags
           - `__swap_cache_prepare_and_add` adds the folio to swap cache
         - `swap_read_folio` calls `swap_read_folio_bdev_async` to submit read
           bio without waiting

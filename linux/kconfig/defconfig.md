@@ -937,6 +937,7 @@
     - select `Debug Filesystem`
     - select `Undefined behaviour sanity checker` if desired
   - select `Memory Debugging` if desired
+    - select `Track page owner`
     - select `Kernel memory leak detector`
     - select `Enable shrinker debugging support`
     - select `Enable memory allocation profiling`
