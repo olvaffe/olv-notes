@@ -8,6 +8,8 @@
   - `reserved` contains regions of in-use physical ram
 - init
   - `memblock_add` adds a fw-reported physical ram region to `memory`
+    - x86 calls this on e820 entries of type `E820_TYPE_RAM`
+    - arm calls this on dt nodes of `device_type = "memory";`
   - `memblock_reserve` adds reserved (in-use) ram to `reserved`
 - alloc/free
   - `memblock_alloc` allocs a range
@@ -25,6 +27,8 @@
   - `for_each_reserved_mem_region` loops over regions in `reserved`
     - `for_each_reserved_mem_range` returns begin/end pa of the regions
   - `for_each_free_mem_range` loops over `memory` and excludes `reserved`
+  - internally, `should_skip_region` also skips regions with mismatching flags
+    - because callers never specify `MEMBLOCK_NOMAP`, they are always skipped
 - queries
   - `memblock_phys_mem_size` returns total size of `memory`
   - `memblock_reserved_size` returns total size of `reserved`
