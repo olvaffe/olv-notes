@@ -36,6 +36,38 @@
   - `swap_writeout` writes folio data to swap
   - `swap_read_folio` reads swap data to folio
 
+## Swap Device
+
+- a `swap_info_struct` represents a swap device
+- `SYSCALL_DEFINE2(swapon, ...)`
+  - `alloc_swap_info` allocs a struct and saves it to global `swap_info` array
+  - `file_open_name` opens the user-specified file
+  - `read_mapping_folio` maps the first folio for swap header
+  - `read_swap_header` parses the swap header
+  - `setup_swap_clusters_info` sets up `si->cluster_info` array
+    - a cluster covers `SWAPFILE_CLUSTER` pages
+      - it is sized for THP, thus typically 2MB
+  - `si->flags` is initialized
+    - `SWP_STABLE_WRITES` if bdev requires pages to be unmodified during
+      writeback
+      - e.g., bdev computes checksums or compresses for whole pages, such as
+        net-attached or zram
+    - `SWP_SYNCHRONOUS_IO` if bdev io is synchronous, such as zram
+    - `SWP_SOLIDSTATE` if bdev is not rotational, such as ssd/mmc/ufs/etc
+  - `enable_swap_info` adds the si to `swap_active_head` and `swap_avail_head`
+- `SYSCALL_DEFINE1(swapoff, ...)`
+  - it removes the si from `swap_avail_head` and `swap_active_head`
+  - `try_to_unuse` swaps in all pages on the si such that it becomes unsued
+- `folio_alloc_swap` allocates an unused swp entry for a folio
+  - it looks at each ci of each si to find an unused entry
+    - `ci->table` is allocated on demand by `swap_cluster_alloc_table`
+      - it represents the states of the entries in the cluster
+      - `SWP_TB_NULL` means unused
+  - `alloc_swap_scan_cluster`
+    - `cluster_scan_range` returns true if a range is `SWP_TB_NULL`
+    - `__swap_cluster_alloc_entries` calls `__swap_cache_add_folio` to mark
+      the range as `SWP_TB_PFN_MARK` and many more
+
 ## Swap Out
 
 - `shrink_folio_list` can swap out an anon folio in an anon mapping
