@@ -105,3 +105,40 @@
 - mediatek: <https://git.kernel.org/pub/scm/linux/kernel/git/chunkuang.hu/linux.git>
 - msm: <https://gitlab.freedesktop.org/drm/msm>
 - xe: <https://gitlab.freedesktop.org/drm/xe/kernel>
+
+## b4
+
+- <https://b4.docs.kernel.org/en/latest/installing.html>
+  - `pip install b4`
+- <https://b4.docs.kernel.org/en/latest/config.html>
+- <https://b4.docs.kernel.org/en/latest/maintainer/overview.html>
+  - `b4 mbox <msg-id>` downloads an entire thread
+  - `b4 am <msg-id>` downloads an entire thread and post-processes the thread
+    for `git am`
+    - `-n <output-name>` specifies custom filename
+    - `--no-cover` skips cover letter
+  - `b4 diff <msg-id>` diffs against the prior revision
+    - `-m <mbox1> <mbox2>` diffs against two local mboxes
+  - `b4 dig -c <commit-id>` reverse looks up the msg id
+    - `-a` looks up all revisions
+- <https://b4.docs.kernel.org/en/latest/contributor/overview.html>
+  - `b4 prep -n <topic>` creates `b4/<topic>` branch and creates an empty
+    cover letter commit
+    - `-f <base-commit>` specifies the base commit to fork from
+    - `-e <branch>` enrolls an existing branch instead
+  - `b4 prep` operations
+    - `--edit-cover` edits the cover letter
+    - `--auto-to-cc` runs `scripts/get_maintainer.pl` to add `To:`/`Cc:`
+      to cover letter
+    - `--check` runs `scripts/checkpatch.pl`
+  - `b4 send` sends the patches, tags the current revision, and increments the
+    revision
+    - one-time setup
+      - `patatt genkey`
+      - edit `.config/git/config`
+      - `b4 send --web-auth-new`
+      - `b4 send --web-auth-verify <token>`
+    - double check
+      - `-o <tmpdir>` generates patches for double check
+      - `--reflect` sends to self for double check
+  - `b4 trailers -u` retrieves trailers and updates commit messages
