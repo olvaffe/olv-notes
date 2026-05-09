@@ -112,10 +112,13 @@
   - `pip install b4`
 - <https://b4.docs.kernel.org/en/latest/config.html>
 - <https://b4.docs.kernel.org/en/latest/maintainer/overview.html>
-  - `b4 mbox <msg-id>` downloads an entire thread
-  - `b4 am <msg-id>` downloads an entire thread and post-processes the thread
-    for `git am`
-    - `-n <output-name>` specifies custom filename
+  - `b4 mbox <msg-id>` saves all threads containing `<msg-id>` to a local mbox
+    - it finds threads with `https://lore.kernel.org/all/<msg-id>/` by default
+    - `-m <local-mbox>` finds in a local mbox instead
+    - `-c` includes threads for later revisions as well
+    - `-n <output-name>` specifies the output filename
+  - `b4 am <msg-id>` is similar to `b4 mbox <msg-id>`, except it
+    post-processes the threads for `git am`
     - `--no-cover` skips cover letter
   - `b4 diff <msg-id>` diffs against the prior revision
     - `-m <mbox1> <mbox2>` diffs against two local mboxes
@@ -123,22 +126,27 @@
     - `-a` looks up all revisions
 - <https://b4.docs.kernel.org/en/latest/contributor/overview.html>
   - `b4 prep -n <topic>` creates `b4/<topic>` branch and creates an empty
-    cover letter commit
-    - `-f <base-commit>` specifies the base commit to fork from
-    - `-e <branch>` enrolls an existing branch instead
-  - `b4 prep` operations
+    commit for the cover letter
+    - it embeds a unique commit-id in the form of `<date>-<topic>-<hash>` in
+      the cover letter
+    - `-f <base-commit>` specifies the base commit for the branch
+    - `-F <msg-id>` populates the new branch with patches from `<msg-id>`
+      - if available, it also uses the base commit and the cover letter from
+        the threads
+    - `-e <branch>` preps an existing branch instead
+  - `b4 prep` branch operations
     - `--edit-cover` edits the cover letter
     - `--auto-to-cc` runs `scripts/get_maintainer.pl` to add `To:`/`Cc:`
-      to cover letter
-    - `--check` runs `scripts/checkpatch.pl`
+      to the cover letter
+    - `--check` runs `scripts/checkpatch.pl` on all commits
+    - `--cleanup br/<topic>` deletes everything related to the branch
+  - `b4 send` one-time setup
+    - `patatt genkey`
+    - edit `.config/git/config` to add `[b4]` and `[patatt]`
+    - `b4 send --web-auth-new`
+    - `b4 send --web-auth-verify <token>`
   - `b4 send` sends the patches, tags the current revision, and increments the
     revision
-    - one-time setup
-      - `patatt genkey`
-      - edit `.config/git/config`
-      - `b4 send --web-auth-new`
-      - `b4 send --web-auth-verify <token>`
-    - double check
-      - `-o <tmpdir>` generates patches for double check
-      - `--reflect` sends to self for double check
+    - `-o <tmpdir>` saves patches locally for double check
+    - `--reflect` sends only to self for double check
   - `b4 trailers -u` retrieves trailers and updates commit messages
