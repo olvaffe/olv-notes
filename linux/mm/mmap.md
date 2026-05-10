@@ -55,6 +55,55 @@
     - `vms_complete_munmap_vmas` removes conflicting vmas
     - `vma_set_page_prot` updates `vma->vm_page_prot` based on `vma->vm_flags`
 
+## VMA Flags
+
+- `VM_READ`
+- `VM_WRITE`
+- `VM_EXEC`
+- `VM_SHARED`
+- `VM_MAYREAD`
+- `VM_MAYWRITE`
+- `VM_MAYEXEC`
+- `VM_MAYSHARE`
+- `VM_GROWSDOWN`, aka `VM_STACK`
+- `VM_UFFD_MISSING` means `UFFDIO_REGISTER_MODE_MISSING`
+- `VM_PFNMAP`
+- `VM_MAYBE_GUARD` means `madvise(MADV_GUARD_INSTALL)`
+- `VM_UFFD_WP` means `UFFDIO_REGISTER_MODE_WP`
+- `VM_LOCKED` means `mlock`ed
+- `VM_IO` means the vma is for mmio
+  - it mainly prevents mm from reading the contents, such as during coredump
+- `VM_SEQ_READ` means `madvise(MADV_SEQUENTIAL)`
+- `VM_RAND_READ` means `madvise(MADV_RANDOM)`
+- `VM_DONTCOPY` means don't copy the vma on fork
+  - because the vma is missing from child, accessign it causes SIGSEGV
+- `VM_DONTEXPAND` disallows `mremap(old_size != new_size)`
+- `VM_LOCKONFAULT` means `mlock2(MLOCK_ONFAULT)` to lock on fault
+- `VM_ACCOUNT` checks against `security_vm_enough_memory_mm`
+- `VM_NORESERVE` skips marking private writable vma as `VM_ACCOUNT`
+  - it forces `accountable_mapping` to return false
+- `VM_HUGETLB` means expliclit hugetlb mapping
+- `VM_SYNC` is for DAX to imply fsync
+- `VM_ARCH_1`, `VM_ARM64_BTI` on arm64
+- `VM_WIPEONFORK` means `madvise(MADV_WIPEONFORK)`
+- `VM_DONTDUMP` means `madvise(MADV_DONTDUMP)`
+- `VM_SOFTDIRTY` tracks dirtied pages for userspace checkpointing
+- `VM_MIXEDMAP`
+- `VM_HUGEPAGE` means `madvise(MADV_HUGEPAGE)`
+- `VM_NOHUGEPAGE` means `madvise(MADV_NOHUGEPAGE)`
+- `VM_MERGEABLE` means `madvise(MADV_MERGEABLE)`
+- `VM_HIGH_ARCH_0`, often `VM_PKEY_BIT0`
+- `VM_HIGH_ARCH_1`, often `VM_PKEY_BIT1`
+- `VM_HIGH_ARCH_2`, often `VM_PKEY_BIT2`
+- `VM_HIGH_ARCH_3`, often `VM_PKEY_BIT3`
+- `VM_HIGH_ARCH_4`, `VM_PKEY_BIT4` on x86, `VM_MTE` on arm64
+- `VM_HIGH_ARCH_5`, `VM_MTE_ALLOWED` on arm64
+- `VM_HIGH_ARCH_6`, `VM_SHADOW_STACK` on arm64
+- `VM_ALLOW_ANY_UNCACHED` is for vfio pci on arm64
+- `VM_DROPPABLE` means the pages can be dropped (rather than swapped) on reclaim
+- `VM_UFFD_MINOR` means `UFFDIO_REGISTER_MODE_MINOR`
+- `VM_SEALED` means `mseal`
+
 ## User Page Tables
 
 - `f_op->mmap_prepare` or `f_op->mmap` can set up user page tables upfront
