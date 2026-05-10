@@ -55,6 +55,30 @@
     - `vms_complete_munmap_vmas` removes conflicting vmas
     - `vma_set_page_prot` updates `vma->vm_page_prot` based on `vma->vm_flags`
 
+## User Page Tables
+
+- `f_op->mmap_prepare` or `f_op->mmap` can set up user page tables upfront
+  - `vm_map_pages` maps pages (system ram) to user vma
+  - `vm_iomap_memory` is a wrapper for `io_remap_pfn_range`
+  - `io_remap_pfn_range` is a wrapper for `remap_pfn_range`
+  - `remap_pfn_range` maps physical addrs (system ram or mmio) to user vma
+- `vma->vm_ops->fault` can set up user page tables on faults
+  - it can return a page in `vmf->page` and let the caller set up pgtables
+  - it can also return `VM_FAULT_NOPAGE` and set up pgtables itself
+  - page ownership
+    - by default, pgtables own pages
+    - `VM_PFNMAP` means the entire vma is PFN-based and pgtables own no pages
+    - `VM_MIXEDMAP` means the vma is mixed and pgtables might or might not own pages
+  - `vmf_insert_page` inserts a page (system ram) to pgtables
+    - the vma must be `VM_MIXEDMAP` because the page is driver-owned
+  - `vmf_insert_pfn` inserts a pfn (system ram or mmio) to pgtables
+    - the vma must be `VM_MIXEDMAP` or `VM_PFNMAP`
+      - if `VM_MIXEDMAP`, pfn must be mmio
+  - `vmf_insert_mixed`
+    - the vma must be `VM_MIXEDMAP`?
+  - `vmf_insert_pfn_pmd`
+  - `vmf_insert_pfn_pud`
+
 ## Memory Mapping
 
 - map pages in...
@@ -79,11 +103,6 @@
       `shmem_zero_setup` is called to set up a shmem file.  For `VM_PRIVATE`,
       the VM is truely anonymous and has no `vma->vm_ops`
   - it adds the vma into `current->mm`
-- pfn is `pa >> PAGE_SHIFT`
-  - when pa is system memory, `pfn_to_page` can be used to get the `struct page`
-  - when pa is MMIO, there is no `struct page`; `pfn_valid` returns false
-  - `pfn_t` is pfn plus flags to distinguish the differences
-    - `PFN_DEV`: no `struct page`
 - VMA has many flags that the file `mmap` op can set
   - `VM_IO` means to treat the area as if it is backed by MMIO
   - `VM_PFNMAP` means to treat the area as if there is no `struct page`
