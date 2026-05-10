@@ -1,6 +1,6 @@
 # Kernel mmap
 
-## Overview
+## `mmap`
 
 - `sys_mmap -> ksys_mmap_pgoff -> vm_mmap_pgoff -> do_mmap`
   - `vm_mmap_pgoff` locks the mm for the duration of `do_mmap`
@@ -24,47 +24,36 @@
   - more checks
     - `arch_validate_flags` performs arch-specific checks
   - `__mmap_setup` preps
+    - `map->prev` and `map->next` point to neighboring vmas
+    - `map->mas_detach` points to conflicting vmas
+      - this can happen with `MAP_FIXED`
+    - `may_expand_vm` checks against `RLIMIT_AS` and `RLIMIT_DATA`
+    - `accountable_mapping` returns true for writable private mapping
+    - `vms_clean_up_area` unmaps conflicting vmas
+      - this can happen with `MAP_FIXED`
+    - `set_desc_from_map` init `vm_area_desc` from `mmap_state`
   - `call_mmap_prepare` uses the new `file->f_op->mmap_prepare` if supported
     - it gives the file a chance to adjust `vm_area_desc`
     - it updates `mmap_state` from the adjusted `vm_area_desc`
-  - `__mmap_new_vma` allocs a new vma if needed
-    - `vm_area_alloc` allocs
+  - `vma_merge_new_range` tries to merge with neighboring vmas
+  - if cannot merge, `__mmap_new_vma` allocs a new vma
+    - `vm_area_alloc` allocs a vma
     - `vma` is initialized based on `mmap_state`
-    - `__mmap_new_file_vma` calls `file->f_op->mmap` if the new
-      `file->f_op->mmap_prepare` is not supported
-      - `can_mmap_file` makes sure they are mutually exclusive
-      - it gives the file a chance to adjust `vm_area_struct`
+    - `vma` is further initialized depending on `map->file`
+      - if `map->file` and the new `file->f_op->mmap_prepare` is not
+        supported, `__mmap_new_file_vma` calls `file->f_op->mmap`
+        - `can_mmap_file` has made sure they are mutually exclusive
+        - it gives the file a chance to adjust `vm_area_struct`
+      - else if share anon, `shmem_zero_setup` creates a shmem for the vma
+      - else if priv anon, `vma_set_anonymous` sets `vma->vm_ops` to NULL
+    - `vma_iter_store_new` adds the vma to mm
+    - `vma_link_file` adds the vma to `vma->vm_file->f_mapping->i_mmap`
+      - this is for rmap, where `mapping->i_mmap` tracks all vmas
+      - for priv anon, `vmf_anon_prepare` will create `vma->anon_vma` on
+        demand for the same purpose
   - `__mmap_complete`
-
-## Memory Management
-
-- `struct mm_struct`: the address space of a task
-- `struct vm_area_struct` describes a continuous area, with same protection, of the address space
-  - It has `struct vm_operations_struct`
-  - It has `struct file *` for backing store
-- `struct vm_struct`: a continuous kernel virtual area
-- `struct address_space` can be viewed as the MMU of an a on-disk object.
-  Accessing to the pages of the object goes through its `struct address_space`
-  in its inode.
-
-## Adding a VMA
-
-- `vm_area_alloc` allocates a `vm_area_struct`
-- the caller sets up `vm_area_struct` manually, such as
-  - `vm_start` and `vm_end` for the addresses
-  - `vm_page_prot` and `vm_flags` for prot and flags
-  - `vm_ops` for accessing the vma
-    - according to `vma_is_anonymous`, it is non-null unless the vma is anon
-  - more
-- `insert_vm_struct` inserts the vma into mm
-  - `find_vma_intersection` makes sure the addr range is available
-  - `vma_link` adds the vma to the mm
-    - mm manages its vma using `mm->mm_mt`, a maple tree
-    - if the vma is file-backed, `__vma_link_file` adds the vma to the
-      `address_space` of the file
-      - `address_space` is the page cache backing the file
-      - `address_space` manages its vmas using
-        `vma->vm_file->f_mapping->i_mmap`
+    - `vms_complete_munmap_vmas` removes conflicting vmas
+    - `vma_set_page_prot` updates `vma->vm_page_prot` based on `vma->vm_flags`
 
 ## Memory Mapping
 
