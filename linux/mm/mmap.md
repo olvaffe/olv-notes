@@ -1,5 +1,41 @@
 # Kernel mmap
 
+## Overview
+
+- `sys_mmap -> ksys_mmap_pgoff -> vm_mmap_pgoff -> do_mmap`
+  - `vm_mmap_pgoff` locks the mm for the duration of `do_mmap`
+  - `prot` is `PROT_*` from userspace
+  - `flags` is `MAP_*` from userspace
+  - `vm_flags` is initially 0
+- `vm_flags` is updated
+  - `calc_vm_prot_bits` converts all `PROT_*` to `VM_*`
+    - `arch_calc_vm_prot_bits` converts arch-specific `PROT_*`
+  - `calc_vm_flag_bits` converts some `MAP_*` to `VM_*`
+    - `arch_calc_vm_flag_bits` converts arch-specific `MAP_*`
+  - `mm->def_flags` is typically 0 unless `mlockall(MCL_FUTURE)`
+  - `VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC`
+- `__get_unmapped_area` finds an available starting addr for the mapping
+  - `file->f_op->get_unmapped_area`
+  - `shmem_get_unmapped_area`
+  - `thp_get_unmapped_area_vmflags`
+  - `mm_get_unmapped_area_vmflags`
+- more checks and `vm_flags` may be updated again
+- `mmap_region` ensures a vma is created
+  - more checks
+    - `arch_validate_flags` performs arch-specific checks
+  - `__mmap_setup` preps
+  - `call_mmap_prepare` uses the new `file->f_op->mmap_prepare` if supported
+    - it gives the file a chance to adjust `vm_area_desc`
+    - it updates `mmap_state` from the adjusted `vm_area_desc`
+  - `__mmap_new_vma` allocs a new vma if needed
+    - `vm_area_alloc` allocs
+    - `vma` is initialized based on `mmap_state`
+    - `__mmap_new_file_vma` calls `file->f_op->mmap` if the new
+      `file->f_op->mmap_prepare` is not supported
+      - `can_mmap_file` makes sure they are mutually exclusive
+      - it gives the file a chance to adjust `vm_area_struct`
+  - `__mmap_complete`
+
 ## Memory Management
 
 - `struct mm_struct`: the address space of a task
@@ -29,20 +65,6 @@
       - `address_space` is the page cache backing the file
       - `address_space` manages its vmas using
         `vma->vm_file->f_mapping->i_mmap`
-
-## userspace mmap
-
-- Call chain
-  - `mmap`: userspace mmap call
-  - `sys_mmap`: kernel space mmap call
-  - `ksys_mmap_pgoff`: generic mmap function
-  - `vm_mmap_pgoff`
-  - `do_mmap_pgoff`
-  - `get_unmapped_area`: to find an available starting addr
-    (`addr & ~PAGE_MASK` means error!)
-    - `arch_get_unmapped_area`
-  - `mmap_region`: a new vma is created (a common case) and `file->f_op->mmap`
-    is called
 
 ## Memory Mapping
 
