@@ -57,22 +57,24 @@
     - `__alloc_pages_cpuset_fallback` tries the fast path with
       `ALLOC_NO_WATERMARKS`
 
-## Page Free
+## `__free_pages`
 
-- `__free_pages_ok`
-  - `__free_pages_prepare` sanitizes `struct page` struct
-  - `free_one_page -> split_large_buddy`
+- `__free_pages -> ___free_pages -> __free_frozen_pages`
+- `__free_pages_prepare` sanitizes `struct page` struct
+- if the page can be freed to per-cpu lists, `free_frozen_page_commit`
+  - it adds the page to `pcp->lists`
+  - if there are too many pages on the per-cpu lists, `free_pcppages_bulk`
+    calls `__free_one_page` to free them to the free area
+- else, `free_one_page -> split_large_buddy`
+  - it splits the page to be no more than `pageblock_order`
     - `pageblock_order` is typically 2MB, size of huge pages
-    - it splits the range to be no more than `pageblock_order`, because there
-      is no benefit
-    - `get_pfnblock_migratetype` gets the migration type
-    - it calls `__free_one_page`
-- `__free_one_page`
-  - `account_freepages` updates `NR_FREE_PAGES` and more
-  - it merges the page with its buddy, to defragment
-  - `set_buddy_order` sets the final order
-  - `__add_to_free_list` adds the page to `zone->free_area` and increments
-    `area->nr_free`
+  - `get_pfnblock_migratetype` gets the migration type
+  - `__free_one_page` frees the page to free area
+    - `account_freepages` updates `NR_FREE_PAGES` and more
+    - it merges the page with its buddy, to defragment
+    - `set_buddy_order` sets the final order
+    - `__add_to_free_list` adds the page to `zone->free_area` and increments
+      `area->nr_free`
 
 ## GFP Flags
 
