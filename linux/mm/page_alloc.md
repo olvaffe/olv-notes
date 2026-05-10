@@ -18,6 +18,45 @@
   - these are pages for kernel `__init` section
   - `free_reserved_area` calls `free_reserved_page` to hand over
 
+## `alloc_pages`
+
+- `alloc_pages -> alloc_pages_noprof -> alloc_frozen_pages_noprof ->
+  alloc_pages_mpol -> __alloc_frozen_pages_noprof`
+  - a frozen page has refcount == 0
+  - `alloc_pages_noprof` calls `set_page_refcounted` to set refcount to 1
+- `prepare_alloc_pages` preps an `alloc_context`
+  - `gfp_to_alloc_flags_cma` casts gfp flags to alloc flags
+- `get_page_from_freelist` is the fast path
+  - it loops over allowed zones and checks against watermarks
+  - `rmqueue` tries to remove a free page from a zone
+    - `rmqueue_pcplist` tries per-cpu list, `zone->per_cpu_pageset`, first
+      - if empty, `rmqueue_bulk` tries to refill the per-cpu list
+    - `rmqueue_buddy` calls `__rmqueue` which calls `__rmqueue_smallest`
+      - it removes a page from `zon->free_area[current_order].freelist[migratetype]`
+  - `prep_new_page` preps the page struct before returning
+    - `post_alloc_hook` sanitizes the page
+    - if `__GFP_COMP`, `prep_compound_page` preps for compound page
+- `__alloc_pages_slowpath` is the slow path
+  - if `ALLOC_KSWAPD`, `wake_all_kswapds` wakes up kswapd
+  - `get_page_from_freelist` tries the fast path again with adjusted flags
+  - if `__GFP_DIRECT_RECLAIM`, `__alloc_pages_direct_reclaim`
+    - `__perform_reclaim` calls `try_to_free_pages` to reclaim
+    - `get_page_from_freelist` again
+  - if huge and `__GFP_IO`, `__alloc_pages_direct_compact`
+    - `try_to_compact_pages` migrates pages to defragment and captures a freed page
+      - `isolate_migratepages` isolates pages from zone head
+      - `migrate_pages` migrates isolated pages from zone head to zone tail
+        - `compaction_alloc` allocs from zone tail
+        - `migrate_folio_done` drops migrated pages
+          - `folio_put -> ... -> __free_frozen_pages`
+      - `lru_add_drain_cpu_zone -> drain_local_pages > ... -> __free_one_page`
+        - `compaction_capture` captures a freed page
+  - `__alloc_pages_may_oom`
+    - `get_page_from_freelist` tries the fast path with `ALLOC_WMARK_HIGH`
+    - `out_of_memory` oom kills
+    - `__alloc_pages_cpuset_fallback` tries the fast path with
+      `ALLOC_NO_WATERMARKS`
+
 ## Page Free
 
 - `__free_pages_ok`
@@ -34,31 +73,6 @@
   - `set_buddy_order` sets the final order
   - `__add_to_free_list` adds the page to `zone->free_area` and increments
     `area->nr_free`
-
-## page alloc
-
-- pages are allocated with `alloc_page` or `alloc_pages`
-  - they are freed with `__free_page` or `__free_pages`
-- when a page is allocated, it can specify the reclaim flags
-  - `__GFP_DIRECT_RECLAIM` means the caller would rather wait than failing the
-    allocation
-  - `___GFP_KSWAPD_RECLAIM` means the allocation can fail, but please wake up
-    kswapd
-- amazingly, it also embeds a 1-bit semaphore
-  - `lock_page` indicates down
-  - `unlock_page` indicates up
-- it turns out pages are refcounted: `page_ref_xxx`; for example,
-  - page cache owns references to the managed pages
-  - lru also owns references to the managed pages
-- the page also has a `_mapcount` which is the number vmas the page is mapped
-  - when a pte is taken down in `zap_pte_range`, `page_remove_rmap` is called
-    to reduce `_mapcount`.  The referernce to the page is transferred to tlb
-    in `__tlb_remove_page`
-- `prep_new_page` preps a newly allocated page
-  - `post_alloc_hook` sanitizes the page
-  - if `__GFP_COMP`, `prep_compound_page` preps for compound page
-  - `alloc_contig_frozen_range_noprof` may skip `prep_new_page` and call the
-    underlying `post_alloc_hook` when not `__GFP_COMP`
 
 ## GFP Flags
 
@@ -172,3 +186,102 @@
   - `GFP_HIGHUSER_MOVABLE` is `GFP_HIGHUSER|__GFP_MOVABLE|__GFP_SKIP_KASAN`
   - `GFP_TRANSHUGE_LIGHT` is `(GFP_HIGHUSER_MOVABLE|__GFP_COMP| __GFP_NOMEMALLOC|__GFP_NOWARN) & ~__GFP_RECLAIM`
   - `GFP_TRANSHUGE` is `GFP_TRANSHUGE_LIGHT|__GFP_DIRECT_RECLAIM`
+
+## Page Flags
+
+- `PG_locked` means the page is locked
+  - it functions as a per-page mutex
+- `PG_writeback` means the page is being written back
+  - it is set between `folio_start_writeback` and `folio_end_writeback`
+- `PG_referenced` means the page was recently used
+  - it is set on read, write, mmap, etc.
+  - see `PG_active`
+- `PG_uptodate` means the page holds the truth
+  - it is set when the contents are synchronized with or newer than the
+    backing
+- `PG_dirty` means the page needs writeback
+  - it is set when the contents are newer than the backing
+- `PG_lru` means the page is on one of the lru lists
+- `PG_head` means the page is the first of a compound page (hugepage)
+- `PG_waiters` means `folio_waitqueue` of the page is non-empty
+- `PG_active` means the page is on the active lru list
+  - when reclaim sees
+    - `+PG_active +PG_reference`: clear `PG_reference`
+    - `+PG_active -PG_reference`: clear `PG_active` and move to inactive list
+    - `-PG_active +PG_reference`: set `PG_active`, clear `PG_reference`, and
+      move to active list
+    - `-PG_active -PG_reference`: reclaim the page
+- `PG_workingset` means the page is in the "working set"
+  - e.g., it is set if it is re-faulted shortly after reclaim
+- `PG_reserved` means the page is special
+  - it tells mm to stay away from managing it: no reclaim, etc.
+  - when an api expects a page, and to pass mmio addr to the api, kernel can
+    fake a `PK_reserved` page?
+- `PG_private` means `folio->private` has private fs data
+  - when set, reclaim must ask fs to clear the bit before reclaim
+- `PG_reclaim` means the page is being reclaimed
+  - it is set when the reclaim requires writeback and takes time
+  - it prevents another concurrnet reclaim
+- `PG_swapbacked` means the page has no backing
+  - it is set on allocation and never changes
+- `PG_unevictable` means the page is on unevictable lru list
+- `PG_dropbehind` means the page was used for streaming io and hit rate is low
+  - e.g., `posix_fadvise(POSIX_FADV_NOREUSE)`
+- `PG_mlocked` means the page is `mlock`ed
+  - it causes `PG_unevictable` after the page is moved to the unevictable lru
+    list
+- `PG_readahead` means the page was paged in by readahead
+  - if a page with the bit is accessed, it encourages readahead to read more
+- `PG_swapcache` means the page is temporarily managed by swapcache
+  - a private anonymous mapping has no backing and thus no page cache
+    - that is, a process heap, stack, etc. has no `inode` backing and thus no
+      `address_space`
+  - to be able to page anonymous mapping out to swap device, its pages
+    temporarily use swapcache as the page cache, which enable them to be paged
+    out
+  - as such, it is set when the page is managed by swapcache
+
+## Page Refcounts
+
+- `alloc_page` and `__free_page`
+  - `alloc_page` allocs a page with refcount 1
+    - `alloc_frozen_pages_noprof` allocs a page with refcount 0
+    - `set_page_refcounted` sets refcount to 1
+  - `__free_page` frees a page with refcount 1
+    - `put_page_testzero` decrements refcount to 0
+    - `__free_frozen_pages` frees a page with refcount 0
+- `vm_operations_struct::fault`
+  - `filemap_fault`, the generic implementation
+    - `filemap_get_folio` returns a folio with incremented refcount
+    - `vmf->page` is the folio
+  - `do_fault`, the user
+    - `__do_fault` calls the callback to get `vmf->page`
+    - `finish_fault` assigns the folio to the pte entry, which is the owner
+    - on errors, `folio_put` decrements the refcount
+- `mm_struct::pgd`
+  - the pgd table, all intermediate levels of tables, and the leaf pages form
+    a tree
+  - all pages are owned by the tree
+  - `exit_mmap` frees all but the pgd table
+    - `unmap_vmas` frees leaf pages and clears pte tables
+    - `free_pgtables` frees all but the pgd table
+  - `mm_free_pgd` frees the pgd table
+- `filemap_add_folio` and `filemap_remove_folio`
+  - `filemap_add_folio` calls `__filemap_add_folio`
+    - `folio_ref_add` adds a ref
+  - `filemap_remove_folio` calls `filemap_free_folio`
+    - `folio_put_refs` removes a ref
+- `folio_add_file_rmap_ptes` and `folio_remove_rmap_ptes`
+  - they don't change refcount
+- `folio_add_lru`
+  - it does not change refcount
+  - when `folio_put` drops the last ref, `page_cache_release` calls
+    `lruvec_del_folio` automatically (but not atomically; the refcount is
+    decremented first)
+
+## Page Mapcounts
+
+- the page also has a `_mapcount` which is the number vmas the page is mapped
+  - when a pte is taken down in `zap_pte_range`, `page_remove_rmap` is called
+    to reduce `_mapcount`.  The referernce to the page is transferred to tlb
+    in `__tlb_remove_page`
