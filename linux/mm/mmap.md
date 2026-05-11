@@ -104,6 +104,33 @@
 - `VM_UFFD_MINOR` means `UFFDIO_REGISTER_MODE_MINOR`
 - `VM_SEALED` means `mseal`
 
+## `VM_PFNMAP` and `VM_MIXEDMAP`
+
+- we assume `CONFIG_ARCH_HAS_PTE_SPECIAL`
+  - the behavior is subtly different if `CONFIG_ARCH_HAS_PTE_SPECIAL=n`
+- by default, pte entries of a vma refer to pages and own pages
+  - when `zap_present_ptes` zaps ptes, `__tlb_remove_folio_pages` batches the
+    owned pages
+  - later, `tlb_finish_mmu` calls `tlb_batch_pages_flush` to drop the pages
+  - the only special pte entries are those for zero page
+    - `vm_normal_page` returns NULL for zero page and there is no page to drop
+- for a `VM_PFNMAP` vma, pte entries refer to pages or mmios, and never own
+  pages
+  - `vmf_insert_pfn` should always be used to udpate pte entries
+    - `pte_mkspecial` marks them special
+  - `vm_normal_page` always returns NULL because all pte entries are special
+    - there is thus no page to drop
+- for a `VM_MIXEDMAP` vma, pte entries refer to pages or mmios; when they
+  refer to pages, they also own pages
+  - `vmf_insert_page` should be used for pages
+    - it calls `folio_get` such that pgtables own the page
+  - `vmf_insert_pfn` should be used for mmios
+    - `pte_mkspecial` marks them special
+  - `vmf_insert_mixed` always calls down to `insert_pfn`
+    - it can be used with pages but then the pages are not owned
+  - `vm_normal_page` returns NULL iff the pte entry is special
+    - valid pages are returned and dropped
+
 ## User Page Tables
 
 - `f_op->mmap_prepare` or `f_op->mmap` can set up user page tables upfront
@@ -114,17 +141,16 @@
 - `vma->vm_ops->fault` can set up user page tables on faults
   - it can return a page in `vmf->page` and let the caller set up pgtables
   - it can also return `VM_FAULT_NOPAGE` and set up pgtables itself
-  - page ownership
-    - by default, pgtables own pages
-    - `VM_PFNMAP` means the entire vma is PFN-based and pgtables own no pages
-    - `VM_MIXEDMAP` means the vma is mixed and pgtables might or might not own pages
   - `vmf_insert_page` inserts a page (system ram) to pgtables
-    - the vma must be `VM_MIXEDMAP` because the page is driver-owned
+    - the vma must be `VM_MIXEDMAP`
+    - it calls `folio_get` such that pgtables own the page
   - `vmf_insert_pfn` inserts a pfn (system ram or mmio) to pgtables
-    - the vma must be `VM_MIXEDMAP` or `VM_PFNMAP`
-      - if `VM_MIXEDMAP`, pfn must be mmio
-  - `vmf_insert_mixed`
-    - the vma must be `VM_MIXEDMAP`?
+    - the vma may be `VM_MIXEDMAP` or `VM_PFNMAP`
+      - if `VM_MIXEDMAP`, pfn must be mmio because it does not call `folio_get`
+    - `pte_mkspecial` marks the pte special
+  - `vmf_insert_mixed` inserts a pfn (system ram or mmio) to pgtables
+    - the vma must be `VM_MIXEDMAP`
+    - it always calls `insert_pfn` if `CONFIG_ARCH_HAS_PTE_SPECIAL`
   - `vmf_insert_pfn_pmd`
   - `vmf_insert_pfn_pud`
 
@@ -152,8 +178,3 @@
       `shmem_zero_setup` is called to set up a shmem file.  For `VM_PRIVATE`,
       the VM is truely anonymous and has no `vma->vm_ops`
   - it adds the vma into `current->mm`
-- VMA has many flags that the file `mmap` op can set
-  - `VM_IO` means to treat the area as if it is backed by MMIO
-  - `VM_PFNMAP` means to treat the area as if there is no `struct page`
-  - `VM_MIXEDMAP` means to treat the area as if there may or may no be `struct page`
-  - `VM_DONTEXPAND` means to disallow mremap expanding
