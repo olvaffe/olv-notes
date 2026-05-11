@@ -2,12 +2,26 @@
 
 ## Installation
 
-- install python
-  - `pacman -S python`
-- create per-user venv
-  - `python -m venv --system-site-packages ~/.pip`
-  - `export PATH="$HOME/.pip/bin:$PATH"`
-  - to upgrade venv, `/usr/bin/python -m venv --upgrade ~/.pip`
+- arch: `pacman -S python`
+- debian: `apt install python3 python3-venv`
+
+## venv
+
+- python standard library includes `venv` and `ensurepip` modules
+- `python -m venv <dir>` creates a new venv
+  - `--without-pip` skips pip in the new venv
+  - `--system-site-packages` allows the new venv to use system packages
+- the convention is to use per-project venvs
+  - `cd project`
+  - `python -m venv .venv`
+  - `source .venv/bin/activate`
+  - `pip install -r requirements.txt`
+  - `pip freeze > requirements.txt`
+- per-user venv
+  - `python -m venv --system-site-packages ~/.local/share/venv`
+  - `export PATH="$HOME/.local/share/venv/bin:$PATH"`
+  - to upgrade venv after system python upgrade,
+    `/usr/bin/python -m venv --upgrade --system-site-packages ~/.local/share/venv`
 
 ## pip
 

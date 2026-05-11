@@ -2,8 +2,7 @@
 
 ## Dependencies
 
-- `python -m venv --system-site-packages ~/.pip`
-  - `pip install packaging mako pyyaml`
+- `pip install packaging mako pyyaml`
 - some drivers (e.g., intel, panfrost, asahi) and frontends (e.g., rusticl)
   compile clc to spirv, and they depend on
   - `libclang-cpp.so`, or its static equivalent, to compile clc to llvm ir
