@@ -2,8 +2,31 @@
 
 ## Overview
 
-- `init_mm` is the mm of `init_task`
-- `init_mm.pgd` is `swapper_pg_dir`
+- the 64-bit address space is splitted into user range and kernel range
+  - arm: `0xfff << 52` is the lowest kernel address
+    - `PAGE_OFFSET` starts here
+  - x86: `0xff << 56` is the lowest kernel addres
+    - `__PAGE_OFFSET_BASE_L5` is slightly above
+- `init_mm` consists of all kernel mappings in the kernel range
+  - `init_mm.pgd` is `swapper_pg_dir`
+- task mm
+  - `task->mm` is the user mm, and is NULL for kthreads
+  - `task->active_mm` is the active mm, which is what the mmu uses
+  - for `init_task` and idle tasks, `task->mm` is NULL and `task->active_mm`
+    is `init_mm`
+  - for user tasks, `task->mm` and `task->active_mm` are user mm
+  - for kthreads, `task->mm` is NULL and `task->active_mm` inherits from the
+    prior task dynamically (lazy tlb)
+- kernel can access both user range and kernel range
+  - arm
+    - a user mm consists of all per-process user mappings in the user range
+    - `ttbr0_el1` points to user mm
+    - `ttbr1_el1` points to `init_mm`
+  - x86
+    - a user mm consists of all per-process user mappings in the user range as
+      well as all kernel mappings in the kernel range
+    - userspace does not have enough privilege to access kernel range
+    - `cr3` points to user mm or `init_mm`
 
 ## Kernel Image Mapping
 
