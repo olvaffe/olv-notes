@@ -173,37 +173,41 @@
 
 ## `struct ww_mutex`
 
-- In database, an atomic transaction locks and updates its data items
-  one-by-one
-  - when another younger atomic transaction shares some of the data items, and
-    attemps to locks and updates those shared data items, there needs to be a
-    scheme to avoid deadlock
-  - wait-die scheme
-    - when the original transaction needs to lock a data item already locked
-      by the younger transaction, it waits
-    - when the younger transaction needs to lock a data item already locked
-      by the original transaction, it rolls back entirely
-  - the original transaction starts first and might have locked most of the
-    data items by the time the younger transaction starts
-    - it is more likely that the younger transaction contends with the
-      original transaction than the other way around
-    - as such, rollback is more likely
-  - wound-wait scheme
-    - when the original transaction needs to lock a data item already locked
-      by the younger transaction, it requests the younger transaction to roll
-      back entirely
-    - when the younger transaction needs to lock a data item already locked
-      by the original transaction, it waits
-  - rollback happens less with wound-wait scheme
-    - but waking up younger transactions is heavy
-- a `ww_mutex` is initialized with the scheme specified
-- `ww_mutex_lock`
-  - it takes a `ww_acquire_ctx` as well which is the transaction
-  - it either waits (sleeps), dies (returns -EDEADLK), or dies after waiting
-    (wounded)
-  - when it dies, the caller must release all mutexes for the context to roll
-    back
-- `ww_mutex_unlock` to release the mutex
+- problem statement
+  - A wants to acquire a set of locks in one order
+  - B wants to acquire another set of locks in another order
+  - when the two sets of locks overlap, how to guarantee forward progress?
+- wait-die algorithm
+  - assign timestamps to A and B
+  - when A tries to acquire a lock already held by B,
+    - if A is older than B, A waits until B releases the lock
+    - if A is younger than B, A dies (releases all locks) and retries
+  - simple implementation
+  - more rollbacks for the younger one
+- wound-wait algorithm
+  - assign timestamps to A and B
+  - when A tries to acquire a lock already held by B,
+    - if A is older than B, A wounds B (signals B to die) and waits until B
+      releases the block
+    - if A is younger than B, A waits until B releases the block
+  - complex implementation: requires signaling
+  - less rollbacks for the younger one
+- setup
+  - `DEFINE_WD_CLASS` defines a wait-die `ww_class`
+  - `DEFINE_WW_CLASS` defines a wound-wait `ww_class`
+  - `ww_mutex_init` inits a mutex for a class
+- locking
+  - `ww_acquire_init` inits a ctx for a class
+    - `ctx->stamp` is initialized to `++ww_class->stamp`
+  - `ww_mutex_lock` locks a mutex; if the mutex is already locked,
+    - if the class is wait-die, it either waits (older) or dies (younger)
+    - if the class is wound-wait, it either wounds (older) or waits (younger)
+      - it still waits after wounding
+      - while waiting, it dies if wounded
+    - if dying, it returns `-EDEADLK`
+      - the caller must rollback and unlock all other mutexes
+  - `ww_mutex_unlock` unlocks a mutex
+  - `ww_acquire_fini`
 
 ## `seqlock_t` and `seqcount_t`
 
