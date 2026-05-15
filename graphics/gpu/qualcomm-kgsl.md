@@ -34,6 +34,9 @@
 - `CONFIG_QCOM_KGSL_DEVCOREDUMP=y`
   - `kgsl_device_snapshot -> kgsl_snapshot_save_frozen_objs` calls
     `kgsl_devcoredump`
+- on android, it appears that shmem and pool can co-exist
+  - `kgsl_alloc_page` always allocs from the pool
+  - on reclaim, it can migrate the page from the pool to shmem for swap out
 
 ## `adreno_gpu_core_gen7_5_0`
 

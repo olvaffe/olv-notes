@@ -1367,10 +1367,12 @@
   - releasing and acquiring exclusive ownership use `VkBufferMemoryBarrier` or
     `VkImageMemoryBarrier`
 
-## Chapter 13. Samplers
+## Chapter 13. Images
+
+## Chapter 14. Samplers
 
 - `VkSampler` describes a sampler (min filter, etc)
-- 13.1. Sampler Y′CBCR Conversion
+- 14.1. Sampler Y′CBCR Conversion
   - Conversion must be fixed at pipeline creation time, through use of a
     combined image sampler with an immutable sampler in
     `VkDescriptorSetLayoutBinding`
@@ -1415,9 +1417,9 @@
         - we can store the top-left sample of each 2x2 samples, in this case we
           want to treat the stored sample as co-sited with the top-left Y aample
 
-## Chapter 14. Resource Descriptors
+## Chapter 15. Resource Descriptors
 
-- 14.1. Descriptor Types
+- 15.1. Descriptor Types
   - samplers
   - sampled images
   - storage images
@@ -1426,7 +1428,7 @@
   - uniform buffers
   - storage buffers
   - input attachments (color attachments being read in following subpasses)
-- 14.2. Descriptor Sets
+- 15.2. Descriptor Sets
   - `VkDescriptorSetLayout` describes the layout (bindings) of a descriptor set
   - `VkPipelineLayout` is a group of descriptor set layouts
   - A `VkDescriptorPool` allocates enough memory (host or device, depending on
@@ -1466,9 +1468,15 @@
         - if the dset already exists, it is either reused or recycled
           depending on whether the layout is compatible or not
 
-## Chapter 15. Shader Interfaces
+## Chapter 16. Descriptor Heaps
 
-- 15.8. Shader Resource Interface
+## Chapter 17. Descriptor Sets
+
+## Chapter 18. Descriptor Buffers
+
+## Chapter 19. Shader Interfaces
+
+- 19.8. Shader Resource Interface
   - Descriptor Set Interface
     - it is comprised of statically used shader variables whose storage
       classes are `StorageBuffer`, `Uniform`, or `UniformConstant`)
@@ -1515,7 +1523,7 @@
         alignment
       - else, it must use the base alignment
     - `std430` uses the base alignment; `std140` uses the extended alignment
-- 15.9. Built-In Variables
+- 19.9. Built-In Variables
   - `NumSubgroups` is the number of subgroups in the local workgroup
   - `SubgroupId` is the id (`[0, NumSubgroups)`) of the subgroup in the local
     workgroup
@@ -1552,7 +1560,7 @@
       - glsl: `gl_DrawID`
       - nir: `draw_id`
 
-## Chapter 16. Image Operations
+## Chapter 20. Sampling
 
 - 16.1. Image Operations Overview
   - image operations are spir-v image instructions which take an `OpTypeImage`
@@ -1702,14 +1710,14 @@
 - 16.13. Image Operation Steps
 - 16.14. Image Query Instructions
 
-## Chapter 17. Fragment Density Map Operations
+## Chapter 21. Fragment Density Map Operations
 
-## Chapter 18. Queries
+## Chapter 23. Queries
 
-- 18.1. Query Pools
+- 23.1. Query Pools
   - a `VkQueryPool` can hold `queryCount` queries of type `queryType`, both
     specified by `VkQueryPoolCreateInfo`
-- 18.2. Query Operation
+- 23.2. Query Operation
   - each query in a query pool has
     - a "status" that is either available or unavailable
     - a "state" that holds numerical values
@@ -1757,12 +1765,12 @@
       - otherwise, the call may
         - fail and return `VK_NOT_READY`
         - succeed and the result is undefined
-- 18.3. Occlusion Queries
+- 23.3. Occlusion Queries
   - `VK_QUERY_TYPE_OCCLUSION` counts samples that pass the per-fragment tests
   - the result is a 32-bit or 64-bit uint
   - if `VK_QUERY_CONTROL_PRECISE_BIT` is not set, the result can be any
     non-zero value if any sample passes the per-fragment tests
-- 18.4. Pipeline Statistics Queries
+- 23.4. Pipeline Statistics Queries
   - it queries a specified set of `VkPipeline` counters
     - IA, VS, TCS/TES, GS, CL, CS, etc.
     - see `VkQueryPipelineStatisticFlagBits`
@@ -1776,12 +1784,12 @@
       invocations or execute additional compute shader invocations for
       implementation-dependent reasons as long as the results of rendering
       otherwise remain unchanged.
-- 18.5. Timestamp Queries
+- 23.5. Timestamp Queries
   - `VK_QUERY_TYPE_TIMESTAMP` reads the gpu clock counter
   - the result is a 32-bit or 64-bit uint
   - the counter may reset anytime except intra-command buffer or when
     `VK_EXT_calibrated_timestamps` is enabled
-- 18.6. Performance Queries
+- 23.6. Performance Queries
   - `VK_KHR_performance_query` mainly adds
     `VK_QUERY_TYPE_PERFORMANCE_QUERY_KHR` query type
     - the query type usually reads counter values at begin and end
@@ -1811,24 +1819,24 @@
     - `VkQueryPoolPerformanceCreateInfoKHR` specifies the counters to enable
   - `vkQueueSubmit`
     - `VkPerformanceQuerySubmitInfoKHR` specifies the counter pass index
-- 18.7. Transform Feedback Queries
+- 23.7. Transform Feedback Queries
   - `VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT` counts primitives written
     out by the SO hw as well as primitives that reach the SO hw
   - the result is two 32-bit or 64-bit uints
     - first one is count of prims written
     - second one is count of prims that would be written if the buffer was
       large enough
-- 18.8. Primitives Generated Queries
+- 23.8. Primitives Generated Queries
   - `VK_QUERY_TYPE_PRIMITIVES_GENERATED_EXT` counts primitives generated,
     regardless of whether they reach the SO hw or not
 
-## Chapter 19. Clear Commands
+## Chapter 25. Clear Commands
 
-## Chapter 20. Copy Commands
+## Chapter 26. Copy Commands
 
-## Chapter 21. Drawing Commands
+## Chapter 27. Drawing Commands
 
-- 21.2. Primitive Order
+- 27.2. Primitive Order
   - primitives generated by draw commands progress through the graphipcs
     pipeline in primitive order
     - submission order determines the initial ordering
@@ -1838,7 +1846,7 @@
     - it follows the order of vertices (if non-indexed) or indices (if
       indexed)
   - primitive order is later used to define rasterization order
-- 21.3. Programmable Primitive Shading
+- 27.3. Programmable Primitive Shading
   - `VkDrawIndirectCommand`
     - params
       - `vertexCount`
@@ -1874,19 +1882,19 @@
     - users
       - `vkCmdDrawMultiIndexedEXT`
 
-## Chapter 22. Fixed-Function Vertex Processing
+## Chapter 28. Fixed-Function Vertex Processing
 
-## Chapter 23. Tessellation
+## Chapter 29. Tessellation
 
-## Chapter 24. Geometry Shading
+## Chapter 30. Geometry Shading
 
-## Chapter 25. Mesh Shading
+## Chapter 31. Mesh Shading
 
-## Chapter 26. Cluster Culling Shading
+## Chapter 32. Cluster Culling Shading
 
-## Chapter 27. Fixed-Function Vertex Post-Processing
+## Chapter 33. Fixed-Function Vertex Post-Processing
 
-- 27.4. Primitive Clipping
+- 33.4. Primitive Clipping
   - view volume
     - it is `[-w, w]` for x and y
     - it is `[0, w]` for z by default
@@ -1900,7 +1908,7 @@
       - positive is inside, zero is on, and negative is outside
     - if `gl_ClipDinstance[i]` is negative for any vertex of a primitive, the
       primitive is clipped
-- 27.7. Coordinate Transformations
+- 33.7. Coordinate Transformations
   - clip coordinates
     - this is the coordinates of `gl_Position`
   - normalized device coordinates
@@ -1925,7 +1933,7 @@
     - when this extension is supported, they can be arbitrary
     - this does not affect depth clipping, but only depth clamping
 
-## Chapter 28. Rasterization
+## Chapter 34. Rasterization
 
 - `VkPhysicalDeviceFeatures`
   - `largePoints` is true if point size greather than 1.0 is supported
@@ -1938,7 +1946,7 @@
       clamped to the range
   - `strictLines`
     - line rasterization follows the strict rules or not
-- 28.3. Rasterization Order
+- 34.3. Rasterization Order
   - within a subpass,
     - primitives are rasterized in primitive order (unless
       `VK_AMD_rasterization_order`)
@@ -1946,11 +1954,11 @@
       fragment
       - fragment operations
       - blending, logic operations, and color writes
-- 28.10. Points
+- 34.10. Points
   - point rasterization
     - same as a square centered at the point position, where the square width is
       the point size
-- 28.11. Line Segments
+- 34.11. Line Segments
   - line rasterization
     - when `strictLines` is true, it is the same as a rectangle centered at the
       line, where two sides have length the same as line width and two sides
@@ -1968,7 +1976,7 @@
       strict rule, except implementations can include pixels that are not
       covered and can compute coverage values freely
     - also support stippled line rasterization
-- 28.12. Polygons
+- 34.12. Polygons
   - depth bias
     - an offset (bias) can be added to z of framebuffer coordinates
   - knobs for depth bias
@@ -1984,26 +1992,26 @@
       `depthBiasExact`
       - they give explicit control over `r`
 
-## Chapter 29. Fragment Operations
+## Chapter 35. Fragment Operations
 
 - coverage mask
   - there is a coverage mask associated with each fragment produced by
     rasterization
   - if a frag op results in a coverage mask of 0, the fragment is discard and
     no further frag ops are performed
-- 29.1. Discard Rectangles Test
+- 35.1. Discard Rectangles Test
   - `VK_EXT_discard_rectangles`
   - if a sample falls inside or outside (depending on
     `VkDiscardRectangleModeEXT`) any discard rectangle, it is discarded
-- 29.2. Scissor Test
+- 35.2. Scissor Test
   - if a sample falls outside the scissor rectangle, it is discarded
-- 29.3. Exclusive Scissor Test
+- 35.3. Exclusive Scissor Test
   - `VK_NV_scissor_exclusive`
   - if a sample falls inside the scissor rectangle, it is discarded
-- 29.4. Sample Mask Test
+- 35.4. Sample Mask Test
   - samples not in `VkPipelineMultisampleStateCreateInfo::pSampleMask` are
     discarded
-- 29.5. Fragment Shading
+- 35.5. Fragment Shading
   - fragment shaders are invoked for each fragment, subjected to these rules
     - a fs must not be executed if the fragment has been discarded
     - a fs may not be executed if it has no side-effect
@@ -2025,21 +2033,21 @@
     - writing replaces the depth value for all samples in `SampleMask`
   - `VK_EXT_shader_stencil_export`
   - `VK_EXT_fragment_shader_interlock`
-- 29.6. Multisample Coverage
+- 35.6. Multisample Coverage
   - samples not in `SampleMask` are discarded
   - `alphaToCoverageEnable` and `alphaToOneEnable`
     - only applies to output 0 and only applies to float
     - `alphaToCoverageEnable` generates a sample mask based on the alpha value
       of the fragment, and is ANDed with the coverage mask
     - `alphaToOneEnable` replaces alpha value by 1
-- 29.7. Depth and Stencil Operations
-- 29.8. Depth Bounds Test
+- 35.7. Depth and Stencil Operations
+- 35.8. Depth Bounds Test
   - samples whose corresponding depth values in the attachment are outside of
     `[minDepthBounds, maxDepthBounds]` are discarded
   - when enabled, and if z value in the depth attachment is outside of
     `[minDepthBounds, maxDepthBounds]`, the sample is discarded
-- 29.9. Stencil Test
-- 29.10. Depth Test
+- 35.9. Stencil Test
+- 35.10. Depth Test
   - depth clamping and range adjustment
     - z in framebuffer coordinates is a float
       - with depth clipping or depth clamping, and with sane `gl_FragDepth`,
@@ -2057,24 +2065,24 @@
     - core has `depthTestEnable` and `depthCompareOp`
   - depth attachment write
     - core has `depthWriteEnable`
-- 29.11. Representative Fragment Test
+- 35.11. Representative Fragment Test
   - `VK_NV_representative_fragment_test`
-- 29.12. Sample Counting
+- 35.12. Sample Counting
   - occulusion query counter is incremented for each sample
-- 29.13. Fragment Coverage To Color
+- 35.13. Fragment Coverage To Color
   - `VK_NV_fragment_coverage_to_color`
-- 29.14. Coverage Reduction
+- 35.14. Coverage Reduction
   - when `rasterizationSamples` is greater than the fb samples
 
-## Chapter 30. The Framebuffer
+## Chapter 36. The Framebuffer
 
-## Chapter 31. Dispatching Commands
+## Chapter 37. Dispatching Commands
 
-## Chapter 32. Device-Generated Commands
+## Chapter 38. Device-Generated Commands
 
-## Chapter 33. Sparse Resources
+## Chapter 39. Sparse Resources
 
-- 33.1. Sparse Resource Features
+- 39.1. Sparse Resource Features
   - sparse binding
     - create the resource with `VK_IMAGE_CREATE_SPARSE_BINDING_BIT` or
       `VK_BUFFER_CREATE_SPARSE_BINDING_BIT`
@@ -2104,11 +2112,11 @@
       `vkGetPhysicalDeviceSparseImageFormatProperties`
     - `VK_IMAGE_TILING_LINEAR` tiling is not supported
 
-## Chapter 34. Window System Integration (WSI)
+## Chapter 40. Window System Integration (WSI)
 
-- 34.1. WSI Platform
+- 40.1. WSI Platform
   - each platform-specific extension is an instance extension
-- 34.2. WSI Surface
+- 40.2. WSI Surface
   - `VK_KHR_surface` provides `VkSurfaceKHR` to abstract platform
     surfaces/windows
   - `VK_KHR_android_surface` provides `vkCreateAndroidSurfaceKHR` to create a
@@ -2131,7 +2139,7 @@
     - `currentExtent` is the window size and can be 0
   - `VK_EXT_metal_surface` provides `vkCreateMetalSurfaceEXT` to create a surface
     from a `CAMetalLayer`
-- 34.3. Presenting Directly to Display Devices
+- 40.3. Presenting Directly to Display Devices
   - `VK_KHR_display` provides
     - `vkGetPhysicalDeviceDisplayProperties2KHR` to enumerate `VkDisplayKHR`
       - on drm, each `drmModeConnectorPtr` of a gpu device corresponds to a
@@ -2160,7 +2168,7 @@
   - `VK_EXT_headless_surface` provides `vkCreateHeadlessSurfaceEXT` to create
     a surface from thin air
     - it does not depend on `VK_KHR_display`
-- 34.4. Querying for WSI Support
+- 40.4. Querying for WSI Support
   - `VK_KHR_surface` provides `vkGetPhysicalDeviceSurfaceSupportKHR` to check
     if a queue family / surface combo is supported
   - `VK_KHR_wayland_surface` provides
@@ -2172,7 +2180,7 @@
   - `VK_KHR_xcb_surface` provides
     `vkGetPhysicalDeviceXcbPresentationSupportKHR` to check if a queu family /
     `xcb_visualid_t` combo is supported
-- 34.5. Surface Queries
+- 40.5. Surface Queries
   - `vkGetPhysicalDeviceSurfaceCapabilities2KHR` for surface caps
     - `minImageCount` and `maxImageCount` specify the valid lengths of the
       swapchain
@@ -2217,14 +2225,14 @@
       the FIFO is empty, the newly presented image does not wait in the FIFO
     - `VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR`
     - `VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR`
-- 34.7. Device Group Queries
+- 40.7. Device Group Queries
   - `vkGetDeviceGroupPresentCapabilitiesKHR`
   - `vkGetDeviceGroupSurfacePresentModesKHR`
   - `vkGetPhysicalDevicePresentRectanglesKHR`
-- 34.9. Present Wait
+- 40.9. Present Wait
   - by chaining `VkPresentIdKHR` to `vkQueuePresentKHR`, `vkWaitForPresentKHR`
     can be used to wait for a present
-- 34.10. WSI Swapchain
+- 40.10. WSI Swapchain
   - `VK_KHR_swapchain` (and etc.) provides
     - `vkCreateSwapchainKHR`
     - `vkDestroySwapchainKHR`
@@ -2236,33 +2244,39 @@
   - `VK_EXT_display_control` provides `vkGetSwapchainCounterEXT`
   - `VK_KHR_display_swapchain` provides `vkCreateSharedSwapchainsKHR`
   - `VK_KHR_present_wait` provides `vkWaitForPresentKHR`
-- 34.11. Hdr Metadata
+- 40.11. Hdr Metadata
   - `VK_EXT_hdr_metadata` provides `vkSetHdrMetadataEXT` to set the hdr
     metadata for following presents
 
-## Chapter 35. Deferred Host Operations
+## Chapter 41. Deferred Host Operations
 
-## Chapter 36. Private Data
+## Chapter 42. Private Data
 
-## Chapter 37. Acceleration Structures
+## Chapter 43. Acceleration Structures
 
-## Chapter 38. Micromap
+## Chapter 44. Compressed triangle data
 
-## Chapter 39. Ray Traversal
+## Chapter 45. Micromap
 
-## Chapter 40. Ray Tracing
+## Chapter 46. Ray Traversal
 
-## Chapter 41. Memory Decompression
+## Chapter 47. Ray Tracing
 
-## Chapter 42. Video Coding
+## Chapter 48. Memory Decompression
 
-## Chapter 43. Optical Flow
+## Chapter 49. Video Coding
 
-## Chapter 44. Execution Graphs
+## Chapter 50. Optical Flow
 
-## Chapter 45. Extending Vulkan
+## Chapter 51. Execution Graphs
 
-- 45.1. Instance and Device Functionality
+## Chapter 52. External Compute Queues
+
+## Chapter 53. Data graphs
+
+## Chapter 54. Extending Vulkan
+
+- 54.1. Instance and Device Functionality
   - Commands that enumerate instance properties, or that accept a `VkInstance`
     object as a parameter, are considered instance-level functionality.
   - Commands that dispatch from a `VkDevice` object or a child object of a
@@ -2275,17 +2289,17 @@
     respectively.
   - Additionally, commands that enumerate physical device properties are
     considered device-level functionality.
-- 45.2. Core Versions
+- 54.2. Core Versions
   - The Vulkan version number comprises four parts indicating the `variant`,
     `major`, `minor` and `patch` version of the Vulkan API Specification.
   - The version of instance-level functionality can be queried by calling
     `vkEnumerateInstanceVersion`.
   - The version of device-level functionality is returned in
     `VkPhysicalDeviceProperties::apiVersion`
-- 45.3. Layers
+- 54.3. Layers
   - `vkEnumerateInstanceLayerProperties` enumerates instance layers
   - `vkEnumerateDeviceLayerProperties` has been deprecated
-- 45.4. Extensions
+- 54.4. Extensions
   - instance-level extensions
     - when an instance-level extension is not enabled, `vkGetInstanceProcAddr`
       for a command defined by the extension returns NULL
@@ -2298,7 +2312,7 @@
       command defined by the extension returns NULL
     - physical-device-level commands defined by device extensions can be used as
       long as the device extensions are available
-- 45.6. Compatibility Guarantees (Informative)
+- 54.6. Compatibility Guarantees (Informative)
   - extension
     - promotion: incorporated into core and absorbed by another extension
     - deprecation: no longer relevant
@@ -2311,7 +2325,7 @@
       - `debugging`
       - `glemulation`
 
-## Chapter 46. Features
+## Chapter 55. Features
 
 - Shader Data Type Widths
   - `VkPhysicalDeviceFeatures` has
@@ -2335,9 +2349,10 @@
       operations on shared and payload memory
     - `shaderFloat16` specifies support for 16-bit floats
     - `shaderInt8` specifies support for 8-bit ints
-- 46.1. Feature Requirements
+- 55.1. Feature Requirements
   - looking for `VK_VERSION_1_1[]`
     - `VkPhysicalDeviceProtectedMemoryFeatures`
+      - `protectedMemory` enables protected memory
     - `VkPhysicalDeviceShaderDrawParametersFeatures`
     - `multiview`
   - looking for `VK_VERSION_1_2[]`
@@ -2345,35 +2360,40 @@
   - looking for `VK_VERSION_1_3[]`
     - `vulkanMemoryModel` and `vulkanMemoryModelDeviceScope`
 
-## Chapter 47. Limits
+## Chapter 56. Limits
 
-- 47.1. Limit Requirements
+- 56.1. Limit Requirements
   - looking for `VK_VERSION_1_1[]`
     - `VkPhysicalDeviceSubgroupProperties`
     - `VkPhysicalDeviceProtectedMemoryProperties`
+      - `protectedNoFault`
+        - there are two types of implementations
+          - protected memory is hw-protected: unauthorized access faults
+          - protected memory is hw-encrypted: unauthorized access does not
+            fault
   - looking for `VK_VERSION_1_2[]`
     - `framebufferIntegerColorSampleCounts`
   - looking for `VK_VERSION_1_3[]`
     - `maxInlineUniformTotalSize`
 
-## Chapter 48. Formats
+## Chapter 57. Formats
 
-- 48.1. Format Definition
+- 57.1. Format Definition
   - a list of all formats
-  - 48.1.1. Compatible Formats of Planes of Multi-Planar Formats
+  - 57.1.1. Compatible Formats of Planes of Multi-Planar Formats
     - a `_2PLANE` format has 2 format planes
     - a `_3PLANE` format has 3 format planes
     - `_420` has reduced width/height after the first plane
     - `_422` has reduced with after the first plane
     - Table 58. Plane Format Compatibility Table
-  - 48.1.2. Multi-planar Format Image Aspect
-  - 48.1.3. Packed Formats
+  - 57.1.2. Multi-planar Format Image Aspect
+  - 57.1.3. Packed Formats
     - formats with `_PACKnn` suffix are packed formats, and the naming
       convention is different
     - formats with `_mPACKnn` suffix are non-packed formats, and the naming
       convention does not change
       - except that each of the `m` compoents is considered packed
-  - 48.1.4. Identification of Formats
+  - 57.1.4. Identification of Formats
     - `VK_FORMAT_{component-format|compression-scheme}_{numeric-format}`
     - the names can be followed by suffices
       - `_PACKnn`
@@ -2392,7 +2412,7 @@
         appear at half the horizontal frequency of the G values,
         - e.g., `VK_FORMAT_G8B8G8R8_422_UNORM` is non-planar and the R/B
           values appear at half the horizontal frequency
-  - 48.1.5. Representation and Texel Block Size
+  - 57.1.5. Representation and Texel Block Size
     - Color formats must be represented in memory in exactly the form
       indicated by the format’s name.
     - Each format has a texel block size, the number of bytes used to store
@@ -2411,14 +2431,14 @@
     - Table 62. Bit mappings for packed 8-bit formats
     - Table 63. Bit mappings for packed 16-bit formats
     - Table 64. Bit mappings for packed 32-bit formats
-  - 48.1.6. Depth/Stencil Formats
+  - 57.1.6. Depth/Stencil Formats
     - Depth/stencil formats are considered opaque and need not be stored in
       the exact number of bits per texel or component ordering indicated by
       the format enum.
     - However, implementations must not substitute a different depth or
       stencil precision than is described in the format (e.g. D16 must not be
       implemented as D24 or D32).
-  - 48.1.7. Format Compatibility Classes
+  - 57.1.7. Format Compatibility Classes
     - Compatible Formats
       - Uncompressed color formats are compatible with each other if they
         occupy the same number of bits per texel block as long as neither or
@@ -2431,7 +2451,7 @@
       - Color formats with the same texel block size are considered
         size-compatible as long as neither or both are alpha formats
     - Table 65. Compatible Formats
-- 48.2. Format Properties
+- 57.2. Format Properties
   - `vkGetPhysicalDeviceFormatProperties2` queries format features
     - `VkFormatFeatureFlagBits` lists all possible features
       - some are specific to buffers and some are specific to images
@@ -2442,7 +2462,7 @@
       `VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT`
       - different modifiers have different `drmFormatModifierTilingFeatures`
         and `drmFormatModifierPlaneCount`
-- 48.3. Required Format Support
+- 57.3. Required Format Support
   - unless otherwise noted, the required format features must be supported for
     - every `VkImageType` (including arrayed and cube variants)
     - all `VkImageCreateFlags` values
@@ -2484,9 +2504,9 @@
       - Table 80. Formats requiring sampler Y′CBCR conversion for
         `VK_IMAGE_ASPECT_COLOR_BIT` image views
 
-## Chapter 49. Additional Capabilities
+## Chapter 58. Additional Capabilities
 
-- 49.1. Additional Image Capabilities
+- 58.1. Additional Image Capabilities
   - an implementation can return `VK_ERROR_FORMAT_NOT_SUPPORTED` for any
     combination except for
     - those required by Required Format Support
@@ -2506,13 +2526,13 @@
       - image type is `VK_IMAGE_TYPE_3D`, or
       - the format requires ycbcr conversion
 
-## Chapter 50. Debugging
+## Chapter 59. Debugging
 
-- 50.1. Debug Utilities
+- 59.1. Debug Utilities
   - `VK_EXT_debug_utils`
     - it is promoted from `VK_EXT_debug_marker`
     - it deprecates `VK_EXT_debug_report`
-- 50.5. Active Tooling Information
+- 59.5. Active Tooling Information
   - `VK_EXT_tooling_info`
     - implemented by tools and layers to report themselves
 
@@ -2802,3 +2822,7 @@
   - Required Limits
   - Required Extensions: 14 extensions
 - `xml/profiles/VP_KHR_roadmap.json`
+
+## Appendix G: Legacy and Superseded Functionality
+
+## Appendix I: Invariance
