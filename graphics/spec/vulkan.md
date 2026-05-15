@@ -291,6 +291,9 @@
       - v3dv: min 16, max 16, def 16
 - 5.2. Devices
   - `VkDevice` and the available `VkQueue`'s are created together
+- 5.3. Queues
+  - `VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT` tells impls to create a
+    protected-capable queue, which can be ignored on some impls
 
 ## Chapter 6. Command Buffers
 
@@ -305,6 +308,10 @@
     - a list of BOs, dynamically growing, with one chained to another
     - a vector of reloc entries (if resources may move on the impl)
     - a vector of binding table blocks
+  - `VkCommandPoolCreateInfo`
+    - `flags`
+      - `VK_COMMAND_POOL_CREATE_PROTECTED_BIT` causes impl to emit extra cmds
+        and/or to use protected scratch buffers internally
 - 6.4. Command Buffer Recording
   - `VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT`
     - an impl might generate self-modifying commands when the flag is set
@@ -321,6 +328,11 @@
     - `vkCmdBeginRenderPass` and `vkCmdEndRenderPass` must appear in a single
       cmdbuf
     - but a render pass can expand multiple cmdbufs
+  - `VkSubmitInfo2`
+    - `flags`
+      - `VK_SUBMIT_PROTECTED_BIT` means all cmdbufs are protected
+        - impls tend to not need this
+        - v1 uses `VkProtectedSubmitInfo`
 - 6.7. Secondary Command Buffer Execution
   - vkCmdExecuteCommands can be inside or outside of a render pass
     - VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT must be set
@@ -1035,6 +1047,7 @@
       - `VK_BUFFER_CREATE_SPARSE_ALIASED_BIT` depends on
         `sparseResidencyAliased` feature
       - `VK_BUFFER_CREATE_PROTECTED_BIT` depends on `protectedMemory` feature
+        and mainly affects memory types
       - sparse and protected are mutually exclusive
     - `usage`
       - all valid usage is supported (because buffers have no format)
@@ -1062,7 +1075,11 @@
         `VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT`
       - `VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT` depends on
         `VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT`
-- 12.3. Images
+- 12.3. Buffer Device Addresses
+- 12.4. Images
+  - `VkImageCreateInfo`
+    - `flags`
+      - `VK_IMAGE_CREATE_PROTECTED_BIT` mainly affects memory types
   - `VK_IMAGE_TILING_LINEAR` may (or may not) have more restrictions
     - as reported by `vkGetPhysicalDeviceFormatProperties` or
       `vkGetPhysicalDeviceImageFormatProperties2`?
@@ -1163,7 +1180,7 @@
       - in graphics,
         - pitch and stride are interchangeable
         - but stride seems preferred, even though vk uses pitch here
-- 12.4. Image Layouts
+- 12.5. Image Layouts
   - `VkImageTiling` and `VkImageLayout`
     - for each plane, HW needs to store the format data and often also format
       metadata
@@ -1221,7 +1238,7 @@
         - `VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL`
         - `VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL`
         - IOW, must use stencil
-- 12.5. Image Views
+- 12.6. Image Views
   - a `VkImageView` can be created fro a `VkImage`
     - `VkImageViewType` and `VkImageType` can differ under conditions
       - `VK_IMAGE_VIEW_TYPE_xD` is always compatible with `VK_IMAGE_TYPE_xD`
@@ -1342,7 +1359,7 @@
   - `vkCmdClearAttachments`
     - aspect mask can be specified in `VkClearAttachment`
     - valid aspect masks are color, depth, stencil, or depth+stencil
-- 12.8. Resource Memory Association
+- 12.9. Resource Memory Association
   - `VK_IMAGE_CREATE_DISJOINT_BIT`
     - driver by default allocates a buffer and puts planes on different region of
       the same buffer
@@ -1352,7 +1369,7 @@
       - thus multiple `VkDeviceMemory` need to be bound
     - as such, internally, a `VkImage` can point to multiple `VkDeviceMemory`
       which respectively point to different BOs
-- 12.9. Resource Sharing Mode
+- 12.10. Resource Sharing Mode
   - resources should only be accessed in the Vulkan instance that has exclusive
     ownership of the underlying memory
   - only one Vulkan instance has exclusive ownership of a resource's underlying
@@ -2353,6 +2370,7 @@
   - looking for `VK_VERSION_1_1[]`
     - `VkPhysicalDeviceProtectedMemoryFeatures`
       - `protectedMemory` enables protected memory
+        - this might change all shaders on some impls
     - `VkPhysicalDeviceShaderDrawParametersFeatures`
     - `multiview`
   - looking for `VK_VERSION_1_2[]`
