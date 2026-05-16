@@ -1414,3 +1414,21 @@
   - <https://git.trustedfirmware.org/plugins/gitiles/TF-A/trusted-firmware-a.git/+/refs/heads/master/plat/mediatek/include/mtk_sip_def.h>
   - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-6.6/include/linux/soc/mediatek/mtk_sip_svc.h>
   - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-6.6/include/soc/mediatek/mtk_sip_svc.h>
+- <https://github.com/coreboot/coreboot/blob/main/src/soc/mediatek/mt8196/include/soc/memlayout.ld>
+  - SRAM: 0x00100000, 256KB
+  - L3-configured-as-SRAM: 0x02000000, 2MB, for romstage
+  - DRAM: 0x80000000 onward
+    - `OPTEE_BUF`: (0x80500000, 70M)
+    - `FSP_RAMSTAGE_INIT_CODE`: (0x90000000, 2M)
+    - `FRAMEBUFFER`: (0x90200000, 32M)
+    - `BL31`: (0x94600000, 0x200000)
+    - `RESV_MEMORY_GPUEB`: 0xA0000000, 2M
+      - `gpueb_resv_mem` in kernel
+    - `GPU_SEC_BUF`: 0xA2000000, 16M
+      - `mali_protected` in kernel
+      - it is likely protected by smpu
+- <https://github.com/coreboot/coreboot/blob/main/src/soc/mediatek/mt8196/gpueb.c>
+  - `mtk_init_mcu` loads the fw to `_dram_dma` (0x80000000)
+  - `gpueb_reset` parses the fw and relocate the fw to `MFG_GPUEB_BASE`
+    (0x4B000000)
+    - it also sets `GPUMPU_RSV_ADDR` to `_resv_mem_gpueb` (0xA0000000)
