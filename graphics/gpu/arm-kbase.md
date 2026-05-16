@@ -466,6 +466,14 @@
     - resumes all suspended csgs
   - `kbase_csf_interrupt -> process_protm_exit`
     - it acks `GLB_REQ_PROTM_EXIT_MASK`
+- protected memory allocator (pma)
+  - `protected_memory_allocator_driver` probes `arm,protected-memory-allocator`
+    - `protected_memory_allocator_probe` creates a
+      `protected_memory_allocator_device` from the rmem
+  - `kbase_csf_protected_memory_init` looks up
+    `protected_memory_allocator_device`
+  - `kbase_csf_protected_memory_alloc` calls `simple_pma_alloc_page` to
+    suballocate from the rmem
 
 ## mediatek platform
 
