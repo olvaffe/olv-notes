@@ -437,6 +437,36 @@
   - `mmu_has_flush_skip_pgd_levels` returns true
 - search for `arch_major` for v10 and v13 differences
 
+## protected mode
+
+- overview
+  - `PROT_REGION` tells the fw to execute the next N instrs in protected mode
+  - FW halts the cs, toggles `CS_ACK_PROTM_PEND_MASK`, and generates an irq
+  - `kbase_csf_interrupt -> process_csg_interrupts -> process_cs_interrupts`
+    - if this is first protm enter,
+      `kbase_csf_scheduler_enqueue_protm_event_work` is called immediately
+      - else, it is called later from `process_tracked_info_for_protm`
+    - `kbase_csf_scheduler_enqueue_protm_event_work` queues
+      `kbase_csf_process_protm_event_request`
+      - `alloc_grp_protected_suspend_buffer_pages` allocs protected suspend
+        buffer on demand
+      - `kbase_csf_scheduler_group_protm_enter` calls
+        `scheduler_group_check_protm_enter`
+        - `scheduler_slot_protm_ack` acks `CS_ACK_PROTM_PEND_MASK`
+        - `kbase_csf_enter_protected_mode` reqs `GLB_REQ_PROTM_ENTER_MASK` to
+          enter protected mode
+  - FW executes `GLB_REQ_PROTM_ENTER_MASK` to enter protected mode
+    - suspends all csgs
+    - switches to protected mode
+      - all memory accesses are tagged as secure
+    - resumes cs that had `CS_ACK_PROTM_PEND_MASK`
+  - after FW completes all protected instrs,
+    - fast resets to initial state (which is not protected)
+    - toggles `GLB_REQ_PROTM_EXIT_MASK` and generates an irq
+    - resumes all suspended csgs
+  - `kbase_csf_interrupt -> process_protm_exit`
+    - it acks `GLB_REQ_PROTM_EXIT_MASK`
+
 ## mediatek platform
 
 - history
