@@ -1394,3 +1394,23 @@
     - <https://chromium.googlesource.com/chromiumos/platform/vboot_reference>
     - <https://chromium.googlesource.com/chromiumos/third_party/coreboot>
 - <https://chromium.googlesource.com/chromiumos/third_party/coreboot/+/refs/heads/main/3rdparty/blobs/soc/mediatek/mt8196/>
+
+## MT8196 Protected Memory
+
+- overview
+  - dramc: memory controller, lowest-level hw block to talk to dram
+  - emi: external memory interface, hw blocks talk to emi which talks to dramc
+    - there are north and south emi
+  - smpu: security memory protection unit, it decides which hw blocks can
+    access which dram regions
+    - there are north and south smpu
+    - the policies are static for most regions, but there are also dynamic regions
+    - they also have the concepts of secure/non-secure worlds
+  - devapc: device access permission control, it decides which hw blocks can
+    access (mmio) which blocks
+    - the policies are static
+    - they also have the concepts of secure/non-secure worlds
+- atf smc calls
+  - <https://git.trustedfirmware.org/plugins/gitiles/TF-A/trusted-firmware-a.git/+/refs/heads/master/plat/mediatek/include/mtk_sip_def.h>
+  - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-6.6/include/linux/soc/mediatek/mtk_sip_svc.h>
+  - <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-6.6/include/soc/mediatek/mtk_sip_svc.h>
