@@ -475,6 +475,26 @@
   - `kbase_csf_protected_memory_alloc` calls `simple_pma_alloc_page` to
     suballocate from the rmem
 
+## DT properties
+
+- `l2-hash-values`
+  - `kbase_pm_l2_config_override` writes `L2_CONFIG` and
+    `GPU_L2_SLICE_HASH_OFFSET`
+- `pbha` child node
+  - `kbase_pbha_read_dtb` parses the child node
+    - `kbase_pbha_read_int_id_override_property` parses `int-id-override` to
+      `kbdev->sysc_alloc`
+    - `kbase_pbha_read_propagate_bits_property` parses `propagate-bits` to
+      `kbdev->pbha_propagate_bits`
+    - `kbase_pbha_read_mma_wa_id_property` parses `mma-wa-id` to
+      `kbdev->mma_wa_id` on v14+
+  - upon l2 poweron,
+    - `kbase_pm_l2_config_override` updates `L2_CONFIG` with
+      `kbdev->pbha_propagate_bits`
+    - `kbase_pbha_write_settings` restores `GPU_SYSC_ALLOC_OFFSET` from
+      `kbdev->sysc_alloc` and restores `GPU_SYSC_PBHA_OVERRIDE_OFFSET` from
+      `kbdev->mma_wa_id`
+
 ## mediatek platform
 
 - history
