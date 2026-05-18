@@ -133,7 +133,6 @@
     - `dd if=u-boot-rockchip-spi.bin of=/dev/mtdblock0`
 - RK3568
   - tfa
-    - <https://review.trustedfirmware.org/c/TF-A/trusted-firmware-a/+/31265>
     - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3568 bl31`
   - u-boot
     - `make nanopi-r5c-rk3568_defconfig`
