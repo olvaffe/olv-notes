@@ -44,3 +44,27 @@
   - modem uses dhcp to get a temp ip and uses tftp to download its config
   - modem applies the config, is assigned an SID (service id), and exchanges
     the encryption key with cmts
+
+## Fiber
+
+- Architecture
+  - OLT (Optical Line Terminal) sits in the ISP's local data center
+  - in FTTH (Fiber-to-the-Home), OLT connects to ONT (Optical Network
+    Terminal) which adapts fiber to ethernet for a single home
+  - in FTTB (Fiber-to-the-Building), OLT connects to ONU (Optical Network
+    Unit) which adapts fiber to ethernet or any legacy network for a single
+    complex building
+- Connection Handshake
+  - State O1/O2: ONT locks on OLT's dowmstream laser beam
+  - State O3: ONT shouts out its unique serial number registered with ISP
+  - State O4: ONT is assigned a unique ID
+  - State O5: OLT opens an OMCI (ONU Management and Control Interface) channel
+    and has complete control over ONT
+    - SLID auth: OLT requests ONT to send SLID (subscriber line id, aka PLOAM
+      Password) and validates it before opening OMCI channel
+    - LOID auth: OLT requests ONT to send LOID (logical id) and validates it
+      after opening OMCI channel
+    - ISP typically uses one of the two methods
+- some ISPs require another auth after the physical fiber connection is
+  established
+  - e.g., PPPoE
