@@ -50,9 +50,26 @@
   - `dev->driver->show_fdinfo` prints driver-specific fdinfo
 - `drm_show_memory_stats` helper
   - it collects `drm_memory_stats` from all gem objs (`file->object_idr`)
+    - `obj->size` is the obj size
+    - `obj->funcs->status` returns `drm_gem_object_status`
+      - `DRM_GEM_OBJECT_RESIDENT` means pages are allocated
+      - `DRM_GEM_OBJECT_PURGEABLE` means obj marked `MADV_DONTNEED`
+      - `DRM_GEM_OBJECT_ACTIVE` means `obj->resv` has any fence
+  - `drm_memory_stats`
+    - `shared` are objs that have multiple handles (in different files)
+      - pages may or may not allocated
+    - `private` are objs that have a single handle in the current file
+      - pages may or may not allocated
+    - `resident` are objs with `DRM_GEM_OBJECT_RESIDENT`
+      - pages are allocated
+    - `active` are objs whose `obj->resv` has fences
+      - pages are allocated
+    - `purgeable` are objs with `DRM_GEM_OBJECT_RESIDENT` and
+      `DRM_GEM_OBJECT_PURGEABLE`, and is not active
+      - pages are allocated
   - `drm_print_memory_stats` prints
-    - `drm-total-memory` is size of private plus shared objs
-    - `drm-shared-memory` is size of shared objs
-    - `drm-active-memory` is size of shared objs
-    - `drm-resident-memory` is size of resident objs
-    - `drm-purgeable-memory` is size of purgeable objs
+    - `drm-total-memory` is `shared` plus `private`
+    - `drm-shared-memory` is `shared`
+    - `drm-active-memory` is `active`
+    - `drm-resident-memory` is `resident`
+    - `drm-purgeable-memory` is `purgeable`
