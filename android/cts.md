@@ -33,6 +33,14 @@
       - `arm64-v8a`
   - `-t` can be replaced by
     `--module-arg 'CtsGraphicsTestCases:include-filter:android.graphics.cts.VulkanFeaturesTest*'`
+- manual run
+  - `m CtsViewTestCases` builds
+    `$ANDROID_TARGET_OUT_TESTCASES/CtsViewTestCases/arm64/CtsViewTestCases.apk`
+  - `adb install -r -g <apk>` install the apk
+  - `adb shell am instrument -w \
+       -e class android.view.cts.TextureViewTest#testSamplingWithTransform \
+       android.view.cts/androidx.test.runner.AndroidJUnitRunner` runs a
+    test
 
 ## Sources
 
