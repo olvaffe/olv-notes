@@ -53,14 +53,12 @@
 
 ## graphics-related modules
 
-- `CtsGraphicsTestCases`
-  - 15m
+- `CtsGraphicsTestCases`, 15m
   - `-t android.graphics.cts.*`
   - `-t android.graphics.drawable.*`
   - `-t android.graphics.fonts.*`
   - `-t android.graphics.text.*`
-- `CtsNativeHardwareTestCases`
-  - 1m
+- `CtsNativeHardwareTestCases`, 1m
   - `-t android.hardware.nativehardware.cts.AHardwareBufferNativeTests*`
   - `-t android.hardware.nativehardware.cts.HardwareBufferVrTest*`
 - `CtsDeqpTestCases`
@@ -73,15 +71,13 @@
   - `-t dEQP-GLES31.*`
     - 40m
   - `-t dEQP-VK.*`
-    - 8h?
+    - 22h
   - logcat says `Writing test log into /sdcard/TestLog.qpa`
-- `CtsSkQPTestCases`
-  - 10m
+- `CtsSkQPTestCases`, 10m
   - `-t org.skia.skqp.SkQPRunner*`
-- `CtsUiRenderingTestCases`
-  - 2m
+- `CtsUiRenderingTestCases`, 2m
   - `-t android.uirendering.cts.testclasses.*`
-- `CtsViewTestCases`
+- `CtsViewTestCases`, 20m
   - `--module-arg 'CtsViewTestCases:include-filter:android.view.cts.PixelCopyTest#*'`
     - 2m
   - `--module-arg 'CtsViewTestCases:include-filter:android.view.cts.SurfaceViewSyncTest#*'`
@@ -89,18 +85,23 @@
   - `--module-arg 'CtsViewTestCases:include-filter:android.view.cts.TextureViewTest#*'`
     - 1s
   - `--module-arg 'CtsViewTestCases:include-filter:android.view.cts.ASurfaceControlTest#*'`
-    - hours?
 - `CtsMediaTestCases`
   - `--module-arg 'CtsMediaTestCases:include-filter:android.media.cts.DecodeAccuracyTest*'`
     - 5m
   - `--module-arg 'CtsMediaTestCases:include-filter:android.media.cts.EncodeDecodeTest*'`
-- `CtsCameraTestCases`
+- `CtsCameraTestCases`, 30m
   - `--module-arg 'CtsCameraTestCases:include-filter:android.hardware.cts.CameraGLTest#*'`
     - 2m
-- `CtsNNAPITestCases`
-- `CtsGpuToolsHostTestCases`
-- `CtsOpenGLTestCases`
+- `CtsNNAPITestCases`, 5m
+- `CtsGpuToolsHostTestCases`, 2m
+- `CtsOpenGLTestCases`, 2m
 - `CtsVideoTestCases`
+- `CtsHardwareTestCases`, 15m
+- `CtsMediaCodecTestCases`, 11m
+- `CtsMediaDecoderTestCases`, 35m
+- `CtsMediaEncoderTestCases`, 6m
+- `CtsMediaMiscTestCases`, 20m
+- `CtsMediaV2TestCases`, 18m
 - this seems like a good starting point for skyrim
   - `cheets_CTS_T.internal.x86.CtsCameraTestCases.camerabox.front`
     - `CtsCameraTestCases`, 18.5m
