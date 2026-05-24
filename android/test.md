@@ -32,6 +32,22 @@
     - runs the test
     - removes test binaries/data and apk
 
+## `AndroidTest.xml`
+
+- tradefed loads test configs from `testcases/<module>/<module>.config`
+  - `tools/tradefederation/core/src/com/android/tradefed/config/ConfigurationFactory.java`
+  - during build, `AndroidTest.xml` is installed as `<module>.config`
+- `<target_preparer>` prepares the taget
+  - `com.android.tradefed.targetprep.suite.SuiteApkInstaller` installs an apk
+  - `com.android.tradefed.targetprep.RootTargetPreparer` runs `adb root`
+  - `com.android.tradefed.targetprep.RunCommandTargetPreparer` runs shell cmds
+  - `com.android.tradefed.targetprep.PushFilePreparer` pushes files
+  - `com.android.tradefed.targetprep.DeviceSetup` keeps screen on, etc.
+- `<test>` specifies a test runner
+  - `com.android.tradefed.testtype.AndroidJUnitTest` runs a junit-based test
+  - `com.android.tradefed.testtype.GTest` runs a gtest-based binary
+  - `com.android.tradefed.testtype.HostTest` runs a host-side test
+
 ## Harness Prebuilts
 
 - `Android.bp` automatically prefers prebuilt `java_import_host` modules over
