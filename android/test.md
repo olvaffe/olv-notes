@@ -45,8 +45,31 @@
   - `com.android.tradefed.targetprep.DeviceSetup` keeps screen on, etc.
 - `<test>` specifies a test runner
   - `com.android.tradefed.testtype.AndroidJUnitTest` runs a junit-based test
+    - `AndroidJUnitTest` is host side
+    - `AndroidJUnitRunner` is device side
   - `com.android.tradefed.testtype.GTest` runs a gtest-based binary
   - `com.android.tradefed.testtype.HostTest` runs a host-side test
+
+## Filtering
+
+- `run commandAndExit cts-dev` loads and runs all test modules
+  - `commandAndExit` tells tradefed to exit after completion
+  - `cts-dev` tells tradefed to load built-in `cts-dev.xml` config
+  - imagine all module configs are loaded to build a huge in-memory config
+- `run ... <module>:<class>#<method>` runs a specific test of a module
+  - it is the same as `-m <module> -t <class>#<method>`
+  - it is a syntax sugar for `--include-filter "<module> <class>#<method>"`
+  - tradefed sees `<module>` and loads only the specific module config
+  - tradefed forwards `<class>#<method>` to the module test runner
+    - e.g., `AndroidJUnitTest` test runner invokes `am instrument` and
+      translates the filter to `-e class <class>#<method>`
+- wildcards
+  - `<module>` must be exact match
+  - `<class>` is actually `[<package>.]<class>`
+    - `<package>` must be exact match if specified
+    - `<class>` depends on runner but can expect full wildcard support
+      - but if `<method>` is specified, `<class>` must be exact match
+  - `<method>` depends on runner but can expect full wildcard support
 
 ## Harness Prebuilts
 
