@@ -41,6 +41,10 @@
        -e class android.view.cts.TextureViewTest#testSamplingWithTransform \
        android.view.cts/androidx.test.runner.AndroidJUnitRunner` runs a
     test
+- manual run examples
+  - `adb shell am instrument -w \
+       -e class android.hardware.nativehardware.cts.AHardwareBufferNativeTests#SingleLayer_ColorTest_CpuWriteColorGpuRead_R8G8B8_UNORM \
+       android.hardware.nativehardware.cts/androidx.test.runner.AndroidJUnitRunner`
 
 ## Sources
 
