@@ -170,6 +170,11 @@
 - FF, Vendor-specific
   - Indicates that a device needs vendor-specific drivers
 
+## Authorization
+
+- `Device is not authorized for usage`
+- `echo 1 > /sys/module/usbcore/parameters/authorized_default`
+
 ## XHCI PCI
 
 - `xhci_pci_init` registers
