@@ -113,6 +113,25 @@
   - `adb shell settings delete global angle_debug_package`
 - to verify, `adb logcat -d | grep ANGLE`
 
+## Logging
+
+- `ANGLE_LOG_IS_ON` determines if a severity is enabled
+  - `LOG_INFO`, `LOG_WARN`, `LOG_ERR`, and `LOG_FATAL` are always enabled
+  - `LOG_EVENT` depends on `angle_enable_trace`
+- `ANGLE_LOG_STREAM` returns the `std::ostringstream` of a temp `LogMessage`
+  - `LogMessage::~LogMessage` calls `Trace` with the stream
+- `Trace` logs
+  - `ShouldCreateLogMessage` detertimes if a severity is logged
+    - `LOG_FATAL` and `LOG_ERR` are always enabled
+    - `LOG_WARN` depends on a debug build, `angle_assert_always_on`, or below
+    - `LOG_INFO` depends on `angle_always_log_info` or below
+    - `LOG_EVENT` depends on `angle_enable_trace`
+  - most severities are logged to stdout/stderr/logcat
+    - `LOG_EVENT` depends on `angle_enable_trace_events`
+  - if `angle_enable_trace`, it also logs to `angle_debug.txt`
+    - release build only logs `LOG_ERR` and `LOG_FATAL`
+    - debug build logs all severities
+
 ## `eglGetDisplay`
 
 - `eglGetDisplay` calls
