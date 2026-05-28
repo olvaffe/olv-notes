@@ -261,6 +261,20 @@
   - `GL_Foo` calls into `Context::foo` defined in
     `libANGLE/Context.cpp`
 
+## Shader Compile
+
+- `glDrawArrays -> GL_DrawArrays -> Context::drawArrays -> ContextVk::drawArrays
+     -> ContextVk::setupDraw -> ContextVk::handleDirtyGraphicsPipelineDesc
+     -> ContextVk::createGraphicsPipeline
+     -> ProgramExecutableVk::createGraphicsPipeline
+     -> ProgramExecutableVk::initProgramThenCreateGraphicsPipeline
+     -> ProgramExecutableVk::createGraphicsPipelineImpl
+     -> ShaderProgramHelper::createGraphicsPipeline
+     -> GraphicsPipelineCache<Hash>::createPipeline
+     -> GraphicsPipelineDesc::initializePipeline
+     -> PipelineCacheAccess::createGraphicsPipeline
+     -> Pipeline::initGraphics -> vkCreateGraphicsPipelines`
+
 ## Command Recording
 
 - `glClear` call sequence
