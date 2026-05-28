@@ -118,6 +118,7 @@
 - `ANGLE_LOG_IS_ON` determines if a severity is enabled
   - `LOG_INFO`, `LOG_WARN`, `LOG_ERR`, and `LOG_FATAL` are always enabled
   - `LOG_EVENT` depends on `angle_enable_trace`
+    - this is used by EGL/GLES call tracing
 - `ANGLE_LOG_STREAM` returns the `std::ostringstream` of a temp `LogMessage`
   - `LogMessage::~LogMessage` calls `Trace` with the stream
 - `Trace` logs
@@ -131,6 +132,26 @@
   - if `angle_enable_trace`, it also logs to `angle_debug.txt`
     - release build only logs `LOG_ERR` and `LOG_FATAL`
     - debug build logs all severities
+
+## Shader Dumping
+
+- `dumpShaderSource` feature dumps source GLSL shaders
+  - `ANGLE_FEATURE_OVERRIDES_ENABLED=dumpShaderSource`
+    - if android, `debug.angle.feature_overrides_enabled`
+  - `GetShaderDumpFilePath` uses
+    - `ANGLE_SHADER_DUMP_PATH` or `debug.angle.shader_dump_path`
+    - `/tmp`
+    - cur dir
+- `dumpTranslatedShaders` feature dumps translated GLSL/HLSL shaders
+  - no spirv support
+- spirv
+  - angle frontend performs `glsl -> ast -> spirv`
+    - `ANGLE_DEBUG_SPIRV_GENERATION` disassembles spirv and prints to stdout
+    - `spirv::Validate` validates if debug build or `angle_assert_always_on`
+  - vulkan renderer performs `spirv -> final spirv`
+    - `spirv::Validate` validates again
+  - `angle_shader_translator` generates spirv offline
+    - `./angle_shader_translator -o -s=e3 -b=v test.frag`
 
 ## `eglGetDisplay`
 
