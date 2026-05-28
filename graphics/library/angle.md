@@ -368,6 +368,20 @@
   - `third_party/catapult/devil/devil/android/device_utils.py`
     - `_ApkDelegate::Run -> DeviceUtils::StartInstrumentation`
     - `DeviceUtils::RunShellCommand` invokes `adb shell <cmd>`
+- manual run
+  - `adb shell mkdir /data/media/10/chromium_tests_root`
+  - `adb push src/tests/angle_end2end_tests_expectations.txt /data/media/10/chromium_tests_root/src/tests/angle_end2end_tests_expectations.txt`
+    - the test expects the expectation files to be at the specific location
+  - `adb install -r -d --force-queryable out/angle_end2end_tests_apk/angle_end2end_tests-debug.apk`
+  - `adb shell pm grant --user 10 com.android.angle.test android.permission.WRITE_EXTERNAL_STORAGE`
+  - `adb shell pm grant --user 10 com.android.angle.test android.permission.READ_EXTERNAL_STORAGE`
+  - `adb shell am instrument -w \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
+       -e org.chromium.native_test.NativeTest.CommandLineFlags '--gtest_filter=SimpleStateChangeTest*' \
+       -e org.chromium.native_test.NativeTestInstrumentationTestRunner.NativeTestActivity com.android.angle.test.AngleUnitTestActivity \
+       com.android.angle.test/org.chromium.build.gtest_apk.NativeTestInstrumentationTestRunner`
+  - `adb pull /data/media/10/chromium_tests_root/out.txt`
 
 ## Traces
 

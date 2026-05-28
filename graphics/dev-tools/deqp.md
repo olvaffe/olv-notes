@@ -2092,6 +2092,23 @@
       visible to
       `VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT/VK_ACCESS_INPUT_ATTACHMENT_READ_BIT`
 
+## Test Case: `dEQP-GLES31.functional.ssbo.atomic.or.mediump_uint`
+
+- `ShaderAtomicOrCase`
+  - `operandType` is `ATOMIC_OPERAND_BUFFER_VARIABLE`
+  - `type` is `TYPE_UINT`
+  - `precision` is `PRECISION_MEDIUMP`
+  - `m_numWorkGroups` is `(4, 4, 4)`
+  - `m_workGroupSize` is `(3, 2, 1)`
+  - there is a total of `4*4*4*3*2*1=384` threads
+- `ShaderAtomicOpCase::init`
+  - `getInputs` will init `sb_inout.inputValues` to random bits
+  - if ssbo, `ShaderAtomicOpCase::iterate` inits `sb_inout.groupValues` to init val
+  - cs: `sb_inout.outputValues[offset] = atomicOr(sb_inout.groupValues[globalNdx], sb_inout.inputValues[offset])`
+    - each thread `atomicOr` its `sb_inout.groupValues` and `sb_inout.inputValues`
+- `ShaderAtomicOpCase::iterate` sets up ssbos and dispatches
+- `ShaderAtomicOrCase::verify`
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
