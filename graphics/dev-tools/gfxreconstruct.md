@@ -2,7 +2,7 @@
 
 ## Build
 
-- dependencies: liblz4-dev, zlib1g-dev, libxcb-glx0-dev
+- dependencies: liblz4-dev, zlib1g-dev, libxcb-glx0-dev, libxcb-keysyms1-dev
 - `git clone --recurse-submodules https://github.com/LunarG/gfxreconstruct.git`
 - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
 - `ninja -C out`
