@@ -112,6 +112,14 @@
   - `adb shell settings delete global angle_gl_driver_all_angle`
   - `adb shell settings delete global angle_debug_package`
 - to verify, `adb logcat -d | grep ANGLE`
+- when the system gles driver is angle, we need to workaround preload
+  - first method
+    - `angle_libs_suffix = _angle_in_apk` to change the library name
+    - `setprop debug.angle.libs.suffix angle_in_apk` to tell EGL the
+      alternative name
+  - second method
+    - `adb shell setprop ro.zygote.disable_gl_preload 1`
+    - `adb shell stop && sleep 1 && adb shell start`
 
 ## Logging
 
