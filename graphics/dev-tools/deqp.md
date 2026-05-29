@@ -2109,6 +2109,18 @@
 - `ShaderAtomicOpCase::iterate` sets up ssbos and dispatches
 - `ShaderAtomicOrCase::verify`
 
+## Test Case: `dEQP-GLES31.functional.shaders.opaque_type_indexing.ssbo.const_literal_fragment`
+
+- `BlockArrayIndexingCase::BlockArrayIndexingCase`
+  - `blockType` is `BLOCKTYPE_BUFFER`
+  - `indexExprType` is `INDEX_EXPR_TYPE_CONST_LITERAL`
+  - `shaderType` is `SHADERTYPE_FRAGMENT`
+  - `m_numInstances` is 4
+- `BlockArrayIndexingCase::iterate`
+  - `getShaderSpec`
+    - `layout(std430, binding = 2) buffer Block { uint value; } block[4];`
+    - essentially `o_resultN = block[X].value;`
+
 ## Test Case: `dEQP-GLES31.functional.copy_image.mixed.viewclass_128_bits_mixed.rgba32ui_srgb8_alpha8_astc_4x4_khr.texture2d_to_texture2d`
 
 - `CopyImageTests::init` calls `addCopyTests`
