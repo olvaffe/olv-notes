@@ -84,6 +84,10 @@
   - `adb shell am start -n com.drawelements.deqp/android.app.NativeActivity -e cmdLine '"deqp
     --deqp-case=dEQP-VK.api.object_management.multithreaded_shared_resources.device_group
     --deqp-log-filename=/sdcard/dEQP-Log.qpa"'`
+    - alternatives locations if permission issues
+      - `/data/media/10/Android/data/com.drawelements.deqp/files`
+      - `/data/user/10/com.drawelements.deqp/files`
+      - `/data/data/com.drawelements.deqp`
 - mustpass
   - android mustpass is under `android/cts/master`
   - `scripts/build_android_mustpass.py` generates the mustpass files
