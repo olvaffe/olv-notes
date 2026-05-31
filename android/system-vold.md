@@ -34,3 +34,24 @@
       - `userdata` to `/data`
   - `do_installkey` invokes `vdc cryptfs enablefilecrypto`
     - it enables file-based encryption for `/data`
+
+## apk data
+
+- `/data/app/~~<random>==/<package>-<random>==` is for installed apk
+- `/data/data/<package>` is the internal private data dir of an app for user 0
+- `/data/user/<user>/<package>` is the internal private data dir of an app
+  - `/data/user/0` is a bind-mount of `/data/data`
+  - no permission required to access
+- `/data/media/<user>/Android/data/<package>` is the external private data dir of an app
+  - `/mnt/user/<user>/emulated` is a fuse-mount of `/data/media`
+    - it is like a bind-mount plus access control
+    - modern app
+      - with `MANAGE_EXTERNAL_STORAGE`: full access to `/mnt/user/<user>/emulated/<user>`
+      - without: full access to `/mnt/user/<user>/emulated/<user>/Android/data/<package>`
+    - legacy app
+      - with `{READ,WRITE}_EXTERNAL_STORAGE`: read/write access to `/mnt/user/<user>/emulated/<user>`
+      - without: no access
+  - `/storage/emulated` is a bind-mount of `/mnt/user/<user>/emulated`
+    - it relies on mount namespace to point to current user
+  - `/sdcard -> /storage/self/primary -> /storage/emulated/<user>` are symlinks
+    - it relies on mount namespace to point to current user
