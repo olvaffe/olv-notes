@@ -54,6 +54,7 @@
 - <https://android.googlesource.com/platform/cts/>
   - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
   - for fastest runs, use `cts-dev` plan
+  - `--skip-preconditions --skip-device-info --skip-all-system-status-check --primary-abi-only --no-enable-parameterized-modules`
 
 ## graphics-related modules
 
