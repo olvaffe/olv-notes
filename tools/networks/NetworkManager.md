@@ -98,5 +98,6 @@
   downstream devices
   - NM starts dnsmasq with `--conf-dir=/etc/NetworkManager/dnsmasq-shared.d`,
     which acts as DNS cache and DHCP server for the downstream devices
+  - leases are at `/var/lib/NetworkManager/dnsmasq-<iface>.leases`
 - dnsmasq parses all files under `--conf-dir`
   - `dhcp-host=aa:bb:cc:dd:ee:ff,hostname,192.168.0.2` assigns a fixed ip
