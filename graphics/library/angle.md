@@ -271,6 +271,20 @@
 
 ## Shader Compile
 
+- `glLinkProgram -> GL_LinkProgram -> Context::linkProgram -> Program::link`
+  - `ProgramVk::link` preps a vector of `LinkTask`
+  - `Context::postCompileLinkTask` posts the task
+  - task `Program::MainLinkTask::operator()`
+    - `LinkTaskVk::link` preps a vector of `LinkSubTask`
+      - `ProgramExecutableVk::getPipelineCacheWarmUpTasks` preps
+        `WarmUpGraphicsTask`
+    - `scheduleSubTasks` schedules the subtasks
+  - subtask `ProgramExecutableVk::WarmUpGraphicsTask::operator()`
+    - `ProgramExecutableVk::warmUpGraphicsPipelineCache` calls
+      `ProgramExecutableVk::createGraphicsPipelineImpl`
+    - `ProgramExecutableVk::mergePipelineCacheToRenderer`
+  - later, `ProgramExecutableVk::waitForGraphicsPostLinkTasks` can be used to
+    wait for subtasks
 - `glDrawArrays -> GL_DrawArrays -> Context::drawArrays -> ContextVk::drawArrays
      -> ContextVk::setupDraw -> ContextVk::handleDirtyGraphicsPipelineDesc
      -> ContextVk::createGraphicsPipeline
