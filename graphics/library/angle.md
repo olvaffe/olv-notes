@@ -282,6 +282,47 @@
      -> GraphicsPipelineDesc::initializePipeline
      -> PipelineCacheAccess::createGraphicsPipeline
      -> Pipeline::initGraphics -> vkCreateGraphicsPipelines`
+  - if GPL, `ContextVk::createGraphicsPipeline` calls both
+    - `ProgramExecutableVk::createGraphicsPipeline` to complie pipeline libraries
+    - `ProgramExecutableVk::createLinkedGraphicsPipeline` to compile final pipelines
+- `GraphicsPipelineDesc::initializePipeline`
+  - `initializePipelineVertexInputState` inits
+    `GraphicsPipelineVertexInputVulkanStructs`, which includes
+    - `VkPipelineVertexInputStateCreateInfo`
+    - `VkPipelineInputAssemblyStateCreateInfo`
+    - `VkPipelineVertexInputDivisorStateCreateInfoEXT`
+    - `VkVertexInputBindingDescription` array
+    - `VkVertexInputAttributeDescription` array
+    - `VkVertexInputBindingDivisorDescriptionEXT` array
+  - `initializePipelineShadersState` inits
+    `GraphicsPipelineShadersVulkanStructs`, which includes
+    - `VkPipelineViewportStateCreateInfo`
+    - `VkPipelineRasterizationStateCreateInfo`
+    - `VkPipelineDepthStencilStateCreateInfo`
+    - `VkPipelineTessellationStateCreateInfo`
+    - `VkPipelineTessellationDomainOriginStateCreateInfo`
+    - `VkPipelineViewportDepthClipControlCreateInfoEXT`
+    - `VkPipelineRasterizationLineStateCreateInfoEXT`
+    - `VkPipelineRasterizationProvokingVertexStateCreateInfoEXT`
+    - `VkPipelineRasterizationStateStreamCreateInfoEXT`
+    - `VkPipelineShaderStageCreateInfo` array
+  - `initializePipelineSharedNonVertexInputState` inits
+    `GraphicsPipelineSharedNonVertexInputVulkanStructs`, which includes
+    - `VkPipelineMultisampleStateCreateInfo`
+  - `initializePipelineFragmentOutputState` inits
+    `GraphicsPipelineFragmentOutputVulkanStructs`, which includes
+    - `VkPipelineColorBlendStateCreateInfo`
+    - `VkPipelineColorBlendAttachmentState` array
+  - `subset`
+    - if no GPL, it is always `GraphicsPipelineSubset::Complete` to compile
+      monolithic pipelines
+    - if GPL,
+      - warmup (triggered by `glLinkProgram`) uses
+        `GraphicsPipelineSubset::Shaders`
+      - compile (triggered by `glDrawArrays`) uses
+        `GraphicsPipelineSubset::Shaders`
+      - final linking (also triggered by `glDrawArrays`) uses
+        `GraphicsPipelineSubset::Complete`
 
 ## Command Recording
 
