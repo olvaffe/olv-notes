@@ -7,6 +7,10 @@
 - `cmd <service> [args...]`
   - `sm->checkService` returns the specified service
   - `IBinder::shellCommand` sends `SHELL_COMMAND_TRANSACTION` to the service
+- wrappers
+  - `pm` invokes `cmd package`
+  - `input` invokes `cmd input`
+  - `appops` invokes `cmd appops`
 
 ## Service
 
