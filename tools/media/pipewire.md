@@ -71,3 +71,9 @@
 - with wireplumber
   - `wpctl get-volume @DEFAULT_AUDIO_SINK@`
   - `wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+`
+- audio profile
+  - `wpctl status` lists all objects, including audio devices
+  - `wpctl set-profile <audio-dev-id> <idx>` sets profile
+    - e.g., when built-in headphone and speaker conflict
+  - `wpctl set-default <audio-sink-id>` sets default sink
+  - `pavucontrol` seems to work better

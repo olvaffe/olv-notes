@@ -187,3 +187,6 @@
 ## Tips
 
 - `adb shell am start -a com.android.setupwizard.FOUR_CORNER_EXIT` skips OOBE
+- force user orientation
+  - `adb shell settings put system user_rotation 0`, landscape
+  - `adb shell settings put system user_rotation 1`, portrait
