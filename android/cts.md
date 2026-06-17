@@ -42,9 +42,13 @@
        android.view.cts/androidx.test.runner.AndroidJUnitRunner` runs a
     test
 - manual run examples
+  - `adb shell pm list instrumentation` lists packages/activities
   - `adb shell am instrument -w \
        -e class android.hardware.nativehardware.cts.AHardwareBufferNativeTests#SingleLayer_ColorTest_CpuWriteColorGpuRead_R8G8B8_UNORM \
        android.hardware.nativehardware.cts/androidx.test.runner.AndroidJUnitRunner`
+  - `adb shell am instrument -w \
+       -e class android.gpu.vulkan.cts.VulkanFeaturesTest#testVulkanHardwareFeatures \
+       android.gpu.cts/androidx.test.runner.AndroidJUnitRunner`
 
 ## Sources
 
