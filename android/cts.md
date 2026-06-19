@@ -82,6 +82,8 @@
   - `-t dEQP-VK.*`
     - 22h
   - logcat says `Writing test log into /sdcard/TestLog.qpa`
+  - sharding
+    - `for i in $(seq 0 9); do ... --shard-count 10 --shard-index $i; done`
 - `CtsSkQPTestCases`, 10m
   - `-t org.skia.skqp.SkQPRunner*`
 - `CtsUiRenderingTestCases`, 2m
