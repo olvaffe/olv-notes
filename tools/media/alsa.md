@@ -77,3 +77,31 @@
 - `aplay -D plug:dmix`
   - `pcm.plug` with `dmix` as the slave
   - this uses the `dmix` mixer which can have multiple active clients
+
+## UCM2
+
+- `/proc/asound/cards`
+  - e.g.,
+    - `0 [sofhdadsp      ]: sof-hda-dsp - sof-hda-dsp`
+    - `                     LENOVO-20XXS3LA00-ThinkPadX1CarbonGen9`
+  - `CardNumber` is 0
+  - `OpenName` is `sofhdadsp`
+    - this is like the unqiue string for card 0
+  - `CardDriver` is `soft-hda-dsp`
+    - the second `sof-hda-dsp` is the short description
+  - `CardLongName` is `LENOVO-20XXS3LA00-ThinkPadX1CarbonGen9`
+- `/usr/share/alsa/ucm2/ucm.conf`
+  - it defines `V2ConfD` to true
+  - it defines `Driver` to `CardDriver`
+    - if empty, it falls back to `/sys/class/sound/card${CardNumber}/device/driver`
+  - it search `UseCasePath.confd1` first
+    - `/usr/share/alsa/ucm2/conf.d/${CardDriver}/${CardLongName}.conf`
+  - it search `UseCasePath.confd2` second
+    - `/usr/share/alsa/ucm2/conf.d/${CardDriver}/${CardDriver}.conf`
+- `/usr/share/alsa/ucm2/conf.d/sof-hda-dsp/sof-hda-dsp.conf`
+  - `SectionUseCase."HiFi"` includes `/Intel/sof-hda-dsp/HiFi.conf`
+- `/usr/share/alsa/ucm2/Intel/sof-hda-dsp/HiFi.conf`
+  - `Include.hda-analog.File` includes `/HDA/HiFi-analog.conf`
+- `/usr/share/alsa/ucm2/HDA/HiFi-analog.conf`
+  - `SectionDevice."Headphones"`
+  - `SectionDevice."Speaker"`
