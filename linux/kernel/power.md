@@ -156,3 +156,32 @@
   - `suspend_finish`
     - `suspend_thaw_processes`
     - `pm_notifier_call_chain(PM_POST_SUSPEND)`
+
+## QoS
+
+- `struct pm_qos_constraints`
+  - `list` is the list of active requests/constraints
+    - userspace and in-kernel users can add requests
+  - `target_value` is the resolved value based on active requests
+  - `default_value` is used when the requests want `PM_QOS_DEFAULT_VALUE`
+  - `no_constraint_value` is used when there is no request
+- `pm_qos_update_target` adds/removes/updates a request/constraint
+  - `pm_qos_get_value` walks `c->list` to resolve the value
+  - it updates `c->list`
+  - `pm_qos_get_value` walks `c->list` to resolve the value again
+  - `pm_qos_set_value` updates `c->target_value`
+  - `blocking_notifier_call_chain` calls notifiers
+- `cpu_latency_constraints` is cpu latency constraint
+  - `cpu_latency_qos_add_request` adds a request
+  - `cpu_latency_qos_update_request` updates a request
+  - `cpu_latency_qos_remove_request` removes a request
+  - userspace can add a cpu idle request via `/dev/cpu_dma_latency`
+  - `cpu_latency_qos_limit` returns the resolved value in microseconds
+    - cpuidle uses the value to constraint the idle states
+- `struct freq_constraints` is cpu/dev freq constraint
+  - the struct is embedded in cpufreq policy or dev pm qos
+  - `freq_qos_add_request` adds a request
+  - `freq_qos_update_request` updates a req
+  - `freq_qos_remove_request` removes a req
+  - `freq_qos_read_value` returns the resolved value
+    - the unit is khz for cpufreq policy and dev pm qos

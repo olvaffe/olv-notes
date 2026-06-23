@@ -355,3 +355,19 @@
   - on submit, if the submit queue becomes non-empty, `pm_runtime_get`
   - on retire, if the submit queue becomes empty,
     `pm_runtime_put_autosuspend`
+
+## QoS
+
+- `dev_pm_qos_add_request` adds a request
+  - `dev_pm_qos_constraints_allocate` allocs `dev->power.qos` on demand
+  - `type` determines the constraint to add the request to
+    - `DEV_PM_QOS_MIN_FREQUENCY` calls `freq_qos_add_request(FREQ_QOS_MIN)`
+    - `DEV_PM_QOS_MAX_FREQUENCY` calls `freq_qos_add_request(FREQ_QOS_MAX)`
+- `dev_pm_qos_update_request` updates a request
+- `dev_pm_qos_remove_request` removes a request
+- `dev_pm_qos_read_value` returns the resolved value
+  - for min/max freq, devfreq is the only user
+    - `devfreq_update_target`
+      - `devfreq->governor->get_target_freq` evals the new freq
+      - `devfreq_get_freq_range` queries min/max freqs to clamp
+      - `devfreq_set_target` applies the new freq
