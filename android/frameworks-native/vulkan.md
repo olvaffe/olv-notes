@@ -56,3 +56,12 @@
   - `vulkan  : added global layer 'VK_LAYER_LUNARG_gfxreconstruct' from library '/data/local/debug/vulkan/libVkLayer_gfxreconstruct.so'`
   - `vulkan  : Loaded layer VK_LAYER_LUNARG_gfxreconstruct`
   - `gfxrecon: ...`
+
+## API Dump
+
+- one way to build the layer is to build angle with
+  - `angle_enable_vulkan_api_dump_layer = true`
+- steps
+  - `adb push libVkLayer_lunarg_api_dump.so /data/local/debug/vulkan`
+  - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_api_dump`
+  - `adb shell setprop debug.vulkan.api_dump.log_filename /data/user/10/<package>/files/vk_apidump.txt`
