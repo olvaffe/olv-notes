@@ -70,6 +70,20 @@
     - `<class>` depends on runner but can expect full wildcard support
       - but if `<method>` is specified, `<class>` must be exact match
   - `<method>` depends on runner but can expect full wildcard support
+- `--include-filter "<module> <class>#<method>"` internal
+  - `BaseTestSuite` parses it into `mIncludeFilters` and passes it to
+    `SuiteModuleLoader`
+  - `SuiteModuleLoader`
+    - `loadConfigsFromDirectory` and `shouldRunModule` use `<module>` to
+      decide which configs to load
+    - `addFiltersToTest -> addTestIncludes` passes `<class>#<method>` to
+      `ITestFilterReceiver::addIncludeFilter`
+  - `AndroidJUnitTest` is a `ITestFilterReceiver` and translates the filter to
+    - if `isRegex`, `tests_regex`
+    - if `isClassOrMethod`, `class`
+    - else, `package`
+  - `RemoteAndroidTestRunner` runs the test
+    - `getAmInstrumentCommand` builds `am instrument -w ...`
 
 ## Harness Prebuilts
 
