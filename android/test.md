@@ -84,6 +84,8 @@
     - else, `package`
   - `RemoteAndroidTestRunner` runs the test
     - `getAmInstrumentCommand` builds `am instrument -w ...`
+  - `DeqpTestRunner` is both a `ITestFilterReceiver` and a runner
+    - `filterTests` applies the test filter to trim down the test list
 
 ## Harness Prebuilts
 
