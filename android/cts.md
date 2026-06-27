@@ -49,6 +49,9 @@
   - `adb shell am instrument -w \
        -e class android.gpu.vulkan.cts.VulkanFeaturesTest#testVulkanHardwareFeatures \
        android.gpu.cts/androidx.test.runner.AndroidJUnitRunner`
+  - `adb shell am instrument -w \
+       -e class 'android.virtualdevice.cts.camera.VirtualCameraCameraXTest#virtualDeviceContext_takePicture[0]' \
+       android.virtualdevice.cts.camera/androidx.test.runner.AndroidJUnitRunner
 
 ## Sources
 
