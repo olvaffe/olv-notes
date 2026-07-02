@@ -366,6 +366,24 @@
   - kernel
     - `ftrace_config` is for `linux.ftrace` from `traced_probes`
       - it collects from `/sys/kernel/tracing` for various events
+      - atrace categories
+        - `gfx` enables `sde`, etc.
+        - `sched` enables `sched`, `cgroup`, `oom`, `task`, etc.
+        - `irq` enables `irq` and `ipi`
+        - `irqoff` and `preemptoff` enable `preemptirq`
+        - `i2c` enables `i2c`
+        - `freq` enables `power`, `clk`, `cpuhp`, etc.
+        - `idle` enables `power/cpuidle`
+        - `disk` enables `f2f2`, `ext4`, `block`, and `ufs`
+        - `mmc` enables `mmc`
+        - `fence` enables `dma_fence`
+        - `workq` enables `workqueue`
+        - `memreclaim` enables `vmscan`
+        - `regulators` enables `regulator`
+        - `binder_driver` and `binder_lock` enables `binder`
+        - `pagecache` enables `filemap`
+        - `memory` enables `kmem`, `gpu_mem`, etc.
+        - `thermal` enables `thermal`
     - `process_stats_config` is for `linux.process_stats` from `traced_probes`
       - it polls `/proc/<pid>` for per-process stats, including names
     - `sys_stats_config` is for `linux.sys_stats` from `traced_probes`
