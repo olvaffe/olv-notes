@@ -335,6 +335,142 @@
     - `i2c`
     - `scm`
 
+## Config
+
+- `protos/perfetto/config/trace_config.proto`
+  - or the generated `protos/perfetto/config/perfetto_config.proto`
+- top-level `TraceConfig`
+  - `buffers` configs `traced` central buffers
+    - when a producuer flushes, traced copies data from the producer's shmem
+      to one of the central buffers
+  - `data_sources` configs data sources
+  - `duration_ms` is the trace duration
+    - traced will trigger `OnTracingDisabled`
+  - direct write from traced
+    - `write_into_file` tells `traced` to write to the provided fd
+    - `output_path` is the direct write path
+    - `file_write_period_ms` is the write period
+    - `max_file_size_bytes` is the size limit
+  - `incremental_state_config`
+    - when a producer writes a trace packet, it may refer to earlier packets
+      - the packet can use ids to refer to interned strings
+    - with ring buffer, the earlier packets may have been overwritten
+    - this tells producers to assume earlier packets have been invalidated and
+      thus need to be emitted again
+  - `compression_type: compression_type_deflate`
+    - this happens during serialization, in response to `ReadBuffers` or
+      periodically duing direct write
+- `DataSourceConfig`
+  - `name` identifies the data source to config
+  - `target_buffer` specifies the central buffer to use
+  - kernel
+    - `ftrace_config` is for `linux.ftrace` from `traced_probes`
+      - it collects from `/sys/kernel/tracing` for various events
+    - `process_stats_config` is for `linux.process_stats` from `traced_probes`
+      - it polls `/proc/<pid>` for per-process stats, including names
+    - `sys_stats_config` is for `linux.sys_stats` from `traced_probes`
+      - it polls from `/proc` and `/sys`, including
+        - `/proc/meminfo`
+        - `/proc/vmstat`
+        - `/proc/stat`
+        - `/sys/class/devfreq`
+        - `/sys/devices/system/cpuN/cpufreq`
+        - `/proc/buddyinfo`
+        - `/proc/diskstats`
+        - `/proc/pressure`
+        - `/sys/class/thermal`
+        - `/sys/devices/system/cpuN/cpuidle`
+        - `/proc/slabinfo`
+    - `perf_event_config` is for `linux.perf` from `traced_perf`
+      - it collects perf events
+    - `system_info_config` is for `linux.system_info` from `traced_probes`
+      - it collects these info once
+        - `/proc/cpuinfo`
+        - `/sys/devices/system/cpu/cpuN`
+        - `/proc/interrupts`
+  - distro
+    - `journald_config` is for `linux.systemd_journald` from `traced_probes`
+  - gpu
+    - `gpu_counter_config` is for `gpu.counters` from vendor daemons
+      - vendor daemons
+        - android has generic `gpu_counter_producer`
+          - it dlopens `libgpudataproducer.so` or
+            `graphics.gpu.profiler.counter_producer_lib`
+        - mesa provides both `pps-producer` and `libgpudataproducer.so`
+        - mali provides both `gpudataproducer` and `libgpudataproducer.so`
+      - ui visualizes them in `GPU` group, `Counters` section
+    - `vulkan_memory_config` is for `vulkan.memory_tracker` from vendor umds
+      - mesa turnip names it `gpu.memory.msm` instead
+      - ui visualizes it in `GPU` group
+    - `gpu_renderstages_config` is for `gpu.renderstages` from vendor umds
+      - `debug.graphics.gpu.profiler.perfetto` enables the support for some
+        umds
+  - chrome
+    - `chrome_config` is for `org.chromium.trace_event`
+    - `chromium_system_metrics` is for `org.chromium.system_metrics`
+    - `chromium_histogram_samples` is for `org.chromium.histogram_samples`
+  - app
+    - `track_event_config` is for `track_event` from perfetto sdk
+      - app embeds perfetto sdk to provide `track_event` data source
+  - android
+    - `android_power_config` is for `android.power` from `traced_probes`
+      - it polls from `IHealth` and `IPowerStats` for power info
+    - `android_log_config` is for `android.log` from `traced_probes`
+      - it polls from `logd`
+    - `android_polled_state_config` is for `android.polled_state` from
+      `traced_probes`
+      - it polls display states
+    - `android_system_property_config` is for `android.system_property` from
+      `traced_probes`
+      - it collects from `init`
+    - `statsd_tracing_config` is for `android.statsd` from `traced_probes`
+      - it collects from `statsd`
+    - `network_packet_trace_config` is for `android.network_packets` from
+      `system_server`
+    - `cpu_per_uid_config` is for `android.cpu_per_uid` from `traced_probes`
+    - `user_list_config` is for `android.user_list` from `traced_probes`
+    - `android_aflags_config` is for `android.aflags` from `traced_probes`
+      - it invokes `/system/bin/aflags list --format proto`
+  - android winscope
+    - `surfaceflinger_layers_config` is for `android.surfaceflinger.layers`
+      from `surfaceflinger`
+    - `surfaceflinger_transactions_config` is for
+      `android.surfaceflinger.transactions` from `surfaceflinger`
+    - `android_input_event_config` is for `android.input.inputevent` from
+      `system_server`
+    - `windowmanager_config` is for `android.windowmanager` from
+      `system_server`
+    - `inputmethod_config` is for `android.inputmethod` from `system_server`,
+      ime service, and apps
+
+## `PerfettoCmd`
+
+- `PerfettoCmdMain` is the entrypoint
+  - it is called by `tracebox perfetto` or by the legacy `perfetto` exec
+  - `ParseCmdlineAndMaybeDaemonize` parses args
+    - `trace_out_path_` is from `--out`
+    - `trace_config_` is from `--config`
+      - if `--txt`, `TraceConfigTxtToPb` converts txt to bin first
+    - `OpenOutputFile` opens `trace_out_path_` and inits `trace_out_stream_`
+    - `packet_writer_` points to `trace_out_stream_`
+  - `ConnectToServiceRunAndMaybeNotify`
+    - `ConsumerIPCClient::Connect` connects to consumer socket
+    - `SetupCtrlCSignalHandler` installs ctrl-c handler
+      - it calls `ConsumerEndpoint::Flush` and
+        `ConsumerEndpoint::DisableTracing`
+- `Consumer` callbacks
+  - `OnConnect` is called when the connection to `traced` is established
+    - `ConsumerEndpoint::EnableTracing` triggers tracing
+  - `OnTracingDisabled` is called when tracing is disabled
+    - `ConsumerEndpoint::ReadBuffers` triggers readback
+  - `OnTraceData` is called when readback is triggered
+    - `packet_writer_->WritePackets` writes packets to file
+    - `FinalizeTraceAndExit` calls `task_runner_.Quit` to exit mainloop
+  - `OnDisconnect` is called when the socket is closed
+- upon ctrl-c,
+  - `ConsumerEndpoint::Flush` requests producers to flush to traced
+  - `ConsumerEndpoint::DisableTracing` disables tracing
+
 ## Add Track Event
 
 - `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
