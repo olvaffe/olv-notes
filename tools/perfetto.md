@@ -335,14 +335,16 @@
         - an event on a track
         - slice begin/end, instance, counter
     - gpu-related
-      - `FrameTimelineEvent`
       - `GpuCounterEvent`
-      - `GpuLog`
-      - `GpuMemTotalEvent`
       - `GpuRenderStageEvent`
-      - `GraphicsFrameEvent`
-      - `VulkanApiEvent`
       - `VulkanMemoryEvent`
+      - `GpuLog`
+      - `VulkanApiEvent`
+      - `GpuMemTotalEvent`
+      - `GpuInfo`
+      - `GenericGpuFrequencyEvent`
+      - `GraphicsFrameEvent`
+      - `FrameTimelineEvent`
 - `TrackEvent`
 
 ## `tracebox traced`
@@ -507,6 +509,103 @@
     - `Kernel threads`: "kernel process" for kthreads, workers, etc.
     - userspace processes
     - orphaned threads
+- GPU-related custom events
+  - `GpuCounterEvent`
+    - producer: privileged vendor services
+      - `gpu.counters` or `gpu.counters.<vendor>`
+    - parser: `GraphicsEventModule` parses to counter tracks
+    - ui: `dev.perfetto.Gpu` visualizes under `GPU -> Counters`
+  - `GpuRenderStageEvent`
+    - producer: vendor umds
+      - `gpu.renderstages` or `gpu.renderstages.<vendor>`
+    - parser: `GraphicsEventModule` parses to slice tracks
+    - ui: `dev.perfetto.Gpu` visualizes under `GPU -> Hardware Queues`
+  - `VulkanMemoryEvent`
+    - producer: vendor umds
+      - `gpu.memory` or `gpu.memory.<vendor>`
+    - parser: `GpuEventParser` parses to counter tracks
+    - ui: `dev.perfetto.Gpu` visualizes under
+      - `GPU -> Vulkan Allocations `
+      - `GPU -> Vulkan Binds`
+      - `GPU -> Vulkan Driver Memory`
+  - `GpuLog`
+    - producer: ?
+    - parser: `GpuEventParser` parses to a slice track
+    - ui: `dev.perfetto.Gpu` visualizes as `GPU Log`
+  - `VulkanApiEvent`
+    - producer: vendor umds
+      - `gpu.renderstages` or `gpu.renderstages.<vendor>`
+    - parser: `GraphicsEventModule` parses to a slice track
+    - ui: `dev.perfetto.Gpu` visualizes as `GPU -> Vulkan Events`
+  - `GpuMemTotalEvent`
+    - producer: `gpuservice`
+      - `android.gpu.memory`
+    - parser: `GpuEventParser` parses to a global counter track and
+      per-process counter tracks
+    - ui: `dev.perfetto.Gpu` visualizes as
+      - `GPU -> GPU Memory`
+      - `Process -> GPU Memory`
+  - `GpuInfo`
+    - producer: ?
+    - parser: `SystemProbesParser`
+    - ui: `dev.perfetto.Gpu` visualizes gpu names instead of `GPU <n>`
+  - `GenericGpuFrequencyEvent`
+    - producer: ?
+    - parser: `GenericKernelParser` parses to counter tracks
+    - ui: `dev.perfetto.Gpu` visualizes as `GPU -> GPU <n> Frequency`
+  - `GraphicsFrameEvent`
+    - producer: `surfaceflinger`
+      - `android.surfaceflinger.frame`
+    - parser: `GraphicsEventModule` parses to slice tracks
+    - ui: `dev.perfetto.Gpu` visualizes under `GPU`
+      - they show the life cycles of graphics buffers
+  - `FrameTimelineEvent`
+    - producer: `surfaceflinger`
+      - `android.surfaceflinger.frametimeline`
+    - parser: `GraphicsEventModule` parses to slice tracks
+    - ui: `dev.perfetto.Gpu` visualizes as
+      - `Process -> Expected Timeline`
+      - `Process -> Actual Timeline`
+- GPU-related ftrace events
+  - `GpuFrequencyFtraceEvent`
+    - producer: android-specific `power/gpu_frequency`
+    - parser: `FtraceEventParser` parses to counter tracks
+    - ui: same as `GenericGpuFrequencyEvent`
+  - `GpuMemTotalFtraceEvent`
+    - producer: `gpu_mem/gpu_mem_total`
+    - parser: `FtraceEventParser` parses to a global counter track and
+      per-process counter tracks
+    - ui: same as `GpuMemTotalEvent`
+      - if a process is idle, we don't get its `gpu_mem/gpu_mem_total`
+      - we rely on `GpuMemTotalEvent` to get its gpu mem size instead
+  - `GpuWorkPeriodFtraceEvent`
+    - producer: android-specific `power/gpu_work_period`
+      - it shows how much gpu time an uid uses for an internal
+    - parser: `FtraceEventParser` parses to slice tracks
+    - ui: `com.android.GpuWorkPeriod` visualizes under `GPU -> Work Period`
+  - `GpuPowerStateFtraceEvent`
+    - producer: android-specific `power/gpu_power_state`
+      - seems powervr-only
+    - parser: `FtraceEventParser` parses to a slice track
+    - ui: `org.kernel.Wattson` visualizes as
+      - `Wattson -> GPU Power (mW)`
+      - `Wattson -> GPU Energy (J)`
+  - `DrmVblank*FtraceEvent`
+    - producer: `drm/drm_vblank_event*`
+    - parser: `FtraceEventParser` parses to slice tracks
+    - ui: `dev.perfetto.TraceProcessorTrack` visualizes under
+      `Hardware -> DRM VBlank`
+  - `DrmSched*FtraceEvent`
+    - producer: `gpu_scheduler/drm_sched_*`
+    - parser: `FtraceEventParser` parses to slice tracks
+    - ui: `dev.perfetto.TraceProcessorTrack` visualizes under
+      `Hardware -> DRM Sched Ring`
+  - `DmaFence*FtraceEvent`
+    - producer: `dma_fence/dma_fence_*`
+    - parser: `FtraceEventParser` parses to slice tracks
+    - ui: `dev.perfetto.TraceProcessorTrack` visualizes under
+      `Hardware -> DRM Fence`
+      - there are also `dma_fence_wait` under `Process`
 
 ## Perfetto SDK
 
