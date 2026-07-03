@@ -256,7 +256,7 @@
             `graphics.gpu.profiler.counter_producer_lib`
         - mesa provides both `pps-producer` and `libgpudataproducer.so`
         - mali provides both `gpudataproducer` and `libgpudataproducer.so`
-      - ui visualizes them in `GPU` group, `Counters` section
+      - ui visualizes them in `GPU` group, `Counters` sub-group
     - `vulkan_memory_config` is for `vulkan.memory_tracker` from vendor umds
       - mesa turnip names it `gpu.memory.msm` instead
       - ui visualizes it in `GPU` group
@@ -461,6 +461,52 @@
     - `cpuTime` is cpu cycle count
   - this use the first and the last snapshot
     - `cpuCyclesPerNano` is "cpu cycle delta" divided by "clock time delta"
+
+## Web UI
+
+- components
+  - core, connect everything together
+  - widgets, for ui elements
+  - trace recorder, to initialize tracing from ui
+  - trace processor engine compiled to WASM
+    - a trace file consists of a `Trace` proto
+    - trace processor parses the trace file into an in-memory sql db
+    - alternatively, `trace_processor_shell` can listen to a local port that
+      ui connects to
+  - plugins, almost all analysis and visualization are provided by plugins
+    - core plugins
+    - domain plugins
+- timeline tab
+  - each row is a track
+  - a group is a track that contains child tracks
+  - non-standard groups
+    - they all have negative priority and show at the beginning
+    - `CPU Scheduling`: per-cpu schedulign
+    - `CPU Frequency`: per-cpu freq
+    - `Ftrace Events`: per-cpu raw ftrace events
+  - standard groups
+    - they all have priority 0
+    - `Thermals`: thermal zones, cooling devices, etc.
+    - `Power`: batteries, etc.
+    - `CPU`: max/min scaling freqs, capacity, utilization, etc.
+    - `Memory`: meminfo, vmstat, reclaim, etc.
+    - `Hardware`: clk, devfreq, drm vblank, dma-fence, etc.
+    - `GPU`: freq, mem, vulkan events
+      - `Counters`: aka gpu counters
+      - `Hardware Queues`: aka render stages
+      - `Work Period`: android-specific
+    - `Device State`: android-specific screen state, charging state, etc.
+    - `IO`: block io, diskstat, ufs, f2fs, etc.
+    - `Network`: tx, rx, etc.
+    - `System`: irq count, psi, clock snapshot (time domain sync), etc.
+    - `Kernel`: almost unused?
+    - `Hypervisor` pkvm
+    - `User Interaction`: android-specific end-to-end input latency
+  - process groups
+    - they all have priority 50 and show at the end
+    - `Kernel threads`: "kernel process" for kthreads, workers, etc.
+    - userspace processes
+    - orphaned threads
 
 ## Perfetto SDK
 
