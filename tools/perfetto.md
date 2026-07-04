@@ -6,25 +6,16 @@
   - `git clone https://github.com/google/perfetto.git`
   - `tools/install-build-deps [--linux-arm]` to pull dependencies
     - `BUILD_DEPS_TOOLCHAIN_HOST`
-      - `gn`
-      - `clang-format`
-      - `ninja`
-      - `clang`
+      - `gn`, `clang-format`, `ninja`, `clang`
     - `BUILD_DEPS_HOST`
-      - `googletest`
-      - `protobuf`
-      - `libcxx`, `libcxxabi`
-      - `libunwind`
-      - `fuzzer`
-      - `benchmark`
-      - `libbacktrace`
-      - `sqlite`
-      - `jsoncpp`
+      - `googletest`, `protobuf`, `abseil-cpp`
+      - `libcxx`, `libcxxabi`, `libunwind`
+      - `libfuzzer`, `benchmark`, `libbacktrace`
+      - `sqlite`, `expat`
       - android core, unwind, logging, base, procinfo, bionic, etc.
-      - `lzma`
-      - `zlib`
-      - `linenoise`
-    - sysroot
+      - `lzma`, `zstd`, `zlib`
+      - `linenoise`, `bloaty`, `re2`, `pcre2`, `open_csd`
+    - `BUILD_DEPS_LINUX_CROSS_SYSROOTS`: arm64 sysroot
   - `tools/gn args out/blah`
     - `target_os = "linux"`
     - `target_cpu = "x64" or "arm64"`
