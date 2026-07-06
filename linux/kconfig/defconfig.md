@@ -857,8 +857,7 @@
     - select `VFAT (Windows-95) fs support` if esp
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
-    - select `NTFS Read-Write file system support` if desired
-      - select `activate support of external compressions lzx/xpress`
+    - select `NTFS file system support` if desired
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
