@@ -292,6 +292,47 @@
     - `inputmethod_config` is for `android.inputmethod` from `system_server`,
       ime service, and apps
 
+## Example Config
+
+- `buffers`
+  - `size_kb: 524288` uses a `TraceBuffer` of 512MB
+  - `fill_policy: DISCARD` discards all overflow protos
+- `data_sources` for `linux.sys_stats`
+  - `meminfo_period_ms` visualizes as `Memory -> Meminfo` group
+  - `vmstat_period_ms` visualizes as `Memory -> vmstat` group
+  - `stat_period_ms` visualizes as
+    - `System -> {IRQ,Softirq} Count` groups
+    - `System -> {num_forks,num_irq_total,num_softirq_total}` tracks
+    - `CPU -> {User,Nice,Kernel,Idle,IO Wait,...} Time` groups
+  - `devfreq_period_ms` visualizes as `Hardware -> Clock Frequency` group
+  - `cpufreq_period_ms` visualizes as `CPU Frequency` group
+  - `diskstat_period_ms` visualizes as `IO -> Diskstat` group
+  - `psi_period_ms` visualizes as `System -> PSI` group
+  - `thermal_period_ms` visualizes as `Thermals -> Temperature (/sys)` group
+  - `cpuidle_period_ms` visualizes as `CPU -> CPU Idle {,Per Cpu} Time In State` groups
+  - `gpufreq_period_ms` visualizes as `GPU -> GPU 0 Frequency` track
+    - it only supports kgsl/i915/amdgpu and only card0
+- `data_sources` for `linux.process_stats`
+  - it creates process groups to hold thread tracks and process stat tracks
+  - `proc_stats_poll_ms` visualizes as `Process -> {mem.*,oom_score_adj}` tracks
+- `data_sources` for `linux.ftrace`
+  - `ftrace_events`
+    - `sched/sched_switch` visualizes as
+      - `CPU Scheduling` group
+      - `Scheduler` group
+      - `Kernel threads` group
+      - `Process -> Thread` tracks
+    - `sched/sched_waking` visualizes as `Runnable` slices in thread tracks
+    - `task/task_newtask` visualizes as `Runnable` slices in thread tracks,
+      for new threads
+    - `task/task_rename` handles renames?
+  - `atrace_categories` enables atrace categories
+  - `atrace_apps: "*"` enables atrace app categories for all apps and system
+    services
+  - `symbolize_ksyms: true` symbolizes kernel func addrs
+- `data_sources` for `track_event`
+  - `enabled_tags: "slow"` enables slow categories
+
 # `Trace` proto
 
 - `protos/perfetto/trace/trace.proto`
