@@ -297,6 +297,8 @@
 - `buffers`
   - `size_kb: 524288` creates a `TraceBuffer` of 512MB
   - `fill_policy: DISCARD` discards all overflow protos
+- `data_sources` for `linux.system_info`
+  - it collects cpu info/feats/freqs/caps
 - `data_sources` for `linux.sys_stats`
   - `cpufreq_period_ms` visualizes as `CPU Frequency` group
     - `power/cpu_frequency` is better, but it does not work with intel/amd pstate
@@ -315,9 +317,22 @@
   - `gpufreq_period_ms` visualizes as `GPU -> GPU 0 Frequency` track
     - it only supports kgsl/i915/amdgpu and only card0
   - `cpuidle_period_ms` visualizes as `CPU -> CPU Idle {,Per Cpu} Time In State` groups
+- `data_sources` for `linux.sysfs_power`
+  - it visualizes as `Power` group
 - `data_sources` for `linux.process_stats`
   - it creates process groups to hold thread tracks and process stat tracks
   - `proc_stats_poll_ms` visualizes as `Process -> {mem.*,oom_score_adj}` tracks
+- `data_sources` for `linux.systemd_journald`
+  - it visualizes as `Journald logs` track
+- `data_sources` for `linux.perf`
+  - it is provided by `tracebox traced_perf`
+  - `timebase`
+    - `frequency: 100` is sample frequency per "second"
+    - `counter: SW_CPU_CLOCK` is the counter used to define a "second"
+      - together, we sample once whenever a cpu core is busy for 10ms
+    - `timestamp_clock: PERF_CLOCK_MONOTONIC` is the clock used by perf
+  - `callstack_sampling`
+    - `kernel_frames: true` unwinds kernel frames as well
 - `data_sources` for `linux.ftrace`
   - `ftrace_events`
     - `sched/sched_switch` visualizes as
