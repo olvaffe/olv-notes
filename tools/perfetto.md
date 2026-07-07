@@ -295,23 +295,26 @@
 ## Example Config
 
 - `buffers`
-  - `size_kb: 524288` uses a `TraceBuffer` of 512MB
+  - `size_kb: 524288` creates a `TraceBuffer` of 512MB
   - `fill_policy: DISCARD` discards all overflow protos
 - `data_sources` for `linux.sys_stats`
+  - `cpufreq_period_ms` visualizes as `CPU Frequency` group
+    - `power/cpu_frequency` is better, but it does not work with intel/amd pstate
+    - `power/cpu_idle` is used to visualize as solid or hollow areas
+  - `thermal_period_ms` visualizes as `Thermals -> Temperature (/sys)` group
+    - `thermal/thermal_temperature` is better, but it typically does not work
+  - `diskstat_period_ms` visualizes as `IO -> Diskstat` group
   - `meminfo_period_ms` visualizes as `Memory -> Meminfo` group
   - `vmstat_period_ms` visualizes as `Memory -> vmstat` group
   - `stat_period_ms` visualizes as
     - `System -> {IRQ,Softirq} Count` groups
     - `System -> {num_forks,num_irq_total,num_softirq_total}` tracks
     - `CPU -> {User,Nice,Kernel,Idle,IO Wait,...} Time` groups
-  - `devfreq_period_ms` visualizes as `Hardware -> Clock Frequency` group
-  - `cpufreq_period_ms` visualizes as `CPU Frequency` group
-  - `diskstat_period_ms` visualizes as `IO -> Diskstat` group
   - `psi_period_ms` visualizes as `System -> PSI` group
-  - `thermal_period_ms` visualizes as `Thermals -> Temperature (/sys)` group
-  - `cpuidle_period_ms` visualizes as `CPU -> CPU Idle {,Per Cpu} Time In State` groups
+  - `devfreq_period_ms` visualizes as `Hardware -> Clock Frequency` group
   - `gpufreq_period_ms` visualizes as `GPU -> GPU 0 Frequency` track
     - it only supports kgsl/i915/amdgpu and only card0
+  - `cpuidle_period_ms` visualizes as `CPU -> CPU Idle {,Per Cpu} Time In State` groups
 - `data_sources` for `linux.process_stats`
   - it creates process groups to hold thread tracks and process stat tracks
   - `proc_stats_poll_ms` visualizes as `Process -> {mem.*,oom_score_adj}` tracks
