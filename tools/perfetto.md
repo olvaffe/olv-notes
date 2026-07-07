@@ -299,6 +299,8 @@
   - `fill_policy: DISCARD` discards all overflow protos
 - `data_sources` for `linux.system_info`
   - it collects cpu info/feats/freqs/caps
+  - to query max freqs,
+    `SELECT cpu, MAX(freq) FROM cpu_available_frequencies GROUP BY cpu`
 - `data_sources` for `linux.sys_stats`
   - `cpufreq_period_ms` visualizes as `CPU Frequency` group
     - `power/cpu_frequency` is better, but it does not work with intel/amd pstate
@@ -319,9 +321,6 @@
   - `cpuidle_period_ms` visualizes as `CPU -> CPU Idle {,Per Cpu} Time In State` groups
 - `data_sources` for `linux.sysfs_power`
   - it visualizes as `Power` group
-- `data_sources` for `linux.process_stats`
-  - it creates process groups to hold thread tracks and process stat tracks
-  - `proc_stats_poll_ms` visualizes as `Process -> {mem.*,oom_score_adj}` tracks
 - `data_sources` for `linux.systemd_journald`
   - it visualizes as `Journald logs` track
 - `data_sources` for `linux.perf`
@@ -333,6 +332,10 @@
     - `timestamp_clock: PERF_CLOCK_MONOTONIC` is the clock used by perf
   - `callstack_sampling`
     - `kernel_frames: true` unwinds kernel frames as well
+- `data_sources` for `linux.process_stats`
+  - it creates process groups to hold thread tracks and process stat tracks
+  - `proc_stats_poll_ms` visualizes as `Process -> {mem.*,oom_score_adj}` tracks
+    - `kmem/rss_stat` and `oom/oom_score_adj_update` are better
 - `data_sources` for `linux.ftrace`
   - `ftrace_events`
     - `sched/sched_switch` visualizes as
@@ -344,12 +347,27 @@
     - `task/task_newtask` visualizes as `Runnable` slices in thread tracks,
       for new threads
     - `task/task_rename` handles renames?
+    - subsets of
+      - `power`, `thermal`, `devfreq`
+      - `dma_fence`, `gpu_scheduler`, `drm`, `gpu_mem`
+      - `irq`, `irq_vectors`, `timer`
+      - `rpm`
+      - `workqueue`, `vmscan`, `raw_syscalls`
+      - `kmem`, `oom`
+  - `syscall_events` is `raw_syscalls` filter
+  - `symbolize_ksyms: true` symbolizes kernel func addrs
   - `atrace_categories` enables atrace categories
   - `atrace_apps: "*"` enables atrace app categories for all apps and system
     services
-  - `symbolize_ksyms: true` symbolizes kernel func addrs
+- `data_sources` for `gpu.counters`
+- `data_sources` for `gpu.renderstages`
 - `data_sources` for `track_event`
   - `enabled_tags: "slow"` enables slow categories
+- `data_sources` for `org.chromium.trace_event`
+- `data_sources` for `android.power`
+- `data_sources` for `android.gpu.memory`
+- `data_sources` for `android.log`
+- `data_sources` for `android.surfaceflinger.frametimeline`
 
 # `Trace` proto
 
