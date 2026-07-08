@@ -47,6 +47,18 @@
 ## free
 
 - `procps_meminfo_new` reads `/proc/meminfo`
+- `Mem`
+  - `total` is `MemTotal`
+  - `used` is `MemTotal - MemAvailable`
+  - `free` is `MemFree`
+  - `shared` is `Shmem`
+  - `buffers` is `Buffers`
+  - `cache` is `Cached + SReclaimable`
+  - `available` is `MemAvailable`
+- `Swap`
+  - `total` is `SwapTotal`
+  - `used` is `SwapTotal - SwapFree`
+  - `free` is `SwapFree`
 
 ## pidof
 
