@@ -476,6 +476,9 @@
   - the config proto file is `protos/perfetto/config/perfetto_config.proto`
     - <https://raw.githubusercontent.com/google/perfetto/master/protos/perfetto/config/perfetto_config.proto>
   - `protoc --encode=perfetto.protos.TraceConfig perfetto_config.proto < config.txt > config.bin`
+- size analysis
+  - `trace_processor_shell --wide --analyze-trace-proto-content -i my_trace.pftrace`
+  - `SELECT path, total_size, count from experimental_proto_content ORDER BY total_size DESC LIMIT 25`
 
 ## SQL
 
