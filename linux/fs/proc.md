@@ -2,7 +2,44 @@
 
 ## `/proc/meminfo`
 
+- physical pages: `get_num_physpages()`
+  - let's break down into an hierarchy
+  - reserved: `get_num_physpages() - totalram_pages()`
+    - these are reserved by memblock, and are not freed to buddy
+    - note that cma is freed to buddy
+  - buddy: `totalram_pages()`
+    - free: `NR_FREE_PAGES`
+      - these have been `free_pages`ed to buddy
+    - allocated: `totalram_pages() - NR_FREE_PAGES`
+      - these have been `alloc_pages`ed from buddy
+      - userspace: `NR_ANON_MAPPED + NR_FILE_PAGES`
+        - anon: `NR_ANON_MAPPED`
+        - file: `NR_FILE_PAGES`
+          - shmem: `NR_SHMEM`
+          - swap: `NR_SWAPCACHE`
+          - blockdev: `nr_blockdev_pages()`
+          - regular file: rest
+      - kernel space
+        - slab: `NR_SLAB_RECLAIMABLE_B + NR_SLAB_UNRECLAIMABLE_B`
+        - vmalloc: `NR_VMALLOC`
+          - because of `CONFIG_VMAP_STACK`, this includes kernel stacks
+        - pgtable: `NR_PAGETABLE`
+        - per-cpu: `pcpu_nr_pages()`
+        - gpu: `NR_GPU_ACTIVE + NR_GPU_RECLAIM`
+        - direct `alloc_pages`: not accounted
+          - mainly for device dmas
 - `meminfo_proc_show`
+  - `si_meminfo`
+    - `totalram` is `totalram_pages`
+    - `sharedram` is `NR_SHMEM`
+    - `freeram` is `NR_FREE_PAGES`
+    - `bufferram` is `nr_blockdev_pages`
+    - `totalhigh` is `totalhigh_pages`
+    - `freehigh` is `nr_free_highpages`
+    - `mem_unit` is `PAGE_SIZE`
+  - `si_swapinfo`
+    - `freeswap` is `nr_swap_pages`
+    - `totalswap` is `total_swap_pages`
 - `MemTotal`
   - this shows `_totalram_pages`
   - it is increased when free pages are handed over from memblock to buddy
@@ -91,16 +128,25 @@
 - `WritebackTmp`
 - `CommitLimit`
 - `Committed_AS`
-- `VmallocTotal`
-- `VmallocUsed`
-- `VmallocChunk`
-- `Percpu`
+- `VmallocTotal` shows `VMALLOC_TOTAL`
+- `VmallocUsed` shows `NR_VMALLOC`
+- `VmallocChunk` shows 0
+- `Percpu` shows `pcpu_nr_pages()`
 - `HardwareCorrupted`
 - `AnonHugePages`
 - `ShmemHugePages`
 - `ShmemPmdMapped`
 - `FileHugePages`
 - `FilePmdMapped`
+- `CmaTotal` shows `totalcma_pages`
+  - cma is managed by buddy so this is included in `totalram_pages()` as well
+- `CmaFree` shows `NR_FREE_CMA_PAGES`
+  - cma is managed by buddy so this is included in `NR_FREE_PAGES` as well
+  - note that a non-cma `alloc_pages` can allocate from cma when it is
+    migratable
+- `Balloon` shows `NR_BALLOON_PAGES`
+- `GPUActive` shows `NR_GPU_ACTIVE`
+- `GPUReclaim` shows `NR_GPU_RECLAIM`
 - `Hugepagesize`
 - `Hugetlb`
 - `DirectMap4k`
