@@ -198,12 +198,17 @@
   - pages promoted to a faster memory tier
 - `PGDEMOTE_*`
   - pages demoted to a slower memory tier
+- `PGSTEAL_*` and `PGSCAN_*`
+  - `shrink_inactive_list` counts `PGSTEAL_*` for reclaimed pages and counts
+    `PGSCAN_*` for scanned pages
 - `NR_HUGETLB`
   - explicit huge pages
 - `NR_BALLOON_PAGES`
   - pages owned by balloon (e.g., kvm guest balloon driver)
 - `NR_KERNEL_FILE_PAGES`
   - pages for page cache of fake kernel file
+- `NR_GPU_ACTIVE` and `NR_GPU_RECLAIM`
+  - pages for gpu objects and gpu pools
 
 ## `zone_stat_item`
 
@@ -248,11 +253,6 @@
 - `PGFAULT` and `PGMAJFAULT`
   - `handle_mm_fault` always counts `PGFAULT` for hw faults
   - when the fault incurs io, it also counts `PGMAJFAULT`
-- `PGSTEAL_KSWAPD` and `PGSCAN_KSWAPD`
-  - `kswapd_shrink_node` shrinks a node to reclaim pages from various
-    sources
-  - `shrink_inactive_list` counts `PGSTEAL_KSWAPD` for reclaimed pages and
-    counts `PGSCAN_KSWAPD` for scanned pages
 - `SWAP_RA` and `SWAP_RA_HIT`
   - when `do_swap_page` swaps in a page, `swapin_readahead` reads more pages
     than needed in the hope that they are going to be needed soon
