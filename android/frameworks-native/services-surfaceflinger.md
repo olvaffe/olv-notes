@@ -402,3 +402,50 @@
     - `RenderEngine::updateProtectedContext`
     - `SkiaRenderEngine::drawLayersInternal`
       - `trace` traces `RE Completion`
+
+## VkCube Example
+
+- vkcube
+  - `vkAcquireNextImageKHR` acquires the next image
+    - more on this below
+  - `vkQueueSubmit` submits the gpu job
+  - `vkQueuePresent` calls `Surface::queueBufferImpl` to queue the buffer
+    - `BufferQueueProducer::queueBuffer` queues the buffer and notifies BLAST
+      - `BLASTBufferQueue::onFrameAvailable` is notified
+        - `BLASTBufferQueue::acquireNextBufferLocked` consumes the buffer
+          and sends it as a transaction to sf
+          - `BLASTBufferQueue::makeReleaseBufferCallbackThunk` is the
+            release callback
+      - it waits on the previous fence to throttle
+    - `Surface::onBufferQueuedLocked` traces gpu completion of the current
+      fence
+  - `vkAcquireNextImageKHR` calls `Surface::dequeueBuffer` to dequeue a buffer
+    - `BufferQueueProducer::dequeueBuffer`
+      - `BufferQueueProducer::waitForFreeSlotThenRelock`
+        - `BBQBufferQueueProducer::waitForBufferRelease`
+          - `BufferReleaseReader::readBlocking` waits for sf `writeReleaseFence`
+          - `BLASTBufferQueue::releaseBufferCallback`
+            - `BufferItemConsumer::releaseBuffer ->
+               ConsumerBase::releaseBufferLocked ->
+               BufferQueueConsumer::releaseBuffer` adds the released buffer
+            - typically, binder thread handles sf `onTransactionCompleted`
+              first and the lamdba from `makeReleaseBufferCallbackThunk`
+              also calls `releaseBufferCallback`
+    - it traces hwc completion of the returned fence, which happens on next vsync
+- sf
+  - `SurfaceFlinger::setTransactionState` handles the present transaction
+  - `SurfaceFlinger::commit` commits the present transaction
+  - `SurfaceFlinger::composite` composites and presents a frame
+    - `CompositionEngine::present` composites and presents
+      - `Output::present`
+        - `Output::prepareFrame` calls `Display::chooseCompositionStrategy`
+          which negotiates hwc/gpu composition with hwc
+        - `Output::finishFrame` calls ` Output::composeSurfaces` to gpu
+          composite
+        - `Output::presentFrameAndReleaseLayers` presents to hwc
+    - `SurfaceFlinger::onCompositionPresented` calls
+      `TransactionCallbackInvoker::sendCallbacks`
+      - `BufferReleaseChannel::ProducerEndpoint::writeReleaseFence`
+        sends the fence of the previous buffer
+      - `BpTransactionCompletedListener::onTransactionCompleted` sends
+        transaction completion
