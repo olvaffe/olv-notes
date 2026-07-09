@@ -440,12 +440,25 @@
       - `Output::present`
         - `Output::prepareFrame` calls `Display::chooseCompositionStrategy`
           which negotiates hwc/gpu composition with hwc
+          - `HWComposer::getDeviceCompositionChanges -> Display::validate ->
+             AidlComposer::validateDisplay`
         - `Output::finishFrame` calls ` Output::composeSurfaces` to gpu
           composite
         - `Output::presentFrameAndReleaseLayers` presents to hwc
+          - `HWComposer::presentAndGetReleaseFences -> Display::present ->
+            AidlComposer::presentDisplay`
     - `SurfaceFlinger::onCompositionPresented` calls
       `TransactionCallbackInvoker::sendCallbacks`
       - `BufferReleaseChannel::ProducerEndpoint::writeReleaseFence`
         sends the fence of the previous buffer
       - `BpTransactionCompletedListener::onTransactionCompleted` sends
         transaction completion
+- drm hwcomposer calls `ComposerClient::ExecuteDisplayCommand`
+  - if `validateDisplay`, `HwcDisplay::ValidateStagedComposition`
+    - `GenericCompositionPlanner::ValidateDisplay`
+  - if `presentDisplay`, `HwcDisplay::PresentStagedComposition`
+    - `HwcDisplay::WaitForPresentTime` sleeps until the next vsync
+    - `HwcDisplay::CommitStagedComposition` commits
+      - `HwcDisplay::CreateFrameUpdateCommit` collects the args
+      - `HwcDisplay::ExecuteAtomicCommit` calls
+        `DrmAtomicCommitSink::ExecuteAtomicCommit`
