@@ -32,7 +32,7 @@
     - `tracebox perfetto -c configs/scheduling.cfg --txt --out aaa`
 - Android
   - <https://perfetto.dev/docs/quickstart/android-tracing>
-  - use <https://raw.githubusercontent.com/google/perfetto/master/tools/record_android_trace>
+  - use <https://raw.githubusercontent.com/google/perfetto/refs/heads/main/tools/record_android_trace>
   - or, `cat config.txt | adb shell perfetto --txt -c - -o /data/misc/perfetto-traces/trace`
   - or, on older devices,
     - `adb shell setprop persist.traced.enable 1`
