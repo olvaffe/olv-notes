@@ -87,6 +87,7 @@
 - `PWR_OVERRIDE1` (`GPU_PWR_OVERRIDE1` in panthor)
 - `GPU_FEATURES`
 - `PRFCNT_FEATURES`
+  - bit 7:0: counter block size (512 bytes)
 - `TIMESTAMP_OFFSET` (`GPU_TIMESTAMP_OFFSET_LO` in panthor)
   - modifiable timestamp offset
 - `CYCLE_COUNT` (`GPU_CYCLE_COUNT_LO` in panthor)
@@ -282,8 +283,11 @@
 - `GLB_GROUP_NUM` number of `GROUP_CONTROL_BLOCK` instances
 - `GLB_GROUP_STRIDE` stride between `GROUP_CONTROL_BLOCK` instances
 - `GLB_PRFCNT_SIZE`
+  - bit 15:0: hw size
+  - bit 31:16: fw size
 - `GLB_INSTR_FEATURES`
 - `GLB_PRFCNT_FEATURES`
+  - bit 3:0: metadata size
 
 ## `GLB_INPUT_BLOCK` regs
 
@@ -295,8 +299,8 @@
   - `CFG_ALLOC_EN` commits `GLB_ALLOC_EN`
   - `CFG_PWROFF_TIMER` commits `GLB_PWROFF_TIMER`
   - `PROTM_ENTER` enters protected mode
-  - `PRFCNT_ENABLE`
-  - `PRFCNT_SAMPLE`
+  - `PRFCNT_ENABLE` enables/disables perfcnt
+  - `PRFCNT_SAMPLE` samples perfcnt and writes to buf
   - `COUNTER_ENABLE`
   - `PING` pings the mcu
   - `FIRMWARE_CONFIG_UPDATE`
@@ -307,8 +311,8 @@
   - `INACTIVE_FRAGMENT`
   - `INACTIVE_TILER`
   - `PROTM_EXIT` exits protected mode
-  - `PRFCNT_THRESHOLD`
-  - `PRFCNT_OVERFLOW`
+  - `PRFCNT_THRESHOLD` toggles when buf is 50% full
+  - `PRFCNT_OVERFLOW` toggles when buf is 100% full
   - `IDLE_EVENT` acks idle event
 - `GLB_ACK_IRQ_MASK`
   - irq sources to enable
@@ -325,10 +329,13 @@
     - it powers down a tile or shader core after idling for timeout
     - it replaces manual `SHADER_PWRON` and `TILER_PWRON` control
 - `GLB_ALLOC_EN` which shader cores are enabled
-- `GLB_PRFCNT_JASID`
-- `GLB_PRFCNT_BASE`
-- `GLB_PRFCNT_EXTRACT`
+- `GLB_PRFCNT_JASID` is the AS
+- `GLB_PRFCNT_BASE` is the ringbuf base
+- `GLB_PRFCNT_EXTRACT` is the ringbuf head (for reading)
 - `GLB_PRFCNT_CONFIG`
+  - bit 7:0: number of samples
+  - bit 9:8: counter set
+  - bit 10: metadata enable
 - `GLB_PRFCNT_CSG_SELECT`
 - `GLB_PRFCNT_FW_EN`
 - `GLB_PRFCNT_CSG_EN`
