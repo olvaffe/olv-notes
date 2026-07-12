@@ -74,6 +74,33 @@
   - with `-w`, it matches against `/proc/*/stat` as well which is for kernel
     workers
 
+## vmstat
+
+- `procs` is from `/proc/stat`
+  - `r` is `procs_running`
+  - `b` is `procs_blocked`
+- `memory` is from `/proc/meminfo`
+  - `swpd` is `SwapTotal - SwapFree`
+  - `free` is `MemFree`
+  - `buff` is `Buffers`
+  - `cache` is `Cached + SReclaimable`
+- `swap` is from `/proc/vmstat`
+  - `si` is `pswpin / uptime`
+  - `so` is `pswpout / uptime`
+- `io` is from `/proc/vmstat`
+  - `bi` is `pgpgin / uptime`
+  - `bo` is `pgpgout / uptime`
+- `system` is from `/proc/stat`
+  - `in` is `intr / uptime`
+  - `cs` is `ctxt / cputime`
+- `cpu` is from `/proc/stat`
+  - `us` is `(user + nice) %`
+  - `sy` is `(system + irq + softirq) %`
+  - `id` is `idle %`
+  - `wa` is `iowait %`
+  - `st` is `steal %`
+  - `gu` is `(guest + guest_nice) %`
+
 ## ps
 
 - `ps -f --ppid 2 --deselect`
