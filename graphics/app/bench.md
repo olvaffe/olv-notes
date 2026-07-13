@@ -239,11 +239,12 @@
 - <https://benchmarks.ul.com/downloads/3dmark-android-pro.zip>
   - `adb install -r -g foo.apk`
   - `adb shell am start -n com.futuremark.dmandroid.application/com.futuremark.flamenco.ui.splash.SplashPageActivity`
-  - `sleep 10`
+  - `sleep 3`
   - `adb shell am force-stop com.futuremark.dmandroid.application`
   - `adb push foo.dlc /data/media/10/Android/data/com.futuremark.dmandroid.application/files`
   - `adb push foo.xml /data/media/10/Android/data/com.futuremark.dmandroid.application/files`
     - after editing `license_key`
+    - or `/data/media/10/Android/data/com.futuremark.dmandroid.application/files/3DMarkAndroid/key.txt`
   - `adb shell am start -n com.futuremark.dmandroid.application/com.futuremark.dmandroid.application.BenchmarkLauncherActivity \
        -e com.futuremark.android.InstallDLC true \
        -e com.futuremark.android.BenchmarkFilePath /storage/emulated/10/Android/data/com.futuremark.dmandroid.application/files/foo.xml`
