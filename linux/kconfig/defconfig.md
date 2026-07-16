@@ -635,6 +635,7 @@
   - select `DMA Engine support` if needed
     - select `BCM2835 DMA engine support` if rpi
     - select `DMA API Driver for PL330` if rk
+    - select `MediaTek SoCs APDMA support for UART` if mt8196
     - select `Qualcomm Technologies GPI DMA support` if qcom x1
     - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
