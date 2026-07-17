@@ -23,9 +23,9 @@
 ## Run
 
 - <https://source.android.com/compatibility/cts/downloads.html>
-- permissions
-  - `adb shell settings put global verifier_verify_adb_installs 0`
-  - `adb shell settings put global package_verifier_enable 0`
+- permissions: one of
+  - narrower `adb shell settings put global verifier_verify_adb_installs 0`
+  - broader `adb shell settings put global package_verifier_enable 0`
 - `./cts-tradefed run commandAndExit cts-dev -m <module> -t <CLASS>#<METHOD>`
   - this runs the primary abi
     - for other abis, specify `--abi` or `-a`
@@ -51,7 +51,7 @@
        android.gpu.cts/androidx.test.runner.AndroidJUnitRunner`
   - `adb shell am instrument -w \
        -e class 'android.virtualdevice.cts.camera.VirtualCameraCameraXTest#virtualDeviceContext_takePicture[0]' \
-       android.virtualdevice.cts.camera/androidx.test.runner.AndroidJUnitRunner
+       android.virtualdevice.cts.camera/androidx.test.runner.AndroidJUnitRunner`
 
 ## Sources
 
@@ -61,7 +61,25 @@
 - <https://android.googlesource.com/platform/cts/>
   - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
   - for fastest runs, use `cts-dev` plan
-  - `--skip-preconditions --skip-device-info --skip-all-system-status-check --primary-abi-only --no-enable-parameterized-modules`
+  - `--skip-preconditions` skips `PreconditionPreparer`, which can check wifi,
+    api level, screen lock, etc.
+  - `--skip-device-info` skips `DeviceInfoCollector`, which collects system info
+  - `--skip-all-system-status-check` skips `ISystemStatusChecker`, which
+    checks system status pre or post tests
+  - `--primary-abi-only` skips all but the primary abi
+  - `--no-enable-parameterized-modules` skips all parameterizations defined in
+    `ModuleParameters`, such as `instant_app`, `multi_abi`, `secondary_user`,
+    `multiuser`, `all_foldable_states`, etc.
+- <https://android.googlesource.com/platform/tools/asuite/+/refs/heads/android17-release/atest/>
+  - atest uses `atest_device_test_base.xml` plan which is faster by default
+  - it appends `--enable-parameterized-modules` and
+    `--exclude-module-parameters <DEFAULT_EXCLUDE_PARAS>` by default
+    - specify `-- --enable-parameterized-modules false` to override
+      - `--no-enable-parameterized-modules` does not work because the runner
+        looks for exact match
+    - or specify `-- --exclude-module-parameters all_foldable_states` to
+      additionally exclude `all_foldable_states`
+      - `DEFAULT_EXCLUDE_PARAS` misses the param
 
 ## graphics-related modules
 
