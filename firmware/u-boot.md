@@ -119,27 +119,37 @@
 ## RK3588
 
 - <https://docs.u-boot.org/en/latest/board/rockchip/rockchip.html>
-  - build or get tf-a firmware
-    - `git clone https://review.trustedfirmware.org/TF-A/trusted-firmware-a.git`
-      - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3588 bl31`
-      - `build/rk3588/release/bl31/bl31.elf` is the image
-    - <https://github.com/rockchip-linux/rkbin>
   - get tpl firmware
-    - also at <https://github.com/rockchip-linux/rkbin>
+    - at <https://github.com/rockchip-linux/rkbin>
+  - build tf-a firmware (bl31)
+    - `git clone https://review.trustedfirmware.org/TF-A/trusted-firmware-a.git`
+      - 6-month release cycle
+      - every other release is lts
+    - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3588 bl31`
+      - optionally `SPD=opteed` for optee
+      - `LOG_LEVEL=40` to enable `INFO` loglevel
+    - `build/rk3588/release/bl31/bl31.elf` is the image
+  - optionally build optee firmware (bl32)
+    - `git clone https://github.com/OP-TEE/optee_os.git`
+      - 3-month release cycle
+    - `make CROSS_COMPILE64=aarch64-linux-gnu- PLATFORM=rockchip-rk3588 CFG_USER_TA_TARGETS=ta_arm64`
+      - `CFG_EARLY_CONSOLE=y` to enable console
+    - `out/arm-plat-rockchip/core/tee-raw.bin` is the image
   - build uboot
     - `make orangepi-5-rk3588s_defconfig`
-    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.19.bin
+    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.21.bin
        BL31=../trusted-firmware-a/build/rk3588/release/bl31/bl31.elf
        CROSS_COMPILE=aarch64-linux-gnu- make`
+       - optionally `TEE=../optee_os/out/arm-plat-rockchip/core/tee.bin`
+         - if prompted, leave `CONFIG_OPTEE_TZDRAM_SIZE` at the default
     - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
       - `arch/arm/dts/rockchip-u-boot.dtsi`
       - `mkimage` packs `rockchip-tpl` (the ddr blob from rkbin) and
         `u-boot-spl` (`spl/u-boot-spl.bin`) into `idbloader.img`
         - this is to be flashed to sector 0x40, mandated by the bootrom
       - `u-boot.itb` is u-boot proper
-        - this is to be flashed to sector 0x4000, because
-          `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` defaults to `0x4000` for
-          `CONFIG_ARCH_ROCKCHIP`
+        - this is to be flashed to sector
+          `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR` (0x4000)
   - flash to sdcard
     - `dd if=u-boot-rockchip.bin of=/dev/mmcblk0 seek=64`
     - bootrom loads tpl/spl from sdcard to sram/dram respectively
