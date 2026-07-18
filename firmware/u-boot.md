@@ -142,8 +142,24 @@
           `CONFIG_ARCH_ROCKCHIP`
   - flash to sdcard
     - `dd if=u-boot-rockchip.bin of=/dev/mmcblk0 seek=64`
+    - bootrom loads tpl/spl from sdcard to sram/dram respectively
+      - it expects sector 0x40 to contain a header that defines tpl/spl
+        offsets and sizes
+    - spl loads fit from sdcard to dram
+      - it loads from sector `CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_SECTOR`
+      - it is arbitrary and is 0x4000 for orange pi 5
+      - binman uses `CONFIG_SPL_PAD_TO` to pad it to the matching offset in
+        the image
   - flash to spi flash
     - `dd if=u-boot-rockchip-spi.bin of=/dev/mtdblock0`
+    - bootrom loads tpl/spl from spi nor to sram/dram respectively
+      - it expects nor offset 0 to contain a header that defines tpl/spl
+        offsets and sizes
+    - spl loads fit from spi nor to dram
+      - it loads from nor offset `CONFIG_SYS_SPI_U_BOOT_OFFS`
+      - it is arbitrary and is 0x60000 for orange pi 5
+      - binman uses `CONFIG_SYS_SPI_U_BOOT_OFFS` to pad it to the matching
+        offset in the image
 - RK3568
   - tfa
     - `CROSS_COMPILE=aarch64-linux-gnu- make PLAT=rk3568 bl31`
