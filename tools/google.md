@@ -105,6 +105,46 @@
     - `gcloud compute ssh <vm-instance>`
     - this adds the ssh key to the vm temporarily and ssh to it
 
+## Antigravity CLI
+
+- overview
+  - the remote gemini model is stateless
+    - each api call is isolated
+  - when the agent makes an api call to the remote model, it
+    includes everything to appear stateful
+    - this is known as context window
+    - system prompt: describe the agent itself to the model in xml format
+      - persona: an ai coding agent for user, etc.
+      - system metadata: os, hostname, username, global config paths, etc.
+      - mcps: connected mcps
+      - skills: available skills from `skills`
+      - subagents: available specialized subagents from `agents`
+      - artifacts: when to respond md to be stored under `brain`
+      - guidelines: must dos and must not dos
+      - user rules: global and per-workspace `AGENTS.md`
+    - tool schemas: describe available tools to the model in json format
+      - file list, read, write, grep, sed, etc.
+      - web search, http get, etc.
+      - run shell cmds
+      - ask questions, define/invoke/control subagents
+      - call mcp
+    - environment state
+      - workspace state: project paths, vcs, available build tools, etc.
+      - ide state: opened files, cursor pos, selected text, compiler errors, etc.
+      - session metadata: timestamp, runtime user settings
+      - runtime state: therminal, pwd, allowed tools
+    - conversation history
+      - past user inputs
+      - past model responses
+      - past tool outputs
+    - current user input
+  - the remote model has a token cache to deal with huge context window
+- `AGENTS.md` and `SKILL.md`
+  - each system prompt includes `AGENTS.md` and summary of skills
+  - when a response instructs the agent to use a specific skill, the agent
+    reads `SKILL.md` and includes the contents in tool output section of past
+    conversation history
+
 ## Gemini CLI
 
 - <https://geminicli.com/docs/get-started/>
