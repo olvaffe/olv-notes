@@ -133,7 +133,7 @@
     - `git clone https://github.com/OP-TEE/optee_os.git`
       - 3-month release cycle
     - `make CROSS_COMPILE64=aarch64-linux-gnu- PLATFORM=rockchip-rk3588 CFG_USER_TA_TARGETS=ta_arm64`
-      - `CFG_EARLY_CONSOLE=y` to enable console
+      - `CFG_EARLY_CONSOLE=y` to enable earlycon
     - `out/arm-plat-rockchip/core/tee-raw.bin` is the image
   - build uboot
     - `make orangepi-5-rk3588s_defconfig`
@@ -141,6 +141,10 @@
        BL31=../trusted-firmware-a/build/rk3588/release/bl31/bl31.elf
        CROSS_COMPILE=aarch64-linux-gnu- make`
        - optionally `TEE=../optee_os/out/arm-plat-rockchip/core/tee.bin`
+         - disable `CONFIG_SPL_ATF_NO_PLATFORM_PARAM` as well
+           - this will pass fdt to atf/optee
+           - optee uses the fdt to enable console and to patch
+             `linaro,optee-tz` in
          - if prompted, leave `CONFIG_OPTEE_TZDRAM_SIZE` at the default
     - `u-boot-rockchip.bin` and `u-boot-rockchip-spi.bin` are the images
       - `arch/arm/dts/rockchip-u-boot.dtsi`
