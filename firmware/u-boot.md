@@ -10,11 +10,24 @@
 - <https://docs.u-boot.org/en/stable/usage/spl_boot.html>
   - on power on, primary cpu executes bootrom stored in mask rom
   - bootrom loads spl to sram and jumps to spl
-  - spl initializes dram, loads uboot proper to dram, and jumps to uboot
-    proper
-  - in rk3588
-    - "spl" consists of memory training blob and uboot spl
-    - "uboot proper" consists of atf as bl31 and uboot proper as bl33
+    - on socs where spl does not fit sram
+      - bootrom loads tpl to sram and calls tpl first
+        - tpl is either from `CONFIG_TPL_BUILD` or an external blob
+      - tpl initializes clock, power, and most importantly, dram
+      - tpl returns to bootrom
+      - bootrom loads spl to dram and jumps to spl
+  - spl loads uboot proper to dram and jumps to uboot proper
+    - spl initializes clock, power, and dram first, unless tpl is used
+    - dt `u-boot,spl-boot-order` tells spl where to load uboot proper
+- uboot proper is a fit image nowadays
+  - `CONFIG_SPL_LOAD_FIT` enables spl to load a fit image
+  - `CONFIG_SPL_ATF` enables spl to support atf (bl31) and tee (bl32)
+    - when they are included in the fit image, spl loads them to the secure
+      region and jumps to bl31
+    - bl31 runs in el3, sets up s-el1, and jumps to bl32
+    - bl32 runs in s-el1, sets up services, and traps back to bl31
+    - bl31 sets up el2 and jumps to uboot proper (bl33)
+    - bl33 runs in el2
 
 ## Build
 
