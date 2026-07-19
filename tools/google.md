@@ -139,6 +139,34 @@
       - past tool outputs
     - current user input
   - the remote model has a token cache to deal with huge context window
+- enterprise pricing
+  - when user enters a prompt, it counts as 1 user message
+  - agent typically makes multiple calls to the model, each counts as 1 model
+    call
+  - each model call consists of N input tokens and M output tokens
+    - N includes system prompt and user prompt
+    - M includes model response and internal reasoning
+  - each model has a set prices on input tokens and output tokens
+    - price per 1M input tokens (uncached)
+    - price per 1M input tokens (cached)
+      - there is an additional per gb/hour storage fee for the cache though
+    - price per 1M output tokens
+  - if agent connects to enterprise data store (for confidential data),
+    - price per 1K queries
+- individual pricing
+  - weekly non-rolling limit: this resets every week
+  - 5-hour rolling limit: this is a 5-hour window
+  - usage limits by tiers
+    - free: 1x, 32K context
+    - ai plus: 2x, 128K context
+    - ai pro: 4x, 1M context
+    - ai ultra: 20-80x, 1M context
+  - usage calculation is semi-opaque and depends on 4 factors
+    - prompt complexity (input and output tokens)
+    - model selection (price per 1M tokens)
+    - conversation length (context window)
+    - feature type
+    - internally, they translate to enterprise pricing
 - `AGENTS.md` and `SKILL.md`
   - each system prompt includes `AGENTS.md` and summary of skills
   - when a response instructs the agent to use a specific skill, the agent
