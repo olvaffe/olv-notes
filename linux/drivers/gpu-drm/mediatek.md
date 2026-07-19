@@ -20,6 +20,30 @@
 - `CONFIG_DRM_MEDIATEK`
   - it probes `mediatek-drm` platform devices registered by `mtk-mmsys`
   - it creaets a single `drm_device` from all the platform devices
+- navi internal display
+  - data path: `ovlsys0 -> dispsys0 -> dispsys1 -> edp_tx -> panel`
+  - `ovlsys0`
+    - `ovlsys0_ep_main` is the entrypoint
+    - `ovl0_rsz0` sizes the blank stream
+    - `ovl0_exdma2 -> ovl0_blender1 -> ... -> ovl0_exdma5 -> ovl0_blender4`
+      - each of `ovl0_exdmaX` reads a data plane
+      - each of `ovl0_blenderX` blends the plane into the stream
+    - `ovl0_outproc0` clamps values, crops stream, and generates vblank irq
+    - `direct-link@260` relays `ovl_dl_out_async0_5` to `ovl_dl_out_async0_5`
+  - `dispsys0`
+    - `direct-link@200` relays `dl_in_async0_0` to `dl_in_relay0_0`
+    - `mdp_rsz0` scales the stream
+    - `tdshp0` sharpens the stream
+    - `ccorr0 -> ccorr1` applies two 3x3 color matrices
+    - `gamma0` applies 1d gamma lut
+    - `postmask0` blanks out inactive margins
+    - `dither0` dithers pixels
+    - `direct-link@200` relays `dl_out_relay0_1` to `dl_out_async0_1`
+  - `dispsys1`
+    - `direct-link@200` relays `dl_in_async1_1` to `dl_in_relay1_1`
+    - `dvo0` generates video signal
+  - `edp_tx` transcodes the video signal to edp frames
+    - `edp_phy` outputs edp signal to `panel`
 
 ## Initialization
 
