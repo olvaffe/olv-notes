@@ -8,17 +8,32 @@
   - `lunch aosp_x86_64`
   - `m cts`
   - `cd out/host/linux-x86/cts/android-cts`
-- branches
-  - `android10-tests-dev`, `android11-tests-dev`, and so on are for
-    developments
-    - `android11-tests-dev` requires `libncurses.so.5` and `libtinfo.so.5`
-      from the host.  Create symlinks if your distro only has `libncurses6`
-  - `android10-tests-release`, `android11-tests-release`, and so on merge
-    from the dev branches to make quarterly releases
-- old branches
-  - `pie-cts-dev` and `pie-cts-release`
-  - iirc, `prebuilts/misc/linux-x86/flex` might be too old
-    - copy the one in the host to here
+- cts release branches
+  - `android15-tests-release`
+  - `android14-tests-release`
+  - `android13-tests-release`
+  - `android12L-tests-release`
+  - `android12-tests-release`
+  - `android11-tests-release`
+  - `android10-tests-release`
+  - `pie-cts-release`
+- cts dev branches
+  - `android15-tests-dev`
+  - `android14-tests-dev`
+  - `android13-tests-dev`
+  - `android12L-tests-dev`
+  - `android12-tests-dev`
+  - `android11-tests-dev`
+    - it requires `libncurses.so.5` and `libtinfo.so.5` from the host.  Create
+      symlinks if your distro only has `libncurses6`
+  - `android10-tests-dev`
+  - `pie-cts-dev`
+    - `prebuilts/misc/linux-x86/flex` might be too old; copy the one in the
+      host to here
+- android 16+
+  - there is still `android16-release`, but no `android16-tests-*` anymore
+  - internally, `android16-release` is frozen but `android16-tests-dev` keeps
+    receiving fixes
 
 ## Run
 
@@ -53,13 +68,9 @@
        -e class 'android.virtualdevice.cts.camera.VirtualCameraCameraXTest#virtualDeviceContext_takePicture[0]' \
        android.virtualdevice.cts.camera/androidx.test.runner.AndroidJUnitRunner`
 
-## Sources
+## Faster Run
 
-- <https://android.googlesource.com/platform/tools/tradefederation/>
-  - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/testtype/suite/BaseTestSuite.java>
-  - <https://android.googlesource.com/platform/tools/tradefederation/+/refs/heads/master/src/com/android/tradefed/command/CommandOptions.java>
-- <https://android.googlesource.com/platform/cts/>
-  - <https://android.googlesource.com/platform/cts/+/refs/heads/master/tools/cts-tradefed/res/config/cts-dev.xml>
+- <https://android.googlesource.com/platform/cts/+/refs/heads/android17-release/tools/cts-tradefed/res/config/cts-dev.xml>
   - for fastest runs, use `cts-dev` plan
   - `--skip-preconditions` skips `PreconditionPreparer`, which can check wifi,
     api level, screen lock, etc.

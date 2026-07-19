@@ -1,5 +1,25 @@
 # Android Test
 
+## Suite Harness
+
+- this is the framework for xTS, built on top of `tools/tradefederation`
+- `compatibility-host-util` is used by various host-side tests
+  - e.g., `com.android.compatibility.common.util.PropertyUtil` can be used to
+    query device properties
+- `compatibility-tradefed` is used by various `xts-tradefed`
+  - it extends `tools/tradefederation`
+  - `CompatibilitySuiteModuleLoader` extends `SuiteModuleLoader`
+  - `CompatibilityTestSuite` extends `BaseTestSuite`
+- e.g., `cts-tradefed` uses `compatibility-tradefed`
+  - there are two twists though
+  - firstly, to ensure all branches use the same version of suite harness, it
+    does not build the test harness from source but uses prebuilts from
+    `tools/tradefederation/prebuilts/test_harness`
+  - secondly, `cts-tradefed` is actually a script that defaults to use
+    closed-source ATS harness from
+    `tools/deviceinfra/prebuilts/ats_console_deploy.jar` instead
+    - <https://source.android.com/docs/core/tests/development/android-test-station/ats-user-guide>
+
 ## `Android.bp`
 
 - `cc_test` builds a native test and `android_test` builds a test apk
@@ -34,8 +54,8 @@
 
 ## VTS
 
-- <https://android.googlesource.com/platform/test/vts/+/refs/heads/android16-qpr2-release/>
-- <https://android.googlesource.com/platform/test/vts/+/refs/heads/android16-qpr2-release/tools/vts-core-tradefed/Android.bp>
+- <https://android.googlesource.com/platform/test/vts/+/refs/heads/android17-release/>
+- <https://android.googlesource.com/platform/test/vts/+/refs/heads/android17-release/tools/vts-core-tradefed/Android.bp>
   - `compatibility_test_suite_package` defines `vts` test suite
     - i guess this allows various tests to specify `test_suites: ["vts"]`,
       which copies the tests to `android-vts` for distribution
