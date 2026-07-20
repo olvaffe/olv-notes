@@ -106,17 +106,28 @@
 
 ## Initialization
 
-- `CONFIG_DRM_MEDIATEK`
-  - it probes `mediatek-drm` platform devices registered by `mtk-mmsys`
-  - it creaets a single `drm_device` from all the platform devices
-- `CONFIG_MTK_MMSYS` adds the `mediatek-drm` platform devices
-  - MMSYS stands for multimedia subsystem
-  - on mt8195, there are two display pipelines
-    - `VDOSYS0`, `mediatek,mt8195-vdosys0`
-      - it supports PQ (COLOR, CCORR, AAL, GAMMA, and DITHER)
-    - `VDOSYS1`, `mediatek,mt8195-vdosys1`
-      - it supports HDR (ETHDR)
-    - two `mediatek-drm` platform devices are added
+- `mtk_drm_init` registers a bunch of platform drivers
+  - they will probe plat devs created by `mtk_mmsys_probe`
+- `mtk_drm_probe` probes each `mediatek-drm` created by `mtk_mmsys_probe`
+  - the parent node is the pipeline
+  - it matches the pipeline against `mtk_drm_of_ids`
+    - before mt8196, the path is hardcoded
+    - since mt8196, `mtk_drm_of_ddp_path_build` builds the path from dt
+  - `mtk_drm_register_sibling` is called on each child node of the pipeline
+    - `mtk_drm_of_get_ddp_comp_type` returns the comp type of the child node
+    - if `MTK_DISP_MUTEX`, `private->mutex_node` is updated
+    - if `MTK_DISP_VDISP_AO`, `private->vdisp_ao_node` is updated
+    - otherwise,
+      - `drm_of_component_match_add`
+      - `mtk_ddp_comp_init`
+  - `component_master_add_with_match` registers an aggregate driver
+- `mtk_drm_bind` is called after all child nodes of the pipeline are probed
+  - `mtk_drm_get_all_drm_priv` returns true when this is the last pipeline
+  - `drm_dev_alloc` allocs a `drm_device` shared by all pipelines
+  - `mtk_drm_kms_init` inits the drm dev
+    - `mtk_crtc_create` creates crtcs
+  - `drm_dev_register` registers the drm dev
+  - `drm_client_setup` sets up fbdev
 - `mtk_drm_platform_driver` binds to the two `mediatek-drm` platform devices on mt8195
   - the compat strings of the mmsys OF nodes are matched again against
     `mtk_drm_of_ids` to get `mtk_mmsys_driver_data`
@@ -147,13 +158,6 @@
       `component_match`
     - `component_master_add_with_match` waits for all components to match and
       binds the master device
-- `mtk_drm_bind` creates a single `drm_device`
-  - `mtk_drm_get_all_drm_priv` early returns until `mtk_drm_platform_driver`
-    binds to all platform devices
-- `mtk_drm_kms_init` initializes the single `drm_device`
-  - `mtk_crtc_create` is called for the two pipelines on mt8195
-- `drm_dev_register` registers the single `drm_device`
-- `drm_fbdev_dma_setup` sets up fbdev emulation
 
 ## AFBC
 
