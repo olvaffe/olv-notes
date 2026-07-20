@@ -2,24 +2,6 @@
 
 ## MT8196 DT
 
-- MMSYS is MediaTek Multimedia Subsystem
-  - display
-  - video codec
-- VMM is Vcore for MMSYS
-  - it is a regulator controlled by VCP fw
-- VCP is Video Companion Processor
-- `CONFIG_MTK_MMSYS`
-  - `mtk-mmsys` probes
-    - `mediatek,mt8196-dispsys0` for display pipeline 0 and clk
-    - `mediatek,mt8196-dispsys1` for display pipeline 1 and clk
-    - `mediatek,mt8196-ovlsys0` for overlay pipeline 0 and clk
-    - `mediatek,mt8196-ovlsys1` for overlay pipeline 1 and clk
-    - `mediatek,mt8196-vdisp-ao` for clk
-  - `mediatek-mutex` probes
-    - `mediatek,mt8196-disp-mutex`
-- `CONFIG_DRM_MEDIATEK`
-  - it probes `mediatek-drm` platform devices registered by `mtk-mmsys`
-  - it creaets a single `drm_device` from all the platform devices
 - navi internal display
   - data path: `ovlsys0 -> dispsys0 -> dispsys1 -> edp_tx -> panel`
   - `ovlsys0`
@@ -44,21 +26,101 @@
     - `dvo0` generates video signal
   - `edp_tx` transcodes the video signal to edp frames
     - `edp_phy` outputs edp signal to `panel`
+- navi external display
+  - data path: `ovlsys1 -> dispsys1 -> anx_bridge -> usb_c0`
+  - `ovlsys1`
+    - `ovlsys1_ep_third` is the entrypoint
+    - `ovl1_rsz0` sizes the blank stream
+    - `ovl1_exdma2 -> ovl1_blender1 -> ... -> ovl1_exdma5 -> ovl1_blender4`
+      - each of `ovl1_exdmaX` reads a data plane
+      - each of `ovl1_blenderX` blends the plane into the stream
+    - `ovl1_outproc0` clamps values, crops stream, and generates vblank irq
+    - `direct-link@260` relays `ovl_dl_out_relay1_5` to `ovl_dl_out_async1_5`
+  - `dispsys1`
+    - `direct-link@200` relays `dl_in_async1_3` to `dl_in_relay1_3`
+    - `dsc1` compresses the stream
+    - `dsi0` generates video signal
+      - `mipi_tx_config0` is the phy
+  - `anx_bridge` converts dsi signal to dp signal
+
+## `CONFIG_MTK_MMSYS`
+
+- MMSYS is MediaTek Multimedia Subsystem
+  - display
+  - camera
+  - video
+- VMM is Vcore for MMSYS
+  - it is a regulator controlled by VCP fw
+  - VCP is Video Companion Processor
+- `mtk_mmsys_probe` probes
+  - `mediatek,mt8196-ovlsys0` for overlay pipeline 0
+    - this blends 4 planes for internal display
+    - it registers `clk-mt8196-ovl0` plat dev
+    - it registers child nodes as plat devs
+      - `mediatek,mt8196-ovl-direct-link`
+      - `mediatek,mt8196-disp-mutex`
+      - `mediatek,mt8196-disp-exdma`
+      - `mediatek,mt8196-disp-blender`
+      - `mediatek,mt8196-disp-outproc`
+      - `mediatek,mt8196-disp-rsz`
+    - it registers a `mediatek-drm` plat dev
+  - `mediatek,mt8196-ovlsys1` for overlay pipeline 1
+    - this blends 4 planes for external display
+    - it registers `clk-mt8196-ovl1` plat dev
+    - it registers child nodes as plat devs
+      - similar to ovlsys0
+    - it registers a `mediatek-drm` plat dev
+  - `mediatek,mt8196-dispsys0` for display pipeline 0
+    - this post-processes display stream for internal display
+    - it registers `clk-mt8196-disp0` plat dev
+    - it registers child nodes as plat devs
+      - `mediatek,mt8196-disp-direct-link`
+      - `mediatek,mt8196-disp-mutex`
+      - `mediatek,mt8196-disp-aal`
+      - `mediatek,mt8196-disp-ccorr`
+      - `mediatek,mt8196-disp-dither`
+      - `mediatek,mt8196-disp-gamma`
+      - `mediatek,mt8196-disp-tdshp`
+      - `mediatek,mt8196-disp-postmask`
+      - `mediatek,mt8196-disp-rsz`
+    - it registers a `mediatek-drm` plat dev
+  - `mediatek,mt8196-dispsys1` for display pipeline 1
+    - this converts display streams to signals for both internal and external
+      displays
+    - it registers `clk-mt8196-disp1` plat dev
+    - it registers child nodes as plat devs
+      - `mediatek,mt8196-disp-direct-link`
+      - `mediatek,mt8196-disp-mutex`
+      - `mediatek,mt8196-dp-intf`
+      - `mediatek,mt8196-disp-dsc`
+      - `mediatek,mt8196-dsi`
+      - `mediatek,mt8196-edp-dvo`
+      - `mediatek,mt8196-disp-dither`
+    - it registers a `mediatek-drm` plat dev
+  - `mediatek,mt8196-vdisp-ao` for clk
+    - it registers `clk-mt8196-vdisp-ao` plat dev
+    - no child node
+    - it registers a `mediatek-drm` plat dev
+- `mediatek-mutex` probes `mediatek,mt8196-disp-mutex`
+  - it associates a `mtk_mutex_ctx` with the device
 
 ## Initialization
 
-- `CONFIG_MTK_MMSYS` adds the platform devices
+- `CONFIG_DRM_MEDIATEK`
+  - it probes `mediatek-drm` platform devices registered by `mtk-mmsys`
+  - it creaets a single `drm_device` from all the platform devices
+- `CONFIG_MTK_MMSYS` adds the `mediatek-drm` platform devices
   - MMSYS stands for multimedia subsystem
   - on mt8195, there are two display pipelines
     - `VDOSYS0`, `mediatek,mt8195-vdosys0`
       - it supports PQ (COLOR, CCORR, AAL, GAMMA, and DITHER)
     - `VDOSYS1`, `mediatek,mt8195-vdosys1`
       - it supports HDR (ETHDR)
-    - two platform devices are added
-- `mtk_drm_platform_driver` binds to the two platform devices on mt8195
-  - the compat strings of the OF nodes are matched again to get
-    `mtk_mmsys_driver_data`
-    - `mt8195_vdosys0_driver_data` has `main_path`
+    - two `mediatek-drm` platform devices are added
+- `mtk_drm_platform_driver` binds to the two `mediatek-drm` platform devices on mt8195
+  - the compat strings of the mmsys OF nodes are matched again against
+    `mtk_drm_of_ids` to get `mtk_mmsys_driver_data`
+    - `mt8195_vdosys0_driver_data` has `mt8195_vdo0_legacy_paths`
       - `DDP_COMPONENT_OVL0` blends planes
       - `DDP_COMPONENT_RDMA0` stands for Read Direct Memory Access
       - `DDP_COMPONENT_COLOR0`
@@ -73,7 +135,7 @@
       - `DDP_COMPONENT_DSC0` is VESA Display Stream Compression
       - `DDP_COMPONENT_MERGE0` merges two inputs into side-by-side output?
       - `DDP_COMPONENT_DP_INTF0` outputs RGB/YUV signal
-    - `mt8195_vdosys1_driver_data` has `ext_path`
+    - `mt8195_vdosys1_driver_data` has `mt8195_vdo1_legacy_paths`
       - `DDP_COMPONENT_DRM_OVL_ADAPTOR`
       - `DDP_COMPONENT_MERGE5`
       - `DDP_COMPONENT_DP_INTF1`
