@@ -103,6 +103,12 @@
     - it registers a `mediatek-drm` plat dev
 - `mediatek-mutex` probes `mediatek,mt8196-disp-mutex`
   - it associates a `mtk_mutex_ctx` with the device
+- after `CONFIG_DRM_MEDIATEK` determines the order of the child nodes of the
+  pipelines, it calls `mtk_ddp_comp_connect` to connect each pair of src/dst
+  nodes
+  - drm mtk uses fixed paths on older socs or calls
+    `mtk_drm_of_ddp_path_build` to build the paths from dt on newer socs
+  - `mtk_mmsys_routes` enumerates all supported combinations
 
 ## Initialization
 
