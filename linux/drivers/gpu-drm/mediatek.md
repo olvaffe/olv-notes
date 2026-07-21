@@ -53,7 +53,7 @@
   - it is a regulator controlled by VCP fw
   - VCP is Video Companion Processor
 - `mtk_mmsys_probe` probes
-  - `mediatek,mt8196-ovlsys0` for overlay pipeline 0
+  - `mediatek,mt8196-ovlsys0` for overlay controller 0
     - this blends 4 planes for internal display
     - it registers `clk-mt8196-ovl0` plat dev
     - it registers child nodes as plat devs
@@ -64,13 +64,13 @@
       - `mediatek,mt8196-disp-outproc`
       - `mediatek,mt8196-disp-rsz`
     - it registers a `mediatek-drm` plat dev
-  - `mediatek,mt8196-ovlsys1` for overlay pipeline 1
+  - `mediatek,mt8196-ovlsys1` for overlay controller 1
     - this blends 4 planes for external display
     - it registers `clk-mt8196-ovl1` plat dev
     - it registers child nodes as plat devs
       - similar to ovlsys0
     - it registers a `mediatek-drm` plat dev
-  - `mediatek,mt8196-dispsys0` for display pipeline 0
+  - `mediatek,mt8196-dispsys0` for display controller 0
     - this post-processes display stream for internal display
     - it registers `clk-mt8196-disp0` plat dev
     - it registers child nodes as plat devs
@@ -84,7 +84,7 @@
       - `mediatek,mt8196-disp-postmask`
       - `mediatek,mt8196-disp-rsz`
     - it registers a `mediatek-drm` plat dev
-  - `mediatek,mt8196-dispsys1` for display pipeline 1
+  - `mediatek,mt8196-dispsys1` for display controller 1
     - this converts display streams to signals for both internal and external
       displays
     - it registers `clk-mt8196-disp1` plat dev
@@ -104,7 +104,7 @@
 - `mediatek-mutex` probes `mediatek,mt8196-disp-mutex`
   - it associates a `mtk_mutex_ctx` with the device
 - after `CONFIG_DRM_MEDIATEK` determines the order of the child nodes of the
-  pipelines, it calls `mtk_ddp_comp_connect` to connect each pair of src/dst
+  controllers, it calls `mtk_ddp_comp_connect` to connect each pair of src/dst
   nodes
   - drm mtk uses fixed paths on older socs or calls
     `mtk_drm_of_ddp_path_build` to build the paths from dt on newer socs
@@ -115,55 +115,53 @@
 - `mtk_drm_init` registers a bunch of platform drivers
   - they will probe plat devs created by `mtk_mmsys_probe`
 - `mtk_drm_probe` probes each `mediatek-drm` created by `mtk_mmsys_probe`
-  - the parent node is the pipeline
-  - it matches the pipeline against `mtk_drm_of_ids`
+  - the parent node is the controller
+  - it matches the controller against `mtk_drm_of_ids`
     - before mt8196, the path is hardcoded
     - since mt8196, `mtk_drm_of_ddp_path_build` builds the path from dt
-  - `mtk_drm_register_sibling` is called on each child node of the pipeline
+  - `mtk_drm_register_sibling` is called on each child node of the controller
     - `mtk_drm_of_get_ddp_comp_type` returns the comp type of the child node
     - if `MTK_DISP_MUTEX`, `private->mutex_node` is updated
     - if `MTK_DISP_VDISP_AO`, `private->vdisp_ao_node` is updated
     - otherwise,
-      - `drm_of_component_match_add`
-      - `mtk_ddp_comp_init`
+      - `drm_of_component_match_add` adds a match
+      - `mtk_ddp_comp_init` creates a `mtk_ddp_comp` for the child node and
+        adds it to `private->hlist`
   - `component_master_add_with_match` registers an aggregate driver
-- `mtk_drm_bind` is called after all child nodes of the pipeline are probed
-  - `mtk_drm_get_all_drm_priv` returns true when this is the last pipeline
-  - `drm_dev_alloc` allocs a `drm_device` shared by all pipelines
+- `mtk_drm_of_ddp_path_build` builds a path from the dt controller
+  - there are leader and follower dt controllers
+    - this is new since mt8196
+    - a controller with `ports` is a leader controller
+      - only port 0 as the entrypoints
+    - a controller without `ports` but with `direct-link` is a follower
+      controller
+      - port 0 is async inputs (from another controller)
+      - port 1 is async outputs (to another controller)
+      - port 2 is input relays (from async inputs)
+      - port 3 is output relays (to async outputs)
+    - each port can have up to `MAX_CRTC` endpoints
+      - `CRTC_MAIN`, `CRTC_EXT`, and `CRTC_THIRD` respectively
+    - a crtc consists of a leader controller followed by follower controllers
+      - two crtcs can share the same controllers but different endpoints
+  - `mtk_drm_of_ddp_path_build_one`
+    - `mtk_drm_of_get_ddp_ep_cid` returns `-EREMOTE` if the port connects to
+      another controller
+    - `out_path->len` is the number of comps (components) in the controller
+    - `out_path->order` is the order of the controller in the crtc path
+      - it is to be fixed up
+- `mtk_drm_bind` is called after all child nodes of a controller are probed
+  - `mtk_drm_get_all_drm_priv` returns false unless `mtk_drm_bind` has been
+    called on all controllers
+    - `private->all_drm_private` are updated to point to each other
+  - `drm_dev_alloc` allocs a single `drm_device` containing by all controllers
   - `mtk_drm_kms_init` inits the drm dev
+    - `component_bind_all` is called on all controllers
+    - `mtk_drm_set_path_orders` updates path orders
+      - `path->order` is 0 for the leader controllers
+      - it fixes up `path->order` for follower controllers
     - `mtk_crtc_create` creates crtcs
   - `drm_dev_register` registers the drm dev
   - `drm_client_setup` sets up fbdev
-- `mtk_drm_platform_driver` binds to the two `mediatek-drm` platform devices on mt8195
-  - the compat strings of the mmsys OF nodes are matched again against
-    `mtk_drm_of_ids` to get `mtk_mmsys_driver_data`
-    - `mt8195_vdosys0_driver_data` has `mt8195_vdo0_legacy_paths`
-      - `DDP_COMPONENT_OVL0` blends planes
-      - `DDP_COMPONENT_RDMA0` stands for Read Direct Memory Access
-      - `DDP_COMPONENT_COLOR0`
-        - `mtk_color_config` configs width/height
-      - `DDP_COMPONENT_CCORR`
-        - `mtk_ccorr_ctm_set` applies a 3x3 color matrix
-      - `DDP_COMPONENT_AAL0` stands for Adaptive Ambient Light
-      - `DDP_COMPONENT_GAMMA`
-        - `mtk_gamma_set` applies a gamma lut
-      - `DDP_COMPONENT_DITHER0`
-        - `mtk_dither_config` applies dither
-      - `DDP_COMPONENT_DSC0` is VESA Display Stream Compression
-      - `DDP_COMPONENT_MERGE0` merges two inputs into side-by-side output?
-      - `DDP_COMPONENT_DP_INTF0` outputs RGB/YUV signal
-    - `mt8195_vdosys1_driver_data` has `mt8195_vdo1_legacy_paths`
-      - `DDP_COMPONENT_DRM_OVL_ADAPTOR`
-      - `DDP_COMPONENT_MERGE5`
-      - `DDP_COMPONENT_DP_INTF1`
-  - ddp components are initialized
-    - `private->comp_node[i]` are initialized by scanning all sibling OF nodes
-    - `private->ddp_comp[i]` are initialized by `mtk_ddp_comp_init`
-  - components
-    - it seems all component (subdevice) matches are added to
-      `component_match`
-    - `component_master_add_with_match` waits for all components to match and
-      binds the master device
 
 ## AFBC
 
