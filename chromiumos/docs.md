@@ -1,5 +1,16 @@
 # Chrome OS SDK
 
+## Minimum Checkout
+
+- for `cros flash`,
+  - `git clone https://chromium.googlesource.com/chromium/tools/depot_tools`
+  - `git clone https://chromium.googlesource.com/chromiumos/chromite`
+  - `touch .repo` to trick `cros` script
+- for `servod`,
+  - `git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools`
+  - `./hdctools/scripts/start-servod -n servo --board=$BOARD --model=$MODEL --mount=$HOST_DIR:$CONTAINER_DIR`
+  - `docker exec -it servo-docker_servod bash`
+
 ## New Device
 
 - enable developer mode
