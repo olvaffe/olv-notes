@@ -122,3 +122,45 @@
        -DCMAKE_CXX_COMPILER=clang++`
     - it seems, because vsp uses perfetto's internal headers, it has to use
       perfetto's internal copy of libcxx and clang
+
+## vkoverhead
+
+- options
+  - `-list` lists all tests
+  - `-submit-only` runs only submit tests
+  - `-draw-only` runs only draw tests
+  - `-descriptor-only` runs only descriptor tests
+  - `-misc-only` runs only misc tests
+  - `-hic-only` runs only hic tests
+  - `-test <idx>` runs the specific test
+  - `-start <idx>` runs the specific test and the following tests in the same group
+  - `-fixed <iterations>` specifies the iteration
+  - `-duration <idx>` specifies the duration in seconds
+- init
+  - `vk_device_create` inits vk
+  - `init_cmdbufs` creates cmdbufs
+  - `create_renderpass` creates rps
+  - `init_dyn_render` inits dynamic rendering
+  - `init_descriptor_state` and `init_descriptor_pool` create desc pools, desc
+    sets, pipeline layouts, etc.
+  - `create_*_pipelines` creates pipelines
+  - `create_index_buffer` creates ib
+  - `create_framebuffer` creates fb
+  - `create_vertex_buffer` creates vb
+  - `create_uniform_buffer` creates ubo
+  - `create_storage_buffer` creates ssbo
+  - `create_texel_buffer` creates tbo
+  - `create_image_buffer` creates ibo
+- setup
+  - `create_tex`, `create_storage_image`, `create_rt`, `create_rt_ms` creates
+    img and img view
+  - `setup_image` transitions and clears img
+  - all buffers are initialized
+  - all desc sets are updated
+  - `init_dyn_att` creates and inits rt img for dynamic rendering
+- first queue submit to complete setup
+- run
+  - `perf_run` runs the first test in a group to get a baseline
+    - `perf_measure_cpu_rate` runs for `-duration` seconds
+    - `perf_measure_cpu_fixed` runs for `-fixed` iterations
+  - `perf_run` runs the remaining tests in a group
