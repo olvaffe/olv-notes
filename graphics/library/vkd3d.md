@@ -131,3 +131,77 @@
     - `demo_swapchain_get_current_back_buffer_index`
       - `IDXGIVkSwapChain_GetImageIndex` returns the next image idx
         - `vkAcquireNextImageKHR`
+
+## Loader and ICD
+
+- `d3d12` is the loader
+  - public entrypoints, such as `D3D12CreateDevice`, call `load_d3d12core` on
+    demand
+    - `d3d12core_module` is from `dlopen`
+    - `core` is from calling `D3D12GetInterface` symbol
+  - they forward calls to `d3d12core`
+- `d3d12core` is the icd
+  - `D3D12GetInterface` is the entrypoint
+    - it returns `d3d12core_interface_instance`
+  - the global vtable has `d3d12core_CreateDevice` to create a dev
+    - the device embeds vtables for various device functions
+
+## Device Initialization
+
+- `d3d12core_CreateDeviceFromFactory` creates and initializes a device
+- `vkd3d_create_instance_global` creates a vk instance on demand
+  - `vkd3d_init_profiling` inits profiling if enabled
+  - `vkd3d_config_flags_init` inits global flags
+    - `vkd3d_parse_debug_options` parses comma-separated options
+    - `VKD3D_CONFIG` is defined by `include/private/config_flag_decl.h`
+    - `vkd3d_instance_apply_application_workarounds` applies app quirks
+    - `vkd3d_instance_deduce_config_flags_from_environment` translates more
+      envvars to config
+    - `vkd3d_instance_apply_global_shader_quirks` inits
+      `vkd3d_shader_quirk_info_template.global_quirks`
+  - it creates the vk instance
+  - `vkd3d_renderdoc_init` inits renderdoc if enabled
+  - `vkd3d_descriptor_debug_init` inits desc debug if enabled
+- `vkd3d_create_device` creates a vk device
+  - `device->ID3D12Device_iface.lpVtbl` defaults to `d3d12_device_vtbl_default`
+    - it points to `d3d12_device_*`
+    - it is from `VKD3D_DECLARE_D3D12_DEVICE_VARIANT(default, ...)`
+  - `device->ID3D12DeviceExt_iface.lpVtbl` is `d3d12_device_vkd3d_ext_vtbl`
+    - it points to `d3d12_device_vkd3d_ext_*`
+  - `device->ID3D12DXVKInteropDevice_iface.lpVtbl` is `d3d12_dxvk_interop_device_vtbl`
+    - it points to `d3d12_dxvk_interop_device_*`
+  - `device->ID3DLowLatencyDevice_iface.lpVtbl` is `d3d_low_latency_device_vtbl`
+    - it points to `d3d12_low_latency_device_*`
+  - `device->IAmdExtAntiLagApi_iface.lpVtbl` is `d3d_amd_ext_anti_lag_vtbl`
+    - it points to `d3d12_amd_ext_anti_lag_*`
+  - `device->ID3D12DeviceConfiguration1_iface.lpVtbl` is `d3d12_device_configuration_vtbl`
+    - it points to `d3d12_device_configuration_*`
+  - `vkd3d_create_vk_device`
+  - `vkd3d_private_store_init`
+  - `vkd3d_memory_transfer_queue_init`
+  - `vkd3d_memory_allocator_init`
+  - `vkd3d_init_format_info`
+  - `vkd3d_memory_info_init`
+  - `vkd3d_global_descriptor_buffer_init`
+  - `vkd3d_bindless_state_init`
+  - `vkd3d_view_map_init`
+  - `vkd3d_sampler_state_init`
+  - `d3d12_device_create_sparse_init_timeline`
+  - `vkd3d_meta_ops_init`
+  - `vkd3d_shader_debug_ring_init`
+  - `vkd3d_queue_timeline_trace_init`
+  - `vkd3d_address_binding_tracker_init`
+  - `vkd3d_scratch_pool_init`
+  - `vkd3d_breadcrumb_tracer_init_barrier_hashes`
+  - `vkd3d_breadcrumb_tracer_init`
+  - `vkd3d_descriptor_debug_alloc_global_info`
+  - `vkd3d_timestamp_profiler_init`
+  - `d3d12_device_caps_init`
+  - `vkd3d_init_shader_extensions`
+  - `vkd3d_compute_shader_interface_key`
+  - `vkd3d_pipeline_library_init_disk_cache`
+  - `d3d12_device_replace_vtable`
+  - `vkd3d_renderdoc_begin_capture`
+  - `d3d12_device_reserve_internal_sparse_queue`
+  - `d3d_destruction_notifier_init`
+  - `d3d12_device_open_kmt`
