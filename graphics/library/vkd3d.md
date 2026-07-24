@@ -1,0 +1,133 @@
+# VKD3D
+
+## Native Build
+
+- build from vkd3d-proton
+  - `apt install mingw-w64-tools libxcb-keysyms1-dev libxcb-util-dev libxcb-icccm4-dev`
+  - `git clone --recurse-submodules https://github.com/HansKristian-Work/vkd3d-proton.git`
+  - `meson setup out --cross-file build-widl.txt -Dbuildtype=debug -Denable_tests=true -Denable_extras=true`
+- run
+  - `./out/demos/triangle`
+  - `./out/demos/gears`
+  - `./out/tests/d3d12`
+    - see `tests/d3d12_tests.h` for available tests
+    - `VKD3D_TEST_MATCH=<test>` to run a specific test
+
+## Triangle Demo
+
+- `demo_init` connects to x11
+- `demo_window_create` creates a win
+- `cxt_load_pipeline`
+  - `D3D12CreateDevice`
+    - `vkCreateInstance`
+    - `vkCreateDevice`
+  - `ID3D12Device_CreateCommandQueue`
+    - `vkGetDeviceQueue`
+    - create a submission worker thread
+  - `demo_swapchain_create`
+    - `vkCreateXcbSurfaceKHR`
+    - `vkCreateSwapchainKHR`
+  - `demo_swapchain_get_current_back_buffer_index`
+    - `IDXGIVkSwapChain_GetImageIndex` returns the next image idx
+      - `vkAcquireNextImageKHR`
+  - `ID3D12Device_CreateDescriptorHeap`
+    - alloc a vkd3d internal sw desc heap array
+    - no vulkan call
+    - if `D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE`, it may use
+      `VK_EXT_descriptor_buffer`
+  - `ID3D12Device_GetDescriptorHandleIncrementSize`
+    - return sw stride of sw desc heap array
+  - `ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart`
+    - return sw addr of sw desc heap array
+  - `demo_swapchain_get_back_buffer`
+    - `IDXGIVkSwapChain_GetImage`
+      - `vkGetSwapchainImagesKHR`
+  - `ID3D12Device_CreateRenderTargetView`
+    - `vkCreateImageView`
+  - `ID3D12Device_CreateCommandAllocator`
+    - `vkCreateCommandPool`
+- `cxt_load_assets`
+  - `demo_create_root_signature`
+    - `D3D12SerializeRootSignature` serializes root sig params
+      - no vulkan call
+    - `ID3D12Device_CreateRootSignature` creates a root sig from serialized blob
+      - a root signature is akin to a pipeline layout and desc layouts
+      - `vkCreatePipelineLayout`
+      - `vkCreateDescriptorSetLayout`
+    - `ID3D10Blob_Release` frees serialized blob
+  - `ID3D12Device_CreateGraphicsPipelineState`
+    - `vkCreateGraphicsPipelines`
+  - `ID3D12Device_CreateCommandList`
+    - `vkAllocateCommandBuffers`
+    - `vkBeginCommandBuffer`
+    - `vkCmdBindPipeline` to an initial pipeline (optional)
+  - `ID3D12GraphicsCommandList_Close`
+    - `vkEndCommandBuffer`
+  - `ID3D12Device_CreateCommittedResource`
+    - `vkCreateBuffer`
+    - `vkAllocateMemory`
+    - `vkBindBufferMemory`, this is what "committed" means
+  - `ID3D12Resource_Map`
+    - `vkMapMemory`
+  - `ID3D12Resource_Unmap`
+    - `vkUnmapMemory`
+  - `ID3D12Resource_GetGPUVirtualAddress`
+    - `vkGetBufferDeviceAddress`
+  - `cxt_fence_create`
+    - `ID3D12Device_CreateFence`
+      - unless `D3D12_FENCE_FLAG_SHARED`, fences map to a shared timeline
+        semaphore internally
+    - `demo_create_event` creates an eventfd
+- `demo_process_events` is the main loop
+  - `xcb_wait_for_event` waits for an event
+  - `window->expose_func` is `cxt_render_frame` to draw a frame
+  - `cxt_populate_command_list`
+    - `ID3D12CommandAllocator_Reset`
+      - `vkResetCommandPool` to reset cmd poll
+    - `ID3D12GraphicsCommandList_Reset` resets a list for recording
+      - `vkAllocateCommandBuffers` or reuse cmdbufs
+      - `vkBeginCommandBuffer`
+      - `vkCmdBindPipeline` to an initial pipeline (optional)
+    - `ID3D12GraphicsCommandList_SetGraphicsRootSignature`
+      - `vkCmdBindDescriptorSets`
+    - `ID3D12GraphicsCommandList_RSSetViewports`
+      - `vkCmdSetViewport`
+    - `ID3D12GraphicsCommandList_RSSetScissorRects`
+      - `vkCmdSetScissor`
+    - `ID3D12GraphicsCommandList_ResourceBarrier`
+      - `vkCmdPipelineBarrier2`
+    - `ID3D12DescriptorHeap_GetCPUDescriptorHandleForHeapStart`
+      - calculate offset to sw desc heap array
+      - no vulkan call
+    - `ID3D12GraphicsCommandList_OMSetRenderTargets`
+      - `vkCmdBeginRendering`
+    - `ID3D12GraphicsCommandList_ClearRenderTargetView`
+      - `vkCmdClearAttachments`
+    - `ID3D12GraphicsCommandList_IASetPrimitiveTopology`
+      - `vkCmdSetPrimitiveTopology`
+    - `ID3D12GraphicsCommandList_IASetVertexBuffers`
+      - `vkCmdBindVertexBuffers`
+    - `ID3D12GraphicsCommandList_DrawInstanced`
+      - `vkCmdDraw`
+    - `ID3D12GraphicsCommandList_Close`
+      - `vkCmdEndRendering` and `vkEndCommandBuffer`
+  - `ID3D12CommandQueue_ExecuteCommandLists`
+    - gather cmdbufs, setup timeline sems, and call `vkQueueSubmit2`
+  - `demo_swapchain_present`
+    - `IDXGIVkSwapChain_Present` presents
+      - `dxgi_vk_swap_chain_present_iteration`
+        - it blits from rt to wsi img
+        - `vkQueuePresentKHR` presents
+        - `dxgi_vk_swap_chain_signal_waitable_handle` writes to an eventfd
+      - `acquire_eventfd` waits on the eventfd to throttle
+  - `cxt_wait_for_previous_frame`
+    - `ID3D12CommandQueue_Signal` adds a cmd to signal a fence to a val
+      - `vkQueueSubmit2` to signal a timeline semaphore
+    - `ID3D12Fence_GetCompletedValue`
+      - `vkGetSemaphoreCounterValue` to query the val
+    - `ID3D12Fence_SetEventOnCompletion` polls a fence until it signals
+      - `vkWaitSemaphores` to wait and then write to the eventfd
+    - `demo_wait_event` waits on the eventfd
+    - `demo_swapchain_get_current_back_buffer_index`
+      - `IDXGIVkSwapChain_GetImageIndex` returns the next image idx
+        - `vkAcquireNextImageKHR`
