@@ -41,12 +41,12 @@
       - polarity
         - active high: high voltage means active
         - active low: low voltage means active
-      - drive mode
+      - drive mode is for output
         - push/pull: it can pull high/low itself
         - open drain: it can only pull low, and relies on external resistor to pull high
         - open source: it can only pull high, and relies on external resistor to pull low
-      - bias
-        - pull-up: if configured as input, pull to high
-        - pull-down: if configured as input, pull to low
-        - disable: if configured as input, no pulling
+      - bias is for input
+        - pull-up: pull to high
+        - pull-down: pull to low
+        - disable: no pulling
     - `gpiod_line_state_notify` calls the notifiers
