@@ -2,11 +2,20 @@
 
 ## GPIO Controller
 
-- `devm_gpiochip_add_data` registers a `gpio_device`
+- `devm_gpiochip_add_data` registers a `gpio_chip`
+  - it allocs a high-level `gpio_device` to wrap the low-level `gpio_chip`
+  - `gpiochip_get_ngpios` inits `gc->ngpio` if the driver does not
+  - `gdev->descs` is an array of `gpio_desc` for each pin
   - `gpiodev_add_to_list_unlocked` adds it to `gpio_devices`
   - `of_gpiochip_add`
-    - `of_xlate` defaults to `of_gpio_simple_xlate`
-  - `gpiochip_setup_dev`
+    - `chip->of_xlate` defaults to `of_gpio_twocell_xlate` typically
+  - `of_gpiochip_add_pin_range` parses `gpio-ranges` if pinctrl-based
+  - `gpiochip_add_irqchip` adds irqchip if the gpio controller is also an irq
+    controller
+  - `gpiochip_setup_shared` allows two consumer drivers to share the same pin
+  - `gpiochip_setup_dev` exposes the gpio chip to userspace
+    - `gcdev_register` exposes the newer `/dev/gpiochipN` interface
+    - `gpiochip_sysfs_register` exposes the legacy `/sys/class/gpio/gpiochipN`
 
 ## Consumers
 
