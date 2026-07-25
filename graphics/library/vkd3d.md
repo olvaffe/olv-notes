@@ -205,3 +205,49 @@
   - `d3d12_device_reserve_internal_sparse_queue`
   - `d3d_destruction_notifier_init`
   - `d3d12_device_open_kmt`
+
+## Memory
+
+- public alloc apis
+  - `vkd3d_allocate_internal_buffer_memory` calls
+    `vkd3d_allocate_device_memory` to alloc for an existing internal buffer
+  - `vkd3d_allocate_device_memory` calls `vkd3d_try_allocate_device_memory`
+    with a fallback
+  - `vkd3d_allocate_heap_memory` calls `vkd3d_allocate_memory`
+  - `vkd3d_allocate_memory` calls
+    - if suballoc, `vkd3d_suballocate_memory`
+    - else, `vkd3d_memory_allocation_init`
+- internal alloc apis
+  - `vkd3d_try_allocate_device_memory` calls `vkAllocateMemory` and is low-level
+  - `vkd3d_suballocate_memory` calls `vkd3d_memory_allocation_init` to alloc a
+    chunk and then suballocs from chunks
+  - `vkd3d_memory_allocation_init`
+    - if host ptr, `vkd3d_import_host_memory`
+    - if no fallback, `vkd3d_try_allocate_device_memory`
+    - else, `vkd3d_allocate_device_memory`
+- vk memory type
+  - `info->memory_requirements` is initialized by the caller from the res
+  - `info->heap_properties` is the d3d heap
+    - `D3D12_HEAP_TYPE_DEFAULT` is for gpu, no cpu access
+      - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
+    - `D3D12_HEAP_TYPE_UPLOAD` is for cpu-to-gpu
+      - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
+    - `D3D12_HEAP_TYPE_READBACK` is for gpu-to-cpu
+      - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_CACHED_BIT`
+    - `D3D12_HEAP_TYPE_GPU_UPLOAD` is for gpu, with cpu access
+      - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
+    - `D3D12_HEAP_TYPE_CUSTOM` is user-defined
+  - `info->heap_flags` is the heap flags
+    - `D3D12_HEAP_FLAG_DENY_BUFFERS` means no buf
+    - `D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES` means no sample/storage img
+    - `D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES` means no rt img
+  - `vkd3d_select_memory_types`
+    - `d3d12_device_get_memory_info_domain`
+    - `domain_info->buffer_type_mask` supports all buf usages
+    - `domain_info->sampled_type_mask` supports all img usages except rt
+    - `domain_info->rt_ds_type_mask` supports all img usages
