@@ -21,8 +21,8 @@
   - `D3D12CreateDevice`
     - `vkCreateInstance`
     - `vkCreateDevice`
-  - `ID3D12Device_CreateCommandQueue`
     - `vkGetDeviceQueue`
+  - `ID3D12Device_CreateCommandQueue`
     - create a submission worker thread
   - `demo_swapchain_create`
     - `IDXGIVkSwapChainFactory_CreateSwapChain`
@@ -214,6 +214,23 @@
 
 ## Threads
 
+- per-queue `vkd3d_queue` and `vkd3d_fence` threads
+  - `d3d12_device_CreateCommandQueue`
+    - `d3d12_command_queue_init`
+      - `vkd3d_fence_worker_start` creates the fence thread
+      - it creates the queue thread
+  - `d3d12_command_queue_ExecuteCommandLists`
+    - `d3d12_command_queue_add_submission` queues `VKD3D_SUBMISSION_EXECUTE`
+  - `d3d12_command_queue_submission_worker_main` is the queue thread
+    - `d3d12_command_queue_execute` handles `VKD3D_SUBMISSION_EXECUTE`
+      - `vkQueueSubmit2` submits with an internal timeline semaphore
+      - `vkd3d_enqueue_timeline_semaphore` wakes up the fence thread
+  - `vkd3d_fence_worker_main` is the fence thread
+    - when woken up, `vkWaitSemaphores` waits on the internal timeline semaphore
+    - `vkd3d_wait_for_gpu_timeline_semaphore`
+    - `vkd3d_waiting_fence_complete_submissions` invokes
+      `fence_info->release_callback`
+      - it is setup when the cmd is queued
 - per-swapchain `vkd3d-swapchain-sync` thread
   - `dxgi_vk_swap_chain_factory_CreateSwapChain`
     - `dxgi_vk_swap_chain_reallocate_user_buffers` creates swapchain imgs
@@ -224,7 +241,7 @@
   - `dxgi_vk_swap_chain_Present`
     - `d3d12_command_queue_enqueue_callback` queues
       `dxgi_vk_swap_chain_present_callback`
-  - later, `dxgi_vk_swap_chain_present_callback`
+  - later, `dxgi_vk_swap_chain_present_callback` from the queue thread
     - `dxgi_vk_swap_chain_present_iteration` calls `vkQueuePresentKHR`
     - `dxgi_vk_swap_chain_signal_waitable_handle` wakes up the sync thread
   - `dxgi_vk_swap_chain_wait_worker` is the sync thread
