@@ -25,8 +25,12 @@
     - `vkGetDeviceQueue`
     - create a submission worker thread
   - `demo_swapchain_create`
-    - `vkCreateXcbSurfaceKHR`
-    - `vkCreateSwapchainKHR`
+    - `IDXGIVkSwapChainFactory_CreateSwapChain`
+      - `vkCreateXcbSurfaceKHR`
+    - `IDXGIVkSwapChain_SetFrameLatency`
+      - no vulkan call
+    - `IDXGIVkSwapChain_GetFrameLatencyEvent`
+      - no vulkan call
   - `demo_swapchain_get_current_back_buffer_index`
     - `IDXGIVkSwapChain_GetImageIndex` returns the next image idx
       - `vkAcquireNextImageKHR`
@@ -115,6 +119,8 @@
     - gather cmdbufs, setup timeline sems, and call `vkQueueSubmit2`
   - `demo_swapchain_present`
     - `IDXGIVkSwapChain_Present` presents
+      - `dxgi_vk_swap_chain_destroy_swapchain_in_present_task`
+        - `vkCreateSwapchainKHR` on demand
       - `dxgi_vk_swap_chain_present_iteration`
         - it blits from rt to wsi img
         - `vkQueuePresentKHR` presents
@@ -205,6 +211,26 @@
   - `d3d12_device_reserve_internal_sparse_queue`
   - `d3d_destruction_notifier_init`
   - `d3d12_device_open_kmt`
+
+## Threads
+
+- per-swapchain `vkd3d-swapchain-sync` thread
+  - `dxgi_vk_swap_chain_factory_CreateSwapChain`
+    - `dxgi_vk_swap_chain_reallocate_user_buffers` creates swapchain imgs
+    - `dxgi_vk_swap_chain_create_surface` creates vk surface
+    - `dxgi_vk_swap_chain_init_sync_objects` creates an eventfd if
+      `DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT`
+    - `dxgi_vk_swap_chain_init_waiter_thread` creates the sync thread
+  - `dxgi_vk_swap_chain_Present`
+    - `d3d12_command_queue_enqueue_callback` queues
+      `dxgi_vk_swap_chain_present_callback`
+  - later, `dxgi_vk_swap_chain_present_callback`
+    - `dxgi_vk_swap_chain_present_iteration` calls `vkQueuePresentKHR`
+    - `dxgi_vk_swap_chain_signal_waitable_handle` wakes up the sync thread
+  - `dxgi_vk_swap_chain_wait_worker` is the sync thread
+    - when woken up, `vkWaitForPresent2KHR` waits for the present
+    - `vkd3d_native_sync_handle_release` writes to the eventfd
+      - the game blocks on the eventfd for frame throttling
 
 ## Memory
 
