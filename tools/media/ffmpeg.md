@@ -51,6 +51,20 @@
   - `-codec ac3` selects ac3 for all streams
   - `-codec:a:0 ac3` selects ac3 for audio stream #0
 
+## Test Clips
+
+- generate raw test clip
+  - `ffmpeg -lavfi testsrc=rate=30:size=300x300:decimals=3 -pix_fmt yuv420p -frames:v 150 test.y4m`
+  - y4m format is for raw yuv
+    - file header: `YUV4MPEG2 W300 H300 F30:1 Ip A1:1 C420jpeg XYSCSS=420JPEG`
+    - frame header: `FRAME`
+- generate av1 test clip
+  - `ffmpeg -lavfi testsrc=rate=30:size=300x300:decimals=3 -pix_fmt yuv420p -frames:v 150 -c:v libsvtav1 -preset 8 -crf 35 test.ivf`
+  - ivf format is for compressed video stream
+    - file header: 32-byte with `DKIF` magic, fourcc, WxH, frame rate, frame
+      count, etc.
+    - frame header: 12-byte with size and timestamp
+
 ## Pixel Formats
 
 - let `a.pnm` be a 64x64 image with solid color `#aabbcc`
