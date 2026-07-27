@@ -339,6 +339,17 @@
       `ID3D11Resource`
     - `ID3D11DeviceContext::Map` maps a `ID3D11Resource`
 
+## Direct3D 12 Resource Model
+
+- root signature is the "function prototype" of the gpu pipeline
+  - when cpu invokes a pipeline, it passes "function arguments" via pseudo
+    registers
+  - there is a limit of 64 regs
+  - each root constant (push constant) takes a reg
+  - each root descriptor (buffer device addr) takes two regs
+  - each root descriptor table (offset to the corresponding desc heap) takes a reg
+    - shader finds the base addr of the desc heap through other means
+
 ## Resource Types
 
 - <https://www.lei.chat/posts/hlsl-for-vulkan-resources/>
