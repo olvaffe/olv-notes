@@ -67,6 +67,11 @@
   - `adb shell am instrument -w \
        -e class 'android.virtualdevice.cts.camera.VirtualCameraCameraXTest#virtualDeviceContext_takePicture[0]' \
        android.virtualdevice.cts.camera/androidx.test.runner.AndroidJUnitRunner`
+  - `adb shell am instrument -w \
+       -e class com.drawelements.deqp.vk.TestCaseRunner \
+       -e deqpLogFilename /sdcard/TestLog.qpa \
+       -e deqpCmdLine '"--deqp-case=dEQP-VK.synchronization2.internally_synchronized_queues.*"' \
+       com.drawelements.deqp/.testercore.DeqpInstrumentation`
 
 ## Faster Run
 
