@@ -157,6 +157,23 @@
   - the global vtable has `d3d12core_CreateDevice` to create a dev
     - the device embeds vtables for various device functions
 
+## Logging
+
+- `vkd3d_dbg_init` inits logging on demand
+  - it parses `VKD3D_DEBUG` or `VKD3D_SHADER_DEBUG` for the loglevel
+    - `VKD3D_DBG_LEVEL_NONE` is used to disable logging
+    - `VKD3D_DBG_LEVEL_ERR`
+    - `VKD3D_DBG_LEVEL_INFO`
+    - `VKD3D_DBG_LEVEL_FIXME` is the default; this and above are logged by default
+    - `VKD3D_DBG_LEVEL_WARN`
+    - `VKD3D_DBG_LEVEL_TRACE`
+- `WARN(..)` or the like expands to `vkd3d_dbg_printf`
+  - `channel` is `VKD3D_DBG_CHANNEL_API` or `VKD3D_DBG_CHANNEL_SHADER`,
+    depending on the caller
+  - `level` is `VKD3D_DBG_LEVEL_WARN` or the like
+  - `funcion` is from `__FUNCTION__`
+  - `vkd3d_dbg_get_level` returns the current log level
+
 ## Device Initialization
 
 - `d3d12core_CreateDeviceFromFactory` creates and initializes a device
