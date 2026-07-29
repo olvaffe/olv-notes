@@ -307,9 +307,19 @@
     - if host ptr, `vkd3d_import_host_memory`
     - if no fallback, `vkd3d_try_allocate_device_memory`
     - else, `vkd3d_allocate_device_memory`
-- vk memory type
+- `vkd3d_memory_allocation_init`
   - `info->memory_requirements` is initialized by the caller from the res
   - `info->heap_properties` is the d3d heap
+    - `D3D12_HEAP_TYPE_DEFAULT` is for gpu, no cpu access
+    - `D3D12_HEAP_TYPE_UPLOAD` is for cpu-to-gpu
+    - `D3D12_HEAP_TYPE_READBACK` is for gpu-to-cpu
+    - `D3D12_HEAP_TYPE_GPU_UPLOAD` is for gpu, with cpu access
+    - `D3D12_HEAP_TYPE_CUSTOM` is user-defined
+  - `info->heap_flags` is the heap flags
+    - `D3D12_HEAP_FLAG_DENY_BUFFERS` means no buf
+    - `D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES` means no sample/storage img
+    - `D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES` means no rt img
+  - `vkd3d_select_memory_flags` returns the mt flags
     - `D3D12_HEAP_TYPE_DEFAULT` is for gpu, no cpu access
       - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
     - `D3D12_HEAP_TYPE_UPLOAD` is for cpu-to-gpu
@@ -317,19 +327,26 @@
       - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
     - `D3D12_HEAP_TYPE_READBACK` is for gpu-to-cpu
       - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
-      - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
       - `VK_MEMORY_PROPERTY_HOST_CACHED_BIT`
     - `D3D12_HEAP_TYPE_GPU_UPLOAD` is for gpu, with cpu access
       - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
       - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
       - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
     - `D3D12_HEAP_TYPE_CUSTOM` is user-defined
-  - `info->heap_flags` is the heap flags
-    - `D3D12_HEAP_FLAG_DENY_BUFFERS` means no buf
-    - `D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES` means no sample/storage img
-    - `D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES` means no rt img
-  - `vkd3d_select_memory_types`
-    - `d3d12_device_get_memory_info_domain`
-    - `domain_info->buffer_type_mask` supports all buf usages
-    - `domain_info->sampled_type_mask` supports all img usages except rt
-    - `domain_info->rt_ds_type_mask` supports all img usages
+      - treats `D3D12_CPU_PAGE_PROPERTY_NOT_AVAILABLE` as `DEFAULT` heap
+      - treats `D3D12_CPU_PAGE_PROPERTY_WRITE_BACK` as `READBACK` heap
+      - treats `D3D12_CPU_PAGE_PROPERTY_WRITE_COMBINE` as `UPLOAD` or
+        `GPU_UPLOAD` heap
+        - `D3D12_MEMORY_POOL_L0` is system ram
+        - `D3D12_MEMORY_POOL_L1` is vram
+  - `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER` creates a `VkBuffer` for the mem
+    alloc
+  - `vkd3d_select_memory_types` returns the mt mask
+    - `d3d12_device_get_memory_info_domain` returns one of
+      - `non_cpu_accessible_domain` are raw mt masks for buffers/images
+      - `fallback_domain` is the same as `non_cpu_accessible_domain` on uma
+      - `cpu_accessible_domain` is
+        `non_cpu_accessible_domain.buffer_type_mask & host_visible_mask`
+    - if buffers are possible, `domain_info->buffer_type_mask`
+    - if non-rt images are possible, `domain_info->sampled_type_mask`
+    - if rt images are possible, `domain_info->rt_ds_type_mask`
