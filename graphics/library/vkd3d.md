@@ -210,6 +210,23 @@
   - `vkd3d_memory_allocator_init`
   - `vkd3d_init_format_info`
   - `vkd3d_memory_info_init`
+    - `vkd3d_memory_info_get_topology` looks at mem props to determine topo
+      (e.g., is this uma or not)
+    - `vkd3d_memory_info_decide_hvv_usage` returns true for uma
+      - hvv stands for host-visible vram
+    - `info->upload_heap_memory_properties` is below for uma
+      - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT`
+      - `VK_MEMORY_PROPERTY_HOST_COHERENT_BIT`
+    - `info->has_gpu_upload_heap` is true for uma
+    - `vkd3d_memory_info_init_budgets` is nop for uma
+    - it queries mem reqs for 3 kinds of resources
+      - `buffer_type_mask` is for buffers with all usage
+      - `sampled_type_mask` is for images without RT/DS usage
+      - `rt_ds_type_mask` is for images with RT/DS usage
+    - `info->non_cpu_accessible_domain` is the raw mem reqs
+    - `info->fallback` is the same as `info->non_cpu_accessible_domain` on uma
+    - `info->cpu_accessible_domain` is always `buffer_type_mask & host_visible_mask`
   - `vkd3d_global_descriptor_buffer_init`
   - `vkd3d_bindless_state_init`
   - `vkd3d_view_map_init`
