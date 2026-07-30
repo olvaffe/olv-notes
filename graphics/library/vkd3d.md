@@ -293,8 +293,8 @@
 - public alloc apis
   - `vkd3d_allocate_internal_buffer_memory` calls
     `vkd3d_allocate_device_memory` to alloc for an existing internal buffer
-  - `vkd3d_allocate_device_memory` calls `vkd3d_try_allocate_device_memory`
-    with a fallback
+  - `vkd3d_allocate_device_memory` calls `vkd3d_try_allocate_device_memory`,
+    with the ability to fall back to system ram when vram is full
   - `vkd3d_allocate_heap_memory` calls `vkd3d_allocate_memory`
   - `vkd3d_allocate_memory` calls
     - if suballoc, `vkd3d_suballocate_memory`
@@ -302,11 +302,9 @@
 - internal alloc apis
   - `vkd3d_try_allocate_device_memory` calls `vkAllocateMemory` and is low-level
   - `vkd3d_suballocate_memory` calls `vkd3d_memory_allocation_init` to alloc a
-    chunk and then suballocs from chunks
+    chunk on demand and then suballocs from chunks
   - `vkd3d_memory_allocation_init`
-    - if host ptr, `vkd3d_import_host_memory`
-    - if no fallback, `vkd3d_try_allocate_device_memory`
-    - else, `vkd3d_allocate_device_memory`
+    - see below
 - `vkd3d_memory_allocation_init`
   - `info->memory_requirements` is initialized by the caller from the res
   - `info->heap_properties` is the d3d heap
@@ -319,7 +317,7 @@
     - `D3D12_HEAP_FLAG_DENY_BUFFERS` means no buf
     - `D3D12_HEAP_FLAG_DENY_NON_RT_DS_TEXTURES` means no sample/storage img
     - `D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES` means no rt img
-  - `vkd3d_select_memory_flags` returns the mt flags
+  - `vkd3d_select_memory_flags` returns the mt flags derived from heap props
     - `D3D12_HEAP_TYPE_DEFAULT` is for gpu, no cpu access
       - `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT`
     - `D3D12_HEAP_TYPE_UPLOAD` is for cpu-to-gpu
@@ -339,9 +337,10 @@
         `GPU_UPLOAD` heap
         - `D3D12_MEMORY_POOL_L0` is system ram
         - `D3D12_MEMORY_POOL_L1` is vram
-  - `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER` creates a `VkBuffer` for the mem
-    alloc
-  - `vkd3d_select_memory_types` returns the mt mask
+  - if `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER`, it creates a `VkBuffer` for the
+    vk mem first
+    - the buffer also imposes more mem reqs
+  - `vkd3d_select_memory_types` returns the mt mask derived from heap props/flags
     - `d3d12_device_get_memory_info_domain` returns one of
       - `non_cpu_accessible_domain` are raw mt masks for buffers/images
       - `fallback_domain` is the same as `non_cpu_accessible_domain` on uma
@@ -350,3 +349,34 @@
     - if buffers are possible, `domain_info->buffer_type_mask`
     - if non-rt images are possible, `domain_info->sampled_type_mask`
     - if rt images are possible, `domain_info->rt_ds_type_mask`
+  - with mt mask and mt flags known, it allocs the vk mem
+    - it uses mt flags to pick the best mt from mt mask
+    - if host ptr, `vkd3d_import_host_memory` calls
+      `vkd3d_try_allocate_device_memory` with host ptr
+    - if `VKD3D_ALLOCATION_FLAG_NO_FALLBACK`,
+      `vkd3d_try_allocate_device_memory` allocs directly
+    - else, `vkd3d_allocate_device_memory` calls
+      `vkd3d_try_allocate_device_memory` and retries without `LOCAL`
+      - the idea is to fall back to system ram when vram is full
+  - if `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER`, `vkBindBufferMemory2` binds the
+    vk mem to the `VkBuffer`
+- `vkd3d_try_allocate_device_memory` allocs a `VkDeviceMemory`
+  - `candidate_mask` is the subset of `base_type_mask` which fulfulls
+    `type_flags`
+  - if empty, it tries again without `LOCAL` and `HOST_CACHED`
+- `d3d12_resource_create_committed`
+  - `d3d12_resource_create` creates `d3d12_resource` obj
+  - if img,
+    - `d3d12_resource_create_vk_resource` creates `VkImage`
+    - `vkd3d_allocate_memory` allocs or sub-allocs a `VkDeviceMemory`
+    - `vkBindImageMemory2` binds the mem to img
+  - if buf, `vkd3d_allocate_heap_memory` calls `vkd3d_allocate_heap_memory`
+    with `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER`
+    - `vkd3d_memory_allocation_init` takes care of `VkBuffer` creation and
+      bind when `VKD3D_ALLOCATION_FLAG_GLOBAL_BUFFER` is set
+- heap and suballocation
+  - d3d heap props and heap flags are translated to vk mt mask and mt flags
+  - when creating a d3d committed resource, it creates a vk resource and calls
+    `vkd3d_allocate_memory` to alloc a full vk mem or a sub-allocated vk mem
+  - when creating a custom heap, it also calls `vkd3d_allocate_memory`
+    indirectly to alloc a full vk mem or a sub-allocated vk mem
