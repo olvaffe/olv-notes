@@ -380,3 +380,12 @@
     `vkd3d_allocate_memory` to alloc a full vk mem or a sub-allocated vk mem
   - when creating a custom heap, it also calls `vkd3d_allocate_memory`
     indirectly to alloc a full vk mem or a sub-allocated vk mem
+- `D3D12_FEATURE_EXISTING_HEAPS` provides `OpenExistingHeapFrom*`
+  - it uses `VK_EXT_external_memory_host` internally to create a heap
+    (`VkDeviceMemory`) from a host pointer
+  - the heap has `D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER`, which is why
+    `vkd3d_create_buffer` inserts
+    `VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT` automatically
+  - note how vkd3d sets `CrossNodeSharingTier` to
+    `D3D12_CROSS_NODE_SHARING_TIER_NOT_SUPPORTED`
+    - apps are not allowed to set `D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER`
