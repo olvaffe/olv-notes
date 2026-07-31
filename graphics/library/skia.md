@@ -21,30 +21,34 @@
       - true for no optimization
       - false for `-O3` and `-DNDEBUG`
     - `is_official_build = false`
-      - true to disable `is_debug`
+      - true to disable `is_debug` and enable aggressive optimizations
       - false to enable `is_debug` and to add `-g`
-    - `skia_enable_ganesh = true`
-      - the old gpu backend
     - `skia_enable_graphite = false`
       - the new gpu backend
+      - chrome is moving toward `graphite -> dawn -> {vk,d3d,mtl}`
+      - android sf is moving toward `graphite -> vk`
+      - android hwui is still `ganesh -> vk`
+    - `skia_enable_ganesh = true`
+      - the old gpu backend
     - `skia_enable_gpu_debug_layers = true`
       - enable vk validation layer for tests/tools
     - `skia_enable_spirv_validation = true`
       - enable vk validation layer for tests/tools
+    - `skia_use_vulkan = false`
+      - true to enable ganesh and graphite vk backend
+    - `skia_use_dawn = false`
+      - true to enable graphite dawn backend
+    - `skia_use_gl = true`
+      - true to enable ganesh gl/gles backend
     - `skia_gl_standard = ""`
       - defines `SK_ASSUME_GL_ES=1` or `SK_ASSUME_GL=1` to reduce code size
-    - `skia_use_angle = false`
     - `skia_use_egl = false`
-      - true to use egl rather than glx
+      - true to provide convenient `GrGLMakeEGLInterface`
       - always true on android
-      - some tools will fail to build on linux
-        - `ninja -C out skia` to build just the library
-    - `skia_use_gl = true`
-      - true to enable gl/gles backend
-    - `skia_use_vulkan = false`
-      - true to enable vk backend
     - `skia_use_x11 = true`
-      - use glx unless `skia_use_egl`
+      - true to provide convenient `GrGLMakeGLXInterface`
+    - `skia_use_angle = false`
+      - true to bundle angle
   - disable font
     - `skia_enable_fontmgr_android = false`
     - `skia_enable_fontmgr_empty = true`
@@ -61,10 +65,17 @@
     - `cc_wrapper = "ccache"`
 - linux build
   - args
-    - `is_component_build = true`
-    - `skia_use_egl = true`
-    - `skia_use_vulkan = true`
+    - `is_component_build = true`, for shared library and faster linking
+    - `skia_enable_graphite = true`, for graphite in addition to ganesh
+    - `skia_use_vulkan = true`, for graphite/vk and ganesh/vk
+    - `skia_use_dawn = true`, if graphite/dawn
+    - `skia_use_x11 = false`, to disable `GrGLMakeGLXInterface` helper
+    - `skia_use_freetype = false`, to disable freetype and fontmgr
     - `cc_wrapper = "ccache"`
+  - `ninja -C out skia` to build just the library
+  - deploy
+    - `strip out/libskia.so`
+    - `tar -zcf skia-dist.tar.gz --transform="s,,skia-dist/," out/libskia.so include modules/skcms/skcms.h modules/skcms/src/skcms_public.h`
   - meson
     - use `cpp.find_library('skia')` directly
     - comparing defines in `defines.bzl` and `include`, we should define
@@ -72,9 +83,6 @@
       - `SK_GANESH`
       - `SK_GL`
       - `SK_VULKAN`
-  - deploy
-    - `strip -g out/lib*.so`
-    - `tar -zcf skia-dist.tar.gz --transform="s,,skia-dist/," out/lib*.so include src/base/SkTime.h modules/skcms/skcms.h modules/skcms/src/skcms_public.h`
 
 ## Tests
 
