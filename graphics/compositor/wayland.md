@@ -1,5 +1,29 @@
 # Wayland
 
+## Simple Client and Internals
+
+- initialization
+  - `wl_display_connect` returns a `wl_display` proxy
+    - client connects to `wayland-N` socket
+    - server accepts the connection and creates a `wl_client`
+  - `wl_display_get_registry` returns a `wl_registry` proxy
+    - client marshals the req to a buffer
+  - `wl_registry_add_listener` adds a listener to the registry
+    - client updates the registry dispatch table
+  - `wl_display_roundtrip` round trips
+    - client marshals `sync` req
+    - client flushes reqs to socket
+    - server creates a `wl_registry` res and sends `global` events immediately
+    - server handles `sync` req and sends `done` event
+    - client handles `global` events and calls `wl_registry_bind` to create
+      various proxies
+    - client handles `done` event and returns
+  - `wl_display_roundtrip` round trips again
+    - this time, client flushes registry `bind` reqs
+    - server creates various resources and sends various events
+      - e.g., shm `format` events, etc.
+    - client handles various evnets
+
 ## Wayland Repos
 
 - <https://gitlab.freedesktop.org/wayland/wayland.git>
