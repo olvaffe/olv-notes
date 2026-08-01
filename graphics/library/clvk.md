@@ -125,8 +125,8 @@
   - `git clone https://github.com/google/clspv`
   - `python3 utils/fetch_sources.py`
   - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug -DCLSPV_SHARED_LIB=ON`
-    - `-DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_CXX_VISIBILITY_PRESET=hidden`
-      - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
+    - when `-DCLSPV_SHARED_LIB=ON`, it is desirable to hide llvm symbols
+      - `-DCMAKE_SHARED_LINKER_FLAGS="-Wl,--exclude-libs,ALL"`
     - `-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `ninja -C out clspv_core`
 - the only entrypoint is `clspvCompileFromSourcesString`
