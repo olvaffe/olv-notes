@@ -3,10 +3,10 @@
 ## Simple Client and Internals
 
 - initialization
-  - `wl_display_connect` returns a `wl_display` proxy
+  - `wl_display_connect` creates a `wl_display` proxy
     - client connects to `wayland-N` socket
     - server accepts the connection and creates a `wl_client`
-  - `wl_display_get_registry` returns a `wl_registry` proxy
+  - `wl_display_get_registry` creates a `wl_registry` proxy
     - client marshals the req to a buffer
   - `wl_registry_add_listener` adds a listener to the registry
     - client updates the registry dispatch table
@@ -27,6 +27,24 @@
     - client frees the proxy
     - server is unaware because the interface protocol does not define a dtor
       - note that modern interfaces always have dtors
+- surface creation
+  - `wl_compositor_create_surface` creates a `wl_surface` proxy
+    - the surface is raw and has no role yet
+  - `xdg_wm_base_get_xdg_surface` creates a `xdg_surface` proxy
+    - the surface can be assigned a role now
+    - it deprecates `wl_shell` and `zxdg_shell`
+  - `xdg_surface_add_listener` adds a listener to the surface
+    - it handles `configure` event to ack resize and commit a new buf
+  - `xdg_surface_get_toplevel` creates a `xdg_toplevel` proxy
+    - the surface is assigned the top-level role. aka a window
+  - `xdg_toplevel_add_listener` adds a listner to the toplevel
+    - `configure` event is intermediate followed by final surface `configure`
+      event
+  - `wl_surface_commit` is the first commit
+    - most surface states are double-buffered and this commits the changes
+      atomically
+    - being the first, server resizes the surface and sends `configure` events
+  - note that client queues the reqs and does not flush them to socket yet
 
 ## Wayland Repos
 
