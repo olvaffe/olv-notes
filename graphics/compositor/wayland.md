@@ -23,6 +23,10 @@
     - server creates various resources and sends various events
       - e.g., shm `format` events, etc.
     - client handles various evnets
+  - `wl_registry_destroy` destroys the `wl_registry` proxy
+    - client frees the proxy
+    - server is unaware because the interface protocol does not define a dtor
+      - note that modern interfaces always have dtors
 
 ## Wayland Repos
 
