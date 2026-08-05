@@ -732,3 +732,19 @@
 - <https://github.com/qbittorrent/qBittorrent>, torrent client
 - <https://github.com/emscripten-core/emscripten>, LLVM to WebAssembly
 - <https://github.com/xbmc/xbmc>, home theater
+
+## Class ABI
+
+- non-virtual methods and static variables are mangled symbols
+  - order does not matter
+- `sizeof` and `offsetof` depend on virtual methods and non-static variables
+  - if any virtual method,
+    - there is a vtable for virtual methods
+      - order matters
+    - first field is `vptr` pointing to the vtable
+  - non-static variables are similar to pod
+    - order matters
+- virtual inheritance
+  - concrete inheritance treats the base class as the first field
+  - virtual inheriance puts the base class at an offset, with the offset
+    recorded in the vtable
