@@ -19,6 +19,27 @@
   - 2024, Unity 6
     - URP becomes default
 
+## Installation and Build
+
+- unity hub
+  - download and install `UnityHubSetup-amd64.deb`
+    - or use flatpak
+  - start `unityhub` and login from browser
+  - `Install -> Install Editor` to install the editor
+    - select `Android Build Support` as well
+  - `Projects -> New project` to create a project
+    - it takes more than a few minutes
+    - it will bring up the editor
+- unity editor
+  - `Asset Store -> My Assets -> Download assets -> Import to project -> Replace`
+    - it takes more than a few minutes, and will install dependencies
+  - `Project -> Assets -> Scenes -> Demo`
+  - if android,
+    - `File > Build Profiles -> Platforms -> Android -> Switch Platform`
+    - `Edit -> Project Settings -> Graphics -> Default Renderer Pipeline`
+    - `Edit -> Project Settings -> Player -> Settings for Android`
+  - `File -> Build And Run`
+
 ## Demo: Boat Attack
 
 - <https://github.com/Unity-Technologies/BoatAttack>

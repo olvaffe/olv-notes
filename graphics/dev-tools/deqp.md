@@ -104,6 +104,34 @@
        -DDEQP_TARGET=android -DDEQP_ANDROID_EXE=ON -DDEQP_TARGET_TOOLCHAIN=ndk-modern \
        -DANDROID_NDK_PATH=~/android/sdk/ndk/28.0.13004108 -DANDROID_ABI=arm64-v8a -DDE_ANDROID_API=34`
 
+## `Android.bp`
+
+- Android CTS builds using `Android.bp`
+- `com.drawelements.deqp` is the CTS device apk
+  - it packs `libdeqp.so` which includes files listed in `AndroidGen.bp`
+    - `tcuAndroidPlatform.cpp` and all egl/gles2/gles3/gles31/vk tests
+  - its apk manifest is `android/package/AndroidManifest-integration.xml`
+- `org.khronos.gl_cts` is the unused KHRONOS device apk
+  - it packs `libkhronosopenglcts.so` which includes files listed in
+    `AndroidKhronosCTSGen.bp`
+    - `tcuAndroidPlatform.cpp` and all gl/egl/gles2/gles3/gles31/vk tests
+  - its apk manifest is `android/openglcts/AndroidManifest.xml`
+- `deqp-binary` is CLI binary
+  - it directly includes files listed in `AndroidGen.bp`
+  - it includes `tcuMain.cpp` and `tcuSurfacelessPlatform.cpp` for CLI
+- `CtsDeqpTestCases` is the CTS host runner
+  - `cts-tradefed run cts -m CtsDeqpTestCases` loads
+    - `CtsDeqpTestCases.config` which is renamed from `AndroidTest.xml`
+    - `CtsDeqpTestCases.jar` which is the host runner
+  - `AndroidTest.xml` specifies test setup and test combos
+  - `CtsDeqpTestCases.jar` controls the device according to the test combo
+    - it parses input testcase list, replaces the last dot by `#`, applies
+      filtering, splits them into `TESTCASE_BATCH_LIMIT`-test batches, and
+      push each batch as `/sdcard/dEQP-TestCaseList.txt`
+- `KhronosCTSTestCases` is the unused KHRONOS host runner
+  - while the device apk also covers big gl, egl, and vk, the host runner only
+    runs gles tests
+
 ## `TestResults.qpa`
 
 - browse to `scripts/qpa_image_viewer.html` and open the qpa file
