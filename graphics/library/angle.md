@@ -382,6 +382,11 @@
   - otherwise, `emulateAdvancedBlendEquations` is set if not on intel
   - `GL_KHR_blend_equation_advanced` is advertised if either is set
 
+## `GL_EXT_multisampled_render_to_texture`
+
+- confusingly enough, ext `glFramebufferTexture2DMultisampleEXT` and core
+  `glFramebufferTexture2DMultisample` behave differently!
+
 ## GLES 3.2
 
 - vk `Renderer::getMaxSupportedESVersion`
