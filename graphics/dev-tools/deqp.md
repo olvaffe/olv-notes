@@ -119,6 +119,9 @@
 - `deqp-binary` is CLI binary
   - it directly includes files listed in `AndroidGen.bp`
   - it includes `tcuMain.cpp` and `tcuSurfacelessPlatform.cpp` for CLI
+    - both `tcuSurfacelessPlatform.cpp` and `tcuAndroidPlatform.cpp` provide
+      `createPlatform`?
+      - in android downstream branch, android platform has no `createPlatform`
 - `CtsDeqpTestCases` is the CTS host runner
   - `cts-tradefed run cts -m CtsDeqpTestCases` loads
     - `CtsDeqpTestCases.config` which is renamed from `AndroidTest.xml`
