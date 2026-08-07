@@ -164,39 +164,41 @@
     no `ANativeWindow`
   - `WindowRegistry::tryAcquireWindow` always returns NULL
 
-## `TestResults.qpa`
-
-- browse to `scripts/qpa_image_viewer.html` and open the qpa file
-- or, <https://android.googlesource.com/platform/external/cherry/+/master>
-  - `mkdir data`
-  - `python ../VK-GL-CTS/scripts/build_caselists.py data`
-    - or manually `./deqp-vk --deqp-runmode=xml-caselist` and copy
-      `dEQP-VK-cases.xml` to `data`
-  - `GO111MODULE=off go run server.go`
-  - browse to `http://127.0.0.1:8080`
-
 ## Build System
 
 - CMakeLists.txt `add_subdirectory`
-  - `frameworks/delib/debase`
-    - drawElements Base Portability Library
-  - `frameworks/delib/decpp`
-    - drawElements C++ Base Library
-  - `frameworks/delib/depool`
-    - drawElements Memory Pool Library
-  - `frameworks/delib/dethread`
-    - drawElements Thread Library
-  - `frameworks/delib/destream`
-    - drawElements I/O Stream Library
-  - `execserver`
-    - dEQP Execution Server
-  - `executor`
-    - dEQP Test Executor
-  - `framework`
-  - `external/vulkancts/framework/vulkan`
-  - `modules`
-  - `external/vulkancts/modules/vulkan`
-  - `external/openglcts`
+  - legacy remote testing
+    - `execserver` listens to tcp, spawns `deqp-vk`, etc., collects logs
+    - `executor` connects to and instructs `execserver` to run tests
+      - `testlog-to-xml` converts `.qpa` to `.xml` for viz, and is still useful
+  - external dependencies
+    - `external/amber` solely for vk amber shader tests
+    - `external/glslang` for vk and big gl
+    - `external/graphicsfuzz` for test shaders used by `deqp-gles3`
+    - `external/jsoncpp` solely for vulkan sc
+    - `external/libpng` for image compression in `.qpa`
+    - `external/renderdoc` for renderdoc capture
+    - `external/spirv-headers` for vk and big gl
+    - `external/spirv-tools` for vk and big gl
+    - `external/video_generator` for sythetic yuv data generation
+    - `external/vulkan-docs` for `vk.xml` and generated headers
+    - `external/vulkan-validationlayers` for optional vk validation
+    - `external/vulkan-video-samples` for bitstream parser/encoder
+    - `external/zlib` solely for `libpng`
+  - low-level drawElements libraries
+    - `frameworks/delib/debase` for macros, math, memory/string, etc.
+    - `frameworks/delib/decpp` for C++ RAII wrappers of other delibs
+    - `frameworks/delib/depool` for mempool and containers (array, set, hash, etc.)
+    - `frameworks/delib/dethread` for thread, mutex, atomic, etc.
+    - `frameworks/delib/destream` for io streams
+    - `frameworks/delib/deutil` for cross-platform dlopen, fork, fs, clocks, etc.
+  - test frameworks
+    - `framework` for platform abstractions, test engine, egl/gl helpers
+    - `external/vulkancts/framework/vulkan` for vk helpers
+  - test modules
+    - `modules` for egl, gles2, gles3, and gles31
+    - `external/openglcts/modules` includes all tests from `module` and adds more
+    - `external/vulkancts/modules/vulkan` for vk
 - `DEQP_TARGET=surfaceless`
   - `targets/surfaceless/surfaceless.cmake`
     - requires EGL/GLES2/GLES3 headers/libraries
@@ -220,10 +222,18 @@
         calls `eglGetPlatformDisplay` or `eglGetDisplay`
     - `getVulkanPlatform` is supported
 - `add_deqp_module` is a macro that adds a module
-  - if `DE_OS_IS_ANDROID`, it skips the executable
-    - we can comment this out, edit `scripts/android/build_apk.py` to build
-      `deqp-vk`, and define `createPlatform` with a dummy `NativeActivity` in
-      `framework/platform/android/tcuAndroidPlatform.cpp`
+  - if `DE_OS_IS_ANDROID`, it skips the executable unless `DEQP_ANDROID_EXE`
+
+## `TestResults.qpa`
+
+- browse to `scripts/qpa_image_viewer.html` and open the qpa file
+- or, <https://android.googlesource.com/platform/external/cherry/+/master>
+  - `mkdir data`
+  - `python ../VK-GL-CTS/scripts/build_caselists.py data`
+    - or manually `./deqp-vk --deqp-runmode=xml-caselist` and copy
+      `dEQP-VK-cases.xml` to `data`
+  - `GO111MODULE=off go run server.go`
+  - browse to `http://127.0.0.1:8080`
 
 ## Mustpass
 
