@@ -135,6 +135,35 @@
   - while the device apk also covers big gl, egl, and vk, the host runner only
     runs gles tests
 
+## Android Platform
+
+- when executed through apk,
+  - `DeqpInstrumentation` uses `RemoteAPI` to start `android.app.NativeActivity`
+  - the apk manifest instructs NativeActivity to load `libdeqp.so` and call
+    `createTestActivity`
+  - `createTestActivity` wraps `ANativeActivity` in a `TestActivity`
+    - inheritance: `TestActivity -> RenderActivity -> NativeActivity`
+    - `NativeActivity` is very thin
+      - it translates `ANativeActivity` callbacks to virtual class methods
+    - `RenderActivity` provides most of the virtual methods
+    - `TestActivity` provides star/stop virtual methods
+  - `RenderActivity::onNativeWindowCreated`
+    - it queues `MESSAGE_WINDOW_CREATED` for `RenderThread`
+    - `RenderThread` calls `TestThread::onWindowCreated` to add the window to
+      the registry
+    - the state is set to `WINDOWSTATE_READY`
+    - render thread starts calling `TestThread::render` in the loop
+  - `TestThread::render` iterates the test steps
+    - for EGL/GLES, `createDefaultRenderContext ->
+      GLContextFactory::createContext -> RenderContext::RenderContext ->
+      NativeWindowFactory::createWindow` acquires the native window
+    - for VK, a wsi test calls `NativeObjects::NativeObjects ->
+      VulkanDisplay::createWindow` to acquire the native window
+- when `DEQP_ANDROID_EXE`, the entrypoint is `createPlatform`
+  - a `NativeActivity` is created, but there is no `ANativeActivity` and thus
+    no `ANativeWindow`
+  - `WindowRegistry::tryAcquireWindow` always returns NULL
+
 ## `TestResults.qpa`
 
 - browse to `scripts/qpa_image_viewer.html` and open the qpa file
