@@ -224,6 +224,79 @@
 - `add_deqp_module` is a macro that adds a module
   - if `DE_OS_IS_ANDROID`, it skips the executable unless `DEQP_ANDROID_EXE`
 
+## Test Core
+
+- cli and android both use these classes
+  - `tcu::CommandLine` parses cmdline args
+  - `tcu::TestLog` receives logs from tests
+  - `tcu::Archive` loads assets for tests
+    - `tcu::DirArchive` or `tcu::Android::AssetArchive` is the concrete class
+    - `tcu::Resource` is an individual asset
+  - `tcu::Platform` abstracts the window system
+  - `tcu::App` uses all above and executes tests
+- `tcu::App::App` ctor
+  - `m_testCtx` is `TestContext`
+    - a thin accessor to `CommandLine`, `TestLog`, `Archive`, and `Platform`
+  - `m_testRoot` is `TestPackageRoot`
+    - `TestPackageRoot` is the root test
+      - it contains top-level tests from test packages
+      - it is the root of the entire test tree
+    - global `TestPackageRegistry` singleton
+      - most test modules use a global `TestPackageDescriptor` to register a
+        `TestPackage` to the registry
+        - `g_eglPackageDescriptor` for `dEQP-EGL`
+        - `g_gles2PackageDescriptor` for `dEQP-GLES2`
+        - `g_gles3PackageDescriptor` for `dEQP-GLES3`
+        - `g_gles31PackageDescriptor` for `dEQP-GLES31`
+        - `g_vktPackageDescriptor` for `dEQP-VK`
+      - big gl uses `RegisterCTSPackages` instead
+        - gles:
+          - `KHR-GLES2`, `KHR-GLES3`, `KHR-GLES31`, `KHR-GLES32`, `KHR-GLESEXT`
+          - `KHR-Single-GLES31`, `KHR-Single-GLES32`
+            - these are compiler tests
+        - opengl:
+          - `KHR-GL30`, `KHR-GL31`, `KHR-GL32`, `KHR-GL33`
+          - `KHR-GL40`, `KHR-GL41`, `KHR-GL42`, `KHR-GL43`, `KHR-GL44`, `KHR-GL45`, `KHR-GL46`
+          - `KHR-Single-GL43`, `KHR-Single-GL44`, `KHR-Single-GL45`, `KHR-Single-GL46`
+          - `KHR-COMPAT-GL42`
+            - this is the only package that uses compatibility profile
+        - functional:
+          - `dEQP-EGL`, `dEQP-GLES2`, `dEQP-GLES3`, `dEQP-GLES31`
+            - these are the same tests as in `deqp-{egl,gles2,gles3,gles31}`
+          - `dEQP-GL45-GLES3`, `dEQP-GL45-GLES31`
+            - these are the same GLES3 tests but using GL45 context
+        - context
+          - `KHR-NoContext`
+            - it does not create a default context but let the tests create
+              their own
+  - `m_testExecutor` is `TestSessionExecutor` to iterate through tests
+- `tcu::App::iterate` iterates a step
+  - `processEvents` processes window system events
+  - `TestSessionExecutor::iterate` iterates a step
+    - if `NODETYPE_PACKAGE`, `enterTestPackage` creates `m_caseExecutor` for
+      the entire package
+    - if `NODETYPE_GROUP`, `enterTestGroup` tracks the group duration
+    - if test case traversal, `enterTestCase` calls `m_caseExecutor->init` to
+      set up the test case
+      - egl/gles2/gles3 `TestCaseWrapper::init` simply calls `testCase->init`
+      - vk `vkt::TestCaseExecutor::init`
+        - `ContextManager::findContext`
+          - `testCase->delayedInit`
+          - `testCase->checkSupport`
+          - `testCase->initDeviceCapabilities`
+        - `vktCase->initPrograms`
+        - `m_resourceInterface->buildProgram`
+        - `vktCase->createInstance`
+    - if test case execution, `iterateTestCase` calls `m_caseExecutor->iterate`
+      - egl/gles2/gles3 `TestCaseWrapper::iterate` calls `testCase->iterate`
+      - vk `vkt::TestCaseExecutor::iterate` calls `m_testInstance->iterate`
+    - `TestHierarchyIterator::next` walks to the next node in the test tree
+      - if `NODETYPE_PACKAGE`, `DefaultHierarchyInflater::enterTestPackage`
+        - `testPackage->init` adds top-level test groups for the package and
+          creates a default gpu context (`EGLContext`, `VkDevice`, etc.)
+      - if `NODETYPE_GROUP`, `DefaultHierarchyInflater::enterGroupNode`
+        - `testGroup->init` adds child tests to the group
+
 ## `TestResults.qpa`
 
 - browse to `scripts/qpa_image_viewer.html` and open the qpa file
@@ -234,6 +307,8 @@
       `dEQP-VK-cases.xml` to `data`
   - `GO111MODULE=off go run server.go`
   - browse to `http://127.0.0.1:8080`
+- or, `testlog-to-xml` to convert to xml and visualize with
+  `testlog-stylesheet`
 
 ## Mustpass
 
