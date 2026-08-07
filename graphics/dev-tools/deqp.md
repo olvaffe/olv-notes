@@ -296,6 +296,47 @@
           creates a default gpu context (`EGLContext`, `VkDevice`, etc.)
       - if `NODETYPE_GROUP`, `DefaultHierarchyInflater::enterGroupNode`
         - `testGroup->init` adds child tests to the group
+- `tcu::Platform`
+  - optional os abstraction
+    - `getMemoryLimits` returns ram size
+    - `processEvents` processes window close, etc.
+  - optional egl support
+    - `getEGLPlatform`
+      - `getNativeDisplayFactoryRegistry` returns native display factories
+        - each factory is a window system backend
+          - `createDisplay` calls `wl_display_connect` or `XOpenDisplay`
+          - `createWindow` calls `wl_compositor_create_surface` or `XCreateWindow`
+      - `createDefaultGLFunctionLibrary` is legacy before
+        `EGL_KHR_get_all_proc_addresses`
+  - optional gl/gles support
+    - `getGLPlatform`
+      - `getContextFactoryRegistry` returns context factories
+        - each factory is a gles context creator
+          - `eglu::GLContextFactory` depends on `eglu::Platform` and uses EGL
+            to create a surface and a context
+          - `surfaceless::ContextFactory` skips `eglu::Platform` and manually
+            uses EGL to create a pbuffer and a context
+            - `--deqp-surface-type=pbuffer` must be specified
+  - optional vulkan support
+    - `getVulkanPlatform`
+      - `createLibrary` loads `libvulkan.so`
+      - `describePlatform` is logged to `.qpa`
+      - `hasDisplay` returns true if a certain display is supported
+        - `TYPE_XLIB` for `VK_KHR_xlib_surface`
+        - `TYPE_XCB` for `VK_KHR_xcb_surface`
+        - `TYPE_WAYLAND` for `VK_KHR_wayland_surface`
+        - `TYPE_ANDROID` for `VK_KHR_android_surface`
+        - `TYPE_WIN32` for `VK_KHR_win32_surface`
+        - `TYPE_METAL` for `VK_EXT_metal_surface`
+        - `TYPE_HEADLESS` for `VK_EXT_headless_surface`
+        - `TYPE_DIRECT` for `VK_KHR_display`
+          - `TYPE_DIRECT_DRM` for `VK_EXT_acquire_drm_display`
+      - optional `createWsiDisplay` creates a display
+        - this is called from wsi tests
+        - it calls `wl_display_connect` or `xcb_connect` to create a native
+          display
+        - it will call `wl_compositor_create_surface` or `xcb_create_window`
+          to create a native window
 
 ## `TestResults.qpa`
 
