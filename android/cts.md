@@ -72,6 +72,10 @@
        -e deqpLogFilename /sdcard/TestLog.qpa \
        -e deqpCmdLine '"--deqp-case=dEQP-VK.synchronization2.internally_synchronized_queues.*"' \
        com.drawelements.deqp/.testercore.DeqpInstrumentation`
+  - `adb shell am instrument -w \
+       -e class org.skia.skqp.SkQPRunner#UnitTest_SkColorSpaceXform_Graphite \
+       org.skia.skqp/androidx.test.runner.AndroidJUnitRunner`
+    - logs at `/data/media/10/Android/data/org.skia.skqp/files`
 
 ## Faster Run
 
