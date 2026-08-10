@@ -142,6 +142,15 @@
   - `dlcservice_util --id=borealis-dlc --install`
   - `vmc start --enable-vulkan --no-start-lxd --enable-big-gl --dlc-id=borealis-dlc --extra-disk=disk.img borealis`
 
+## Guest Network
+
+- there is no dhcp server
+- host `TerminaVm::ConfigureNetwork` sends `ConfigureNetwork` and
+  `SetResolvConfig`
+- guest `ServiceImpl::ConfigureNetwork` configures the interface directly
+- guest `ServiceImpl::SetResolvConfig` writes dns servers to `kResolvConfPath`
+  (`/run/resolv.conf`)
+
 ## Arch Linux
 
 - enable crostini in settings
