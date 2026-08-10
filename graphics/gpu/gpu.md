@@ -322,3 +322,36 @@
 - each point inside the triangle can be expressed as
   `p = v1 * a + v2 * b + v3 * c`, where `a + b + c = 1`
 - `(a, b, c)` is called the barycentric weight vector of the point
+
+## Counters
+
+- top-down triage flow
+- is it gpu-bound or cpu-bound?
+  - check gpu utilization
+  - `F (frame time) = C (cpu time) + G (gpu time) - O (cpu/gpu overlap)`
+  - gpu utilization is `G/F`
+  - low gpu utilization can be due to high C (cpu cannot keep up; high
+    scheduling latency) or low O (cpu/gpu are serialized)
+- is it frequency-bound?
+  - check gpu frequency
+  - it could be thermal or poor governor behavior
+  - it could happen on cpu as well
+- is it memory-bound?
+  - check mem bw, l2 stall, l2 miss
+- is it command-bound?
+  - check mcu utilization
+- is it geometry-bound, fragment-bound, or compute-bound?
+  - check geometry, fragment, or compute utilizations
+- is it shader-bound or fixed-function-bound?
+  - check shader core utilization
+  - low shader core utilization can be due to bottleneck in fixed functions or
+    barriers
+  - check fixed-function utilizations as well
+    - vertex input
+    - input assembly
+    - tiler
+    - rasterizer
+    - earlyz/latez
+    - color output
+- is it alu-bound, tex-bound, load/store-bound, or interpolation-bound?
+  - check the respective utilization
