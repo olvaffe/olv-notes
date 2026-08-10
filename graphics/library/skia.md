@@ -217,7 +217,7 @@
        --module-arg 'CtsSkQPTestCases:include-filter:org.skia.skqp.SkQPRunner#gles_imageblur*'`
 - android skqp cmdline build
   - after `make_universal_apk` sets up `args.gn`
-    - `ninja -C out/skqp/arm64/skqp skqp`
+    - `ninja -C out/skqp/arm64 skqp`
   - dist
     - `mkdir skqp-dist`
     - `aarch64-linux-gnu-strip -o skqp-dist/skqp out/skqp/arm64/skqp`
