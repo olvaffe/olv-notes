@@ -180,30 +180,34 @@
 
 ## Android
 
-- skia on android
-  - <https://android.googlesource.com/platform/external/skia> for platform
-  - <https://android.googlesource.com/platform/external/skqp> for cts
+- <https://android.googlesource.com/platform/external/skia> for android
   - <https://skia.org/docs/user/build/#android>
-  - <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
-- to build an apk from skqp's `android12-tests-release` or
-  `android11-tests-release` branch
-  - install python2 and openjdk 8
-    - `python-is-python2`
-    - `openjdk-8-jre` and `openjdk-8-jdk`
-  - install `ndk;16.1.4479499` and `platforms;android-26`
-  - edit `DEPS` and `BUILD.gn` to remove all mentions of `Nima`
-  - `tools/git-sync-deps`
-  - `rm -rf platform_tools/android/apps/arcore`
-  - comment out duplicated defines from `include/config/SkUserConfig.h`
-  - `ANDROID_HOME=~/android/sdk ANDROID_NDK=~/android/sdk/ndk/16.1.4479499
-    tools/skqp/make_universal_apk arm64`
-- to build an apk from skqp's `pie-cts-release` branch
-  - same as above
-  - no need to remove Nima-Cpp and arcore
-- note that `make_universal_apk` downloads models and sets up `resources`
-  symlink
-  - `tools/skqp/download_model`
-  - `resources` symlink
+- <https://skia.googlesource.com/skia/+/main/tools/skqp/README.md>
+  - `sed -i 's,/tools/bin/,/cmdline-tools/latest/bin/,' tools/skqp/create_apk.py`
+  - `ANDROID_HOME=~/android/sdk ANDROID_NDK_HOME=~/android/sdk/ndk/28.2.13676358 ./tools/skqp/make_universal_apk arm64`
+    - create `platform_tools/android/apps/skqp/src/main/assets/resources` symlink
+    - generate `out/skqp/arm64/args.gn` using `gn/skqp_gn_args.py`
+    - build `out/skqp/arm64/libskqp_jni.so`
+    - copy `libskqp_jni.so` to `out/skqp/libs/arm64-v8a`
+    - build apk using gradle
+- <https://android.googlesource.com/platform/external/skqp> for legacy cts
+  - to build an apk from skqp's `android12-tests-release` or
+    `android11-tests-release` branch
+    - install python2 and openjdk 8
+      - `python-is-python2`
+      - `openjdk-8-jre` and `openjdk-8-jdk`
+    - install `ndk;16.1.4479499` and `platforms;android-26`
+    - edit `DEPS` and `BUILD.gn` to remove all mentions of `Nima`
+    - `tools/git-sync-deps`
+    - `rm -rf platform_tools/android/apps/arcore`
+    - comment out duplicated defines from `include/config/SkUserConfig.h`
+    - `ANDROID_HOME=~/android/sdk ANDROID_NDK=~/android/sdk/ndk/16.1.4479499
+      tools/skqp/make_universal_apk arm64`
+      - unlike modern skqp, this also invokes `tools/skqp/download_model` to
+        download models
+  - to build an apk from skqp's `pie-cts-release` branch
+    - same as above
+    - no need to remove Nima-Cpp and arcore
 - manual run
   - `adb install -r out/skqp/skqp-universal-debug.apk`
   - `adb shell am instrument -w org.skia.skqp`
@@ -212,37 +216,15 @@
   - `./cts-tradefed run commandAndExit cts-dev -m CtsSkQPTestCases
        --module-arg 'CtsSkQPTestCases:include-filter:org.skia.skqp.SkQPRunner#gles_imageblur*'`
 - android skqp cmdline build
-  - `./bin/gn args out`
-    - see `gn/skqp_gn_args.py`
-    - `ndk_api = 26`
-    - `is_debug = false`
-    - `skia_enable_fontmgr_android = false`
-    - `skia_enable_fontmgr_empty = true`
-    - `skia_enable_graphite = true`
-    - `skia_enable_pdf = false`
-    - `skia_enable_skottie = false`
-    - `skia_enable_skshaper = false`
-    - `skia_enable_svg = false`
-    - `skia_enable_tools = true`
-    - `skia_tools_require_resources = true`
-    - `skia_use_dng_sdk = false`
-    - `skia_use_expat = true`
-    - `skia_use_freetype = false`
-    - `skia_use_icu = false`
-    - `skia_use_lua = false`
-    - `skia_use_piex = false`
-    - `skia_use_vulkan = true`
-    - `skia_use_wuffs = true`
-    - `target_cpu = "arm64"`
-    - `ndk = "/home/olv/android/sdk/ndk/28.0.13004108"`
-  - `ninja -C out skqp`
+  - after `make_universal_apk` sets up `args.gn`
+    - `ninja -C out/skqp/arm64/skqp skqp`
   - dist
-    - `mkdir -p skqp-dist/assets`
-    - `aarch64-linux-gnu-strip -o skqp-dist/skqp out/skqp`
-    - `ln -sf ../../resources skqp-dist/assets`
+    - `mkdir skqp-dist`
+    - `aarch64-linux-gnu-strip -o skqp-dist/skqp out/skqp/arm64/skqp`
+    - `ln -sf ../resources skqp-dist`
     - `tar -zchf skqp-dist.tar.gz skqp-dist`
-    - `rm -rf skqp-dist`
   - run
+    - `./skqp . out unitTest_SkColorSpaceXform_Graphite`
 
 ## `sk_app`
 
