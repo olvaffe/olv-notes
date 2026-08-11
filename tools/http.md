@@ -59,6 +59,11 @@
     - `User-Agent` the user agent, such as `User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0`
     - `Upgrade` ask the server to upgrade to another protocol
     - `Via` list of proxies
+  - non-standard fields
+    - `X-Forwarded-*` is standardized as `Forwarded`
+    - `X-RateLimit-*`, being standarized as `RateLimit-*`
+    - `X-Request-Id` is standardized as `traceparent`
+    - `X-Scheme` is what tornado uses before `X-Forwarded-Proto`
 - an empty line
 - optional request body
 
