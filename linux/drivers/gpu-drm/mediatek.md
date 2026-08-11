@@ -298,6 +298,14 @@
   - `mtk_crtc_ddp_config`
   - `mtk_drm_finish_page_flip`
 
+## Debug
+
+- if atomic commit is successful, but the screen is black
+  - `echo "1 0" > /sys/kernel/debug/dri/mediatek-drm.24.auto/eDP-1/dvo_test_pattern`
+  - this forces dvo to generate test pattern 0
+  - if the screen shows the test pattern, it means the issue resides in the
+    upstream of dvo
+
 ## AFBC
 
 - corsola/cherry advertises AFBC support but triggers
