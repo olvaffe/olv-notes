@@ -11,7 +11,7 @@
   - secure
     - EL0: trusted apps
     - EL1: trusted OS (TEE, optional)
-    - EL2: secure partition manager (optional)
+    - EL2: secure partition manager (SPM, optional)
     - EL3: secure monitor (BL31)
 - <https://trustedfirmware-a.readthedocs.io/en/latest/design/firmware-design.html>
   - Cold boot

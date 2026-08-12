@@ -10,9 +10,9 @@
     - EL2: hypervisor (kvm)
   - trustzone introduces the secure world
     - EL0: trusted app
-    - EL1: trusted os
-    - EL2: secure partition manager
-    - EL3: secure monitor
+    - EL1: trusted os (e.g., op-tee)
+    - EL2: secure partition manager (e.g., hafnium)
+    - EL3: secure monitor (e.g., tfa)
   - CCA introduces the realms
     - EL0: userspace
     - EL1: kernel (guest)
