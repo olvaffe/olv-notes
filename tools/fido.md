@@ -58,3 +58,34 @@
     - generate OTP passwords
     - type a static password
     - handle challenge-response requests
+
+## Enterprise
+
+- corp sso cookie
+  - user authenticates to the corp login service to get the corp sso cookie
+  - when using the browser, the sso cookie is stored in browser cookie jar
+  - when using cli tools, the sso cookie is stored somewhere on disk
+- corp network
+  - user uses sso cookie to access (virtual) corp network service to gain internal
+    network access
+  - user gains limited internal network access if the machine lacks machine
+    cert
+    - user uses sso cookie to access internal CA service to refresh machine cert
+      - machine cert is typically stored in tpm
+    - user gains full internal network access with the refreshed machine cert
+  - for physical corp network, machine cert is used with 802.1X to gain access
+- internal web service
+  - user uses sso cookie to access internal web service
+  - if the internal web service uses google account credential, user can be
+    redirected to google login
+- internal non-web service
+  - user uses sso cookie to access internal non-web service
+    - it works the same way except a cli tool is used
+  - if the internal non-web service uses corp account credential, user can be
+    rejected
+    - user needs to use sso cookie to access internal CA service to refresh
+      user cert
+      - user cert is typically stored on disk
+    - for ssh, user needs to use sso cookie to access internal CA service to
+      refresh ssh cert
+      - ssh cert is typically stored on security key
