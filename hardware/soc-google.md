@@ -34,3 +34,9 @@
   - X4 x1@3.78, A725 x5@3.05, A520 x2@2.25
   - PowerVR DXT-48-1536 MC1(6CU)
   - P25: 10 (frankel), pro (blazer), xl (mustang), fold (rango)
+- 2026, G6
+  - GS601, ?, malibu
+  - 3nm
+  - C1-Ultra x1@4.11, C1-Pro x4@3.38, C1-Pro x2@2.65
+  - PowerVR CXT-48-1536
+  - P26: 11 series
