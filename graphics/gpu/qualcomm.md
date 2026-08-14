@@ -4,63 +4,53 @@
 
 - <https://en.wikipedia.org/wiki/Adreno>
 - `freedreno_devices.py`
-- A2XX
-  - Adreno 200
-  - Adreno 201
-  - Adreno 205
-  - Adreno 220
-- A3XX
-  - Adreno 305
-  - Adreno 305B
-  - Adreno 306A
-  - Adreno 307
-  - Adreno 320
-  - Adreno 330
-- A4XX
-  - Adreno 405
-  - Adreno 420
-  - Adreno 430
-- A5XX
-  - Adreno 505
-  - Adreno 506
-  - Adreno 508
-  - Adreno 509
-  - Adreno 510
-  - Adreno 512
-  - Adreno 530
-  - Adreno 540
-- A6XX Gen1
-  - Adreno 605
-  - Adreno 608
-  - Adreno 610
-  - Adreno 612
-  - Adreno 615
-  - Adreno 616
-  - Adreno 618
-  - Adreno 619
-  - Adreno 620
-  - Adreno 630
-- A6XX Gen2
-  - Adreno 640
-  - Adreno 680
-- A6XX Gen3
-  - Adreno 621
-  - Adreno 650
-- A6XX Gen4
-  - Adreno 635
-  - Adreno 643
-  - Adreno 660
-  - Adreno 662
-  - Adreno 663
-  - Adreno 690
-- A7XX Gen1
-  - Adreno 725
-  - Adreno 730
-- A7XX Gen2
-  - Adreno 735
-  - Adreno 740
-- A7XX Gen3
-  - Adreno 750
+- A2XX, 2008
+  - gles2
+  - 200, 201, 205
+  - 220, 225
+- A3XX, 2012
+  - gles3, ir3
+  - 305, 305B, 306A, 307
+  - 320, 330
+- A4XX, 2014
+  - gles3.1, astc
+  - 405
+  - 420, 430
+- A5XX, 2015
+  - vk1.0, ubwc
+  - 505, 506, 508, 509
+  - 510, 512
+  - 530, 540
+- A6XX Gen1, 2018
+  - sqe, ccu, ubwc2, increased maxMultiviewViewCount for vk1.1 except for low-end
+  - 615, 616, 618, 619, 620, 630
+  - low-end: 605, 608, 610, 612, 613, 702, 704
+- A6XX Gen2, 2019
+  - z24s8
+  - 640, 680
+- A6XX Gen3, 2020
+  - scalar alu, preamble, 16-bit storage
+  - 621, 623, 650
+- A6XX Gen4, 2021
+  - lpac, better subgroup, vrs
+  - 660, 662, 663, 690
+  - 635
+- A7XX Gen1, 2021
+  - increased maxBoundDescriptorSets for vk1.4
+  - 722, 725, 730
+- A7XX Gen2, 2022
+  - raytracing
+  - 735, 740, 740v3
+  - X1-45, X1-85
+  - A32
+- A7XX Gen3, 2023
+  - 750
+- A8XX Gen1, 2024
+  - slices, with each slice up to 2 SP/CCU
+  - 810, 830
+- A8XX Gen2, 2025
+  - 829, 840
+  - X2-85, X2-90
 
 ## Architecture
 
