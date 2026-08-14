@@ -43,40 +43,56 @@
   - Cortex-A34, 2016
   - Cortex-A73, 2016
 - ARMv8.1-A
+  - LSE, VHE, RDM, HAFDBS
 - ARMv8.2-A
+  - FP16, RAS, SPE, DPB, LPA2
+  - optional SVE
   - Cortex-A55, 2017
   - Cortex-A75, 2017
   - Cortex-A76, 2018
   - Cortex-A77, 2019
   - Cortex-A78, 2020
   - Cortex-X1, 2020
-- ARMv8.3-A
-- ARMv8.4-A
-- ARMv8.5-A and ARMv9.0-A
+- ARMv8.3-A, 2016
+  - PAuth, JSCVT, FCMA, LRCPC
+- ARMv8.4-A, 2017
+  - NV, NV2, SEL2, DotProd, MPAM, SHA3, SHA512, SM3, SM4, AMUv1, TLBIRANGE
+- ARMv8.5-A and ARMv9.0-A, 2018
+  - MTE, MTE2, MTE3, BTI, SSBS, SSBS2, CSV2_2, CSV3, RNG, FlagM2, EOPD, GTG
+  - v9.0: more mandatory extensiosn, drop 32-bit compat
   - Cortex-A510, 2021
   - Cortex-A710, 2021
   - Cortex-A715, 2022
   - Cortex-X2, 2021
   - Cortex-X3, 2022
-- ARMv8.6-A and ARMv9.1-A
-- ARMv8.7-A and ARMv9.2-A
+- ARMv8.6-A and ARMv9.1-A, 2019
+  - BF16, I8MM, F32MM, F64MM, FGT, ECV, TWED, AMUv1p1, FPAC
+- ARMv8.7-A and ARMv9.2-A, 2020
+  - WFxT, XS, LPA2, HCX, NMI, AFP
+  - optional SME
   - Cortex-A520, 2023
   - Cortex-A720, 2023
   - Cortex-X4, 2023
   - Cortex-A725, 2024
   - Cortex-X925, 2024
-- ARMv8.8-A and ARMv9.3-A
+- ARMv8.8-A and ARMv9.3-A, 2021
+  - MOPS, NMI, HBC, CLRBHB, SPE_v1p2
+  - optional SME2
   - C1-Nano, 2025 (was A5xx)
   - C1-Pro, 2025 (was A7xx)
   - C1-Premium, 2025 (new)
   - C1-Ultra, 2025 (was X9xx)
-- ARMv8.9-A and ARMv9.4-A
-- ARMv9.5-A
-- ARMv9.6-A
-- ARMv9.7-A
-- ARMv9.8-A
-- ARMv9.9-A
-- ARMv10.0-A
+- ARMv8.9-A and ARMv9.4-A, 2022
+  - GCS, LSE128, CSSC, THE, PRFM_SLC
+  - optional SVE2p1, SME2p1
+- ARMv9.5-A, 2023
+  - FP8, HDBSS, FGWTE3, CPA, PoPS, LSUI, RME_GPC3, OCCMO
+- ARMv9.6-A, 2024
+  - CMPBR, SME2p2, SVE2p2, F8F16MM, F8F32MM, FPRCVT, MPAM_DOMAINS, PAC_SPLIT, LOR_REALM
+- ARMv9.7-A, 2025
+- ARMv9.8-A?
+- ARMv9.9-A?
+- ARMv10.0-A?
 
 ## Microcontroller Profile
 
@@ -155,27 +171,33 @@
   - 2025, C1-Ultra, up to 4.1 GHz, +26% perf
     - there is also C1-Premium
 - <https://www.cpubenchmark.net/singleThread.html#mobile-thread>
-  - X2
-    - 3.1GHz, 3111
-  - A78
-    - 3.0GHz, 2647
-    - 2.6GHz, 1764
-    - 2.5GHz, 1641
-  - A77
-    - 3.1GHz, 2687
-    - 3.1GHz, 2592
-  - A76
-    - 2.6GHz, 1823
-  - A55
-    - 2.1GHz, 336
-    - 2.0GHz, 313
-    - 1.8GHz, 288
-    - 1.4GHz, 230
-  - A53, 2012
-    - 1.9GHz, 274
-    - 1.7GHz, 244
-    - 1.6GHz, 218
-    - 1.5GHz, 197
-    - 1.4GHz, 193
-    - 1.3GHz, 183
-    - 1.2GHz, 178
+  - little
+    - A53, 1.2-1.9GHz, 178-274
+    - A55, 1.4-2.1GHz, 230-336
+    - A510, 1.8-2.0GHz, 600-800
+    - A520, 2.0GHz, 800-1000
+    - C1-Nano, 2.0GHz, 900-1100
+  - big
+    - A76, 2.6GHz, 1823
+    - A77, 3.1GHz, 2592-2687
+    - A78, 2.5-3.0GHz, 1641-2647
+    - A710, 2.5-2.8GHz, 2400-2800
+    - A715, 2.8GHz, 2800-3200
+    - A720, 2.9-3.1GHz, 3400-3800
+    - A725, 3.0-3.3GHz, 4000-4400
+    - C1-Pro, 3.0-3.3GHz, 4200-4700
+  - premium
+    - C1-Preimum, 3.4-3.6GHz, 5200-5700
+  - extreme
+    - X1, 2.8-3.0GHz, 2500-2700
+    - X2, 3.1GHz, 3111
+    - X3, 3.2-3.3GHz, 3900-4100
+    - X4, 3.3-3.4GHz, 4700-5000
+    - X925, 3.6-3.8GHz, 5800-6100
+    - C1-Ultra, 3.8-4.1GHz, 6300-6800
+  - intel ptl
+    - LP-E, 2.8-3.3GHz, 2300-2600
+    - E, 3.8-4.2GHz, 3300-3700
+    - P, 4.8-5.2GHz, 4400-4800
+  - intel adl-n
+    - E, 3.4GHz, 1881
