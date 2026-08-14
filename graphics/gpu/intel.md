@@ -46,15 +46,21 @@
     - `intel_device_info_mtl_u`, etc.
   - Arrow Lake, 2024, 3nm, Ultra 1st gen, Gfx12.5
     - `intel_device_info_arl_u`, etc.
-- Xe2
-  - Arc (DG3, Battlemage), 2024, 5nm, Gfx20
-    - `intel_device_info_bmg`
+- Xe2-LPG
   - Lunar Lake, 2024, 3nm, Ultra 2nd gen, Gfx20
     - `intel_device_info_lnl`
-- Xe3
+- Xe2-HPG
+  - Arc (DG3, Battlemage), 2024, 5nm, Gfx20
+    - `intel_device_info_bmg`
+- Xe3-LPG
+  - Panthor Lake, 2026, 2nm, Ultra 3rd gen, Gfx30
+    - `intel_device_info_ptl`
+  - Wildcat Lake, 2026, 2nm, 3rd gen, Gfx30
+    - `intel_device_info_wcl`
+- Xe3P
+  - Nova Lake, 2026, 2nm, Ultra 4th gen, Gfx35?
+    - `intel_device_info_nvl_p`
   - Arc (DG4, Celestial)
-  - Panthor Lake
-    - `intel_device_info_ptl`, Gfx30
 - Xe4
   - Arc (DG5, Druid)
 
