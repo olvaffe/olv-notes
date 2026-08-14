@@ -79,10 +79,14 @@
 - `GFX11_5`
   - APU only (Strix Point) released in 2024
     - RDNA 3.5
+- `GFX11_7`
+  - APU only?
+    - RDNA 4m
 - `GFX12`
   - Radeon RX 9000 released in 2025
     - Navi 4x
     - RDNA4
+- `GFX12_1`
 
 ## Naming
 
