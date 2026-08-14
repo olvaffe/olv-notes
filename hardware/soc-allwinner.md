@@ -8,6 +8,7 @@
   - A64, 2015, A53 x 4
   - A133, 2021, A53 x 4 @1.5GHz
   - A523, 2023, A55 x 8
+  - A527, 2024, A55 x 8 @2.0GHz
   - A733, 2023, A76 x2, A55 x 6
 - B-Series: ebook
 - H-Series: home
@@ -16,8 +17,9 @@
   - H64, A53 x4
   - H313, A53 x4
   - H616, A53 x4
-  - H616, A53 x4
   - H618, A53 x4 @1.5GHz
+  - H700, 2023, A53 x8 @1.5GHz
+  - H728, 2024, A55 x8 @1.8GHz
 - R-Series: realtime
   - R329, 2021, A53 x2 @1.5GHz
   - R818, A53 x4 @1.5GHz
