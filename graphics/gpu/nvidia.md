@@ -134,6 +134,7 @@
     - GeForce 50
     - Direct3D 12.0 Ultimate with `12_2` feature level
 - Rubin
+- Feynman
 
 ## Naming
 
