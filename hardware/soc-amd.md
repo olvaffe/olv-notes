@@ -13,6 +13,7 @@
 - Zen 3+      - 2022 - 6nm (apu only)
 - Zen 4       - 2022 - 5nm
 - Zen 5       - 2024 - 3nm
+- Zen 6       - 2026 - 2nm
 
 ## CPUs and APUs
 
