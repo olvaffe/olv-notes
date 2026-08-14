@@ -28,6 +28,7 @@
   - Crestmont     - 2023 - Intel 4
   - Skymont       - 2024 - 3nm
   - Darkmont      - 2025 - Intel 18A
+  - Arctic Wolf
 
 ## CPUs
 
@@ -90,8 +91,10 @@
   - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
     - mobile
 - 25Q4~: Core Ultra 3xx
-  - Panther Lake, Cougar Cove, Darkmont, Gfx30 GPU
-  - Nova Lake
+  - Panther Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
+  - Wildcat Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
+- 26Q4~: Core Ultra 4xx?
+  - Nova Lake, Coyote Cove, Arctic Wolf, Gfx30 (Xe3) GPU?
 
 ## TDP
 
