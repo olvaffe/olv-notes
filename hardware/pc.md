@@ -813,13 +813,13 @@
   - `DISK_IPS_THRES = 0x0` enters pcie D3hot after idling for threshold
   - `LATE_INIT_DISK = 0x0` inits chip and disk in parallel
   - `LED = 0x1` uses pin 1 for led
-  - `MANUFACTURE = "Realtek"`
+  - `MANUFACTURE = "Realtek"` specifies `iManufacturer`
   - `PINMUX1 = 0x0` uses standard pinctrl
   - `PINMUX2 = 0x0` uses standard pinctrl
-  - `PRODUCT = "RTL9210B-CG"`
+  - `PRODUCT = "RTL9210B-CG"` specifies `iProduct`
   - `SCSI_PRODUCT = "RTL9210B-CG"`
   - `SCSI_VENDOR = "Realtek"`
-  - `SERIAL = "012345678904"`
+  - `SERIAL = "012345678904"` specifies `iSerial`
 
 ## Laptops
 
