@@ -748,13 +748,24 @@
       - if loading fails, boot rom can also load from usb
     - golden fw loads real fw from spi flash and jumps to it
       - if instructed, golden fw can also update itself and real fw
+- remember that RTL9210B is
+  - to host,
+    - a UDC (usb device controller)
+      - supports mass storage interface
+      - supports scsi vendor cmds
+  - to disk,
+    - a pcie controller
+      - supports nvme devices
+      - supports cfexpress devices
+    - a sata controller
+      - supports ahci devices
 - constant options
   - `ASPMDIS = 0x0` enables pcie ASPM
-  - `BCDDEVICE = 0x0`
-  - `CDROM_CFG = 0x0`
-  - `CFEXPRESS = 0x0`
-  - `CUSTOMIZED_DISK_IDENTIFY = 0x0`
-  - `CUSTOMIZED_FEATURE = 0x0`
+  - `BCDDEVICE = 0x0` specifies `bcdDevice`
+  - `CDROM_CFG = 0x0` disables scsi cdrom lun
+  - `CFEXPRESS = 0x0` disables cfexpress support
+  - `CUSTOMIZED_DISK_IDENTIFY = 0x0` disables disk id customization
+  - `CUSTOMIZED_FEATURE = 0x0` disables some scsi vendor cmds
   - `DISCONN_FORCE_USB2 = n`
   - `DISK_HOTPLUG = 0x0` disables disk hot-swap support
   - `DIS_SHOW_EMPTY_DISK = 0x1` enables usb even when no disk
@@ -763,43 +774,43 @@
   - `FAN = 0x0` no fan
   - `FINGER_PRINT_EN = n` no fingerprint
   - `FORCE_PCIE_QUIRK = 0x0` disables pcie quirks
-  - `FORCE_PCIE_SPEED = 0x0`
-  - `FORCE_PORT_TYPE = 0x0`
-  - `FORCE_SATA_NORMAL_DMA = 0x0`
+  - `FORCE_PCIE_SPEED = 0x0` auto-negotiates pcie speed
+  - `FORCE_PORT_TYPE = 0x0` auto-negotiates usbc role
+  - `FORCE_SATA_NORMAL_DMA = 0x0` uses sata ncq
   - `FORCE_USB_QUIRK = 0x0` disables usb quirks
-  - `FORCE_USB_SPEED = 0x0`
+  - `FORCE_USB_SPEED = 0x0` auto-negotiates usb speed
   - `FORMAT = "NTFS"`
   - `FORMAT_DISK = n`
-  - `HS_AUTO_SWITCH = 0x0` no external mux
+  - `HS_AUTO_SWITCH = 0x0` no external usb mux
   - `HW_LED_CFG = 0x0` uses sw led pattern
   - `INC_SERIAL = y` increments serial number after flashing
   - `LABEL = "My USB"`
   - `PARTITION = "MBR"`
-  - `PCIE_PWRCUT_THRES = 0x0` enters D3cold after idling for threshold
+  - `PCIE_PWRCUT_THRES = 0x0` enters pcie D3cold after idling for threshold
   - `PCIE_REFCLK = 0x0`
   - `PD = 0x0` disables chip core power down
   - `PERIPH_API = 0x0` disables peripheral vendor scsi cmds
-  - `PID = 0x9210`
+  - `PID = 0x9210` specifies `idProduct`
   - `RAID_CFG = 0x0` disables raid
-  - `RM_INTERNAL_RD = 0x0`
+  - `RM_INTERNAL_RD = 0x0` enables internal pull-down resistor for usbc cc1/cc2
   - `SCSI_WB_PIN = 0x0` no write block pin
   - `SCSI_WP_PIN = 0x0` no write protect pin
   - `SD_MMC_TYPE = 0x0`
-  - `SUPPORT_HID = 0x0` disables HID
+  - `SUPPORT_HID = 0x0` disables usb HID for buttons
   - `SUSPEND_DISK_OFF = 0x7` cuts all ssd powers on host suspend
-  - `SUSPEND_LED_OFF = 0x0` keeps led on on host suspend
-  - `SWR_1_2V = 0x0`
-  - `U2PHY = 02 f4 9b e0 e1`
-  - `U2_MAXPWR = 0xfa` specifes 2.0 bMaxPower (500mA)
-  - `U3PHY = 02 d4 09 00 d5 00 80`
-  - `U3_MAXPWR = 0x70` specifies 3.0 bMaxPower (900mA)
+  - `SUSPEND_LED_OFF = 0x0` cuts no led powers on host suspend
+  - `SWR_1_2V = 0x0` disables offset to 1.2v rail
+  - `U2PHY = 02 f4 9b e0 e1` specifies usb2 phy params
+  - `U2_MAXPWR = 0xfa` specifes 2.0 `bMaxPower` (500mA)
+  - `U3PHY = 02 d4 09 00 d5 00 80` specifies usb3 phy params
+  - `U3_MAXPWR = 0x70` specifies 3.0 `bMaxPower` (900mA)
   - `UART_BAUD_RATE = 0x0`
-  - `UART_DBG_PIN = 0x5`
-  - `USB_SELF_PWR = 0x0`
-  - `VID = 0x0bda`
+  - `UART_DBG_PIN = 0x5` uses gpio 5 for tx
+  - `USB_SELF_PWR = 0x0` clears `bmAttributes.Bit6`, drawing power from host
+  - `VID = 0x0bda` specifies `idVendor`
 - customize options
   - `CUSTOMIZED_LED = 01 01` specifies the sw led pattern
-  - `DISK_IPS_THRES = 0x0` enters D3hot after idling for threshold
+  - `DISK_IPS_THRES = 0x0` enters pcie D3hot after idling for threshold
   - `LATE_INIT_DISK = 0x0` inits chip and disk in parallel
   - `LED = 0x1` uses pin 1 for led
   - `MANUFACTURE = "Realtek"`
