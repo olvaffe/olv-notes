@@ -737,6 +737,79 @@
   - for games that use steam input api, they either see evdev, the real
     controller, or the emulated xbox controller
 
+## USB: RTL9210B
+
+- fw update
+  - `UTHSB_MPtool_Lite.exe` is USB To High Speed Bridge Mass Production Tool Lite
+  - `RTL9210B_v1.34.39.032625.bin` is the latest real fw
+  - `RTL9210B_gd_v4.30.23.071922.bin` is the latest golden fw
+    - the chip executes from boot rom on power
+    - boot rom loads golden fw from spi flash and jumps to it
+      - if loading fails, boot rom can also load from usb
+    - golden fw loads real fw from spi flash and jumps to it
+      - if instructed, golden fw can also update itself and real fw
+- constant options
+  - `ASPMDIS = 0x0` enables pcie ASPM
+  - `BCDDEVICE = 0x0`
+  - `CDROM_CFG = 0x0`
+  - `CFEXPRESS = 0x0`
+  - `CUSTOMIZED_DISK_IDENTIFY = 0x0`
+  - `CUSTOMIZED_FEATURE = 0x0`
+  - `DISCONN_FORCE_USB2 = n`
+  - `DISK_HOTPLUG = 0x0` disables disk hot-swap support
+  - `DIS_SHOW_EMPTY_DISK = 0x1` enables usb even when no disk
+  - `EN_U1U2 = 0x1` enables U1/U2 LPM power states
+  - `EN_UPS = 0x0` disables USB Phy Suspend
+  - `FAN = 0x0` no fan
+  - `FINGER_PRINT_EN = n` no fingerprint
+  - `FORCE_PCIE_QUIRK = 0x0` disables pcie quirks
+  - `FORCE_PCIE_SPEED = 0x0`
+  - `FORCE_PORT_TYPE = 0x0`
+  - `FORCE_SATA_NORMAL_DMA = 0x0`
+  - `FORCE_USB_QUIRK = 0x0` disables usb quirks
+  - `FORCE_USB_SPEED = 0x0`
+  - `FORMAT = "NTFS"`
+  - `FORMAT_DISK = n`
+  - `HS_AUTO_SWITCH = 0x0` no external mux
+  - `HW_LED_CFG = 0x0` uses sw led pattern
+  - `INC_SERIAL = y` increments serial number after flashing
+  - `LABEL = "My USB"`
+  - `PARTITION = "MBR"`
+  - `PCIE_PWRCUT_THRES = 0x0` enters D3cold after idling for threshold
+  - `PCIE_REFCLK = 0x0`
+  - `PD = 0x0` disables chip core power down
+  - `PERIPH_API = 0x0` disables peripheral vendor scsi cmds
+  - `PID = 0x9210`
+  - `RAID_CFG = 0x0` disables raid
+  - `RM_INTERNAL_RD = 0x0`
+  - `SCSI_WB_PIN = 0x0` no write block pin
+  - `SCSI_WP_PIN = 0x0` no write protect pin
+  - `SD_MMC_TYPE = 0x0`
+  - `SUPPORT_HID = 0x0` disables HID
+  - `SUSPEND_DISK_OFF = 0x7` cuts all ssd powers on host suspend
+  - `SUSPEND_LED_OFF = 0x0` keeps led on on host suspend
+  - `SWR_1_2V = 0x0`
+  - `U2PHY = 02 f4 9b e0 e1`
+  - `U2_MAXPWR = 0xfa` specifes 2.0 bMaxPower (500mA)
+  - `U3PHY = 02 d4 09 00 d5 00 80`
+  - `U3_MAXPWR = 0x70` specifies 3.0 bMaxPower (900mA)
+  - `UART_BAUD_RATE = 0x0`
+  - `UART_DBG_PIN = 0x5`
+  - `USB_SELF_PWR = 0x0`
+  - `VID = 0x0bda`
+- customize options
+  - `CUSTOMIZED_LED = 01 01` specifies the sw led pattern
+  - `DISK_IPS_THRES = 0x0` enters D3hot after idling for threshold
+  - `LATE_INIT_DISK = 0x0` inits chip and disk in parallel
+  - `LED = 0x1` uses pin 1 for led
+  - `MANUFACTURE = "Realtek"`
+  - `PINMUX1 = 0x0` uses standard pinctrl
+  - `PINMUX2 = 0x0` uses standard pinctrl
+  - `PRODUCT = "RTL9210B-CG"`
+  - `SCSI_PRODUCT = "RTL9210B-CG"`
+  - `SCSI_VENDOR = "Realtek"`
+  - `SERIAL = "012345678904"`
+
 ## Laptops
 
 - consumer
