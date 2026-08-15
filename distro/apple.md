@@ -63,3 +63,10 @@
   - iBoot2 loads m1n1 instead of XNU kernel
   - iBoot2 jumps to m1n1 directly, keeping at EL2
   - m1n1 translates apple dt to linux dt, loads uboot from esp, jumps to it
+
+## Homebrew
+
+- homebrew installs to `/opt/homebrew` mostly
+  - `/opt/homebrew/Cellar/<formula>/<version>` are installed formulas
+  - `/opt/homebrew/Caskroom/<cask>/<version>` are installed casks
+    - the real `.app` is under `/Applications`
