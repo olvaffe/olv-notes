@@ -343,32 +343,27 @@
 
 ## `wpa_supplicant`
 
-- quick connect
+- setup
   - create `/etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
-
     ```text
-      ctrl_interface=DIR=/run/wpa_supplicant
-      network={
-        ssid="<ssid>"
-        psk="<password>"
-      }
+      ctrl_interface=/run/wpa_supplicant
+      update_config=1
     ```
-
-  - `chmod 600`
+  - `chmod 600 /etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
   - `systemctl enable --now wpa_supplicant@<iface>`
-- operation modes
-  - `wpa_supplicant` can be started with `-u`
-    - this enables the dbus service
-    - network-manager uses the dbus service to add and config interfaces
-  - `wpa_supplicant` can be started with `-i <dev>` and
-    `-C /run/wpa_supplicant`
-    - this enables `/run/wpa_supplicant/<dev>` socket
-    - `wpa_cli` uses the socket to config `<dev>`
-  - `wpa_supplicant` can be started with `-i <dev>` and
-    `-c /etc/wpa_supplicant/wpa_supplicant-<dev>.conf`
-    - the config file can optionall have
-      `ctrl_interface=DIR=/run/wpa_supplicant` to enable the control socket
-      for `wpa_cli`
+  - `wpa_cli <iface>`
+    - `add_network` adds a network and returns id (assume to be 0 here)
+    - `set_network 0 ssid "my-ssid"` specifies ssid
+    - `set_network 0 psk "my-psk"` specifies psk
+    - `set_network 0 key_mgmt SAE` requires SAE (WPA3-Personal)
+    - `enable_network 0` enables the network
+    - `save_config` updates the config file
+- systemd services
+  - `wpa_supplicant.service` specifies `-u` to enable dbus service
+    - this is used with network-manager to control over dbus
+  - `wpa_supplicant@.service` specifies `-c <config>` and `-i <dev>`
+    - this requires `/etc/wpa_supplicant/wpa_supplicant-<dev>.conf`
+    - one can configure networks statically and/or enable ctrl socket
 - `wpa_cli`
   - `interface` lists interfaces or selects interface
   - `status` shows current status
