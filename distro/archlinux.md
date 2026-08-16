@@ -27,6 +27,7 @@
     - if luks,
       - `cryptsetup luksFormat <part2>`
       - `systemd-cryptsetup attach root <part2>`
+      - `cryptsetup refresh --allow-discards --persistent root`
     - `mkfs.fat -F32 <part1>`
     - `mkfs.ext4 <part2>`
       - if btrfs, `mkfs.btrfs <part2>`
