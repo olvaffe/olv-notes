@@ -319,15 +319,27 @@
 
 ## `iwd`
 
-- quick connect
-  - `systemctl enable --now iwd`
-  - `iwctl`
-    - `device list`
-    - `station <dev> scan`
-    - `station <dev> get-networks`
-    - `station <dev> connect "<ssid>"`
-      - password will be prompted
-  - the link and password will be saved to `/var/lib/iwd`
+- `systemctl enable --now iwd`
+- `iwctl`
+  - `adapter list` lists phys (e.g., phy0)
+  - `device list` lists devs (e.g., wlan0)
+  - `ap list` lists devs in ap mode
+  - `station list` lists devs in station mode
+  - `wsc list` lists WSC-capable (aka WPS) devs
+  - `dpp list` lists DPP-capable (aka Wi-Fi Easy Connect) devs
+    - a configurator (e.g, phone) scans the QR code generated on the enrollee
+  - `pkex list` lists DPP-PKEX-capable devs
+    - used when the configurator cannot scan QR code
+  - `known-networks list` lists known networks (e.g., `/var/lib/iwd/*.psk`)
+- `iwctl station`
+  - `station <dev> show` shows the status
+  - `station <dev> scan` starts an ap scan to refresh in-memory cache
+  - `station <dev> get-networks` lists networks from in-memory cache
+  - `station <dev> get-bsses` lists bsses from in-memory cache
+  - `station <dev> connect "<ssid>"`
+    - password will be prompted
+    - the link and password will be saved to `/var/lib/iwd`
+  - `station <dev> disconnect` disconnects
 
 ## `wpa_supplicant`
 
