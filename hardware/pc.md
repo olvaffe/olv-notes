@@ -820,6 +820,10 @@
   - `SCSI_PRODUCT = "RTL9210B-CG"`
   - `SCSI_VENDOR = "Realtek"`
   - `SERIAL = "012345678904"` specifies `iSerial`
+- trim workaround
+  - `lsblk -D` shows trim caps
+  - a fw bug causes linux to disable trim support
+    - `echo unmap > /sys/class/scsi_disk/0:0:0:0/provisioning_mode` to override
 
 ## Laptops
 
