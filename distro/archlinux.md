@@ -58,7 +58,7 @@
   - `arch-chroot -S /mnt`
   - install more packages
     - `sudo vim dosfstools btrfs-progs git zram-generator`
-    - `iwd wpa_supplicant`, either suffices
+    - `wpa_supplicant`
     - `{intel,amd}-ucode linux-firmware-{amdgpu,intel,mediatek}`
     - `linux systemd-ukify sbctl`
     - `linux-headers broadcom-wl-dkms`, or other out-of-tree drivers
@@ -74,7 +74,11 @@
   - network
     - `echo -e '[Match]\nType=ether\n[Network]\nDHCP=yes' > /etc/systemd/network/60-ether.network`
     - `echo -e '[Match]\nType=wlan\n[Network]\nDHCP=yes' > /etc/systemd/network/60-wlan.network`
-    - `systemctl enable systemd-{networkd,resolved,timesyncd} iwd`
+    - `systemctl enable systemd-{networkd,resolved,timesyncd}`
+    - if wifi,
+      - `systemctl enable wpa_supplicant@<iface>`
+      - `echo -e 'ctrl_interface=/run/wpa_supplicant\nupdate_config=1' > /etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
+        - optionally config static `network={\n\tssid="..."\n\tpsk="..."\n}`
   - create user
     - `useradd -m -G wheel <user>`
     - `passwd <user>`

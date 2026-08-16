@@ -320,6 +320,7 @@
 ## `iwd`
 
 - `systemctl enable --now iwd`
+  - it can also be configured to enable built-in dhcp client
 - `iwctl`
   - `adapter list` lists phys (e.g., phy0)
   - `device list` lists devs (e.g., wlan0)

@@ -41,7 +41,7 @@
 - ethernet
   - `ip link set eth0 up`
 - wifi
-  - see `iwd` or `wpa_supplicant` in <wifi.md>
+  - see `wpa_supplicant` in <wifi.md>
 
 ## IP and Routing
 
@@ -51,11 +51,6 @@
   - `ip route add default via <gateway>`
 - DHCPv4
   - `systemd-networkd` supports DHCPv4
-  - `iwd` also has a built-in DHCPv4 client, if desirable
-    - create `/etc/iwd/main.conf`
-
-        [General]
-        EnableNetworkConfiguration=true
   - there is also `dhcpcd --debug --nobackground eth0`
 - IPv6 RA and DHCPv6
   - `systemd-networkd` supports both and enables RA by default

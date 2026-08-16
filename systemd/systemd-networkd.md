@@ -7,7 +7,7 @@
   under `/etc/systemd/network` (and other places) that matches the link
 - after a link is ready, a network is configured according to the `.network` file
   - for wired, the link is ready when it is connected
-  - for wireless, the link is ready when `wpa_supplicant` or `iwd` sets it up
+  - for wireless, the link is ready when `wpa_supplicant` sets it up
 - `networkctl` lists all links and their states
 - systemd-networkd replaces ifup / ifdown
   - ifup / ifdown uses `/etc/network/interfaces`
