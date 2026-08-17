@@ -259,6 +259,8 @@
   `update-initramfs`
   - on postinst, `update-initramfs -c -k <ver>` creates initramfs
   - on postrm, `update-initramfs -d -k <ver>` removes initramfs
+- `initramfs-tools-bin` provides `unmkinitramfs` to unpack initramfs
+  - `unmkinitramfs /boot/initrd.img-<ver>-amd64 unpacked`
 - `systemd-boot` provides postinst and postrm scripts to invoke
   `kernel-install`
   - on postinst, `kernel-install add <ver> <img>`
