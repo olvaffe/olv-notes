@@ -79,6 +79,7 @@
       - `systemctl enable wpa_supplicant@<iface>`
       - `echo -e 'ctrl_interface=/run/wpa_supplicant\nupdate_config=1' > /etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
         - optionally config static `network={\n\tssid="..."\n\tpsk="..."\n}`
+      - `chmod 600 /etc/wpa_supplicant/wpa_supplicant-<iface>.conf`
   - create user
     - `useradd -m -G wheel <user>`
     - `passwd <user>`
