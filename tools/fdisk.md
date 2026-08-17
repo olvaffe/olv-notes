@@ -108,6 +108,46 @@
     - `-S` uses sparse
     - `-x` stays on the same filesystem
 
+## Data Erasure
+
+- SW erase
+  - `cp /dev/urandom /dev/sdX`
+  - zero vs random
+    - for HDD, no big diff
+    - for SSD, FTL can optimize for zeros and defeat the erasure
+  - does not really work for SSD
+    - FTL remaps blocks
+      - SW has no way to overwrite the exact same block
+    - flash is larger than advertised capacity
+      - it is to hide bad blocks from wearing
+      - erasing whole SSD does not overwrite every flash cell
+- SATA erase
+  - `hdparm -I` reports support
+    - newer `SANITIZE feature set`
+    - older `Security` section
+      - it means `ATA Security Feature Set`
+      - `supported` means `ATA Security Erase`
+      - `supported: enhanced erase` means `Enhanced Security Erase`
+  - newer sanitize
+    - SSD: `hdparm --yes-i-know-what-i-am-doing --sanitize-block-erase /dev/sdX`
+    - HDD: `hdparm --yes-i-know-what-i-am-doing --sanitize-overwrite hex:00000000 /dev/sdX`
+    - `hdparm --sanitize-status /dev/sdX` reports progress
+  - older erase
+    - `hdparm --security-set-pass NULL /dev/sdX`
+    - `hdparm --security-erase-enhanced NULL /dev/sdX`
+      - or weaker `hdparm --security-erase NULL /dev/sdX`
+- SCSI erase
+  - newer sanitize
+    - SSD: `sg_sanitize --block /dev/sgX`
+    - HDD: `sg_sanitize --overwrite --zero /dev/sgX`
+  - older format
+    - `sg_format --format /dev/sgX`
+- NVME erase
+  - newer sanitize
+    - `nvme sanitize /dev/nvmeX --action=start-block-erase`
+  - older format
+    - `nvme format`
+
 ## GPT
 
 - <https://en.wikipedia.org/wiki/GUID_Partition_Table>
