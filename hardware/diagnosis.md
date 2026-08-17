@@ -107,6 +107,24 @@
 - SD: `bs=256K` and `iodepth=8`
   - `READ: bw=45.0MiB/s`
 
+## Storage: TRIM
+
+- TRIM, or discard, require support from all layers
+  - fs must track which blocks can be trimmed
+    - most fs support batched trim ioctl
+    - some support continuous async trim
+  - if dm is used, dm must advertise trim
+    - `dm-crypt` requires explicit `discard` option
+    - `dm-linear` passes through the suppot
+  - host controller driver must advertise trim
+    - nvme driver expects `NVME_CTRL_ONCS_DSM` from the device controller
+    - sata driver expects `ATA_ID_DATA_SET_MGMT` from the device controller
+    - usb mass storage expects `UNMAP` from the device controller
+  - device controller must support trim
+    - for sd, `/sys/class/scsi_disk/*/provisioning_mode` shows/overrides the
+      support
+- `lsblk -D` shows which layers support trim
+
 ## Windows
 
 - CPU-Z: <https://www.cpuid.com/>
