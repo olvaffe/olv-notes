@@ -824,6 +824,17 @@
   - `lsblk -D` shows trim caps
   - a fw bug causes linux to disable trim support
     - `echo unmap > /sys/class/scsi_disk/0:0:0:0/provisioning_mode` to override
+- speed test
+  - `lsusb -t`
+  - `sudo dd if=/dev/sda of=/dev/null bs=4M count=1024 status=progress`
+  - `sudo dd if=/dev/urandom of=/dev/sda  bs=4M count=1024 status=progress`
+  - example
+    - usb is 10Gb
+    - flash is rated for 3.4GB/1.9GB read/write
+    - read sustains 1GB, capped by usb speed
+    - write sustains 150MB
+      - flash is dram-less and enclosure does not support HMB
+      - 150MB is the real flash write speed
 
 ## Laptops
 
