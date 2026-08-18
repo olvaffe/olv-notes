@@ -121,6 +121,9 @@
     - flash is larger than advertised capacity
       - it is to hide bad blocks from wearing
       - erasing whole SSD does not overwrite every flash cell
+- USB erase
+  - SATA/SCSI/NVME erase over USB might brick the device
+  - use SW erase if acceptable
 - SATA erase
   - `hdparm -I` reports support
     - newer `SANITIZE feature set`
