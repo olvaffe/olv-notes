@@ -1,38 +1,36 @@
 # Android SDK
 
-## SDK/NDK
+## Installation
 
-- Bootstrap to `~/android/sdk`
-  - <https://developer.android.com/studio>
-  - choose "Command line tools only"
-  - `unzip commandlinetools-linux-*_latest.zip`
-  - `./cmdline-tools/bin/sdkmanager --sdk_root=$HOME/android/sdk cmdline-tools\;latest`
-  - `rm -rf commandlinetools-linux-*_latest.zip cmdline-tools`
-- Install packages
-  - `cd ~/android/sdk`
-  - `./cmdline-tools/latest/bin/sdkmanager --list`
-  - `./cmdline-tools/latest/bin/sdkmanager --list_installed`
-  - `./cmdline-tools/latest/bin/sdkmanager 'ndk;<ver>' platform-tools`
+- <https://developer.android.com/tools/agents/android-cli>
+  - `curl -O https://dl.google.com/android/cli/latest/linux_x86_64/android`
+  - `chmod +x android`
+  - `./android --sdk ~/android/sdk sdk install <packages>...`
+    - `platform-tools`, `ndk`, `cmake`, `build-tools`
+    - `./android sdk list --all` lists all packages
+- SDK path defaults to `~/Android/Sdk`
+  - export `ANDROID_HOME` to override
+- update
+  - `./android update` self-updates
+    - it downloads latest cli to `~/.android`
+  - `./android sdk update` updates sdk packages
 - if only adb is needed,
-  - search for "android sdk platform tools" for direct download
   - <https://developer.android.com/studio/releases/platform-tools>
 
-## Components
+## Packages
 
-- `build-tools;<ver>` to build Android apks
+- `platform-tools` to communicate with devices
+  - always use the latest version
+  - `adb`
+  - `fastboot`
+- `build-tools/<ver>` to build Android apks
   - `aapt`
   - `aidl`
   - `d8`
-- `cmake;<ver>` to build native binaries using cmake
-- `cmdline-tools;latest` to manage SDK
-  - `sdkmanager`
-  - `avdmanager`
-- `ndk;<ver>` to build native binaries
-- `platforms;android-<ver>` to various runtime versions
+- `platforms/android-<ver>` for various runtime versions
   - `android.jar`
-- `platform-tools` to communicate with devices
-  - `adb`
-  - `fastboot`
+- `ndk/<ver>` to build native binaries
+- `cmake/<ver>` to build native binaries using cmake
 
 ## Emulator
 
