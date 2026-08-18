@@ -826,8 +826,8 @@
     - `echo unmap > /sys/class/scsi_disk/0:0:0:0/provisioning_mode` to override
 - speed test
   - `lsusb -t`
-  - `sudo dd if=/dev/sda of=/dev/null bs=4M count=1024 status=progress`
-  - `sudo dd if=/dev/urandom of=/dev/sda  bs=4M count=1024 status=progress`
+  - `dd if=/dev/urandom of=/dev/sda  bs=4M count=256 status=progress oflag=direct conv=fsync`
+  - `dd if=/dev/sda     of=/dev/null bs=4M count=256 status=progress iflag=direct`
   - example
     - usb is 10Gb
     - flash is rated for 3.4GB/1.9GB read/write
