@@ -19,8 +19,11 @@ FEX
     - `ls /proc/sys/fs/binfmt_misc` to confirm
 - rootfs
   - `pacman -S erofsfuse erofs-utils patchelf`
-  - `FEXRootFSFetcher` downloads rootfs
-    - unpack manuall as root
+  - `FEXRootFSFetcher` downloads and unpacks rootfs
+- run
+  - `FEXBash`
+  - <https://wiki.fex-emu.com/index.php/Steam>
+- customize prebuilt rootfs
   - `cd ~/.local/share/fex-emu/RootFS/<foo>`
   - `./chroot.py chroot`
     - `DoUnbreak` preps chroot
