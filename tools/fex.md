@@ -19,6 +19,18 @@ FEX
     - `ls /proc/sys/fs/binfmt_misc` to confirm
 - rootfs
   - `pacman -S erofsfuse erofs-utils patchelf`
-  - `FEXRootFSFetcher` downloads and unpacks rootfs
+  - `FEXRootFSFetcher` downloads rootfs
+    - unpack manuall as root
   - `cd ~/.local/share/fex-emu/RootFS/<foo>`
   - `./chroot.py chroot`
+    - `DoUnbreak` preps chroot
+      - copy `FEX`, `FEXServer`, and deps to `<foo>/fex`
+      - patch copied binaries to modify `PT_INTERP` and add `DT_RUNPATH`
+        - it is invalid to patch `/usr/lib/ld-linux-aarch64.so.1`!
+      - restore some dirs from `<foo>/chroot` to `<foo>`
+      - mount `/proc`, `/sys`, `/dev`, `/dev/pts`, and `/tmp`
+    - `sudo chroot <foo> /fex/bin/FEX /usr/bin/bash -i`
+    - `DoBreak` cleans up chroot
+      - remove `<foo>/fex`
+      - unmount pseudo fs
+      - move some dirs from `<foo>` to `<foo>/chroot` for backup
