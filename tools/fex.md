@@ -34,3 +34,17 @@ FEX
       - remove `<foo>/fex`
       - unmount pseudo fs
       - move some dirs from `<foo>` to `<foo>/chroot` for backup
+- custom rootfs
+  - `sudo debootstrap --arch amd64 --variant minbase trixie trixie`
+  - `echo "http://deb.debian.org/debian" | sudo tee trixie/debootstrap/mirror`
+  - copy fex
+    - `sudo cp FEX FEXServer trixie/usr/lib`
+    - `sudo cp /usr/lib/{ld-linux-aarch64.so.1,libfmt.so.12,libxxhash.so.0,libstdc++.so.6,libm.so.6,libgcc_s.so.1,libc.so.6} trixie/usr/lib`
+  - mount pseudo fs
+    - `sudo mount -t proc none trixie/proc`
+    - `sudo mount -t sysfs none trixie/sys`
+    - `sudo mount -t devtmpfs none trixie/dev`
+    - `sudo mount -t devpts none trixie/dev/pts`
+    - `sudo mount -o bind /tmp trixie/tmp`
+  - `sudo chroot trixie /usr/lib/FEX /debootstrap/debootstrap --second-stage`
+  - `sudo chroot trixie /usr/lib/FEX /usr/bin/bash -i`
