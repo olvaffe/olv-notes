@@ -79,6 +79,27 @@ FEX
   - `./install_steam.sh`
 - `BOX64_LOG=1`
 
+## UMU Launcher
+
+- <https://github.com/Open-Wine-Components/umu-launcher>
+  - a launcher that minics steam to download and use proton to run win games
+  - it downloads `UMU-Proton` to `~/.local/share/Steam/compatibilitytools.d`
+    - this is to run win games
+  - it downloads steamrt to `~/.local/share/umu`
+    - this is to run proton
+  - it created wineprefix at `~/Games/umu/umu-default`
+- build
+  - `pacman -S scdoc`
+  - `pip install build hatchling installer`
+  - `./configure.sh --prefix=$PWD/out/install --use-system-pyzstd --use-system-urllib`
+  - `make install`
+- run
+  - `pip install pyzstd urllib3 xlib`
+  - `umu-run <game.exe>`
+- debug
+  - `UMU_LOG=1`
+  - `PROTON_LOG=1`
+
 ## Steam
 
 - <https://wiki.fex-emu.com/index.php/Steam>
