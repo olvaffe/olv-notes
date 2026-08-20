@@ -5,14 +5,16 @@
 - <https://developer.android.com/tools/agents/android-cli>
   - `curl -O https://dl.google.com/android/cli/latest/linux_x86_64/android`
   - `chmod +x android`
-  - `./android --sdk ~/android/sdk sdk install <packages>...`
-    - `platform-tools`, `ndk`, `cmake`, `build-tools`
-    - `./android sdk list --all` lists all packages
-- SDK path defaults to `~/Android/Sdk`
-  - export `ANDROID_HOME` to override
+  - `./android update` downloads latest cli to `~/.android`
+- sdk
+  - SDK path defaults to `~/Android/Sdk`
+    - export `ANDROID_HOME` to override
+  - `./android sdk list --all` lists all packages
+  - `./android sdk install <packages>...`
+    - `platform-tools`, `ndk/<ver>`, `cmake/<ver>`, `build-tools/<ver>`,
+      `platforms/android-<ver>`
 - update
   - `./android update` self-updates
-    - it downloads latest cli to `~/.android`
   - `./android sdk update` updates sdk packages
 - if only adb is needed,
   - <https://developer.android.com/studio/releases/platform-tools>
@@ -24,13 +26,17 @@
   - `adb`
   - `fastboot`
 - `build-tools/<ver>` to build Android apks
+  - manual install needed if not using gradle
   - `aapt`
   - `aidl`
   - `d8`
 - `platforms/android-<ver>` for various runtime versions
+  - manual install needed if not using gradle
   - `android.jar`
 - `ndk/<ver>` to build native binaries
+  - manual install needed if not using gradle
 - `cmake/<ver>` to build native binaries using cmake
+  - manual install needed
 
 ## Emulator
 
