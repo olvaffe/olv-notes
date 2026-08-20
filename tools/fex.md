@@ -18,12 +18,14 @@ FEX
   - `sudo systemctl restart systemd-binfmt`
     - `ls /proc/sys/fs/binfmt_misc` to confirm
 - rootfs
-  - `pacman -S erofsfuse erofs-utils patchelf`
-  - `FEXRootFSFetcher` downloads and unpacks rootfs
+  - `pacman -S erofsfuse erofs-utils`
+  - `FEXRootFSFetcher` downloads and unpacks rootfs to
+    `~/.local/share/fex-emu/RootFS`
+    - make sure `~/.config/fex-emu/Config.json` point to the rootfs
 - run
   - `FEXBash`
-  - <https://wiki.fex-emu.com/index.php/Steam>
-- customize prebuilt rootfs
+- optionally customize prebuilt rootfs
+  - `pacman -S patchelf`
   - `cd ~/.local/share/fex-emu/RootFS/<foo>`
   - `./chroot.py chroot`
     - `DoUnbreak` preps chroot
@@ -51,3 +53,7 @@ FEX
     - `sudo mount -o bind /tmp trixie/tmp`
   - `sudo chroot trixie /usr/lib/FEX /debootstrap/debootstrap --second-stage`
   - `sudo chroot trixie /usr/lib/FEX /usr/bin/bash -i`
+
+## Steam
+
+- <https://wiki.fex-emu.com/index.php/Steam>
