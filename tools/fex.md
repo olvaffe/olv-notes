@@ -17,13 +17,16 @@ FEX
   - `sudo cp out/install/lib/binfmt.d/FEX-x86* /etc/binfmt.d`
   - `sudo systemctl restart systemd-binfmt`
     - `ls /proc/sys/fs/binfmt_misc` to confirm
-- rootfs
+- x86 rootfs
   - `pacman -S erofsfuse erofs-utils`
   - `FEXRootFSFetcher` downloads and unpacks rootfs to
     `~/.local/share/fex-emu/RootFS`
     - make sure `~/.config/fex-emu/Config.json` point to the rootfs
 - run
-  - `FEXBash`
+  - `FEXBash` execs `FEX /bin/bash`, the bash in x86 rootfs
+    - `FEX` seems to weird things in addition to translate x86 to arm64
+    - e.g., `ls /usr/bin` lists x86 rootfs while `cd /usr/bin && ls` lists
+      host rootfs
 - optionally customize prebuilt rootfs
   - `pacman -S patchelf`
   - `cd ~/.local/share/fex-emu/RootFS/<foo>`
@@ -53,6 +56,27 @@ FEX
     - `sudo mount -o bind /tmp trixie/tmp`
   - `sudo chroot trixie /usr/lib/FEX /debootstrap/debootstrap --second-stage`
   - `sudo chroot trixie /usr/lib/FEX /usr/bin/bash -i`
+
+## Box64
+
+- build
+  - `git clone https://github.com/ptitSeb/box64`
+  - `cmake -S . -B out -G Ninja \
+       -DCMAKE_INSTALL_PREFIX=$PWD/out/install -DCMAKE_BUILD_TYPE=Release \
+       -DBOX32=ON -DBOX32_BINFMT=ON \
+       -DUSE_CCACHE=1 \
+       -DSDORYON1=ON`
+- install wrapped x86 libraries
+  - `sudo cp -rd x64lib /usr/lib/box64-x86_64-linux-gnu`
+  - `sudo cp -rd x86lib /usr/lib/box64-i386-linux-gnu`
+- install bundled x86 libraries
+  - `sudo pacman -S rpm-tools`
+  - `./box64-bundle-x86-libs.sh`
+  - `sudo tar -xf box64-bundle-x86-libs.tar.gz --no-same-owner -C /`
+- install binfmt
+  - `sudo cp out/system/box*.conf /etc/binfmt.d`
+- install steam
+  - `./install_steam.sh`
 
 ## Steam
 
