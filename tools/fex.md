@@ -77,6 +77,7 @@ FEX
   - `sudo cp out/system/box*.conf /etc/binfmt.d`
 - install steam
   - `./install_steam.sh`
+- `BOX64_LOG=1`
 
 ## Steam
 
