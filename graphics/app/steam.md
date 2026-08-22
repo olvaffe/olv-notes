@@ -101,8 +101,17 @@
 - proton is installed as apps
   - since proton 5.13, it should be run under steam runtime v2
   - since proton 8.0, it shoud be run under steam runtime v3
+  - since proton 11.0, it shoud be run under steam runtime v4
 - 7.0, <https://steamdb.info/app/1887720/>
+  - wine 7, dxvk 1.10+, vkd3d-proton 2.6+
 - 8.0, <https://steamdb.info/app/2348590/>
+  - wine 8, dxvk 2.3+, vkd3d-proton 2.11+
+- 9.0, <https://steamdb.info/app/2805730/>
+  - wine 9, dxvk 2.5+, vkd3d-proton 2.14+
+- 10.0, <https://steamdb.info/app/3658110/>
+  - wine 10, dxvk 2.6+, vkd3d-proton 3.0b
+- 11.0, <https://steamdb.info/app/4628710/>
+  - wine 11, dxvk 2.7+, vkd3d-proton 3.0a+, fex 2607
 - manual
   - `STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
      STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/<appid>
