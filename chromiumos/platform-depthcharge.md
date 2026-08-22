@@ -183,3 +183,65 @@
   - `flashrom -w /tmp/bios.bin -i RW_LEGACY`
   - `crossystem dev_boot_legacy=1`
   - `Ctrl-L` in boot prompt
+
+## VPD
+
+- `RO_VPD` partition of AP FW ro region on spi nor
+  - device id
+    - `serial_number` is the serial number of the device
+    - `mlb_serial_number` is the serial number of the motherboard
+    - `attested_device_id` (ADID) is for gsc attestation
+    - `sku_number` / `mfg_sku_id` is the sku
+  - network data
+    - `wifi_mac` is the wifi mac
+    - `bluetooth_mac` is the bluetooth mac
+  - oobe
+    - `region` is the region code
+    - `initial_locale` is the initial lang
+    - `initial_timezone` is the initial timezone
+    - `keyboard_layout` is the keyboard layout
+  - calibration data
+- `RW_VPD` partition of AP FW rw region on spi nor
+  - activation date
+  - `check_enrollment` is for forced re-enrollment in oobe
+  - `block_devmode` is blocks devmode according to enterprise policy
+  - `enrollment_domain` is for the enrolled domain
+
+## GBB
+
+- `GBB` partition of AP FW ro region on spi nor
+- `hwid` is the hwid string
+- `rootkey` is the root of trust
+- gbb flags
+  - `VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY` (bit 0): reduce dev mode screen from 30s to 2s
+  - `VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON` (bit 3): force devmode
+    - ignoring the bit in ti50 tpm nvram
+  - `VB2_GBB_FLAG_FORCE_DEV_BOOT_USB` (bit 4): force usb boot support
+    - ignoring the bit is in `RW_NVRAM` partition of AP FW rw region on spi nor
+  - `VB2_GBB_FLAG_DISABLE_ROLLBACK_CHECK` (bit 5): allow booting older rw ap fw or kernel
+    - rollback check disallows an attacker from booting older vulnerable ap fw or kernel
+    - the current version is written to ti5 tpm nvram
+    - this flag disables the check
+  - `VB2_GBB_FLAG_FORCE_DEV_BOOT_ALTFW` (bit 7): force altfw boot support
+    - ignoring the bit is in `RW_NVRAM` partition of AP FW rw region on spi nor
+  - `VB2_GBB_FLAG_DEFAULT_DEV_BOOT_ALTFW` (bit 10): boot to altfw instead of cros by default
+  - `VB2_GBB_FLAG_DISABLE_AUXFW_SOFTWARE_SYNC` (bit 11): disable usb/touch/tcon/fp fw update
+    - disable the checks that the aux fws match those bundled with ap fw
+  - `VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT` (bit 13): force android fastboot support
+    - disable both dev mode check and the oem lock check
+  - `VB2_GBB_FLAG_BYPASS_EC_RW_UPDATE` (bit 18): do not force ec rw update
+    - in regular boot,
+      - ec boots to ec ro
+      - ap checks the hashes of active and bundled ec rw, and forces an update
+        on mismatch
+      - ap tells ec to continue to ec rw, which provides
+        - usb: pd, alt, drd
+        - thermal: throttoling, fan curves
+        - battery: monitoring, adapative charging, cut-off for long-term
+          storage
+        - sensor: lid open, proximity
+        - led: keyboard, status
+        - acpi: for os
+    - when the bit is set, it assumes the hashes always match
+    - there is also `VB2_GBB_FLAG_DISABLE_EC_SOFTWARE_SYNC` (bit 9), which
+      disables the check and leaves ec at ro
