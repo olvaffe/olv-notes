@@ -76,8 +76,11 @@ FEX
 - install binfmt
   - `sudo cp out/system/box*.conf /etc/binfmt.d`
 - install steam
+  - `sed -i 's/^sudo/#sudo/' install_steam.sh`
   - `./install_steam.sh`
 - `BOX64_LOG=1`
+- box64 does not seem to be stable to run steam
+  - there also appears to be no vk driver when used with umu
 
 ## UMU Launcher
 
@@ -95,7 +98,7 @@ FEX
   - `make install`
 - run
   - `pip install pyzstd urllib3 xlib`
-  - `umu-run <game.exe>`
+  - `PYTHONLIB=$PWD/out/install/lib/python3.14/site-packages umu-run <game.exe>`
 - debug
   - `UMU_LOG=1`
   - `PROTON_LOG=1`
