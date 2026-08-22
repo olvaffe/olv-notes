@@ -135,29 +135,26 @@
 ## Direct3D
 
 - Built-in DLLs
+  - `dxgi.dll` is needed by Direct3D 10, 11, and 12
   - wined3d provides `wined3d.dll` and is used by
     - `ddraw.dll` for Direct3D 7 and below
     - `d3d8.dll` for Direct3D 8
     - `d3d9.dll` for Direct3D 9
     - `d3d10.dll`, `d3d10core.dll`, and `d3d10_1.dll` for Direct3D 10
     - `d3d11.dll` for Direct3D 11
+    - internally,
+      - `wined3d.dll` calls to `wined3d.so` to cross win/lin bounary
+      - `wined3d.so` translates d3d to gl or vk
   - vkd3d provides `libvkd3d.so` and is used by
-    - `d3d12.dll.so` for Direct3D 12
-  - `dxgi.dll` is needed by Direct3D 10, 11, and 12
+    - `d3d12.dll` for Direct3D 12
+    - internally,
+      - `d3d12.dll` calls to `d3d12.so` to cross win/lin bounary
+      - `d3d12.so` calls to `libvkd3d.so` to translate d3d to gl or vk
 - (External) Native DLLs
   - dxvk provides native `d3d9.dll`, `d3d10.dll`, `d3d10core.dll`,
     `d3d10_1.dll`, `d3d11.dll`, and `dxgi.dll`
-
-## DXVK
-
-- `DxvkSubmissionQueue`
-  - `submit` or `present` adds a gpu job to `m_submitQueue`
-  - there is a `dxvk-submit` thread
-    - it retrieves gpu jobs from `m_submitQueue`, submit them to `VkQueue`,
-      and moves them to `m_finishQueue`
-  - there is also a `dxvk-queue` thread
-    - it waits on the gpu jobs to complete, free the associated resources, and
-      recycles the jobs for reuse
+  - vkd3d-proton provides native `d3d12.dll`
+  - they translate d3d to vk and call to `vulkan-1.dll`
 
 ## MiceWine
 
