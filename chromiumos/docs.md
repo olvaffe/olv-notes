@@ -560,6 +560,7 @@
 
 ## Independent Toolchains
 
+- <https://www.chromium.org/chromium-os/build/sdk-creation/>
 - the toolchain tarball can be downloaded from, e.g.,
   <gs://chromiumos-sdk/2024/07/x86_64-cros-linux-gnu-2024.07.17.68785.tar.xz>
 - when compiling, `$sdk/bin/x86_64-cros-linux-gnu-clang -v -c test.c` shows
