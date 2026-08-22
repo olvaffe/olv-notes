@@ -70,3 +70,20 @@
 ## Command Lines
 
 - `ectool chargeoverride dontcharge` forces discharge
+
+## Developer Mode
+
+- EC does not know if developer mode is enable or not
+  - the bit is stored in Ti50 TPM NVRAM
+
+## Key Combos
+
+- for clamshells,
+  - Refresh+Power: hw reset EC
+  - Refresh+Power+ESC: after hw reset, if EC detectes ESC, it signals AP to
+    enter recovery mode
+- for tablets or detachables,
+  - power+vol-up+vol-down+10s: hw reset EC and signals AP to enter recovery mode
+- power key
+  - short press (200ms): power on, wake up from suspend, or notify OS
+  - long press (10s): hard power off
