@@ -82,27 +82,6 @@ FEX
 - box64 does not seem to be stable to run steam
   - there also appears to be no vk driver when used with umu
 
-## UMU Launcher
-
-- <https://github.com/Open-Wine-Components/umu-launcher>
-  - a launcher that minics steam to download and use proton to run win games
-  - it downloads `UMU-Proton` to `~/.local/share/Steam/compatibilitytools.d`
-    - this is to run win games
-  - it downloads steamrt to `~/.local/share/umu`
-    - this is to run proton
-  - it created wineprefix at `~/Games/umu/umu-default`
-- build
-  - `pacman -S scdoc`
-  - `pip install build hatchling installer`
-  - `./configure.sh --prefix=$PWD/out/install --use-system-pyzstd --use-system-urllib`
-  - `make install`
-- run
-  - `pip install pyzstd urllib3 xlib`
-  - `PYTHONLIB=$PWD/out/install/lib/python3.14/site-packages umu-run <game.exe>`
-- debug
-  - `UMU_LOG=1`
-  - `PROTON_LOG=1`
-
 ## Steam
 
 - <https://wiki.fex-emu.com/index.php/Steam>

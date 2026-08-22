@@ -142,6 +142,7 @@
 
 ## Using runtime and proton directly
 
+- this is automated by UMU launcher in the next section
 - use runtime directly
   - `cp -a ~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper .`
   - parse runtime vdf for cmdline
@@ -187,6 +188,27 @@
   - `VK_DRIVER_FILES=...` is passed through and semi-works
     - it works inside the container
     - it does not work inside proton
+
+## UMU Launcher
+
+- <https://github.com/Open-Wine-Components/umu-launcher>
+  - a launcher that minics steam to download and use proton to run win games
+  - it downloads `UMU-Proton` to `~/.local/share/Steam/compatibilitytools.d`
+    - this is to run win games
+  - it downloads steamrt to `~/.local/share/umu`
+    - this is to run proton
+  - it created wineprefix at `~/Games/umu/umu-default`
+- build
+  - `pacman -S scdoc`
+  - `pip install build hatchling installer`
+  - `./configure.sh --prefix=$PWD/out/install --use-system-pyzstd --use-system-urllib`
+  - `make install`
+- run
+  - `pip install pyzstd urllib3 xlib`
+  - `PYTHONLIB=$PWD/out/install/lib/python3.14/site-packages umu-run <game.exe>`
+- debug
+  - `UMU_LOG=1`
+  - `PROTON_LOG=1`
 
 ## Fossilize
 
