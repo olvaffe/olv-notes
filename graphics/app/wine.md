@@ -184,3 +184,43 @@
   - `mesa-vulkan-wrapper` is a `VulkanDriver` and provides `libvulkan_wrapper.so`
     - it is a vulkan driver that is a wrapper for `/system/lib64/libvulkan.so`
   - `mesa-vulkan-freedreno` is a `VulkanDriver` and provides `libvulkan_freedreno.so`
+
+## WoW64
+
+- wine is purely 64-bit on the linux side
+  - all executables and all `.so` are 64-bit
+  - unlikely before, where it ran in 32-bit mode for 32-bit apps
+- a 32-bit win app runs in 32-bit cpu mode
+  - a 32-bit syscall is handled by 32-bit `kernel32.dll`
+    - which is lowered to 32-bit `ntdll.dll`
+  - a 32-bit gui call is handled by 32-bit `user32.dll`
+    - which is lowered to 32-bit `win32u.dll`
+  - a 32-bit subsys call is handled by 32-bit `<subsys>.dll`, such as `d3d12.dll`
+  - `32-bit ntdll.dll -> 32/64-bit wow64cpu.dll -> 64-bit wow64.dll -> 64-bit ntdll.dll -> 64-bit ntdll.so`
+    - `wow64cpu.dll` switches the cpu to 64-bit
+    - `wow64.dll` widens syscall params to 64-bit
+  - `32-bit win32u.dll -> 32/64-bit wow64cpu.dll -> 64-bit wow64.dll -> 64-bit wow64win.dll -> 64-bit win32u.dll -> 64-bit win32u.so`
+    - `wow64win.dll` widens gui params to 64-bit
+  - `32-bit <subsys>.dll -> 32/64-bit wow64cpu.dll -> 64-bit <subsys>.so`
+    - `<subsys>.so` is responsible for widening all params to 64-bit
+
+## WoA
+
+- similar to WoW64, there is `wowarmhw.dll` that switches the cpu to 64-bit mode like `wow64cpu.dll`
+- there are additionally x86 cpu simulators
+  - `xtajit.dll` simulates 32-bit x86 cpu
+    - it replaces `wow64cpu.dll` in the call chain
+    - it generates 64-bit arm instrs from 32-bit x86 instructions
+    - when it hits a syscall, it pauses simulation and calls the 64-bit arm
+      `wow64.dll -> ntdll.dll`
+  - `xtajit64.dll` simulates 64-bit x86 cpu
+    - it is similar to `xtajit.dll`
+    - without arm64ec, the concept is the same
+    - with arm64ec, it pauses simulation upon subsys call as well
+- ARM64EC
+  - a `<subsys>.dll` can be compiled for ARM64EC
+  - it is the same as ARM64, except it also has x64 fast-forward stubs and can
+    be loaded into x64 processes
+  - when the x64 process makes a x64 subsys call, it calls to the fast-forward stub
+    - `xtajit64.dll` pauses cpu simulation, maps x64 regs to arm64 regs,  and
+      calls the real function in `<subsys>.dll`
