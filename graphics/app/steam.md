@@ -54,7 +54,76 @@
   - the client checks for updates
     - <https://client-update.steamstatic.com/steam_client_ubuntu12> is the
       manifest
-    - it downloads missing packages or updates to `~/.local/share/Steam/package`
+    - it downloads missing packages or updates to
+      `~/.local/share/Steam/package` and unpacks them to
+      `~/.local/share/Steam`
+- <https://client-update.steamstatic.com/steam_client_ubuntu12> manifest
+  - steamui resources
+    - `tenfoot_images_all` unpacks to `tenfoot/resource/images`
+      - icons for big picture mode
+    - `steamui_websrc_all` unpacks to `steamui`
+      - entire steamui in js, rendered by CEF
+    - `strings_en_all` unpacks to various paths
+      - english strings
+    - `strings_all` unpacks to various paths
+      - translated strings
+    - `public_all` unpacks to various paths
+      - fonts, images, etc.
+    - `steamui_websrc_sounds_all` unpacks to `steamui/sounds`
+      - sounds
+    - `steamui_websrc_movies_all` unpacks to `steamui/movies`
+      - movies
+  - legacy vgui resources
+    - `resources_misc_all` unpacks to various paths
+      - images and audios
+    - `resources_hidpi_all` unpacks to `grahics`
+      - hidpi images
+    - `resources_all` unpacks to various paths
+      - images and audios
+  - steam fw updater
+    - `bins_hardware_all` unpacks to `bin/hardwareupdater`
+      - firwmares for steam dongles
+    - `bins_hardware_ubuntu12` unpacks to `bin/hardwareupdater`
+      - firwmare flasher
+  - linux sdk
+    - `bins_sdk_ubuntu12` unpacks to `linux32` and `linux64`
+      - steam sdk for native linux games
+      - used by native linux games to communicate to steam client
+  - 32-bit client
+    - `bins_ubuntu12` unpacks to `ubuntu12_32` and `ubuntu12_64`
+      - client components
+      - 32-bit client core, ui logic, service
+      - 64-bit web engine host and remote play
+      - 32- and 64-bit in-game overlays, layers, fossilize, etc.
+    - `bins_codecs_ubuntu12` unpacks to `ubuntu12_32` and `ubuntu12_64`
+      - 32- and 64-bit versions of ffmpeg, aom, ogg, etc., for remote play
+    - `bins_misc_ubuntu12` unpacks to various paths
+      - detect host gpu caps, detect disk spaces, webrtc, etc.
+    - `webkit_ubuntu12` unpacks to `ubuntu12_64`
+      - entire CEF, Chromium Embedded Framework
+    - `miles_ubuntu12` unpacks to `ubuntu12_32`
+      - legacy miles audio engine
+    - `sdl3_ubuntu12` unpacks to `ubuntu12_32` and `ubuntu12_64`
+      - sdl3 image and font libs
+    - `steam_ubuntu12` unpacks to various paths
+      - `steam.sh` and `steam`, the steam client itself
+    - `runtime_scout_ubuntu12` unpacks to `ubuntu12_32`
+      - `steam-runtime.tar.xz` for the updated steamrt1
+  - 64-bit client (beta)
+    - `runtime_steamrt_ubuntu12` unpacks to `steamrt64`
+      - steamrt3c, for running beta 64-bit client
+    - `bins_steamrt_ubuntu12` unpacks to `steamrt32` and `steamrt64`
+      - similar to `bins_ubuntu12`
+    - `bins_codecs_steamrt_ubuntu12` unpacks to `steamrt32` and `steamrt64`
+      - similar to `bins_codecs_ubuntu12`
+    - `bins_misc_steamrt_ubuntu12` unpacks to `steamrt32` and `steamrt64`
+      - similar to `bins_misc_ubuntu12`
+    - `webkit_steamrt_ubuntu12` unpacks to `steamrt64`
+      - similar to `webkit_ubuntu12`
+    - `sdl3_steamrt_ubuntu12` unpacks to `steamrt32` and `steamrt64`
+      - similar to `sdl3_ubuntu12`
+    - `steam_steamrt_ubuntu12` unpacks to `steamrt64`
+      - similar to `steam_ubuntu12`
 - for command line options
   - <https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29>
   - `-silent` starts steam client in the background
