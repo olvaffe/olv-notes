@@ -41,19 +41,20 @@
     - the bootstrap tarball contains the streamrt1
     - the client might download newer streamrt1 which will be unpacked
       - `setup.sh` displays `Updating Steam runtime environment...` dialog
-  - it sets up steamrt1 to run steam client
+  - it sets up `LD_LIBRARY_PATH` to run steam client
     - steamrt1 is not container-based but `LD_LIBRARY_PATH`-based
   - it finally invokes `~/.local/share/Steam/ubuntu12_32/steam`, the
     proprietary steam client
+    - if `DEBUGGER=gdb` is set, it is run under gdb
 
 ## steam client
 
-- `~/.local/share/Steam/ubuntu12_32/steam` is the client
-  - it is the proprietary steam client
-  - if `DEBUGGER=gdb` is set, it is run under gdb
-  - it downloads/updates all packages
-    - bootstrap is a minimal environment to run the client
-    - the client downloads more packages to `~/.local/share/Steam/package`
+- `~/.local/share/Steam/ubuntu12_32/steam` is the proprietary steam client
+  - the bootstrap tarball is minimal, containing the client and stearmrt1
+  - the client checks for updates
+    - <https://client-update.steamstatic.com/steam_client_ubuntu12> is the
+      manifest
+    - it downloads missing packages or updates to `~/.local/share/Steam/package`
 - for command line options
   - <https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29>
   - `-silent` starts steam client in the background
