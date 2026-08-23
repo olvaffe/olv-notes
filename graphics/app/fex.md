@@ -132,5 +132,6 @@ FEX
   - fex provides `libarm64ecfex.dll` (and `libwow64fex.dll`)
   - x86-64 (and x86-32) apps will work
   - and wine is pure arm64 to linux
+    - no need to setup fex rootfs, binfmt, etc.
 - there is also ARM64X
   - it is fat and contains both ARM64EC and ARM64 code

@@ -306,7 +306,7 @@
   - `make install`
 - run
   - `pip install pyzstd urllib3 xlib`
-  - `PYTHONLIB=$PWD/out/install/lib/python3.14/site-packages umu-run <game.exe>`
+  - `PYTHONPATH=$PWD/out/install/lib/python3.14/site-packages umu-run <game.exe>`
 - debug
   - `UMU_LOG=1`
   - `PROTON_LOG=1`
