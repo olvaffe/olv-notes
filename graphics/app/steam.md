@@ -1,44 +1,59 @@
 # Steam
 
-## Troubleshooting
+## Arch
 
 - `pacman -S steam`
   - `pacman -S ttf-liberation` if ui text is garbled
   - `pacman -S lib32-systemd` if no network
 
-## Official `steam_latest.deb`
+## Official Steam Client Package
+
+- <https://store.steampowered.com/about/>
+  - <https://cdn.fastly.steamstatic.com/client/installer/steam.deb> redirects
+    to <https://repo.steampowered.com/steam/archive/precise/steam_latest.deb>
+  - the deb installs `steam-launcher` package
+- `steam-package` package
+  - it recommends
+    - `steam-libs-amd64` metapackage for 64-bit deps
+    - `steam-libs-i386` metapackage for 32-bit deps
+  - it adds <https://repo.steampowered.com/steam/> to source lists
+  - it adds udev rules for controllers and vr headsets
+  - it provides launcher script, `/usr/bin/steam`
+
+## `steam` launcher script
 
 - `/usr/bin/steam` is a symlink to `/usr/lib/steam/bin_steam.sh`
-  - it bootstraps `~/.local/share/Steam`
+  - it creates legacy `~/.steam` on demand
+  - it bootstraps `~/.local/share/Steam` on demand
+    - this is the steam dir, aka steam root
+    - legay `~/.steam/steam` is a symlink to `~/.local/share/Steam`
     - `install_bootstrap` untars
       `/usr/lib/steam/bootstraplinux_ubuntu12_32.tar.xz` to the directory
-    - the tarball is also copied over (and can be used to re-bootstrap)
-  - it creates `~/.steam`
-    - `~/.steam/steam` is a symlink to `~/.local/share/Steam`
-  - it runs `~/.local/share/Steam/steam.sh`
-- `/usr/bin/steam` execs `~/.local/share/Steam/steam.sh`
-  - it checks host package dependencies
-    - `/usr/bin/steamdeps ~/.local/share/Steam/steamdeps.txt`
-  - it creates various symlinks in `~/.steam`
-  - it sets up steam runtime
-    - `STEAM_RUNTIME=~/.local/share/Steam/ubuntu12_32/steam-runtime`
-    - the runtime is unpacked from the bootstrap tarball
+    - the tarball is also copied over (for recovery if corrupted)
+  - it invokes `/usr/bin/steamdeps` to install deps
+    - distro packages typically customize this
+  - it execs `~/.local/share/Steam/steam.sh` from the tarball
+- bootstrapped `~/.local/share/Steam/steam.sh`
+  - it creates legacy symlinks in `~/.steam`
+  - `unpack_runtime` updates steam client runtime on demand
+    - the runtime is steamrt1, aka scout
       - source at <https://github.com/ValveSoftware/steam-runtime>
-    - `setup.sh` uses `zenity` to display a `Updating Steam runtime
-      environment...` dialog
-  - it sets up `LD_LIBRARY_PATH` to use the libraries from the runtime
-    - with the help of
-      `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh --print-steam-runtime-library-paths`
-  - it finally invokes `~/.local/share/Steam/ubuntu12_32/steam`
-- `~/.local/share/Steam/ubuntu12_32/steam`
+    - the bootstrap tarball contains the streamrt1
+    - the client might download newer streamrt1 which will be unpacked
+      - `setup.sh` displays `Updating Steam runtime environment...` dialog
+  - it sets up steamrt1 to run steam client
+    - steamrt1 is not container-based but `LD_LIBRARY_PATH`-based
+  - it finally invokes `~/.local/share/Steam/ubuntu12_32/steam`, the
+    proprietary steam client
+
+## steam client
+
+- `~/.local/share/Steam/ubuntu12_32/steam` is the client
   - it is the proprietary steam client
   - if `DEBUGGER=gdb` is set, it is run under gdb
   - it downloads/updates all packages
     - bootstrap is a minimal environment to run the client
     - the client downloads more packages to `~/.local/share/Steam/package`
-
-## steam client
-
 - for command line options
   - <https://developer.valvesoftware.com/wiki/Command_Line_Options#Steam_.28Windows.29>
   - `-silent` starts steam client in the background
