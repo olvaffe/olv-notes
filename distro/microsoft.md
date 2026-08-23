@@ -87,3 +87,33 @@
   - PC-DOS, Microsoft / IBM, 1981
   - DR-DOS, Digital Research, 1988
   - FreeDOS, open source, 1994
+
+## UNIX and Windows
+
+- 1995, Cygwin
+  - `i686-pc-cygwin-` is the triplet
+  - `cygwin1.dll` provides POSIX layer on top of NT kernel
+  - posix tools are compiled against `cygwin1.dll`
+- 1998, MinGW
+  - `i686-pc-mingw32-` is the triplet
+  - clean-room win32 headers
+  - compile win32 source to win32 binary
+    - no posix compatibility
+- 2001, MSYS
+  - `i686-pc-mingw32-` is the triplet
+  - minimal set of posix tools ported to win32
+    - enough to `./configure && make`
+- 2007, MinGW-w64
+  - forked from MinGW
+  - `x86_64-w64-mingw32-` and `i686-w64-mingw32-` are the triplets
+  - directx headers, win32 threading, unicode support
+- 2013, MSYS2
+  - use cygwin, MinGW-w64, and pacman for a more complete distro
+- 2016, WSL 1
+  - implement linux syscalls in NT kernel
+  - complete linux distro
+- 2018, LLVM-MinGW
+  - LLVM port of MinGW-w64
+  - `aarch64-w64-mingw32-`, windbg, newer MS C runtime, full llvm goodies
+- 2019, WSL 2
+  - complete linux distro in a VM
