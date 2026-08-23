@@ -40,6 +40,12 @@
 - arm64ec with clang
   - `sed -i 's/x86_64/arm64ec/' build-win64.txt`
   - this is super useful when the game is x86-64 and there is `xtajit64.dll`
+  - `file` says the dll is for x86-64, which is true
+- arm64x with clang
+  - <https://github.com/mstorsjo/llvm-mingw/commit/986847858c5d598682bedef87987290c8754d7ad>
+  - `sed -i 's/x86_64/arm64ec/' build-win64.txt`
+    - plus `-marm64x`
+  - `file` says the dll is for arm64, but it is actually for both
 
 ## Triangle Demo
 
