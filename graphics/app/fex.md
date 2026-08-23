@@ -85,3 +85,49 @@ FEX
 ## Steam
 
 - <https://wiki.fex-emu.com/index.php/Steam>
+
+## Linux ARM64
+
+- when compiled and run as `FEX`, it acts as a usermode emulator
+  - `FEX` is a native arm64 binary that provides CPU and OS simulation
+- CPU simulation recompiles x86-64 instrs to arm64 instrs
+- OS simulation provides a x86-64 linux kernel
+  - elf loading and env setup
+  - redirect fs access to a pre-existing x86-64 rootfs
+  - synthesize `/proc/cpuinfo`, etc.
+  - simulate syscalls
+  - simulate signals
+  - simulate tls
+  - etc.
+- Library Thunks
+  - for selected libraries, provide x86-64 thunks that forward calls to real
+    arm64 libraries
+    - sdl, vulkan, gl, x11, wayland, asound, etc.
+  - how it works
+    - x86-64 app calls into x86-64 thunk
+    - x86-64 thunk packs the args and traps to fex
+    - fex handles the trap and calls into aarch64 thunk
+    - aarch64 thunk unpacks the args and calls the real aarch64 lib
+
+## Windows ARM64
+
+- when compiled as `libarm64ecfex.dll` for x86-64 or `libwow64fex.dll` for
+  x86-32, they act as CPU simulators
+- they only recompile x86-64 and x86-32 instrs to arm64 instrs
+- wine 10+ or win11+ provides the rest
+- ARM64EC is similar to library thunks
+  - a dll is compiled for ARM64EC rather than for ARM64
+    - such a dll is fat and can be loaded as ARM64 or X64
+    - compiler generates X64 fast forward stubs
+  - how it works
+    - X64 app calls into X64 fast forward stub
+    - the stub traps to the fex
+    - fex calls the real ARM64 version in the same dll
+- if a dll is not compiled for ARM64EC but only for ARM64, FEX needs to jit
+  everything
+- in an ideal setup,
+  - wine provides arm64ec (and x86-32) dlls
+  - dxvk and vkd3d-proton provide arm64ec (and x86-32) dlls
+  - fex provides `libarm64ecfex.dll` (and `libwow64fex.dll`)
+  - arm64, x86-64 (and x86-32) apps will work
+  - and wine is pure arm64 to linux
