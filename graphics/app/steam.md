@@ -84,12 +84,16 @@
   - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/scout>
     - <https://gitlab.steamos.cloud/steamrt/scout>
     - <https://steamdb.info/app/1070560/>
+      - this installs steamrt1 as an app
+      - it requires steamrt2; that is, steamrt1 as an app runs inside steamrt2
     - <https://github.com/ValveSoftware/steam-runtime>
   - v1 is `LD_LIBRARY_PATH`-based
   - manual
     - `~/.local/share/Steam/ubuntu12_32/steam-runtime/run.sh
       ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
+      - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime/run-in-scout-on-soldier`
+        if using the app
     - `installdir`, `executable`, and `arguments` are from the app database
 - v2, soldier
   - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/soldier>
@@ -106,9 +110,21 @@
   - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/sniper>
     - <https://gitlab.steamos.cloud/steamrt/sniper>
     - <https://steamdb.info/app/1628350/>
-  - v2 is also container-based
+  - v3 is also container-based
     - debian 11
-    - for use with proton 8.0
+    - for use with proton 8.0, 9.0, and 10.0
+  - manual
+    - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/run`
+- v4
+  - <https://gitlab.steamos.cloud/steamrt/steamrt/-/tree/steamrt/steamrt4>
+    - <https://gitlab.steamos.cloud/steamrt/steamrt4>
+    - <https://steamdb.info/app/4183110/>
+    - <https://steamdb.info/app/4185400/> (arm64)
+  - v4 is also container-based
+    - debian 13
+    - for use with proton 11.0
+  - manual
+    - `~/.local/share/Steam/steamapps/common/SteamLinuxRuntime_4/run`
 - <https://gitlab.steamos.cloud/steamrt/steam-runtime-tools>
   - tools included in all runtime v2 and later
 
