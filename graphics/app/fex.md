@@ -117,17 +117,20 @@ FEX
 - wine 10+ or win11+ provides the rest
 - ARM64EC is similar to library thunks
   - a dll is compiled for ARM64EC rather than for ARM64
-    - such a dll is fat and can be loaded as ARM64 or X64
-    - compiler generates X64 fast forward stubs
+    - the generated instrs are for ARM64, but with X64 ABI
+    - there are also X64-fast-forward stubs
+    - such a dll is loadable by X64 executable
   - how it works
     - X64 app calls into X64 fast forward stub
     - the stub traps to the fex
     - fex calls the real ARM64 version in the same dll
-- if a dll is not compiled for ARM64EC but only for ARM64, FEX needs to jit
+- if a dll is not compiled for ARM64EC but for X64, FEX needs to jit
   everything
 - in an ideal setup,
   - wine provides arm64ec (and x86-32) dlls
   - dxvk and vkd3d-proton provide arm64ec (and x86-32) dlls
   - fex provides `libarm64ecfex.dll` (and `libwow64fex.dll`)
-  - arm64, x86-64 (and x86-32) apps will work
+  - x86-64 (and x86-32) apps will work
   - and wine is pure arm64 to linux
+- there is also ARM64X
+  - it is fat and contains both ARM64EC and ARM64 code

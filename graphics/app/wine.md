@@ -219,8 +219,11 @@
     - with arm64ec, it pauses simulation upon subsys call as well
 - ARM64EC
   - a `<subsys>.dll` can be compiled for ARM64EC
-  - it is the same as ARM64, except it also has x64 fast-forward stubs and can
-    be loaded into x64 processes
+    - it can only be loaded by X64 executable
+    - the generated instrs are for ARM64, but with X64 ABI
+    - there are also X64-fast-forward stubs
   - when the x64 process makes a x64 subsys call, it calls to the fast-forward stub
     - `xtajit64.dll` pauses cpu simulation, maps x64 regs to arm64 regs,  and
       calls the real function in `<subsys>.dll`
+- ARM64X
+  - it is fat and contains both ARM64EC and ARM64 code
