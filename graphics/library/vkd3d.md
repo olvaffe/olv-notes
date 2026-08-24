@@ -47,6 +47,29 @@
     - plus `-marm64x`
   - `file` says the dll is for arm64, but it is actually for both
 
+## Envvars
+
+- feature override
+  - `VKD3D_FEATURE_LEVEL` overrides feature level (e.g., `12_0`)
+  - `VKD3D_SHADER_MODEL` overrides sm version (e.g., `6_0`)
+- vulkan override
+  - `VKD3D_DISABLE_EXTENSIONS` ignores comma-separated list of vk exts
+- logging
+  - `VKD3D_DEBUG` controls log level (e.g., `warn`)
+  - `VKD3D_SHADER_DEBUG` controls log level (e.g., `warn`)
+  - `VKD3D_LOG_FILE` specifes a file (instead of stderr) for logging
+- shader debug
+  - `VKD3D_SHADER_DUMP_PATH` dumps shaders
+  - `VKD3D_SHADER_OVERRIDE` replaces shaders
+- `VKD3D_CONFIG` is a comma-separated list of options
+  - `include/private/config_flag_decl.h` is the list of options
+  - general
+    - `vk_debug` enables vvl and debug utils
+  - dxr
+    - `nodxr` disables dxr
+  - mem
+    - `no_upload_hvv` avoids using host-visible vram for upload
+
 ## Triangle Demo
 
 - `demo_init` connects to x11
