@@ -63,12 +63,15 @@
   - `VKD3D_SHADER_OVERRIDE` replaces shaders
 - `VKD3D_CONFIG` is a comma-separated list of options
   - `include/private/config_flag_decl.h` is the list of options
-  - general
-    - `vk_debug` enables vvl and debug utils
-  - dxr
-    - `nodxr` disables dxr
-  - mem
-    - `no_upload_hvv` avoids using host-visible vram for upload
+  - `vk_debug` enables vvl and debug utils
+  - `debug_utils` enables debug utils
+  - `skip_application_workarounds` disables app quirks
+  - `no_upload_hvv` avoids using host-visible vram for upload
+  - `nodxr` disables dxr
+  - `single_queue` disables compute and xfer queues
+  - `fault` enables `VK_EXT_device_fault`
+  - `breadcrumbs_sync` enables `VK_AMD_buffer_marker` and add barries around
+    markers
 
 ## Triangle Demo
 
