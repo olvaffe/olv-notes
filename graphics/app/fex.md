@@ -57,6 +57,18 @@ FEX
   - `sudo chroot trixie /usr/lib/FEX /debootstrap/debootstrap --second-stage`
   - `sudo chroot trixie /usr/lib/FEX /usr/bin/bash -i`
 
+## Windows Build
+
+- use llvm-mingw
+- `cmake -S . -B out-aarch64 -G Ninja \
+     -DCMAKE_INSTALL_PREFIX=$PWD/out-aarch64/install -DCMAKE_BUILD_TYPE=Release \
+     -DENABLE_LTO=False -DBUILD_TESTING=False \
+     -DCMAKE_TOOLCHAIN_FILE=Data/CMake/toolchain_mingw.cmake \
+     -DMINGW_TRIPLE=aarch64-w64-mingw32`
+  - this builds `libwow64fex.dll` to translate x86-32
+- cmake again but replace `aarch64` by `arm64ec`
+  - this builds `libarm64ecfex.dll` to translate x86-64
+
 ## Box64
 
 - build
