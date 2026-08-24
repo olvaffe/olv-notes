@@ -69,6 +69,37 @@
   - new WoW64 mode
   - ntsync
 
+## Envvars
+
+- `WINEPREFIX` defaults to a shared prefix, `~/.wine`
+  - `wineboot` bootstraps a prefix
+    - `drive_c` is drive C
+    - `system.reg` is `HKLM`
+    - `user.reg` is `HKCU`
+- `WINEDLLOVERRIDES` overrides loader behavior
+  - `dll1,dll2=mode1;dll3=mode2`
+  - `mode` can be
+    - `n`: native, searched in work dir and system dir
+    - `b`: builtin, from wine
+    - `n,b` or `b,n`: with fallback
+    - empty: always missing
+- `WINEDEBUG` controls logging
+  - `+seh` logs structured exception handling (crashes)
+  - `+debugstr` logs debug strs from executables
+  - `+loaddll` logs dll loading
+  - `-all,err+all` disables for all channels then enables err for all channels
+  - `+timestamp,+pid,+tid,+threadname` enables all 4 metadata channels
+    - prefix each log by timestamp, pid, tid, and threadname
+
+## ds
+
+- `PROTON_LOG`
+- `PROTON_HEAP_DELAY_FREE`
+- `PROTON_ENABLE_NVAPI`
+- `VK_LOADER_DEBUG`
+- `VK_INSTANCE_LAYERS`
+- `VK_DRIVER_FILES`
+
 ## Initialization Process
 
 - <https://wiki.winehq.org/Wine_Developer%27s_Guide/Kernel_modules>
