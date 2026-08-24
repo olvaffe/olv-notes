@@ -221,7 +221,7 @@
      waitforexitandrun
      ~/.local/share/Steam/steamapps/common/<installdir>/<executable>
       <arguments>`
-- Proton Environment Variables from `user_settings.sample.py`,
+- `user_settings.py` in proton install customizes proton
   - proton
     - `PROTON_USE_WINED3D=1` to use GL-based wined3d rather than dxvk for
       D3D{9,10,11}
@@ -240,6 +240,12 @@
     - `WINE_MONO_TRACE=E:System.NotImplementedException`
   - gstreamer
     - `GST_DEBUG=4`
+- proton envvars
+  - `PROTON_LOG=1` enables logging to `~/steam-<appid>.log`
+  - `PROTON_HEAP_DELAY_FREE` works around app cpu use-after-free
+  - `PROTON_ENABLE_NVAPI` enables `dxvk-nvapi`
+    - many games use nvidia's nvapi for dlss, raytracing, etc.
+    - `dxvk-nvapi` implements nvapi on top of vk
 
 ## Using runtime and proton directly
 
