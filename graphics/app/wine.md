@@ -91,15 +91,6 @@
   - `+timestamp,+pid,+tid,+threadname` enables all 4 metadata channels
     - prefix each log by timestamp, pid, tid, and threadname
 
-## ds
-
-- `PROTON_LOG`
-- `PROTON_HEAP_DELAY_FREE`
-- `PROTON_ENABLE_NVAPI`
-- `VK_LOADER_DEBUG`
-- `VK_INSTANCE_LAYERS`
-- `VK_DRIVER_FILES`
-
 ## Initialization Process
 
 - <https://wiki.winehq.org/Wine_Developer%27s_Guide/Kernel_modules>
