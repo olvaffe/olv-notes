@@ -3,13 +3,23 @@
 ## Super Resolution
 
 - Spatial Upscaling
-  - game integration optional
   - e.g., DLSS 1, FSR 1
+  - game integrates the stage into their rendering pipeline
 - Temporal Upscaling
-  - game integration required
-  - e.g., DLSS 2, FSR 2
-- Frame Generation
+  - e.g., DLSS 2, FSR 2, XeSS 1
+  - game needs deeper integration to feed motion vector and depth into the
+    stage
+- Frame Generation and Latency Mitigation
+  - e.g., DLSS 3, FSR 3, XeSS 2
+  - latency mitigation is called reflex (nvidia), anti-lag (amd), and xell
+    (intel)
 - Ray Reconstructoin / Regeneration
+  - e.g., DLSS 3.5, FSR 4
+- proton
+  - dlss sdk calls to `nvapi64.dll`
+    - there is `dxvk-nvapi` to provide an implementation
+  - fsr sdk generates standard d3d compute shaders
+    - they just work
 
 ## Lighting
 
