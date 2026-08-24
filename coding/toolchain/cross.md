@@ -15,6 +15,15 @@
     - clang supports multiple targets and does not need separate packages
     - but cross C/C++ runtimes are provided by separate packages
   - `clang -target aarch64-linux-gnu --sysroot=<path> ...`
+- mingw-w64 toolchains
+  - `sudo apt install mingw-w64`
+    - `x86_64-w64-mingw32-gcc` has two alternatives
+      - one for c11/posix threading
+      - one for win32 threading
+    - binutils, headers, crt are common
+  - there is also `gcc-mingw-w64-ucrt64` package
+    - it has its own gcc, binutils, etc.
+  - `x86_64-w64-mingw32-gcc ...`
 - rust
   - `rustup target add aarch64-unknown-linux-gnu`
     - rustc is LLVM-based and supports multiple targets
@@ -58,6 +67,17 @@
 - sysroot
   - build from scratch
   - or, point to `$CHROMIUMOS/out/build/$BOARD/`
+
+## LLVM MinGW
+
+- <https://github.com/mstorsjo/llvm-mingw>
+- variants
+  - `ucrt` vs `msvcrt` are target C runtimes
+  - `ubuntu-22.04` is cross-compiler built on ubuntu 22.04
+  - `x86_64` or `aarch64` is host arch
+- `export PATH=$PWD/llvm-mingw-<date>-ucrt-ubuntu-22.04-x86_64/bin:$PATH`
+  - llvm-mingw can be used as a drop-in replacement
+  - it includes `gcc` wrappers that invokes `clang`
 
 ## Arch Linux Cross Toolchains
 
