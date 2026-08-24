@@ -23,6 +23,27 @@
 - to target arm64ec, which can be loaded by x64,
   - `sed -i 's/x86_64/arm64ec/' build-win64.txt`
 
+## Config
+
+- envvars
+  - `DXVK_CONFIG_FILE` specifies the config file (default to `./dxvk.conf`)
+  - `DXVK_CONFIG` specifies config vals inline
+  - `DXVK_HUD` enables hud
+  - `DXVK_LOG_LEVEL` specifies log level (e.g., `debug`)
+  - `DXVK_LOG_PATH` saves logs to a dir
+  - `DXVK_DEBUG`
+    - `validation` enables vvl and debug utils
+    - `capture` enables debug utils and debug names
+    - `markers` is `capture` plus forwarding d3d debug names
+    - `hang` enables `VK_KHR_device_fault` and `VK_AMD_buffer_marker`
+  - `DXVK_SHADER_DUMP_PATH` dumps shaders to a dir
+- config options
+  - `dxvk.hud` is `DXVK_HUD`
+  - `dxgi.syncInterval` forces vsync
+  - `d3d11.maxFeatureLevel` caps feature level
+  - `d3d11.disableMsaa` forces sample count to 1
+  - `d3d11.enableContextLock` serializes d3d11 ctx calls
+
 ## DXVK
 
 - `DxvkSubmissionQueue`
