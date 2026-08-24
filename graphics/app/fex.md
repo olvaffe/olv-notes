@@ -94,6 +94,24 @@ FEX
 - box64 does not seem to be stable to run steam
   - there also appears to be no vk driver when used with umu
 
+## Config
+
+- from low to high precedence
+  - `$datadir` is `$prefix/share/fex-emu`
+  - `$userdir` is `~/.config/fex-emu`
+  - `LAYER_GLOBAL_MAIN` is `$datadir/Config.json`
+  - `LAYER_MAIN` is `$userdir/Config.json`
+  - `LAYER_GLOBAL_STEAM_APP` is `$datadir/AppConfig/Steam_<id>_<name>.json`
+  - `LAYER_GLOBAL_APP` is `$datadir/AppConfig/<name>.json`
+  - `LAYER_LOCAL_STEAM_APP` is `$userdir/AppConfig/Steam_<id>_<name>.json`
+  - `LAYER_LOCAL_APP` is `$userdir/AppConfig/<name>.json`
+  - `LAYER_ARGUMENTS` is linux cli args
+  - `LAYER_USER_OVERRIDE` is from `FEX_APP_CONFIG` envvar
+  - `LAYER_ENVIRONMENT` is `FEX_*` envvars
+    - each `<option>` can be specified as `FEX_<OPTION>`
+- `FEXCore/Source/Interface/Config/Config.json.in` is source of truth
+  - `SilentLog` enables logging
+
 ## Steam
 
 - <https://wiki.fex-emu.com/index.php/Steam>
