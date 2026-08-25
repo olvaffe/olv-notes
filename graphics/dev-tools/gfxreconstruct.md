@@ -20,8 +20,26 @@
 
 - `export PATH=<gfxrecon>:$PATH`
 - `export VK_LAYER_PATH=<gfxrecon>`
-- `gfxrecon.py capture -o <name.gfxr> <executable> ...` to capture
+- `gfxrecon.py capture-vulkan -o <name.gfxr> <executable> ...` to capture
+  - it runs `gfxrecon-capture-vulkan.py` script to set up envvars and run the
+    executable
+  - these envvars are always set
+    - `VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_gfxreconstruct`
+    - `GFXRECON_CAPTURE_FILE=gfxrecon_capture.gfxr`
+  - these envvars are from cmdline options
+    - `VK_LAYER_PATH`
+    - `GFXRECON_CAPTURE_FRAMES`
+    - `GFXRECON_CAPTURE_FILE_TIMESTAMP`
+    - `GFXRECON_CAPTURE_TRIGGER`
+    - `GFXRECON_CAPTURE_TRIGGER_FRAMES`
+    - `GFXRECON_CAPTURE_COMPRESSION_TYPE`
+    - `GFXRECON_CAPTURE_FILE_FLUSH`
+    - `GFXRECON_LOG_LEVEL`
+    - `GFXRECON_LOG_FILE`
+    - `GFXRECON_LOG_OUTPUT_TO_OS_DEBUG_STRING`
+    - `GFXRECON_MEMORY_TRACKING_MODE`
 - `gfxrecon.py replay <name.gfxr>` to replay
+  - it runs `gfxrecon-replay` native binary
   - might need `--wsi xlib` on xwayland
 
 ## Android Build
