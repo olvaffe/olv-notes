@@ -67,6 +67,7 @@
   - `fault` enables `VK_EXT_device_fault`
   - `breadcrumbs_sync` enables `VK_AMD_buffer_marker` and add barries around
     markers
+    - requires `-Denable_trace=true`, which is defaut on debug build
 
 ## Triangle Demo
 
