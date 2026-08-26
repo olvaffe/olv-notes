@@ -38,6 +38,14 @@
 - `cmake/<ver>` to build native binaries using cmake
   - manual install needed
 
+## NDK
+
+- <https://developer.android.com/ndk/guides/ndk-build>
+  - e.g., <https://github.com/LunarG/gfxreconstruct/commit/27351d2978dfd4f2f934be6bbc4982bbc5099b9e>
+    - `git clone https://github.com/lz4/lz4.git`
+    - create `jni/Android.mk` and `jni/Application.mk`
+    - `PATH=$ANDROID_NDK:$PATH ndk-build`
+
 ## Emulator
 
 - use sdkmanager to install `system-images` first

@@ -2,7 +2,7 @@
 
 ## Build
 
-- dependencies: liblz4-dev, zlib1g-dev, libxcb-glx0-dev, libxcb-keysyms1-dev
+- `apt install liblz4-dev zlib1g-dev libxcb-glx0-dev libxcb-keysyms1-dev`
 - `git clone --recurse-submodules https://github.com/LunarG/gfxreconstruct.git`
 - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug`
 - `ninja -C out`
@@ -58,11 +58,6 @@
 ## Android Build
 
 - to build,
-  - if x86, add pre-compiled lz4
-    - `git clone https://github.com/lz4/lz4.git`
-    - create `jni/Android.mk` and `jni/Application.mk`
-      - see `git show 27351d2978dfd4f2f934be6bbc4982bbc5099b9e`
-    - `PATH=~/android/sdk/ndk/25.1.8937393:$PATH ndk-build`
   - `cd android`
   - edit `gradle/wrapper/gradle-wrapper.properties`
     - use a newer version (e.g., 7.6) if openjdk is too new (e.g., 17)
