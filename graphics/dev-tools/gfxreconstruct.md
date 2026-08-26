@@ -59,14 +59,9 @@
 
 - to build,
   - `cd android`
-  - edit `gradle/wrapper/gradle-wrapper.properties`
-    - use a newer version (e.g., 7.6) if openjdk is too new (e.g., 17)
-    - <https://docs.gradle.org/current/userguide/compatibility.html>
-  - edit `build.gradle`
-    - update the android gradle plugin version (e.g., 7.4.1)
-    - <https://developer.android.com/studio/releases/gradle-plugin#updating-gradle>
   - edit `layer/build.gradle` and `tools/replay/build.gradle`
     - update `abiFilters`
+  - `./gradlew assembleDebug`
 - to install,
   - `adb install -g -t -r
     ./tools/replay/build/outputs/apk/debug/replay-debug.apk`

@@ -71,3 +71,14 @@
     - `java` sets the JDK version
     - `application` specifies the main class of the app
   - `gradle :app:dependencies` lists java class dependencies
+
+## Misc
+
+- if gradle wrapper is too old and is incompatible with openjdk
+  - edit `gradle/wrapper/gradle-wrapper.properties` manually
+  - <https://docs.gradle.org/current/userguide/compatibility.html>
+- if android gradle plugin (AGP, `com.android.application`) is too old
+  - edit `build.gradle` manually
+  - <https://developer.android.com/studio/releases/gradle-plugin#updating-gradle>
+- to save build time by limiting abis
+  - edit `build.gradle` and set `abiFilters`
