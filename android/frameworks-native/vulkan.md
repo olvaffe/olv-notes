@@ -37,6 +37,8 @@
     - `AddLayerLibrary` during init
   - `vulkan  : Loaded layer VK_LAYER_KHRONOS_validation`
     - `ActivateLayers` during instance creation
+- if `failed to open layer directory '/data/local/debug/vulkan': Permission denied`,
+  - it is selinux
 
 ## gfxreconstruct
 
