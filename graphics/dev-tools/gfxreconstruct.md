@@ -15,10 +15,18 @@
   - `for i in $(find out/tools -type f -name 'gfxrecon*') out/layer/{libVkLayer_gfxreconstruct.so,VkLayer_gfxreconstruct.json}; do ln -sf ../$i gfxrecon/$(basename $i); done`
   - `strip gfxrecon/*`
   - `tar --zstd -hcf gfxrecon.tar.zst gfxrecon`
+- headless-only build
+  - `-DGFXRECON_ENABLE_OPENXR=OFF -DBUILD_WSI_XLIB_SUPPORT=OFF -DBUILD_WSI_XCB_SUPPORT=OFF -DBUILD_WSI_WAYLAND_SUPPORT=OFF`
 - cross-compile
   - prep chroot with the same deps
   - use `CMAKE_TOOLCHAIN_FILE`
     - `set(CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/nlohmann-json")`
+- headless-only ndk
+  - `-DGFXRECON_ENABLE_OPENXR=OFF`
+  - `-DLZ4_INCLUDE_DIR=$PWD/external/precompiled/android/include`
+  - `-DLZ4_LIBRARY=$PWD/external/precompiled/android/lib/arm64-v8a/liblz4_static.a`
+  - compile errors: comment out `android_native_app_glue.h`-related stuff
+  - link errors: replace `pthread` by `android log`
 
 ## Usage
 
