@@ -22,11 +22,12 @@
   - use `CMAKE_TOOLCHAIN_FILE`
     - `set(CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/nlohmann-json")`
 - headless-only ndk
-  - `-DGFXRECON_ENABLE_OPENXR=OFF`
-  - `-DLZ4_INCLUDE_DIR=$PWD/external/precompiled/android/include`
-  - `-DLZ4_LIBRARY=$PWD/external/precompiled/android/lib/arm64-v8a/liblz4_static.a`
+  - `cmake -S. -Bout -GNinja -DCMAKE_BUILD_TYPE=Debug \
+       -DLZ4_OPTIONAL=ON  -DGFXRECON_ENABLE_OPENXR=OFF \
+       -DCMAKE_FIND_ROOT_PATH=$PWD/external/nlohmann-json \
+       -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK}/build/cmake/android.toolchain.cmake \
+       -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-35 -DANDROID_CCACHE=ccache`
   - compile errors: comment out `android_native_app_glue.h`-related stuff
-  - link errors: replace `pthread` by `android log`
 
 ## Usage
 
