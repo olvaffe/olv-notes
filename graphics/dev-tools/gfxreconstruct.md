@@ -15,6 +15,10 @@
   - `for i in $(find out/tools -type f -name 'gfxrecon*') out/layer/{libVkLayer_gfxreconstruct.so,VkLayer_gfxreconstruct.json}; do ln -sf ../$i gfxrecon/$(basename $i); done`
   - `strip gfxrecon/*`
   - `tar --zstd -hcf gfxrecon.tar.zst gfxrecon`
+- cross-compile
+  - prep chroot with the same deps
+  - use `CMAKE_TOOLCHAIN_FILE`
+    - `set(CMAKE_FIND_ROOT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/external/nlohmann-json")`
 
 ## Usage
 
@@ -117,3 +121,20 @@
     - ICD `vkCreateXlibSurfaceKHR`
   - `--wsi wayland` uses the deprecated `wl_shell` and is not supported by
     modern compositors
+
+## WSI
+
+- replay `--wsi` maps
+  - `auto`     to `WsiPlatform::kAuto`
+  - `win32`    to `WsiPlatform::kWin32`
+  - `xlib`     to `WsiPlatform::kXlib`
+  - `xcb`      to `WsiPlatform::kXcb`
+  - `wayland`  to `WsiPlatform::kWayland`
+  - `metal`    to `WsiPlatform::kMetal`
+  - `display`  to `WsiPlatform::kDisplay`
+  - `headless` to `WsiPlatform::kHeadless`
+- platform support
+  - win supports win32 and headless
+  - linux supports xlib, xcb, wayland, display, and headless
+  - macos supports metal and headless
+  - android only supports android and has no platform concept
