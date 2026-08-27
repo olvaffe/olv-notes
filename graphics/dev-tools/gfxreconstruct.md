@@ -133,3 +133,42 @@
   - linux supports xlib, xcb, wayland, display, and headless
   - macos supports metal and headless
   - android only supports android and has no platform concept
+
+## `VK_KHR_buffer_device_address`
+
+- app usage
+  - enable `bufferDeviceAddress` feature
+  - create buffer with `VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT`
+  - allocate memory with `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT`
+  - query buffer addr with `vkGetBufferDeviceAddress`
+- capture usage
+  - upon `bufferDeviceAddress`, silently enable
+    `bufferDeviceAddressCaptureReplay` as well
+  - upon `VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT`, sliently set
+    `VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT_KHR` as well
+    - it also writes a metadata packet to record
+      `vkGetBufferOpaqueCaptureAddress`
+  - upon `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT`, sliently set
+    `VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT` as well
+    - it also writes a metadata packet to record
+      `vkGetDeviceMemoryOpaqueCaptureAddress`
+- replay usage
+  - similar to capture usage, except...
+  - `VkBufferOpaqueCaptureAddressCreateInfoKHR` instead of
+    `vkGetBufferOpaqueCaptureAddress`
+  - `VkMemoryOpaqueCaptureAddressAllocateInfoKHR` instead of
+    `vkGetDeviceMemoryOpaqueCaptureAddress`
+- turnip behavior
+  - `bo->iova` is the device addr
+  - `vkGetBufferOpaqueCaptureAddress` returns 0
+  - `vkGetDeviceMemoryOpaqueCaptureAddress` returns `bo->iova`
+  - `vkGetBufferDeviceAddress` returns `bo->iova` plus bind offset
+  - on drm msm,
+    - userspace has a single `dev->vma`
+    - userspace dictates `bo->iova`
+    - non-replayable allocs use `dev->vma.alloc_high = false`
+    - replayable allocs use `dev->vma.alloc_high = true` to avoid conflict
+  - on kgsl,
+    - kgsl dictates `bo->iova`
+    - except when `KGSL_MEMFLAGS_USE_CPU_MAP`, kgsl waits until `mmap` to use
+      a matching iova
