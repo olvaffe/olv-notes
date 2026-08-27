@@ -206,6 +206,23 @@
   - `mesa-vulkan-wrapper` is a `VulkanDriver` and provides `libvulkan_wrapper.so`
     - it is a vulkan driver that is a wrapper for `/system/lib64/libvulkan.so`
   - `mesa-vulkan-freedreno` is a `VulkanDriver` and provides `libvulkan_freedreno.so`
+- IOW,
+  - the rootfs
+    - is compiled using NDK, not gcc
+    - is not chroot'ed into
+    - consists of wine and its deps
+    - wine deps include mesa, vulkan loader, libglvnd, x11 libs, etc.
+    - wine prefix additionally includes dxvk, vkd3d-proton, etc.
+  - the xserver runs separately
+    - mesa in rootfs is modified such that x11 wsi uses ahbs
+      - xpixmaps are created from ahbs
+    - xserver works with ahbs
+  - take VVL for example
+    - when `mesa-vulkan-freedreno` is used, we want to add VVL to rootfs and
+      let khronos vulkan loader loads both
+    - when `mesa-vulkan-wrapper` is used, we prefer the same
+      - but since the wrapper loads the system vulkan, it is also possible to
+        add VVL to android system and let android vulkan loader loads VVL
 
 ## WoW64
 
