@@ -154,21 +154,10 @@
   - `PATH=~/android/sdk/tools:$PATH ANDROID_SDK_ROOT=~/android/sdk NDK=~/android/sdk/ndk/25.1.8937393 ./scripts/build.py patrace android release`
 - android install
   - `adb install -r ./install/patrace/android/debug/eglretrace/eglretrace-release.apk`
-  - install the gles layer
-    - `adb shell mkdir /data/local/debug/gles`
-    - `adb push ./install/patrace/android/release/gleslayer/libGLES_layer_arm64.so /data/local/debug/gles`
-    - `adb push ./install/patrace/android/release/gleslayer/libGLES_layer_arm.so /data/local/debug/gles`
+  - the tracing layer is under `install/patrace/android/release/gleslayer`
 - android use
-  - for tracing, see <https://developer.android.com/ndk/guides/rootless-debug-gles>
-    - `adb shell settings put global enable_gpu_debug_layers 1`
-    - `adb shell settings put global gpu_debug_layers_gles libGLES_layer_arm64.so`
-    - `adb shell settings put global gpu_debug_app <package_name>`
-    - the trace file will be written to `/data/apitrace/%s`
-      - `%s` is `/proc/<pid>/cmdline` which is the package name
-      - `adb shell mkdir -p /data/apitrace/%s`
-      - `adb shell chmod 777 /data/apitrace/%s`
-      - `chcon u:object_r:app_data_file:s0:c512,c768 /data/apitrace/%s`
   - for replay, `adb shell am start -n com.arm.pa.paretrace/.Activities.RetraceActivity --es fileName /absolute/path/to/tracefile.pat`
+  - for tracing, it is standard gles layer
 - fakedriver (without `GLESLAYER`)
   - it should be installed as the driver
   - when `glFoo` is called for the first time, it does

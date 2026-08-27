@@ -63,21 +63,11 @@
     - update `abiFilters`
   - `./gradlew assembleDebug`
 - to install,
-  - `adb install -g -t -r
+  - `adb install -g -t -r --force-queryable
     ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
-  - `adb shell mkdir -p /data/local/debug/vulkan`
-  - `adb push <path-to>/libVkLayer_gfxreconstruct.so /data/local/debug/vulkan`
-    - this does not work
-    - use `/data/app/<package>-<hash>/lib/x86_64` instead
 - to trace,
-  - `adb shell setprop debug.vulkan.layers VK_LAYER_LUNARG_gfxreconstruct`
-    - the loader will always implicitly load the layer
-  - permissions
-    - `adb shell pm grant com.name.app android.permission.READ_EXTERNAL_STORAGE`
-    - `adb shell pm grant com.name.app android.permission.WRITE_EXTERNAL_STORAGE`
-    - this requires app's manifest to request those permissions first
-    - alternatively,
-      - `adb shell setprop debug.gfxrecon.capture_file /data/data/<package>/abc.gfxr"`
+  - location
+    - `adb shell setprop debug.gfxrecon.capture_file /data/data/<package>/abc.gfxr"`
   - settings
     - `adb push vk_layer_settings.txt /sdcard`
     - `adb shell setprop debug.gfxrecon.settings_path /sdcard/vk_layer_settings.txt`
@@ -87,7 +77,6 @@
     - look for `vulkan` or `gfxrecon` in logcat
 - to replay,
   - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
-  - remember to unset `debug.vulkan.layers`
 
 ## Internals
 

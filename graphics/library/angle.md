@@ -432,9 +432,8 @@
   - `adb shell mkdir /data/media/10/chromium_tests_root`
   - `adb push src/tests/angle_end2end_tests_expectations.txt /data/media/10/chromium_tests_root/src/tests/angle_end2end_tests_expectations.txt`
     - the test expects the expectation files to be at the specific location
-  - `adb install -r -d --force-queryable out/angle_end2end_tests_apk/angle_end2end_tests-debug.apk`
-  - `adb shell pm grant --user 10 com.android.angle.test android.permission.WRITE_EXTERNAL_STORAGE`
-  - `adb shell pm grant --user 10 com.android.angle.test android.permission.READ_EXTERNAL_STORAGE`
+  - `adb install -r -d out/angle_end2end_tests_apk/angle_end2end_tests-debug.apk`
+  - `adb shell appops set --uid com.android.angle.test MANAGE_EXTERNAL_STORAGE 0`
   - `adb shell am instrument -w \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.ShardNanoTimeout 1000000000000000000 \
@@ -508,9 +507,8 @@
   - `memory_max`
 - android
   - push traces to `/sdcard/chromium_tests_root/src/tests/restricted_traces`
-  - `adb install -r -d --force-queryable ./out/Android/angle_trace_tests_apk/angle_trace_tests-debug.apk`
+  - `adb install -r -d ./out/Android/angle_trace_tests_apk/angle_trace_tests-debug.apk`
   - `adb shell appops set --uid com.android.angle.test MANAGE_EXTERNAL_STORAGE 0`
-  - `adb shell appops write-settings`
   - `adb shell am instrument -w \
        -e org.chromium.native_test.NativeTestInstrumentationTestRunner.StdoutFile /sdcard/chromium_tests_root/out.txt \
        -e org.chromium.native_test.NativeTest.CommandLineFlags '--use-gl=angle\ --gtest_filter=TraceTest.*' \

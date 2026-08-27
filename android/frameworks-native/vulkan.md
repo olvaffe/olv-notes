@@ -40,6 +40,57 @@
 - if `failed to open layer directory '/data/local/debug/vulkan': Permission denied`,
   - it is selinux
 
+## Android
+
+- <https://developer.android.com/ndk/guides/graphics/validation-layer>
+  - apps can include the validation layer in their apks
+  - On Android 9+, if an app is debuggable or if the system is userdebug with
+    root, it can load an external layer
+    - `adb push <layer.so> /data/local/tmp`
+    - `adb shell run-as <com.example.app> cp /data/local/tmp/<layer.so> .`
+    - `adb shell run-as <com.example.app> ls <layer.so>`
+    - `adb shell setprop debug.vulkan.layers <layer>`, or
+      - `adb shell settings put global enable_gpu_debug_layers 1`
+      - `adb shell settings put global gpu_debug_app <com.example.app>`
+      - `adb shell settings put global gpu_debug_layers <layer>`
+    - note, this does NOT work for me.  The loader does not search under
+      `/data/data/com.example.app`
+      - it appears that the app must be debuggable
+      - copy the layer to
+        `/data/app/<package>-<hash>/lib/x86_64` works
+  - On Android 10+, the app can additionally load an external layer from
+    another apk
+    - `adb shell settings put global enable_gpu_debug_layers 1`
+    - `adb shell settings put global gpu_debug_app <com.example.app>`
+    - `adb shell settings put global gpu_debug_layers <layer>`
+    - `adb shell settings put global gpu_debug_layer_app <package>`
+    - these settings persist reboots until explicitly deleted
+    - `GraphicsEnvironment.java`
+      - `setupGpuLayers`
+        - it calls `debugLayerEnabled` to check both `ENABLE_GPU_DEBUG_LAYERS`
+          and `GPU_DEBUG_APP`
+        - if enabled for the app, it calls `setupGpuLayers` with
+          `GPU_DEBUG_LAYERS`
+      - `getDebugLayerPathsFromSettings`
+        - if `debugLayerEnabled` returns true, return the library path from
+          `GPU_DEBUG_LAYER_APP`
+  - looking at the source code, the loader also searches
+    `/data/local/debug/vulkan`
+- validation layers android
+  - `~/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'platforms;android-26'`
+  - `cd build-android`
+  - edit `jni/Application.mk` and `jni/shaderc/Application.mk`
+    - set `APP_ABI` to the desired abis
+    - set `APP_STL` to `c++_static`
+  - `ANDROID_SDK_HOME=~/android/sdk ANDROID_NDK_HOME=~/android/sdk/ndk/25.1.8937393 PATH=~/android/sdk/ndk/25.1.8937393:$PATH ./build_all.sh`
+  - `./install_all.sh` installs the apk for Android 10+
+  - for Android 9,
+    - `adb push bin/libs/lib/x86_64/libVkLayer_khronos_validation.so /data/local/tmp`
+    - `adb shell run-as com.example.VkCube cp /data/local/tmp/libVkLayer_khronos_validation.so .`
+    - `adb shell run-as com.example.VkCube ls`
+    - `adb shell settings put global enable_gpu_debug_layers 1`
+    - `adb shell settings put global gpu_debug_app com.example.VkCube`
+
 ## gfxreconstruct
 
 - <https://github.com/LunarG/gfxreconstruct/blob/dev/HOWTO_android.md>

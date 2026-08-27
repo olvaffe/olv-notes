@@ -21,6 +21,10 @@
     - if no layer, `debug.gles.layers` is used instead
     - `GraphicsEnv::getLayerPaths` returns the paths to search
     - if debuggable, `/data/local/debug/gles` is searched too
+- <https://developer.android.com/ndk/guides/rootless-debug-gles>
+  - `adb shell settings put global enable_gpu_debug_layers 1`
+  - `adb shell settings put global gpu_debug_layers_gles libGLES_layer_arm64.so`
+  - `adb shell settings put global gpu_debug_app <package_name>`
 
 ## EGL (froyo)
 

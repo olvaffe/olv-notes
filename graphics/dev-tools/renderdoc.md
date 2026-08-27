@@ -39,7 +39,7 @@
   - `s/ALooper_pollAll/ALooper_pollOnce/`
   - `s/-source 1.7 -target 1.7/-source 1.8 -target 1.8/`
   - `s/-Wno-cast-function-type-mismatch/-Wno-cast-function-type-strict/`
-- `adb push out/lib/libVkLayer_GLES_RenderDoc.so /data/local/debug/vulkan`
+- the capture layer is at `out/lib/libVkLayer_GLES_RenderDoc.so`
 - cmake internals
   - with `BUILD_ANDROID`,
     - `JAVA_HOME` must be defined and `$JAVA_HOME/bin/java` is the bin
