@@ -59,24 +59,31 @@
 
 - to build,
   - `cd android`
-  - edit `layer/build.gradle` and `tools/replay/build.gradle`
-    - update `abiFilters`
-  - `./gradlew assembleDebug`
-- to install,
-  - `adb install -g -t -r --force-queryable
-    ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
-- to trace,
-  - location
-    - `adb shell setprop debug.gfxrecon.capture_file /data/data/<package>/abc.gfxr"`
-  - settings
-    - `adb push vk_layer_settings.txt /sdcard`
-    - `adb shell setprop debug.gfxrecon.settings_path /sdcard/vk_layer_settings.txt`
-    - or, specify them using props
-      - `adb shell setprop debug.gfxrecon.capture_file /sdcard/blah.gfxr`
-  - to debug,
-    - look for `vulkan` or `gfxrecon` in logcat
+  - `./gradlew :replay:assembleDebug -Parm64-v8a`
+    - we limit to `:replay` project defined in `settings.gradle`
+    - wt set `arm64-v8a` property which maps to `abiFilters`
+- to install
+  - `adb install -r --force-queryable ./tools/replay/build/outputs/apk/debug/replay-debug.apk`
+- to trace
+  - as non-root, enable the layer for the specific app
+    - there are 4 settings to set
+    - the app must be debuggable
+  - or, as root, enable the layer globally
+  - useful settings
+    - `debug.gfxrecon.capture_file` defaults to `/sdcard/gfxrecon_capture.gfxr`
+      - the default requires the app to have `MANAGE_EXTERNAL_STORAGE`
+      - good alternatives are
+        - `/data/user/10/${AppName}/gfxrecon_capture.gfxr`
+        - `/sdcard/Android/data/${AppName}/gfxrecon_capture.gfxr`
+    - `debug.gfxrecon.capture_process_name`
+      - capture only the specified app, useful when the layer is enabled globally
+    - `debug.gfxrecon.capture_file_flush` defaults to `false`
+      - flush packet after each write, useful when capturing a crashing app
 - to replay,
+  - `adb shell appops set --uid com.lunarg.gfxreconstruct.replay MANAGE_EXTERNAL_STORAGE allow`
   - `./scripts/gfxrecon.py replay /sdcard/<trace.gfxr>`
+- to debug,
+  - look for `vulkan` or `gfxrecon` in logcat
 
 ## Internals
 

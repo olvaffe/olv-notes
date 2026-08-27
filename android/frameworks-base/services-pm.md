@@ -41,6 +41,9 @@
   - `MANAGE_EXTERNAL_STORAGE` is a special permission
     - it allows full access to external storage
     - only available since android 11
+  - `android:requestLegacyExternalStorage`
+    - when app target sdk is less than 29 (android 10), this flag is implied
+    - it restores the behavior prior to android 10
   - private app dir on external storage
     - since android 4.4, app can read/write its private app dir on external
       storage without any permission
