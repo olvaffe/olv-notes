@@ -1,0 +1,139 @@
+# Android `dumpstate`
+
+## `adb bugreport`
+
+- adb `Bugreport::DoIt` invokes `bugreportz -p`
+  - `BugreportStandardStreamsCallback` tracks the progress and pulls the
+    bugreport zip
+- dut `bugreportz -p`
+  - it sets `ctl.start` to `dumpstatez` to start the one-shot service
+  - it connects to `dumpstatez` socket to receive progress and print to stdout
+
+## `dumpstate`
+
+- `dumpstatez` service invokes `dumpstate -S` as root
+  - `-S` sets `progress_updates_to_socket`
+- `Dumpstate::Initialize` locks `/bugreports/.bugreport_lock`
+- `Dumpstate::RunInternal`
+  - it adjusts priority, oom score, wake lock, signals, etc.
+  - it opens `dumpstate` socket for progress update
+  - `PrepareToWriteToFile`
+    - `ds.base_name_` is `bugreport-<product>-<build>`
+    - `ds.name_` is `<YYYY-MM-DD-hh-mm-ss>`
+    - `ds.tmp_path_` is `/bugreports/<base_name>-<name>.tmp`
+    - `ds.log_path_` is `/bugreports/<base_name>-<name>-dumpstate_log-<pid>.txt`
+    - `ds.path_` is `/bugreports/<base_name>-<name>.zip`
+      - with `version.txt` in it
+  - it broadcasts bugreport event to apps and to socket
+  - it redirects stdout to `ds.tmp_path_` and stderr to `ds.log_path_`
+  - `Dumpstate::PrintHeader` prints header
+    - time, build, bootloader, sdk, kernel, cmdline, uptime, etc.
+  - `Dumpstate::MaybeSnapshotSystemTraceAsync`
+    - it tells backgroud tracing to save to
+      `/bugreports/tmp_serialize_perfetto_trace`
+  - `RunDumpsysCritical` dumps `DUMP_FLAG_PRIORITY_CRITICAL` services
+    - `RunDumpsysText` dumps them to stdout
+    - `RunDumpsysProto` further dumps those with `DUMP_FLAG_PROTO` to
+      `proto/<service>_CRITICAL.proto` in zip
+  - `Dumpstate::MaybeSnapshotUiTraces`
+    - it invokes these for 10s in the background
+      - `cmd input_method tracing save-for-bugreport`
+      - `cmd window tracing save-for-bugreport`
+      - `cmd window shell tracing save-for-bugreport`
+    - the traces are written to `/data/misc/wmtrace`
+  - `Dumpstate::MaybeWaitForSnapshotSystemTrace` waits for background tracing
+  - `Dumpstate::DumpstateDefaultAfterCritical` dumps the rest
+  - `FinalizeFile` finializes the zip
+    - `Dumpstate::FinishZipFile` adds files to zip
+      - it adds `ds.tmp_path_` as `<base_name>-<name>.txt`
+      - it adds `main_entry.txt`
+      - it adds `ds.log_path_` as `dumpstate_log.txt`
+    - it notifies the progress socket
+  - it broadcasts bugreport event to apps
+  - it closes the progress socket
+- `Dumpstate::DumpstateDefaultAfterCritical` as root
+  - `DoLogcat` collects logcat, including `LAST LOGCAT`
+  - `Dumpstate::DumpTraces` dumps backtraces of interesting pids to
+    `/bugreports/dumptrace_XXXXXX`
+    - it walks `/proc` and dumps
+      - `app_process64` for apps
+      - `should_dump_native_traces` for interesting system services
+        - `native_processes_to_dump`
+      - `get_interesting_pids` for interesting hidl and aidl services
+        - `hidl_hal_interfaces_to_dump`
+        - `aidl_interfaces_to_dump`
+    - `DumpBacktrace` asks debuggerd to dump
+  - it opens various files
+    - `ds.tombstone_data_` is `/data/tombstones/tombstone_*`
+    - `ds.anr_data_` is `/data/anr/anr_*`
+    - `ds.anr_trace_data_` is `/data/anr/trace_*`
+    - `ds.shutdown_checkpoints_` is `/data/system/shutdown-checkpoints/checkpoints-*`
+  - it dumps various dirs to `FS/` in zip
+    - `/cache/recovery`
+    - `/data/misc/recovery`
+    - `/data/misc/logd`
+    - etc
+  - `add_mountinfo` dumps `/proc/<pid>/mountinfo` to `FS/` in zip
+  - it dumps various files to `FS/` in zip
+    - `/proc/cpuinfo`
+    - `/proc/meminfo`
+  - `DumpIpTablesAsRoot` dumps iptables to stdout
+  - `DumpDynamicPartitionInfo` dumps lpdump and dm
+  - it dumps more dirs
+    - `/metadata/ota`
+    - `/data/system/dropbox`
+    - `/data/misc/apexdata/com.android.uwb/log`
+  - it dumps various tool outputs to stdout
+    - `ip`
+    - `ss`
+    - `iotop`
+    - `dmabuf_dump`
+    - `/apex/com.android.sdkext/bin/derive_sdk`
+  - it dumps more files
+    - `/proc/pressure/cpu`
+    - `/proc/pressure/memory`
+    - `/proc/pressure/io`
+    - `/proc/config.gz`
+  - it drops from root to shell
+  - `Dumpstate::dumpstate` dumps more as shell
+  - `DoSystemLogcat` collects logcat again for the dumpstate duration
+- `Dumpstate::dumpstate` dumps as shell
+  - `/sys/bus/platform/drivers/trusty`
+  - `uptime`
+  - `/sys/block`
+  - `/proc/meminfo`
+  - `top`
+  - `bugreport_procdump`
+  - `DumpVisibleWindowViews` invokes `cmd window dump-visible-window-views`
+  - `/proc/vmstat`
+  - `/proc/vmallocinfo`
+  - `/proc/slabinfo`
+  - `/proc/zoneinfo`
+  - `/proc/pagetypeinfo`
+  - `/proc/buddyinfo`
+  - `/sys/kernel/mm/lru_gen/enabled`
+  - `DumpExternalFragmentationInfo` dumps `/proc/buddyinfo`
+  - `/sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state`
+  - `ps`
+  - `DumpHals` dumps hals
+  - `printenv`
+  - `netstat`
+  - `/proc/modules`
+  - `do_dmesg` dumps dmesg
+  - `DumpVintf` dumps vintfs
+  - `lsof`
+  - `/proc/<pid>/wchan`
+  - `/proc/<pid>/stat`
+  - `/data/misc/nfc/logs`
+  - `AddAnrTraceFiles`
+  - `MaybeAddSystemTraceToZip` dumps `/data/misc/perfetto-traces/bugreport`
+  - `bpftool`
+  - `ds.tombstone_data_`
+  - `DumpPacketStats` dumps `/proc/net/dev`
+  - `connectivity`
+  - `DoKmsg` dumps `/sys/fs/pstore/console-ramoops*` or `/proc/last_kmsg`
+  - `DumpKernelMemoryAllocations` invokes `alloctop`
+  - `DumpShutdownCheckpoints` dumps `ds.shutdown_checkpoints_`
+  - `DumpIpAddrAndRules` invokes `ip`
+  - `dump_route_tables` dumps `/data/misc/net/rt_tables` and invokes `ip`
+  - many more
