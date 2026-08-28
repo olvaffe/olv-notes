@@ -86,6 +86,39 @@
 - <https://github.com/zeux/volk>
 - vulkan meta-loader
 
+## Loader Manifests
+
+- default search paths are
+  - `$XDG_CONFIG_DIRS/vulkan/{icd,explicit_layer,implicit_layer}.d` (home and system)
+  - `/etc/vulkan/{icd,explicit_layer,implicit_layer}.d`
+  - `$XDG_DATA_DIRS/vulkan/{icd,explicit_layer,implicit_layer}.d` (home and system)
+- driver manifests
+  - `VK_ADD_DRIVER_FILES` adds additional search paths
+    - the colon-separated paths can be jsons and dirs
+  - `VK_DRIVER_FILES` dictates the search paths
+    - it replaces both the default and the additional search paths
+    - `VK_ICD_FILENAMES` is the old name
+- explicit layer manifests
+  - `VK_ADD_LAYER_PATH` adds additional search paths
+  - `VK_LAYER_PATH` dictates the search paths
+- implicit layer manifests
+  - `VK_ADD_IMPLICIT_LAYER_PATH` adds additional search paths
+  - `VK_IMPLICIT_LAYER_PATH` dictates the search paths
+- driver manifest filtering
+  - `VK_LOADER_DRIVERS_SELECT` is the driver manifest allowlist
+    - the comma-separated (logical OR) globs match against manfiest filenames
+  - `VK_LOADER_DRIVERS_DISABLE` is the driver manifest denylist
+    - contrary to common practice, allowlist takes precedence over denylist
+- explicit/implicit layer filtering
+  - `VK_LOADER_LAYERS_ENABLE` enables matching layers
+    - the comma-separated (logical OR) globs match against layer names
+    - `VK_INSTANCE_LAYERS` is the old name that does not support glob
+  - `VK_LOADER_LAYERS_DISABLE` is the denylist of app-specified and implicit layers
+    - it has no effect on `VK_LOADER_LAYERS_ENABLE`
+  - `VK_LOADER_LAYERS_ALLOW` punches holes in the denylist
+    - the effective denylist is `DISABLE AND ~ALLOW`
+  - remember that implicit layers also have `disable_env` and `enable_env`
+
 ## Call Chain
 
 - `vkCreateBuffer` in loader
