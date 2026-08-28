@@ -1,4 +1,4 @@
-# Vulkan Loader
+# Vulkan Loader, Layers, and Tools
 
 ## Build
 
@@ -9,15 +9,6 @@
     - this clones and builds `Vulkan-Headers`
   - `cmake -G Ninja -C helper.cmake ..`
   - `ninja`
-  - env vars
-    - `VK_LOADER_DEBUG=all` prints all debug msgs
-    - `VK_DRIVER_FILES` or `VK_ICD_FILENAMES`
-      - colon-separated paths to driver jsons
-    - `VK_LAYER_PATH`
-      - colon-separated paths to layer json directories
-    - `VK_INSTANCE_LAYERS`
-      - colon-separated layer names to enable
-      - `VK_LAYER_KHRONOS_validation`
 - validation layers
   - `git clone https://github.com/KhronosGroup/Vulkan-ValidationLayers.git`
   - `cd Vulkan-ValidationLayers; mkdir out; cd out`
@@ -88,6 +79,7 @@
 
 ## Loader Manifests
 
+- `VK_LOADER_DEBUG=all` prints all debug msgs
 - default search paths are
   - `$XDG_CONFIG_DIRS/vulkan/{icd,explicit_layer,implicit_layer}.d` (home and system)
   - `/etc/vulkan/{icd,explicit_layer,implicit_layer}.d`
