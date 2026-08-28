@@ -101,6 +101,13 @@
     - the comma-separated (logical OR) globs match against manfiest filenames
   - `VK_LOADER_DRIVERS_DISABLE` is the driver manifest denylist
     - contrary to common practice, allowlist takes precedence over denylist
+- physical device filtering
+  - `VK_LOADER_VENDOR_ID_FILTER` filters by `VkPhysicalDeviceProperties::vendorID`
+    - desktop: 0x8086 (intel), 0x1002 (amd), 0x10de (nvidia)
+    - mobile: 0x5143 (qcom), 0x13b5 (arm), 0x1010 (img)
+    - sw: 0x10005 (mesa lavapipe)
+  - `VK_LOADER_DEVICE_ID_FILTER` filters by `VkPhysicalDeviceProperties::deviceID`
+  - `VK_LOADER_DRIVER_ID_FILTER` filters by `VkPhysicalDeviceVulkan12Properties::driverID`
 - explicit/implicit layer filtering
   - `VK_LOADER_LAYERS_ENABLE` enables matching layers
     - the comma-separated (logical OR) globs match against layer names
