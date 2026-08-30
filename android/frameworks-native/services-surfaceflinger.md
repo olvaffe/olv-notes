@@ -6,38 +6,68 @@
   PriorityDumper::priorityDump -> PriorityDumper::dumpAll ->
   SurfaceFlinger::dumpCritical -> SurfaceFlinger::doDump`
 - `Build configuration` section
-  - a couple global configs
+  - `SurfaceFlinger::appendSfConfigString`
+    - a couple global configs initialized from properties
 - `Display identification data` section
-  - display names, vendors, etc.
+  - `SurfaceFlinger::dumpDisplayIdentificationData`
+    - display names, vendors, etc.
 - `Wide-Color information` section
-  - display supported color modes (srgb, p3, etc.) and active color mode
+  - `SurfaceFlinger::dumpWideColorInfo`
+    - display supported color modes (srgb, p3, etc.) and active color mode
 - `HDR events for display foo` sections
-  - `HdrLayerInfoReporter::dump`
+  - `SurfaceFlinger::dumpHdrInfo -> HdrLayerInfoReporter::dump`
     - historical hdr events (number of layers, hdr region, etc.)
 - `Sync configuration` section
-  - egl exts for dma-fences (irrelevant to SF when using vulkan)
+  - `SyncFeatures::toString`
+    - egl exts for dma-fences (irrelevant to SF when using vulkan)
 - `Scheduler` section
-  - `Scheduler::dump`
+  - `SurfaceFlinger::dumpScheduler -> Scheduler::dump`
     - features, policies
-  - `FrameRateOverrideMappings::dump`
-    - frame rate overrides
-  - `VsyncConfiguration::dump`
-    - app/sf phases
-  - `RefreshRateStats::dump`
-    - how much time spent in each frame rate
-  - `RefreshRateSelector::dump`
-    - current rate, current mode, supported modes
-  - `FrameTargeter::dump`
-    - total/hwc/gpu missed frame counts
+    - `FrameRateOverrideMappings::dump`
+      - frame rate overrides
+    - `VsyncConfiguration::dump`
+      - app/sf phases
+    - `RefreshRateStats::dump`
+      - how much time spent in each frame rate
+    - `RefreshRateSelector::dump`
+      - current rate, current mode, supported modes, policies, etc.
+    - `FrameTargeter::dump`
+      - total/hwc/gpu missed frame counts
 - `app` section
-  - `EventThread::dump`
+  - `SurfaceFlinger::dumpEvents -> Scheduler::dump -> EventThread::dump`
 - `VsyncSchedule for pacesetter foo` section
-  - `Scheduler::dumpVsync -> VsyncSchedule::dump and VsyncModulator::dump`
+  - `SurfaceFlinger::dumpVsync -> Scheduler::dumpVsync`
+    - `VsyncSchedule::dump`
+      - `VSyncReactor::dump`
+        - `VSyncPredictor::dump`
+    - `VSyncDispatchTimerQueue::dump`
 - `Active Layers` section
   - `SurfaceFlinger::dumpVisibleFrontEnd`
+    - `Composition list` are visible `LayerSnapshot`
+    - `Input list` are input `LayerSnapshot`
+    - `Layer Hierarchy` is onscreen `LayerHierarchy`
+    - `Offscreen Hierarchy` is offscreen `LayerHierarchy`
+    - `Mergeable Hierarchies` are `HierarchyEntry`
+    - `SurfaceFlinger::dumpHwcLayersMinidump -> Layer::miniDump`
+  - `Window Infos`
 - `Displays` section
   - `SurfaceFlinger::dumpDisplays`
-  - `SurfaceFlinger::dumpCompositionDisplays -> compositionengine::impl::Display::dump`
+    - `Display` for physical display
+      - `DisplaySnapshot::dump`
+      - `DisplayDevice::dump`
+        - `RefreshRateSelector::dump` again
+    - `Virtual Display` for virtual display
+      - `DisplayDevice::dump`
+      - `VirtualDisplaySnapshot::dump`
+    - `VirtualDisplayThreadManager::dump`
+  - `SurfaceFlinger::dumpCompositionDisplays -> compositionengine::impl::Display::dump -> compositionengine::impl::Output::dumpBase`
+    - `OutputCompositionState::dump`
+    - `compositionengine::impl::DisplayColorProfile::dump`
+    - `compositionengine::impl::RenderSurface::dump`
+      - `FramebufferSurface::dumpAsString`
+        - `ConsumerBase::dumpState -> ConsumerBase::dumpLocked -> BufferQueueConsumer::dumpState -> BufferQueueCore::dumpState`
+    - `compositionengine::impl::OutputLayer::dump`
+      - `OutputLayerCompositionState::dump`
 - `SurfaceFlinger global state` section
   - `SkiaRenderEngine::dump`
     - `GraphiteVkRenderEngine::appendBackendSpecificInfoToDump`
