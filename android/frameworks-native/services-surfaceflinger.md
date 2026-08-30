@@ -37,19 +37,31 @@
   - `SurfaceFlinger::dumpVisibleFrontEnd`
 - `Displays` section
   - `SurfaceFlinger::dumpDisplays`
-  - `SurfaceFlinger::dumpCompositionDisplays`
+  - `SurfaceFlinger::dumpCompositionDisplays -> compositionengine::impl::Display::dump`
 - `SurfaceFlinger global state` section
   - `SkiaRenderEngine::dump`
-- `ClientCache state` section
-  - `ClientCache::dump`
-- `Transaction tracing` section
-  - `TransactionTracing::dump`
-- `Planner info for display` section
-  - `SurfaceFlinger::dumpPlannerInfo -> Output::dumpPlannerInfo -> Planner::dump`
+    - `GraphiteVkRenderEngine::appendBackendSpecificInfoToDump`
+    - `SkGraphics::DumpMemoryStatistics`
+    - `SkiaMemoryReporter::logTotals`
+    - `SkiaMemoryReporter::logOutput`
+    - `dumpGpuCaches`
+    - `RuntimeEffectManager::dump`
+  - `ClientCache state` section
+    - `ClientCache::dump`
+  - undefinedRegion, transaction-flags, peak-refresh-rate, etc.
+  - `Transaction tracing` section
+    - `TransactionTracing::dump`
+  - `Planner info for display` section
+    - `SurfaceFlinger::dumpPlannerInfo -> Output::dumpPlannerInfo -> Planner::dump`
+    - layer cache
 - `h/w composer state` section
   - `HWComposer::dump -> AidlComposer::dumpDebugInfo`
+  - drm hwc `ComposerClient::Dump`
+    - `DrmHwc::DumpState`
+    - `BackendManager::DumpBackends`
 - `GraphicBufferAllocator buffers` section
   - `GraphicBufferAllocator::dump`
+  - `Gralloc5Mapper::dumpBuffers`
 - `FlagManager values` section
   - `FlagManager::dump`
 - `TimeStats miniDump` section
