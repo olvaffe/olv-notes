@@ -1,5 +1,60 @@
 # Android SurfaceFlinger
 
+## dumpsys
+
+- upon `DUMP_TRANSACTION`, `SurfaceFlinger::dump ->
+  PriorityDumper::priorityDump -> PriorityDumper::dumpAll ->
+  SurfaceFlinger::dumpCritical -> SurfaceFlinger::doDump`
+- `Build configuration` section
+  - a couple global configs
+- `Display identification data` section
+  - display names, vendors, etc.
+- `Wide-Color information` section
+  - display supported color modes (srgb, p3, etc.) and active color mode
+- `HDR events for display foo` sections
+  - `HdrLayerInfoReporter::dump`
+    - historical hdr events (number of layers, hdr region, etc.)
+- `Sync configuration` section
+  - egl exts for dma-fences (irrelevant to SF when using vulkan)
+- `Scheduler` section
+  - `Scheduler::dump`
+    - features, policies
+  - `FrameRateOverrideMappings::dump`
+    - frame rate overrides
+  - `VsyncConfiguration::dump`
+    - app/sf phases
+  - `RefreshRateStats::dump`
+    - how much time spent in each frame rate
+  - `RefreshRateSelector::dump`
+    - current rate, current mode, supported modes
+  - `FrameTargeter::dump`
+    - total/hwc/gpu missed frame counts
+- `app` section
+  - `EventThread::dump`
+- `VsyncSchedule for pacesetter foo` section
+  - `Scheduler::dumpVsync -> VsyncSchedule::dump and VsyncModulator::dump`
+- `Active Layers` section
+  - `SurfaceFlinger::dumpVisibleFrontEnd`
+- `Displays` section
+  - `SurfaceFlinger::dumpDisplays`
+  - `SurfaceFlinger::dumpCompositionDisplays`
+- `SurfaceFlinger global state` section
+  - `SkiaRenderEngine::dump`
+- `ClientCache state` section
+  - `ClientCache::dump`
+- `Transaction tracing` section
+  - `TransactionTracing::dump`
+- `Planner info for display` section
+  - `SurfaceFlinger::dumpPlannerInfo -> Output::dumpPlannerInfo -> Planner::dump`
+- `h/w composer state` section
+  - `HWComposer::dump -> AidlComposer::dumpDebugInfo`
+- `GraphicBufferAllocator buffers` section
+  - `GraphicBufferAllocator::dump`
+- `FlagManager values` section
+  - `FlagManager::dump`
+- `TimeStats miniDump` section
+  - `TimeStats::miniDump`
+
 ## Native Activity
 
 - before looking into how surfaceflinger works, let's look into how a native
