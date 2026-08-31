@@ -159,6 +159,23 @@
   - `LegacyFramebufferSurface::advanceFrame` calls
     `HWComposer::setClientTarget`
 
+## Special Effects
+
+- `LayerSnapshotBuilder::updateSnapshot` sets `forceClientComposition` when
+  - `snapshot.shadowSettings`
+  - `snapshot.stretchEffect`
+  - `snapshot.edgeExtensionEffect`
+  - `snapshot.borderSettings`
+  - `snapshot.boxShadowSettings`
+- `snapshot.shadowSettings` is layer shadow
+- `snapshot.stretchEffect` is list overscroll animation
+- `snapshot.edgeExtensionEffect` fills out transient empty space during layer resize
+- `snapshot.borderSettings` is layer border
+  - RE draws solid color around the layer
+- `snapshot.boxShadowSettings` is layer CSS-style box shadow
+- rounded corner
+- background blur
+
 ## Protocol Overview
 
 - `ISurfaceComposer` is the interface of `SurfaceFlinger`
