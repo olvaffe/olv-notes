@@ -859,6 +859,7 @@
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
     - select `NTFS file system support` if desired
+      - select `NTFS Windows system compression support`
   - select `Pseudo filesystems`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
