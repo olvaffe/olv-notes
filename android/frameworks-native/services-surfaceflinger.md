@@ -159,6 +159,67 @@
   - `LegacyFramebufferSurface::advanceFrame` calls
     `HWComposer::setClientTarget`
 
+## Composition Strategy
+
+- `SurfaceFlinger::commit` commits queued transactions from apps
+  - `SurfaceFlinger::updateLayerSnapshots -> LayerSnapshotBuilder::update ->
+    LayerSnapshotBuilder::updateSnapshots -> ... ->
+    LayerSnapshotBuilder::updateSnapshot`
+  - `snapshot.forceClientComposition` is updated based on shadow, stretch
+    effect, edge extension effect, border, box shadow, etc.
+  - blur and rounded corner are handled later at `composite` stage
+- `SurfaceFlinger::composite` composites and presents a frame
+  - `SurfaceFlinger::setForcedClientCompositionLayerStacks` forces some layer
+    stacks to client composition
+    - e.g., this is what force client composition backdoor uses
+  - `Output::present`
+    - `Output::updateCompositionState` calls
+      `OutputLayer::updateCompositionState` on each layer
+      - `state.forceClientComposition` is set when frontend state says so, or
+        when, for example, forced by backdoor, below a blur layer, unsupported
+        lut or dataspace
+    - `Output::planComposition` is layer caching
+      - `overrideInfo.peekThroughLayer` may be set
+        - when a video stream has rounded corner, it is possible to
+          hwc-composite video stream and let the layer above clip the corner
+    - `Output::writeCompositionState` calls `OutputLayer::writeStateToHWC` on
+      each layer
+      - it forces client composition when `isClientCompositionForced` returns
+        true
+    - `Output::prepareFrame`
+      - `Display::chooseCompositionStrategy ->
+        HWComposer::getDeviceCompositionChanges -> Display::validate ->
+        AidlComposer::validateDisplay` negotiates with hwc, which may demote
+        hwc-compositon to gpu-composition
+      - `Display::applyCompositionStrategy` applies the changes from hwc
+    - `Output::finishFrame`
+      - if gpu composition,
+        - `Output::dequeueRenderBuffer` dequeues a buffer
+        - `Output::composeSurfaces` render to the buffer
+        - `RenderSurface::queueBuffer` queues the buffer
+          - `FramebufferSurface::advanceFrame` acquires the buffer and sends
+            it to hwc
+    - `Output::presentFrameAndReleaseLayers`
+      - `Display::presentFrame -> HWComposer::presentAndGetReleaseFences ->
+        Display::present -> AidlComposer::presentDisplay`
+- `drm_hwcomopser`
+  - `ExecuteDisplayCommand -> HwcDisplay::ValidateStagedComposition`
+    - `GenericCompositionPlanner::ValidateDisplay`
+      - flatten means to use gpu exclusively (to save power, psr, etc.)
+      - `GetClientLayers` decides gpu-composited layers
+      - `HwcDisplay::TestComposition` tests if the combo is supported
+        - `DrmAtomicCommitSink::TestAtomicCommit` calls `drmModeAtomicCommit`
+          with `DRM_MODE_ATOMIC_TEST_ONLY`
+      - if not supported, it forces all layers to gpu-composition
+  - `ExecuteDisplayCommand -> HwcDisplay::PresentStagedComposition`
+    - `DrmAtomicStateManager::WaitLastFrame` waits for last commit
+    - `HwcDisplay::CommitStagedComposition`
+      - `HwcDisplay::PrepareCompositionForCommit` updates client target if any
+      - `HwcDisplay::CreateFrameUpdateCommit` builds full `AtomicCommitArgs`
+      - `HwcDisplay::ExecuteAtomicCommit`
+        - `DrmAtomicCommitSink::ExecuteAtomicCommit` calls `drmModeAtomicCommit`
+      - `HwcDisplay::ApplyCommitChanges` updates present fence and stuff
+
 ## Special Effects
 
 - `LayerSnapshotBuilder::updateSnapshot` sets `forceClientComposition` when

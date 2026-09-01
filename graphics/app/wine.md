@@ -87,6 +87,7 @@
   - `+seh` logs structured exception handling (crashes)
   - `+debugstr` logs debug strs from executables
   - `+loaddll` logs dll loading
+  - `+module` logs loader internals
   - `-all,err+all` disables for all channels then enables err for all channels
   - `+timestamp,+pid,+tid,+threadname` enables all 4 metadata channels
     - prefix each log by timestamp, pid, tid, and threadname
