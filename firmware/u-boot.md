@@ -137,7 +137,7 @@
     - `out/arm-plat-rockchip/core/tee-raw.bin` is the image
   - build uboot
     - `make orangepi-5-rk3588s_defconfig`
-    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.21.bin
+    - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.24.bin
        BL31=../trusted-firmware-a/build/rk3588/release/bl31/bl31.elf
        CROSS_COMPILE=aarch64-linux-gnu- make`
        - optionally `TEE=../optee_os/out/arm-plat-rockchip/core/tee.bin`
@@ -184,7 +184,7 @@
        CROSS_COMPILE=aarch64-linux-gnu- make`
 - boot sequence
   - bootrom jumps to spi flash sector 0x40
-  - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.18.bin`
+  - `ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2400MHz_v1.24.bin`
     - this initializes ddr
   - `spl/u-boot-spl.bin`
     - `_start` of `arch/arm/cpu/armv8/start.S` is the entrypoint
