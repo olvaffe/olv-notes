@@ -117,7 +117,9 @@
     - select `Packet socket`
     - select `Unix domain sockets`
     - select `TCP/IP networking`
-    - select `Network packet filtering framework (Netfilter)` if desired
+      - select `The IPv6 protocol`
+        - deselect `IPv6: IPv6-in-IPv4 tunnel (SIT driver)` if not needed
+    - select `Network packet filtering framework (Netfilter)`
       - select `Core Netfilter Configuration`
         - select `Netfilter connection tracking support`
         - select `Network Address Translation support`
