@@ -79,7 +79,7 @@
     - `pacman-key --populate`
     - `pacman -S linux vim`
     - `bootctl install`
-    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux-fallback.img\noptions console=ttyS0,115200 root=/dev/vda2 loglevel=7" > /boot/loader/entries/arch.conf`
+    - `echo -e "linux /vmlinuz-linux\ninitrd /initramfs-linux.img\noptions console=ttyS0,115200 root=/dev/vda2 loglevel=7" > /boot/loader/entries/arch.conf`
       - `loglevel=7` because arch has `CONFIG_CONSOLE_LOGLEVEL_DEFAULT=4`
   - debian
     - `echo "console=ttyS0,115200 root=/dev/vda2 noresume" > /etc/kernel/cmdline`
@@ -87,6 +87,7 @@
     - `apt install linux-image-amd64 vim systemd-{resolved,timesyncd,boot}`
   - `echo 'root:test0000' | chpasswd`
   - `echo -e "/dev/vda2\t/\text4\trw\t0\t1\n/dev/vda1\t/boot\tvfat\trw\t0\t2" > /etc/fstab`
+  - `pacman -Scc`
 - `zstd test.img`
 
 ## Example: Power Up
@@ -109,7 +110,7 @@
 
 ## Example: Boot Kernel
 
-- `-bios /usr/share/ovmf/OVMF.fd -drive file=test.img,format=raw,if=virtio`
+- `-bios /usr/share/ovmf/x64/OVMF.4m.fd -drive file=test.img,format=raw,if=virtio`
   - `-bios` specifies OVMF instead of the default seabios at `pc-bios/bios.bin`
     - this is done because systemd-boot only supports uefi
     - a better way is to use `-pflash` to separate ovmf ro code and rw vars
