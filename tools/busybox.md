@@ -37,7 +37,7 @@
 - prepare cpio archive
   - `mkdir tmp && cd tmp`
   - `curl -L https://archlinux.org/packages/extra/x86_64/busybox/download | tar --zstd -x --strip 1 usr/bin/busybox`
-  - `curl -L http://mirror.archlinuxarm.org/aarch64/extra/busybox-1.36.1-4-aarch64.pkg.tar.xz | tar -Jx --strip 1 usr/bin/busybox`
+  - `curl https://arch-linux-repo.drzee.net/arch/extra/os/aarch64/busybox-1.36.1-4-aarch64.pkg.tar.zst | tar --zstd -x --strip 1 usr/bin/busybox`
   - `vi init`
   - `chmod 755 init`
   - `find . | cpio -o -H newc -R root:root | zstd > ../initramfs.cpio.zst`

@@ -117,7 +117,7 @@
     sysroot instead
     - `pacman -S qemu-user-static qemu-user-static-binfmt`
     - `systemctl start systemd-binfmt`
-    - `wget http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz`
+    - `curl -O https://arch-linux-repo.drzee.net/arch/tarballs/os/aarch64/archlinux-bootstrap-latest-aarch64.tar.zst`
     - not working
       - `aarch64-linux-gnu-gcc -print-search-dirs` confirms the search dirs
          are correct but still not working
