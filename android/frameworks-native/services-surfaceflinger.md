@@ -165,6 +165,8 @@
   - `SurfaceFlinger::updateLayerSnapshots -> LayerSnapshotBuilder::update ->
     LayerSnapshotBuilder::updateSnapshots -> ... ->
     LayerSnapshotBuilder::updateSnapshot`
+  - `updateRoundedCorner` merges in parent rounded corner settings
+    - when `childOverlapsParentCornerRegion`, it uses parent's settings
   - `snapshot.forceClientComposition` is updated based on shadow, stretch
     effect, edge extension effect, border, box shadow, etc.
   - blur and rounded corner are handled later at `composite` stage
