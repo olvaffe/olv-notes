@@ -383,15 +383,16 @@
       - select `Enable detect function`
     - select `ASUS EC Sensors` if asus
   - select `Thermal drivers`
+    - select `Thermal netlink management`
     - select `Generic cpu cooling support` if arm
     - select `Generic device cooling support` if arm, depending on `PM_DEVFREQ`
     - select `Mediatek thermal drivers` if mtk
       - select `MediaTek thermal drivers`
         - select `AUXADC temperature sensor driver for MediaTek SoCs`
         - select `LVTS Thermal Driver for MediaTek SoCs`
-    - select `Intel thermal drivers` if intel
-      - select `X86 package temperature thermal driver`
-      - select `ACPI INT340X thermal drivers`
+    - select `Intel thermal drivers`
+      - deselect `X86 package temperature thermal driver` if not intel
+      - select `ACPI INT340X thermal drivers` if intel
         - select `ACPI INT340X thermal drivers`
       - select `Intel PCH Thermal Reporting Driver` if needed
     - select `Broadcom thermal drivers` if rpi
