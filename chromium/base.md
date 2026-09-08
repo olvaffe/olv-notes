@@ -109,19 +109,15 @@
 
 ## Perfetto
 
-- Chrome uses TrackEvent data source in a different way
-  - use perfetto ui, `Record new trace`, `Chrome` to record a trace
-  - then go to `Info and stats` to see the exact config used
-    - instead of `track_event` data source and `track_event_config`, it uses
-
-      data_sources: {
-        config {
-          name: "org.chromium.trace_event"
-          chrome_config {
-              trace_config: "..."
-          }
-        }
-      }
+- chrome may connect to built-in traced rather than system traced
+  - `--enable-features=EnablePerfettoSystemTracing` to use system traced
+    - this feature is enabled by defaut for cros
+    - `PerfettoTracedProcess::SetupSystemTracing` connects to the system
+      perfetto socket
+    - older chrome might require `--disable-gpu-sandbox`
+    - `perfetto --query` to confirm working
+  - newer chrome uses standard `track_event` data source
+    - it used to use `org.chromium.trace_event` with json
 - <https://source.chromium.org/chromium/chromium/src/+/main:base/trace_event/builtin_categories.h>
   - `cc` is the compositor
     - <https://source.chromium.org/chromium/chromium/src/+/main:cc/>
@@ -159,9 +155,3 @@
     - <https://source.chromium.org/chromium/chromium/src/+/main:components/viz/>
   - `wayland` is ozone wayland
     - <https://source.chromium.org/chromium/chromium/src/+/main:ui/ozone/platform/wayland/>
-- `EnablePerfettoSystemTracing`
-  - this feature is enabled by defaut for cros
-  - `PerfettoTracedProcess::SetupSystemTracing` connects to the system
-    perfetto socket
-  - the gpu process cannot connect to the perfetto socket due to sandboxing,
-    which can be disabled by `--disable-gpu-sandbox`
