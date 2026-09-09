@@ -3,9 +3,11 @@
 ## CPU uArchs
 
 - Bulldozer   - 2011 - 32nm
+  - x86-64-v2
 - Piledriver  - 2012 - 32nm
 - Steamroller - 2014 - 28nm
 - Excavator   - 2015 - 28nm
+  - x86-64-v3
 - Zen         - 2017 - 14nm
 - Zen+        - 2018 - 12nm
 - Zen 2       - 2019 - 7nm

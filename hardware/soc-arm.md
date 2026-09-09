@@ -47,6 +47,7 @@
 - ARMv8.2-A
   - FP16, RAS, SPE, DPB, LPA2
   - optional SVE
+  - several sw projects require armv8.2-a
   - Cortex-A55, 2017
   - Cortex-A75, 2017
   - Cortex-A76, 2018
@@ -124,21 +125,19 @@
   - Cortex-R52, 2016
   - Cortex-R82, 2020
 
-## Distro Support
+## Debian Support
 
-- Debian has 3 flavors
-  - armel
-    - 32-bit
-    - soft-float
-    - ARMv5TE
-    - ARMv6
-  - armhf
-    - 32-bit
-    - hard-float
-    - ARMv7
-  - arm64
-    - 64-bit
-    - ARMv8
+- `arm64`
+  - triplet `aarch64-linux-gnu`
+  - ARMv8
+- `armhf`
+  - triplet `arm-linux-gnueabihf`
+  - ARMv7, hard-float
+- `armel`
+  - triplet `arm-linux-gnueabi`
+  - ARMv5TE / ARMv6, soft-float
+- `arm`
+  - triplet `arm-linux-gnu`
 
 ## Performances
 

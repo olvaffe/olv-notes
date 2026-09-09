@@ -4,8 +4,10 @@
 
 - Big Cores
   - Sandy Bridge  - 2010 - 32nm
+    - x86-64-v2
   - Ivy Bridge    - 2011 - 22nm
   - Haswell       - 2013 - 22nm
+    - x86-64-v3
   - Broadwell     - 2014 - 14nm
   - Skylake       - 2015 - 14nm
   - Palm Cove     - 2018 - 10nm (skipped)
