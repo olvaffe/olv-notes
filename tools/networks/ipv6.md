@@ -106,6 +106,13 @@
       - `ff02::2` all routers
       - `ff02::1:2` all DHCP servers
 
+## Geofeed
+
+- <https://rdap.db.ripe.net/ip/2a00:79e0::/31>
+  - ripe allocates `2a00:79e0::/31` to google
+- <https://www.gstatic.com/geofeed/corp_external>
+  - google publishes its geofeed
+
 ## Examples
 
 - my eth0 has 3 IPv6 addresses (and 1 IPv4 address)
