@@ -178,3 +178,12 @@
     - the pipeline encodes to all low/medium/high resolutions
       - the servier does not transcode, but just forwards streams to other
         participants
+- local presentation feed
+  - meet uses webrtc `getDisplayMedia` to receive raw screen recording as a
+    `MediaStream`
+    - it requests variable frame rates between `[0, 30]`, which allows chrome
+      to pause sending frames when the contents are static
+    - chrome captures and converts rgba to yuv internally
+  - it connects the raw stream to webrtc transceiver directly
+    - the encoder adapts to the variable frame rates, down to 1fps idle
+      heatbeat
