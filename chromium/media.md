@@ -146,3 +146,35 @@
       - `vaBeginPicture`
       - `vaRenderPicture`
       - `vaEndPicture`
+
+## Google Meet
+
+- each participant with camera feed has 1 active `<video>`
+  - if a participant is pinned, meet creates a second `<video>` with a
+    different res on demand, and swaps the two elements to avoid black frames
+  - meet connects `<video>` to webrtc stream, preferring vp9 for camera feed
+- a presentation is a virtual participant with an active `<video>`
+  - meet connects `<video>` to webrtc stream, preferring av1 for presentation
+- local camera feed
+  - meet uses webrtc `getUserMedia` to receive raw camera feed as a
+    `MediaStream`
+  - it uses `MediaStreamTrackProcessor` to convert the video track to a
+    sequence of read-only webcodec `VideoFrame`
+  - it uses mediapipe (compiled to wasm) to execute tflite model for person
+    segmentation and others
+    - the model can execute on cpu, or execute using webgl/webgpu/webnn
+    - the segmentation mask of each `VideoFrame` is stored as a gpu texture
+  - it uses webgl to render to a `OffscreenCanvas`
+    - the shader takes the video frame and segmentation mask, blur/replace the
+      background, etc.
+  - for each raw `VideoFrame`, it creates a processed `VideoFrame` from the
+    `OffscreenCanvas` and feeds the frame into `MediaStreamTrackGenerator` to
+    recreate a processed track
+  - it clones the processed track, wraps it in a `MediaStream`, and connects
+    the stream to `<video>` for local display
+  - it clones the processed track and connects to webrtc transceiver
+    - the transceiver pipeline encodes the video frames and sends them to the
+      server
+    - the pipeline encodes to all low/medium/high resolutions
+      - the servier does not transcode, but just forwards streams to other
+        participants
