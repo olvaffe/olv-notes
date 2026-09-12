@@ -130,3 +130,23 @@
   - `message_type` is 4
   - `counter` is a sequence number
   - `encrypted_encapsulated_packet` is ChaCha20Poly1305 of the ip packet
+
+## VPN Variants
+
+- Host-to-Host: a client connects to other clients in P2P fashion
+  - pick a private subnet for the vpn
+  - assign a private ip and generate a key for each host
+  - add pubkeys and pub ips of all other hosts to each host
+- Host-to-Gateway: a client connects to a private network
+  - pick a private subnet for the vpn
+  - assign a private ip and generate a key for each host and the gateway
+  - add pubkey and pub ip of the gateway to each host
+  - set up forwarding and nat on the gateway
+- Gateway-to-Gateway: connect two private networks transparently
+  - pick a private subnet for the vpn
+  - assign a private ip and generate a key for both gateways
+  - add pubkey and pub ip of the other gateway to each gateway
+  - set up forwarding and nat on both gateways
+- Personal VPN: a client connects to a gateway for routing
+  - same as Host-to-Gateway, except the nat on the gateway is not for the
+    private network but for the internet
