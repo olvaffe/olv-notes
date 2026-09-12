@@ -133,3 +133,36 @@
     - the netdev is still available, but is only used to configure the port
     - the netdev is no longer involved in routing
 - <https://hicu.be/bridge-vs-macvlan>
+
+## VLAN
+
+- 802.11q
+  - each port can be individually configured
+    - each port has a pvid
+    - each port has a list of members
+      - each member consists of the `(tag id, egress tagged bit)` pair
+      - the list can be empty
+  - ingress
+    - if the frame is untagged, it is tagged with pvid first
+    - a frame is accepted if and only if its tag is on the member list
+  - all frames are tagged for internal switching
+  - egress
+    - a frame is queued if and only if its tag is on the member list
+    - the `egress tagged bit` decides if the tag is kept or stripped
+- terms
+  - the native vlan of a port refers to the pvid
+  - an access port is a port with pvid X and with single member `(X, 0)`
+    - some impls only acceept untagged frames
+    - it connects to endpoints that are not aware of vlans
+  - a trunk port is a port with pvid X and with multiple members `(X, 0)` and
+    `(Y, 1)`
+    - it connects to endpoints that are aware of vlans
+- router config
+  - router is connected to the trunk port
+  - by default,
+    - untagged frames are accepted
+    - tagged frames are dropped
+  - `ip link add link eth0 name eth0.Y type vlan id Y`
+    - untagged frames are accepted by `eth0`
+    - frames with tag Y are accepted by `eth0.Y`
+    - frames with other tags are dropped
