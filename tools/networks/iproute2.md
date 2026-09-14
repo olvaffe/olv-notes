@@ -19,6 +19,10 @@
 - does not replace `iputils`
   - <https://github.com/iputils/iputils>
   - `ping`, `tracepath`
+- does not replace `inetutils`
+  - <https://git.savannah.gnu.org/git/inetutils.git>
+  - `hostname`, `telnet`, `ftp`, etc.
+    - debian uses <https://salsa.debian.org/meskes/hostname> instead
 
 ## OSI
 
@@ -54,6 +58,21 @@
   - there is also `dhcpcd --debug --nobackground eth0`
 - IPv6 RA and DHCPv6
   - `systemd-networkd` supports both and enables RA by default
+
+## `ip rule`
+
+- `ip route` modifies routing tables
+  - routing decisions are solely based on daddr
+- `ip rule` modifies routing policy database (RPDB)
+  - routing decisions are based on saddr, daddr, iif, oif, etc.
+- each packet is matched against ordered rules
+  - built-in rules
+    - `0:     from all lookup local`
+    - `32766: from all lookup main`
+    - `32767: from all lookup default`
+  - custom rules are user-specified
+  - if a packet is matched by a rule, it is matched again by the specified
+    routing table
 
 ## Socket Statistics
 
