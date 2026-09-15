@@ -185,3 +185,32 @@
     - untagged frames are accepted by `eth0`
     - frames with tag Y are accepted by `eth0.Y`
     - frames with other tags are dropped
+
+## Asymmetric Routing
+
+- when a network has a second router in addition to the default gateway
+  - e.g., the second router provides VPN service
+  - incoming traffic: `vpn client -> second router -> internal host`
+  - outgoing traffic: `internal host -> default gateway -> second router -> vpn client`
+- the routing is asymmetric
+  - the default gateway sees half of the traffic
+  - with stateful (conntract) firewall, the packets are considered invalid and
+    are dropped
+- suboptimal solutions
+  - second router sets up SNAT
+    - all incoming traffic appears to be from the seocnd router
+  - default gateway adds a firewall exception
+    - allow lan-to-lan forwarding even if the packet is invalid
+  - second router always routes incoming vpn traffic via the default gateway
+    - second router sets up `ip rule`
+    - default gateway must disable `send_redirects`, which would request the
+      second router to skip the default gateway
+  - all hosts have static route for vpn
+    - dhcp server uses option 121 to advertise static routes
+- better solutions
+  - avoid the second router
+    - move VPN service to the default gateway
+  - move the second router to a p2p transit subnet
+    - second router and default gateway are on yet another p2p subnet
+    - incoming traffic: `vpn client -> second router -> default gateway -> internal host`
+    - outgoing traffic: `internal host -> default gateway -> second router -> vpn client`
