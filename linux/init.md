@@ -380,3 +380,16 @@
     compressed cpio archive
     - the first archive holds the cpu microcode
   - `(cpio -idmv; zcat | cpio -idmv) < /boot/initramfs.img`
+- purposes of initramfs
+  - generic kernel for various devices
+    - initramfs packs different modules and firmwares on different devices
+  - microcode patching
+    - it happens very early and has special earlycpio unpack code
+  - hibernation
+    - kernel must resume previous state from swap before mouting root
+    - fancy swap discovery: similar to fancy root discovery below
+  - fancy root discovery, fsck, and mount
+    - luks, lvm, nfs, etc.
+    - comparing to mounted ro, fsck sometimes works better when unmounted
+  - emergency shell
+    - in case of any error, usually regarding root
