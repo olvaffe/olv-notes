@@ -543,3 +543,22 @@
   - `init.scope`
   - `syslog.socket`
   - `system-update-cleanup.service`
+
+## Unattended Server
+
+- `systemd.conf`
+  - `CrashAction=reboot`
+  - `RuntimeWatchdogSec=1min`
+- `fstab`
+  - `nofail` adds the mount to `local-fs.target.wants` instead of
+    `local-fs.target.requires`
+  - `noatime` avoids atime updates
+  - `lazytime` batches all time updates on supported fs
+    - might want to change `vm.dirtytime_expire_seconds` on devices without
+      rtc, because `/var/lib/systemd/timesync/clock` is touched to keep time
+  - `nodev`, `nosuid`, `noexec` as needed for security
+- `systemd.network`
+  - consider downgrading `RequiredForOnline` if not critical
+  - if dynamic addr but no service listens on the addr, `RequiredForOnline=no`
+  - if static addr, `ConfigureWithoutCarrier=yes` and
+    `RequiredForOnline=no-carrier`
