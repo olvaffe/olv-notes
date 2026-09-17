@@ -930,6 +930,9 @@
       - select `KASAN mode (Hardware Tag-Based KASAN)` if arm
   - select `Debug Oops, Lockups and Hangs` if desired
     - select `Panic on Oops`
+    - select `Detect Soft Lockups`
+    - select `Detect Hard Lockups`
+    - select `Detect Hung Tasks`
   - select `Lock Debugging (spinlocks, mutexes, etc...)` if desired
     - select `Lock debugging: prove locking correctness`
     - select `Lock debugging: detect incorrect freeing of live locks`
