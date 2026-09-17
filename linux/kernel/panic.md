@@ -79,3 +79,28 @@
   - `dump_stack` prints call stack
   - prints `---[ end Kernel panic - not syncing: %s ]---`
   - infinite loop unless `CONFIG_PANIC_TIMEOUT`
+
+## Unattended Server
+
+- fatal errors
+  - `panic` enters infinite loop by default
+    - `panic=10`, or sysctl `kernel.panic=10`, to reboot after timeout
+- severe errors
+  - `die` does not panic by default
+    - the task is merely killed on invalid access, divide-by-zero, etc.
+      - this could lead to lockup, corruption, etc.
+    - `oops=panic`, or sysctl `kernel.panic_on_oops=1`, to panic
+- lockups
+  - a hard lockup does not panic by default
+    - a cpu is monopolized by a running task and does not handle irqs
+      - e.g., the task soft lockups with irq disabled, waits a hw which has
+        wedged with irq disabled, etc.
+    - `nmi_watchdog=panic`, or sysctl `kernel.hardlockup_panic`, to panic
+  - a soft lockup does not panic by default
+    - a cpu is monopolized by a running task but still handles irqs
+      - e.g., the task spin-deadlocks, infinite loops without preemption, etc.
+    - `softlockup_panic=1`, or sysctl `kernel.softlockup_panic`, to panic
+  - a hung task does not panic by default
+    - a task stays in uninterruptible sleep for a long time
+      - e.g., it sleep-deadlocks or waits on a dma-fence that never signals
+    - sysctl `kernel.hung_task_panic` to panic
