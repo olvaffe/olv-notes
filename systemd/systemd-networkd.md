@@ -96,6 +96,7 @@
     - on google wifi, which provides both DHCPv4 and DNS, the hostname is used
       to create an A record for `<hostname>.lan`
   - `UseDomains=` controls whether domain names received are used
+  - leases are in `/run/systemd/netif/leases`
 
 ## `systemd.netdev`
 
