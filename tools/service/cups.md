@@ -283,7 +283,7 @@
   - `<Location />Order allow,deny  Allow @LOCAL</Location>`
     - all http requests starting with `/` are denied by default, but are
       allowed if coming from the local subnet
-  - might need to specify `ServerName` manually
+  - might need to specify `ServerName` and `ServerAlias` manually
 - `ippfind` finds the shared queue
   - `ipp://foo.local:631/printers/mf3010`
   - make sure avahi is running
