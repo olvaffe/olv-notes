@@ -68,3 +68,28 @@
     - there is also dhcp snooping
   - control
     - it connects to tcp port 9999
+
+## Integration: Android TV Remote
+
+- <https://www.home-assistant.io/integrations/androidtv_remote/>
+- discovery: dns-sd
+  - `_androidtvremote2._tcp.local. IN PTR MyTV._androidtvremote2._tcp.local.`
+    - this advertises an instance, `MyTV`, of `_androidtvremote2` service
+  - `MyTV._androidtvremote2._tcp.local. IN SRV 0 0 6466 MyTV.local.`
+    - this advertises tcp port 6466 of host `MyTV.local`
+  - `MyTV.local. IN A 192.168.1.50`
+    - this advertises A record of `MyTV.local`
+  - `MyTV._androidtvremote2._tcp.local. IN TXT "bt=<mac>"`
+    - this advertises MAC address
+    - mac is used to uniquely identify the device
+    - it can also be used in dhcp snooping to update ip
+- pairing: use tcp port `6466+1`
+  - ha generates a cert
+  - ha connects to port 6467 to start pairing
+  - tv displays a pin
+  - ha gets the pin from user input
+  - ha completes pairing
+  - tv trusts the cert
+- control: use tcp port `6466`
+  - the protocol supports `RemoteKeyInject` and `RemoteAppLinkLaunchRequest`
+  - ha exposes a media player entity and a remote entity
