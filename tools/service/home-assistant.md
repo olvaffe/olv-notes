@@ -56,3 +56,15 @@
     - a coordinator is defined by the app layer, such as matter defines a
       controller
     - a matter controller is also often a TBR
+
+## Integration: TP-Link Smart Home
+
+- <https://www.home-assistant.io/integrations/tplink/>
+- legacy plugs without DNS-SD
+  - discovery
+    - it broadcasts `get_sysinfo` to udp port 9999
+    - plugs respond with `sysinfo` which contains macs, models, etc.
+      - plug ips are from the unicast response saddrs
+    - there is also dhcp snooping
+  - control
+    - it connects to tcp port 9999
