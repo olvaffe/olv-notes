@@ -116,3 +116,20 @@
     - `bs` is mac
     - `nf` is notification flag (for google home)
     - `rs` is current active app
+
+## Integration: Roborock
+
+- <https://www.home-assistant.io/integrations/roborock/>
+- discovery
+  - ha snoops dhcp for roborock
+  - if mac is unknown, ha prompts user to login to cloud
+    - this is to retrieve `duid` (device uid), `local_key` (aes key), `rriot`
+      (mqtt cred), etc.
+  - ha connects to cloud and uses mqtt (tcp port 8883) for control
+  - ha discovers the vacuum and dock local ips
+    - it makes `get_network_info` mqtt call
+    - it also broadcasts to udp port 58866 locally
+- control: tcp port 58867 and mqtt
+  - ha subscribes to push notifications using mqtt
+  - ha polls detailed states periodically
+    - locally but can fall back to mqtt
