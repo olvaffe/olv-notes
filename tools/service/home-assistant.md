@@ -61,13 +61,12 @@
 
 - <https://www.home-assistant.io/integrations/tplink/>
 - legacy plugs without DNS-SD
-  - discovery
-    - it broadcasts `get_sysinfo` to udp port 9999
+  - discovery: udp port 9999
+    - ha broadcasts `get_sysinfo` to udp port 9999
     - plugs respond with `sysinfo` which contains macs, models, etc.
       - plug ips are from the unicast response saddrs
     - there is also dhcp snooping
-  - control
-    - it connects to tcp port 9999
+  - control: tcp port 9999
 
 ## Integration: Android TV Remote
 
@@ -83,13 +82,37 @@
     - this advertises MAC address
     - mac is used to uniquely identify the device
     - it can also be used in dhcp snooping to update ip
-- pairing: use tcp port `6466+1`
+- pairing: tcp port `6466+1`
   - ha generates a cert
   - ha connects to port 6467 to start pairing
   - tv displays a pin
   - ha gets the pin from user input
   - ha completes pairing
   - tv trusts the cert
-- control: use tcp port `6466`
+- control: tcp port `6466`
   - the protocol supports `RemoteKeyInject` and `RemoteAppLinkLaunchRequest`
   - ha exposes a media player entity and a remote entity
+
+## Integration: Google Cast
+
+- <https://www.home-assistant.io/integrations/cast/>
+- discovery: dns-sd
+  - `_googlecast._tcp.local. IN PTR Model-UUID._googlecast._tcp.local.`
+    - this advertises an instance, `Model-UUID`, of `_googlecast` service
+  - `Model-UUID._googlecast._tcp.local. IN SRV 0 0 8009 UUID.local.`
+    - this advertises tcp port 8009 of host `UUID.local`
+  - `UUID.local. IN A 192.168.1.50`
+    - this advertises A record of `UUID.local`
+  - `Model-UUID._googlecast._tcp.local. IN TXT "..."`
+    - `id` is uuid
+    - `cd` is cloud uuid (when added to google home)
+    - `rm` is rma id
+    - `ve` is protocol version
+    - `md` is model name
+    - `ic` is path to icon
+    - `fn` is friendly name
+    - `ca` is caps (video, audio, etc.)
+    - `st` is status
+    - `bs` is mac
+    - `nf` is notification flag (for google home)
+    - `rs` is current active app
