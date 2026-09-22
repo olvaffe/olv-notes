@@ -62,6 +62,33 @@
 - `time`
 - `[[` and `]]`
 
+## Parameters
+
+- a parameter is an entity that stores values
+- a variable is a parameter denoted by a name
+- positional params: `$1` to `$9`, and special `$0`
+- special params: `$*`, `$@`, `$#`, `$?`, `$-`, `$!`, and `$0`
+- shell variables: `$_`, `$BASH`, etc.
+- arrays: indexed and associative
+
+## Expansion
+
+- brace expansion: `/path/{file1,file2,file3}`
+- tilde expansion: `~/file`
+- param expansion: `${param}`
+- command subst: `$(cmd)`
+- arith expansion: `$((expr))`
+- process subst: `<$(cmd)`, `>$(cmd)`
+- word splitting
+- pathname expansion: `/path/[A-Z]*.?`
+- quote removal
+
+## Redirection
+
+## Arithmetic Evaluation
+
+## Conditional Expressions
+
 ## Prompting
 
 - `PS1="\u@\h:\w\$ "`
