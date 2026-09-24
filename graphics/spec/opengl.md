@@ -3,6 +3,7 @@
 ## Specs
 
 - <https://registry.khronos.org/OpenGL/>
+- <https://github.com/KhronosGroup/OpenGL-Registry>
 
 ## History
 
