@@ -183,7 +183,15 @@
     - `-n <output-name>` specifies the output filename
   - `b4 am <msg-id>` is similar to `b4 mbox <msg-id>`, except it
     post-processes the threads for `git am`
+    - post-processing includes
+      - select the highest revision thread
+      - separate cover, patches, and replies
+      - collect trailers from replies into patches
+      - write out cover letter and git-am-friendly mbox
+    - `-v <rev>` picks the specified revision rather than the highest rev
     - `--no-cover` skips cover letter
+  - `b4 shazam <msg-id>` is similar to `b4 am <msg-id>`, except it `git am`
+    automatically
   - `b4 diff <msg-id>` diffs against the prior revision
     - `-m <mbox1> <mbox2>` diffs against two local mboxes
   - `b4 dig -c <commit-id>` reverse looks up the msg id
