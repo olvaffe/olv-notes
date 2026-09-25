@@ -193,8 +193,8 @@
   - `b4 shazam <msg-id>` is similar to `b4 am -c <msg-id>`, except it applies
     the mbox automagically
     - it honors `prerequisite-patch-id` and applies prerequisites first
-    - it follows `git am` with `b4 ty`
-    - `-H` honors `base-commit` and applies to `FETCH_HEAD`
+    - it follows `b4 am -c` with `git am`
+    - `-H` honors `base-commit` as the base and updates `FETCH_HEAD`
     - `-M` follows `-H` by `git merge FETCH_HEAD`
   - `b4 diff <msg-id>` diffs against the prior revision
     - `-m <mbox1> <mbox2>` diffs against two local mboxes
@@ -216,13 +216,37 @@
       to the cover letter
     - `--check` runs `scripts/checkpatch.pl` on all commits
     - `--cleanup br/<topic>` deletes everything related to the branch
-  - `b4 send` one-time setup
-    - `patatt genkey`
-    - edit `.config/git/config` to add `[b4]` and `[patatt]`
-    - `b4 send --web-auth-new`
-    - `b4 send --web-auth-verify <token>`
   - `b4 send` sends the patches, tags the current revision, and increments the
     revision
-    - `-o <tmpdir>` saves patches locally for double check
+    - it generates cover letter and patches from the current branch
+    - it generates `To:` and `Cc:` from trailers in cover letter and patches
+    - it runs pre-flight checks
+    - it signs all msgs with `patatt`, which adds `X-Developer-Signature:`
+    - it sends all msgs using `[sendmail]` or `[b4]` web endpoint
+    - after really sending,
+      - it creates a git tag
+      - it updates cover letter
+        - increment revision
+        - record msgid
+        - add Changes section
+        - add Link
+    - `-o <tmpdir>` saves msgs locally for double check
     - `--reflect` sends only to self for double check
   - `b4 trailers -u` retrieves trailers and updates commit messages
+    - it decides the commit range on the current branch
+    - it finds the mailing thread for the commits
+    - it extracts trailers and updates commit messages
+- patatt signing key
+  - patatt uses `patatt.signingKey` (must be ed25519) and falls back to
+    `user.signingKey` (must be pgp)
+    - if no pgp, `patatt genkey` can generate a key
+  - `patatt.selector` defaults to `default`
+    - it is an arbitrary string for `s=<selector>` field in
+      `X-Developer-Signature:`
+    - there must be 1:1 between a key and a `(email, selector)` pair
+      - iow, to change a key, selector must be changed
+      - selector is commonly set to the creation date of the key
+- web endpoint
+  - add `b4.send-endpoint-web` for the endpoint
+  - `b4 send --web-auth-new`
+  - `b4 send --web-auth-verify <token>`
