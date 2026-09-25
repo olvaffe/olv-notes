@@ -85,6 +85,110 @@
       - `a6xx_rb_start`
         - this sets up ringbuffer and sends `CP_ME_INIT`
 
+## ioctls
+
+- device
+  - `IOCTL_KGSL_DEVICE_GETPROPERTY` and `kgsl_ioctl_device_getproperty`
+    - `struct kgsl_device_getproperty`
+      - `KGSL_PROP_DEVICE_INFO`
+      - `KGSL_PROP_UCHE_GMEM_VADDR`
+      - `KGSL_PROP_HIGHEST_BANK_BIT`
+      - `KGSL_PROP_UBWC_MODE`
+      - `KGSL_PROP_UCHE_TRAP_BASE`
+      - `KGSL_PROP_GPU_VA64_SIZE`
+      - `KGSL_PROP_IS_RAYTRACING_ENABLED`
+      - `KGSL_PROP_GPU_RESET_STAT`
+  - `IOCTL_KGSL_SETPROPERTY` and `kgsl_ioctl_device_setproperty`
+    - `struct kgsl_device_getproperty`
+      - mainly for dvfs (dcvs) to lock freq, keep awake, etc.
+  - `IOCTL_KGSL_GET_FAULT_REPORT` and `kgsl_ioctl_get_fault_report`
+    - `struct kgsl_fault_report`
+- drawctx
+  - per-VkQueue
+  - `IOCTL_KGSL_DRAWCTXT_CREATE` and `kgsl_ioctl_drawctxt_create`
+    - `struct kgsl_drawctxt_create`
+      - `KGSL_CONTEXT_PREAMBLE` required, userspace inits gpu state in each cmdbuf
+      - `KGSL_CONTEXT_NO_GMEM_ALLOC` required, skip shadow gmem
+      - `KGSL_CONTEXT_SAVE_GMEM` ignored
+  - `IOCTL_KGSL_DRAWCTXT_DESTROY` and `kgsl_ioctl_drawctxt_destroy`
+    - `struct kgsl_drawctxt_destroy`
+- submit
+  - `IOCTL_KGSL_GPU_COMMAND` and `kgsl_ioctl_gpu_command`, for hw cmds
+    - `struct kgsl_gpu_command`
+  - `IOCTL_KGSL_GPU_AUX_COMMAND` and `kgsl_ioctl_gpu_aux_command`, for sw cmds
+    - `struct kgsl_gpu_aux_command`
+  - `IOCTL_KGSL_RECURRING_COMMAND` and `kgsl_ioctl_recurring_command`
+    - `struct kgsl_recurring_command`
+  - legacy
+    - `IOCTL_KGSL_SUBMIT_COMMANDS`
+    - `IOCTL_KGSL_RINGBUFFER_ISSUEIBCMDS`
+- alloc
+  - `IOCTL_KGSL_GPUOBJ_ALLOC` and `kgsl_ioctl_gpuobj_alloc`
+    - `struct kgsl_gpuobj_alloc`
+  - `IOCTL_KGSL_GPUOBJ_FREE` and `kgsl_ioctl_gpuobj_free`
+    - `struct kgsl_gpuobj_free`
+  - `IOCTL_KGSL_GPUOBJ_INFO` and `kgsl_ioctl_gpuobj_info`
+    - `struct kgsl_gpuobj_info`
+  - `IOCTL_KGSL_GPUOBJ_IMPORT` and `kgsl_ioctl_gpuobj_import`
+    - `struct kgsl_gpuobj_import`
+  - `IOCTL_KGSL_GPUOBJ_SYNC` and `kgsl_ioctl_gpuobj_sync`
+    - `struct kgsl_gpuobj_sync`
+  - `IOCTL_KGSL_GPUOBJ_SET_INFO` and `kgsl_ioctl_gpuobj_set_info`, for debug aid
+    - `struct kgsl_gpuobj_set_info`
+  - `IOCTL_KGSL_GPUMEM_BIND_RANGES` and `kgsl_ioctl_gpumem_bind_ranges`, for sparse
+    - `struct kgsl_gpumem_bind_ranges`
+  - legacy
+    - `IOCTL_KGSL_GPUMEM_ALLOC` obsoleted by `IOCTL_KGSL_GPUOBJ_ALLOC`
+    - `IOCTL_KGSL_GPUMEM_ALLOC_ID` obsoleted by `IOCTL_KGSL_GPUOBJ_ALLOC`
+    - `IOCTL_KGSL_GPUMEM_FREE_ID` obsoleted by `IOCTL_KGSL_GPUOBJ_FREE`
+    - `IOCTL_KGSL_GPUMEM_GET_INFO` obsoleted by `IOCTL_KGSL_GPUOBJ_INFO`
+    - `IOCTL_KGSL_GPUMEM_SYNC_CACHE` obsoleted by `IOCTL_KGSL_GPUOBJ_SYNC`
+    - `IOCTL_KGSL_GPUMEM_SYNC_CACHE_BULK` obsoleted by `IOCTL_KGSL_GPUOBJ_SYNC`
+    - `IOCTL_KGSL_MAP_USER_MEM` obsoleted by `IOCTL_KGSL_GPUOBJ_IMPORT`
+    - `IOCTL_KGSL_SHAREDMEM_FROM_PMEM` obsoleted by `IOCTL_KGSL_GPUOBJ_IMPORT`
+    - `IOCTL_KGSL_SHAREDMEM_FREE` obsoleted by `IOCTL_KGSL_GPUOBJ_FREE`
+    - `IOCTL_KGSL_SHAREDMEM_FLUSH_CACHE` obsoleted by `IOCTL_KGSL_GPUOBJ_SYNC`
+    - `IOCTL_KGSL_CMDSTREAM_FREEMEMONTIMESTAMP_CTXTID` obsoleted by `IOCTL_KGSL_GPUOBJ_FREE`
+- sync
+  - each drawctx maintains 3 seqnos, aka timestamps
+    - they are QUEUED, CONSUMED, and RETIRED
+    - each submit is assigned a seqno
+  - `IOCTL_KGSL_DEVICE_WAITTIMESTAMP_CTXTID` and `kgsl_ioctl_device_waittimestamp_ctxtid`, wait for RETIRED
+    - `struct kgsl_device_waittimestamp_ctxtid`
+  - `IOCTL_KGSL_TIMESTAMP_EVENT` and `kgsl_ioctl_timestamp_event`, create a sync fd signaled when RETIRED
+    - `struct kgsl_timestamp_event`
+  - legacy
+    - `IOCTL_KGSL_CMDSTREAM_READTIMESTAMP_CTXTID` obsoleted by direct mmap of timestamps
+    - `IOCTL_KGSL_SYNCSOURCE_CREATE` obsoleted as it works similar to the bad sw sync
+    - `IOCTL_KGSL_SYNCSOURCE_DESTROY`
+    - `IOCTL_KGSL_SYNCSOURCE_CREATE_FENCE`
+    - `IOCTL_KGSL_SYNCSOURCE_SIGNAL_FENCE`
+- timeline (similar to timeline drm syncobj; also backed by dma-fences)
+  - `IOCTL_KGSL_TIMELINE_CREATE` and `kgsl_ioctl_timeline_create`
+    - `struct kgsl_timeline_create`
+  - `IOCTL_KGSL_TIMELINE_WAIT` and `kgsl_ioctl_timeline_wait`
+    - `struct kgsl_timeline_wait`
+  - `IOCTL_KGSL_TIMELINE_QUERY` and `kgsl_ioctl_timeline_query`
+    - `struct kgsl_timeline_val`
+  - `IOCTL_KGSL_TIMELINE_SIGNAL` and `kgsl_ioctl_timeline_signal`
+    - `struct kgsl_timeline_signal`
+  - `IOCTL_KGSL_TIMELINE_FENCE_GET` and `kgsl_ioctl_timeline_fence_get`
+    - `struct kgsl_timeline_fence_get`
+  - `IOCTL_KGSL_TIMELINE_DESTROY` and `kgsl_ioctl_timeline_destroy`
+- counter
+  - `IOCTL_KGSL_PERFCOUNTER_GET` and `adreno_ioctl_perfcounter_get`
+    - `struct kgsl_perfcounter_get`
+  - `IOCTL_KGSL_PERFCOUNTER_PUT` and `adreno_ioctl_perfcounter_put`
+    - `struct kgsl_perfcounter_put`
+  - `IOCTL_KGSL_PERFCOUNTER_QUERY` and `adreno_ioctl_perfcounter_query`
+    - `struct kgsl_perfcounter_query`
+  - `IOCTL_KGSL_PERFCOUNTER_READ` and `adreno_ioctl_perfcounter_read`
+    - `struct kgsl_perfcounter_read`
+  - `IOCTL_KGSL_PREEMPTIONCOUNTER_QUERY` and `adreno_ioctl_preemption_counters_query`
+    - `struct kgsl_preemption_counters_query`
+  - `IOCTL_KGSL_READ_CALIBRATED_TIMESTAMPS` and `adreno_ioctl_read_calibrated_ts`
+    - `struct kgsl_read_calibrated_timestamps`
+
 ## Snapshots
 
 - `a3xx_snapshot`
