@@ -190,8 +190,12 @@
       - write out cover letter and git-am-friendly mbox
     - `-v <rev>` picks the specified revision rather than the highest rev
     - `--no-cover` skips cover letter
-  - `b4 shazam <msg-id>` is similar to `b4 am <msg-id>`, except it `git am`
-    automatically
+  - `b4 shazam <msg-id>` is similar to `b4 am -c <msg-id>`, except it applies
+    the mbox automagically
+    - it honors `prerequisite-patch-id` and applies prerequisites first
+    - it follows `git am` with `b4 ty`
+    - `-H` honors `base-commit` and applies to `FETCH_HEAD`
+    - `-M` follows `-H` by `git merge FETCH_HEAD`
   - `b4 diff <msg-id>` diffs against the prior revision
     - `-m <mbox1> <mbox2>` diffs against two local mboxes
   - `b4 dig -c <commit-id>` reverse looks up the msg id
