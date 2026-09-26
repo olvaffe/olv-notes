@@ -90,26 +90,50 @@
 - device
   - `IOCTL_KGSL_DEVICE_GETPROPERTY` and `kgsl_ioctl_device_getproperty`
     - `struct kgsl_device_getproperty`
-      - `KGSL_PROP_DEVICE_INFO`
-      - `KGSL_PROP_UCHE_GMEM_VADDR`
-      - `KGSL_PROP_HIGHEST_BANK_BIT`
-      - `KGSL_PROP_UBWC_MODE`
-      - `KGSL_PROP_UCHE_TRAP_BASE`
-      - `KGSL_PROP_GPU_VA64_SIZE`
-      - `KGSL_PROP_IS_RAYTRACING_ENABLED`
-      - `KGSL_PROP_GPU_RESET_STAT`
+      - `KGSL_PROP_DEVICE_INFO`: `chip_id`, `gmem_sizebytes`, etc.
+      - `KGSL_PROP_GPU_RESET_STAT`: reset stat for drawctx for hang check
+      - `KGSL_PROP_UCHE_GMEM_VADDR`: gmem iova
+      - `KGSL_PROP_HIGHEST_BANK_BIT`: ubwc config
+      - `KGSL_PROP_UBWC_MODE`: ubwc version
+      - `KGSL_PROP_UCHE_TRAP_BASE`: always-on counter for shader clock
+      - `KGSL_PROP_GPU_VA64_SIZE`: va size
+      - `KGSL_PROP_IS_RAYTRACING_ENABLED`: rt
+      - `KGSL_PROP_DEVICE_SHADOW`: mmap offset for drawctx timestamps
+      - `KGSL_PROP_DEVICE_QTIMER`: better than `KGSL_PROP_UCHE_TRAP_BASE`
+      - `KGSL_PROP_*SECURE*`: protected mem
+      - `KGSL_PROP_SPEED_BIN`: speedbin
+      - `KGSL_PROP_GAMING_BIN`: `gaming_bin` fuse cell
+      - `KGSL_PROP_GPU_MODEL`: dt device name
+      - `KGSL_PROP_VK_DEVICE_ID`: dt device id
+      - `KGSL_PROP_IS_LPAC_ENABLED`: async compute queues
+      - more
   - `IOCTL_KGSL_SETPROPERTY` and `kgsl_ioctl_device_setproperty`
     - `struct kgsl_device_getproperty`
-      - mainly for dvfs (dcvs) to lock freq, keep awake, etc.
+      - `KGSL_PROP_PWRCTRL`: global slumber/dvfs disable, lock to pwr level 0 (peak)
+      - `KGSL_PROP_PWR_CONSTRAINT`: per-drawctx constraint to specific pwr level
+      - `KGSL_PROP_DCVS_PROFILE`: dvfs profiles
   - `IOCTL_KGSL_GET_FAULT_REPORT` and `kgsl_ioctl_get_fault_report`
-    - `struct kgsl_fault_report`
+    - `struct kgsl_fault_report`, for `VK_KHR_device_fault`
 - drawctx
   - per-VkQueue
   - `IOCTL_KGSL_DRAWCTXT_CREATE` and `kgsl_ioctl_drawctxt_create`
     - `struct kgsl_drawctxt_create`
-      - `KGSL_CONTEXT_PREAMBLE` required, userspace inits gpu state in each cmdbuf
-      - `KGSL_CONTEXT_NO_GMEM_ALLOC` required, skip shadow gmem
-      - `KGSL_CONTEXT_SAVE_GMEM` ignored
+      - `KGSL_CONTEXT_SAVE_GMEM`: ignored
+      - `KGSL_CONTEXT_NO_GMEM_ALLOC`: required, skip shadow gmem
+      - `KGSL_CONTEXT_CTX_SWITCH`: force ctx switch even when current, for debugging
+      - `KGSL_CONTEXT_PREAMBLE`: required, userspace inits gpu state in each cmdbuf
+      - `KGSL_CONTEXT_PER_CONTEXT_TS`: always on, per-drawctx seqnos in memstore
+      - `KGSL_CONTEXT_USER_GENERATED_TS`: drawctx seqnos are user-providied
+      - `KGSL_CONTEXT_NO_FAULT_TOLERANCE`: disable fault tolerance (no transparent skip nor replay)
+      - `KGSL_CONTEXT_PWR_CONSTRAINT`: per-drawctx pwr constraint
+      - `KGSL_CONTEXT_PRIORITY_MASK`: prio 1 (high) to 15 (low), default to 8
+      - `KGSL_CONTEXT_IFH_NOP`: skip all cmds, for benchmarking cpu overhead
+      - `KGSL_CONTEXT_SECURE`: protected
+      - `KGSL_CONTEXT_NO_SNAPSHOT`: no devcoredump
+      - `KGSL_CONTEXT_PREEMPT_STYLE_MASK`: default, ringbuffer, finegrain
+      - `KGSL_CONTEXT_TYPE_MASK`: vk, gl, etc. for debugging
+      - `KGSL_CONTEXT_INVALIDATE_ON_FAULT`: disable transparent skip on fault
+      - `KGSL_CONTEXT_LPAC`: async compute
   - `IOCTL_KGSL_DRAWCTXT_DESTROY` and `kgsl_ioctl_drawctxt_destroy`
     - `struct kgsl_drawctxt_destroy`
 - submit
