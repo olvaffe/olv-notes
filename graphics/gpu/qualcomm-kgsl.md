@@ -167,16 +167,49 @@
 - alloc
   - `IOCTL_KGSL_GPUOBJ_ALLOC` and `kgsl_ioctl_gpuobj_alloc`
     - `struct kgsl_gpuobj_alloc`
+      - `size`: obj size
+      - `flags`
+        - `KGSL_MEMFLAGS_SECURE`: protected mem
+        - `KGSL_MEMFLAGS_USERMEM_MASK`: non-zero if imported
+        - `KGSL_MEMTYPE_MASK`: for debugging and accounting
+        - `KGSL_MEMALIGN_MASK`: iova alignment
+        - `KGSL_MEMFLAGS_GPUREADONLY`: iommu read-only
+        - `KGSL_CACHEMODE_MASK`: cpu cache mode, wc (default) or wb
+        - `KGSL_MEMFLAGS_USE_CPU_MAP`: defer until mmap to use cpu addr as gpu iova
+        - `KGSL_MEMFLAGS_IOCOHERENT`: cache coherent with cpu
+        - `KGSL_MEMFLAGS_FORCE_32BIT`: force 32-bit iova
+        - `KGSL_MEMFLAGS_VBO`: virtual bo, aka sparse
+      - `va_len`: ignored
+      - `mmap_size`: size for use with `mmap` (obj size plus optional guard)
+      - `id`: obj id
+      - `metadata_len`: user metadata
   - `IOCTL_KGSL_GPUOBJ_FREE` and `kgsl_ioctl_gpuobj_free`
     - `struct kgsl_gpuobj_free`
+      - `KGSL_GPUOBJ_FREE_ON_EVENT` is deferred free
+        - `KGSL_GPU_EVENT_TIMESTAMP` waits for drawctx/timestamp
+        - `KGSL_GPU_EVENT_FENCE` waits for dma-fence
   - `IOCTL_KGSL_GPUOBJ_INFO` and `kgsl_ioctl_gpuobj_info`
     - `struct kgsl_gpuobj_info`
+      - `id`: obj id to query
+      - `gpuaddr`: iova, or 0 until mmap if `KGSL_MEMFLAGS_USE_CPU_MAP`
+      - `flags`: obj flags
+      - `size`: obj size
+      - `va_len`: same as `mmap_size`
+      - `va_addr`: legacy, always 0
   - `IOCTL_KGSL_GPUOBJ_IMPORT` and `kgsl_ioctl_gpuobj_import`
     - `struct kgsl_gpuobj_import`
+      - `KGSL_USER_MEM_TYPE_DMABUF` and `kgsl_gpuobj_import_dma_buf`
+      - `KGSL_USER_MEM_TYPE_ADDR` and `kgsl_gpuobj_import_useraddr`
   - `IOCTL_KGSL_GPUOBJ_SYNC` and `kgsl_ioctl_gpuobj_sync`
     - `struct kgsl_gpuobj_sync`
+      - `KGSL_GPUMEM_CACHE_CLEAN`: flush cpu cache
+      - `KGSL_GPUMEM_CACHE_INV`: invalidate cpu cache
+      - `KGSL_GPUMEM_CACHE_FLUSH`: flush and invalidate cpu cache
+      - `KGSL_GPUMEM_CACHE_RANGE`: honor bo range
+      - nop if `KGSL_CACHEMODE_WRITECOMBINE`, `KGSL_MEMFLAGS_SECURE`, or `KGSL_MEMFLAGS_IOCOHERENT`
   - `IOCTL_KGSL_GPUOBJ_SET_INFO` and `kgsl_ioctl_gpuobj_set_info`, for debug aid
     - `struct kgsl_gpuobj_set_info`
+      - update metadata and memtype
   - `IOCTL_KGSL_GPUMEM_BIND_RANGES` and `kgsl_ioctl_gpumem_bind_ranges`, for sparse
     - `struct kgsl_gpumem_bind_ranges`
   - legacy
