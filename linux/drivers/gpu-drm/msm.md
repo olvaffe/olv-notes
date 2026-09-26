@@ -22,29 +22,46 @@
           - `boe,nv110wtm-n61`
   - `pwm-backlight`
 - `msm_drm_register` registers these platform drivers in order
-  - unused `mdp5_driver` named `msm_mdp` for `qcom,mdp5` and more
-  - `dpu_driver` named `msm_dpu` for `qcom,sc7180-dpu` and more
-  - `dsi_phy_platform_driver` named `msm_dsi_phy` for `qcom,dsi-phy-10nm` and
-    more
-  - `dsi_driver` named `msm_dsi` for `qcom,mdss-dsi-ctrl` and more
-  - unused `msm_hdmi_phy_platform_driver` named `msm_hdmi_phy` for
-    `qcom,hdmi-phy-8996` and more
-  - unused `msm_hdmi_driver` named `hdmi_msm` for `qcom,hdmi-tx-8996` and more
-  - `dp_display_driver` named `msm-dp-display` for `qcom,sc7180-dp` and more
-  - `adreno_driver` named `adreno` for `qcom,adreno` and more
-  - `msm_platform_driver` named `msm` for `qcom,sc7180-mdss` and more
-- `adreno_probe` probes `qcom,adreno`
-  - this only calls `component_add`
-- `msm_pdev_probe` probes `qcom,sc7180-mdss`
-  - this calls `component_match_add` to match all relevant subdevices
-  - this calls `component_master_add_with_match` to register the aggregate
-    driver
-- `msm_drm_bind`
-  - this is called after all components have been successfully bound
-    - `adreno_bind`
-    - `dpu_bind`
-    - `dp_display_bind`
-    - `dsi_bind`
+  - `msm_mdp_register` registers legacy mdp5 driver for `qcom,mdp5`, etc.
+  - `msm_dpu_register` registers dpu driver for `qcom,sc7180-dpu`, etc.
+  - `msm_dsi_register` registers dsi driver for `qcom,mdss-dsi-ctrl`, etc., as
+    well as dsi phy driver for `qcom,dsi-phy-10nm`, etc.
+  - `msm_hdmi_register` registers legacy hdmi driver for `qcom,hdmi-tx-8998`,
+    etc., as well as hdmi phy driver for `qcom,hdmi-phy-8998`, etc.
+  - `msm_dp_register` registers dp driver for `qcom,sc7180-dp`, etc.
+  - `adreno_register` registers adreno driver for `qcom,adreno`, etc.
+  - `msm_mdp_register` registers legacy mdp4 driver for `qcom,mdp4`, etc.
+  - `msm_mdss_register` registers mdss driver for `qcom,sc7180-mdss`, etc.
+- probe order
+  - `adreno_probe` adds a component driver
+  - `mdss_probe` populates display subdevs
+    - `dpu_dev_probe` calls `msm_drv_probe` to add component matches and master
+    - `dsi_dev_probe` adds a component driver indirectly
+    - `msm_dp_display_probe` adds a component driver
+  - `msm_drm_bind` is called after all component drivers are matched
+    - `msm_drm_init` inits a drm dev with `msm_driver` as the drm driver
+      - `component_bind_all` binds component drivers
+        - `adreno_bind`
+        - `dsi_bind`
+        - `msm_dp_display_bind`
+- `msm.separate_gpu_kms=1`
+  - `adreno_probe` skips component driver
+    - `msm_gpu_probe` calls `msm_drm_init` with `msm_gpu_driver`
+  - `msm_drv_probe` skips adreno component match
+    - `msm_drm_bind` calls `msm_drm_init` with `msm_kms_driver`
+  - combined `msm_driver` vs separated `msm_gpu_driver` and `msm_kms_driver`
+    - `msm_kms_driver` is kms-only
+      - no render driver features
+      - no legacy prime import
+      - no msm-specific ioctls (gem alloc, submitqueue, submit, vm bind, etc.)
+      - renamed to `msm-kms`
+    - `msm_gpu_driver` is render-only
+      - no kms driver features
+      - no dumb
+      - no legacy prime import
+      - no fbdev
+- kms-only: `msm.skip_gpu=1` to disable `adreno_has_gpu` and `adreno_register`
+- gpu-only: `msm.separate_gpu_kms=1` and disable `CONFIG_DRM_MSM_DPU` (and legacy MDP4/MDP5)
 
 ## ioctls
 
