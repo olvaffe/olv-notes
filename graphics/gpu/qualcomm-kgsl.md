@@ -139,6 +139,24 @@
 - submit
   - `IOCTL_KGSL_GPU_COMMAND` and `kgsl_ioctl_gpu_command`, for hw cmds
     - `struct kgsl_gpu_command`
+      - `flags`
+        - `KGSL_CMDBATCH_SUBMIT_IB_LIST`: ignored
+        - `KGSL_CMDBATCH_PROFILING`: writes submit timings to obj
+      - `cmdlist`, `cmdsize`, and `numcmds` are an array of `kgsl_command_object` for IB1s
+        - `gpuaddr` and `size` are IB1 addr and size
+        - `offset` and `id` are legacy and are ignored
+        - `flags`
+          - `KGSL_CMDLIST_IB`: IB1
+      - `objlist`, `objsize`, and `numobjs` are legacy except for `KGSL_OBJLIST_PROFILE`
+      - `synclist`, `syncsize`, and `numsyncs` are an array of `kgsl_command_syncpoint`
+        - `KGSL_CMD_SYNCPOINT_TYPE_TIMESTAMP` and `kgsl_cmd_syncpoint_timestamp`
+          - wait on the specified drawctx/timestamp to retire
+        - `KGSL_CMD_SYNCPOINT_TYPE_FENCE` and `kgsl_cmd_syncpoint_fence`
+          - wait on the specified dma-fence
+        - `KGSL_CMD_SYNCPOINT_TYPE_TIMELINE` and `kgsl_cmd_syncpoint_timeline`
+          - wait on the specified kgsl timeline point
+      - `context_id` is the drawctx
+      - `timestamp` is for `KGSL_CONTEXT_USER_GENERATED_TS`
   - `IOCTL_KGSL_GPU_AUX_COMMAND` and `kgsl_ioctl_gpu_aux_command`, for sw cmds
     - `struct kgsl_gpu_aux_command`
   - `IOCTL_KGSL_RECURRING_COMMAND` and `kgsl_ioctl_recurring_command`
