@@ -639,3 +639,26 @@
       - `HwcDisplay::CreateFrameUpdateCommit` collects the args
       - `HwcDisplay::ExecuteAtomicCommit` calls
         `DrmAtomicCommitSink::ExecuteAtomicCommit`
+
+## Chrome Example
+
+- RE renders from bottom to top
+  - wallpaper: full screen, R8G8B8A8, by sysui
+  - launcher: full screen, R8G8B8A8, by launcher
+    - for icons, etc
+    - buffer is mostly transparent 
+  - chrome task: window size, solid color, by wm
+    - for background and effects
+    - shadow effect, border effect, rounded corder
+  - chrome child surface: window size, R8G8B8A8, by chrome
+    - web content and tabs
+  - chrome VRI: window size, R8G8B8A8, by chrome
+    - ui (url bar, not including tabs)
+  - chrome caption: caption size, R8G8B8A8, by sysui
+    - app icon, control buttons, etc.
+    - it overlaps with the chrome window at the top
+  - input method: almost full screen, R8G8B8A8
+    - transparent unless enabled?
+  - status bar: status bar size, R8G8B8A8
+  - task bar: task bar size, R8G8B8A8
+  - sprite: cursor size, B8G8R8A8
