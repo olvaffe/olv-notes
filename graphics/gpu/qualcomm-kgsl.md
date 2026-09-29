@@ -66,24 +66,54 @@
 
 - `kgsl_3d_init` is the module entrypoint
   - `kgsl_core_init` registers `kgsl_fops`
-  - `gmu_core_register` registers `a6xx_gmu_driver`
-  - itself registers `adreno_platform_driver`
-- `adreno_bind` binds the driver to the device
-  - I think a618 uses `adreno_gpu_core_a630v2` and `adreno_a630_gpudev`
-  - `a6xx_gmu_device_probe` is called
-  - `a630_gmu_power_ops` is the power ops
+  - `kgsl_mmu_init` registers `kgsl_mmu_driver` for `qcom,kgsl-smmu-v2`, etc.
+  - `gmu_core_register` registers `gen7_gmu_driver` for `qcom,gen7-gmu`, etc.
+  - itself registers `adreno_platform_driver` for `qcom,kgsl-3d0`, etc.
+- component drivers
+  - `kgsl_mmu_dev_probe` adds `kgsl_mmu_component_ops` and
+    `kgsl_mmu_cb_component_ops` comps
+    - `of_platform_populate` adds subdevs of compat `qcom,smmu-kgsl-cb`
+  - `gen7_gmu_probe_dev` adds `gen7_gmu_component_ops` comp
+  - `adreno_probe`
+    - it adds matches from `adreno_component_match_legacy`
+    - it adds `adreno_ops` master
+- after all components are matched, `adreno_bind`
+  - `adreno_identify_gpu` returns `adreno_gpu_core_gen7_5_0`, etc.
+  - `gpucore->gpudev->probe` is `gen7_gmu_device_probe`
+    - `gen7_probe_common`
+      - `adreno_device_probe`
+        - `adreno_setup_device`
+        - `adreno_setup_speedbin`
+        - `kgsl_bus_init`
+        - `adreno_of_get_power`
+        - `adreno_bind_components` binds component drivers
+          - `kgsl_mmu_bind` calls `kgsl_iommu_bind`
+          - `kgsl_mmu_cb_bind` is nop
+          - `gen7_gmu_bind`
+            - `gen7_gmu_probe`
+            - `gen7_gmu_hfi_probe`
+        - `adreno_irq_setup`
+        - `kgsl_device_platform_probe`
+        - `adreno_init_ubwc`
+        - `kgsl_device_snapshot_probe`
+        - `adreno_debugfs_init`
+        - `adreno_sysfs_init`
+        - `kgsl_pwrscale_init`
+      - it inits `adreno_dev->preempt`
+    - `adreno_dispatcher_init`
 - when `/dev/kgsl-3d0` is opened,
   - `kgsl_open` calls `kgsl_open_device` which calls `adreno_first_open` in
     `adreno_functable::first_open`
-  - `adreno_first_open` calls `a6xx_gmu_first_open` in
-    `a630_gmu_power_ops::first_open`
-    - this is where `a630_sqe.fw` and `a630_gmu.bin` firmwares are loaded
-    - `a6xx_gmu_first_boot` starts gmu and hfi
-    - `a6xx_gpu_boot` starts gpu
-      - `a6xx_start`
-        - what is ROQ?
-      - `a6xx_rb_start`
-        - this sets up ringbuffer and sends `CP_ME_INIT`
+  - `adreno_first_open` calls `gen7_gmu_first_open` in
+    `gen7_gmu_power_ops::first_open`
+    - `gen7_ringbuffer_init`
+    - `gen7_microcode_read` loads `gen70500_sqe.fw`
+    - `gen7_init`
+    - `gen7_gmu_init` loads `gen70500_gmu.bin`
+    - `gen7_gmu_first_boot` boots gmu
+    - `gen7_gpu_boot`
+      - `gen7_rb_start`
+        - `adreno_zap_shader_load` loads `gen70500_zap.mbn`
 
 ## ioctls
 
@@ -263,6 +293,28 @@
     - `struct kgsl_preemption_counters_query`
   - `IOCTL_KGSL_READ_CALIBRATED_TIMESTAMPS` and `adreno_ioctl_read_calibrated_ts`
     - `struct kgsl_read_calibrated_timestamps`
+
+## Secure Context and Buffer
+
+- init
+  - `kgsl_mmu_bind -> kgsl_iommu_bind`
+    - `iommu_probe_secure_context` sets up `gfx3d_secure`
+  - more
+- prop queries
+  - `KGSL_PROP_SECURE_CTXT_SUPPORT` requires `ADRENO_CONTENT_PROTECTION` and
+    `CONFIG_QCOM_SECURE_BUFFER`
+  - `KGSL_PROP_SECURE_BUFFER_ALIGNMENT` returns `PAGE_SIZE`
+  - `KGSL_PROP_GPU_SECURE_VA_SIZE` returns fixed secure iommu va size
+  - `KGSL_PROP_GPU_SECURE_VA_INUSE` returns current total secure alloc size
+- `KGSL_CONTEXT_SECURE`
+  - when a submit is to a secure drawctx, `F_SECURE` is set
+    - it adds `CP_SET_SECURE_MODE` to rb for the ib
+- `KGSL_MEMFLAGS_SECURE`
+  - `kgsl_allocate_secure` instead of `kgsl_alloc_pages`
+    - `kgsl_alloc_page` calls `kgsl_alloc_secure` to alloc from buddy directly
+    - `kgsl_lock_sgt` calls downstream-only `hyp_assign_table` to transfer
+      from `VMID_HLOS` to `VMID_CP_PIXEL`
+  - `kgsl_iommu_secure_map` instead of `kgsl_iommu_default_map`
 
 ## Snapshots
 
