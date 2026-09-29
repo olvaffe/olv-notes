@@ -157,3 +157,31 @@
     - extract the firmware signing key to verify `FW_MAIN`
   - `FW_MAIN` subsection contains
     - romstage, ramstage, and payload
+
+## X1P-42-100
+
+- secure world
+  - sEL3
+    - boot time
+      - on-die PBL (primary boot loader, aka bootrom) loads coreboot
+      - romstage calls into qclib for ddr training, pmic and smem init, etc.
+      - ramstage inits pcie, loads BL31 (tfa), BL32 (qtee), and BL33 (depthcharge)
+    - runtime: psci
+  - sEL2: unused
+  - sEL1: qtee / tz
+    - soc access control and stage-2 smmu
+    - peripheral image loader (PIL) and PAS for signed fw loading
+    - hw crypto
+    - scm, smci, ffa, etc.
+  - sEL0: tas
+- non-secure world
+  - EL2
+    - boot time: depthcharge
+    - runtime: linux pkvm (nvhe mode) or gunyah uefi stack
+  - EL1: VM kernels
+    - VM: android linux kernel
+    - pVM: trusty, face auth, etc.
+  - EL0: VM userspaces
+- both linux pkvm and qtee manage stage-2 smmu
+  - qtee partitions stage-2 smmu into two, one for itself and one for pkvm
+  - pkvm uses stage-2 to isolate pVMs from VMs
