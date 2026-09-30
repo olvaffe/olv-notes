@@ -88,7 +88,7 @@
 
 ## Unit File State
 
-- each unit has a `UnitFileState`
+- each unit file has a `UnitFileState`
   - `UNIT_FILE_ENABLED`: permanently enabled via `/etc/systemd`
   - `UNIT_FILE_ENABLED_RUNTIME`: temporarily enabled via `/run/systemd`
   - `UNIT_FILE_LINKED`: permanently available via `/etc/systemd`
@@ -119,6 +119,30 @@
     - if has `[Install]`, DISABLED
     - if mentioned by `Also=`, INDIRECT
     - else, STATIC
+
+## Unit Load/Active/Type-Specific State
+
+- each unit loaded into memory has a `UnitLoadState`
+  - `UNIT_STUB`: initial state
+  - `UNIT_LOADED`: loaded without errors
+  - `UNIT_NOT_FOUND`: missing unit file
+  - `UNIT_BAD_SETTING`: invalid field values in the unit file
+  - `UNIT_ERROR`: invalid unit file
+  - `UNIT_MERGED`: alias and merged to real unit
+  - `UNIT_MASKED`: masked unit file
+- it also has a `UnitActiveState`
+  - `UNIT_ACTIVE`: started/bound/plugged/mounted/etc
+  - `UNIT_RELOADING`: unit and is reloading its config
+  - `UNIT_INACTIVE`: inactive and did not fail
+  - `UNIT_FAILED`: inactive and failed
+  - `UNIT_ACTIVATING`: transition from inactive to active
+  - `UNIT_DEACTIVATING`: transition from active to inactive
+  - `UNIT_MAINTENANCE`: inactive and being maintained
+  - `UNIT_REFRESHING`: active and being refreshed
+- it also has a type-specific state
+  - `ServiceState` for `.service`
+  - `SocketState` for `.socket`
+  - one for each type
 
 ## Old SysVinit (`/sbin/init`)
 
