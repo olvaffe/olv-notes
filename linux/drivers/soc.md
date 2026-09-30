@@ -66,6 +66,48 @@
   - `CONFIG_UCSI_PMIC_GLINK` is the driver for `PMIC_GLINK_CLIENT_UCSI`
     - `pmic_glink_ucsi_probe` uses the soc glink api to talk to adsp fw
       - this is how we get type-c support on x1e
+- `CONFIG_QCOM_SMEM`
+  - fw typically reserves 2MB memory for `qcom,smem`
+  - fw stores only partition table in this carveout
+    - first 4KB: `struct smem_header`
+      - `versions[SMEM_MASTER_SBL_VERSION_INDEX]` is the SBL (secondary
+        bootloader) version, which is typically `SMEM_GLOBAL_PART_VERSION`
+    - last 4KB: `struct smem_ptable + struct smem_ptable_entry array + struct smem_info`
+      - `smem_ptable` is the partition table
+        - there is always a global partition
+      - `smem_ptable_entry` describes a partition entry
+        - each partition is shared by two "hosts"
+        - we only care about partitions where one of the hosts is
+          `SMEM_HOST_APPS`, ap processor
+      - `smem_info`
+  - `qcom_smem_get(QCOM_SMEM_HOST_ANY, SBL_MINIDUMP_SMEM_ID)`
+    - it calls `qcom_smem_get_private` with the global partition
+    - it returns the pointer to the item, which is `minidump_global_toc` in
+      this case
+- `CONFIG_QCOM_MINIDUMP`
+  - <https://lore.kernel.org/lkml/20260708-meminspect-v3-v3-0-7aa5a0a74d5c@oss.qualcomm.com/>
+  - `qcom_smem_get` returns the pointer to `minidump_global_toc` on dram
+    - `status` is initialized to 1 by sbl
+    - `md_version` is 1, which is minidump version
+    - `enabled`
+  - `minidump_subsystem` array follows `minidump_global_toc`
+    - there are several subsystems
+      - `MINIDUMP_SUBSYSTEM_APSS` is for ap processor
+      - others are for co-processors
+    - `qcom_md_table_init` inits `MINIDUMP_SUBSYSTEM_APSS` subsys
+      - `status` is set to 1
+      - `enabled` is set to `MINIDUMP_SS_ENABLED`
+      - `regions_baseptr` is pa of `struct minidump_region` array
+        - there can be up to `MAX_NUM_REGIONS` (251) regions
+      - `region_count` is initially 0
+  - subsystem `struct minidump_region` array
+    - `name` is the name of the region, such as `GPU_SNAPSHOT`
+    - `valid` is `MINIDUMP_REGION_VALID`
+    - `address` is the pa of the region in dram
+    - `size` is the size of the region
+  - on warm reboot, xbl (extended bootloader) saves the minidump regions to
+    persistent storage
+    - the persistent storage typically has a `rawdump` partition
 
 ## Rockchip
 
