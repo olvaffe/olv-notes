@@ -892,6 +892,14 @@
       - it's sometimes called ORB?
     - OEMs make their designs based on soc reference design or ODM reference
       design
+- Laptop NPI (new product introduction)
+  - main phases: proto, evt, dvt, pvt, mp
+  - within each phase, there are 2 stages: smt and fatp
+    - smt prints the main/daughter boards and mounts components
+    - fatp stands for final assembly, testing, and packaging
+  - within each stage, there are 3 steps: dry run, mini build, and main build
+    - they differ in quantities, often with a mandatory pause between
+      mini/main builds for verification
 
 ## SBCs
 
