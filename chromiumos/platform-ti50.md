@@ -100,6 +100,33 @@
 - ti50 on nuvotitan
   - nuvotitan is the successor to titan D2
 
+## Developer Mode
+
+- developer mode ultimately maps to a bit in Ti50 TPM NVRAM
+- if not already in developer mode, ccd open is rejected before the presence test
+
+## CCD
+
+- <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_gsc.md>
+- enter dev mode first
+- on DUT or host with working `gsctool`
+  - `gsctool -a -o`
+  - press power key occasionally for 5 minutes
+  - `minicom -D /dev/ttyUSB0`
+    - we can also do `ccd open` here instead of `gsctool -o`
+  - `ccd reset factory`
+  - `ccd testlab enable`
+  - press power key several times
+- to confirm
+  - `reboot`
+  - `ccd testlab` should print `CCD test lab mode enabled`
+  - `ccd` should have `State: Opened`
+    - if not, `ccd open` to open it
+    - testlab allows it to be opened anytime
+  - `wp` should have `force disabled`
+- if the ap firmware says "something went wrong", try entering developer mode
+  again
+
 ## Flash Firmwares
 
 - NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
@@ -197,27 +224,6 @@
   - ec and ap
     - `chromeos-firmwareupdate -m factory`
 
-## CCD
-
-- <https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_gsc.md>
-- on DUT or host with working `gsctool`
-  - `gsctool -a -o`
-  - press power key occasionally for 5 minutes
-  - `minicom -D /dev/ttyUSB0`
-    - we can also do `ccd open` here instead of `gsctool -o`
-  - `ccd reset factory`
-  - `ccd testlab enable`
-  - press power key several times
-- to confirm
-  - `reboot`
-  - `ccd testlab` should print `CCD test lab mode enabled`
-  - `ccd` should have `State: Opened`
-    - if not, `ccd open` to open it
-    - testlab allows it to be opened anytime
-  - `wp` should have `force disabled`
-- if the ap firmware says "something went wrong", try entering developer mode
-  again
-
 ## `gsctool`
 
 - gsctool is a helper tool to update Cr50
@@ -234,11 +240,6 @@
     for DUT
     - prod image is for MP devices
     - pre-pvt image is for pre-pvt devices and developers
-
-## Developer Mode
-
-- developer mode ultimately maps to a bit in Ti50 TPM NVRAM
-- if not already in developer mode, ccd open is rejected before the presence test
 
 ## RBOX
 
