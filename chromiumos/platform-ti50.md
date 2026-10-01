@@ -1,5 +1,105 @@
 # Chrome OS Ti50
 
+## GSC (Google Security Chip)
+
+- generations
+  - Haven
+    - H1: chromebook
+    - Titan: cloud
+    - Titan M: pixel and security key
+  - Dauntless
+    - D2: chromebook
+    - Titan: cloud
+    - Titan M2: pixel
+  - Earl Grey (of OpenTitan)
+    - Nuvotitan: chromebook
+    - Titan M3: pixel
+  - Earl Grey 2 (of OpenTitan)
+- titan
+  - titan is a family of silicon root of trust (secure microcontrollers)
+    developed by google
+  - they are used in different products
+    - datacenter servers
+    - chromebooks
+    - pixels
+    - security keys
+  - opentitan is an open-source design based on titan
+  - tock os is an open-source os with titan and opentitan support
+  - what cros calls gsc is titan
+- titan H1
+  - it is an older soc
+  - <https://2018.osfc.io/uploads/talk/paper/7/gsc_copy.pdf>
+    - ARM SC300 core, 8kB boot ROM, 64kB SRAM, 512kB flash
+    - USB, I2C, SPI, UART, GPIO, etc.
+  - pins
+    - power related
+      - power/refresh/back keys
+      - AC present
+      - battery cutoff
+      - EC reset
+      - AP reset
+    - flash related
+      - WP to AP & EC flashes
+      - SPI to AP & EC flashes
+    - tpm
+      - SPI to AP
+    - debug related
+      - usb-c (for CCD)
+      - EC uart
+      - AP uart
+    - in other words,
+      - GSC can flash its own flash, EC flash, and AP flash
+      - GSC can connect to EC uart and AP uart
+      - devs can access EC using a special usb-c SuzyQ cable
+      - devs can also access EC from AP via TPM
+        - thus devs can update GSC, EC, and AP firmwares on DUT
+- titan D2
+  - more hardened and certified
+  - riscv, higher freq
+  - more ram, more flash
+  - faster io
+- nuvotitan
+  - based on opentitan
+  - pin-to-pin compat with D2
+  - higher freq
+  - more flash
+  - i3c
+
+## GSC Firmwares
+
+- cr50 on h1
+  - cr50 is the older firmware that runs on titan H1
+  - it is a fork of <https://chromium.googlesource.com/chromiumos/platform/ec>
+    for the apps (tpm, ccd, u2f, serial, etc.) and kernel
+    - `cr50_stab` branch
+    - `make BOARD=cr50`
+    - ebuild is `chromeos-base/chromeos-cr50`
+  - H1 has a bootrom and a 512KB flash
+    - bootrom is read-only
+    - the 512KB flash is divided into two (16 KB RO, 228KB RW, 12KB NVMEM)
+      - two copies of Cr50 for A/B update
+    - coming out of reset, bootrom boots to RO first;  RO then boots to RW.
+  - the tpm app exposes a tpm device to the dut
+  - the ccd app exposes a usb device with id `18d1:5014` when connected to the
+    host with servo
+    - the usb device provides many functions
+    - up to 4 serial ports
+      - 0 for cr50 serial
+      - 1 for ap serial
+      - 2 for ec serial
+      - 3 for fpmcu serial
+    - `raiden_debug_spi` flash programmer
+      - because gsc connects to both ec and ap flashes, `target={ec,ap}`
+        should be specified as well
+      - use `gsctool` to flash gsc firmware instead
+- ti50 on d2
+  - ti50 is the newer firmware that runs on titan D2
+  - it consists of a fork of cros ec for the apps and a fork of tock os for
+    the kernel
+  - the ccd app exposes a usb device with id `18d1:504a`
+- ti50 on nuvotitan
+  - nuvotitan is the successor to titan D2
+
 ## Flash Firmwares
 
 - NEVER FLASH ANY FIRMWARE WITHOUT HAVING SUZYQ TO UNBRICK
@@ -96,83 +196,6 @@
     - `gsctool -a <img>` to flash
   - ec and ap
     - `chromeos-firmwareupdate -m factory`
-
-## GSC (Google Security Chip)
-
-- latest release
-  - <https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay/+/main/chromeos-base/chromeos-ti50/chromeos-ti50-0.0.1.ebuild>
-    - e.g., `gs://chromeos-localmirror/distfiles/ti50.r0.0.58.w0.23.242.tar.xz`
-  - <https://chromium.googlesource.com/chromiumos/platform/ec/+/gsc_utils/docs/ti50_firmware_releases.md>
-- titan
-  - titan is a family of silicon root of trust (secure microcontrollers)
-    developed by google
-  - they are used in different products
-    - datacenter servers
-    - chromebooks
-    - pixels
-    - security keys
-  - opentitan is an open-source design based on titan
-  - tock os is an open-source os with titan and opentitan support
-  - what cros calls gsc is titan
-- titan H1
-  - it is an older soc
-  - <https://2018.osfc.io/uploads/talk/paper/7/gsc_copy.pdf>
-    - ARM SC300 core, 8kB boot ROM, 64kB SRAM, 512kB flash
-    - USB, I2C, SPI, UART, GPIO, etc.
-  - pins
-    - power related
-      - power/refresh/back keys
-      - AC present
-      - battery cutoff
-      - EC reset
-      - AP reset
-    - flash related
-      - WP to AP & EC flashes
-      - SPI to AP & EC flashes
-    - tpm
-      - SPI to AP
-    - debug related
-      - usb-c (for CCD)
-      - EC uart
-      - AP uart
-    - in other words,
-      - GSC can flash its own flash, EC flash, and AP flash
-      - GSC can connect to EC uart and AP uart
-      - devs can access EC using a special usb-c SuzyQ cable
-      - devs can also access EC from AP via TPM
-        - thus devs can update GSC, EC, and AP firmwares on DUT
-- cr50 on h1
-  - cr50 is the older firmware that runs on titan H1
-  - it is a fork of <https://chromium.googlesource.com/chromiumos/platform/ec>
-    for the apps (tpm, ccd, u2f, serial, etc.) and kernel
-    - `cr50_stab` branch
-    - `make BOARD=cr50`
-    - ebuild is `chromeos-base/chromeos-cr50`
-  - H1 has a bootrom and a 512KB flash
-    - bootrom is read-only
-    - the 512KB flash is divided into two (16 KB RO, 228KB RW, 12KB NVMEM)
-      - two copies of Cr50 for A/B update
-    - coming out of reset, bootrom boots to RO first;  RO then boots to RW.
-  - the tpm app exposes a tpm device to the dut
-  - the ccd app exposes a usb device with id `18d1:5014` when connected to the
-    host with servo
-    - the usb device provides many functions
-    - up to 4 serial ports
-      - 0 for cr50 serial
-      - 1 for ap serial
-      - 2 for ec serial
-      - 3 for fpmcu serial
-    - `raiden_debug_spi` flash programmer
-      - because gsc connects to both ec and ap flashes, `target={ec,ap}`
-        should be specified as well
-      - use `gsctool` to flash gsc firmware instead
-- ti50 on d2
-  - ti50 is the newer firmware that runs on titan D2
-  - it consists of a fork of cros ec for the apps and a fork of tock os for
-    the kernel
-  - the ccd app exposes a usb device with id `18d1:504a`
-- ti50 on nuvotitan
-  - nuvotitan is the successor to titan D2
 
 ## CCD
 
