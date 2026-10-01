@@ -67,7 +67,14 @@
 
 ## GSC Firmwares
 
-- cr50 on h1
+- gsc fw is always signed
+  - root of trust is stored in gsc bootrom
+  - gsc bootrom verifies gsc ro
+  - gsc ro verifies gsc rw
+  - on the other hand,
+    - ec ro is not verified but protected by wp
+    - traditionally, ap ro is not verified either but protected by wp
+      - gsc rw may support APROV (ap ro verify) now
   - cr50 is the older firmware that runs on titan H1
   - it is a fork of <https://chromium.googlesource.com/chromiumos/platform/ec>
     for the apps (tpm, ccd, u2f, serial, etc.) and kernel
