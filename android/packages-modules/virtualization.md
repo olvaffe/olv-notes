@@ -1,5 +1,21 @@
 # AVF
 
+## Overview
+
+- <https://android.googlesource.com/platform/packages/modules/Virtualization/+/refs/heads/android17-release/>
+  - `android` is host-side (android) services, apps, and cli
+    - `TerminalApp` is the terminal app for debian guest
+    - `virtmgr` spawns `crosvm`
+      - it talks to `virtualizationservice` for privileged ops
+    - `virtualizationservice` is a privileged service
+    - `vm` is a cli
+  - `build` builds apex, debian img, and microdroid img
+  - `guest` is guest-side pvm fw, services, and cli
+    - `kernel` is prebuilt guest kernels
+    - `linux_vm_manager` runs in debian guest
+    - `microdroid_manager` runs in microdroid guest
+  - `libs` is shared libraries and aidls (mostly for host and microdroid)
+
 ## CLI: `/apex/com.android.virt/bin/vm`
 
 - `vm info`
