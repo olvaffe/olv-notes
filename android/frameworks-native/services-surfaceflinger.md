@@ -222,6 +222,52 @@
         - `DrmAtomicCommitSink::ExecuteAtomicCommit` calls `drmModeAtomicCommit`
       - `HwcDisplay::ApplyCommitChanges` updates present fence and stuff
 
+## Layer Cache
+
+- `Output::present` composites and presents
+  - `Output::writeCompositionState` sends layer states to hwc
+  - `Output::prepareFrame` negotiates with hwc and can demote DEVICE to CLIENT
+  - `Output::finishFrame` performs CLIENT composition
+    - `Output::composeSurfaces` composes with RE
+    - `RenderSurface::queueBuffer` calls `FramebufferSurface::advanceFrame` to
+      send the result to hwc as the client target
+  - `Output::presentFrameAndReleaseLayers` presents to hwc
+- before `Output::writeCompositionState`
+  - `Output::planComposition` calls `Planner::plan`
+    - `Flattener::flattenLayers`
+      - each layer belongs to a `CachedSet`
+        - a `CachedSet` is a vector of one or more consecutive layers
+      - `mergeWithCachedSets`
+        - if all layers in a set are unchanged, their `state.overrideInfo` are
+          updated to use the set
+        - if any layer is updated, the set is broken down such that each layer
+          is in its own set
+      - `buildCachedSets`
+        - create `mNewCachedSet` and try to merge consecutive layers into the
+          set
+- during `Output::writeCompositionState`
+  - if a layer is overriden to use the cache set
+    - if it is the first layer in the set, it uses the set's buffer
+      - `writeOutputIndependentGeometryStateToHWC` forces `alpha` to 1.0
+      - `writeBufferStateToHWC` forces the set's buffer
+      - `writeOutputDependentGeometryStateToHWC` forces display frame, etc.
+    - if it is after the first layer in the set, `skipLayer` is set
+      - `writeOutputIndependentGeometryStateToHWC` forces `alpha` to 0.0
+      - `writeBufferStateToHWC` does not change buffer
+      - `writeOutputDependentGeometryStateToHWC` forces display frame, etc.
+  - iow, hwc still sees all layers except some layers' alpha and buffer are
+    overridden
+- during `Output::finishFrame`
+  - `Output::generateClientCompositionRequests`
+    - if a layer is overridden to use the cache set,
+      - if first layer in the set, composite or skip depending on CLIENT or
+        DEVICE
+      - if after the frist layer, always skip
+- after `Output::presentFrameAndReleaseLayers`
+  - `Output::renderCachedSets` calls `Planner::renderCachedSets`
+    - `Flattener::renderCachedSets` calls `CachedSet::render` to render
+      `mNewCachedSet` using RE
+
 ## Special Effects
 
 - `LayerSnapshotBuilder::updateSnapshot` sets `forceClientComposition` when
