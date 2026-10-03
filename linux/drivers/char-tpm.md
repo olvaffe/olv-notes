@@ -61,6 +61,7 @@
 - a seed generates a transient key deterministically
   - a seed is much smaller than a key to store in nvmem
   - EPS generates EK, endorcement key
+    - there are typically RSA EK and ECC EK, both generated deterministically
   - PPS generates PPK, platform primary key
   - SPS generates SRK, storage root key
 - chain of trust
@@ -70,6 +71,34 @@
     - generates a cert for EK, which is stored in nvmem ro and never changes
   - by trusting cert, we trust EK and the tpm chip as a whole
     - that is, the tpm chip is authentic, not forged
+- to create the endorsement/platform/owner/null keys,
+  - `tpm2 createprimary -C <hierarchy> -o prim.pub -c prim.ctx`
+    - `hierarchy` is `e`/`p`/`o`/`n`
+  - it generates the key pair deterministically in tpm ram, saves the pubkey
+    to `prim.pub`, saves the encrypted context (including the privkey) to
+    `prim.ctx`, and flushes the key pair from tpm ram
+    - tpm ram is very small
+    - the context must be loaded into tpm ram everytime before any operation
+- to create a child object,
+  - `tpm2 create -C prim.ctx -u key.pub -r key.priv -c key.ctx` creates a key
+  - it generates the key pair with trng in tpm ram, saves the pubkey to
+    `key.pub`, saves the privkey encrypted by `prim.ctx` to `key.priv`, saves
+    the encrypted context (including the privkey) to `key.ctx`, and flushes
+    the key pair from tpm ram
+    - primary key pairs are generated deterministically; the privkeys are not
+      saved
+    - non-primary key pairs are generated using trng; the privkeys are saved
+      - they are encrypted by the primary keys
+    - the context must be loaded into tpm ram everytime before any operation
+- to use a child object,
+  - to sign a message with the key,
+    - `tpm2 sign -c key.ctx -o msg.sig msg.dat` signs the message
+    - `tpm2 verifysignature -c key.ctx -s msg.sig -m msg.dat` verifies the
+      signature
+- to seal/unseal user data,
+  - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx` creates a sealing object
+    - this saves a small amount of user data to tpm
+  - to read back, `tpm2 unseal -c blob.ctx`
 - `tpm2 getcap handles-transient` lists object handles in volatile memory
 - `tpm2 getcap handles-persistent` lists object handles in nvmem
   - 0x810000XX: storage primary keys
@@ -92,28 +121,6 @@
   - 0x01C1XXXX: defined by component oem
   - 0x01C2XXXX: defined by tpm oem
   - 0x01C3XXXX: defined by platform oem
-- to create the endorsement/platform/owner/null keys,
-  - `tpm2 createprimary -C <hierarchy> -o prim.pub -c prim.ctx`
-    - `hierarchy` is `e`/`p`/`o`/`n`
-  - in more general tpm terms, this creates a tpm object on tpm
-    - the object is a key which has a private part and a public part
-    - `-o` saves the public part to filesystem
-    - `-c` saves the "handle" to filesystem
-      - the handle is used to refer to the private part
-- to create a child object,
-  - `tpm2 create -C prim.ctx -u key.pub -r key.priv -c key.ctx` creates a key
-    - this time, both the public and private parts are saved to filesystem
-    - the private part is encrypted by the parent object
-    - the context file appears to be a serialization of the loaded key
-      - `tpm2 load -C prim.ctx -u key.pub -r key.priv -c key.ctx` loads the
-        key and serializes it to the context file again
-    - to sign a message with the key,
-      - `tpm2 sign -c key.ctx -o msg.sig msg.dat` signs the message
-      - `tpm2 verifysignature -c key.ctx -s msg.sig -m msg.dat` verifies the
-        signature
-  - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx` creates a sealing object
-    - this saves a small amount of user data to tpm
-    - to read back, `tpm2 unseal -c blob.ctx`
 
 ## Platform Configuration Registers (PCRs)
 
