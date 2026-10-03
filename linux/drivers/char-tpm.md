@@ -107,55 +107,67 @@
   - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx` creates a sealing object
     - this saves a small amount of user data to tpm
     - to read back, `tpm2 unseal -c blob.ctx`
-- PCRs
-  - Platform Configuration Registers
-  - there are 24 PCRs
-    - they are registers that can be read or extended
-      - extension means `pcr-x = hash(pcr-x + new-data)`
-    - there are usually 2 banks, for sha1 and sha256
-    - `tpm2 pcrread` dumps the current values
-  - usage
-    - we can seal the key to disk encryption to tpm
-    - tpm would unseal it when PCR values match pre-calculated values
-    - this makes sure the disk is unlocked only when all code and data used
-      before unlock are not tampered
-  - <https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/>
+
+## Platform Configuration Registers (PCRs)
+
+- there are 24 PCRs
+  - they are registers that can be read or extended
+    - extension means `pcr-x = hash(pcr-x + new-data)`
+  - there are usually 2 banks, for sha1 and sha256
+  - `tpm2 pcrread` dumps the current values
+- usage
+  - we can seal the key to disk encryption to tpm
+  - tpm would unseal it when PCR values match pre-calculated values
+  - this makes sure the disk is unlocked only when all code and data used
+    before unlock are not tampered
+- <https://trustedcomputinggroup.org/resource/pc-client-specific-platform-firmware-profile-specification/>
+  - definitions
     - pcr 0-7 is reserved for firmware (uefi)
     - pcr 8-15 is reserved for os
     - pcr 16 is for debug
     - pcr 23 is for app support
-  - pcr-0 is for SRTM, BIOS, Host Platform Extensions, Embedded Option ROMs
-    and PI Drivers
-    - e.g., the firmware measures itself to pcr-0; the value may change after
-      firmware update
-  - pcr-1 is for Host Platform Configuration
-    - e.g., the firmware measures its config to pcr-1; the value may change
-      after config change
-  - pcr-2 is for 2 UEFI driver and application Code
-    - e.g., the firwware measures uefi drivers and apps to pcr-2
-  - pcr-3 is for 3 UEFI driver and application Configuration and Data
-    - e.g., the firwware measures uefi driver and app configs to pcr-3
-  - pcr-4 is for UEFI Boot Manager Code (usually the MBR) and Boot Attempts
-    - e.g., the firwware measures the bootloader to pcr-4; the vlaue may
-      change after bootloader update
-  - pcr-5 is for Boot Manager Code Configuration and Data (for use by the Boot
-    Manager Code) and GPT/Partition Table
-    - e.g., the firwware measures the bootloader config and the partition
-      table to pcr-5; the vlaue may change after partition table change
-  - pcr-6 is for Host Platform Manufacturer Specific
-    - it is reserved for motherboard manufacturer
-  - pcr-7 is for Secure Boot Policy
-    - e.g., the firwware measures secure boot related variables (SecureBoot,
-      PK, KEK, DB, DBX, etc.) to pcr-7
+  - modern recommentations
+    - do not use pcr 0-6 to allow bios/bootloader/kernel update or config
+      change
+    - prefer pcr 11 over pcr 7
+  - `TPM2_PCR_PLATFORM_CODE` (0) measures uefi code, etc.
+    - it changes after bios update
+  - `TPM2_PCR_PLATFORM_CONFIG` (1) measures uefi config, etc.
+    - it changes after bios config change (e.g., boot order)
+  - `TPM2_PCR_EXTERNAL_CODE` (2) measures option roms, etc.
+    - it changes after plugging a pcie gpu, nic, scsi hba, etc.
+  - `TPM2_PCR_EXTERNAL_CONFIG` (3) measures option rom configs, etc.
+    - it changes after nic pxe config or scsi hba raid config change, etc.
+  - `TPM2_PCR_BOOT_LOADER_CODE` (4) measures pe binaries loaded by `LoadImage`
+    - it changes after bootloader, kernel, initrd updates
+  - `TPM2_PCR_BOOT_LOADER_CONFIG` (5) measures disk/bootloader/kernel/initrd
+    - it changes after partition table or bootloader config change, etc.
+  - `TPM2_PCR_HOST_PLATFORM` (6) is reserved for motherboard manufacturer
+    - it is rarely used nor changes
+  - `TPM2_PCR_SECURE_BOOT_POLICY` (7) measures Secure Boot Policy
+    - it changes with secure boot related uefi variables: SecureBoot, PK, KEK,
+      DB, DBX, etc.
+  - `TPM2_PCR_DEBUG` (16) is reserved for debug/test
+  - `TPM2_PCR_APPLICATION_SUPPORT` (23) is reserved for userspace apps
 - <https://uapi-group.org/specifications/specs/linux_tpm_pcr_registry/>
-  - pcr-8 is used by grub for cmdline
-  - pcr-9 is used by grub for all files read
-  - pcr-10 is used by kernel or ima
-  - pcr-11 is used by systemd-stub for uki and by systemd-pcrphase
-  - pcr-12
-  - pcr-13
-  - pcr-14
-  - pcr-15
+  - pcr-8 measures grub config
+  - `TPM2_PCR_KERNEL_INITRD` (9) measures initrd/cmdline and nvpcr
+    - kernel itself measures initrd/cmdline
+    - systemd measures nvpcr
+      - systemd uses nvram as pseudo PCRs
+      - the measurement ensures no tampering
+  - `TPM2_PCR_IMA` (10) measures userspace binaries and configs
+    - kernel ima subsystem measures userspace at runtime
+  - `TPM2_PCR_KERNEL_BOOT` (11) measures uki and boot pharses
+    - `systemd-stub` measures uki pe sections in canonical order
+    - `systemd-pcrextend` measures boot phases
+  - `TPM2_PCR_KERNEL_CONFIG` (12) measures dynamic configs of uki
+    - it changes with cmdline override, etc.
+  - `TPM2_PCR_SYSEXTS` (13) measures sysext disk images
+  - `TPM2_PCR_SHIM_POLICY` (14) is reserved for shim
+    - shim measures mok and sbat
+  - `TPM2_PCR_SYSTEM_IDENTITY` (15) measures luks key/uuid, rootfs partition,
+    and machine id
 - policies
   - `TPM2_PolicyPCR` creates a policy based on fixed PCR values, to unseal
     secret only when PCRs have the fixed values
