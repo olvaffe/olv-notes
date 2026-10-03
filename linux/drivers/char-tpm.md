@@ -41,6 +41,35 @@
   - volatile RAM for temporary stoage
   - crypto engines for accelerated crypto ops
   - io to communicate with the host
+- each TPM has 4 secret seeds
+  - EPS, endorsement primary seed
+    - it is controlled by tpm manufacturer
+      - tpm manufacturer runs `TPM2_ChangeEPS` once to generate EPS in the
+        chip factory
+      - it never changes on consumer deivces
+  - PPS, platform primary seed
+    - it is controlled by motherboard manufacturer
+      - mb manufacturer runs `TPM2_ChangePPS` once to generate PPS in the mb
+        factory
+      - it almost never changes unless mb goes through RMA or the like
+  - SPS, storage primary seed, aka owner primary seed
+    - it is controlled by device owner
+      - uefi runs `TPM_Clear` to generate SPS
+      - bios provides a "clear tpm" function to re-generate
+  - null seed
+    - it is re-generated every reboot
+- a seed generates a transient key deterministically
+  - a seed is much smaller than a key to store in nvmem
+  - EPS generates EK, endorcement key
+  - PPS generates PPK, platform primary key
+  - SPS generates SRK, storage root key
+- chain of trust
+  - in the chip factory, tpm manufacturer
+    - generates EPS, which never changes
+    - generates EK, which is transient
+    - generates a cert for EK, which is stored in nvmem ro and never changes
+  - by trusting cert, we trust EK and the tpm chip as a whole
+    - that is, the tpm chip is authentic, not forged
 - `tpm2 getcap handles-transient` lists object handles in volatile memory
 - `tpm2 getcap handles-persistent` lists object handles in nvmem
   - 0x810000XX: storage primary keys
@@ -63,28 +92,6 @@
   - 0x01C1XXXX: defined by component oem
   - 0x01C2XXXX: defined by tpm oem
   - 0x01C3XXXX: defined by platform oem
-- each TPM has 3 secret seeds that are burned in nvmem ro region
-  - the first seed is used for the endorsement hierarchy
-    - it is used with a fixed template (algorithm, etc.) to deterministically
-      generate the endorsement key (EK)
-  - the second seed is used for the platform hierarchy
-    - it is used to generate the platform key
-    - it is deterministically as long as the template is unchanged
-  - the third seed is used for the owner hierarchy
-    - it is used to generate the owner key
-    - it is deterministically as long as the template is unchanged
-  - seeds are cheaper to store than keys
-  - there is usually an endorsement cert stored in NVRAM
-    - the cert is signed by manufacturer and is used to verify the tpm
-      itself
-- there is another secret seed that is randomly generated on tpm reset
-  - this is used for the null hierarchy
-  - it is non-deterministically across resets
-- chain of trust
-  - if there is an endorsement cert, signed by the manufacturer which in turn
-    signed by a CA that we can trust, we can trust EK
-    - otherwse, we have to trust EK
-  - by trusting EK, we trust the TPM chip as a whole
 - to create the endorsement/platform/owner/null keys,
   - `tpm2 createprimary -C <hierarchy> -o prim.pub -c prim.ctx`
     - `hierarchy` is `e`/`p`/`o`/`n`
