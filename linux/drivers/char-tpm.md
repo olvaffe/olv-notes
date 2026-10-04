@@ -74,22 +74,30 @@
 - to create the endorsement/platform/owner/null keys,
   - `tpm2 createprimary -C <hierarchy> -o prim.pub -c prim.ctx`
     - `hierarchy` is `e`/`p`/`o`/`n`
-  - it generates the key pair deterministically in tpm ram, saves the pubkey
-    to `prim.pub`, saves the encrypted context (including the privkey) to
-    `prim.ctx`, and flushes the key pair from tpm ram
-    - tpm ram is very small
-    - the context must be loaded into tpm ram everytime before any operation
+  - internally,
+    - `TPM2_CreatePrimary` generates the key pair deterministically in tpm ram
+      slot and returns the pubkey which is saved to `prim.pub`
+    - `TPM2_ContextSave` encrypts and serializes the tpm ram slot which is
+      saved to `prim.ctx`
+    - `TPM2_FlushContext` frees the tpm ram slot
+  - tpm ram is very small
+  - the context must be loaded into tpm ram slot every time before use
 - to create a child object,
   - `tpm2 create -C prim.ctx -u key.pub -r key.priv -c key.ctx` creates a key
-  - it generates the key pair with trng in tpm ram, saves the pubkey to
-    `key.pub`, saves the privkey encrypted by `prim.ctx` to `key.priv`, saves
-    the encrypted context (including the privkey) to `key.ctx`, and flushes
-    the key pair from tpm ram
-    - primary key pairs are generated deterministically; the privkeys are not
-      saved
-    - non-primary key pairs are generated using trng; the privkeys are saved
-      - they are encrypted by the primary keys
-    - the context must be loaded into tpm ram everytime before any operation
+  - internally,
+    - `TPM2_ContextLoad` loads and decrypts `prim.ctx` to the tpm ram slot
+    - `TPM2_Create` generates the key pair with trng in antoher tpm ram slot,
+      returns the key pair which is saved to `key.pub` and `key.priv`, and
+      flushes the tpm ram slot immediately
+      - primary key pair is generated deterministically; the privkey does not
+        leave tpm
+      - non-primary key pair is generated using trng; the privkey is encrypted
+        by the primary key and saved to disk
+    - `TPM2_Load` loads and decrypts the key pair to another tpm ram slot
+    - `TPM2_ContextSave` encrypts and serializes the tpm ram slot which is
+      saved to `key.ctx`
+    - `TPM2_FlushContext` frees both tpm ram slots
+  - the context must be loaded into tpm ram slot every time before use
 - to use a child object,
   - to sign a message with the key,
     - `tpm2 sign -c key.ctx -o msg.sig msg.dat` signs the message
@@ -97,8 +105,16 @@
       signature
 - to seal/unseal user data,
   - `echo test | tpm2 create -C prim.ctx -i - -c blob.ctx` creates a sealing object
-    - this saves a small amount of user data to tpm
+    - internall, this is similar to `tpm2 create` except
+      - `TPM2_Create` generates public and private parts, where the private
+        part is user data encrypted by the primary key
+        - the two parts are not saved to disk because `-u` and `-r` are not
+          specified
   - to read back, `tpm2 unseal -c blob.ctx`
+    - internally,
+      - `TPM2_ContextLoad` loads and decrypts `blob.ctx` to tpm ram slot
+      - `TPM2_Unseal` returns the user data
+      - `TPM2_FlushContext` frees the tpm ram slot
 - `tpm2 getcap handles-transient` lists object handles in volatile memory
 - `tpm2 getcap handles-persistent` lists object handles in nvmem
   - 0x810000XX: storage primary keys
