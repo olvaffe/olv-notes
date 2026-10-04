@@ -198,6 +198,15 @@
     - shim measures mok and sbat
   - `TPM2_PCR_SYSTEM_IDENTITY` (15) measures luks key/uuid, rootfs partition,
     and machine id
+- how to unseal luks key?
+  - extract `key.pub` and `key.priv` from luks key slot
+  - `tpm2 load -C prim.ctx -u key.pub -r key.priv -c key.ctx` loads the sealed data
+  - `tpm2 startauthsession --policy-session -S session.ctx` starts a policy session
+  - `tpm2 policypcr -S session.ctx -l sha256:7` extends session by current pcr 7 val
+  - `tpm2 unseal -c key.ctx -p session:session.ctx` unseals data only if the
+    pre-calculated digest stored in the sealed data matches the session digest
+  - `tpm2 flushcontext session.ctx` frees session from tpm ram slot
+  - `tpm2 flushcontext key.ctx` frees sealed data from tpm ram slot
 - policies
   - `TPM2_PolicyPCR` creates a policy based on fixed PCR values, to unseal
     secret only when PCRs have the fixed values
