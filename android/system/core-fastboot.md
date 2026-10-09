@@ -66,6 +66,13 @@
 
 ## Commands
 
+- `fastboot devices` enumerates devices
+  - `list_devices_callback` enumerates usb fastboot devices
+    - usb class 0xff (vendor specific), subclass 0x42 (adb/fastboot), protocol
+      0x03 (fastboot)
+    - `is_h2h_device` rejects h2h device
+  - `NetworkDeviceConnected` enumerates connected remote devices
+    - `~/.fastboot/devices` tracks connected remote devices
 - `fastboot flash` sends `flash:<part>`
 - `fastboot getvar foo` sends `getvar:foo`
   - depthcharge has
