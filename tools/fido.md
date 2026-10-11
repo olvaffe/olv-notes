@@ -31,6 +31,15 @@
   - the browser conforms to WebAuthn Client
   - the authenticator conforms to CTAP1/UAF or CTAP2
 
+## Open Source
+
+- <https://github.com/lowrisc/opentitan>
+  - root of trust hw designs
+  - early grey is for discrete rot
+  - darjeeling is for integrated rot
+- <https://github.com/google/opensk>
+  - fido2 sw impl
+
 ## Command Line
 
 - `fido2-token -L [<dev>]` lists various stuff
