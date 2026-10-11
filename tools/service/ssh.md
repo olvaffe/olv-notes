@@ -120,6 +120,22 @@
   - the privkey is optionally encrypted
   - it also generates the pubkey from the privkey
     - `ssh-keygen -y` re-generates the pubkey from the privkey
+- `ssh-keygen -t ed25519-sk` generates a key handle on disk
+  - many sks only support weaker `-t ecdsa-sk`
+  - this appears to generate a key on disk, except it also requires the fido
+    sk to work
+    - the privkey file on disk only contains a handle and a template
+    - both are sent to the fido sk to re-create the privkey on the fly
+    - the handle refers to the master seed on the sk, which never leaves sk
+    - i guess different privkey files use the same handle but different
+      templates, which allows infinite privkeys
+  - `-O resident` saves the privkey in the sk
+    - the privkey file on disk only contains a handle, referring to the
+      privkey on sk
+    - the privkey on sk becomes portable and can be used on different machines
+      - `ssh-keygen -K` re-creates the on-disk files on each machine
+        - a pin is required to protect against stolen sk
+    - there is a limit on number of resident privkeys on sk
 - `ssh-agent` caches (decrypted) keys in memory
   - it listens on `SSH_AUTH_SOCK` for connections
 - `ssh-add` manages `ssh-agent`
