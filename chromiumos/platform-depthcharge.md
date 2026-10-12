@@ -229,6 +229,8 @@
     - disable the checks that the aux fws match those bundled with ap fw
   - `VB2_GBB_FLAG_FORCE_UNLOCK_FASTBOOT` (bit 13): force android fastboot support
     - disable both dev mode check and the oem lock check
+  - `VB2_GBB_FLAG_FORCE_MANUAL_RECOVERY` (bit 14): force into recovery on broken boot
+    - without the flag, a broken boot shows `ChromeOS is missing or damaged` instead
   - `VB2_GBB_FLAG_BYPASS_EC_RW_UPDATE` (bit 18): do not force ec rw update
     - in regular boot,
       - ec boots to ec ro
