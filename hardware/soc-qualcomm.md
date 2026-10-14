@@ -459,6 +459,14 @@
 - uefi
   - the bios is flashed to spi nor
   - the uefi impl seems to create a 70MB `Persisted_Capsules.bin` in esp
+- <https://github.com/linux-msm/qdl>
+  - prefer `qdl` over `PCAT+QUTS+QUD` when possible
+- <https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/main/zephyr/program/calypso/>
+  - `apshutdown`
+  - `gpioset gpio_forced_boot_r 0`
+  - `powerbtn`
+  - replace servo by a direct usb-c-to-c cable
+  - lsusb should show `Qualcomm, Inc. Gobi Wireless Modem (QDL mode)`
 
 ## Qualcomm Modem/WiFi/BT?
 

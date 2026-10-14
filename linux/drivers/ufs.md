@@ -27,6 +27,15 @@
   - `ufshcd_verify_dev_init` pings the attached dev
   - `ufshcd_complete_dev_init` waits for dev ready
   - `ufshcd_device_params_init` inits dev params
+    - `ufshcd_device_geo_params_init` sends `QUERY_DESC_IDN_GEOMETRY`
+      - `GEOMETRY_DESC_PARAM_DEV_CAP` is `qTotalRawDeviceCapacity`
+      - `GEOMETRY_DESC_PARAM_MAX_NUM_LUN` is `bMaxNumberLU`
+    - `ufs_get_device_desc` sends `QUERY_DESC_IDN_DEVICE`
+      - `DEVICE_DESC_PARAM_SPEC_VER` is `wSpecVersion`
+      - `DEVICE_DESC_PARAM_MANF_ID` is `wManufacturerID`
+      - `DEVICE_DESC_PARAM_Q_DPTH` is `bQueueDepth`
+      - `DEVICE_DESC_PARAM_NUM_LU` is `bNumberLU`
+      - `DEVICE_DESC_PARAM_NUM_WLU` is `bNumberWLU`
   - `ufshcd_post_device_init` post-inits dev
   - `ufshcd_add_scsi_host`
     - `scsi_add_host` adds `Scsi_Host` to scsi subsys
@@ -42,5 +51,8 @@
       - `scsi_alloc_target` allocs `scsi_target`
       - `scsi_probe_and_add_lun` probes and creates `scsi_device`
     - `scsi_scan_host` is unnecessary?
+- `ufshcd_sdev_init`
+  - `ufshcd_lu_init` calls `ufshcd_read_unit_desc_param` to send
+    `QUERY_DESC_IDN_UNIT`
 - modules such as `sd` provides an `scsi_driver` to probe `scsi_device`
   - the flashes will show up as `/dev/sdX`
