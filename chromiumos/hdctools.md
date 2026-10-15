@@ -123,6 +123,26 @@
   - Cr50 executes commands from servod
   - `flashrom` still works
 
+## servo 4.1
+
+- <https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4p1.md>
+  - main chips
+    - stm32f is the mcu that the servo fw runs on
+    - gl3590 is the usb 3.2 gen2 hub for host
+    - cyusb33 is the usb 3.2 gen1 hub for dut
+    - rtl8153 is the nic connected to cyusb33
+  - usb-c ports
+    - host usb-c is to gl3590 and is also power soruce for servo
+    - servo power is alt power source for servo
+    - dut power is power source for dut
+    - dut usb-c is to cyusb33, mini dp, and dut power
+  - other ports
+    - uservo usb-a is to gl3590 for legacy uservo (predates ccd)
+    - rj25 is console to stm32f
+    - two usb-a ports are muxed to both gl3590 and cyusb33
+    - rj45 is to rtl8153
+    - mini dp is to dut usb-c
+
 ## Command Lines
 
 - `dut-control lid_open:no` closes the lid

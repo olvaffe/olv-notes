@@ -247,3 +247,53 @@
     - when the bit is set, it assumes the hashes always match
     - there is also `VB2_GBB_FLAG_DISABLE_EC_SOFTWARE_SYNC` (bit 9), which
       disables the check and leaves ec at ro
+
+## fastboot
+
+- `fastboot_screen`
+  - it requires `VB2_CONTEXT_FASTBOOT_ALLOWED`
+    - either forced in gbb, or dev mode plus `dev_fastboot_en`
+  - `fastboot_init` inits a session
+    - `fastboot_setup_usb` tries `18d1:27a7` usb cable first
+    - `fastboot_setup_tcp` sends dhcp request and listens on port 5554
+  - `fastboot_handle_packet` handles a packet
+- std commands
+  - `fastboot_cmd_continue` exits fastboot
+  - `fastboot_cmd_upload` uploads data to host from staging area
+  - `fastboot_cmd_download` downloads data from host to staging area
+  - `fastboot_cmd_erase` erases a named partition
+  - `fastboot_cmd_flash` flashes a named partition
+    - `raw-sector:0` skips gpt parsing and flashes raw data to disk
+      - `fastboot -s tcp:<addr> flash raw-sector:0 disk-image.bin`
+  - `fastboot_cmd_getvar` prints or enumerates `fastboot_vars`
+    - `all` enumerates all vars
+  - `fastboot_cmd_reboot_to_target` and `fastboot_cmd_reboot` reboot
+    - if a target is specified, it updates reboot reason in misc partition
+      - <https://android.googlesource.com/platform/bootable/recovery/+/refs/heads/android17-release/bootloader_message/include/bootloader_message/bootloader_message_core.h>
+  - `fastboot_cmd_set_active` sets the active slot
+    - it invalidates all entries and activates the specifies entry
+    - it plays with cros-specific gpt attrs
+  - `fastboot_cmd_snapshot_update` queries/updates super partition a/b state
+    - android ota goes through 3 steps
+      - it snapshots updated partitions and sets `misc_virtual_ab_message` to
+        `SNAPSHOTTED` in misc partition before reboot
+      - it reboots to the updated snapshots and sets state to `MERGING`
+      - it applies the updated snapshots back to the base partitions and sets
+        `NONE`
+    - by querying and potentially setting the state to `CANCELLED`, it allows
+      fastboot flash to play nicely with android ota
+- oem commands
+  - `fastboot_cmd_oem_cmdline_add`
+  - `fastboot_cmd_oem_cmdline_del`
+  - `fastboot_cmd_oem_cmdline_set`
+  - `fastboot_cmd_oem_cmdline_get`
+  - `fastboot_cmd_oem_bootconfig_add`
+  - `fastboot_cmd_oem_bootconfig_del`
+  - `fastboot_cmd_oem_bootconfig_set`
+  - `fastboot_cmd_oem_bootconfig_get`
+  - `fastboot_cmd_oem_logs`
+  - `fastboot_cmd_oem_read_ufs_descriptor`
+  - `fastboot_cmd_oem_write_ufs_descriptor`
+  - `fastboot_cmd_oem_set_successful`
+  - `fastboot_cmd_oem_set_priority`
+  - `fastboot_cmd_oem_sha256`
