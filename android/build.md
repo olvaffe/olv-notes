@@ -273,6 +273,13 @@
     - `INSTALLED_ODMIMAGE_TARGET := $(PRODUCT_OUT)/odm.img`
     - `INSTALLED_ODM_DLKMIMAGE_TARGET := $(PRODUCT_OUT)/odm_dlkm.img`
     - `INSTALLED_PRODUCTIMAGE_TARGET := $(PRODUCT_OUT)/product.img`
+  - user data
+    - `INSTALLED_USERDATAIMAGE_TARGET := $(PRODUCT_OUT)/userdata.img`
+      - empty on production build
+    - <https://source.android.com/docs/security/features/encryption/metadata>
+      - `userdata` employs file-based encryption for file data
+      - if `BOARD_USES_METADATA_PARTITION`, there is a `metadata` partition
+        that stores the key for fs metadata encryption
   - `BOARD_AVB_ENABLE`
     - `INSTALLED_VBMETAIMAGE_TARGET := $(PRODUCT_OUT)/vbmeta.img`
       - `m vbmetaimage` runs `avbtool make_vbmeta_image` to generate
@@ -375,49 +382,53 @@
 - the disk layout is similar to
   <https://chromium.googlesource.com/chromiumos/platform/crosutils/+/refs/heads/main/build_library/disk_layout_v3.json>
   - see also <https://source.android.com/docs/core/architecture/partitions>
-  - p1: `userdata`, 4G
-  - p2: `KERN-A`, 32M, only by recovery usb image
+- android boot partitions
+  - `misc`, 4M
+    - persistent bootloader settings such as current ab slot
+  - `vbmeta_a`, 4M, `vbmeta.img`
+  - `vbmeta_b`, 4M
+  - `boot_a`, 64M, `boot.img`
+  - `boot_b`, 64M
+  - `init_boot_a`, 32M, `init_boot.img`
+  - `init_boot_b`, 32M
+  - `vendor_boot_a`, 32M, `vendor_boot.img`
+  - `vendor_boot_b`, 32M
+  - `dtb_a`, 2M, `dtb.img`
+  - `dtb_b`, 2M
+  - `dtbo_a`, 8M, `dtbo.img`
+  - `dtbo_b`, 8M
+  - `recovery_a`, 32M, recovery ramdisk
+    - because of `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`, the ramdisk
+      is packed into `vendor_boot.img` rather than in this partition
+  - `recovery_b`, 32M
+- android system partitions
+  - `metadata`, 16M, generated
+    - `userdata` fs metadata encryption key
+  - `userdata`, dynamically expand, `userdata.img`
+  - `super`, 12G, `super.img`
+  - `frp_persist`, 2M
+    - persistent data across factory resets, for anti-theft
+  - `pvmfw_a`, 4M, `pvmfw.img`
+  - `pvmfw_b`, 4M
+  - `desktop_security_persist`, 16M
+    - trusty pvm data that persists across factory resets
+  - `desktop_security_storage`, 32M
+    - trusty pvm data
+- chromeos recovery partitions
+  - `KERN-A`, 128M, only for usb recovery
     - when `m pack-recovery-image` generates
       `android-desktop_recovery_image.bin`, `pack_image` packs
       `recovery-kernel` into this partition
-      - it also packs ap fw update to `ROOT-B` and recovery script to `KERN-B`
-  - p3: `super`, 8G, `super.img`
-  - p4: `KERN-B`, unused
-  - p5: `ROOT-B`, unused
-  - p6: `KERN-C`, unused
-  - p7: `ROOT-C`, unused
-  - p8: `OEM`, 4M, mostly unused
-  - p9: `ota_recovery_a`, 128M, for chromebook ota recovery
+  - `KERN-B`, 128M, only for usb recovery
+      - `pack_image` packs recovery script here
+  - `ROOT-B`, 128M, only for usb recovery
+      - `pack_image` packs ap fw update here
+  - `ota_recovery_a`, 128M, for ota recovery
     - minimal os whose job is to download images and flash partitions
-  - p10: `ota_recovery_b`, 128M
-  - p11
-  - p12: `EFI-SYSTEM`, 64M, only by non-chromebook uefi system
-  - p13: `boot_a`, 64M, `boot.img`
-  - p14: `boot_b`, 64M
-  - p15: `vbmeta_a`, 4M, `vbmeta.img`
-  - p16: `vbmeta_b`, 4M
-  - p17: `metadata`, 16M, generated
-    - it stores encryption key for `userdata` when `BOARD_USES_METADATA_PARTITION`
-      - <https://source.android.com/docs/security/features/encryption/metadata>
-      - `userdata` employs file-based encryption for file data
-      - metadata encryption encrypts fs metadata
-  - p18: `init_boot_a`, 32M, `init_boot.img`
-  - p19: `init_boot_b`, 32M
-  - p20: `vendor_boot_a`, 32M, `vendor_boot.img`
-  - p21: `vendor_boot_b`, 32M
-  - p22: `pvmfw_a`, 4M, `pvmfw.img`
-  - p23: `pvmfw_b`, 4M
-  - p24: `misc`, 4M
-    - persistent bootloader settings such as current ab slot
-  - p25: `RWFW-A`, unused
-  - p26: `RWFW-B`, unused
-  - p27: `recovery_a`, 32M, vendor initramfs for fastbootd
-    - because of `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`, the
-      initramfs is usually a part of `vendor_boot.img` instead
-  - p28: `recovery_b`, 32M
-  - p29: `desktop_security_persist`, 16M
-    - trusty
-  - p30: `desktop_security_storage`, 32M
-    - trusty
-  - p31: `frp_persist`, 2M
-    - persistent data across factory resets, for anti-theft
+    - android writes `/vendor/etc/recovery/ota_recovery.img` to the partition
+  - `ota_recovery_b`, 128M
+- chromeos legacy partitions
+  - `OEM`, 4M, mostly unused
+  - `EFI-SYSTEM`, 64M, only by non-chromebook uefi system
+  - `RWFW-A`, unused
+  - `RWFW-B`, unused
