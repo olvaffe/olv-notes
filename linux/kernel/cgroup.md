@@ -126,6 +126,7 @@
     - it regulates access to dev nodes
   - RDMA
   - DMEM
+    - it regulates device memory (e.g., vram or stolen ram)
   - HugeTLB
   - Misc
   - Others
@@ -144,6 +145,43 @@
   - Competition Between Inner Nodes and Threads
   - Other Interface Issues
   - Controller Issues and Remedies
+
+## Available Controllers
+
+- `include/linux/cgroup_subsys.h`
+  - explicit (`.dfl_cftypes`)
+    - `CONFIG_CPUSETS` and `cpuset_cgrp_subsys`
+    - `CONFIG_CGROUP_SCHED` and `cpu_cgrp_subsys`
+    - `CONFIG_BLK_CGROUP` and `io_cgrp_subsys`
+    - `CONFIG_MEMCG` and `memory_cgrp_subsys`
+    - `CONFIG_CGROUP_HUGETLB` and `hugetlb_cgrp_subsys`
+    - `CONFIG_CGROUP_PIDS` and `pids_cgrp_subsys`
+    - `CONFIG_CGROUP_RDMA` and `rdma_cgrp_subsys`
+    - `CONFIG_CGROUP_MISC` and `misc_cgrp_subsys`
+    - `CONFIG_CGROUP_DMEM` and `dmem_cgrp_subsys`
+  - implicit (`.implicit_on_dfl`)
+    - `CONFIG_CGROUP_PERF` and `perf_event_cgrp_subsys`
+    - `CONFIG_CGROUP_DEBUG` and `debug_cgrp_subsys`
+  - legacy
+    - `CONFIG_CGROUP_CPUACCT` and `cpuacct_cgrp_subsys`
+    - `CONFIG_CGROUP_DEVICE` and `devices_cgrp_subsys`
+    - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
+    - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
+    - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CGROUP_DMEM` regulates device memory (e.g., vram)
+  - device driver calls
+    - `dmem_cgroup_register_region` to add dmem regions
+    - `dmem_cgroup_try_charge` to charge
+    - `dmem_cgroup_uncharge` to uncharge
+  - `dmem.capacity` shows all dmem regions
+  - `dmem.current` shows current usage in each dmem region
+  - `dmem.peak` shows historical peak in each dmem region
+  - `dmem.{min,low,max}` sets/shows min/low/max
+    - `dmem_cgroup_try_charge` never exceeds `dmem.max`
+    - when `dmem_cgroup_try_charge` or alloc fails,
+      - if `dmem_cgroup_below_low`, it evicts from any cgroup above `dmem.low`
+      - if `dmem_cgroup_below_min`, it evicts from any cgroup above `dmem.min`
+      - it tries after eviction
 
 ## cgroup2 filesystem
 
