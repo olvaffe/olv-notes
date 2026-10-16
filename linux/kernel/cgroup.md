@@ -168,6 +168,19 @@
     - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
     - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
     - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CGROUP_MISC` regulates misc hw resources
+  - subsys calls
+    - `misc_cg_set_capacity` to add a res
+    - `misc_cg_try_charge` to charge
+    - `misc_cg_uncharge` to uncharge
+  - `misc.capacity` shows all resources
+  - `misc.current` shows current usage per res
+  - `misc.peak` shows historical peak per res
+  - `misc.max` sets/shows max usage per res
+  - `misc.events` shows event count
+    - failed `misc_cg_try_charge` attemps
+  - `misc.events.local` show local event count
+    - non-hierarchical
 - `CONFIG_CGROUP_DMEM` regulates device memory (e.g., vram)
   - device driver calls
     - `dmem_cgroup_register_region` to add dmem regions
