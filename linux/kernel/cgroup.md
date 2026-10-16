@@ -168,6 +168,11 @@
     - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
     - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
     - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CGROUP_RDMA` regulates infiniband rdma
+  - infiniband drv calls
+    - `rdmacg_register_device` to add infiniband dev
+    - `rdmacg_try_charge` to charge
+    - `rdmacg_uncharge` to uncharge
 - `CONFIG_CGROUP_MISC` regulates misc hw resources
   - subsys calls
     - `misc_cg_set_capacity` to add a res
