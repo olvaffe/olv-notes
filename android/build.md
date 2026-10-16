@@ -233,30 +233,74 @@
 - `git grep ^INSTALLED` under `build/make/`
 - `core/Makefile`
   - <https://source.android.com/docs/core/architecture/partitions/generic-boot>
-    - `INSTALLED_RECOVERYIMAGE_TARGET := $(PRODUCT_OUT)/recovery.img`
-      - this is no longer needed with A/B boot
-    - `INSTALLED_RAMDISK_TARGET := $(PRODUCT_OUT)/ramdisk.img`
-      - it packages from `$(TARGET_RAMDISK_OUT)`
+  - <https://source.android.com/docs/core/ota/dynamic_partitions/implement>
+  - boot images
     - `INSTALLED_BOOTIMAGE_TARGET := $(PRODUCT_OUT)/boot.img`
-      - kernel packaged by `mkbootimg`
+      - `m bootimage` runs `mkbootimg` to pack `INSTALLED_KERNEL_TARGET`
+        (`kernel`) to `boot.img`
     - `INSTALLED_INIT_BOOT_IMAGE_TARGET := $(PRODUCT_OUT)/init_boot.img`
-      - ramdisk packaged by `mkbootimg`
-    - `INSTALLED_VENDOR_RAMDISK_TARGET := $(PRODUCT_OUT)/vendor_ramdisk.img`
-      - vendor ramdisk packaged by `mkbootimg`
+      - `m initbootimage` runs `mkbootimg` to pack `INSTALLED_RAMDISK_TARGET`
+        (`ramdisk.img`) to `init_boot.img`
+      - `INSTALLED_RAMDISK_TARGET := $(PRODUCT_OUT)/ramdisk.img`
+        - it packages from `$(TARGET_RAMDISK_OUT)`
     - `INSTALLED_VENDOR_BOOTIMAGE_TARGET := $(PRODUCT_OUT)/vendor_boot.img`
-  - `INSTALLED_RECOVERY_BUILD_PROP_TARGET := $(TARGET_RECOVERY_ROOT_OUT)/prop.default`
-  - `INSTALLED_SYSTEMIMAGE_TARGET := $(PRODUCT_OUT)/system.img`
-  - `INSTALLED_USERDATAIMAGE_TARGET := $(PRODUCT_OUT)/userdata.img`
-  - `INSTALLED_VENDORIMAGE_TARGET := $(PRODUCT_OUT)/vendor.img`
-  - `INSTALLED_PRODUCTIMAGE_TARGET := $(PRODUCT_OUT)/product.img`
-  - `INSTALLED_SYSTEM_EXTIMAGE_TARGET := $(PRODUCT_OUT)/system_ext.img`
-  - `INSTALLED_SYSTEM_DLKMIMAGE_TARGET := $(PRODUCT_OUT)/system_dlkm.img`
-  - `INSTALLED_VBMETAIMAGE_TARGET := $(PRODUCT_OUT)/vbmeta.img`
-  - `INSTALLED_FASTBOOT_INFO_TARGET := $(PRODUCT_OUT)/fastboot-info.txt`
-  - `INSTALLED_MISC_INFO_TARGET := $(PRODUCT_OUT)/misc_info.txt`
-  - `INSTALLED_SUPERIMAGE_TARGET := $(PRODUCT_OUT)/super.img`
-    - <https://source.android.com/docs/core/ota/dynamic_partitions/implement>
-  - `INSTALLED_SUPERIMAGE_EMPTY_TARGET := $(PRODUCT_OUT)/super_empty.img`
+      - `m vendorbootimage` runs `mkbootimg` to pack these to `vendor_boot.img`
+        - `INTERNAL_KERNEL_CMDLINE` (`BOARD_KERNEL_CMDLINE`)
+        - `INTERNAL_VENDOR_RAMDISK_TARGET` (`vendor_ramdisk.cpio.lz4`)
+        - `INTERNAL_VENDOR_RAMDISK_FRAGMENTS` (`recovery.cpio.lz4`) if
+          `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`
+        - `INSTALLED_DTBIMAGE_TARGET` (`dtb.img`) if
+          `BOARD_INCLUDE_DTB_IN_BOOTIMG`
+    - `INSTALLED_DTBOIMAGE_TARGET := $(PRODUCT_OUT)/dtbo.img`
+      - copied from `BOARD_PREBUILT_DTBOIMAGE`
+    - with A/B boot, regular and recovery boot uses the same kernel
+      - `INSTALLED_RECOVERYIMAGE_TARGET := $(PRODUCT_OUT)/recovery.img`
+        - this is no longer needed
+  - super image
+    - `m superimage` runs `build_super_image` which runs `lpmake` to pack
+      these to `super.img`
+      - `system.img`
+      - `system_ext.img`, vendor extension to system
+      - `system_dlkm.img`, gki kernel modules
+      - `vendor.img`
+      - `vendor_dlkm.img`, vendor kernel modules
+      - `product.img`, product-specific apks and stuff
+    - `INSTALLED_SYSTEMIMAGE_TARGET := $(PRODUCT_OUT)/system.img`
+    - `INSTALLED_SYSTEM_EXTIMAGE_TARGET := $(PRODUCT_OUT)/system_ext.img`
+    - `INSTALLED_SYSTEM_DLKMIMAGE_TARGET := $(PRODUCT_OUT)/system_dlkm.img`
+    - `INSTALLED_VENDORIMAGE_TARGET := $(PRODUCT_OUT)/vendor.img`
+    - `INSTALLED_VENDOR_DLKMIMAGE_TARGET := $(PRODUCT_OUT)/vendor_dlkm.img`
+    - `INSTALLED_ODMIMAGE_TARGET := $(PRODUCT_OUT)/odm.img`
+    - `INSTALLED_ODM_DLKMIMAGE_TARGET := $(PRODUCT_OUT)/odm_dlkm.img`
+    - `INSTALLED_PRODUCTIMAGE_TARGET := $(PRODUCT_OUT)/product.img`
+  - `BOARD_AVB_ENABLE`
+    - `INSTALLED_VBMETAIMAGE_TARGET := $(PRODUCT_OUT)/vbmeta.img`
+      - `m vbmetaimage` runs `avbtool make_vbmeta_image` to generate
+        `vbmeta.img`
+      - it contains hashes for partitions listed in
+        `INSTALLED_VBMETAIMAGE_TARGET` for verified boot
+        - <https://android.googlesource.com/platform/external/avb/+/refs/heads/main/README.md>
+      - on eng build, it specifies `--set_hashtree_disabled_flag` to disable verity
+  - `PRODUCT_BUILD_PVMFW_IMAGE`
+    - `INSTALLED_PVMFWIMAGE_TARGET := $(PRODUCT_OUT)/pvmfw.img`
+      - `m pvmfwimage` generates `pvmfw.img`, which is entrypoint for pVMs
+        - <https://android.googlesource.com/platform/packages/modules/Virtualization/+/refs/heads/main/guest/pvmfw/README.md>
+        - hypervisor: pkvm
+        - host: android in a vm
+        - pVMs: protected vms that host has restricted access to
+  - `PRODUCT_BUILD_ANDROID_ESP_IMAGE` for cuttlefish
+    - `INSTALLED_ESPIMAGE_TARGET := $(PRODUCT_OUT)/esp.img`
+  - `BUILD_QEMU_IMAGES` for goldfish
+    - `INSTALLED_QEMU_SYSTEMIMAGE := $(PRODUCT_OUT)/system-qemu.img`
+    - `INSTALLED_SYSTEM_QEMU_CONFIG := $(PRODUCT_OUT)/system-qemu-config.txt`
+    - `INSTALLED_QEMU_VENDORIMAGE := $(PRODUCT_OUT)/vendor-qemu.img`
+    - `INSTALLED_QEMU_RAMDISKIMAGE := $(PRODUCT_OUT)/ramdisk-qemu.img`
+    - `INSTALLED_QEMU_PRODUCTIMAGE := $(PRODUCT_OUT)/product-qemu.img`
+    - `INSTALLED_QEMU_SYSTEM_EXTIMAGE := $(PRODUCT_OUT)/system_ext-qemu.img`
+    - `INSTALLED_QEMU_ODMIMAGE := $(PRODUCT_OUT)/odm-qemu.img`
+    - `INSTALLED_QEMU_VENDOR_DLKMIMAGE := $(PRODUCT_OUT)/vendor_dlkm-qemu.img`
+    - `INSTALLED_QEMU_ODM_DLKMIMAGE := $(PRODUCT_OUT)/odm_dlkm-qemu.img`
+    - `INSTALLED_QEMU_SYSTEM_DLKMIMAGE := $(PRODUCT_OUT)/system_dlkm-qemu.img`
 - `core/definitions.mk`
   - `INSTALLED_RADIOIMAGE_TARGET` is populated by `add-radio-file`
 - `core/sysprop.mk`
@@ -311,7 +355,7 @@
 - `core/tasks/oem_image.mk`
   - `INSTALLED_OEMIMAGE_TARGET := $(PRODUCT_OUT)/oem.img`
     - it packages from `$(TARGET_OUT_OEM)`
-- `target/board/Android.mk`
+- `target/board/android-info.mk`
   - `INSTALLED_ANDROID_INFO_TXT_TARGET := $(PRODUCT_OUT)/android-info.txt`
     - e.g., it can be generated from `TARGET_BOARD_INFO_FILES`
 
@@ -338,14 +382,6 @@
       `recovery-kernel` into this partition
       - it also packs ap fw update to `ROOT-B` and recovery script to `KERN-B`
   - p3: `super`, 8G, `super.img`
-    - `m superimage` runs `build_super_image` which runs `lpmake` to pack
-      these to `super.img`
-      - `system.img`
-      - `system_ext.img`, vendor extension to system
-      - `system_dlkm.img`, gki kernel modules
-      - `vendor.img`
-      - `vendor_dlkm.img`, vendor kernel modules
-      - `product.img`, product-specific apks and stuff
   - p4: `KERN-B`, unused
   - p5: `ROOT-B`, unused
   - p6: `KERN-C`, unused
@@ -357,16 +393,8 @@
   - p11
   - p12: `EFI-SYSTEM`, 64M, only by non-chromebook uefi system
   - p13: `boot_a`, 64M, `boot.img`
-    - `m bootimage` runs `mkbootimg` to pack `INSTALLED_KERNEL_TARGET`
-      (`kernel`) to `boot.img`
   - p14: `boot_b`, 64M
   - p15: `vbmeta_a`, 4M, `vbmeta.img`
-    - `m vbmetaimage` runs `avbtool make_vbmeta_image` to generate
-      `vbmeta.img`
-    - it contains hashes for partitions listed in
-      `INSTALLED_VBMETAIMAGE_TARGET` for verified boot
-      - <https://android.googlesource.com/platform/external/avb/+/refs/heads/main/README.md>
-    - on eng build, it specifies `--set_hashtree_disabled_flag` to disable verity
   - p16: `vbmeta_b`, 4M
   - p17: `metadata`, 16M, generated
     - it stores encryption key for `userdata` when `BOARD_USES_METADATA_PARTITION`
@@ -374,22 +402,10 @@
       - `userdata` employs file-based encryption for file data
       - metadata encryption encrypts fs metadata
   - p18: `init_boot_a`, 32M, `init_boot.img`
-    - `m initbootimage` runs `mkbootimg` to pack `INSTALLED_RAMDISK_TARGET`
-      (`ramdisk.img`) to `init_boot.img`
   - p19: `init_boot_b`, 32M
   - p20: `vendor_boot_a`, 32M, `vendor_boot.img`
-    - `m vendorbootimage` runs `mkbootimg` to pack these to `vendor_boot.img`
-      - `INTERNAL_KERNEL_CMDLINE` (`BOARD_KERNEL_CMDLINE`)
-      - `INTERNAL_VENDOR_RAMDISK_TARGET` (`vendor_ramdisk.cpio.lz4`)
-      - `INTERNAL_VENDOR_RAMDISK_FRAGMENTS` (`recovery.cpio.lz4`) if
-        `BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT`
   - p21: `vendor_boot_b`, 32M
   - p22: `pvmfw_a`, 4M, `pvmfw.img`
-    - `m pvmfwimage` generates `pvmfw.img`, which is entrypoint for pVMs
-      - <https://android.googlesource.com/platform/packages/modules/Virtualization/+/refs/heads/main/guest/pvmfw/README.md>
-      - hypervisor: pkvm
-      - host: android in a vm
-      - pVMs: protected vms that host has restricted access to
   - p23: `pvmfw_b`, 4M
   - p24: `misc`, 4M
     - persistent bootloader settings such as current ab slot
