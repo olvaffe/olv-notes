@@ -98,3 +98,26 @@
     - for ssh, user needs to use sso cookie to access internal CA service to
       refresh ssh cert
       - ssh cert is typically stored on security key
+
+## PC/SC Smartcards
+
+- history
+  - MS defines PC/SC spec, and provides `winscard.dll` to clients
+  - pcsc-lite is a partial impl of the spec, and provides `libpcsclite.so`
+- pcsc-lite
+  - client uses `libpcsclite.so` to talk to `pcscd` over unix socket
+  - `pcscd` loads an IFD, aka a driver plugin, to talk to the hardware
+  - the most common IFD is `libccid.so`, which supports USB CCID and ICCD
+    - usb card readers often support CCID
+    - usb keys often support ICCD
+  - for EZ100PU, there is <https://github.com/drinkcat/ezIFD>
+- opensc
+  - `app -> PKCS #11 (opensc impl) -> pcsc-lite`
+    - PKCS #11 defines a standard C API
+- taiwain
+  - MOICA card: `browser -> HiPKILocalSignServerApp -> PKCS #11 (HiCOS impl) -> pcsc-lite`
+    - `HiPKILocalSignServerApp` provides a web service on port 61161
+    - the api is json-based
+  - NHI card: `browser -> mLNHIICC -> pcsc-lite`
+    - `mLNHIICC` provides a web service on port 7777
+    - the api is also json-based
