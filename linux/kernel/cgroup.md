@@ -168,6 +168,20 @@
     - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
     - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
     - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CGROUP_HUGETLB` regulates hugetlb usage
+  - hugetlb calls
+    - `hugetlb_cgroup_charge_cgroup` to charge allocs
+    - `hugetlb_cgroup_uncharge_cgroup` to uncharge allocs
+    - `hugetlb_cgroup_charge_cgroup_rsvd` to charge mmaps and allocs
+    - `hugetlb_cgroup_uncharge_cgroup_rsvd` to uncharge mmaps and allocs
+  - `hugetlb.<hugepagesize>.numa_stat` shows current alloc sizes by nodes
+  - `hugetlb.<hugepagesize>.current` shows current alloc size
+  - `hugetlb.<hugepagesize>.rsvd.current` shows current resv size
+  - `hugetlb.<hugepagesize>.max` sets/shows max alloc size
+  - `hugetlb.<hugepagesize>.rsvd.max` sets/shows max resv size
+  - `hugetlb.<hugepagesize>.events` shows event count
+    - failed `hugetlb_cgroup_charge_cgroup` count
+  - `hugetlb.<hugepagesize>.events.local` shows non-hierarchical local event count
 - `CONFIG_CGROUP_PIDS` regulates task counts (for fork bomb)
   - task subsys calls
     - `cgroup_can_fork -> pids_can_fork` to charge
