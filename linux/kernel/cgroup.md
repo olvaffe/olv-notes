@@ -168,6 +168,16 @@
     - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
     - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
     - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CGROUP_PIDS` regulates task counts (for fork bomb)
+  - task subsys calls
+    - `cgroup_can_fork -> pids_can_fork` to charge
+    - `cgroup_task_release -> pids_release` to uncharge
+  - `pids.current` shows current task count
+  - `pids.peak` shows historical peak
+  - `pids.max` sets/shows max task count
+  - `pids.events` shows event count
+    - failed `pids_can_fork` count
+  - `pids.events.local` shows non-hierarchical local event count
 - `CONFIG_CGROUP_RDMA` regulates infiniband rdma
   - infiniband drv calls
     - `rdmacg_register_device` to add infiniband dev
