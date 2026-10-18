@@ -189,6 +189,26 @@
       - we use `exclusive` along its ancestor chain
 - `CONFIG_CGROUP_SCHED` regulates cpu time
 - `CONFIG_BLK_CGROUP` regulates block io
+  - `io.stat` shows stats of all block devs
+  - `CONFIG_BLK_CGROUP_IOPRIO`
+    - `io.prio.class` sets/shows prio class assigned to bios
+      - by default, kernel uses `none` for mq hw (nvme) or `mq-deadline` for
+        non-mq hw
+      - the prio class is translated to hw class or handled by `mq-deadline`
+  - `CONFIG_BLK_DEV_THROTTLING`
+    - `io.max` sets/shows max bandwidths
+  - `CONFIG_BLK_CGROUP_IOCOST`
+    - `io.cost.qos` sets/shows qos
+      - it enables/disables/tunes iocost policy
+      - iocost policy is better than max bandwidths to estimate the real costs
+    - `io.cost.model` sets/shows cost model
+    - `io.weight` sets/shows weight
+      - it allocates device times to cgroups based on weights
+  - `CONFIG_BFQ_GROUP_IOSCHED`
+    - `io.bfq.weight` sets/shows weight
+      - it replaces `io.weight` when bfq is used
+  - `CONFIG_BLK_CGROUP_IOLATENCY` is experimental
+    - `io.latency` sets/shows guaranteed latency
 - `CONFIG_MEMCG` regulates memory usage
 - `CONFIG_CGROUP_HUGETLB` regulates hugetlb usage
   - hugetlb calls
