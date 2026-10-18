@@ -168,6 +168,25 @@
     - `CONFIG_CGROUP_FREEZER` and `freezer_cgrp_subsys`
     - `CONFIG_CGROUP_NET_CLASSID` and `net_cls_cgrp_subsys`
     - `CONFIG_CGROUP_NET_PRIO` and `net_prio_cgrp_subsys`
+- `CONFIG_CPUSETS` regulates cpu cores and numa memory nodes
+  - `cpuset.cpus` sets/shows non-hierarchical local allowed cpus
+  - `cpuset.cpus.effective` shows effective allowed cpus
+    - this takes both the hierarchy and the online status into consideration
+  - `cpuset.mems` sets/shows non-hierarchical local allowed numa memory nodes
+  - `cpuset.mems.effective` shows effective allowed numa memory nodes
+  - `cpuset.cpus.partition` sets/shows partitioning
+    - say parent cgroup allows cpu 0-7 and child cgroup allows cpu 4-7
+    - `member` on child means parent effective allowed cpus are cpu 0-7
+    - `root` on child means parent effective allowed cpus are cpu 0-3
+    - `isolated` is similar to `root` and futhermore disables load balancing
+      and housekeeping
+      - even an isolated cpu is completely idle, sched does not move tasks on
+        other cpus or housekeeping tasks to the isolated cpu
+  - `cpuset.cpus.isolated` shows isolated cpus
+  - `cpuset.cpus.exclusive` sets/shows non-hierarchical local exclusive cpus
+    - when a child uses `root` partition, it carves out cpus from the parent
+    - when if we want a grandchild uses `root` partition?
+      - we use `exclusive` along its ancestor chain
 - `CONFIG_CGROUP_HUGETLB` regulates hugetlb usage
   - hugetlb calls
     - `hugetlb_cgroup_charge_cgroup` to charge allocs
