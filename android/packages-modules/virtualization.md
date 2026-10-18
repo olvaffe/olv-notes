@@ -96,3 +96,15 @@
       - `CopySpecsToDir` copies `linux_vm_manager`
       - `cp -R cloud-init_config ...`
       - generate iso
+  - runtime
+    - host: `TerminalApp` translates `vm_config.json` to crosvm args
+      - `ds=nocloud` tells `cloud-init` to use `NoCloud` data source
+      - `cidata.iso` is used as `/dev/vdb`
+    - guest: `cloud-init` uses `cloud-init_config` to provision
+      - `meta-data` defines `instance-id` that is generated at `cidata.iso`
+        build time
+      - `vendor-data` is empty
+      - `user-data`
+        - it creates user `droid`
+        - it mounts `/dev/vdb` to `/mnt/cidata` to run `init.sh`
+      - `network-config` defines netplan v2 config
