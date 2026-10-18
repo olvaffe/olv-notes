@@ -22,7 +22,13 @@
       - `runtime_suspend`
       - `runtime_resume`
       - `runtime_idle`
-- `suspend_devices_and_enter` executes system suspend and resume
+- `DEFINE_RUNTIME_DEV_PM_OPS` inits all ops from runtime suspend/resume/idle
+  - `SYSTEM_SLEEP_PM_OPS` uses `pm_runtime_force_suspend` and
+    `pm_runtime_force_resume` for everything
+  - no `LATE_SYSTEM_SLEEP_PM_OPS`
+  - no `NOIRQ_SYSTEM_SLEEP_PM_OPS`
+  - `RUNTIME_PM_OPS` is explicitly specified
+- when `suspend_devices_and_enter` executes system suspend and resume
   - `prepare`
   - `suspend`
   - `suspend_late`
@@ -33,7 +39,7 @@
   - `resume_early`
   - `resume`
   - `complete`
-- `hibernation_snapshot` executes system image snapshot
+- when `hibernation_snapshot` executes system image snapshot
   - `prepare`
   - `freeze`
   - `freeze_late`
@@ -43,7 +49,7 @@
   - `thaw_early`
   - `thaw`
   - `complete`
-- `power_down` executes system hibernation
+- when `power_down` executes system hibernation
   - if `hibernation_platform_enter`,
     - `prepare`
     - `poweroff`
@@ -52,7 +58,7 @@
   - if `kernel_power_off`,
     - `dev->driver->shutdown` instead of `dev_pm_ops`
   - at this point, the system is powered off
-- `hibernation_restore` executes system image restore
+- when `hibernation_restore` executes system image restore
   - `prepare`
   - `freeze`
   - `freeze_late`
@@ -63,12 +69,6 @@
   - `restore_early`
   - `restore`
   - `complete`
-- `DEFINE_RUNTIME_DEV_PM_OPS` inits all ops from runtime suspend/resume/idle
-  - `SYSTEM_SLEEP_PM_OPS` uses `pm_runtime_force_suspend` and
-    `pm_runtime_force_resume` for everything
-  - no `LATE_SYSTEM_SLEEP_PM_OPS`
-  - no `NOIRQ_SYSTEM_SLEEP_PM_OPS`
-  - `RUNTIME_PM_OPS` is explicitly specified
 
 ## System Suspend and Resume
 
