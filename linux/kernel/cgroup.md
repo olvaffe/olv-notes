@@ -188,6 +188,26 @@
     - when if we want a grandchild uses `root` partition?
       - we use `exclusive` along its ancestor chain
 - `CONFIG_CGROUP_SCHED` regulates cpu time
+  - `CONFIG_GROUP_SCHED_WEIGHT`
+    - `cpu.weight` sets/shows weight (`[1, 10000]`)
+      - sched allocs cpu times to cgroups based on weights
+    - `cpu.weight.nice` sets/shows weight  (`[-20, 19]`)
+      - same as `cpu.weight`, except it maps nice vals to raw weights
+    - `cpu.idle` sets/shows whether the cgroup is idle
+      - it is similar to `SCHED_IDLE`, but is relative to sibling cgroups
+  - `CONFIG_GROUP_SCHED_BANDWIDTH`
+    - `cpu.max` sets/shows max cpu time
+      - it sets both quota and period
+    - `cpu.max.burst` sets/shows burst cpu time
+      - it allows burst in a period when there is remaining quota from prior
+        period
+  - `CONFIG_UCLAMP_TASK_GROUP`
+    - `cpu.uclamp.min` sets/shows min uclamp
+      - sched calculates cpu utilization (`util_avg`) and
+        - feed it to `schedutil` for cpufreq
+        - move tasks between big/little cores
+      - `util_avg` is clamped to `[cpu.uclamp.min, cpu.uclamp.max]`
+    - `cpu.uclamp.max` sets/shows max uclamp
 - `CONFIG_BLK_CGROUP` regulates block io
   - `io.stat` shows stats of all block devs
   - `CONFIG_BLK_CGROUP_IOPRIO`
