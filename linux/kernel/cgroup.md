@@ -230,6 +230,48 @@
   - `CONFIG_BLK_CGROUP_IOLATENCY` is experimental
     - `io.latency` sets/shows guaranteed latency
 - `CONFIG_MEMCG` regulates memory usage
+  - `memory.current` shows current usage
+  - `memory.peak` shows historical peak usage
+  - `memory.min` sets/shows min usage
+    - never reclaim if below min
+  - `memory.low` sets/shows low usage
+    - reclaim last if below low
+  - `memory.high` sets/shows high usage
+    - sched reclaim after alloc if above high
+      - the return-to-userspace path waits for the reclaim
+      - if reclaim fails, throttles (sleeps) but never oom kills
+    - userspace oomd should react to this
+  - `memory.max` sets/shows max usage
+    - force direct reclaim before alloc if above max
+      - if reclaim fails, oom kills
+    - last resort when userspace oomd does not react to `memory.high`
+  - `memory.events` shows event counts
+    - `MEMCG_LOW`
+    - `MEMCG_HIGH`
+    - `MEMCG_MAX`
+    - `MEMCG_OOM`
+    - `MEMCG_OOM_KILL`
+    - `MEMCG_OOM_GROUP_KILL`
+    - `MEMCG_SOCK_THROTTLED`
+  - `memory.events.local` shows non-hierarchical local event counts
+  - `memory.stat` shows stats
+  - `memory.numa_stat` shows stats by numa nodes
+  - `memory.oom.group` sets/shows oom group
+    - when a task is oom-killed, this controls whether other tasks in the
+      cgroup are killed
+  - `memory.reclaim` triggers reclaim immediately
+  - `CONFIG_SWAP`
+    - `memory.swap.current` shows current usage
+    - `memory.swap.peak` shows historical peak usage
+    - `memory.swap.high` sets/shows high usage
+      - throttle mem alloc if above high
+      - userspace oomd should react to this
+    - `memory.swap.max` sets/shows max usage
+      - never use more than max swap space
+    - `memory.swap.events` shows event counts
+      - `MEMCG_SWAP_HIGH`
+      - `MEMCG_SWAP_MAX`
+      - `MEMCG_SWAP_FAIL`
 - `CONFIG_CGROUP_HUGETLB` regulates hugetlb usage
   - hugetlb calls
     - `hugetlb_cgroup_charge_cgroup` to charge allocs
