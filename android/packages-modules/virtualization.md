@@ -62,3 +62,37 @@
     - `MESA_LOADER_DRIVER_OVERRIDE=zink`
     - `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/lvp_icd.json`
 - <https://android.googlesource.com/platform/packages/modules/Virtualization/+/refs/heads/android17-release/build/debian/>
+  - `build.sh` builds a builder image and starts a container to build `images.tar.gz`
+    - `build_internal.sh` runs inside container
+      - `fetch_debian_image` downloads and unpacks `disk.raw` from official
+        `debian-13-genericcloud-${DEBIAN_ARCH}.tar.xz`
+        - <https://cloud.debian.org/images/cloud/>
+      - `compile_ttyd` builds ttyd
+        - <https://github.com/tsl0922/ttyd>
+      - compile gui
+        - <https://github.com/google/sommelier-rs>
+        - <https://github.com/Supreeeme/xwayland-satellite>
+        - <https://android.googlesource.com/platform/external/mesa3d>
+      - `customize_rootfs`
+        - it extracts `root_part` from `disk.raw`
+        - `chroot_rootfs.sh`
+          - `mount_environment` mounts `root_part` and others
+          - it invokes `build_rootfs_in_chroot.sh`
+        - `build_rootfs_in_chroot.sh` runs inside `root_part` chroot
+          - `remove_default_kernels` purges unneeded packages
+          - `install_packages` installs `GUEST_PACKAGES`
+          - `install_ttyd` installs `/usr/local/bin/ttyd`
+          - install gui
+          - `apply_custom_configs` applies configs
+      - `generate_final_package` packs `images.tar.gz`
+        - `build_id`
+        - `vm_config.json`
+        - `vmlinuz` and `initrd.img`
+          - <https://ci.android.com/builds/branches/aosp_kernel-common-android16-6.12/status.json>
+          - `last_known_good_build` of `aosp_kernel-common-android16-6.12.kernel_$TARGET_ARCH`
+        - `root_part`
+  - `build_cidata.sh` builds `debian_cidata_$ARCH.iso`
+    - `cidata-iso-package.go`'s `GenerateAndroidBuildActions`
+      - `CopySpecsToDir` copies `linux_vm_manager`
+      - `cp -R cloud-init_config ...`
+      - generate iso
