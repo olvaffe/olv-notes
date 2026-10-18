@@ -187,6 +187,9 @@
     - when a child uses `root` partition, it carves out cpus from the parent
     - when if we want a grandchild uses `root` partition?
       - we use `exclusive` along its ancestor chain
+- `CONFIG_CGROUP_SCHED` regulates cpu time
+- `CONFIG_BLK_CGROUP` regulates block io
+- `CONFIG_MEMCG` regulates memory usage
 - `CONFIG_CGROUP_HUGETLB` regulates hugetlb usage
   - hugetlb calls
     - `hugetlb_cgroup_charge_cgroup` to charge allocs
