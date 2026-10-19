@@ -139,76 +139,125 @@
 
 ## `node_stat_item`
 
-- `NR_LRU_BASE`
-  - this is the base enum for lru lists
-    - `NR_INACTIVE_ANON`
-    - `NR_ACTIVE_ANON`
-    - `NR_INACTIVE_FILE`
-    - `NR_ACTIVE_FILE`
-    - `NR_UNEVICTABLE`
-  - as page caches allocate/free pages, or as pages are moved between lru
-    lists, `update_lru_size` updates page counts on each list
-- `NR_SLAB_RECLAIMABLE_B` and `NR_SLAB_UNRECLAIMABLE_B`
-  - slab calls `account_slab` to update the counters
-- `NR_ISOLATED_ANON` and `NR_ISOLATED_FILE`
-  - during reclaim, `shrink_inactive_list` isolates pages and updates the
-    counters
-- `WORKINGSET_*`
-- `NR_ANON_MAPPED`, `NR_FILE_MAPPED`, `NR_FILE_PMDMAPPED`, `NR_ANON_THPS`, and
-  `NR_SHMEM_PMDMAPPED`
-  - as pages are added to rmap, these counters are updated
-- `NR_FILE_PAGES`
-  - as pages are allocated for page cache, shmem, swap cache, this counter is
-    updated
-- `NR_FILE_DIRTY`
-  - as pages are marked dirty, `folio_account_dirtied` updates the counter
-- `NR_WRITEBACK`
-  - between `__folio_start_writeback` and `__folio_end_writeback`
-- `NR_SHMEM` and `NR_SHMEM_THPS`
-  - as pages are allocated for shmem, these are updated
-- `NR_FILE_THPS`
-  - as pages are allocated for page cache, this counter is updated
-- `NR_VMSCAN_WRITE` and `NR_VMSCAN_IMMEDIATE`
-  - when `shrink_folio_list` reclaims a dirty folio,
-    - if file-backed, increments `NR_VMSCAN_IMMEDIATE`, marks folio for
-      immediate reclaim after bg writeback, and bail
-    - if shmem or anon, writeback directly and increments `NR_VMSCAN_WRITE`
-      - vmscan de-prioritizes such folios with lower `swappiness`
-- `NR_DIRTIED`
-  - pages dirtied
-- `NR_WRITTEN`
-  - pages written back
-- `NR_THROTTLED_WRITTEN`
-  - pages written back while reclaim is throttled
-- `NR_KERNEL_MISC_RECLAIMABLE`
-  - unused
-- `NR_FOLL_PIN_ACQUIRED` and `NR_FOLL_PIN_RELEASED`
+- used ram hierarchy
+  - `NR_FILE_PAGES`
+    - as pages are allocated for page cache, blk buffer, shmem, swap cache, this
+      counter is updated
+    - page caches and blk buffers
+      - `NR_KERNEL_FILE_PAGES`
+        - pages for page cache of fake kernel file
+      - `NR_FILE_THPS`
+        - as huge pages are allocated for page cache, this counter is updated
+    - `NR_SHMEM`
+      - as pages are allocated for shmem, these are updated
+      - `NR_SHMEM_THPS`
+    - `NR_SWAPCACHE`
+      - number of pages in swap cache
+  - `NR_ANON_MAPPED`
+    - as pages are added to rmap, this counter is updated
+    - `NR_ANON_THPS`
+  - `NR_SLAB_RECLAIMABLE_B`
+    - dentry, inode, etc.
+    - `WORKINGSET_NODES`
+  - `NR_SLAB_UNRECLAIMABLE_B`
+  - `NR_VMALLOC`
+    - `NR_KERNEL_STACK_KB`
+      - every task allocates `THREAD_SIZE` for kernel stack
+    - `NR_KERNEL_SCS_KB`
+    - other vmalloc
+  - `NR_PAGETABLE`
+    - number of pages used for pgtables
+  - `NR_SECONDARY_PAGETABLE`
+    - number of pages used for nested or iommu pgtables
+    - `NR_IOMMU_PAGES`
+      - number of pages used for iommu pgtables
+    - kvm secondary pgtables
+  - `NR_HUGETLB`
+    - explicit huge pages
+  - `NR_BALLOON_PAGES`
+    - pages owned by balloon (e.g., kvm guest balloon driver)
+  - `NR_KERNEL_MISC_RECLAIMABLE`
+    - unused
+  - gpu
+    - `NR_GPU_ACTIVE`
+      - pages for gpu objects
+    - `NR_GPU_RECLAIM`
+      - pages for gpu pools
+  - unaccounted pages
+    - vmemmap array, kernel image, etc.
+- lru view (roughly `NR_FILE_PAGES + NR_ANON_MAPPED`)
+  - `NR_LRU_BASE`
+    - this is the base enum for lru lists
+      - `NR_INACTIVE_ANON`
+      - `NR_ACTIVE_ANON`
+      - `NR_INACTIVE_FILE`
+      - `NR_ACTIVE_FILE`
+      - `NR_UNEVICTABLE`
+    - as page caches allocate/free pages, or as pages are moved between lru
+      lists, `update_lru_size` updates page counts on each list
+  - `NR_ISOLATED_ANON` and `NR_ISOLATED_FILE`
+    - during reclaim, `shrink_inactive_list` isolates pages and updates the
+      counters
+- mapped view (roughly `NR_FILE_PAGES`)
+  - `NR_FILE_MAPPED`
+    - as pages are added to rmap, these counters are updated
+    - `NR_FILE_PMDMAPPED`
+    - `NR_SHMEM_PMDMAPPED`
+  - unmapped pagecaches
+- writeback view (roughly `NR_FILE_PAGES`)
+  - `NR_FILE_DIRTY`
+    - as pages are marked dirty, `folio_account_dirtied` updates the counter
+  - `NR_WRITEBACK`
+    - between `__folio_start_writeback` and `__folio_end_writeback`
+  - clean pagecaches/shmems/swapcache
+- event counters
+  - they never decrement
+  - writeback
+    - `NR_DIRTIED`
+      - pages dirtied
+    - `NR_WRITTEN`
+      - pages written back
+    - `NR_THROTTLED_WRITTEN`
+      - pages written back while reclaim is throttled
+    - `NR_VMSCAN_WRITE` and `NR_VMSCAN_IMMEDIATE`
+      - when `shrink_folio_list` reclaims a dirty folio,
+        - if file-backed, increments `NR_VMSCAN_IMMEDIATE`, marks folio for
+          immediate reclaim after bg writeback, and bail
+        - if shmem or anon, writeback directly and increments `NR_VMSCAN_WRITE`
+          - vmscan de-prioritizes such folios with lower `swappiness`
+  - total pages scanned view 1
+    - `shrink_inactive_list` counts `PGSCAN_*` for scanned pages
+    - `PGSCAN_KSWAPD`
+    - `PGSCAN_DIRECT`
+    - `PGSCAN_KHUGEPAGED`
+    - `PGSCAN_PROACTIVE`
+  - total pages scanned view 2
+    - `PGSCAN_ANON`
+    - `PGSCAN_FILE`
+  - total pages reclaimed view 1
+    - `shrink_inactive_list` counts `PGSTEAL_*` for reclaimed pages
+    - `PGSTEAL_KSWAPD`
+    - `PGSTEAL_DIRECT`
+    - `PGSTEAL_KHUGEPAGED`
+    - `PGSTEAL_PROACTIVE`
+  - total pages reclaimed view 2
+    - `PGSTEAL_ANON`
+    - `PGSTEAL_FILE`
+  - total pages demoted
+    - pages demoted to a slower memory tier
+    - `PGDEMOTE_*`
+  - total pages promoted
+    - pages promoted to a faster memory tier
+    - `PGPROMOTE_*`
+  - lru rotation and refill 
+    - `PGROTATE_ANON`
+    - `PGROTATE_FILE`
+    - `PGREFILL`
+  - working set
+    - `WORKINGSET_*`
   - gup
-- `NR_KERNEL_STACK_KB`
-  - every task allocates `THREAD_SIZE` for kernel stack
-- `NR_PAGETABLE`
-  - number of pages used for pgtables
-- `NR_SECONDARY_PAGETABLE`
-  - number of pages used for nested or iommu pgtables
-- `NR_IOMMU_PAGES`
-  - number of pages used for iommu pgtables
-- `NR_SWAPCACHE`
-  - number of pages in swap cache
-- `PGPROMOTE_*`
-  - pages promoted to a faster memory tier
-- `PGDEMOTE_*`
-  - pages demoted to a slower memory tier
-- `PGSTEAL_*` and `PGSCAN_*`
-  - `shrink_inactive_list` counts `PGSTEAL_*` for reclaimed pages and counts
-    `PGSCAN_*` for scanned pages
-- `NR_HUGETLB`
-  - explicit huge pages
-- `NR_BALLOON_PAGES`
-  - pages owned by balloon (e.g., kvm guest balloon driver)
-- `NR_KERNEL_FILE_PAGES`
-  - pages for page cache of fake kernel file
-- `NR_GPU_ACTIVE` and `NR_GPU_RECLAIM`
-  - pages for gpu objects and gpu pools
+    - `NR_FOLL_PIN_ACQUIRED`
+    - `NR_FOLL_PIN_RELEASED`
 
 ## `zone_stat_item`
 
