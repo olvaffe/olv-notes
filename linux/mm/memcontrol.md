@@ -29,15 +29,39 @@
 
 ## Charging Internals
 
+- callbacks
+  - `mem_cgroup_css_alloc` allocs a `mem_cgroup`
+  - `mem_cgroup_css_online` onlines a `mem_cgroup`
+    - `obj_cgroup_alloc` allocs an `obj_cgroup`
+      - subsystems work with light `obj_cgroup` rather than heavy `mem_cgroup`
+      - when a cgroup is removed, heavy `mem_cgroup` can be freed and light
+        `obj_cgroup` lives on for a bit longer
 - `obj_cgroup` vs `mem_cgroup`
   - `objcg->memcg` is a weak pointer to memcg
     - `get_mem_cgroup_from_objcg` promotes it to strong pointer
-  - each `page->memcg_data` points to objcg
-    - it used to point to memcg
-      - when the memcg is destroyed, it is not freed until the last page loses
-        the reference
-      - with objcg and weak pointer, the memcg is freed immediately
   - `objcg->nr_charged_bytes` enables sub-page charging
+- `page->memcg_data`
+  - it used to point to memcg
+    - when the memcg is destroyed, it is not freed until the last page loses
+      the reference
+    - with objcg and weak pointer, the memcg is freed immediately
+  - buddy alloc: `alloc_pages`
+    - with `__GFP_ACCOUNT`, `__memcg_kmem_charge_page` calls `page_set_objcg`
+      to update the pointer with `MEMCG_DATA_KMEM`
+    - without `__GFP_ACCOUNT`, the page is not accounted
+  - slab alloc: `kmalloc`, `kmem_cache_create`, etc.
+    - `KMALLOC_CGROUP` implies `SLAB_ACCOUNT`
+    - with `SLAB_ACCOUNT`, `allocate_slab` calls `account_slab` to update the
+      pointer with `MEMCG_DATA_OBJEXTS`
+      - `slab->obj_exts` and `page->memcg_data` alias with each other
+    - without `SLAB_ACCOUNT`, the slab is not accounted
+  - user alloc: anon, shmem, page cache, etc.
+    - they use buddy alloc, but they do not set `__GFP_ACCOUNT`
+    - instead,
+      - `alloc_anon_folio` calls `mem_cgroup_charge` explictly
+      - `shmem_alloc_and_add_folio` calls `mem_cgroup_charge` explicitly
+      - `filemap_add_folio` calls `mem_cgroup_charge` explicitly
+    - `mem_cgroup_charge` calls `commit_charge` to update the pointer
 - `charge_memcg` charges a folio to a memcg
   - `try_charge_memcg`
     - `consume_stock` consumes the pre-charged quota

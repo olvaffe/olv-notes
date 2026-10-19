@@ -349,14 +349,28 @@
 ## Controller
 
 - a `struct cgroup_subsys` represents a controller
+  - `cgroup_subsys` is an array of all controllers
+- remember that when `cgroup_create` creates a new `cgroup`,
+  - controllers are not enabled for the cgroup and there is no
+    `cgroup_subsys_state`
+  - except for controllers with `implicit_on_dfl`, which are enabled
+    automatically
 - callbacks
   - hierarchy lifecycle
     - when a controller is enabled for a cgroup, `css_create` calls
       - `ss->css_alloc` to alloc a css
       - `ss->css_online` to enable the css
-    - when a controller is disabled for a cgroup, `kill_css` calls
-      - `ss->css_offline` to disable the css
-      - `ss->css_free` to free the css
+    - when a controller is disabled for a cgroup,
+      - `kill_css_sync` calls
+        - `ss->css_killed` to notify the css
+      - `kill_css_finish` queues `css_killed_work_fn` to call
+        - `ss->css_offline` to disable the css
+      - when css refcount reaches 0, `css_release` queues
+        `css_release_work_fn` to call
+        - `ss->css_rstat_flush` to flush rstat
+        - `ss->css_released` to notify the css
+      - `css_release_work_fn` also queues `css_free_rwork_fn` to call
+        - `ss->css_free` to free the css
   - task migration
     - when a task is migrated to a cgroup, `cgroup_migrate_execute` calls
       - `ss->can_attach` to check
@@ -370,7 +384,10 @@
       - `ss->exit` to exit
     - after a task is released, `cgroup_task_release` calls
       - `ss->release` to release
-- `CONFIG_CGROUP_PIDS`
+
+## `CONFIG_CGROUP_PIDS`
+
+- callbacks
   - `pids_css_alloc` allocs a `pids_cgroup`
   - `pids_css_free` frees the `pids_cgroup`
   - `pids_can_attach`
