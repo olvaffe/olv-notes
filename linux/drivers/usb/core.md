@@ -170,6 +170,33 @@
 - FF, Vendor-specific
   - Indicates that a device needs vendor-specific drivers
 
+## lsusb
+
+- bus and device numbers are made up and are assigned sequentially
+  - on pc, there are typically multiple usb controllers that are pci devices
+  - as controllers are probed, `usb_register_bus` assigns `bus->busnum`
+    sequentially
+    - 1.x/2.x controller has a 1.x/2.x bus
+    - 3.x controller has both a 2.x bus and a 3.x bus
+      - `usb_hcd_pci_probe` creates and adds the 2.x bus
+      - `usb_create_shared_hcd` creates and `usb_add_hcd` adds the 3.x bus
+  - as devices are discovered on each bus, `choose_devnum` assigns
+    `udev->devnum` sequentially within the bus
+- `/dev/bus/usb/<bus>/<dev>` uses bus and device numbers
+  - `usb_devnode` returns `bus/usb/<busnum>/<devnum>`
+- `/sys/bus/usb/devices/<bus>-<port[.port]...>:<config>-<iface>` uses bus
+  number and device path instead
+  - `dev_set_name` sets to `<busnum>-<devpath>:<config>-<iface>`
+  - e.g., `3-1.3:1.3`
+    - bus 3
+    - port 1 (of root hub)
+    - port 3 (of external hub)
+    - config 1
+      - current active config, which is almost always 1
+    - iface 3
+- `lsusb -v -s [<bus>:]<dev>` shows a specific device verbosely
+- `lsusb -tvv` shows the tree structure
+
 ## Authorization
 
 - `Device is not authorized for usage`
@@ -220,24 +247,3 @@
   - fingerprint reader uses bus 3, port 3
   - camera uses bus 3, port 4
   - bt uses bus 3, port 10
-
-## lsusb
-
-- `lsusb -v -s <bus>:<dev>`
-- `lsusb -tvv` shows the tree structure
-  - each usb controller creates one or more busses
-    - 1.x/2.x controller creates a 1.x/2.x bus
-    - 3.x controller creates a 3.x bus and a 2.x bus
-    - on pc, there are typically multiple usb controllers that are pci devices
-  - usb controllers can be probed in any order
-    - bus numbers are assigned sequentially when probed
-    - dev numbers are assigned sequentially within each bus
-- sysfs naming: `<bus>-<port[.port]...>:<config>-<iface>`
-  - this is different from `lsusb` or `/dev/bus/usb` which does not have ports
-    in their namings
-  - e.g., `3-1.3:1.3`
-    - bus 3
-    - port 1 (which is a hub) then port 3 (of the hub)
-    - config 1
-      - current active config, which is almost always 1
-    - iface 3
