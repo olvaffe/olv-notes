@@ -142,3 +142,34 @@
     - `kmalloc` calls `slab_post_alloc_hook` after sub-alloc
       - `memcg_slab_post_alloc_hook` charges to memcg if `__GFP_ACCOUNT` or
         `SLAB_ACCOUNT`
+
+## Stats
+
+- `memcg_stat_item` extends `node_stat_item`
+  - the first memcg stat item is after the last node stat item
+  - there are holes
+    - only those on `memcg_node_stat_items` and `memcg_stat_items` are allowed
+    - `BAD_STAT_IDX` returns true for holes
+- each tracked page belongs to a memcg
+  - `page->memcg_data` points to the memcg
+- lruvec is per-cgroup and per-node
+  - `mem_cgroup_lruvec` returns the lruvec for the `(memcg, pgdat)` pair
+  - when `CONFIG_MEMCG=n`, it is per-node
+- why `memcg_stat_item`?
+  - for `node_stat_item`, we account for allocated physical pages
+    - e.g., `lruvec_stat_mod_folio`
+      - `folio_pgdat` returns the pgdat
+      - `folio_memcg` returns the memcg
+      - `mod_node_page_state` updates the node stat
+      - if tracked, `mem_cgroup_lruvec` returns the lruvec
+        - `mod_memcg_lruvec_state` updates the lruvec stat
+  - for `memcg_stat_item`, we don't require a physical page
+    - `mod_memcg_state` updates the memcg stat
+  - `MEMCG_SWAP` accounts for `swp_entry_t`
+    - it is only read on cgroup v1
+  - `MEMCG_SOCK` accounts for `sock`
+  - `MEMCG_PERCPU_B` accounts for per-cpu bytes
+  - `MEMCG_KMEM` accouts for bytes (and pages)
+  - `MEMCG_ZSWAP_B`
+  - `MEMCG_ZSWAPPED`
+  - `MEMCG_ZSWAP_INCOMP`
