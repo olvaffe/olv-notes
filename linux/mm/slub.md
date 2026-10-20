@@ -34,9 +34,18 @@
         - `__slab_update_freelist` updates `slab->freelist_counters`
           atomically
     - `new_slab` allocates a new slab and is the slowest path
-      - note that `struct slab` overlays `struct page`
-      - `slab->freelist` is the singly-linked list of free objects
+      - `alloc_slab_page` allocs from buddy and casts `page` to `slab`
+        - that is, `struct slab` overlays `struct page`
+      - `kasan_poison_slab` poisons the slab
+      - `alloc_slab_obj_exts_early` allocs `slab->obj_exts`
+      - `account_slab`
+        - `alloc_slab_obj_exts` allocs `slab->obj_exts` if `SLAB_ACCOUNT` and
+          not already allocated in `alloc_slab_obj_exts_early`
+        - it always updates `cache_vmstat_idx` stat
+          - `NR_SLAB_RECLAIMABLE_B` or `NR_SLAB_UNRECLAIMABLE_B`, depending on
+            `SLAB_RECLAIM_ACCOUNT`
     - `alloc_from_new_slab` sub-allocs from the new slab
+      - `slab->freelist` is the singly-linked list of free objects
       - it pops an object from `slab->freelist`
   - `slab_want_init_on_alloc` returns true if `__GFP_ZERO` or
     `CONFIG_INIT_ON_ALLOC_DEFAULT_ON`
