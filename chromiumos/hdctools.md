@@ -142,6 +142,15 @@
     - two usb-a ports are muxed to both gl3590 and cyusb33
     - rj45 is to rtl8153
     - mini dp is to dut usb-c
+- usb3 to dut is disabled by default
+  - `dut-control reinit_dut_usb3_en:enabled` or `dut_usb3 enable` in console
+    enables usb3 lanes
+  - some duts might still refuse to use usb3 for reasons
+    - e.g., servo enables debug accessory for ccd
+    - `cc srcdts` in console is the default
+      - `src` allows charger
+        - servo can be pd src or pd sink depending on if charger is connected
+      - `dts` enables dts (debug)
 
 ## Command Lines
 
