@@ -102,8 +102,9 @@
     - `purwa`: 8-core, with X1-45 gpu
     - qualcomm compute platform: `x1e80100-qcp.dts`
     - compute reference design: `x1e80100-crd.dts`
-  - 2025, X2 Elite/Plus (SC8480, X2-80-100/X2P-42-100), 3nm, Adreno X2-85/X2-45
-    - `glymur`
+  - 2025, X2 Elite/Plus (SC8480, X2E-80-100/X2P-42-100), 3nm, Adreno X2-85/X2-45
+    - `glymur`: 18-core, with X2-90 gpu
+    - `mahua`: 12-core, with X2-85 gpu
 
 ## SoC: Gaming Platforms
 
