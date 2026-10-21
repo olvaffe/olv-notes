@@ -47,26 +47,33 @@
   - Gen 4x1: 40Gbit/s
   - Gen 4x2: 80Gbit/s (two lanes)
 - Power
-  - Low Power: `5V * 0.1A = 0.5W`
-  - High Power: up to `5V * 0.5A = 2.5W`
-  - Low Power SuperSpeed: `5V * 0.15A = 0.75W`
-  - High Power SuperSpeed: up to `5V * 0.9A = 4.5W`
-  - Two-Lane SuperSpeed (3.2 Gen2x2): up to `5V * 1.5A = 7.5W`
+  - 2.x  Low Power: `5V * 0.1A = 0.5W`
+  - 2.x High Power: `5V * 0.5A = 2.5W`
+  - 3.x  Low Power: `5V * 0.15A = 0.75W`
+  - 3.x High Power: `5V * 0.9A = 4.5W`
+    - 3.2 Gen2x2: `5V * 1.5A = 7.5W`
   - BC 1.2: `5V * 1.5A = 7.5W`
-  - USB-C: `5V * 1.5A = 7.5W` and `5V * 3A = 15W`
+  - USB-C:
+    - if CC pin is not connected, it is the same as USB-A
+    - CC pin always advertises `5V * 1.5A = 7.5W` or `5V * 3A = 15W`
+    - CC pin optionally advertises USB PD
 - USB Type-A
   - USB 1.0 and 2.0 has 4 pins: VBUS, D-, D+, and GND
   - USB 3.0 has 9 pins: 4 pins plus RX-, RX+, TX-, TX+, GND
 - USB Type-C
+  - Type-C has 12 pins on each side: 9 pins plus CC, SBU, and second VBUS
   - revisions
-    - 1.0, 2014
+    - 1.0, 2014, original
     - 1.1, 2015
     - 1.2, 2016
     - 1.3, 2017
     - 1.4, 2019
-    - 2.0, 2019
+    - 2.0, 2019, USB4
     - 2.1, 2021, USB PD up to 240W
     - 2.2, 2022, USB4 2.0
+    - 2.3, 2023
+    - 2.4, 2024
+    - 2.5, 2026
   - alternate mode
     - this is different from USB4 / TB3 tunnelling
     - DisplayPort 1.2, 1.4, 2.0
@@ -77,19 +84,18 @@
     - alternate mode is optional
     - PD is optional
 - USB Power Delivery
-  - 1.0
-    - 5V: 2A
-    - 12V: 1.5A, 3A, 5A
-    - 20V: 3A, 5A
-  - 2.0/3.0
+  - 1.0, 2012, USB-A and USB-B
+    - 5 fixed profiles: 5V2A, 12V{1.5,3,5}A, and 20V{3,5}A
+    - very rare
+  - 2.0, 2014, USB-C
     - 5V: 0.1A ~ 3A
     - 9V: 1.67A ~ 3A
     - 15V: 1.8A ~ 3A
     - 20V: 2.25A ~ 5A
-  - 3.1
-    - 28V
-    - 36V
-    - 48V: 5A
+  - 3.0, 2016
+  - 3.1, 2021, EPR
+    - 28V, 36V, 48V: up to 5A
+  - 3.2, 2023
 - Connectors
   - most common: type A, type C
   - was common: mini B, micro B
