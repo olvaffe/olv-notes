@@ -1,28 +1,50 @@
 # Kernel USB Type-C
 
-## A Type-C Port Needs a Driver?
+## Type-C HW
 
-- controllers usually function autonomously and do not need drivers
-  - but simpler controllers might need one
-- a driver is also needed to
-  - get the port status
-  - swap the port power role (to supply or to consume power)
-  - swap the port data role (to be host or device)
-- types of hw controllers
-  - if the hw runs a FW and supports UCSI iface,
-    - kernel talks to the hw over UCSI
-  - if the hw is FW-less but supports TCPCI iface,
-    - kernel provides TCPM state machine and talks to the hw over TCPCI
-  - if the hw is FW-less aod does not support TCPCI iface,
-    - kernel provides TCPM state machine and talks to the hw over hw-specific
-      driver
+- type-c has 12 pins on each side
+  - control plane: cc
+  - power plane: vbus/gnd x2
+  - data plane: tx1/rx1/tx2/rx2/sbu
+  - 2.x compat: d+/d-
+- control plane: `pdc/tcpc <-> port`
+  - pdc runs fw
+    - kernel talks to fw using ucsi or proprietary iface
+    - fw is autonomous
+  - tcpc is dumb
+    - kernel talks to tcpc using tcpci or proprietary iface
+    - kernel implements tcpm state machine
+      - tcpc negotiates over cc pin
+      - kernel updates soc, mux, retimer, etc.
+- power plane: `src/sink <-> port`
+  - control plane negotiates pd src/sink
+  - as pd src, 5v rail connects to vbus
+  - as pd sink, a charger ic connects to vbus
+    - charge ic in turns outputs to vsys and battery
+- data plane: `soc (usb3 and dp) <-> mux <-> retimer -> port`
+  - soc can switch between host or device
+- 2.x compat: `soc (usb2) <-> port`
+
+## UCSI (USB Type-C Connector System Software Interface)
+
+- UCSI is a standard interface that the os can use to communicate with PDC, if
+  PDC FW supports the interface
+  - PDC FW can work autonomously
+  - kernel ucsi driver is optional; it is to get the port status or to
+    override port power/data roles
+- `CONFIG_TYPEC_UCSI` is a full UCSI implementation
+- `CONFIG_UCSI_ACPI` is a driver for UCSI over ACPI
+  - it registers a platform driver for `ucsi_acpi`
+  - it calls `ucsi_create` and `ucsi_register`
 
 ## Type-C Port Controller Manager
 
-- the os must provide a controller manager if the hw controller is simple
-  - e.g., the hw controller does not run its own firmware
+- the os must provide a controller manager if the hw controller is not PDC but
+  only dumb TCPC
+  - a manager can be written from scratch or uses the TCPM framework
 - `CONFIG_TYPEC_TCPM` consists of helpers to write a manager
   - `tcpm_register_port` registers a port
+  - this is used when the TCPC does not support TCPCI
 - `CONFIG_TYPEC_TCPCI` consists of helpers to write a manager for controllers
   that support the standard TCPCI (Type-C Port Controller Interface)
   - `tcpci_register_port` registers a port
@@ -33,15 +55,3 @@
   - it initializes `tcpci_data` and calls `tcpci_register_port`
     - it provides callbacks for `init`, `set_vconn`, and `set_vbus`
     - it has a irq handler that calls `tcpci_irq`
-- there are also drivers that are based on TCPM but are not based on TCPCI
-- then there are drivers that are written from scratch
-
-## UCSI (USB Type-C Connector System Software Interface)
-
-- UCSI is a standard interface that the os can use to communicate with a port
-  if the port supports the interface
-  - it's used to get the port status and to swap the port roles
-- `CONFIG_TYPEC_UCSI` is a full UCSI implementation
-- `CONFIG_UCSI_ACPI` is a driver for UCSI over ACPI
-  - it registers a platform driver for `ucsi_acpi`
-  - it calls `ucsi_create` and `ucsi_register`

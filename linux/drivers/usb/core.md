@@ -79,6 +79,8 @@
     - DisplayPort 1.2, 1.4, 2.0
     - Thunderbolt 3
     - HDMI 1.4b
+      - no real user
+      - hdmi adapters use DP alt mode and covert DP to HDMI
   - Cable
     - SuperSpeed is optional
     - alternate mode is optional
