@@ -115,14 +115,25 @@
     the kernel from the internal disk
     - it calls `vb2api_load_kernel` from vboot to load the kernel image
     - internally,
-      - `GptNextKernelEntry` picks the kernel with the highest priority
-        - it only considers partitions with `S1` or `Tn` with `n>0`
-      - `GptUpdateKernelEntry` updates the gpt flags
-        - `GPT_UPDATE_ENTRY_TRY` decrements `T` if `S0`
+      - `GptNextKernelEntry` picks the next kernel to boot
+        - it only considers partitions that are
+          - `IsBootableEntry`: `guid_chromeos_kernel` or `guid_android_vbmeta`
+          - either of
+            - `GetEntrySuccessful`: successful bit is set
+            - `GetEntryTries`: tries is greater than 0
+          - `GetEntryPriority`: priority is greater than 0
+        - it picks the partition with the highest priority
+          - if two partitions have the same priority, they are picked in order
+      - `GptUpdateKernelEntry` updates the gpt flags only if `S0`
+        - if the kernel fails verification, `GPT_UPDATE_ENTRY_BAD` sets
+          `P0,T0`
+        - if the kernel passes verification, `GPT_UPDATE_ENTRY_TRY` decrements
+          `T`
           - if `T` reaches 0, set `P0` as well
-        - `GPT_UPDATE_ENTRY_BAD` sets `P0,T0` if `S0`
-        - `GPT_UPDATE_ENTRY_ACTIVE` sets `S1,P2,T0`
-        - `GPT_UPDATE_ENTRY_INVALID` sets `S0,P0,T0`
+      - later, when userspace is up, userspace sets `S1`
+        - `S1` means known good
+        - in normal boot flow, depthcharge never resets to `S0` or updates
+          other gpt flags for a known good partition
   - `vboot_boot_kernel` boots the loaded kernel
     - `fill_boot_info` fills in the boot info including the cmdline
     - `commandline_subst` replaces the cmdline
@@ -271,8 +282,10 @@
     - if a target is specified, it updates reboot reason in misc partition
       - <https://android.googlesource.com/platform/bootable/recovery/+/refs/heads/android17-release/bootloader_message/include/bootloader_message/bootloader_message_core.h>
   - `fastboot_cmd_set_active` sets the active slot
-    - it invalidates all entries and activates the specifies entry
-    - it plays with cros-specific gpt attrs
+    - it invalidates all entries and activates the specified entry
+    - it calls `GptUpdateKernelWithEntry` to play with cros-specific gpt attrs
+      - `GPT_UPDATE_ENTRY_INVALID` sets `S0,P0,T0` for all bootable partitions
+      - `GPT_UPDATE_ENTRY_ACTIVE` sets `S1,P2,T0` for the new active partition
   - `fastboot_cmd_snapshot_update` queries/updates super partition a/b state
     - android ota goes through 3 steps
       - it snapshots updated partitions and sets `misc_virtual_ab_message` to
