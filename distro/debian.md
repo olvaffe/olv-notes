@@ -109,6 +109,14 @@
   `Essential/Important/Protected` packages and their dependencies/recommends
   - also packages listed in `NeverAutoRemove` of `/etc/apt/apt.conf.d/01autoremove`
 
+## Multi-Arch
+
+- `dpkg --print-architecture` prints the main arch
+- `dpkg --print-foreign-architectures` print foreign archs
+- `dpkg --add-architecture i386` adds i386
+- `dpkg --remove-architecture i386` removes i386
+  - `apt purge "*:i386"` removes i386 packages first
+
 ## APT
 
 - `apt-get`
