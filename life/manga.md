@@ -1,5 +1,20 @@
 # Manga
 
+## Awards
+
+- Professional
+  - <https://ja.wikipedia.org/wiki/手塚治虫文化賞>
+  - <https://ja.wikipedia.org/wiki/日本漫画家協会賞>
+- Industry
+  - <https://ja.wikipedia.org/wiki/このマンガがすごい!>
+  - <https://ja.wikipedia.org/wiki/全国書店員が選んだおすすめコミック>
+  - <https://ja.wikipedia.org/wiki/マンガ大賞>
+- Reader
+  - <https://ja.wikipedia.org/wiki/次にくるマンガ大賞>
+- Publisher
+  - <https://ja.wikipedia.org/wiki/小学館漫画賞>
+  - <https://ja.wikipedia.org/wiki/講談社漫画賞>
+
 ## Publishers
 
 - Publishers
