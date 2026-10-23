@@ -584,7 +584,7 @@
       - select `USB Serial Console device support`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if sc7180
-    - select `USB Gadget Support` if desired
+    - select `USB Gadget Support` if desired or typec tcpm
       - select `USB Gadget functions configurable through configfs`
         - select desired functions
     - select `USB Type-C Support`
