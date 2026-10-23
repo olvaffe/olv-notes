@@ -147,9 +147,11 @@
     - `sg_format --format /dev/sgX`
 - NVME erase
   - newer sanitize
+    - `nvme id ctrl /dev/nvmeX | grep sanicap`
     - `nvme sanitize /dev/nvmeX --action=start-block-erase`
   - older format
-    - `nvme format`
+    - `nvme id ctrl /dev/nvmeX | grep fna`
+    - `nvme format /dev/nvmeXnY --ses=1`
 
 ## GPT
 
