@@ -1,5 +1,29 @@
 # Chrome OS hdctools
 
+## Manual Usage
+
+- `pip install backoff grpcio-tools pyserial pyusb`
+- one-time setup
+  - `python servo/grpc.py`, to generate`servo/common/proto/*.py`
+  - `./servo/data/generate_ina_controls.py -i servo/data/servo_v4p1_inas.py`,
+    to generate `servo/data/servo_v4p1_inas.xml`
+  - edit `servo/core/servod.py` to return `True` from `exit_if_in_chroot`
+    - or `export CROS_WORKON_SRCROOT=1 I_NEED_SERVOD=1` every time
+  - edit `ec3po/console.py` to set `PW_TOKENIZER_SUPPORTED` to `False`
+- `sudo env PATH=$PATH PYTHONPATH=$PWD python servo/core/servod.py -b <board> -m <model>`
+  - there are exceptions about firmware checks
+    - they require
+      - `servo_updater/setup.py` to install `share/servo_updater/configs`
+      - `dockerfiles/Dockerfile.base` to provision
+        `/usr/share/servo_updater/firmware`
+    - edit `servo/data/servo_v4p1.xml` to remove `init="check"` from
+      `servo_v4p1_firmware_uptodate` to skip
+- `PYTHONPATH=$PWD python servo/core/dut_control.py`
+  - `gsc_uart_pty`
+  - `ec_uart_pty`
+  - `cpu_uart_pty`
+  - `servo_uart_pty`
+
 ## `start-servod`
 
 - `start-servod`
