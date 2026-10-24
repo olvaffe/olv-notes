@@ -1,6 +1,6 @@
 # Chrome OS hdctools
 
-## Manual Usage
+## Direct Usage
 
 - `pip install backoff grpcio-tools pyserial pyusb`
 - one-time setup
@@ -23,6 +23,11 @@
   - `ec_uart_pty`
   - `cpu_uart_pty`
   - `servo_uart_pty`
+- EC/AP flash does not quite work
+  - `flash_ec` depends on `dut-control`, `shflags`, `uartupdatetool`,
+    `npcx_monitor.bin`, etc.
+  - `futility` depends on `dut-control` and `libflashrom`
+  - it is probably easier to download and unpack docker image
 
 ## `start-servod`
 
