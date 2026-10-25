@@ -267,3 +267,15 @@
       calls the real function in `<subsys>.dll`
 - ARM64X
   - it is fat and contains both ARM64EC and ARM64 code
+
+## Controllers
+
+- <https://github.com/GloriousEggroll/proton-ge-custom/blob/master/docs/CONTROLLERS.md>
+- a game can use any combo of all of these apis
+  - `rawinput` uses raw hid protocol and vendor extensions directly
+  - `hid` uses win hid layer which in turn uses raw hid protocol
+  - `xinput` is for xbox controllers and is implemented on top of `rawinput`
+  - `dinput` is generic and is implemented on top of `hid`
+  - `winmm` is legacy and is implemented on top of `dinput`
+- `winebus.sys` implements `rawinput`
+  - it uses either sdl2 or hidraw on linux
