@@ -116,13 +116,6 @@
 
 - <https://gitlab.freedesktop.org/libevdev/libevdev>
   - libevdev is a low-level wrapper for evdev
-- <https://gitlab.freedesktop.org/libevdev/evemu>
-  - evdev provides tools to debug evdev
-  - `evemu-describe` shows info about an evdev
-  - `evemu-record` shows (optionally records) events for an evdev
-  - `evemu-device` creates an uinput evdev
-  - `evemu-play` generates a sequence of events
-  - `evemu-event` generates an event
 - <https://gitlab.freedesktop.org/libinput/libinput>
   - libinput is a high-level wrapper for evdev
   - it depends on
@@ -131,6 +124,18 @@
     - `libevdev`
     - `libwacom`
   - userspace compositors use libinput
+  - `libinput list-devices` lists libinput devices
+  - `libinput debug-events` prints libinput events
+  - `libinput list-kernel-devices` lists evdev devices
+  - `libinput record` prints evdev info and events
+    - `--show-keycodes` to show real keycodes
+    - `--no-events` to show evdev info and exit
+  - `libinput replay` replays recorded evdev info and events
+    - it uses uinput
 - <https://gitlab.freedesktop.org/libinput/libei>
   - libei provides emulated input
   - userspace compositors may use libei, but the adoption rate is low
+- <https://gitlab.freedesktop.org/libevdev/evemu>
+  - evemu is in maintenance mode
+- <https://gitlab.freedesktop.org/libevdev/evtest>
+  - evtest is even older than evemu
