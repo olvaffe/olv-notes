@@ -22,7 +22,7 @@
 - CTAP stands for Client to Authenticator Protocol
   - it defines two protocols: CTAP1/U2F and CTAP2
     - CTAP1/U2F is designed for 2FA
-    - CTAP2 is deisgned for both 2FA and passwordless
+    - CTAP2 is deisgned for both 2FA and passwordless (resident passkey)
   - an authenticator supporting either (or both) protocol is referred to as a
     U2F or FIDO2/WebAuthn authenticator
     - a security key is an example of an authenticator
@@ -38,21 +38,26 @@
   - early grey is for discrete rot
   - darjeeling is for integrated rot
 - <https://github.com/google/opensk>
-  - fido2 sw impl
+  - fido2 fw impl
 
 ## Command Line
 
-- `fido2-token -L [<dev>]` lists various stuff
-  - `-L` lists authenticators
-- `fido2-token -I <dev>` shows various stuff
-  - `-I` shows protocol version and caps
-- `fido2-token -G <dev>` gets various stuff
-- `fido2-token -S <dev>` sets various stuff
-  - `-S` sets pin
-- `fido2-token -D <dev>` deletes/disables various stuff
-- `fido2-token -C <dev>` changes various stuff
-  - `-C` changes pin
-- `fido2-token -R <dev>` resets device
+- `fido2-token -L` lists
+  - `-L` alone lists authenticators
+  - `-L -r <dev>` lists relaying parties
+    - `<rp_idx>: <rp_hash> <rp_id>`
+      - hash is `echo -n <rp_id> | openssl dgst -sha256 -binary | base64`
+  - `-L -k <rp_id> <dev>` lists resident creds for the relaying party
+    - `<cred_idx>: <cred_id> <user.name> <user.id> <algo> <flags> <payload>`
+- `fido2-token -I` shows info
+  - `-I` alone shows protocol version and caps
+  - `-I -k <rp_id> -i <cred_id> <dev>` shows pubkey of the resident cred
+- `fido2-token -S` sets
+  - `-S` alone sets pin after factory reset
+- `fido2-token -G` gets
+- `fido2-token -D` deletes/disables
+- `fido2-token -C` changes the existing pin
+- `fido2-token -R` factory resets
 
 ## Yubikey
 
@@ -114,7 +119,7 @@
 - opensc
   - `app -> PKCS #11 (opensc impl) -> pcsc-lite`
     - PKCS #11 defines a standard C API
-- taiwain
+- taiwan
   - MOICA card: `browser -> HiPKILocalSignServerApp -> PKCS #11 (HiCOS impl) -> pcsc-lite`
     - `HiPKILocalSignServerApp` provides a web service on port 61161
     - the api is json-based
