@@ -70,3 +70,8 @@
   - `/opt/homebrew/Cellar/<formula>/<version>` are installed formulas
   - `/opt/homebrew/Caskroom/<cask>/<version>` are installed casks
     - the real `.app` is under `/Applications`
+- terms
+  - a formula is a package definition that builds from source
+    - a bottle is a pre-built formula package
+  - a cask is a package definition that repackages binaries
+  - a tap is a third-party repo for formulas/casks
