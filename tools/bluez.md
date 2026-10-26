@@ -15,14 +15,66 @@
     - the dongle must be pairable
     - a pairing code might be needed
       - in bluez, an agent is enabled to provide the code interactively
-    - once paired, both the computer and the dongle remember one another in
-      their databases
+  - once paired, both the computer and the dongle remember one another in
+    their databases
+    - "pairing" generates and exchanges the shared key for secure connection
+    - "bonding" saves the shared key to persistent storage
   - the computer connects to the paired dongle
 - given a paired dongle,
   - when the dongle is powered on, it connects to one of the paired computers
     in its database
   - because the dongle is in the computer's database, connection is
     established
+    - an auth might be needed unless the computer has trusted the dongle
+
+## BlueZ `bluetoothctl`
+
+- a CLI tool to talk to `bluetoothd`
+  - `show` shows the controller info
+  - `scan on` discovers discoverable devices and adds them to database
+    temporarily
+  - `devices` lists devices in the database
+  - `info <dev>` shows the device info from the database
+  - `pair <dev>` pairs with the device
+  - `trust <dev>` trusts the device
+  - `connect <dev>` connects to the device
+- `main`
+  - it connects to the system bus
+  - it creates a client for `/org/bluez` of `org.bluez`
+  - it registers proxy handlers
+    - `proxy_added`
+    - `proxy_removed`
+    - `property_changed`
+  - `proxy_added`
+    - when `org.bluez.AgentManager1` is added, `agent_register` is called
+      - this is equivalent to automatic `agent on`
+- `cmd_agent` calls `org.bluez.AgentManager1.RegisterAgent`
+  - `register_agent` in `bluetoothd`
+    - `set_io_cap` enables pairable automatically
+- `cmd_default_agent` calls `org.bluez.AgentManager1.RequestDefaultAgent`
+  - `request_default` in `bluetoothd`
+    - it moves the agent to the head of `default_agents` queue, which will be
+      returned by `agent_get(NULL)`
+- `cmd_scan` calls `org.bluez.Adapter1.StartDiscovery`
+  - `start_discovery` in `bluetoothd`
+    - temp devices are created for discovered devices
+      - temp devices are destroyed after 30s `TemporaryTimeout`
+    - when `bluetoothctl` exits, `bluetoothd` calls `discovery_disconnect` to
+      stop scanning automatically
+- `cmd_info` calls `org.freedesktop.DBus.Properties.Get` (of the device)
+  - `find_device` returns the dbus proxy for the device
+- `cmd_pair` calls `org.bluez.Device1.Pair`
+  - `pair_device` in `bluetoothd`
+    - `btd_device_set_temporary` promotes the device to non-temp first
+    - if pairing fails, `device_bonding_complete` demotes it to temp again
+    - the agent provides the pairing code, if needed, interactively
+- `cmd_trust` calls `org.freedesktop.DBus.Properties.Set` (of the device)
+  - `dev_property_set_trusted` in `bluetoothd`
+  - profiles such as HIDP requires authorization every time the device
+    connects for security
+  - by marking the device trusted, the authorization can be skipped
+- `cmd_connect` calls `org.bluez.Device1.Connect`
+  - `dev_connect` in `bluetoothd`
 
 ## BlueZ Build System
 
@@ -274,45 +326,6 @@
       - `input_device_connected` calls `hidp_add_connection` which calls either
         - `uhid_connadd` to create the hid device
         - `ioctl_connadd` to make `HIDPCONNADD` ioctl to create the hid device
-
-## BlueZ `bluetoothctl`
-
-- a CLI tool to talk to `bluetoothd`
-  - `show` shows the controller info
-  - `scan` discovers discoverable devices and add them to database
-  - `devices` lists devices in the database
-  - `info <dev>` shows the device info from the database
-  - `pairable on` makes the controller pairable
-  - `agent on` enables the agent that can provide pairing code
-  - `default-agent` makes the agent the default one
-  - `pair <dev>` pairs with the device
-    - the agent provides the pairing code, if needed, interactively
-  - `connect <dev>` connects to the device
-  - `trust <dev>` trusts the device
-    - profiles such as HIDP requires authorization every time the device
-      connects for security
-    - by marking the device trusted, the authorization can be skipped
-- `main`
-  - it connects to the system bus
-  - it creates a client for `/org/bluez` of `org.bluez`
-  - it registers proxy handlers
-    - `proxy_added`
-    - `proxy_removed`
-    - `property_changed`
-- `cmd_agent` calls `agent_register`
-  - it registers `/org/bluez/agent` with `org.bluez.Agent1`
-  - it invokes `org.bluez.AgentManager1.RegisterAgent` with `/org/bluez/agent`
-    - this calls `register_agent` in `bluetoothd`
-  - this provides a cmdline-based auth agent
-- `cmd_default_agent` calls `agent_default`
-  - it invokes `org.bluez.AgentManager1.RequestDefaultAgent`
-    - this calls `request_default` in `bluetoothd`
-    - it moves the agent to the head of `default_agents` queue, which will be
-      returned by `agent_get(NULL)`
-- `cmd_connect`
-  - `find_proxy_by_address` returns the proxy for the device
-  - it invokes `org.bluez.Device1.Connect` on the device
-    - this calls `dev_connect` in `bluetoothd`
 
 ## BlueZ Plugin, using input plugin as an example
 
