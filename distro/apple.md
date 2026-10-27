@@ -1,5 +1,27 @@
 # Apple
 
+## Initial Setup
+
+- System Settings
+  - General
+    - About -> Name
+    - Software Update
+    - Date & Time
+    - Language & Region
+  - Appearance
+  - Desktop & Dock
+  - Displays
+  - Menu Bar
+  - Wallpaper
+  - Sound
+  - Lock Screen
+  - Keyboard
+    - Keyboard Shorcuts...
+  - Mouse
+    - Natural scrolling
+  - Trackpad
+    - Tap to click
+
 ## Disk Layout
 
 - Partition 1: iSC container
