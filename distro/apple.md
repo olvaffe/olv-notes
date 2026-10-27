@@ -21,6 +21,16 @@
     - Natural scrolling
   - Trackpad
     - Tap to click
+- Homebrew
+  - bash
+    - `brew install bash`
+    - `echo /opt/homebrew/bin/bash >> /etc/shells`
+    - `chsh -s /opt/homebrew/bin/bash`
+  - aerospace
+    - `brew install --cask nikitabobko/tap/aerospace`
+- manual apps
+  - alacritty
+    - <https://github.com/alacritty/alacritty/releases>
 
 ## Disk Layout
 
@@ -88,6 +98,14 @@
 
 ## Homebrew
 
+- `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+  - it creates and chowns `/opt/homebrew`
+  - it `xcode-select --install` and `xcode-select --switch`
+  - it adds `/etc/paths.d/homebrew`
+  - it git clones <https://github.com/Homebrew/brew> to `/opt/homebrew`
+- post-install setup
+  - `/opt/homebrew/bin/brew shellenv bash` shows the required envs
+  - `brew analytics off`
 - homebrew installs to `/opt/homebrew` mostly
   - `/opt/homebrew/Cellar/<formula>/<version>` are installed formulas
   - `/opt/homebrew/Caskroom/<cask>/<version>` are installed casks
