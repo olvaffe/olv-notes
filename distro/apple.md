@@ -32,6 +32,45 @@
   - alacritty
     - <https://github.com/alacritty/alacritty/releases>
 
+## CLI Tools
+
+- system
+  - `system_profiler` shows system profile
+    - `-listDataTypes` lists collected datatypes
+      - `SPSecureElementDataType` for apple pay
+      - `SPApplicationsDataType` for apps
+      - `SPAudioDataType` for audio
+      - `SPBluetoothDataType` for bt
+      - `SPCameraDataType` for camera
+      - `SPCardReaderDataType` for sd
+      - `SPEthernetDataType` for ether
+      - `SPFirewallDataType` for firewall
+      - `SPDisplaysDataType` for gpu
+      - `SPHardwareDataType` for machine
+      - `SPMemoryDataType` for ram
+      - `SPNVMeDataType` for nvme
+      - `SPNetworkDataType` for network
+      - `SPPCIDataType` for pci
+      - `SPPowerDataType` for power
+      - `SPSPIDataType` for spi (keyboard)
+      - `SPStorageDataType` for storage
+      - `SPThunderboltDataType` for usb4
+      - `SPUSBHostDataType` for usb3
+- hw
+  - `diskutil` for disk
+- network
+  - `scutil` for low-level system configuration
+    - `--get`
+      - `HostName` is hostname
+      - `LocalHostName` is mdns name
+      - `ComputerName` is pretty name
+    - `--dns` shows DNS resolvers
+  - `networksetup` for high-level network
+    - `-listallhardwareports` lists hw devs
+    - `-listnetworkserviceorder` lists sw services
+    - `-getinfo <srv>` gets sw service info
+  - `dig`, `ifconfig`, `netstat`, etc.
+
 ## Disk Layout
 
 - Partition 1: iSC container
