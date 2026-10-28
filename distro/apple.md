@@ -8,24 +8,24 @@
     - Software Update
     - Date & Time
     - Language & Region
+    - Login Items & Extensions
+    - Sharing -> Local hostname
   - Appearance
   - Desktop & Dock
-  - Displays
   - Menu Bar
   - Wallpaper
   - Sound
   - Lock Screen
   - Keyboard
-    - Keyboard Shorcuts...
   - Mouse
-    - Natural scrolling
   - Trackpad
-    - Tap to click
 - Homebrew
   - bash
     - `brew install bash`
     - `echo /opt/homebrew/bin/bash >> /etc/shells`
     - `chsh -s /opt/homebrew/bin/bash`
+  - middleclick
+    - `brew install --cask middleclick`
   - aerospace
     - `brew install --cask nikitabobko/tap/aerospace`
 - manual apps
