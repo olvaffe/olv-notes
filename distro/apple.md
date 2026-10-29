@@ -57,6 +57,13 @@
       - `SPThunderboltDataType` for usb4
       - `SPUSBHostDataType` for usb3
 - hw
+  - `ioreg` for io registry
+    - it shows the tree of objects without props by default
+    - to list all usb devices, `ioreg -r -d1 -c IOUSBHostDevice`
+    - `-d <depth>` limits the tree depth
+    - `-c <class>` shows props of matching objects
+      - `-r` shows matching objects as roots
+        - `-t` shows the path leading to matching objects
   - `diskutil` for disk
 - network
   - `scutil` for low-level system configuration
