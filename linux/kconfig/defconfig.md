@@ -4,7 +4,7 @@
 
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
-  - select `System V IPC` if desired (for fakeroot, steam, fio, etc.)
+  - select `System V IPC` if desired (fakeroot, steam, fio, etc.)
   - select `POSIX Message Queues` if desired, depending on `NET`
   - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
@@ -16,11 +16,11 @@
       - select `Permanently enable BPF JIT and remove BPF interpreter`
   - select `Preemption Model (Scheduler controlled preemption model)`
   - select `CPU/Task time and stats accounting`
-    - select `Export task/process statistics through netlink`, depending on `NET` (for htop, iotop)
+    - select `Export task/process statistics through netlink`, depending on `NET` (htop, iotop)
       - select `Enable per-task delay accounting`
       - select `Enable extended accounting over taskstats`
         - select `Enable per-task storage I/O accounting`
-    - select `Pressure stall information tracking` (for systemd-oomd)
+    - select `Pressure stall information tracking` (systemd-oomd)
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
   - select `Control Group support`
@@ -38,7 +38,7 @@
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
-  - select `/dev/cpu/*/msr - Model-specific register support` if desired (for turbostat)
+  - select `/dev/cpu/*/msr - Model-specific register support` if desired (turbostat)
   - select `EFI runtime service support`
     - select `EFI stub support` if uki
   - select `Timer frequency (1000 HZ)` if desired
@@ -136,7 +136,7 @@
       - select `Fair Queue Controlled Delay AQM (FQ_CODEL)`
       - select `Allow override default queue discipline`
         - select `Default queuing discipline (Fair Queue Controlled Delay)`
-    - select `Virtual Socket protocol` if desired (for kvm, guest)
+    - select `Virtual Socket protocol` if desired (kvm, guest)
       - select `virtio transport for Virtual Sockets` if guest, depending on `VIRTIO_PCI`
     - select `Qualcomm IPC Router support` if qcom
       - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
@@ -162,7 +162,7 @@
       - select `PCI Express Advanced Error Reporting support`
     - select `PCI Express Downstream Port Containment support` if qcom x1
     - select `Message Signaled Interrupts (MSI and MSI-X)`
-    - select `Support for PCI Hotplug` if needed (for usb4)
+    - select `Support for PCI Hotplug` if needed (usb4)
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe controller` if rpi
       - select `Generic PCI host controller` if guest
@@ -171,10 +171,10 @@
         - select `Qualcomm PCIe controller (host mode)` if qcom
         - select `Rockchip DesignWare PCIe controller (host mode)` if rk
   - select `Generic Driver Options`
-    - select `Maintain a devtmpfs filesystem to mount at /dev` (for systemd)
+    - select `Maintain a devtmpfs filesystem to mount at /dev` (systemd)
     - select `Firmware loader`
       - select `Firmware loading facility`
-        - select `Build named firmware blobs into the kernel binary` if desired (for microcode, built-in drivers)
+        - select `Build named firmware blobs into the kernel binary` if desired (microcode, built-in drivers)
         - select `Enable compressed firmware support`
           - select `Enable ZSTD-compressed firmware support`
   - select `Firmware Drivers`
@@ -182,7 +182,7 @@
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
-    - select `DMI table support in sysfs` if desired (for dmidecode)
+    - select `DMI table support in sysfs` if desired (dmidecode)
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if desired
     - select `coreboot Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
@@ -194,7 +194,7 @@
     - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
-  - select `Memory Technology Device (MTD) support` if needed (for spi nor, etc.)
+  - select `Memory Technology Device (MTD) support` if needed (spi nor, etc.)
     - select `Caching block device access to MTD devices`
     - select `Self-contained MTD device drivers`
       - select `Intel Discrete Graphics non-volatile memory driver` if needed
@@ -210,10 +210,10 @@
   - select `Misc devices`
     - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
-    - select `NT synchronization primitive emulation` if desired (for wine)
+    - select `NT synchronization primitive emulation` if desired (wine)
     - select `EEPROM support`
       - select `I2C EEPROMs / RAMs / ROMs from most vendors` if needed, depending on `I2C`
-      - select `SPD EEPROMs on DDR4 memory modules` if needed (for ddr4)
+      - select `SPD EEPROMs on DDR4 memory modules` if needed (ddr4)
     - select `Intel Management Engine Interface` if intel
       - select `ME Enabled Intel Chipsets`
       - select `Intel MEI GSC embedded device`
@@ -221,7 +221,7 @@
       - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
       - select `Intel GSC Proxy services of ME Interface`
     - select `Realtek PCI-E card reader` if needed
-  - select `SCSI device support` if needed (for sata, usb mass storage, uas, ufs, etc.)
+  - select `SCSI device support` if needed (sata, usb mass storage, uas, ufs, etc.)
     - select `SCSI device support`
     - deselect `legacy /proc/scsi/ support`
     - select `SCSI disk support`
@@ -238,10 +238,10 @@
   - select `Network device support`
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
-      - select `MAC-VLAN support` if desired (for container)
+      - select `MAC-VLAN support` if desired (container)
       - select `Network console logging support` if desired
       - select `Universal TUN/TAP device driver support` if kvm
-      - select `Virtual ethernet pair device` if desired (for container)
+      - select `Virtual ethernet pair device` if desired (container)
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
       - deselect all but the needed drivers, such as
@@ -310,7 +310,7 @@
           - select `QCOM GENI Serial Console support`
     - select `Virtio console` if desired
     - deselect `Hardware Random Number Generator Core support` if not needed
-    - select `TPM Hardware Support` if needed (for luks, etc.)
+    - select `TPM Hardware Support` if needed (luks, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
         - select `Cr50 SPI Interface` if cros
@@ -379,7 +379,7 @@
     - select `Intel Core/Core2/Atom temperature sensor` if intel
     - select `Platform driver for Nuvoton NCT6775F and compatibles` if asus
     - select `Raspberry Pi voltage monitor` if rpi
-    - select `SPD5118 Compliant Temperature Sensors` if needed (for ddr5)
+    - select `SPD5118 Compliant Temperature Sensors` if needed (ddr5)
       - select `Enable detect function`
     - select `ASUS EC Sensors` if asus
   - select `Thermal drivers`
@@ -455,7 +455,7 @@
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
       - select `Display a user-friendly message when a kernel panic occurs`
       - select `Supported DRM clients`, depending on any drm driver
-        - select `Enable legacy fbdev support for your modesetting driver` (for vt)
+        - select `Enable legacy fbdev support for your modesetting driver` (vt)
       - select `Enable DisplayPort CEC-Tunneling-over-AUX HDMI support` if needed
       - select `AMD GPU` if amd
       - select `Display Interface Bridges` if arm
@@ -495,7 +495,7 @@
   - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
       - deselect `Support old ALSA API`
-      - select `Sequencer support` if desired (for midi)
+      - select `Sequencer support` if desired (midi)
       - select `HD-Audio` if x86
         - select `HD Audio PCI` if needed
         - select `Realtek HD-audio codec support` if needed
@@ -563,7 +563,7 @@
         - select `Wacom Intuos/Graphire tablet support (USB)`
         - select `HID Sensors framework support`
       - select `I2C HID support` if needed
-        - select `HID over I2C transport layer ACPI driver` if x86 (for I2C touchpads)
+        - select `HID over I2C transport layer ACPI driver` if x86 (I2C touchpads)
         - select `HID over I2C transport layer Open Firmware driver` if arm
         - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
       - select `AMD SFH HID Support` if amd
@@ -768,7 +768,7 @@
     - select `ChromeOS Embedded Controller EXTCON support` if cros and mtk
   - select `Industrial I/O support` if needed
     - select `Accelerometers`
-      - select `HID Accelerometers 3D` if needed (for tablets, 2-in-1s), depending on `HID_SENSOR_HUB`
+      - select `HID Accelerometers 3D` if needed (convertibles, tablets), depending on `HID_SENSOR_HUB`
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
       - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if sc7180
@@ -840,8 +840,8 @@
 
 - select `File systems`
   - select `The Extended 4 (ext4) filesystem` if desired
-    - select `Ext4 POSIX Access Control Lists` (for systemd)
-    - select `Ext4 Security Labels` (for pacman)
+    - select `Ext4 POSIX Access Control Lists` (systemd)
+    - select `Ext4 Security Labels` (pacman)
   - select `Btrfs filesystem support` if desired
     - select `Btrfs POSIX Access Control Lists`
   - select `F2FS filesystem support` if desired
@@ -853,7 +853,7 @@
   - select `Quota support` if desired
   - select `Report quota messages through netlink interface` if `QUOTA`
   - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
-  - select `Kernel automounter support (supports v3, v4 and v5)` (for systemd)
+  - select `Kernel automounter support (supports v3, v4 and v5)` (systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
     - select `Virtio Filesystem` if desired
   - select `Overlay filesystem support` if desired
@@ -889,13 +889,13 @@
     - select `SMB3 and CIFS support (advanced network filesystem)` if desired
       - select `CIFS extended attributes`
     - select `SMB3 server support` if desired
-  - select `Native language support` if desired (for vfat, ntfs, cifs, iso, etc.)
+  - select `Native language support` if desired (vfat, ntfs, cifs, iso, etc.)
     - select `Codepage 437 (United States, Canada)`
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
 - select `Security options`
   - select `Enable different security models`
-  - select `Landlock support` (for pacman)
+  - select `Landlock support` (pacman)
   - select `Kernel hardening options` if desired
     - select `Memory initialization`
       - select `Enable heap memory zeroing on allocation by default`
