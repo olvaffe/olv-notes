@@ -184,7 +184,7 @@
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `DMI table support in sysfs` if desired (for dmidecode)
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if desired
-    - select `Google Firmware Drivers` if cros
+    - select `coreboot Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
@@ -585,6 +585,7 @@
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
+      - select `USB Serial Simple Driver`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if sc7180
     - select `USB Gadget Support` if desired or typec tcpm
