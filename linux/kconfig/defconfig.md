@@ -5,7 +5,7 @@
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
   - select `System V IPC` if desired (fakeroot, steam, fio, etc.)
-  - select `POSIX Message Queues` if desired, depending on `NET`
+  - select `POSIX Message Queues` if desired (podman), depending on `NET`
   - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
@@ -24,6 +24,10 @@
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
   - select `Control Group support`
+    - select `Memory controller` if desired
+    - select `CPU controller` if desired
+    - select `PIDs controller` if desired (podman)
+    - select `User namespace` if desired
   - select `Namespaces support`
     - select `User namespace`
   - select `Automatic process group scheduling`
@@ -119,18 +123,18 @@
     - select `TCP/IP networking`
       - select `The IPv6 protocol`
         - deselect `IPv6: IPv6-in-IPv4 tunnel (SIT driver)` if not needed
-    - select `Network packet filtering framework (Netfilter)`
+    - select `Network packet filtering framework (Netfilter)` if desired (firewall, podman)
       - select `Core Netfilter Configuration`
         - select `Netfilter connection tracking support`
+        - select `Connection mark tracking support`
         - select `Network Address Translation support`
         - select `Netfilter nf_tables support`
+          - select `Netfilter nf_tables mixed IPv4/IPv6 tables support`
+          - select `Netfilter nf_tables conntrack module`
           - select `Netfilter nf_tables masquerade support`
-          - select `Netfilter nf_tables nat module`, depending on `NF_TABLES_IPV4`
-      - select `IP: Netfilter Configuration`
-        - select `IPv4 nf_tables support`
-      - select `IPv6: Netfilter Configuration`
-        - select `IPv6 nf_tables support`
-    - select `802.1d Ethernet Bridging` if desired
+          - select `Netfilter nf_tables nat module`
+          - select `Netfilter nf_tables fib inet support`, depending on `NFT_FIB_IPV4` and `NFT_FIB_IPV6`
+    - select `802.1d Ethernet Bridging` if desired (kvm, podman)
     - select `802.1Q/802.1ad VLAN Support` if desired
     - select `QoS and/or fair queueing` if desired
       - select `Fair Queue Controlled Delay AQM (FQ_CODEL)`
@@ -238,10 +242,10 @@
   - select `Network device support`
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
-      - select `MAC-VLAN support` if desired (container)
+      - select `MAC-VLAN support` if desired (podman)
       - select `Network console logging support` if desired
-      - select `Universal TUN/TAP device driver support` if kvm
-      - select `Virtual ethernet pair device` if desired (container)
+      - select `Universal TUN/TAP device driver support` if kvm or podman
+      - select `Virtual ethernet pair device` if desired (podman)
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
       - deselect all but the needed drivers, such as
@@ -825,7 +829,6 @@
   - select `Trusted Execution Environment support` if needed
     - select `OP-TEE` if arm
     - select `AMD-TEE` if amd
-  - select `SLIMbus support` if qcom and `SND`
   - select `On-Chip Interconnect management support` if needed
     - select `MediaTek interconnect drivers` if mtk
       - select `MediaTek DVFSRC EMI interconnect driver`
@@ -856,7 +859,7 @@
   - select `Kernel automounter support (supports v3, v4 and v5)` (systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
     - select `Virtio Filesystem` if desired
-  - select `Overlay filesystem support` if desired
+  - select `Overlay filesystem support` if desired (podman)
   - select `CD-ROM/DVD Filesystems` if desired
     - select `ISO 9660 CDROM file system support`
       - select `Microsoft Joliet CDROM extensions`
