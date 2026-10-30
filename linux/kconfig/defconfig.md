@@ -10,7 +10,7 @@
   - select `Timers subsystem`
     - select `Timer tick handling (Idle dynticks system (tickless idle))`
     - select `High Resolution Timer Support`
-  - select `BPF subsystem` if desired
+  - select `BPF subsystem` if desired (rootful podman, etc.)
     - select `Enable bpf() system call`
     - select `Enable BPF Just In Time compiler`
       - select `Permanently enable BPF JIT and remove BPF interpreter`
@@ -28,6 +28,7 @@
     - select `CPU controller` if desired
     - select `PIDs controller` if desired (podman)
     - select `User namespace` if desired
+    - select `Support for eBPF programs attached to cgroups` if desired (rootful podman)
   - select `Namespaces support`
     - select `User namespace`
   - select `Automatic process group scheduling`
