@@ -22,6 +22,23 @@
   - `nft list ruleset` shows a NAT for `10.8.0.0/24`
   - `sysctl net.ipv4.ip_forward` returns 1
 
+## Docker Emulation
+
+- `docker` is a client that connects to `dockerd` over `/var/run/docker.sock`
+  - `DOCKER_HOST` specifies an alternative socket path
+- when `podman` emulates `docker`, `docker` handles the command directly
+  - it is a thin script that invokes `podman`
+- when an app skips `docker` and uses the docker socket directly,
+  - `/var/run/docker.sock` is a symlink to `/run/podman/podman.sock`
+    - see `/usr/lib/tmpfiles.d/podman-docker.conf`
+  - systemd socket activation spawns `podman system service` to handle the
+    requests
+  - `podman system service` shuts down automatically after 5s idle
+- rootless docker socket
+  - systemd per-user socket activation listens on
+    `$XDG_RUNTIME_DIR/podman/podman.sock`
+  - specify `DOCKER_HOST` to point to the per-user socket
+
 ## OCI
 
 - <https://opencontainers.org/>
