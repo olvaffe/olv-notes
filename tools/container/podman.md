@@ -1,5 +1,27 @@
 # Podman
 
+## Rootful
+
+- just `sudo` to be rootful
+- `sudo podman system info`
+  - `crun` uses `/run/crun` instead of `$XDG_RUNTIME_DIR/crun`
+  - docker socket is `/run/podman/podman.sock` instead of
+    `$XDG_RUNTIME_DIR/podman/podman.sock`
+  - storage is `/var/lib/containers/storage` instead of
+    `$XDG_DATA_HOME/containers/storage`
+  - temp state storage is `/run/containers/storage` instead of
+    `$XDG_RUNTIME_DIR/containers`
+- network is set up by `netavark`
+  - there is `podman0` bridge with ip `10.88.0.1`
+  - there is a `veth0` pair
+    - host `veth0@ifX` has no ip
+    - container `veth0@ifY` has ip `10.88.0.Y`
+    - note that veth is of type ethernet and should not be managed by
+      systemd-networkd
+      - use `Type=ether` and `Kind=!*`
+  - `nft list ruleset` shows a NAT for `10.8.0.0/24`
+  - `sysctl net.ipv4.ip_forward` returns 1
+
 ## OCI
 
 - <https://opencontainers.org/>
