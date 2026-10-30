@@ -113,32 +113,49 @@
     - `sleep infinity` runs as user
       - the stdio connects to the 3 pipes
 
-## SSH agent
+## SSH Keys
 
 - `ssh-keygen` generates a key on disk
-  - it defaults to Ed25519 and saves the privkey to `~/.ssh/id_ed25519`
+  - it defaults to `-t ed25519`
+    - `ed25519` generates `~/.ssh/id_ed25519`
+    - `ecdsa` generates `~/.ssh/id_ecdsa`
+    - `rsa` generates `~/.ssh/id_rsa`
+    - `ed25519-sk` generates `~/.ssh/id_ed25519_sk`
+    - `ecdsa-sk` generates `~/.ssh/id_ecdsa_sk`
   - the privkey is optionally encrypted
   - it also generates the pubkey from the privkey
     - `ssh-keygen -y` re-generates the pubkey from the privkey
-- `ssh-keygen -t ed25519-sk` generates a key handle on disk
+- `ssh-keygen -t ed25519-sk` generates a "key handle" on disk
   - many sks only support weaker `-t ecdsa-sk`
-  - this appears to generate a key on disk, except it also requires the fido
-    sk to work
-    - the privkey file on disk only contains a handle and a template
-    - both are sent to the fido sk to re-create the privkey on the fly
-    - the handle refers to the master seed on the sk, which never leaves sk
-    - i guess different privkey files use the same handle but different
-      templates, which allows infinite privkeys
-  - `-O resident` saves the privkey in the sk
+  - by default,
+    - sk generates a privkey on internal memory
+    - sk exports the key pair with privkey encrypted
+    - ssh-keygen saves the exported pair to disk
+      - ssh-keygen treats the privkey as a "key handle" and the fact that the
+        privkey is already encrypted is an internal detail
+      - ssh-keygen still prompts to (double-)encrypt the privkey, which has no
+        benefit
+    - to use privkey, it is loaded into sk and decrypted into sk internal mem
+      - decrypted privkey never leaves sk
+  - `-O resident` saves the privkey in the sk nvmem instead
+    - the privkey on sk becomes portable and can be used on different machines
     - the privkey file on disk only contains a handle, referring to the
       privkey on sk
-    - the privkey on sk becomes portable and can be used on different machines
       - `ssh-keygen -K` re-creates the on-disk files on each machine
         - a pin is required to protect against stolen sk
     - there is a limit on number of resident privkeys on sk
-- `ssh-agent` caches (decrypted) keys in memory
+
+## SSH agent
+
+- `ssh-agent` caches keys in memory
   - it listens on `SSH_AUTH_SOCK` for connections
 - `ssh-add` manages `ssh-agent`
-  - without arg, it adds decrypted `~/.ssh/id_ed25519` to the agent
+  - without arg, it adds keys from default locations to the agent
+    - it searches for `~/.ssh/id_<type>`, such as `~/.ssh/id_ed25519`
+    - if encrypted, keys are decrypted
+      - an sk-based key may be (unnecessarily) double-encrypted, once by sk
+        and once by ssh-keygen
+        - after this step, the key is still encrypted by sk
+        - a fully decrypted key never leaves sk internal memory
   - `ssh-add -L` lists all cached keys
 - `ssh` connects to `SSH_AUTH_SOCK` to get the cached keys
