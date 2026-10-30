@@ -32,6 +32,51 @@
   - alacritty
     - <https://github.com/alacritty/alacritty/releases>
 
+## Keyboard
+
+- from left to right, there are 4 mod keys: `fn`, `ctrl`, `alt`, and `cmd`
+  - `fn` changes keycodes
+    - function keys become `F1..F12`
+    - arrow keys become pageup, pagedown, home, and end
+  - `fn` talks to desktop shell
+    - `fn-a` toggles dock
+    - `fn-c` toggles control center
+    - `fn-h` toggles desktop
+    - `fn-n` toggles notification center
+  - `ctrl` sends ascii control codes in terminal
+    - `ctrl-a` is home
+    - `ctrl-b` is left
+    - `ctrl-c` is sigint
+    - `ctrl-d` is eof
+    - `ctrl-e` is end
+    - `ctrl-f` is right
+    - `ctrl-l` is clear
+    - `ctrl-m` is enter
+    - `ctrl-n` is down
+    - `ctrl-p` is up
+    - `ctrl-w` is delete-a-word
+    - etc.
+  - `alt` means alternatives
+    - `alt-left` moves back a word in terminal (escape sequence)
+    - `alt-right` moves forward a word in terminal (escape sequence)
+    - `alt-brightness` opens display settings
+    - `alt-volume` opens audio settings
+  - `cmd` sends various gui commands
+    - `cmd-a` is all
+    - `cmd-c` is copy
+    - `cmd-f` is find
+    - `cmd-m` is minimize
+    - `cmd-o` is open
+    - `cmd-p` is print
+    - `cmd-q` is quit
+    - `cmd-s` is save
+    - `cmd-t` is tab
+    - `cmd-v` is paste
+    - `cmd-w` is close
+    - `cmd-z` is undo
+    - `cmd-,` is settings
+    - `cmd-space` is spotlight
+
 ## CLI Tools
 
 - system
@@ -122,7 +167,7 @@
 
 - recovery modes
   - normal recovery: boots to macos `Recovery` volume
-  - 1TR recovery: boots to macos `Recovery` volume with physical presence 
+  - 1TR recovery: boots to macos `Recovery` volume with physical presence
   - fallback 1TR: boots to fallback `Recovery` volume
   - if storage is wiped, iBoot1 inits display and prompts to use DFU mode
   - if spi nor is wiped, Boot ROM enters DFU mode automatically
