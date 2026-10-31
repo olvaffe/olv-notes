@@ -3,13 +3,12 @@
 ## Initial Setup
 
 - System Settings
+  - Battery
   - General
-    - About -> Name
     - Software Update
     - Date & Time
     - Language & Region
     - Login Items & Extensions
-    - Sharing -> Local hostname
   - Appearance
   - Desktop & Dock
   - Menu Bar
@@ -76,6 +75,10 @@
     - `cmd-z` is undo
     - `cmd-,` is settings
     - `cmd-space` is spotlight
+    - `ctrl-left` is beginning of line
+    - `ctrl-right` is end of line
+    - `ctrl-up` is beginning of doc
+    - `ctrl-down` is end of doc
 
 ## CLI Tools
 
