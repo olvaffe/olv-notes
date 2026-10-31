@@ -26,7 +26,29 @@
   - an authenticator supporting either (or both) protocol is referred to as a
     U2F or FIDO2/WebAuthn authenticator
     - a security key is an example of an authenticator
-- W3C WebAuthn involves a website, a browser, and an authenticator
+  - 2FA is non-resident
+    - registration
+      - authenticator generates a key pair for each relying party (domain)
+      - authenticator exports the key pair with privkey encrypted
+        - decrypted privkey never leaves authenticator
+        - encrypted privkey is called a credential id
+      - relying party stores the key pair
+    - authentication
+      - relying party asks for username and password
+      - relying party looks up and returns the encrypted key pair
+      - authenticator decrypts the key pair to solve the challenge
+        - authenticator requires UP, user presense, to decrypt
+  - passwordless is resident
+    - registration
+      - authenticator stores the key pair as well as account metadata
+        - there is a limit on number of resident keys
+    - authentication
+      - relying party sends rp id (domain name) and challenge
+        - no username/password needed
+      - authenticator looks up the resident key, solves the challenge, and
+        sends everything including account metadata back to rp
+        - authenticator requires UV, user verification, to look up
+- C WebAuthn involves a website, a browser, and an authenticator
   - the website conforms to WebAuthn Relying Party
   - the browser conforms to WebAuthn Client
   - the authenticator conforms to CTAP1/UAF or CTAP2
