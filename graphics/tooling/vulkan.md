@@ -72,6 +72,22 @@
     - `-DBUILD_WSI_XCB_SUPPORT=off`
     - `-DBUILD_WSI_XLIB_SUPPORT=off`
 
+## macOS
+
+- <https://vulkan.lunarg.com/sdk/home>
+  - unzip sdk installer
+  - `./vulkansdk-macOS-<ver>.app/Contents/MacOS/vulkansdk-macOS-<ver> \
+       --root $PWD/vulkansdk --accept-licenses --default-answer --confirm-command install`
+- use sdk
+  - `export VULKAN_SDK=$PWD/vulkansdk/macOS`
+  - `export PATH=$VULKAN_SDK/bin:$PATH`
+  - `export DYLD_LIBRARY_PATH=$VULKAN_SDK/lib:$DYLD_LIBRARY_PATH`
+  - `export VK_DRIVER_FILES=$VULKAN_SDK/share/vulkan/icd.d`
+  - `export VK_LAYER_PATH=$VULKAN_SDK/share/vulkan/explicit_layer.d`
+  - `vulkaninfo`
+    - GPU0 has `VK_DRIVER_ID_MOLTENVK`
+    - GPU1 has `VK_DRIVER_ID_MESA_KOSMICKRISP`
+
 ## volk
 
 - <https://github.com/zeux/volk>
