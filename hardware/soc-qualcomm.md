@@ -85,6 +85,7 @@
       - `sc7180-trogdor-coachz-r3.dts`
   - 2021, 7c Gen2 (SC7180P), 8nm, Adreno 618
   - 2022, 7c+ Gen3 (SC7280), 6nm, Adreno 7c+ Gen3 (Adreno 635)
+    - `kodiak`: 1+3+4-core (A78 and A55)
     - idp reference design: `sc7280-idp.dts`
     - compute reference design: `sc7280-crd-r3.dts`
     - cros: herobrine
@@ -105,6 +106,9 @@
   - 2025, X2 Elite/Plus (SC8480, X2E-80-100/X2P-42-100), 3nm, Adreno X2-85/X2-45
     - `glymur`: 18-core, with X2-90 gpu
     - `mahua`: 12-core, with X2-85 gpu
+- Snapdragon C Series
+  - 2026, C1 (C1-10-100), 6nm, Adreno 643
+    - `kenai`: very similar to `kodiak`
 
 ## SoC: Gaming Platforms
 
