@@ -61,6 +61,78 @@
     - `->atomic_enable` the encoder
     - `->atomic_enable` the bridge chain, starting from the head
 
+## eDP
+
+- three paths between DE and TCON
+  - hdp: uni-dir from tcon to de
+    - tcon uses hdp for major state transitions
+      - power on: low to high
+      - normal operation: constant high
+      - link loss: pulse low for <1ms
+      - error: pulse low for >100ms
+  - aux: bi-dir
+    - low-bandwidth communications
+  - main link: uni dir from de to tcon
+    - there can be 1, 2, or 4 lanes
+      - max lane count depends on tcon cap, de cap, and wiring (specified in
+        acpi/dt)
+    - a lane supports a subset of
+      - RBR:  1.62Gbps
+      - HBR:  2.70Gbps
+      - HBR2: 5.40Gbps, eDP 1.2/1.3
+      - HBR3: 8.10Gbps, eDP 1.4
+    - e.g., 4K@120HZ@WCG requires `3840*2160*120*10*3=27.86Gbps`
+      - the required bw is more like 32Gbps because there are also inactive
+        pixels (horizontal and vertical blanks)
+      - HBR3 usable bw is more like 6.48Gbps because of encoding overhead
+        - and the usable bw is shared by video, audio, framing, metadata, etc.
+      - DSC compression is required to pull off
+- link training
+  - tcon pulls hdp high after power on
+  - de reads dpcd (dp configuration data) from tcon via aux
+    - supported lane count, link rates, features (dsc, psr, etc.)
+    - edid
+  - TPS1 (training pattern sequence 1) for clock recovery
+    - de sends a repetitive pattern
+    - if tcon can lock to the pattern, it sets `LANEx_CR_DONE` and de moves on
+    - otherwise, de increases voltage swing and tries again
+  - TPS2/TPS3/TPS4 for equalization and symbol lock
+    - de sends complex signals simulating real video data
+    - if tcon can receive clear signals, it sets `LANEx_EQ_DONE` and
+      `SYMBOL_LOCKED` and de moves on
+    - otherwise, de increases pre-emphasis and tries again
+  - normal operation
+    - on the de side, timing generator ticks regularly and transcoder packs
+      frame buffers to dp packets
+    - on the tcon side, tcon parse dp packets, post-processes video data, and
+      sends video data to column (source) drivers and timing data to row
+      (gate) drivers
+- why does mode change blank the panel?
+  - each mode might require a different pixel clock
+    - `Pclk = Htotal * Vtotal * Hz`
+    - `Htotal = Hactive + Hfront_porch + Hsync_pulse + Hback_porch`
+    - `Vtotal = Vactive + Vfront_porch + Vsync_pulse + Vback_porch`
+  - it takes time for de pll and tcon pll to lock to the new pixel clock
+  - if the new pixel clock requires a different link rate, it also requires
+    link retraining
+  - de intentionally blanks the panel to avoid seeing garbage during the
+    transition
+    - this is what `DRM_MODE_ATOMIC_ALLOW_MODESET` means in drm
+- seamless refresh rate change
+  - when two modes share the same `Pclk`, no blanking is needed
+  - in `Pclk = Htotal * Vtotal * Hz`,
+    - only `Vtotal` and `Hz` vary between the two modes
+    - inside `Vtotal`, typically only `Vfront_porch` varies
+- VRR
+  - tcon pauses inside `Vfront_porch` after `Vactive`
+  - de sends a cmd to tell tcon to terminate `Vfront_porch` and moves on to
+    `Vsync_pulse`
+    - iow, tcon supports dynamic `Vfront_porch`
+  - vrr has a range, such as `[48HZ, 144HZ]`
+    - in modeset, the mode's fixed refresh rate decides the max refresh rate
+    - vrr only allows `Vfront_porch` to be stretched, to lower the refresh
+      rate of the current mode
+
 ## Atomic Modesetting
 
 - `DRM_IOCTL_MODE_ATOMIC`
