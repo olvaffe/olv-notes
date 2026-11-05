@@ -105,9 +105,6 @@
   - `-o APT::Autoremove::RecommendsImportant=0` to remove recommends
   - `-o APT::Autoremove::SuggestsImportant=0` to remove suggests
 - `apt autoremove -o APT::Autoremove::SuggestsImportant=0` to remove unneeded ones
-- without marking any package manual, we will end up with a system with only
-  `Essential/Important/Protected` packages and their dependencies/recommends
-  - also packages listed in `NeverAutoRemove` of `/etc/apt/apt.conf.d/01autoremove`
 
 ## Multi-Arch
 
@@ -115,7 +112,7 @@
 - `dpkg --print-foreign-architectures` print foreign archs
 - `dpkg --add-architecture i386` adds i386
 - `dpkg --remove-architecture i386` removes i386
-  - `apt purge "*:i386"` removes i386 packages first
+  - `apt purge --allow-remove-essential "*:i386"` removes all i386 packages first
 
 ## APT
 
@@ -132,8 +129,20 @@
   - `downloads` downalods the listed packages
   - `clean` removes all cached packages
   - `autoclean` removes cached packages that are outdated
-  - `autoremove` removes packages that were installed as dependencies but are
-    not dependencies anymore
+  - `autoremove` auto-removes unnecessary packages
+    - step 1: mark these packages as necessary
+      - manually installed
+      - `Essential: yes` or `Protected: yes`
+      - held packages (`apt-mark hold`)
+      - matched by `APT::NeverAutoRemove` (`/etc/apt/apt.conf.d`)
+        - `APT::Protect-Kernels` feeds latest two installed kernels into the
+          never-autoremove list
+      - `Priority: required`
+    - step 2: follow dependency arrows from the necessary packages
+      - it always follows `Depends` to mark dependencies as necessary
+      - `APT::AutoRemove::RecommendsImportant` follows `Recommends`
+      - `APT::AutoRemove::SuggestsImportant` follows `Suggests`
+    - step 3: remove unnecessary packages
 - `apt-cache`
   - `show` shows info of listed packages (see `man apt-patterns`)
     - e.g., `apt-cache show ~E` shows essential pacakges and
@@ -399,30 +408,34 @@
   - `Version` is the version
   - `Description` is the description
   - `Installed-Size` is the installed size
-  - `Essential` specifies whether a package is essential or not
+  - `Essential` means the package can be assumed installed
+    - it is not listed as dependency of other packages, but is assumed
+      - it is never a bright idea to remove
     - `dpkg -r` refuses to remove essential packages unless `--force-remove-essential`
-  - `Protected` is undocumented
-    - the package may not be installed, but once installed, it is treated as
-      `Essential`
+  - `Protected` means removal protection
+    - `dpkg -r` refuses to remove protected packages unless `--force-remove-essential`
     - it was renamed from `Important`
-    - there are these `Protected`/`Important` packages
-      - `e2fsprogs`
-      - `grub-efi-amd64-signed`
-      - `init`
-      - `libgcc-s1`
-      - `login`
-  - `Priority`
-    - `required` has ~35 packages for a rootfs that one can chroot into and
-      install more packages
-    - `important` has ~30 packages for a rootfs with minimum admin tools
-      (e.g., init, editor, net)
-    - `standard` has ~40 packages for a rootfs with standard admin tools
+    - looking at the package list, it is used for packages that are essential
+      on bare metal but optional in container
+      - e.g., `grub-efi-amd64-signed` or `init`
+  - `Priority` is for bootstrapping mostly
+    - `required` is always included by debootstrap
+      - there are ~35 packages for a rootfs that one can chroot into and
+        install more packages
+      - additionally, autoremove skips required packages
+    - `important` is included by debootstrap by default
+      - there ~30 packages for minimum admin tools (e.g., init, editor, net)
+      - `--variant minbase` skips them
+    - `standard` is incldued by tasksel standard task
+      - there are ~40 packages for standard admin tools
     - `optional` is the rest
   - inter-relationship fields
     - `Depends`
     - `Pre-Depends`
     - `Recommends`: A recommends B when A is pointless without B for most users
+      - `APT::Install-Recommends` is true by default to auto-install B
     - `Suggests`: A suggests B when A is enhanced by B
+      - `APT::Install-Suggests` is false by default to not auto-install B
     - `Breaks`
     - `Conflicts`
     - `Provides`
