@@ -126,6 +126,37 @@
     - `-getinfo <srv>` gets sw service info
   - `dig`, `ifconfig`, `netstat`, etc.
 
+## Network
+
+- sw layers
+  - layer 4: net services (this is the user-visible layer)
+  - layer 3: bsd devices (`enX`)
+  - layer 2: drv devices (IOKit Network Objects such as `AppleWLANDriver` or `IOSkywalkLegacyEthernetInterface`)
+  - layer 1: hw devices (`IOPCIDevice`, `IOUSBHostDevice`)
+- `ifconfig`
+  - wifi: `en0`
+  - virtual devs based on `en0`
+    - `awdl0`: apple wireless direct link for airdrop, airplay, sidecar, etc.
+    - `llw0`: low-latency layered on top of `awdl0`
+    - `ap1`: used for softap
+    - `nan0`: Wi-Fi Aware, formally known as Neighbor Awareness Networking
+  - ip-over-thunderbolt: `en1`, `en2`, `en3`, and `bridge0`
+    - there are 3 thunderbolt ports with `bridge0` grouping them together
+  - ether-over-usb (cdc-ncm): `en4`, `en5`, and `en6`
+    - used when the 3 thunderbolt ports act as usb devices
+  - apple network private interface: `anpi0`, `anpi1`, and `anpi2`
+    - one for each cdc-ncm dev for internal communication
+  - tun tunnels: `utun0`, `utun1`, `utun2`, `utun3`, and `utun4`
+  - misc
+    - `lo0`: loopback
+    - `pktap0`: packet tap for capturing
+    - `gif0`: legacy generic tunnel
+    - `stf0`: legacy 6to4 tunnel
+- usb ethernet dongle
+  - usb ether: `en7`
+  - internet sharing enabled: `bridge100` consisting of `en0` and `en7`
+    - `bridge100` has ip `192.168.2.1/24`
+
 ## Disk Layout
 
 - `/dev/disk0`: physical disk
