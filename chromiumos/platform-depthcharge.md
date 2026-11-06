@@ -3,6 +3,29 @@
 ## AP firmware (BIOS)
 
 - depthcharge lives on SPI storage
+- `sys-boot/chromeos-bootimage` is the AP FW (`image-<model>.bin`)
+  - `sys-boot/coreboot` is coreboot (`coreboot.rom`)
+    - `sys-boot/coreboot-files-board` provides public board blobs
+    - `sys-boot/coreboot-files-chipset` provides public chipset blobs
+    - `sys-boot/coreboot-private-files-board` provides private board blobs
+    - `sys-boot/coreboot-private-files-chipset` provides private chipset blobs
+    - `sys-boot/firmware-bootsplash-assets` is bootsplash
+    - `virtual/coreboot-private-files` is legacy board-specific virtual
+      package that is still widely used
+    - `chromeos-base/chromeos-config`
+  - `sys-boot/depthcharge` is coreboot payload (`depthcharge.elf`)
+    - `sys-boot/coreboot` for `static_fw_config.h`
+    - `chromeos-base/chromeos-ec-headers`
+    - `sys-boot/libpayload` provides `libpayload.a` (vboot, libavb, tlcl,
+      etc.)
+  - `sys-boot/chromeos-bmpblk` is depthcharge assets (icons, fonts, locales, etc.)
+  - `chromeos-base/chromeos-config` defines projects/models for the board
+    - `chromeos-base/chromeos-config-bsp`
+    - `chromeos-base/chromeos-config-bsp-private`
+    - `chromeos-base/chromeos-config-bsp-baseboard`
+    - `chromeos-base/chromeos-config-bsp-baseboard-private`
+  - `chromeos-base/chromeos-zephyr` is the EC FW (`ec.bin`)
+    - this allows AP FW to update EC FW
 - `emerge-<board> sys-boot/chromeos-bootimage`
   - depends on `coreboot`
     - `/build/$BOARD/firmware/$DEVICE/coreboot.rom`
@@ -64,6 +87,63 @@
     - `platform/vboot_reference`
     - `platform/depthcharge`
   - if android, use `firmware-android-*`
+
+## Coreboot Blobs
+
+- x1p42100
+  - bootrom (before coreboot) loads these to TME (Trust Management Engine) to
+    establish root of trust
+    - `secure/tme/sequencer_ram.elf`
+    - `secure/tme/signed_firmware_soc_view.elf`
+    - `secure/qc_sec/qc_sec.mbn` is soc security/debug policy
+  - bootblock loads these to QUPs (Qualcomm Universal Peripheral)
+    - `qup_fw/i2c_fw.bin` for ti50
+    - `qup_fw/spi_fw.bin` for ec
+  - if serial enabled, verstage loads these to QUP for serial
+    - `qup_fw/uart_fw.bin`
+  - romstage loads these to SHRM (System Hardware Resource Manager) for dram
+    freq scaling
+    - `secure/shrm/shrm.elf`
+  - romstage loads these to SRAM for memory training
+    - `boot/hamoa/dcb.bin` (or `boot/x1p42100/dcb.bin`)
+    - `boot/hamoa/pre-ddr.dtb` (or `boot/x1p42100/pre-ddr.dtb`)
+    - `boot/hamoa/cpr.dtb` (or `boot/x1p42100/cpr.dtb`)
+    - `secure/apdp/apdp.mbn` for AP debug policy
+    - `boot/QcLib.elf` runs for the first time to train
+  - romstage loads these to SRAM, DRAM, and AOP (Always-On Processor) as a
+    part of RPMh (Resource Power Manager (hardened)) bringup to manage power
+    rails, clocks, and sleep states
+    - `secure/aop/aop.mbn`
+    - `secure/aop/aop_devcfg.mbn`
+    - `boot/QcLib.elf` runs for the second time to bring up AOP
+    - if rampdump, `boot/XblRamdump.elf`
+  - romstage charging
+    - battery critically low: trickle charge until ready to boot
+    - normal boot: no charging
+  - ramstage loads these to DRAM
+    - `qup_fw/i2c_fw.bin` to QUP for ADSP
+    - `qup_fw/gsi_fw.bin` to GSI DMA controller
+    - if low battery or off-mode charging,
+      - `low_battery.bmp` or `off_mode_charging.bmp` for prompt
+      - `adsp/mainboard/<model>/adsp.mbn`
+      - `adsp/mainboard/<model>/adsp_dtbs.elf`
+      - stay in the charging loop
+    - otherwise, normal boot: no charging
+  - ramstage loads these
+    - `cpucp/cpucp.elf` and `cpucp/cpucp_dtbs.elf` to CPUCP (CPU Control
+      Processor) for cpu dvfs and sequencing
+    - `qtee/tz_oem_config.mbn`, `qtee/tz_qti_config.mbn`,
+      `ac_policy/tz_ac_config.elf`, and `ac_policy/hyp_ac_config.elf` to TZ
+      DRAM
+    - `tz.mbn` (`CONFIG_ARM64_SECURE_OS_FILE`)
+    - `qup_fw/i2c_fw.bin`, `qup_fw/spi_fw.bin`, and `qup_fw/uart_fw.bin` for
+      OS-facing QUPs
+    - `cb_logo.bmp` for oem logo
+  - ramstage loads these
+    - `bl31.elf` (`CONFIG_ARM64_BL31_EXTERNAL_FILE`) for BL31 in sEL3
+    - `tz.mbn` (`CONFIG_ARM64_SECURE_OS_FILE`) for BL32 in sEL1
+    - `depthcharge.elf` for BL33 in EL2
+      - it enables slow charging until handing off to kernel
 
 ## Using depthcharge
 
