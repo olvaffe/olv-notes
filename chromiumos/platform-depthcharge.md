@@ -99,8 +99,8 @@
   - bootblock loads these to QUPs (Qualcomm Universal Peripheral)
     - `qup_fw/i2c_fw.bin` for ti50
     - `qup_fw/spi_fw.bin` for ec
-  - if serial enabled, verstage loads these to QUP for serial
-    - `qup_fw/uart_fw.bin`
+  - if serial enabled, verstage loads these to QUPs
+    - `qup_fw/uart_fw.bin` for coreboot serial
   - romstage loads these to SHRM (System Hardware Resource Manager) for dram
     freq scaling
     - `secure/shrm/shrm.elf`
@@ -118,8 +118,8 @@
     - `boot/QcLib.elf` runs for the second time to bring up AOP
     - if rampdump, `boot/XblRamdump.elf`
   - romstage charging
-    - battery critically low: trickle charge until ready to boot
-    - normal boot: no charging
+    - battery critically low: trickle charge before continuing to normal boot
+    - normal boot: charging disabled
   - ramstage loads these to DRAM
     - `qup_fw/i2c_fw.bin` to QUP for ADSP
     - `qup_fw/gsi_fw.bin` to GSI DMA controller
@@ -127,15 +127,14 @@
       - `low_battery.bmp` or `off_mode_charging.bmp` for prompt
       - `adsp/mainboard/<model>/adsp.mbn`
       - `adsp/mainboard/<model>/adsp_dtbs.elf`
-      - stay in the charging loop
-    - otherwise, normal boot: no charging
+      - stay in the charging loop; power button / lid open resets
+    - otherwise, normal boot: charging disabled
   - ramstage loads these
     - `cpucp/cpucp.elf` and `cpucp/cpucp_dtbs.elf` to CPUCP (CPU Control
       Processor) for cpu dvfs and sequencing
     - `qtee/tz_oem_config.mbn`, `qtee/tz_qti_config.mbn`,
       `ac_policy/tz_ac_config.elf`, and `ac_policy/hyp_ac_config.elf` to TZ
       DRAM
-    - `tz.mbn` (`CONFIG_ARM64_SECURE_OS_FILE`)
     - `qup_fw/i2c_fw.bin`, `qup_fw/spi_fw.bin`, and `qup_fw/uart_fw.bin` for
       OS-facing QUPs
     - `cb_logo.bmp` for oem logo
