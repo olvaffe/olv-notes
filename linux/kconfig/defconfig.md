@@ -91,7 +91,7 @@
       - select `Generic DT based cpufreq driver`
       - select `CPU Frequency scaling support for MediaTek SoCs` if mt8186, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mt8195
-      - select `QCOM CPUFreq HW driver` if sc7180
+      - select `Qualcomm CPUFreq HW driver` if sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Virtualization` if kvm
@@ -269,7 +269,7 @@
       - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support` if sc7180
         - select `Qualcomm ath10k SNOC support` if sc7180
-        - select `Qualcomm Technologies Wi-Fi 7 support (ath12k)` if qcom x1
+        - select `Qualcomm Wi-Fi 7 support (ath12k)` if qcom x1
       - select `Broadcom devices` if rpi
         - select `Broadcom FullMAC WLAN driver`
       - select `Intel devices` if intel
@@ -311,8 +311,8 @@
         - select `Mediatek serial port support` if mtk
         - select `ARM AMBA PL011 serial port support` if arm guest
           - select `Support for console on AMBA serial port`
-        - select `QCOM on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
-          - select `QCOM GENI Serial Console support`
+        - select `Qualcomm on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
+          - select `Qualcomm GENI Serial Console support`
     - select `Virtio console` if desired
     - deselect `Hardware Random Number Generator Core support` if not needed
     - select `TPM Hardware Support` if needed (luks, etc.)
@@ -331,7 +331,7 @@
           - select `Synopsys DesignWare Platform driver`, depending on `COMMON_CLK`
           - select `AMD PSP I2C semaphore support` if amd
         - select `MediaTek I2C adapter` if mtk
-        - select `Qualcomm Technologies Inc.'s GENI based I2C controller` if qcom, depending on `QCOM_GENI_SE`
+        - select `Qualcomm GENI based I2C controller` if qcom, depending on `QCOM_GENI_SE`
         - select `Rockchip RK3xxx I2C adapter` if rk
         - select `ChromeOS EC tunnel I2C bus` if cros, depending on `CROS_EC`
   - select `SPI support`
@@ -356,11 +356,11 @@
     - select `MediaTek pinctrl drivers` if mtk
       - select needed drivers
     - select `Qualcomm core pin controller driver` if qcom
-      - select `Qualcomm Technologies Inc SC7180 pin controller driver` if sc7180
-      - select `Qualcomm Technologies Inc X1E80100 pin controller driver` if qcom x1
+      - select `Qualcomm SC7180 pin controller driver` if sc7180
+      - select `Qualcomm X1E80100 pin controller driver` if qcom x1
     - select `Qualcomm SPMI PMIC pin controller driver` if qcom
-    - select `Qualcomm Technologies Inc LPASS LPI pin controller driver` if qcom
-      - select `Qualcomm Technologies Inc SM8550 LPASS LPI pin controller driver` if qcom x1
+    - select `Qualcomm LPASS LPI pin controller driver` if qcom
+      - select `Qualcomm SM8550 LPASS LPI pin controller driver` if qcom x1
     - select `Pinctrl and GPIO driver for RK805 PMIC` if rk
     - select `Rockchip gpio and pinctrl driver` if rk
   - select `GPIO Support`
@@ -410,7 +410,7 @@
   - select `Watchdog Timer Support` if needed
     - select `AMD/ATI SP5100 TCO Timer/Watchdog` if amd
     - select `ARM SBSA Generic Watchdog` if qcom x1
-    - select `QCOM watchdog` if sc7180
+    - select `Qualcomm watchdog` if sc7180
     - select `Intel OC Watchdog` if intel
     - select `Intel TCO Timer/Watchdog` if intel
     - select `Intel MEI iAMT Watchdog` if intel
@@ -440,7 +440,7 @@
       - select `MT6373 SPMI PMIC regulator driver`
     - select `MediaTek DVFSRC regulator driver` if mtk
     - select `Qualcomm REFGEN regulator driver` if sc7180
-    - select `Qualcomm Technologies, Inc. RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
+    - select `Qualcomm RPMh regulator driver` if qcom, depending on `QCOM_COMMAND_DB` and `QCOM_RPMH`
     - select `Rockchip RK805/RK808/RK809/RK817/RK818 Power regulators` if rk
   - select `Multimedia support` if needed
     - select `Media device types`
@@ -630,7 +630,7 @@
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if needed, depending on `PWM`
-    - select `LED support for flash module inside Qualcomm Technologies, Inc. PMIC` if qcom, depending on `LEDS_CLASS_FLASH`
+    - select `LED support for flash module inside Qualcomm PMIC` if qcom, depending on `LEDS_CLASS_FLASH`
     - select `LED support for Qualcomm LPG` if qcom, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
@@ -648,7 +648,7 @@
     - select `BCM2835 DMA engine support` if rpi
     - select `DMA API Driver for PL330` if rk
     - select `MediaTek SoCs APDMA support for UART` if mt8196
-    - select `Qualcomm Technologies GPI DMA support` if qcom x1
+    - select `Qualcomm GPI DMA support` if qcom x1
     - select `Intel integrated DMA 64-bit support` if intel
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
   - select `DMABUF options` if desired
@@ -707,12 +707,12 @@
     - select `Qualcomm APCS IPC driver` if sc7180
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
-    - select `Qualcomm Technologies, Inc. CPUCP mailbox driver` if qcom x1
-    - select `Qualcomm Technologies, Inc. IPCC driver` if qcom
+    - select `Qualcomm CPUCP mailbox driver` if qcom x1
+    - select `Qualcomm IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `AMD IOMMU support` if amd
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588 or mt8196
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588, mt8196, or qcom x1 el2
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
     - select `Rockchip IOMMU Support` if rk
@@ -743,17 +743,17 @@
     - select `Qualcomm SoC drivers` if qcom
       - select `Qualcomm AOSS Driver`
       - select `Qualcomm Command DB`
-      - select `QCOM GENI Serial Engine Driver`
-      - select `Qualcomm Technologies, Inc. LLCC driver`
+      - select `Qualcomm GENI Serial Engine Driver`
+      - select `Qualcomm LLCC driver`
       - select `Qualcomm PMIC GLINK driver`
       - select `Qualcomm Remote Filesystem memory driver` if qcom modem
       - select `Qualcomm RPM-Hardened (RPMH) Communication`
       - select `Qualcomm Shared Memory Manager (SMEM)`
       - select `Qualcomm Shared Memory Point to Point support`
       - select `Qualcomm socinfo driver`
-      - select `Qualcomm Technologies, Inc. (QTI) Sleep stats driver`
+      - select `Qualcomm Sleep stats driver`
       - select `Qualcomm APR/GPR Bus (Asynchronous/Generic Packet Router)`
-      - select `QCOM Interconnect Bandwidth Monitor driver`
+      - select `Qualcomm Interconnect Bandwidth Monitor driver`
     - select `Rockchip IO domain support` if rk3568
   - select `PM Domains` if arm
     - select `Broadcom PM Domains` if rpi
@@ -776,7 +776,8 @@
       - select `HID Accelerometers 3D` if needed (convertibles, tablets), depending on `HID_SENSOR_HUB`
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
-      - select `Qualcomm Technologies Inc. SPMI PMIC5 ADC` if sc7180
+      - select `Qualcomm SPMI PMIC5 ADC` if sc7180
+      - select `Qualcomm SPMI PMIC5 GEN3 ADC` if qcom x1
       - select `Rockchip SARADC driver` if rk, depending on `RESET_CONTROLLER`
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
@@ -793,7 +794,7 @@
     - select `MediaTek display PWM driver` if mtk
     - select `Rockchip PWM support` if rk
   - select `IRQ chip support` if arm
-    - select `QCOM PDC` if qcom
+    - select `Qualcomm PDC` if qcom
   - select `Reset Controller Support` if arm
     - select `Qcom AOSS Reset Driver` if sc7180
     - select `Qualcomm PDC Reset Driver` if sc7180
@@ -824,7 +825,7 @@
   - select `Unified support for USB4 and Thunderbolt` if needed
   - select `NVMEM Support` if needed
     - select `Mediatek SoCs EFUSE support` if mtk
-    - select `QCOM QFPROM Support` if qcom
+    - select `Qualcomm QFPROM Support` if qcom
     - select `SPMI SDAM Support` if qcom x1
     - select `Rockchip OTP controller support` if rk3588
   - select `Trusted Execution Environment support` if needed
