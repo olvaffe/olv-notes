@@ -53,8 +53,9 @@
 
 - the 4 speakers are woofer and tweeter on left and right
 - data flow: `app -> pipewire -> pcm -> dsp -> swr xN -> amp x4 -> speaker x4`
-- dt describes a dai link
-  - the link is a backend and does not correspond to a pcm device
+- dt describes a dai link for the speaker path
+  - the link is a backend (covering swr, amp, speaker) and does not correspond
+    to a user-visible pcm device
   - `platform` refers to dsp
   - `cpu` refers to dsp dma port
     - dsp outputs processed pcm with all 4 channels interleaved
@@ -63,8 +64,39 @@
       bitstream
     - second codec is soundwire controller
     - third codec is amp
-- dsp topology
-- ucm
+- dsp topology describes a graph for the speaker path
+  - frontend subgraph: `read interleaved pcm from dram -> convert to internal format -> apply volume gain -> write to internal buffer`
+    - the dsp firmware provides functions for high-level ops
+    - each node in the subgraph refers to a dsp-specific function
+    - it also tells alsa core to create a user-visible pcm device
+      - it also specifies supported pcm format, such as `S16_LE`, 48khz, 2 or
+        4 channels
+  - backend subgraph: `read from internal buffer -> remap channels -> write to dma port`
+  - mixer widget: `frontend subgraph -> backend subgraph`
+    - a mixer is more like a switch in the topology; it can have N inputs and
+      M outputs, but only one input and one output can be active at any time
+- ucm config
+  - a full pipeline looks like: `pcm dev -> dsp -> dai`
+    - codec drivers for dai expose low-level codec hw controls as kcontrols
+    - dsp topology can define kcontrols as well
+    - `amixer -D hw:0 controls` lists all kcontrols
+  - ucm groups low-level kcontrols to high-level kcontrols in userspace
+    - e.g. each of the 4 amps has a hw volume kcontrol
+      - ucm remaps them to a single volume kcontrol
+    - `amixer -D default:0 controls` lists raw and remapped kcontrols
+  - ucm also defines use cases
+    - `_fboot` runs `FixedBootSequence`
+      - it is run on every boot to init ucm state
+    - `_boot` runs `BootSequence`
+      - it is run on first boot to init kcontrols to default values
+      - subsequent boots rely on save/restore
+    - `_verb Foo` runs `SectionUseCase."Foo"`'s `EnableSequence` and the old
+      verb's `DisableSequence`
+      - `HiFi` is the most commonly verb, indicating media playback
+    - `_enadev Foo` runs `SectionDevice."Foo"`'s `EnableSequence` and the
+      disabled dev's `DisableSequence`
+      - common devices are `Speaker`, `Mic`, `Headphones`, `Headset`, etc.
+    - iow, play music on speaker is `_verb HiFi _enadev Speaker`
 
 ## ASoC
 
