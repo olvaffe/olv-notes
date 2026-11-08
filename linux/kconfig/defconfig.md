@@ -368,6 +368,8 @@
       - select `AMD Promontory GPIO support` if amd
       - select `PrimeCell PL061 GPIO support` if arm guest
       - select `Rockchip GPIO support` if rk
+    - select `Virtual GPIO drivers` if arm
+      - select `Proxy driver for non-exclusive GPIOs`
   - select `Board level reset or power off` if qcom x1
     - select `Qualcomm power-on driver`
   - select `Power Sequencing support` if arm
@@ -499,7 +501,7 @@
         - select `Generic PWM based Backlight Driver` if needed, depending on `PWM`
   - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
-      - deselect `Support old ALSA API`
+      - select `HR-timer backend support`
       - select `Sequencer support` if desired (midi)
       - select `HD-Audio` if x86
         - select `HD Audio PCI` if needed
@@ -532,7 +534,7 @@
         - select `Rockchip` if rk
           - select `Rockchip I2S Device Driver` if rk3588
           - select `Rockchip I2S/TDM Device Driver`
-        - select `Sound Open Firmware Support`
+        - select `Sound Open Firmware Support` if needed
           - select `SOF PCI enumeration support` if x86
           - select `SOF OF enumeration support` if arm
           - select `SOF support for AMD audio DSPs` if amd and cros
@@ -797,6 +799,7 @@
   - select `IRQ chip support` if arm
     - select `Qualcomm PDC` if qcom
   - select `Reset Controller Support` if arm
+    - select `GPIO reset controller`
     - select `Qcom AOSS Reset Driver` if sc7180
     - select `Qualcomm PDC Reset Driver` if sc7180
     - select `Raspberry Pi 4 Firmware Reset Driver` if rpi
