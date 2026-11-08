@@ -593,8 +593,8 @@
       - select `USB Serial Simple Driver`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if sc7180
-    - select `USB Gadget Support` if desired or typec tcpm
-      - select `USB Gadget functions configurable through configfs`
+    - select `USB Gadget Support` if role switch
+      - select `USB Gadget functions configurable through configfs` if desired
         - select desired functions
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk3588
