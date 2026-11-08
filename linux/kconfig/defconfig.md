@@ -588,13 +588,14 @@
       - select `Host driver`
     - select `MediaTek USB3 Dual Role controller` if mtk
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
+      - select `DWC3 Mode Selection (Dual Role mode)`, depending on `USB_GADGET`
     - select `USB Serial Converter support` if needed
       - select `USB Serial Console device support`
       - select `USB Serial Simple Driver`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB hub support` if sc7180
-    - select `USB Gadget Support` if role switch
-      - select `USB Gadget functions configurable through configfs` if desired
+    - select `USB Gadget Support` if desired
+      - select `USB Gadget functions configurable through configfs`
         - select desired functions
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk3588

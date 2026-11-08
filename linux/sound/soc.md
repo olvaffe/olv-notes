@@ -49,6 +49,23 @@
     - dac input line, for headphone
     - adc output line, for mic
 
+## Example: 4-Speaker Laptop
+
+- the 4 speakers are woofer and tweeter on left and right
+- data flow: `app -> pipewire -> pcm -> dsp -> swr xN -> amp x4 -> speaker x4`
+- dt describes a dai link
+  - the link is a backend and does not correspond to a pcm device
+  - `platform` refers to dsp
+  - `cpu` refers to dsp dma port
+    - dsp outputs processed pcm with all 4 channels interleaved
+  - `codec` refers to all codecs behind dsp
+    - first codec reads data from dsp dma, post-processes, and generates
+      bitstream
+    - second codec is soundwire controller
+    - third codec is amp
+- dsp topology
+- ucm
+
 ## ASoC
 
 - <https://docs.kernel.org/sound/soc/index.html>
