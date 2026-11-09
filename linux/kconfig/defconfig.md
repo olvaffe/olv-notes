@@ -407,6 +407,8 @@
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
     - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
+      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5` if sc7180
+      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5 Gen3` if qcom x1
       - select `Qualcomm SPMI PMIC Temperature Alarm`
     - select `Rockchip thermal driver` if rk, depending on `RESET_CONTROLLER`
   - select `Watchdog Timer Support` if needed
@@ -457,7 +459,8 @@
         - select `Mediatek Video Codec driver` if mtk, depending on `MTK_IOMMU` and `MTK_SCP`
         - select `MediaTek MDP v3 driver` if mtk, depending on `MTK_IOMMU`, `MTK_SCP`, and `MTK_CMDQ`
         - select `Qualcomm V4L2 Camera Subsystem driver` if qcom
-        - select `Qualcomm Venus V4L2 encoder/decoder driver` if qcom
+        - select `Qualcomm iris V4L2 decoder driver` if qcom x1
+        - select `Qualcomm Venus V4L2 encoder/decoder driver` if sc7180
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
       - select `Display a user-friendly message when a kernel panic occurs`
@@ -703,6 +706,7 @@
       - select `RPMh Clock Driver`
       - select `SC7180 *` if sc7180
       - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if qcom x1
+      - select `SM8550 Video Clock Controller` if qcom x1
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if needed

@@ -37,7 +37,29 @@
 ## `CONFIG_QCOM_Q6V5_PAS`
 
 - `CONFIG_QCOM_Q6V5_PAS` is the adsp remoteproc driver
-- it loads the adsp fw and boots adsp
+- it loads the adsp fw and boots adsp using PAS
+  - if in EL2, `rproc->has_iommu` is true
+    - rproc core enables and sets up iommu first
+    - if in EL1, we will trap into EL2 hypervisor later which will enable and
+      set up iommu for us
+  - `qcom_pas_load` calls `qcom_mdt_pas_load` to load the dtb fw
+    - the fw is in elf format, with `.elf` or `.mbn` as the suffix
+      - it could also be splitted into `.mdt` and `.bXX`
+    - `__qcom_mdt_pas_init -> qcom_pas_init_image -> qcom_scm_pas_init_image`
+      - it uploads merely metadata for auth
+      - if in EL1, `use_tzmem` is false
+        - metadata is uploaded to `dma_alloc_coherent` and
+          `QCOM_SCM_PIL_PAS_INIT_IMAGE` traps into EL2 hypervisor
+      - if in EL2, `use_tzmem` is true
+        - metadata is uploaded to `qcom_tzmem_alloc` and
+          `QCOM_SCM_PIL_PAS_INIT_IMAGE` traps into EL3 directly
+    - `qcom_mdt_load_no_init`
+      - it uploads rest of the fw
+  - `qcom_pas_start`
+    - `qcom_pas_prepare_and_auth_reset` invokes
+      `QCOM_SCM_PIL_PAS_AUTH_AND_RESET`
+    - it `qcom_mdt_pas_load` and `qcom_pas_prepare_and_auth_reset` again for
+      the real fw (it was done first for dtb fw)
 - `qcom_pas_probe` calls `qcom_add_glink_subdev` to add a subdev
   - when it boots, `glink_subdev_start` calls `qcom_glink_smem_register`
     - `qcom_glink_native_probe`
