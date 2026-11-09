@@ -191,12 +191,14 @@
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if desired
     - select `coreboot Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
+      - select `CBMEM entries in sysfs`, depending on `COREBOOT_TABLE`
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
     - select `EFI (Extensible Firmware Interface) Support` if uefi and arm
       - select `Enable the generic EFI decompressor`
-    - select `Qualcomm firmware drivers` if qcom x1, depending on `PINCTRL_MSM`
+    - select `Qualcomm firmware drivers` if qcom x1
+      - select `TrustZone interface memory allocator: SHM Bridge`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
   - select `Memory Technology Device (MTD) support` if needed (spi nor, etc.)
@@ -315,6 +317,7 @@
           - select `Qualcomm GENI Serial Console support`
     - select `Virtio console` if desired
     - deselect `Hardware Random Number Generator Core support` if not needed
+      - select `Qualcomm True Random Number Generator Driver` if qcom
     - select `TPM Hardware Support` if needed (luks, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
@@ -323,6 +326,7 @@
       - select `TPM 2.0 CRB Interface` if needed
   - select `I2C support`
     - select `I2C support`
+      - select `I2C device interface` if desired
       - select `I2C Hardware Bus support`
         - select `Intel 82801 (ICH/PCH)` if intel
         - select `Intel PIIX4 and compatible (ATI/AMD/Serverworks/Broadcom/SMSC)` if x86
@@ -837,8 +841,9 @@
     - select `SPMI SDAM Support` if qcom x1
     - select `Rockchip OTP controller support` if rk3588
   - select `Trusted Execution Environment support` if needed
-    - select `OP-TEE` if arm
+    - select `OP-TEE` if needed
     - select `AMD-TEE` if amd
+    - select `Qualcomm TEE Support` if qcom
   - select `On-Chip Interconnect management support` if needed
     - select `MediaTek interconnect drivers` if mtk
       - select `MediaTek DVFSRC EMI interconnect driver`
@@ -915,6 +920,10 @@
     - select `Hardening of kernel data structures`
       - select `Trigger a BUG when data corruption is detected`
 - select `Cryptographic API`
+  - select `Accelerated Cryptographic Algorithms for CPU (arm64)` if arm
+    - select `AEAD cipher: AES in GCM mode (ARMv8 Crypto Extensions)`
+    - select `Ciphers: AES, modes: ECB/CBC/CTR/XTS (ARMv8 Crypto Extensions)`
+    - select `AEAD cipher: AES in CCM mode (ARMv8 Crypto Extensions)`
   - select `Accelerated Cryptographic Algorithms for CPU (x86)` if x86
     - select `Ciphers: AES, modes: ECB, CBC, CTS, CTR, XTR, XTS, GCM (AES-NI)`
   - select `Hardware crypto devices`
