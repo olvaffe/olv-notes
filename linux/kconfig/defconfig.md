@@ -189,6 +189,7 @@
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `DMI table support in sysfs` if desired (dmidecode)
     - select `Mark VGA/VBE/EFI FB as generic system framebuffer` if desired
+    - select `Arm Firmware Framework for Armv8-A` if qcom x1
     - select `coreboot Firmware Drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `CBMEM entries in sysfs`, depending on `COREBOOT_TABLE`
