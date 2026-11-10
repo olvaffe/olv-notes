@@ -1,0 +1,73 @@
+# Kernel Firmware QCOM
+
+## `CONFIG_QCOM_SCM`
+
+- SCM stands for Secure Channel Manager
+  - QC is replacing QC-specific SCM by ARM FFA
+- an SCM call uses ARM SMCCC convention
+  - see `qcom_scm_call` and `qcom_scm_desc`
+- owner: `ARM_SMCCC_OWNER_SIP` / `QSEECOM_TZ_OWNER_SIP`
+  - tfa in sEL3 (or sEL2 if virtualized)
+  - svc: `QCOM_SCM_SVC_BOOT`
+    - `QCOM_SCM_BOOT_SDI_CONFIG` disables SDI (system debug image)
+    - `QCOM_SCM_BOOT_SET_REMOTE_STATE` saves/restores vpu secure state
+    - the rest are legacy and have been replaced by psci
+  - svc: `QCOM_SCM_SVC_PIL` for FW loading (being replaced)
+    - remember that fw is signed elf file
+    - `QCOM_SCM_PIL_PAS_INIT_IMAGE` validates fw cert/sig and inits auth session
+    - `QCOM_SCM_PIL_PAS_MEM_SETUP` validates relocations
+    - `QCOM_SCM_PIL_PAS_AUTH_AND_RESET` validates fw code, locks normal world
+      out, deasserts reset pin of the coprocessor
+    - `QCOM_SCM_PIL_PAS_SHUTDOWN` undoes auth-and-reset
+    - `QCOM_SCM_PIL_PAS_IS_SUPPORTED` checks for support
+    - `QCOM_SCM_PIL_PAS_GET_RSCTABLE` returns static and dynamic iova ranges
+      so that kernel can set up smmu pgtable
+    - the rest are legacy
+    - will be replaced by `SMCINVOKE` to qtee PAS TA
+  - svc: `QCOM_SCM_SVC_IO` for mmio to secure regs
+  - svc: `QCOM_SCM_SVC_INFO` / `QSEECOM_TZ_SVC_INFO`
+    - `QCOM_SCM_INFO_IS_CALL_AVAIL` checks if a svc/cmd is supported
+  - svc: `QCOM_SCM_SVC_MP` for memory protection (being replaced)
+    - `QCOM_SCM_MP_VIDEO_VAR` for video iova partitioning
+      - video wrapper hw block assigns different smmu stream ids for different iovas
+        - 0x1940: non-pixel, normal metadata
+        - 0x1941: secure-bitstream, protected encoded frames (ro)
+        - 0x1942: video-firmware
+        - 0x1943: secure-pixel, protected decoded frames (ro)
+        - 0x1944: secure-non-pixel, protected metadata (rw)
+        - 0x1945: same as 0x1941
+        - 0x1946: unused
+        - 0x1947: normal decoded frames
+      - this cmd writes video wrapper regs to update partitioning
+      - will be replaced by `SMCINVOKE` to qtee VideoVar TA
+    - `QCOM_SCM_MP_ASSIGN` traps to hyp to update stage-2 mmu and iommu
+      - return `QCOM_SCM_EINVAL_ARG` if bare metal
+      - will be replaced by `FFA_MEM_LEND` and `FFA_MEM_SHARE`
+    - `QCOM_SCM_MP_SHM_BRIDGE_*`
+      - once enabled, qtee rejects any phy addr unless it is within the shm
+        bridges explicitly created by kernel
+      - this prevents abusing qtee to corrupt memory
+      - will be replaced by `FFA_MEM_SHARE`
+    - the rest are legacy
+  - svc: `QCOM_SCM_SVC_ES` for enterprise security / inline crypto engine
+  - svc: `QCOM_SCM_SVC_WAITQ` for irq-driven sleep/resume
+  - svc: `QCOM_SCM_SVC_GPU`
+    - `QCOM_SCM_SVC_GPU_INIT_REGS` inits gpu regs
+  - legacy
+    - svc: `QCOM_SCM_SVC_OCMEM` for legacy on-chip mem
+    - svc: `QCOM_SCM_SVC_HDCP` for hdmi HDCP auth
+    - svc: `QCOM_SCM_SVC_LMH` for thermal limit
+    - svc: `QCOM_SCM_SVC_SMMU_PROGRAM`
+- owner: `ARM_SMCCC_OWNER_TRUSTED_OS` / `QSEECOM_TZ_OWNER_QSEE_OS`
+  - qtee in sEL1
+  - svc: `QCOM_SCM_SVC_SMCINVOKE`
+    - `QCOM_SCM_SMCINVOKE_INVOKE` starts an rpc to a qtee TA
+    - `QCOM_SCM_SMCINVOKE_CB_RSP` steps forward the rpc
+  - svc: `QSEECOM_TZ_SVC_APP_MGR`
+    - `QSEECOM_TZ_CMD_APP_LOOKUP` looks up TA info
+      - this is legacy
+- owner: `ARM_SMCCC_OWNER_TRUSTED_APP` / `QSEECOM_TZ_OWNER_TZ_APPS`
+  - TAs in sEL0
+  - svc: `QSEECOM_TZ_SVC_APP_ID_PLACEHOLDER`
+    - `QSEECOM_TZ_CMD_APP_SEND` sends to TA directly
+      - this is legacy and `SMCINVOKE` should be used instead
