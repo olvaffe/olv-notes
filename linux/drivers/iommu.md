@@ -1,24 +1,63 @@
 # Kernel IOMMU
 
-## Core
+## ARM SMMU v2 Overview
 
-- config
-  - `IOMMU_DEFAULT_DMA_STRICT`
-    - this is the default on arm
-    - `iommu.passthrough=0 iommu.strict=1`
-    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_DMA` and set
-      `iommu_dma_strict`
-    - devices are translated, restricted to dma-mapped pages
-    - higher overhead, higher security
-  - `IOMMU_DEFAULT_DMA_LAZY`
-    - this is the default on x86
-    - `iommu.passthrough=0 iommu.strict=0`
-    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_DMA_FQ`
-  - `IOMMU_DEFAULT_PASSTHROUGH`
-    - `iommu.passthrough=1`
-    - set `iommu_def_domain_type` to `IOMMU_DOMAIN_IDENTITY`
-    - trusted devices are identically-mapped
-    - lower overhead, lower security
+- every dma transtion carries an sid, stream id
+- if `SMMU_sCR0.CLIENTPD` (client port disable), `pa = iova`
+  - this is the initial state after reset, where smmu is completely bypassed
+    globally
+  -  this is why disabling smmu in dt equals to global bypass
+- else, if the hw supports `SMMU_IDR0.SMS` (cilent matching support), sid
+  is matched against `SMMU_SMRn`
+  - each SMR has VALID, MASK, and ID bits
+  - an sid is matched if `VALID && ((sid & ~MASK) == (ID & ~MASK))`
+  - if no match,
+    - if `sCR0.USFCFG` (unidentified stream fault configuration), fault
+    - else, `pa = iova`
+- else, `S2CR[sid]` (stream-to-context register) is checked
+  - `S2CR[n].TYPE` can be
+    - `TRANS`, translate
+    - `BYPASS`, `pa = iova`
+    - `FAULT`, fault
+- in linux kernel,
+  - `arm-smmu.disable_bypass=0`
+    - it `sCR0.USFCFG = 0` to allow unknown sids
+    - it `S2CR[n].TYPE = BYPASS` to allow known sids
+  - `iommu.passthrough=1`
+    - the core uses `IOMMU_DOMAIN_IDENTITY` by default
+    - `arm_smmu_attach_dev_identity` sets `S2CR[n].TYPE = BYPASS`
+
+## IOMMU Domains
+
+- `iommu_subsys_init` inits `iommu_def_domain_type`
+  - arm defaults to `CONFIG_IOMMU_DEFAULT_DMA_STRICT`
+    - `iommu_set_default_translated` picks `IOMMU_DOMAIN_DMA`
+  - x86 defaults to `CONFIG_IOMMU_DEFAULT_DMA_LAZY`
+    - `iommu_set_default_translated` picks `IOMMU_DOMAIN_DMA`
+    - `IOMMU_DOMAIN_DMA` is overriden to `IOMMU_DOMAIN_DMA_FQ`
+- cmdline `iommu.passthrough` takes precedence over kconfig
+  - it picks `IOMMU_DOMAIN_DMA` or `IOMMU_DOMAIN_IDENTITY`
+- cmdline `iommu.strict` controls whether `IOMMU_DOMAIN_DMA` is overriden to
+  `IOMMU_DOMAIN_DMA_FQ`
+- common domains
+  - `IOMMU_DOMAIN_BLOCKED` blocks all dma
+    - arm smmu `S2CR_TYPE_FAULT`
+  - `IOMMU_DOMAIN_IDENTITY` passes through (that is, bypasses translations)
+    - arm smmu `S2CR_TYPE_BYASS`
+    - no pgtable lookup: low overhead, low security
+    - unkonwn stream id is still rejected
+  - `IOMMU_DOMAIN_UNMANAGED`
+    - arm smmu `S2CR_TYPE_TRANS`
+    - pgtable lookup: high overhead, high security
+    - client driver must manage pgtable explicitly via `iommu_map` / `iommu_unmap`
+  - `IOMMU_DOMAIN_DMA`
+    - arm smmu `S2CR_TYPE_TRANS`
+    - pgtable lookup: high overhead, high security
+    - iommu-dma layer manages pgtable implicitly
+    - iotlb invalidations are synchronous on unmap
+  - `IOMMU_DOMAIN_DMA_FQ`
+    - same as `IOMMU_DOMAIN_DMA`, except iotlb invalidations are async and
+      batched on unmap to balance overhead/security
 
 ## Controllers
 
