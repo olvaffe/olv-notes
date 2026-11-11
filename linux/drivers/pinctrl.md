@@ -8,8 +8,6 @@
   - each io mux has several pins, such as 8
   - there is a total of `5*4*8=160` pins
 - the dt node usually has
-  - child nodes for the hw gpio banks
-    - these child nodes have `compatible` and are bound by a gpio driver
   - child nodes to group the pins
     - e.g., we want to use two pins for uart
       - the uart is called a "function" and is controlled by `pinmux_ops`
@@ -18,6 +16,14 @@
         `pinctrl_ops`
     - this way, a pin can be used for several functions
       - which pins are used for which functions are described by dt
+    - props
+      - `pins = "gpio55";` specifies the pins, where `gpio55` is hw-specific
+      - `function = "gpio";` configures for func, where `gpio` is hw-specific
+      - `drive-strength = <6>;` 6mA output
+      - `bias-disable;` disables gpio pull
+      - `output-high;` drives high when there is no consumer
+  - optional child nodes for the hw gpio banks
+    - these child nodes have `compatible` and are bound by a gpio driver
 - `pinctrl_desc` describes a pin controller
   - `pinctrl_ops *pctlops` controls pin grouping
   - `pinmux_ops *pmxops` controls pin muxing
