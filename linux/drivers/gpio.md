@@ -1,5 +1,40 @@
 # Kernel GPIO
 
+## Overview
+
+- when a circuit connects two components,
+  - the voltage floats when no component actively drives
+  - if a component actively drives high and low, we are good
+  - if a component only actively drives low, we need a pull-up resistor to
+    avoid floating
+  - if a component only actively drives high, we need a pull-down resistor to
+    avoid floating
+  - the resistor can be external, or be internal to either component
+- drive mode is for output
+  - `drive-push-pull`: actively drive high and low (default)
+  - `drive-open-drain`: actively drive low but float when not driving
+  - `drive-open-source`: actively drive high but float when not driving
+- bias is for internal pull resistor
+  - `bias-disable`: disconnected (to save power)
+  - `bias-pull-up`: pull high
+  - `bias-pull-down`: pull low
+- polarity is the expectation of a consumer
+  - active high: high voltage means active
+  - active low: low voltage means active
+- a gpio pin pad on a pinctrl combines multiple circuits internally
+  - pinmux (`function`): select gpio, i2c, pwm, etc.
+  - voltage-rail mux (`power-source`): select vin0, vin1, etc.
+  - output buffer
+    - `output-high` / `output-low`: enable output and explicitly drive high/low
+    - `output-enable`: enable output without change the default/cached drive
+    - `drive-strength`: mA
+  - input buffer
+    - `input-disable`: disable internal input comparator
+  - bias
+    - `bias-disable`: disconnect pull resistor (to save power)
+    - `bias-pull-up`: pull high
+    - `bias-pull-down`: pull low
+
 ## GPIO Controller
 
 - `devm_gpiochip_add_data` registers a `gpio_chip`
@@ -47,15 +82,4 @@
     - `gpiod_configure_flags` configs the pin according to the flags
       - `lflags` is from dt
       - `dflags` is from the consumer driver
-      - polarity
-        - active high: high voltage means active
-        - active low: low voltage means active
-      - drive mode is for output
-        - push/pull: it can pull high/low itself
-        - open drain: it can only pull low, and relies on external resistor to pull high
-        - open source: it can only pull high, and relies on external resistor to pull low
-      - bias is for input
-        - pull-up: pull to high
-        - pull-down: pull to low
-        - disable: no pulling
     - `gpiod_line_state_notify` calls the notifiers
