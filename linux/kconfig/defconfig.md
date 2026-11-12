@@ -39,6 +39,7 @@
   - select `Symmetric multi-processing support`
   - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP` or `HYPERVISOR_GUEST`
   - deselect `Enable MPS table`
+  - select `Flexible Return and Event Delivery`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
   - select `AMD ACPI2Platform devices support` if amd
   - select `Linux guest support` if guest
@@ -154,6 +155,7 @@
       - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS` and `GPIOLIB`
       - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
       - select `MediaTek HCI SDIO driver` if mt8186, depending on `SERIAL_DEV_BUS`
+      - select `Intel HCI PCIe driver` if intel
   - select `Wireless` if needed
     - select `cfg80211 - wireless configuration API`
       - select `Generic IEEE 802.11 Networking Stack (mac80211)`
@@ -278,6 +280,7 @@
       - select `Intel devices` if intel
         - select `Intel Wireless WiFi Next Gen AGN - Wireless-N/Advanced-N/Ultimate-N (iwlwifi)`
           - select `Intel Wireless WiFi MVM Firmware support`
+          - select `Intel Wireless WiFi MLD Firmware support`
       - select `MediaTek devices` if mtk
         - select `MediaTek MT7921E (PCIe) support`
   - select `Input device support`
@@ -342,6 +345,7 @@
   - select `SPI support`
     - select `BCM2835 SPI controller` if rpi
     - select `BCM2835 SPI auxiliary controller` if rpi
+    - select `Intel PCH/PCU SPI flash PCI driver` if intel
     - select `MediaTek SPI controller` if mtk
     - select `MediaTek SPI NOR controller` if mtk
     - select `PXA2xx SSP SPI master` if intel
@@ -356,6 +360,7 @@
     - select `AMD GPIO pin control` if amd
     - select `Intel pinctrl drivers` if intel
       - select needed drivers such as
+      - select `Intel pinctrl and GPIO platform driver`
       - select `Intel Meteor Lake pinctrl and GPIO driver`
       - select `Intel Tiger Lake pinctrl and GPIO driver`
     - select `MediaTek pinctrl drivers` if mtk
@@ -407,6 +412,8 @@
       - select `ACPI INT340X thermal drivers` if intel
         - select `ACPI INT340X thermal drivers`
       - select `Intel PCH Thermal Reporting Driver` if needed
+      - select `Intel TCC offset cooling Driver` if intel
+      - select `Intel Hardware Feedback Interface` if intel
     - select `Broadcom thermal drivers` if rpi
       - select `Thermal sensors on bcm2835 SoC`
     - select `Generic ADC based thermal sensor` if mtk, depending on `IIO`
@@ -507,14 +514,16 @@
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if needed, depending on `PWM`
+  - select `Compute Acceleration Framework` if needed
+    - select `Intel NPU (Neural Processing Unit)` if intel
   - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
       - select `HR-timer backend support`
       - select `Sequencer support` if desired (midi)
       - select `HD-Audio` if x86
         - select `HD Audio PCI` if needed
-        - select `Realtek HD-audio codec support` if needed
-        - select `HD-audio HDMI codec support`
+        - select `Realtek HD-audio codec support` if needed, depending on `SND_HDA_INTEL` or `SND_SOC_SOF_HDA_AUDIO_CODEC`
+        - select `HD-audio HDMI codec support`, depending on `SND_HDA_INTEL` or `SND_SOC_SOF_HDA_AUDIO_CODEC`
       - select `USB sound devices`
         - select `USB Audio/MIDI driver` if needed
       - select `ALSA for SoC audio support`
@@ -527,7 +536,7 @@
           - deselect `Intel ASoC SST drivers`
           - select `Intel Machine drivers` if intel, depending on `SND_SOC_SOF_INTEL_TOPLEVEL`
             - select `Use more user friendly long card names`
-            - select `Skylake+ with HDA Codecs`
+            - select `Skylake+ with HDA Codecs`, depending on `SND_SOC_SOF_HDA_AUDIO_CODEC`
             - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
             - select `SOF with nau8825 codec in I2S Mode` if needed
             - select `SoundWire generic machine driver` if needed
@@ -576,11 +585,13 @@
         - select `HID Multitouch panels`
         - select `Nintendo Joy-Con and Pro Controller support`, depending on `LEDS_CLASS`
         - select `Wacom Intuos/Graphire tablet support (USB)`
-        - select `HID Sensors framework support`
+        - select `HID Sensors framework support` if amd/intel
       - select `I2C HID support` if needed
         - select `HID over I2C transport layer ACPI driver` if x86 (I2C touchpads)
         - select `HID over I2C transport layer Open Firmware driver` if arm
         - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
+      - select `Intel ISH HID support` if intel
+        - select `Intel Integrated Sensor Hub`
       - select `AMD SFH HID Support` if amd
         - select `AMD Sensor Fusion Hub`
   - select `USB support`
