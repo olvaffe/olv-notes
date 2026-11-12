@@ -95,6 +95,8 @@
   - 2025, Kompanio Ultra 910 / MT8196, 3nm, Cortex-{X925x1,X4x3,A720x4}, Immortalis-G925 MC11
     - cros: rauru
     - `mt8196-rauru-navi-sku1.dts`
+  - 2026, Kompanio 540 / MT8189, 6nm, Cortex-{A78x2,A55x6}, Mali-G57 MC2
+    - cros: skywalker
 - Genio (for IoT)
   - 2020, Genio 700 / MT8390, 6nm, Cortex-{A78x2,A55x6}, Mali-G57 MC3
   - 2022, Genio 1200 / MT8395, 6nm, Cortex-{A78x4,A55x4}, Mali-G57 MC5

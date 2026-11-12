@@ -92,9 +92,13 @@
     - desktop
   - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
     - mobile
-- 25Q4~: Core Ultra 3xx
+  - Atom: Twin Lake, 6-15W, Gracemont, Gfx12 GPU
+- 26Q1~: Core Ultra 3xx
   - Panther Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
+    - mobile
+    - cros: fatcat
   - Wildcat Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
+    - mobile, no "Ultra"
 - 26Q4~: Core Ultra 4xx?
   - Nova Lake, Coyote Cove, Arctic Wolf, Gfx30 (Xe3) GPU?
 
