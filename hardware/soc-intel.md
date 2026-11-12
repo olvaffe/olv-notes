@@ -101,6 +101,9 @@
     - mobile, no "Ultra"
 - 26Q4~: Core Ultra 4xx?
   - Nova Lake, Coyote Cove, Arctic Wolf, Gfx30 (Xe3) GPU?
+- 27Q4~: Core Ultra 5xx?
+  - Razor Lake, Griffin Cove, Arctic Wolf, Gfx30 (Xe3P) GPU?
+  - Atom: Moon Lake, Darkmont, Gfx30 (Xe3) GPU?
 
 ## TDP
 
