@@ -74,23 +74,22 @@
 
 ## Options
 
+- `allow-broken-lto` allows `-Db_lto=true`, which is unsupported
 - `allow-fallback-for` allows specified deps (e.g., `libdrm`, `libva`, and `perfetto`)
   to use wraps
 - `allow-kcmp` defines `-DALLOW_KCMP`
   - this is desirable because of seccomp
   - this provides `os_same_file_description` impl
-- `amdgpu-virtio` enables virtio support for radeonsi and radv
-- `amd-use-llvm` enables llvm support, in addition to aco, for radeonsi and
-  radv
-- `android-libbacktrace` defines `-DWITH_LIBBACKTRACE`
-  - it also builds `backtrace` stub
-  - this provides `u_debug_stack.h` impl on android
+- `amd-options` specifies radv/radeonsi options
+  - `use-llvm` enables llvm support in addition to aco
+  - `virtio` enables virtio support
 - `android-libperfetto` defines `ANDROID_LIBPERFETTO` to use android's system
   perfetto rather than sdk
 - `android-strict` defines `-DANDROID_STRICT`
   - this caps vk versions/extensions for android
 - `android-stub` builds various stub shared libraries for android
   - this enables an android build without android deps
+- `apitrace` traces GL calls
 - `build-aco-tests` builds `aco_tests` unit tests
 - `build-radv-tests` builds `radv_tests` unit tests
 - `build-tests` builds various unit tests
@@ -98,9 +97,6 @@
   shader replacement for mesa main
   - the built-in shader replacement based on `MESA_SHADER_DUMP_PATH` and
     `MESA_SHADER_READ_PATH` should be good enough
-- `d3d-drivers-path` is the install path of `d3dadapter9.so`
-  - default to `$libdir/d3d`
-  - it is a driver loaded by wine nine
 - `datasources` enables various perfetto datasources
   - they are supported drivers of `pps-producer`
 - `display-info` uses `libdisplay-info` for `VK_KHR_display` hdr
@@ -122,21 +118,18 @@
   - `xmlconfig` and intel tools both require `expat`
 - `freedreno-kmds` specifies supported freedreno kmds
   - there are `msm`, `kgsl`, `virtio`, and `wsl`
-- `gallium-d3d10-dll-name` is the name of d3d10 umd dll
-  - default to `libgallium_d3d10.dll`
-- `gallium-d3d10umd` builds sw d3d10 umd for windows
-  - it uses llvmpipe/softpipe
 - `gallium-d3d12-graphics` enables gfx support in d3d12 gallium driver
 - `gallium-d3d12-video` enables video support in d3d12 gallium driver
 - `gallium-drivers` specifies the list of enabled gallium drivers
   - hw drivers
+  - `ethosu` and `rocket` are npu drivers
   - `zink` and `d3d12` are layered drivers on top of vk/d3d12
   - `svga` and `virgl` are virtualized drivers for vmware/virtio-gpu
-  - `llvmpipe` and `software` are sw drivers
-  - `kmsro` is for when the drm fd lacks a rendernode
+  - `llvmpipe` and `softpipe` are sw drivers
 - `gallium-extra-hud` defines `-DHAVE_GALLIUM_EXTRA_HUD=1`
-  - it provides `hud_create` used by gallium fronts to provide HUD info
+  - it provides extra gallium HUD info
 - `gallium-mediafoundation` enables gallium mediafoundation frontend
+- `gallium-mediafoundation-test` enables gallium mediafoundation tests
 - `gallium-rusticl` enables gallium opencl frontend/target
   - similar to vk, this builds an opencl icd loaded by `OpenCL-ICD-Loader`
 - `gallium-rusticl-enable-drivers` lists enabled drivers
@@ -144,7 +137,6 @@
 - `gallium-va` enables gallium vaapi frontend/target
 - `gallium-wgl-dll-name` is the name of wgl dll
   - default to `libgallium_wgl.dll`
-  - it provides sw gl on windows
 - `gbm` builds GBM
 - `gbm-backends-path` defines `-DDEFAULT_BACKENDS_PATH=`
   - defaults to `$libdir/gbm`
@@ -157,15 +149,12 @@
   `libGLESv2.so`, for android
 - `glvnd` defines `-DUSE_LIBGLVND=1`
   - for glx, it defines `__glx_Main` and renames `libGL.so.1.2.0` to
-    `libGLX_mesa.0.0.0`
+    `libGLX_mesa.so.0.0.0`
   - for egl, it defines `__egl_Main` and renames `libEGL.so.1.0.0` to
-    `libEGL_mesa.0.0.0`
+    `libEGL_mesa.so.0.0.0`
 - `glvnd-vendor-name` specifies the glvnd vendor name
   - default to `mesa`
-- `glx` builds GLX
-  - with `xlib`, it is pure sw and uses only core x11 protocol
-  - with `dri`, it always defines `-DGLX_INDIRECT_RENDERING` and uses glx
-    protocol for indirect rendering
+- `glx` builds GLX using glx protocol for indirect rendering
 - `glx-direct` defines `-DGLX_DIRECT_RENDERING`
   - it uses various protocols for direct rendering
 - `glx-read-only-text` defines `-DGLX_X86_READONLY_TEXT`
@@ -179,10 +168,11 @@
   - it enables downstream `pvr` kmd support
 - `imagination-uscgen-devices`
 - `install-intel-gpu-tests` installs `intel_FOO_mi_builder_test` unit tests
-- `install-mesa-clc` installs `mesa_clc`
-- `install-precomp-compiler` installs `asahi_clc` and `panfrost_compile`
+- `install-mesa-clc` installs `mesa_clc` and `vtn_bindgen2`
+- `install-precomp-compiler` installs driver pre-compilers
 - `intel-elk` enables intel gen8- compiler support
 - `intel-rt` enables raytracing in intel anv driver
+- `intel-virtio-experimental` enables virtio support in intel anv driver
 - `legacy-wayland` enables `EGL_WL_bind_wayland_display` support for egl
 - `libgbm-external` links against system libgbm
 - `libunwind` defines `-DHAVE_LIBUNWIND`
@@ -192,6 +182,7 @@
 - `llvm-orcjit` uses ORCJIT instead of MCJIT for llvmpipe
 - `lmsensors` enables sensors support for gallium hud
 - `mediafoundation-codecs` selects enabled codecs for gallium mediafoundation
+- `mediafoundation-store-dll` builds gallium mediafoundation for ms store
 - `mesa-clc` builds `mesa_clc` and `vtn_bindgen2`
   - `mesa_clc` translates CLC to SPIRV
   - `vtn_bindgen2` translates SPIRV to NIR, and generates a C function to
@@ -201,26 +192,29 @@
 - `microsoft-clc` builds `clon12compiler.dll`
   - it translates CL to SPIRV to NIR to DXIL
 - `min-windows-version` specifies win ver
-  - it defines `-DWINDOWS_NO_FUTEX` on win 8 and before
+  - it defines `-DWINDOWS_NO_FUTEX` before win 8
 - `moltenvk-dir` defines the path to moltenvk
   - it is used by zink
+- `nvk-build-id` overrides nvk shader cache build id
 - `opengl` defines `-DHAVE_OPENGL=1`
   - it enables gl support in egl and mesa main
+- `panfrost-rust` enables new kraid compiler (default)
+- `panfrost-virtio` enables virtio support
 - `perfetto` defines `-DHAVE_PERFETTO`
   - it enables perfetto tracing and `pps-producer`
 - `platforms` specifies supported window systems
   - user can specify `x11`, `wayland`, `haiku`, `android`, `windows`, `macos`
   - `xcb` is automatically added when `x11` is selected
   - egl adds `surfaceless`, and if gbm is enabled, `drm`
-- `platform-sdk-version` specifies the android sdk version, defaults to 34
-- `power8` enables power8 optimizations
-- `precomp-compiler` builds `asahi_clc` and `panfrost_compile`
+- `platform-sdk-version` specifies the android sdk version, defaults to 35
+- `precomp-compiler` builds driver pre-compilers
   - they translate SPIRV to NIR to hw-specific binary, and generate a C
     variable to embed the binary
 - `radeonsi-build-id` defines `-DRADEONSI_BUILD_ID_OVERRIDE=`
 - `radv-build-id` defines `-DRADV_BUILD_ID_OVERRIDE=`
   - it is used to avoid shader cache rebuild when two radv versions are known
     to generate compat shader binaries
+- `radv-u_trace` enables `u_trace` support
 - `selinux` has no effect
   - it was used with `execmem`
 - `shader-cache` defines `-DENABLE_SHADER_CACHE`
@@ -228,18 +222,13 @@
 - `shader-cache-default` defines `-DSHADER_CACHE_DISABLE_BY_DEFAULT` if
   disabled
   - it disables disk cache by default and requires
-    `MESA_SHADER_CACHE_DISABLE=1` envvar to re-enable
+    `MESA_SHADER_CACHE_DISABLE=0` envvar to re-enable
 - `shader-cache-max-size` defines `-DMESA_SHADER_CACHE_MAX_SIZE=`
   - default to 1GB or `MESA_SHADER_CACHE_MAX_SIZE` envvar
-- `shared-glapi` builds `libglapi.so`
-  - it provides current ctx and dispatch table shared by gl, gles1, and gles2
-  - it might not be needed with `glvnd`?
-  - deprecated and always enabled
 - `shared-llvm` defines `-DLLVM_IS_SHARED=`
   - it links llvm statically/dynamically
-- `spirv-to-dxil` enables spirv to dxil translation
-  - this is needed by vk-to-d3d12
-  - it also provides offline `spirv_to_dxil` compiler
+- `spirv-to-dxil` enables spirv to dxil translation (i.e., vk-to-d3d12)
+  - it provides `libspirv_to_dxil` and offline `spirv2dxil` compiler
 - `spirv-tools` defines `-DHAVE_SPIRV_TOOLS`
 - `split-debug` adds `-gsplit-dwarf` and `-Wl,--gdb-index` for a debug build
   - `-gsplit-dwarf` splits dwarf info to a separate `.dwo` file
@@ -251,9 +240,11 @@
 - `sysprof` enables sysprof-backend for utrace
 - `teflon` enables gallium tensorflow lite frontend/target
 - `tools` enables various tools
-  - generic: `drm-shim`, `glsl`, `nir`, `dlclose-skip`
+  - generic: `drm-shim`, `glsl`, `nir`, `dlclose-skip`, `gamma`
   - driver-specific: `etnaviv`, `freedreno`, `intel`, `intel-ui`, `nouveau`,
-    `lima`, `panfrost`, `asahi`, `imagination`,
+    `lima`, `panfrost`, `asahi`, `imagination`, `amd`
+- `torx` enables gallium pytorch frontend
+- `tu-build-id` overrides turnip shader cache build id
 - `unversion-libgallium` builds `libgallium_dri.so` instead of
   `libgallium-<version>.so`
 - `valgrind` defines `-DHAVE_VALGRIND`
@@ -261,9 +252,10 @@
 - `va-libs-path` specifies the install path for vaapi drivers
   - default to `$libdir/dri`
 - `video-codecs` defines `-DVIDEO_CODEC_FOO=1`
-  - `{vc1,h264,h265,av1,vp9}{dec,enc}`, or simply `all` or `all_free`
-  - it affects anv, radv, gallium-on-d3d12, and `vl_codec_supported` used by
-    vaapi
+  - `all_free` covers `av1{dec,enc}`, `{vp9,mpeg12,jpeg}dec`
+  - `all` adds `{h264,h265}{dec,enc}`, `vc1dec`
+  - `{vc1,h264,h265,av1,vp9,mpeg12,jpeg}{dec,enc}`, or simply `all` or `all_free`
+  - it affects anv, radv, nvk, d3d12, vappi (`vl_codec_supported`), etc.
 - `virtgpu_kumquat` enables kumquat ffi for gfxstream
 - `vmware-mks-stats` defines `-DVMX86_STATS=1` for vmware
 - `vulkan-beta` defines `-DVK_ENABLE_BETA_EXTENSIONS`
@@ -273,15 +265,16 @@
   - `virtio` and `gfxstream` are virtualized drivers for virtio-gpu
   - `swrast` is sw driver using llvmpipe
   - `microsoft-experimental` is layered driver on top of d3d12
+  - `kosmickrisp` is layered driver on top of metal
 - `vulkan-icd-dir` specifies the install path for vk icd jsons
   - default to `$datadir/vulkan/icd.d`
 - `vulkan-layers` specifies vk layers to build
-  - `anti-lag` supports `VK_AMD_anti_lag`
   - `device-select` makes the best device the first
   - `intel-nullhw` disables draw and compute at hw level
   - `overlay` draws hud using imgui
   - `screenshot` writes presented images to png
-    `vram-report-limit` caps reported mem heap sizes and budgets
+   -`vram-report-limit` caps reported mem heap sizes and budgets
+- `vulkan-loader-rpath` sets rpath to help zink find vk loader
 - `vulkan-manifest-per-architecture` decides if `<arch>` part is included in
   the generated `<drv>_icd.<arch>.json`
 - `xlib-lease` enables `VK_EXT_acquire_xlib_display` support
