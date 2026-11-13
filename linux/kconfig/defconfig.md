@@ -58,9 +58,7 @@
     - select `Processor Aggregator` if needed
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
-      - select `AMD Processor P-State driver` if cros and amd
-        - select `AMD Processor P-State default mode` (guybrush requires 2)
-      - select `ACPI Processor P-States driver` if before zen2
+      - select `ACPI Processor P-States driver` if before zen2 or guybrush
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations` if x86
   - select `IA32 Emulation` if desired
@@ -121,7 +119,7 @@
     - select `Unix domain sockets`
     - select `TCP/IP networking`
       - select `The IPv6 protocol`
-        - deselect `IPv6: IPv6-in-IPv4 tunnel (SIT driver)` if not needed
+        - deselect `IPv6: IPv6-in-IPv4 tunnel (SIT driver)` if desired
     - select `Network packet filtering framework (Netfilter)` if desired (firewall, podman)
       - select `Core Netfilter Configuration`
         - select `Netfilter connection tracking support`
@@ -183,7 +181,7 @@
   - select `Firmware Drivers`
     - select `ARM System Control and Management Interface Protocol` if arm
       - select `ARM System Control and Management Interface (SCMI) Message Protocol`
-    - select `DMI table support in sysfs` if desired (dmidecode)
+    - select `DMI table support in sysfs` if needed (dmidecode)
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
     - select `Arm Firmware Framework for Armv8-A` if qcom x1
@@ -236,7 +234,7 @@
     - deselect `ATA SFF support (for legacy IDE and PATA)`
   - select `Multiple devices driver support (RAID and LVM)` if desired
     - select `Device mapper support`
-      - select `Crypt target support` if luks
+      - select `Crypt target support` (luks)
   - select `Network device support`
     - select `Network core driver support`
       - select `WireGuard secure network tunnel` if desired
@@ -246,7 +244,7 @@
       - select `Virtual ethernet pair device` if desired (podman)
       - select `Virtio network driver` if guest, depending on `VIRTIO_PCI`
     - select `Ethernet driver support` if needed
-      - deselect all but the needed drivers, such as
+      - deselect all but needed, such as
       - select `Broadcom devices` if rpi
         - select `Broadcom GENET internal MAC support`
       - select `Intel devices` if intel
@@ -262,7 +260,7 @@
     - select `USB Network Adapters` if needed, depending on `USB`
       - select `Realtek RTL8152/RTL8153 Based USB Ethernet Adapters`
     - select `Wireless LAN` if needed
-      - deselect all but the needed drivers, such as
+      - deselect all but needed, such as
       - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support` if sc7180
         - select `Qualcomm ath10k SNOC support` if sc7180
@@ -312,9 +310,12 @@
         - select `Qualcomm on-chip GENI based serial port support` if qcom, depending on `QCOM_GENI_SE`
           - select `Qualcomm GENI Serial Console support`
     - select `Virtio console` if desired
-    - deselect `Hardware Random Number Generator Core support` if not needed
+    - select `Hardware Random Number Generator Core support` if needed
+      - deselect all but needed, such as
+      - select `Arm SMCCC TRNG firmware interface support` if arm
+      - select `Rockchip True Random Number Generator` if rk
       - select `Qualcomm True Random Number Generator Driver` if qcom
-    - select `TPM Hardware Support` if needed (luks, etc.)
+    - select `TPM Hardware Support` if needed (luks, hwrng, etc.)
       - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
       - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
         - select `Cr50 SPI Interface` if cros
@@ -353,12 +354,10 @@
     - select `Pinctrl and GPIO driver for RK805 PMIC` if rk
     - select `Rockchip gpio and pinctrl driver` if rk
     - select `Intel pinctrl drivers` if intel
-      - select needed drivers such as
+      - select needed, such as
       - select `Intel pinctrl and GPIO platform driver`
       - select `Intel Meteor Lake pinctrl and GPIO driver`
-      - select `Intel Tiger Lake pinctrl and GPIO driver`
     - select `MediaTek pinctrl drivers` if mtk
-      - select needed drivers
     - select `Qualcomm core pin controller driver` if qcom
       - select `Qualcomm SC7180 pin controller driver` if sc7180
       - select `Qualcomm X1E80100 pin controller driver` if qcom x1
@@ -404,7 +403,6 @@
       - deselect `X86 package temperature thermal driver` if not intel
       - select `ACPI INT340X thermal drivers` if intel
         - select `ACPI INT340X thermal drivers`
-      - select `Intel PCH Thermal Reporting Driver` if needed
       - select `Intel TCC offset cooling Driver` if intel
       - select `Intel Hardware Feedback Interface` if intel
     - select `Broadcom thermal drivers` if rpi
@@ -428,7 +426,7 @@
   - select `Multifunction device drivers`
     - select `ChromeOS Embedded Controller multifunction device` if cros, depending on `CROS_EC`
     - select `Intel Low Power Subsystem support in PCI mode` if intel
-    - select `MediaTek MT6397 PMIC Support` if mtk before mt8196
+    - select `MediaTek MT6397 PMIC Support` if before mt8196
     - select `MediaTek SPMI PMICs` if mt8196
     - select `Qualcomm SPMI PMICs` if qcom
     - select `Rockchip RK8xx Power Management Chips` if rk3568
@@ -478,8 +476,7 @@
         - select `Simple DRM bridge support` if needed
         - select `TI SN65DSI86 DSI to eDP bridge` if needed
         - select `Analogix Anx7625 MIPI to DP interface support` if needed
-      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if intel before lnl
-        - select `Force probe i915 for selected Intel hardware IDs` (to `!*`) if needed
+      - select `Intel 8xx/9xx/G3x/G4x/HD Graphics` if before lnl
       - select `DRM Support for Mediatek SoCs` if mtk
         - select `DRM DPTX Support for MediaTek SoCs`
         - select `DRM HDMI Support for Mediatek SoCs`
@@ -497,18 +494,17 @@
         - select `Rockchip VOP2 driver`
         - select `Rockchip specific extensions for Synopsys DW HDMI` if rk3568
         - select `Rockchip specific extensions for Synopsys DW HDMI QP` if rk3588
-      - select `Drivers for system framebuffers` if desired
-        - select `EFI framebuffer driver`
-        - select `Simple framebuffer driver`
+      - select `Drivers for system framebuffers` if needed
+        - select `EFI framebuffer driver` if uefi
+        - select `Simple framebuffer driver` if arm
       - select `Broadcom VC4 Graphics` if rpi, depending on `SND_SOC`
       - select `Virtio GPU driver` if guest
-      - select `Intel Xe2 Graphics` if intel since lnl
-        - select `Force probe xe for selected Intel hardware IDs` (to `*`) if needed
+      - select `Intel Xe2 Graphics` if lnl+
     - select `Backlight & LCD device support`
       - select `Lowlevel Backlight controls`
         - select `Generic PWM based Backlight Driver` if needed, depending on `PWM`
   - select `Compute Acceleration Framework` if needed
-    - select `Intel NPU (Neural Processing Unit)` if intel
+    - select `Intel NPU (Neural Processing Unit)` if mtl+
   - select `Sound card support` if needed
     - select `Advanced Linux Sound Architecture`
       - select `HR-timer backend support`
@@ -521,18 +517,16 @@
         - select `USB Audio/MIDI driver` if needed
       - select `ALSA for SoC audio support`
         - select `AMD` if amd
-          - select `AMD Audio Coprocessor - Renoir support` if renoir
-            - select `AMD Renoir support for DMIC`
           - select `AMD Audio ACP Common support`
-          - select `AMD SOF Machine Driver Support` if cros
+          - select `AMD SOF Machine Driver Support`
         - select `Intel` if intel
           - deselect `Intel ASoC SST drivers`
-          - select `Intel Machine drivers` if intel, depending on `SND_SOC_SOF_INTEL_TOPLEVEL`
+          - select `Intel Machine drivers`, depending on `SND_SOC_SOF_INTEL_TOPLEVEL`
             - select `Use more user friendly long card names`
             - select `Skylake+ with HDA Codecs`, depending on `SND_SOC_SOF_HDA_AUDIO_CODEC`
             - select `SOF with rt5650/rt5682 codec in I2S Mode` if needed
             - select `SOF with nau8825 codec in I2S Mode` if needed
-            - select `SoundWire generic machine driver` if needed
+            - select `SoundWire generic machine driver`
         - select `Mediatek` if mtk
           - select `ASoC support for Mediatek MT8186 chip` if mt8186
             - select `ASoC Audio driver for MT8186 with MT6366 and I2S codecs`, depending on `MTK_PMIC_WRAP`
@@ -547,8 +541,7 @@
         - select `Sound Open Firmware (SOF) platforms` if needed
           - select `SOF PCI enumeration support` if x86
           - select `SOF OF enumeration support` if arm
-          - select `SOF support for AMD audio DSPs` if amd and cros
-            - select `SOF support for RENOIR`
+          - select `SOF support for AMD audio DSPs` if amd
             - select `SOF support for REMBRANDT`
           - select `SOF support for Intel audio DSPs` if intel
             - select `SOF support for HDA Links(HDA/HDMI)`
@@ -569,7 +562,7 @@
       - select `/dev/hidraw raw HID device support` if desired
       - select `User-space I/O driver support for HID subsystem` if desired
       - select `Special HID drivers`
-        - deselect all but the needed drivers, such as
+        - deselect all but needed, such as
         - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
         - select `Vivaldi Keyboard`
         - select `Logitech devices`, depending on `LEDS_CLASS_MULTICOLOR`
@@ -608,9 +601,8 @@
       - select `USB Serial Simple Driver`
       - select `USB FTDI Single Port Serial Driver`
     - select `Onboard USB device support` if sc7180
-    - select `USB Gadget Support` if desired
-      - select `USB Gadget functions configurable through configfs`
-        - select desired functions
+    - select `USB Gadget Support` if needed
+      - select `USB Gadget functions configurable through configfs` if desired
     - select `USB Type-C Support`
       - select `USB Type-C Port Controller Manager` if rk3588
         - select `Fairchild FUSB302 Type-C chip driver`
@@ -690,26 +682,25 @@
   - select `X86 Platform Specific Device Drivers` if x86
     - select `AMD SoC PMC driver` if amd
     - select `ASUS WMI Driver` if asus, depending on `RFKILL` and `HOTPLUG_PCI`
-    - select `Eee PC WMI Driver` if asus
     - select `Dell X86 Platform Specific Device Drivers` if dell
     - select `Intel PMC Core driver` if intel
     - select `Intel Platform Monitoring Technology (PMT) Telemetry driver` if intel, depending on `INTEL_VSEC`
     - select `Intel WMI thunderbolt force power driver` if intel
     - select `Intel HID Event` if intel
     - select `Intel Vendor Specific Extended Capabilities Driver` if intel
-    - select `Lenovo IdeaPad Laptop Extras` if ideapad
-    - select `ThinkPad ACPI Laptop Extras` if thinkpad
-    - select `Lenovo WMI-based systems management driver` if thinkpad
+    - select `Lenovo IdeaPad Laptop Extras` if lenovo
+    - select `ThinkPad ACPI Laptop Extras` if lenovo
+    - select `Lenovo WMI-based systems management driver` if lenovo
     - select `Intel SCU platform driver` if intel
   - select `Broadcom VideoCore support` if rpi
-    - select all
+    - select `BCM2835 VCHIQ`
+      - select `BCM2835 MMAL VCHIQ service`
   - select `ACPI-WMI support` if x86
   - select `Common Clock Framework`
     - select `Clock driver controlled via SCMI interface` if rk
     - select `Broadcom BCM2835 clock support` if rpi
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
-      - select needed drivers
     - select `Support for Qualcomm's clock controllers` if qcom
       - select `X1*` if qcom x1
       - select `RPMh Clock Driver`
@@ -887,7 +878,7 @@
       - select `Microsoft Joliet CDROM extensions`
     - select `UDF file system support`
   - select `DOS/FAT/EXFAT/NT Filesystems`
-    - select `VFAT (Windows-95) fs support` if esp
+    - select `VFAT (Windows-95) fs support` if desired
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
     - select `NTFS file system support` if desired
@@ -896,7 +887,7 @@
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
       - select `Use 64-bit ino_t by default in tmpfs`
-    - select `EFI Variable filesystem` if `EFI`
+    - select `EFI Variable filesystem` if uefi
   - select `Miscellaneous filesystems`
     - select `SquashFS 4.0 - Squashed file system support` if desired
       - select `Squashfs XATTR support`
@@ -937,8 +928,7 @@
   - select `Hardware crypto devices`
     - select `Support for AMD Secure Processor` if amd
       - select `Secure Processor device driver`
-        - select `Cryptographic Coprocessor device`, depending on `DMADEVICES`
-          - deselect `Encryption and hashing offload support` if raven (boot issue)
+        - deselect `Cryptographic Coprocessor device` if `DMADEVICES`
 - select `Library routines`
   - select `DMA Contiguous Memory Allocator` if needed, depending on `CMA`
   - select `Terminus 16x32 font (not supported by all drivers)` if desired, depending on `FONTS`
