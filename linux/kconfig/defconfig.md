@@ -4,7 +4,7 @@
 
 - select `General setup`
   - deselect `Automatically append version information to the version string` if desired
-  - select `System V IPC` if desired (fakeroot, steam, fio, etc.)
+  - select `System V IPC` (fakeroot, steam, fio, etc.)
   - select `POSIX Message Queues` if desired (podman), depending on `NET`
   - select `Auditing support` if desired, depending on `NET`
   - select `Timers subsystem`
@@ -14,9 +14,8 @@
     - select `Enable bpf() system call`
     - select `Enable BPF Just In Time compiler`
       - select `Permanently enable BPF JIT and remove BPF interpreter`
-  - select `Preemption Model (Scheduler controlled preemption model)`
   - select `CPU/Task time and stats accounting`
-    - select `Export task/process statistics through netlink`, depending on `NET` (htop, iotop)
+    - select `Export task/process statistics through netlink` (htop, iotop), depending on `NET`
       - select `Enable per-task delay accounting`
       - select `Enable extended accounting over taskstats`
         - select `Enable per-task storage I/O accounting`
@@ -24,20 +23,18 @@
   - select `Kernel .config support`
     - select `Enable access to .config through /proc/config.gz`
   - select `Control Group support`
-    - select `Memory controller` if desired
-    - select `CPU controller` if desired
+    - select `Memory controller` (systemd-oomd)
+    - select `CPU controller`
     - select `PIDs controller` if desired (podman)
-    - select `User namespace` if desired
     - select `Support for eBPF programs attached to cgroups` if desired (rootful podman)
   - select `Namespaces support`
-    - select `User namespace`
+    - select `User namespace` if desired (podman)
   - select `Automatic process group scheduling`
   - select `Initial RAM filesystem and RAM disk (initramfs/initrd) support`
   - select `Kernel Performance Events And Counters`
     - select `Kernel performance events and counters`
 - select `Processor type and features` if x86
   - select `Symmetric multi-processing support`
-  - select `x2APIC interrupt controller architecture support`, depending on `IRQ_REMAP` or `HYPERVISOR_GUEST`
   - deselect `Enable MPS table`
   - select `Flexible Return and Event Delivery`
   - select `Intel Low Power Subsystem Support` if intel, depending on `PCI`
@@ -45,12 +42,13 @@
   - select `Linux guest support` if guest
     - select `Enable paravirtualization code`
   - select `/dev/cpu/*/msr - Model-specific register support` if desired (turbostat)
-  - select `EFI runtime service support`
+  - select `EFI runtime service support` if uefi
     - select `EFI stub support` if uki
   - select `Timer frequency (1000 HZ)` if desired
-  - select `Built-in kernel command line` if desired
-    - select `Built-in command line overrides boot loader arguments` if desired
   - select `vsyscall table for legacy applications (None)`
+  - select `Built-in kernel command line` if desired
+    - select `Built-in kernel command string`
+      - select `Built-in command line overrides boot loader arguments` if desired
 - select `Mitigations for CPU vulnerabilities` if x86
   - deselect `Mitigate speculative RAS overflow on AMD` if amd (high overhead)
 - select `Power management and ACPI options` if x86
@@ -60,12 +58,12 @@
     - select `Processor Aggregator` if needed
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
-      - select `AMD Processor P-State driver` if amd
-        - select `AMD Processor P-State default mode` if cros (guybrush requires 2)
-      - select `ACPI Processor P-States driver` if amd
+      - select `AMD Processor P-State driver` if cros and amd
+        - select `AMD Processor P-State default mode` (guybrush requires 2)
+      - select `ACPI Processor P-States driver` if before zen2
   - select `Cpuidle Driver for Intel Processors` if intel
 - select `Binary Emulations` if x86
-  - select `IA32 Emulation`
+  - select `IA32 Emulation` if desired
 - select `Platform selection` if arm
   - select `Broadcom SoC Support` if rpi
     - select `Broadcom BCM2835 family`
@@ -75,7 +73,7 @@
 - select `Kernel Features` if arm
   - select `Timer frequency (1000 HZ)` if desired
   - select `Enable paravirtualization code` if guest
-  - select `Kernel support for 32-bit EL0`
+  - select `Kernel support for 32-bit EL0` if desired
 - select `Boot options` if arm
   - select `Default kernel command string` if desired
     - select `Kernel command line type (Always use the default kernel command string)` if desired
@@ -97,11 +95,10 @@
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Virtualization` if kvm
   - select `Kernel-based Virtual Machine (KVM) support`
-  - select `KVM for Intel processors support` if intel
+  - select `KVM for Intel (and compatible) processors support` if intel
   - select `KVM for AMD processors support` if amd
 - select `General architecture-dependent options`
   - select `Optimize very unlikely/likely branches`
-  - select `Provide system calls for 32-bit time_t`
   - select `Support for randomizing kernel stack offset on syscall entry`
     - select `Default state of kernel stack offset randomization`
 - select `Enable loadable module support`
@@ -149,15 +146,15 @@
       - select `TUN device for Qualcomm IPC Router` if qcom modem
   - select `Bluetooth subsystem support` if needed
     - select `Bluetooth device drivers`
-      - select `HCI USB driver` if x86/mtk, depending on `USB`
+      - select `HCI USB driver` if needed, depending on `USB`
         - select `MediaTek protocol support` if mtk
       - select `HCI UART driver` if qcom/rpi
       - select `Broadcom protocol support` if rpi, depending on `SERIAL_DEV_BUS` and `GPIOLIB`
       - select `Qualcomm Atheros protocol support` if qcom, depending on `SERIAL_DEV_BUS`
-      - select `MediaTek HCI SDIO driver` if mt8186, depending on `SERIAL_DEV_BUS`
-      - select `Intel HCI PCIe driver` if intel
-  - select `Wireless` if needed
-    - select `cfg80211 - wireless configuration API`
+      - select `MediaTek HCI SDIO driver` if mt8186, depending on `MMC`
+      - select `Intel HCI PCIe driver` if lnl+
+  - select `Wireless`
+    - select `cfg80211 - wireless configuration API` if needed
       - select `Generic IEEE 802.11 Networking Stack (mac80211)`
   - select `RF switch subsystem support` if needed
 
@@ -891,7 +888,7 @@
     - select `ISO 9660 CDROM file system support`
       - select `Microsoft Joliet CDROM extensions`
     - select `UDF file system support`
-  - select `DOS/FAT/NT Filesystems`
+  - select `DOS/FAT/EXFAT/NT Filesystems`
     - select `VFAT (Windows-95) fs support` if esp
     - select `Enable FAT UTF-8 option by default` if `VFAT_FS`
     - select `exFAT filesystem support` if desired
@@ -901,7 +898,7 @@
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
       - select `Use 64-bit ino_t by default in tmpfs`
-    - select `EFI Variable filesystem` if uefi, depending on `EFI`
+    - select `EFI Variable filesystem` if `EFI`
   - select `Miscellaneous filesystems`
     - select `SquashFS 4.0 - Squashed file system support` if desired
       - select `Squashfs XATTR support`
@@ -925,19 +922,20 @@
     - select `NLS UTF-8`
 - select `Security options`
   - select `Enable different security models`
+  - select `SELinux Support` if desired, depending on `SECURITY_NETWORK` and `AUDIT`
   - select `Landlock support` (pacman)
   - select `Kernel hardening options` if desired
     - select `Memory initialization`
       - select `Enable heap memory zeroing on allocation by default`
     - select `Hardening of kernel data structures`
       - select `Trigger a BUG when data corruption is detected`
-- select `Cryptographic API`
+- select `Cryptographic API` if desired
   - select `Accelerated Cryptographic Algorithms for CPU (arm64)` if arm
     - select `AEAD cipher: AES in GCM mode (ARMv8 Crypto Extensions)`
     - select `Ciphers: AES, modes: ECB/CBC/CTR/XTS (ARMv8 Crypto Extensions)`
     - select `AEAD cipher: AES in CCM mode (ARMv8 Crypto Extensions)`
   - select `Accelerated Cryptographic Algorithms for CPU (x86)` if x86
-    - select `Ciphers: AES, modes: ECB, CBC, CTS, CTR, XTR, XTS, GCM (AES-NI)`
+    - select `Ciphers: AES, modes: GCM (AES-NI/VAES)`
   - select `Hardware crypto devices`
     - select `Support for AMD Secure Processor` if amd
       - select `Secure Processor device driver`
@@ -950,7 +948,7 @@
   - select `printk and dmesg options`
     - select `Show timing information on printks`
     - select `Show caller information on printks` if desired
-    - select `Delay each boot printk message by N milliseconds` if desired
+    - select `Delay each boot printk message by N milliseconds` if desired, depending on `DEBUG_KERNEL`
     - select `Enable dynamic printk() support` if desired
   - select `Kernel debugging`
   - select `Compile-time checks and compiler options`
@@ -962,8 +960,8 @@
   - select `Memory Debugging` if desired
     - select `Track page owner`
     - select `Kernel memory leak detector`
-    - select `Enable shrinker debugging support`
     - select `Enable memory allocation profiling`
+    - select `Enable shrinker debugging support`
     - select `KASAN: dynamic memory safety error detector`
       - select `KASAN mode (Hardware Tag-Based KASAN)` if arm
   - select `Debug Oops, Lockups and Hangs` if desired
@@ -977,6 +975,6 @@
   - select `Debug kernel data structures` if desired
     - select `Debug linked list manipulation`
   - select `Tracers`
-    - deselect `Automount tracefs on debugfs`
+    - deselect `Automount tracefs on debugfs [DEPRECATED]`
     - select `Kernel Function Tracer` if desired
     - select `Trace syscalls`
