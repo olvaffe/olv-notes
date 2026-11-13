@@ -101,7 +101,7 @@
   - they are supported drivers of `pps-producer`
 - `display-info` uses `libdisplay-info` for `VK_KHR_display` hdr
 - `draw-use-llvm` enables llvm for draw module (all stages before
-  rastreization), required by llvmpipe
+  rasterization), required by llvmpipe
 - `dri-drivers-path` is the install path of `*_dri.so`
   - default to `$libdir/dri`
   - nowadays, egl/glx/gbm directly links to `libgallium.so`, which provides
@@ -172,7 +172,7 @@
 - `install-precomp-compiler` installs driver pre-compilers
 - `intel-elk` enables intel gen8- compiler support
 - `intel-rt` enables raytracing in intel anv driver
-- `intel-virtio-experimental` enables virtio support in intel anv driver
+- `intel-virtio-experimental` enables virtio support for intel drivers
 - `legacy-wayland` enables `EGL_WL_bind_wayland_display` support for egl
 - `libgbm-external` links against system libgbm
 - `libunwind` defines `-DHAVE_LIBUNWIND`
@@ -225,6 +225,7 @@
     `MESA_SHADER_CACHE_DISABLE=0` envvar to re-enable
 - `shader-cache-max-size` defines `-DMESA_SHADER_CACHE_MAX_SIZE=`
   - default to 1GB or `MESA_SHADER_CACHE_MAX_SIZE` envvar
+- `shared-glapi` has no effect
 - `shared-llvm` defines `-DLLVM_IS_SHARED=`
   - it links llvm statically/dynamically
 - `spirv-to-dxil` enables spirv to dxil translation (i.e., vk-to-d3d12)
@@ -242,7 +243,7 @@
 - `tools` enables various tools
   - generic: `drm-shim`, `glsl`, `nir`, `dlclose-skip`, `gamma`
   - driver-specific: `etnaviv`, `freedreno`, `intel`, `intel-ui`, `nouveau`,
-    `lima`, `panfrost`, `asahi`, `imagination`, `amd`
+    `lima`, `panfrost`, `asahi`, `imagination`, `amd`, `zink`
 - `torx` enables gallium pytorch frontend
 - `tu-build-id` overrides turnip shader cache build id
 - `unversion-libgallium` builds `libgallium_dri.so` instead of
@@ -254,8 +255,7 @@
 - `video-codecs` defines `-DVIDEO_CODEC_FOO=1`
   - `all_free` covers `av1{dec,enc}`, `{vp9,mpeg12,jpeg}dec`
   - `all` adds `{h264,h265}{dec,enc}`, `vc1dec`
-  - `{vc1,h264,h265,av1,vp9,mpeg12,jpeg}{dec,enc}`, or simply `all` or `all_free`
-  - it affects anv, radv, nvk, d3d12, vappi (`vl_codec_supported`), etc.
+  - it affects anv, radv, nvk, d3d12, vaapi (`vl_codec_supported`), etc.
 - `virtgpu_kumquat` enables kumquat ffi for gfxstream
 - `vmware-mks-stats` defines `-DVMX86_STATS=1` for vmware
 - `vulkan-beta` defines `-DVK_ENABLE_BETA_EXTENSIONS`
@@ -273,7 +273,7 @@
   - `intel-nullhw` disables draw and compute at hw level
   - `overlay` draws hud using imgui
   - `screenshot` writes presented images to png
-   -`vram-report-limit` caps reported mem heap sizes and budgets
+  - `vram-report-limit` caps reported mem heap sizes and budgets
 - `vulkan-loader-rpath` sets rpath to help zink find vk loader
 - `vulkan-manifest-per-architecture` decides if `<arch>` part is included in
   the generated `<drv>_icd.<arch>.json`
