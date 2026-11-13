@@ -68,9 +68,9 @@
     - cros: hatch, puff, drallion
   - Amber Lake Y, Skylake uarch, Gfx9.5 GPU
 - 20Q4~: Core 11xxx
-  - Tiger Lake, Willow Cove, Gfx12 GPU
+  - desktop: Rocket Lake, Sunny Cove, Gfx12 GPU
+  - mobile: Tiger Lake, Willow Cove, Gfx12 GPU
     - cros: volteer
-  - Rocket Lake, Sunny Cove, Gfx12 GPU
   - Atom: Jasper Lake, 6-15W, Tremont, Gfx11 GPU
     - cros: dedede
 - 21Q4~: Core 12xxx
@@ -82,23 +82,19 @@
   - Atom: Alder Lake N, 6-15W, Gracemont, Gfx12 GPU
     - cros: nissa
 - 23Q4~: Core 14xxx and Core Ultra 1xx
-  - Raptor Lake-R, Raptor Cove, Gracemont, Gfx12 GPU
-    - Core 14xxx, desktop
+  - desktop: Raptor Lake-R, Raptor Cove, Gracemont, Gfx12 GPU
+    - 14xxx, no "Ultra"
   - mobile: Meteor Lake, Redwood Cove, Crestmont, Gfx12.5 GPU
-    - Core Ultra 1xx, mobile
     - cros: rex
 - 24Q4~: Core Ultra 2xx
-  - Arrow Lake, Lion Cove, Skymont, Gfx12.5 GPU
-    - desktop
-  - Lunar Lake, Lion Cove, Skymont, Gfx20 GPU
-    - mobile
+  - desktop: Arrow Lake, Lion Cove, Skymont, Gfx12.5 GPU
+  - mobile: Lunar Lake, Lion Cove, Skymont, Gfx20 (Xe2) GPU
   - Atom: Twin Lake, 6-15W, Gracemont, Gfx12 GPU
 - 26Q1~: Core Ultra 3xx
-  - Panther Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
-    - mobile
+  - mobile: Panther Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
     - cros: fatcat
-  - Wildcat Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
-    - mobile, no "Ultra"
+  - mobile: Wildcat Lake, Cougar Cove, Darkmont, Gfx30 (Xe3) GPU
+    - no "Ultra"
 - 26Q4~: Core Ultra 4xx?
   - Nova Lake, Coyote Cove, Arctic Wolf, Gfx30 (Xe3) GPU?
 - 27Q4~: Core Ultra 5xx?
