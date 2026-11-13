@@ -18,11 +18,11 @@
   - Zen 4,       2022, 5nm/4nm, x86-64-v4
 - AMD Family 1Ah
   - Zen 5,       2024, 4nm
-  - Zen 6,       2026, 3nm/nnm
+  - Zen 6,       2026, 3nm/2nm
 
 ## CPUs
 
-- AMD CPUs have chipset design, not SoC design
+- AMD CPUs have chiplet design, not SoC design
   - CCD: cores and caches
   - IOD: memory controller, infinity fabric, pcie, fch (usb, spi, hda),
     psp/smu, display
