@@ -1,38 +1,58 @@
 # AMD CPUs
 
-## CPU uArchs
+## CPUID Families
 
-- Bulldozer   - 2011 - 32nm
-  - x86-64-v2
-- Piledriver  - 2012 - 32nm
-- Steamroller - 2014 - 28nm
-- Excavator   - 2015 - 28nm
-  - x86-64-v3
-- Zen         - 2017 - 14nm
-- Zen+        - 2018 - 12nm
-- Zen 2       - 2019 - 7nm
-- Zen 3       - 2020 - 7nm
-- Zen 3+      - 2022 - 6nm (apu only)
-- Zen 4       - 2022 - 5nm
-- Zen 5       - 2024 - 3nm
-- Zen 6       - 2026 - 2nm
+- AMD Family 15h
+  - Bulldozer,   2011, 32nm, x86-64-v2
+  - Piledriver,  2012, 32nm
+  - Steamroller, 2014, 28nm
+  - Excavator,   2015, 28nm, x86-64-v3
+  - Excavator+,  2016, 28nm
+- AMD Family 17h
+  - Zen,         2017, 14nm
+  - Zen+,        2018, 12nm
+  - Zen 2,       2019, 7nm
+- AMD Family 19h
+  - Zen 3,       2020, 7nm
+  - Zen 3+,      2022, 6nm, apu only
+  - Zen 4,       2022, 5nm/4nm, x86-64-v4
+- AMD Family 1Ah
+  - Zen 5,       2024, 4nm
+  - Zen 6,       2026, 3nm/nnm
 
-## CPUs and APUs
+## CPUs
 
+- AMD CPUs have chipset design, not SoC design
+  - CCD: cores and caches
+  - IOD: memory controller, infinity fabric, pcie, fch (usb, spi, hda),
+    psp/smu, display
+- 2017: Ryzen 1000 series
+  - Summit Ridge, 65-95W, Zen
+- 2018: Ryzen 2000 series
+  - Pinnacle Ridge, 45-105W, Zen+
+- 2019: Ryzen 3000 series
+  - Matisse, 65-105W, Zen 2
+- 2021: Ryzen 5000 series
+  - Vermeer, 65-105W, Zen 3
+- 2023: Ryzen 7000 series
+  - Raphael, 65-170W, Zen 4, RDNA2-display
+    - the gpu has only 2 CUs and is mostly for display
+  - Dragon Range, 45-75W, Zen 4, RDNA2-display
+    - this is used on high-end mobile with discrete gpu
+- 2025: Ryzen 9000 series
+  - Granite Ridge, 65-170W, Zen 5, RDNA2-display
+  - Fire Range, 45-75W, Zen 5, RDNA2-display
+
+## APUs
+
+- AMD APUs have SoC design
 - 2016: A 9000 series
   - Bristol Ridge, 35-65W, Excavator+, GCN3
   - Stoney Ridge, 6-15W,, Excavator+, GCN3
     - cros: grunt
-- 2017: Ryzen 1000 series
-  - Whitehaven, 180W, Zen, no GPU
-  - Summit Ridge, 65-95W, Zen, no GPU
 - 2018: Ryzen 2000 series
-  - Colfax, 180-250W, Zen+, no GPU
-  - Pinnacle Ridge, 45-105W, Zen+, no GPU
   - Raven Ridge, 35-65W, Zen, GCN5
 - 2019: Ryzen 3000 series
-  - Castle Peak, 280W, Zen 2, no GPU
-  - Matisse, 65-105W, Zen 2, no GPU
   - Picasso, 15-65W, Zen+, GCN5
     - cros: zork
   - Dali/Pollock (2020), 6-15W, Zen, GCN5
@@ -40,8 +60,6 @@
 - 2020: Ryzen 4000 series
   - Renoir, 15-65W, Zen 2, GCN5
 - 2021: Ryzen 5000 series
-  - Chagall, 280W, Zen 3, no GPU
-  - Vermeer, 65-105W, Zen 3, no GPU
   - Cezanne, 35-65W, Zen 3, GCN5
   - Cezanne-U, 10-25W, Zen 3, GCN5
   - Lucienne, 10-25W, Zen 2, GCN5
@@ -50,12 +68,6 @@
 - 2022: Ryzen 6000 series
   - Rembrandt, 15-45W, Zen 3+, RDNA2
 - 2023: Ryzen 7000 series
-  - Storm Peak, 350W, Zen 4, no GPU
-  - Raphael, 65-170W, Zen 4, RDNA2-display
-    - the gpu has only 2 CUs and is mostly for display
-  - Dragon Range, 45-75W, Zen 4, RDNA2-display
-    - the gpu has only 2 CUs and is mostly for display
-    - this is used on high-end mobile with discrete gpu
   - Phoenix, 15-54W, Zen 4, RDNA3
     - cros: myst
   - Mendocino, 15W, Zen 2, RDNA2
@@ -65,8 +77,7 @@
 - 2024: Ryzen 8000 series
   - Phoenix, 65W, Zen 4, RDNA3
   - Hawk Point, 15-54W, Zen 4, RDNA3
-- 2025: Ryzen 9000 series and AI 300 series
-  - Granite Ridge, 65-170W, Zen 5, RDNA2-display
+- 2024: Ryzen AI 300 series
   - Strix Point, 28W, Zen 5, RDNA3.5
 - 2026: Ryzen AI 400 series
   - Gorgon Point, 15-54W, Zen 5, RDNA3.5
