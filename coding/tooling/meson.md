@@ -96,21 +96,26 @@
       - `prefix`
     - Core options
       - `buildtype`
-        - `plain` to not mess around with compile flags
-      - `cmake_prefix_path`
-      - `debug`
+        - `plain` is `debug=false` and `optimization=plain`
+        - `debug` is `debug=true` and `optimization=0`
+        - `debugoptimized` is `debug=true` and `optimization=2`
+        - `release` is `debug=false` and `optimization=2`
+      - `cmake_prefix_path` is `CMAKE_PREFIX_PATH`
+      - `debug` is `-g`
       - `default_library` selects between static/shared
-      - `optimization`
-      - `warning_level`
-      - `werror`
+      - `optimization` is `-O`
+      - `pkg_config_path` is `PKG_CONFIG_PATH`
+      - `prefer_static` prefers `.a` over `.so` for linking
       - `strip` strips on install
+      - `warning_level` is `-W`
+      - `werror` is `-Werror`
   - Base options
-    - `b_asneeded` links with `-Wl,--as-needed`
-    - `b_lundef` links with `-Wl,--no-undefined`
-    - `b_lto` enables LTO
-    - `b_ndebug` defines `NDEBUG` to disble `assert`
+    - `b_asneeded` is `-Wl,--as-needed`
+    - `b_lundef` is `-Wl,--no-undefined`
+    - `b_lto` is `-flto=auto`
+    - `b_ndebug` is `-DNDEBUG` to disble `assert`
     - `b_pgo` enables PGO
-    - `b_pie` enables `-pie`
+    - `b_pie` is `-fPIE` and `-pie`
     - `b_sanitize` enables sanitizers
   - Compiler options
     - `c_args`, `c_link_args`, `c_std`
@@ -139,7 +144,8 @@
     - deprecated by `[built-in options]`
   - `[properties]` section
     - `cmake_toolchain_file`
-    - `java_home`
+    - `java_home` is java home
+    - `bindgen_clang_arguments` are passed to clang by rust bindgen
     - `<lang>_args` and `<lang>_link_args` are deprecated in favor of
       `[built-in options]`
   - `[cmake]` section
