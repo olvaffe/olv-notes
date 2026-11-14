@@ -160,7 +160,8 @@
   - select `PCI support` if needed
     - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
-    - select `PCI Express Downstream Port Containment support` if x1
+    - select `PCI Express Downstream Port Containment support`
+    - select `PCI Express Error Disconnect Recover support` if x86
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `Support for PCI Hotplug` if needed (usb4)
     - select `PCI controller drivers` if arm

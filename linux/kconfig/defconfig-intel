@@ -40,6 +40,8 @@ CONFIG_INET=y
 # CONFIG_IPV6_SIT is not set
 CONFIG_PCI=y
 CONFIG_PCIEAER=y
+CONFIG_PCIE_DPC=y
+CONFIG_PCIE_EDR=y
 CONFIG_PCI_MSI=y
 CONFIG_DEVTMPFS=y
 CONFIG_EXTRA_FIRMWARE="i915/tgl_guc_70.bin i915/tgl_huc.bin i915/adlp_guc_70.bin i915/mtl_guc_70.bin i915/mtl_huc_gsc.bin i915/mtl_dmc.bin i915/mtl_gsc_1.bin i915/xe3lpd_dmc.bin xe/ptl_guc_70.bin xe/ptl_gsc_1.bin xe/ptl_huc.bin intel/ish/ish_ptl.bin"
