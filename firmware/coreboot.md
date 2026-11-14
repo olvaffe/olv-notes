@@ -185,3 +185,51 @@
 - both linux pkvm and qtee manage stage-2 smmu
   - qtee partitions stage-2 smmu into two, one for itself and one for pkvm
   - pkvm uses stage-2 to isolate pVMs from VMs
+- x1p42100 blobs
+  - bootrom (before coreboot) loads these to TME (Trust Management Engine) to
+    establish root of trust
+    - `secure/tme/sequencer_ram.elf`
+    - `secure/tme/signed_firmware_soc_view.elf`
+    - `secure/qc_sec/qc_sec.mbn` is soc security/debug policy
+  - bootblock loads these to QUPs (Qualcomm Universal Peripheral)
+    - `qup_fw/i2c_fw.bin` for ti50
+    - `qup_fw/spi_fw.bin` for ec
+  - if serial enabled, verstage loads these to QUPs
+    - `qup_fw/uart_fw.bin` for coreboot serial
+  - romstage loads these to SHRM (System Hardware Resource Manager) for dram
+    freq scaling
+    - `secure/shrm/shrm.elf`
+  - romstage loads these to SRAM for memory training
+    - `boot/hamoa/dcb.bin` (or `boot/x1p42100/dcb.bin`)
+    - `boot/hamoa/pre-ddr.dtb` (or `boot/x1p42100/pre-ddr.dtb`)
+    - `boot/hamoa/cpr.dtb` (or `boot/x1p42100/cpr.dtb`)
+    - `secure/apdp/apdp.mbn` for AP debug policy
+    - `boot/QcLib.elf` runs for the first time to train
+  - romstage loads these to SRAM, DRAM, and AOP (Always-On Processor) as a
+    part of RPMh (Resource Power Manager (hardened)) bringup to manage power
+    rails, clocks, and sleep states
+    - `secure/aop/aop.mbn`
+    - `secure/aop/aop_devcfg.mbn`
+    - `boot/QcLib.elf` runs for the second time to bring up AOP
+    - if rampdump, `boot/XblRamdump.elf`
+  - romstage charging
+    - battery critically low: trickle charge before continuing to normal boot
+    - normal boot: charging disabled
+  - ramstage loads these to DRAM
+    - `qup_fw/i2c_fw.bin` to QUP for ADSP
+    - `qup_fw/gsi_fw.bin` to GSI DMA controller
+    - if low battery or off-mode charging,
+      - `low_battery.bmp` or `off_mode_charging.bmp` for prompt
+      - `adsp/mainboard/<model>/adsp.mbn`
+      - `adsp/mainboard/<model>/adsp_dtbs.elf`
+      - stay in the charging loop; power button / lid open resets
+    - otherwise, normal boot: charging disabled
+  - ramstage loads these
+    - `cpucp/cpucp.elf` and `cpucp/cpucp_dtbs.elf` to CPUCP (CPU Control
+      Processor) for cpu dvfs and sequencing
+    - `qtee/tz_oem_config.mbn`, `qtee/tz_qti_config.mbn`,
+      `ac_policy/tz_ac_config.elf`, and `ac_policy/hyp_ac_config.elf` to TZ
+      DRAM
+    - `qup_fw/i2c_fw.bin`, `qup_fw/spi_fw.bin`, and `qup_fw/uart_fw.bin` for
+      OS-facing QUPs
+    - `cb_logo.bmp` for oem logo
