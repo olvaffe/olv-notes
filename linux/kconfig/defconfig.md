@@ -139,8 +139,7 @@
     - select `Virtual Socket protocol` if desired (kvm, guest)
       - select `virtio transport for Virtual Sockets` if guest, depending on `VIRTIO_PCI`
     - select `Qualcomm IPC Router support` if qcom
-      - select `SMD IPC Router channels`, depending on `HWSPINLOCK`, `MAILBOX`, `QCOM_SMEM`, and `RPMSG_QCOM_GLINK_SMEM`
-      - select `TUN device for Qualcomm IPC Router` if qcom modem
+      - select `SMD IPC Router channels`, depending on `RPMSG_QCOM_GLINK_SMEM`
   - select `Bluetooth subsystem support` if needed
     - select `Bluetooth device drivers`
       - select `HCI USB driver` if needed, depending on `USB`
@@ -210,7 +209,7 @@
     - select `NVM Express block device`
     - select `NVMe hardware monitoring`
   - select `Misc devices`
-    - select `Qualcomm FastRPC` if qcom x1, depending on `HWSPINLOCK`, `QCOM_SMEM`, `MAILBOX`, `RPMSG_QCOM_GLINK_SMEM`
+    - select `Qualcomm FastRPC` if qcom x1, depending on `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
     - select `NT synchronization primitive emulation` if desired (wine)
     - select `Intel Management Engine Interface` if intel
@@ -249,7 +248,7 @@
         - select `Realtek 8169/8168/8101/8125 ethernet support`
       - select `STMicroelectronics devices` if rk
         - select `STMicroelectronics Multi-Gigabit Ethernet driver`
-    - select `Qualcomm IPA support` if qcom modem, depending on `REMOTEPROC`, `QCOM_SYSMON`, `QCOM_WCNSS_PIL`, `RPMSG_QCOM_SMD`, `QCOM_AOSS_QMP`, and `INTERCONNECT`
+    - select `Qualcomm IPA support` if needed (modem), depending on `INTERCONNECT` and `QCOM_RPROC_COMMON`
     - select `PHY Device support and infrastructure` if rk
       - select `Motorcomm PHYs`
     - select `USB Network Adapters` if needed, depending on `USB`
@@ -476,7 +475,7 @@
       - select `Display Panels` if arm
         - select `Samsung ATNA33XC20 eDP panel` if needed
         - select `support for simple Embedded DisplayPort panels` if needed, depending on `BACKLIGHT_CLASS_DEVICE`
-      - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if rk3568 or mtk before mt8196
+      - select `Panfrost (DRM support for ARM Mali Midgard/Bifrost GPUs)` if rk3568 or before mt8196
       - select `Panthor (DRM support for ARM Mali CSF-based GPUs)` if rk3588 or mt8196
       - select `DRM Support for Rockchip` if rk
         - deselect `Rockchip VOP driver`
@@ -626,8 +625,7 @@
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if needed, depending on `PWM`
-    - select `LED support for flash module inside Qualcomm PMIC` if qcom, depending on `LEDS_CLASS_FLASH`
-    - select `LED support for Qualcomm LPG` if qcom, depending on `LEDS_CLASS_MULTICOLOR`
+    - select `LED support for Qualcomm LPG` if qcom x1, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
   - select `EDAC (Error Detection And Correction) reporting` if needed, depending on `RAS`
@@ -719,12 +717,10 @@
       - select `Mediatek SCP support` if mtk
       - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if sc7180
       - select `Qualcomm Peripheral Authentication Service support` if qcom x1
-      - select `Qualcomm sysmon driver` if qcom modem
-      - select `Qualcomm WCNSS Peripheral Image Loader` if qcom modem
+      - select `Qualcomm sysmon driver` if qcom
   - select `Rpmsg drivers` if needed
     - select `MediaTek SCP` if mtk
     - select `Qualcomm SMEM Glink driver` if qcom
-    - select `Qualcomm Shared Memory Driver (SMD)` if qcom modem
   - select `SoundWire support` if needed, depending on `SND_SOC`
     - select `AMD SoundWire Manager driver` if amd
     - select `Intel SoundWire Master driver` if intel
@@ -742,7 +738,7 @@
       - select `Qualcomm GENI Serial Engine Driver`
       - select `Qualcomm LLCC driver`
       - select `Qualcomm PMIC GLINK driver`
-      - select `Qualcomm Remote Filesystem memory driver` if qcom modem
+      - select `Qualcomm Remote Filesystem memory driver` if sc7180
       - select `Qualcomm RPM-Hardened (RPMH) Communication`
       - select `Qualcomm Shared Memory Manager (SMEM)`
       - select `Qualcomm Shared Memory Point to Point support`
