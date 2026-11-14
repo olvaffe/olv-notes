@@ -89,7 +89,7 @@
       - select `MediaTek CPUFreq HW driver` if mt8195
       - select `Qualcomm CPUFreq HW driver` if sc7180
       - select `Raspberry Pi cpufreq support` if rpi, depending on `BCM2835_MBOX` and `CLK_RASPBERRYPI`
-      - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
+      - select `SCMI based CPUfreq driver` if x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Virtualization` if kvm
   - select `Kernel-based Virtual Machine (KVM) support`
   - select `KVM for Intel (and compatible) processors support` if intel
@@ -160,7 +160,7 @@
   - select `PCI support` if needed
     - select `PCI Express Port Bus support`
       - select `PCI Express Advanced Error Reporting support`
-    - select `PCI Express Downstream Port Containment support` if qcom x1
+    - select `PCI Express Downstream Port Containment support` if x1
     - select `Message Signaled Interrupts (MSI and MSI-X)`
     - select `Support for PCI Hotplug` if needed (usb4)
     - select `PCI controller drivers` if arm
@@ -182,7 +182,7 @@
     - select `DMI table support in sysfs` if needed (dmidecode)
     - select `Raspberry Pi Firmware Driver` if rpi
     - select `MTK ADSP IPC Protocol driver` if mtk, depending on `MTK_ADSP_MBOX`
-    - select `Arm Firmware Framework for Armv8-A` if qcom x1
+    - select `Arm Firmware Framework for Armv8-A` if x1
     - select `coreboot firmware drivers` if cros
       - select `SMI interface for Google platforms` if x86
       - select `CBMEM entries in sysfs`, depending on `COREBOOT_TABLE`
@@ -191,7 +191,7 @@
       - select `Vital Product Data`
     - select `EFI (Extensible Firmware Interface) Support` if uefi and arm
       - select `Enable the generic EFI decompressor`
-    - select `Qualcomm firmware drivers` if qcom x1
+    - select `Qualcomm firmware drivers` if x1
       - select `TrustZone interface memory allocator: SHM Bridge`
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
@@ -209,8 +209,8 @@
     - select `NVM Express block device`
     - select `NVMe hardware monitoring`
   - select `Misc devices`
-    - select `Qualcomm FastRPC` if qcom x1, depending on `RPMSG_QCOM_GLINK_SMEM`
-    - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
+    - select `Qualcomm FastRPC` if x1, depending on `RPMSG_QCOM_GLINK_SMEM`
+    - select `Generic on-chip SRAM driver` if rk3588 or x1
     - select `NT synchronization primitive emulation` if desired (wine)
     - select `Intel Management Engine Interface` if intel
       - select `Intel GSC Proxy services of ME Interface` if needed (protected), depending on `DRM_I915` or `DRM_XE`
@@ -258,7 +258,7 @@
       - select `Atheros/Qualcomm devices` if qcom
         - select `Atheros 802.11ac wireless cards support` if sc7180
         - select `Qualcomm ath10k SNOC support` if sc7180
-        - select `Qualcomm Wi-Fi 7 support (ath12k)` if qcom x1
+        - select `Qualcomm Wi-Fi 7 support (ath12k)` if x1
       - select `Broadcom devices` if rpi
         - select `Broadcom FullMAC WLAN driver`
       - select `Intel devices` if intel
@@ -272,7 +272,7 @@
       - select `Event interface`
       - select `Keyboards`
         - select `ADC Ladder Buttons` if rk
-        - select `GPIO Buttons` if rk3568, mt8186, qcom x1, or arm guest
+        - select `GPIO Buttons` if rk3568, mt8186, x1, or arm guest
         - select `ChromeOS EC keyboard` if cros, depending on `CROS_EC`
       - select `Mice`
         - select `ELAN I2C Touchpad support` if needed, depending on `I2C`
@@ -280,7 +280,7 @@
         - select `Elan eKTH I2C touchscreen` if needed, depending on `I2C`
       - select `Miscellaneous devices`
         - select `PC Speaker support` if needed
-        - select `Qualcomm PM8941 power key support` if qcom x1
+        - select `Qualcomm PM8941 power key support` if x1
         - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
         - select `Windows-compatible SoC Button Array` if needed, depending on `KEYBOARD_GPIO`
@@ -348,10 +348,10 @@
     - select `MediaTek pinctrl drivers` if mtk
     - select `Qualcomm core pin controller driver` if qcom
       - select `Qualcomm SC7180 pin controller driver` if sc7180
-      - select `Qualcomm X1E80100 pin controller driver` if qcom x1
+      - select `Qualcomm X1E80100 pin controller driver` if x1
     - select `Qualcomm SPMI PMIC pin controller driver` if qcom
     - select `Qualcomm LPASS LPI pin controller driver` if qcom
-      - select `Qualcomm SM8550 LPASS LPI pin controller driver` if qcom x1
+      - select `Qualcomm SM8550 LPASS LPI pin controller driver` if x1
   - select `GPIO Support`
     - select `Memory mapped GPIO drivers`
       - select `AMD Promontory GPIO support` if amd
@@ -359,13 +359,13 @@
       - select `Rockchip GPIO support` if rk
     - select `Virtual GPIO drivers` if arm
       - select `Proxy driver for non-exclusive GPIOs`
-  - select `Board level reset or power off` if qcom x1
+  - select `Board level reset or power off` if x1
     - select `Qualcomm power-on driver`
   - select `Power Sequencing support` if arm
-    - select `Qualcomm WCN family PMU driver` if qcom x1
+    - select `Qualcomm WCN family PMU driver` if x1
     - select `PCIe M.2 connector power sequencing driver` if mt8195, depending on `SERIAL_DEV_BUS`
   - select `Power supply class support`
-    - select `Qualcomm PMIC GLINK battery manager support` if qcom x1, depending on `QCOM_PMIC_GLINK`
+    - select `Qualcomm PMIC GLINK battery manager support` if x1, depending on `QCOM_PMIC_GLINK`
     - select `SBS Compliant gas gauge` if needed
     - select `ChromeOS EC based USBPD charger` if cros, depending on `CROS_EC`
     - select `ChromeOS EC based peripheral charger` if cros, depending on `CROS_EC`
@@ -399,10 +399,10 @@
     - select `Qualcomm thermal drivers` if qcom
       - select `Qualcomm TSENS Temperature Alarm`, depending on `NVMEM` and `NVMEM_QCOM_QFPROM`
       - select `Qualcomm SPMI PMIC Thermal Monitor ADC5` if sc7180
-      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5 Gen3` if qcom x1
+      - select `Qualcomm SPMI PMIC Thermal Monitor ADC5 Gen3` if x1
       - select `Qualcomm SPMI PMIC Temperature Alarm`
   - select `Watchdog Timer Support` if needed
-    - select `ARM SBSA Generic Watchdog` if qcom x1
+    - select `ARM SBSA Generic Watchdog` if x1
     - select `Synopsys DesignWare watchdog` if rk
     - select `Qualcomm watchdog` if sc7180
     - select `Mediatek SoCs watchdog support` if mtk
@@ -449,7 +449,7 @@
         - select `Mediatek Video Codec driver` if mtk, depending on `MTK_IOMMU` and `MTK_SCP`
         - select `MediaTek MDP v3 driver` if mtk, depending on `MTK_IOMMU`, `MTK_SCP`, and `MTK_CMDQ`
         - select `Qualcomm V4L2 Camera Subsystem driver` if qcom
-        - select `Qualcomm iris V4L2 decoder driver` if qcom x1
+        - select `Qualcomm iris V4L2 decoder driver` if x1
         - select `Qualcomm Venus V4L2 encoder/decoder driver` if sc7180
   - select `Graphics support`
     - select `Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)`
@@ -522,7 +522,7 @@
             - select `ASoC Audio driver for MT8195 with MT6359 and I2S codecs`, depending on `MTK_PMIC_WRAP`
         - select `Qualcomm` if qcom
           - select `SoC Machine driver for SC7180 boards` if sc7180
-          - select `SoC Machine driver for X1E80100 boards` if qcom x1, depending on `SOUNDWIRE`
+          - select `SoC Machine driver for X1E80100 boards` if x1, depending on `SOUNDWIRE`
         - select `Rockchip` if rk
           - select `Rockchip I2S Device Driver` if rk3588
           - select `Rockchip I2S/TDM Device Driver`
@@ -538,9 +538,9 @@
             - select `SOF support for MT8186 audio DSP` if mt8186
             - select `SOF support for MT8195 audio DSP` if mt8195
         - select `CODEC drivers` if qcom
-          - select `WCD9380/WCD9385 Codec - SDW` if qcom x1
-          - select `WSA884X Codec` if qcom x1
-          - select `Qualcomm WSA Macro in LPASS(Low Power Audio SubSystem)` if qcom x1
+          - select `WCD9380/WCD9385 Codec - SDW` if x1
+          - select `WSA884X Codec` if x1
+          - select `Qualcomm WSA Macro in LPASS(Low Power Audio SubSystem)` if x1
           - select `Qualcomm VA Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm RX Macro in LPASS(Low Power Audio SubSystem)`
           - select `Qualcomm TX Macro in LPASS(Low Power Audio SubSystem)`
@@ -596,11 +596,11 @@
         - select `Fairchild FUSB302 Type-C chip driver`
       - select `USB Type-C Connector System Software Interface driver` if needed
         - select `UCSI ACPI Interface Driver` if x86
-        - select `UCSI Qualcomm PMIC GLINK Interface Driver` if qcom x1, depending on `QCOM_PMIC_GLINK`
+        - select `UCSI Qualcomm PMIC GLINK Interface Driver` if x1, depending on `QCOM_PMIC_GLINK`
         - select `UCSI Driver for ChromeOS EC` if cros
       - select `USB Type-C Multiplexer/DeMultiplexer Switch support`
         - select `Intel PMC mux control` if intel, depending on `INTEL_SCU_PLATFORM`
-        - select `Parade PS883x Type-C retimer driver` if qcom x1
+        - select `Parade PS883x Type-C retimer driver` if x1
       - select `USB Type-C Alternate Mode drivers`
         - select `DisplayPort Alternate Mode driver`
     - select `USB Role Switch Support`
@@ -625,7 +625,7 @@
     - select `LED Class Support`
     - select `LED Support for GPIO connected LEDs` if rk
     - select `PWM driven LED Support` if needed, depending on `PWM`
-    - select `LED support for Qualcomm LPG` if qcom x1, depending on `LEDS_CLASS_MULTICOLOR`
+    - select `LED support for Qualcomm LPG` if x1, depending on `LEDS_CLASS_MULTICOLOR`
     - select `LED Trigger support` if desired
       - select `LED Heartbeat Trigger`
   - select `EDAC (Error Detection And Correction) reporting` if needed, depending on `RAS`
@@ -635,14 +635,14 @@
     - select `Haoyu Microelectronics HYM8563` if rk
     - select `Chrome OS EC RTC driver` if cros, depending on `CROS_EC`
     - select `ARM AMBA PL031 RTC` if arm guest
-    - select `Qualcomm PMIC8XXX RTC` if qcom x1
+    - select `Qualcomm PMIC8XXX RTC` if x1
     - select `MediaTek PMIC based RTC` if mtk
   - select `DMA Engine support` if needed
     - select `BCM2835 DMA engine support` if rpi
     - select `Intel integrated DMA 64-bit support` if intel
     - select `DMA API Driver for PL330` if rk
     - select `MediaTek SoCs APDMA support for UART` if mt8196
-    - select `Qualcomm GPI DMA support` if qcom x1
+    - select `Qualcomm GPI DMA support` if x1
     - select `Synopsys DesignWare AHB DMA platform driver` if intel
   - select `DMABUF options` if desired
     - select `userspace dmabuf misc driver`
@@ -689,11 +689,11 @@
     - select `Raspberry Pi firmware based clock support` if rpi
     - select `Clock driver for MediaTek SoC` if mtk
     - select `Support for Qualcomm's clock controllers` if qcom
-      - select `X1*` if qcom x1
+      - select `X1*` if x1
       - select `RPMh Clock Driver`
       - select `SC7180 *` if sc7180
-      - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if qcom x1
-      - select `SM8550 Video Clock Controller` if qcom x1
+      - select `SC8280 Low Power Audio Subsystem (LPASS) Clock Controller` if x1
+      - select `SM8550 Video Clock Controller` if x1
   - select `Hardware Spinlock drivers` if qcom
     - select `Qualcomm Hardware Spinlock device`
   - select `Mailbox Hardware Support` if needed
@@ -701,12 +701,12 @@
     - select `Qualcomm APCS IPC driver` if sc7180
     - select `MediaTek ADSP Mailbox Controller` if mtk
     - select `MediaTek CMDQ Mailbox Support` if mtk
-    - select `Qualcomm CPUCP mailbox driver` if qcom x1
+    - select `Qualcomm CPUCP mailbox driver` if x1
     - select `Qualcomm IPCC driver` if qcom
   - select `IOMMU Hardware Support`
     - select `AMD IOMMU support` if amd
     - select `ARM Ltd. System MMU (SMMU) Support` if qcom
-    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588, mt8196, or qcom x1 el2
+    - select `ARM Ltd. System MMU Version 3 (SMMUv3) Support` if rk3588, mt8196, or x1 el2
     - select `Support for Intel IOMMU using DMA Remapping Devices` if intel
     - select `Support for Interrupt Remapping` if x86
     - select `Rockchip IOMMU Support` if rk
@@ -716,7 +716,7 @@
     - select `Support for Remote Processor subsystem`
       - select `Mediatek SCP support` if mtk
       - select `Qualcomm Hexagon V5 self-authenticating modem subsystem support` if sc7180
-      - select `Qualcomm Peripheral Authentication Service support` if qcom x1
+      - select `Qualcomm Peripheral Authentication Service support` if x1
       - select `Qualcomm sysmon driver` if qcom
   - select `Rpmsg drivers` if needed
     - select `MediaTek SCP` if mtk
@@ -748,7 +748,7 @@
       - select `Qualcomm Interconnect Bandwidth Monitor driver`
     - select `Rockchip IO domain support` if rk3568
   - select `PM Domains` if arm
-    - select `SCMI performance domain driver` if qcom x1
+    - select `SCMI performance domain driver` if x1
     - select `Broadcom PM Domains` if rpi
       - select `Raspberry Pi power domain driver`
     - select `MediaTek PM Domains` if mtk
@@ -769,7 +769,7 @@
     - select `Analog to digital converters`
       - select `MediaTek AUXADC driver` if mtk
       - select `Qualcomm SPMI PMIC5 ADC` if sc7180
-      - select `Qualcomm SPMI PMIC5 GEN3 ADC` if qcom x1
+      - select `Qualcomm SPMI PMIC5 GEN3 ADC` if x1
       - select `Rockchip SARADC driver` if rk, depending on `RESET_CONTROLLER`
     - select `ChromeOS EC Sensors Core` if cros
       - select `ChromeOS EC Contiguous Sensors`
@@ -801,12 +801,12 @@
       - select `MediaTek MIPI-DSI Driver`
       - select `MediaTek DP-PHY Driver`
     - if qcom
-      - select `NXP PTN3222 1-port eUSB2 to USB2 redriver` if qcom x1
-      - select `SNPS eUSB2 PHY Driver` if qcom x1
+      - select `NXP PTN3222 1-port eUSB2 to USB2 redriver` if x1
+      - select `SNPS eUSB2 PHY Driver` if x1
       - select `Qualcomm eDP PHY driver`
       - select `Qualcomm QMP PHY Drivers`
       - select `Qualcomm QUSB2 PHY Driver` if sc7180
-      - select `Qualcomm PMIC eUSB2 Repeater Driver` if qcom x1
+      - select `Qualcomm PMIC eUSB2 Repeater Driver` if x1
     - if rk
       - select `Rockchip INNO USB2PHY Driver`, depending on `EXTCON`
       - select `Rockchip NANENG COMBO PHY Driver`
@@ -822,7 +822,7 @@
     - select `Mediatek SoCs EFUSE support` if mtk
     - select `Qualcomm QFPROM Support` if qcom
     - select `Rockchip OTP controller support` if rk3588
-    - select `SPMI SDAM Support` if qcom x1
+    - select `SPMI SDAM Support` if x1
   - select `Trusted Execution Environment support` if needed
     - select `OP-TEE` if needed
     - select `AMD-TEE` if amd
@@ -835,7 +835,7 @@
     - select `Qualcomm Network-on-Chip interconnect drivers` if qcom
     - select `Qualcomm OSM L3 interconnect driver` if sc7180
     - select `Qualcomm SC7180 interconnect driver` if sc7180
-    - select `Qualcomm X1E80100 interconnect driver` if qcom x1
+    - select `Qualcomm X1E80100 interconnect driver` if x1
 
 ## Config: Post-Device Drivers
 
