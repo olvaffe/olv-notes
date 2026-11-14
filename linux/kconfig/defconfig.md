@@ -43,7 +43,7 @@
     - select `Enable paravirtualization code`
   - select `/dev/cpu/*/msr - Model-specific register support` if desired (turbostat)
   - select `EFI runtime service support` if uefi
-    - select `EFI stub support` if uki
+    - select `EFI stub support`
   - select `Timer frequency (1000 HZ)` if desired
   - select `vsyscall table for legacy applications (None)`
   - select `Built-in kernel command line` if desired
@@ -55,7 +55,6 @@
   - select `Energy Model for devices with DVFS (CPUs, GPUs, etc)`
   - select `ACPI (Advanced Configuration and Power Interface) Support`
     - select `ACPI Time and Alarm (TAD) Device Support` if needed
-    - select `Processor Aggregator` if needed
   - select `CPU Frequency scaling`
     - select `CPU Frequency scaling`
       - select `ACPI Processor P-States driver` if before zen2 or guybrush
@@ -89,7 +88,7 @@
       - select `CPU Frequency scaling support for MediaTek SoCs` if mt8186, depending on `REGULATOR`
       - select `MediaTek CPUFreq HW driver` if mt8195
       - select `Qualcomm CPUFreq HW driver` if sc7180
-      - select `Raspberry Pi cpufreq support` if rpi, depending on `MAILBOX`, `BCM2835_MBOX`, `RASPBERRYPI_FIRMWARE` and `CLK_RASPBERRYPI`
+      - select `Raspberry Pi cpufreq support` if rpi, depending on `BCM2835_MBOX` and `CLK_RASPBERRYPI`
       - select `SCMI based CPUfreq driver` if qcom x1, depending on `ARM_SCMI_PROTOCOL`
 - select `Virtualization` if kvm
   - select `Kernel-based Virtual Machine (KVM) support`
@@ -215,11 +214,7 @@
     - select `Generic on-chip SRAM driver` if rk3588 or qcom x1
     - select `NT synchronization primitive emulation` if desired (wine)
     - select `Intel Management Engine Interface` if intel
-      - select `ME Enabled Intel Chipsets`
-      - select `Intel MEI GSC embedded device`
-      - select `Intel HDCP2.2 services of ME Interface` if protected, depending on `DRM_I915`
-      - select `Intel PXP services of ME Interface` if protected, depending on `DRM_I915`
-      - select `Intel GSC Proxy services of ME Interface`
+      - select `Intel GSC Proxy services of ME Interface` if needed (protected), depending on `DRM_I915` or `DRM_XE`
     - select `Realtek PCI-E card reader` if needed
   - select `SCSI device support` if needed (sata, usb mass storage, uas, ufs, etc.)
     - select `SCSI device support`
@@ -290,12 +285,6 @@
         - select `User level driver support` if desired
         - select `Rockchip RK805 PMIC power key support` if rk
         - select `Windows-compatible SoC Button Array` if needed, depending on `KEYBOARD_GPIO`
-      - select `Synaptics RMI4 bus support` if needed
-        - select `RMI4 SMB Support`
-        - select `RMI4 Function 03 (PS2 Guest)`
-        - select `RMI4 Function 11 (2D pointing)`
-        - select `RMI4 Function 30 (GPIO LED)`
-        - select `RMI4 Function 34 (Device reflash)`
   - select `Character devices`
     - select `Enable TTY`
       - deselect `Legacy (BSD) PTY support`
@@ -573,7 +562,7 @@
         - select `Wacom Intuos/Graphire tablet support (USB)`
         - select `HID Sensors framework support` if amd/intel
       - select `I2C HID support` if needed
-        - select `HID over I2C transport layer ACPI driver` if x86 (I2C touchpads)
+        - select `HID over I2C transport layer ACPI driver` if x86
         - select `HID over I2C transport layer Open Firmware driver` if arm
         - select `Driver for Goodix hid-i2c based devices on OF systems` if needed
       - select `Intel ISH HID support` if intel
