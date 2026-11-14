@@ -71,6 +71,9 @@
   - rusticl-only build
     - `meson setup out-rusticl -Dbuildtype=debug -Dplatforms= -Dglx=disabled -Degl=disabled -Dgbm=disabled -Dopengl=false -Dgles1=disabled -Dgles2=disabled -Dgallium-va=disabled -Dgallium-rusticl=true -Dgallium-drivers=radeonsi -Dvulkan-drivers=`
     - `pacman -S rust rust-bindgen libclc spirv-llvm-translator llvm clang`
+  - pavnk-only build
+    - `meson setup out-host -Dprefix=$PWD/out-host/install -Dbuildtype=release -Dgallium-drivers= -Dvulkan-drivers= -Dplatforms= -Dmesa-clc=enabled -Dtools=panfrost -Dinstall-mesa-clc=true -Dinstall-precomp-compiler=true`
+    - `PATH=$PWD/out-host/install/bin:$PATH meson setup --cross-file lin-arm-64.ini out-panvk -Dprefix=$PWD/out-panvk/install -Dbuildtype=debug -Dgallium-drivers= -Dvulkan-drivers=panfrost -Dplatforms= -Dmesa-clc=system -Dprecomp-compiler=system -Dallow-fallback-for=libdrm`
 
 ## Options
 
@@ -291,9 +294,10 @@
 - <https://docs.mesa3d.org/android.html>
 - compile mesa-clc (if panvk)
   - `apt install llvm llvm-dev clang libclang-dev libclang-cpp-dev llvm-spirv-19 libclc-19-dev glslang-tools`
-  - `meson setup out-host -Dprefix=/tmp/mesa -Dbuildtype=release -Dgallium-drivers= -Dvulkan-drivers=panfrost -Dplatforms= -Dinstall-mesa-clc=true -Dinstall-precomp-compiler=true`
+  - `meson setup out-host -Dprefix=/tmp/mesa -Dbuildtype=release -Dgallium-drivers= -Dvulkan-drivers= -Dplatforms= -Dmesa-clc=enabled -Dtools=panfrost -Dinstall-mesa-clc=true -Dinstall-precomp-compiler=true`
 - cross-compile drm
   - `meson setup --cross-file ndk.ini out-ndk -Dprefix=/tmp/mesa -Dbuildtype=release`
+  - it is also possible to skip drm and specify `-Dallow-fallback-for=libdrm`
 - cross-compile llvm (if llvmpipe)
   - `cmake -Sllvm -Bout-ndk -GNinja -DCMAKE_INSTALL_PREFIX=/tmp/mesa -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache`
   - `-DCMAKE_TOOLCHAIN_FILE=~/android/sdk/ndk/28.0.13004108/build/cmake/android.toolchain.cmake -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-34`
