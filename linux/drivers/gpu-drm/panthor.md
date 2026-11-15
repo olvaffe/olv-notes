@@ -1512,26 +1512,27 @@
 
 ## Performance Counter
 
-- physical layout of a sample
+- physical layout of a fw sample
   - metadata, if supported and enabled
     - `glb_iface->control->perfcnt_features` gives the size of metadata
     - typical size is 256 bytes
-  - firmware counters, if supported
-    - `glb_iface->control->perfcnt_size` gives the size of fw and hw
-    - typical size is 0 bytes
-  - hardware counters
-    - `glb_iface->control->perfcnt_size` gives the size of fw and hw
-    - typical size is about a dozen kilobytes
-      - each hw block typically needs 512 bytes
+  - fw and hw counters
+    - `glb_iface->control->perfcnt_size` gives both the size of fw and hw
+      - fw size is typical 0 bytes
+      - hw size is typically a dozen kilobytes
+      - the total size is number of fw/hw blocks times block size
+        - block size given by `glb_iface->control->perfcnt_features`
+    - hw blocks
       - CSHW x1: gpu active, mcu active, etc.
       - tiler x1: tiler active, jobs processed, triangles processed, etc.
         - `tiler_present` is typically 0x1
-      - memsys x1: mmu reqs, mmu hits, l2 reads, l2 writes, etc.
-        - `l2_present` is typically 0x1
+      - memsys xN: mmu reqs, mmu hits, l2 reads, l2 writes, etc.
+        - number of l2 slices given by `mem_features`
       - shader core xN: frag active, prim rasterized, etc.
-        - when `shader_present` is 0x800000, N is 24
-    - it can capture up to `512/4=128` counters per hw block
-      - but some hw blocks have more than 128 counters
+        - `hweight64(shader_present)`
+    - each block typically takes 512 bytes
+      - it can capture up to `512/4=128` counters
+      - if the block has more than 128 counters,
         - their counters are grouped into up to 4 sets
         - each set has 128 counters
         - only one of the sets can be active and be captured
@@ -1539,77 +1540,79 @@
         - there is a 32-bit mask where each bit maps to 4 counters
         - the mask can be used to capture the interesting counters
         - this does not save space but saves bandwidth
-- `panthor_fw_init` boots fw and enables `GLB_PERFCNT_*`
-- `panthor_perfcnt_init` inits `ptdev->perfcnt` and `ptdev->perfcnt_info`
-  - `hrtimer_setup` preps `perfcnt->periodic_sampler`
-  - `get_perfcnt_info` inits `drm_panthor_perfcnt_info`
-    - `flags`
-      - `DRM_PANTHOR_PERFCNT_HAS_METADATA_BLOCK` if md size > 0
-    - `sample_size` is sum of md size, hw size, and fw size
-    - `max_sample_count` is `GLB_PERFCNT_SIZE_MAX` (128)
-    - `control_in_size` is `drm_panthor_perfcnt_session_control_in`
-    - `control_out_size` is `drm_panthor_perfcnt_session_control_out`
-    - `annotation_size` is `drm_panthor_perfcnt_sample_annotation`
-- `panthor_perfcnt_session_create` creates a session
-  - `drm_panthor_perfcnt_session_create`
-    - `ringbuf_sample_count` must be <= `max_sample_count`
-    - `ringbuf_data_bo_handle` must be >= `ringbuf_sample_count * sample_size`
-    - `ringbuf_annotation_bo_handle` msut be >= `ringbuf_sample_count * annotation_size`
-    - `control_in_bo_handle` msut be >= `control_in_size`
-    - `control_out_bo_handle` msut be >= `control_out_size`
-    - `eventfd` is for reporting
-  - `ptdev->perfcnt->active_session` and `pfile->perfcnt` both point to
-    `panthor_perfcnt_session`
-    - `session->ringbuf.capacity` is `ringbuf_sample_count`
-    - `session->ringbuf.data_bo` is `ringbuf_data_bo_handle`
-      - this is mapped in fw vm
-    - `session->ringbuf.annotation_bo` is `ringbuf_annotation_bo_handle`
-    - `session->control.in_bo` is `control_in_bo_handle`
-    - `session->control.out_bo` is `control_out_bo_handle`
-    - `session->cycle_tracking` tracks clk rates
-      - `top_level` tracks `ptdev->clks.core`
-      - `coregroup` tracks `ptdev->clks.coregroup`
-      - `shader` tracks `ptdev->clks.stacks`
-- `panthor_perfcnt_update_config` enables/disables perfcnt for the session
-  - `drm_panthor_perfcnt_config`
-    - `counter_set` specifies the counter set
-      - we can sample up to 128 counters per hw block
-      - because hw blocks can have more than 128 counters, their counters are
-        grouped into sets
-    - `csf_enable` specifies which of the 128 csf counters are sampled
-    - `shader_enable` specifies which of the 128 shader counters are sampled
-    - `tiler_enable` specifies which of the 128 tiler counters are sampled
-    - `mmu_l2_enable` specifies which of the 128 mmu/l2 counters are sampled
-    - `sampling_period_us`, if non-zero, enables `perfcnt->periodic_sampler`
-  - if enable, `enable_perfcnt_locked`
-    - `glb_iface->input->perfcnt_as` is the fw vm
-    - `glb_iface->input->perfcnt_base` is the data bo
-    - `glb_iface->input->perfcnt_extract` is the ring head (for reading)
-    - `glb_iface->input->perfcnt_config` specifies counter set, sample count, etc.
-    - `glb_iface->input->perfcnt_csf_enable` specifies the enabled csf counters
-    - `glb_iface->input->perfcnt_shader_enable` specifies the enabled shader counters
-    - `glb_iface->input->perfcnt_tiler_enable` specifies the enabled tiler counters
-    - `glb_iface->input->perfcnt_mmu_l2_enable` specifies the enabled mmu/l2 counters
-    - `GLB_PERFCNT_EN` is set
-    - `hrtimer_start` starts the timer if periodic
-  - if disable, `disable_perfcnt_locked`
-    - `hrtimer_cancel` cancels the timer
-    - `GLB_PERFCNT_EN` is cleared
-    - `annotate_slots_locked` updates annotation
-- `sample_perfcnt_locked` triggers a periodic or a manual sample
-  - `annotate_slots_locked` annotates already completed samples
-    - it annocates samples between `[session->ringbuf.insert, glb_iface->output->perfcnt_insert]`
-      and updates `session->ringbuf.insert`
-  - `session->sample` is initialized to track this sample
-  - `GLB_PERFCNT_SAMPLE` is toggled
-  - `eventfd_signal` signals the eventfd if there are completed samples
-- `panthor_perfcnt_report_fw_events` notifies a completed sample
-  - `session->sample.end.cpu_ts` is set if sample completes
-  - `sync_state_locked`
-    - `recycle_slots_locked` sets `glb_iface->input->perfcnt_extract` to `ucontrol->extract`
-      - that is, it updates the ring head to make room for more samples
-    - `annotate_slots_locked` annotates already completed samples
-    - `eventfd_signal` signals the eventfd if there are completed samples
-- `panthor_perfcnt_sync` calls `sync_state_locked` explicitly
-  - after userspace consumes samples, this explicitly frees the space up for more samples
-  - userspace can trigger sample manually
+- physical layout of a sw sample
+  - each fw sample is massaged into a sw sample
+    - fw/hw counters are 32-bit
+    - each fw sample resets the counters
+    - their vals are accumulated into 64-bit counters in the sw sample
+  - `drm_panthor_perf_sample_header`
+  - `drm_panthor_perf_block_header` and 64-bit counters for each block
+- `panthor_fw_init` boots fw and enables interrupt for perfcnt events
+  - `GLB_PERFCNT_SAMPLE` fires when a manual fw sample is captured
+  - `GLB_PERFCNT_THRESHOLD` fires when the fw rb is 50% full
+  - `GLB_PERFCNT_OVERFLOW` fires when the fw rb is 100% full
+- `panthor_perf_init` inits `ptdev->perf_info` and `ptdev->perf`
+  - `panthor_perf_info_init` inits `drm_panthor_perf_info` for sw sample layout
+    - `counters_per_block` is typically `512/4=128`
+      - `PRFCNT_FEATURES_COUNTER_BLOCK_SIZE(GPU_PRFCNT_FEATURES) / PANTHOR_HW_COUNTER_SIZE`
+    - `sample_header_size` is `sizeof(struct drm_panthor_perf_sample_header)`
+    - `block_header_size` is `sizeof(struct drm_panthor_perf_block_header)`
+    - `sample_size` is typically a few dozen kbs
+      - `sample_header_size + (block_header_size + counters_per_block * sizeof(u64)) * total_blocks`
+    - `fw_blocks` is typically 0
+    - `cshw_blocks` is 1
+    - `tiler_blocks` is 1
+    - `memsys_blocks` is l2 slice count, typically 4
+      - `GPU_MEM_FEATURES_L2_SLICES(ptdev->gpu_info.mem_features)`
+    - `shader_blocks` is shader core count
+      - `hweight64(ptdev->gpu_info.shader_present)`
+  - `panthor_perf_setup_fw_buffer` queries hw sample layout
+    - `perf->blocks` describes blocks
+    - `perf->fw_block_size` is size of a block (typically 512)
+    - `perf->fw_sample_size` is size of a sample (block count times block size)
+  - `perf->rb` is the fw ring buffer, sized to hold `perf_ringbuf_slots` (32) fw samples
+  - `perf->sample_work` is `panthor_perf_sample_worker`, which will be queued on irqs
+- `panthor_ioctl_dev_query` with `DRM_PANTHOR_DEV_QUERY_PERF_INFO` returns
+  `ptdev->perf_info`, the sw sample info
+- `panthor_perf_session_create` creates a session
+  - this is privileged
+  - a session consists of
+    - a user-provided eventfd for signaling
+    - a user-provided sw rb for sw samples
+    - a user-provided sw rb head/tail
+    - user-provided masks of enabled counters
+  - `panthor_perf_session_add` adds the new session
+    - `perf_disable` disables `GLB_PERFCNT_ENABLE`
+    - `perf_attach_session` adds the session and recomputes enable masks
+    - `perf_enable` re-enables `GLB_PERFCNT_ENABLE`
+      - `panthor_perf_fw_write_config` updates enabled masks and configs
+      - `panthor_perf_fw_start_sampling` sets `GLB_PERFCNT_ENABLE`
+        - this tells fw to auto-sample on major events, to avoid losing counters
+          - e.g., power down, protected mode, etc.
+        - userspace needs to use manual fw sample to drive periodic sampling
+- `panthor_perf_session_start` starts a session
+  - `session_try_start` updates state from `STOPPED` to `STARTING`
+  - `panthor_perf_request_sync` requests and wait for the first manual fw sample
+- `panthor_perf_session_sample` requests a manual fw sample
+  - userspace uses this to drive periodic sampling
+- `panthor_perf_session_stop` stops a session
+  - `session_try_stop` updates state from `ACTIVE` to `STOPPING`
+  - `panthor_perf_request_sync` requests and waits for the final manual fw sample
+- `panthor_perf_session_destroy` destroys a dession
+- on irq, `panthor_perf_report_irq` queues `panthor_perf_sample_worker`
+  - according to `panthor_fw_init`, this happens on `GLB_PERFCNT_SAMPLE`,
+    `GLB_PERFCNT_THRESHOLD`, or `GLB_PERFCNT_OVERFLOW`
+  - `panthor_perf_handle_fw_samples` accumulates fw samples in fw rb into
+    staging `perf->sample`
+    - this includes manual fw samples as well as auto fw samples
+      (`GLB_PERFCNT_ENABLE`) captured on major events
+    - 32-bit counters of fw samples are accumulated into 64-bit counters of
+      the staging sw sample
+  - `session_copy_sample` copies `perf->sample` to session's sw rb
+  - `session_emit_sample`
+    - if `STARTING`, update state to `ACTIVE`
+    - if `STOPPING`, update state to `STOPPED`
+    - if a manual fw sample was requested, `session_publish_sample` notifies
+      userspace
+      - it sets the sw sample header, increments sw rb tail, and signals
+        eventfd
