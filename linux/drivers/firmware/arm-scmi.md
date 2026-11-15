@@ -15,15 +15,15 @@
   protocol for the SCP firmware
   - this allows generic drivers to be written and talk to the firmware
   - it replaces the older SCPI interface
+- there is a trend to replace SCP by secure world firmware
 - transports
   - scmi messages are put on shmem
   - doorbell via
     - hw mailbox when the provider is an scp
-    - smc to sel3 when the provider is tfa
+    - smc to el3 when the provider is el3 (tfa)
+    - op-tee to sel1 when the provider is sel1 (op-tee)
     - hvc to el2 when the provider is hypervisor
-    - ffa to sel2 when the provider is spm
-    - virtio-scmi to el0 when the provider is qemu/crosvm/etcc.
-    - op-tee to sel1 when the provider is op-tee
+    - virtio-scmi to el0 when the provider is qemu/crosvm/etc.
 
 ## SCMI FW Driver
 
