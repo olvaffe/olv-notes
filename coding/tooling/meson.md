@@ -124,9 +124,6 @@
   - Module options
 - Syntax
 - Cross and Native File reference
-  - machine files are used with `--native-file` or `--cross-file` to describe
-    native or cross machines
-    - there can be multiple machine files and they are concatenated together
   - data types
     - integers (e.g., 42)
     - booleans (`true` or `false`)
@@ -138,23 +135,36 @@
     - path concatenation with `/`
   - `[binaries]` section
     - programs used by meson internally or returned by `find_program`
-    - `c`, `c_ld`, `cpp`, `cpp_ld`, `ar`, `strip`, etc.
-    - `cmake`, `pkg-config`, `llvm-config`, etc.
+    - `<lang>` such as `c`, `cpp`, `rust`
+    - `<lang>_ld` such as `c_ld`, `cpp_ld`, `rust_ld`
+    - binutils and core tools
+      - `ar`, `strip`, `ranlib` (mac), `windres` (win)
+      - `as`, `ld`, `nm`, `objcopy`, `objdump`, `readelf`, `size`, `strings`, `make`
+    - deps
+      - `pkg-config`, `cmake`, `llvm-config`, `qmake`, etc.
+    - module tools
+      - `python`, `wayland-scanner`, `moc`, `bindgen`, `cbindgen`, `flex`, `bison`, etc.
+    - `find_program`
+      - `protoc`, `glslangValidator`, `spirv-opt`, etc.
   - `[paths]` section
     - deprecated by `[built-in options]`
   - `[properties]` section
     - `cmake_toolchain_file`
-    - `java_home` is java home
+    - `java_home` is `JAVA_HOME`
     - `bindgen_clang_arguments` are passed to clang by rust bindgen
     - `<lang>_args` and `<lang>_link_args` are deprecated in favor of
       `[built-in options]`
+    - `meson.get_external_property` queries any key/val
   - `[cmake]` section
   - `[project options]` section
-    - set project options
+    - set project options, those defined in `meson.options`
     - use `[<subproject>:project options]` for subproject options
   - `[built-in options]` section
     - set built-in options such as `prefix`, `c_args`, or `pkg_config_path`
     - use `[<subproject>:built-in options]` for subproject options
+  - there can be multiple machine files
+    - key values are overridden by later files
+    - express evaluation happen after all files are loaded
 - Persistent native environments
   - `--native-file my-native.ini` finds the file under, in order,
     - local dir
@@ -202,9 +212,10 @@
   - `[binaries]` section
     - `exe_wrapper`
   - `[properties]` section
+    - `needs_exe_wrapper`
+    - `pkg_config_libdir` is `PKG_CONFIG_LIBDIR`
     - `sizeof_int`
-    - `sys_root` affects `PKG_CONFIG_SYSROOT_DIR`
-    - `pkg_config_libdir` affects `PKG_CONFIG_LIBDIR`
+    - `sys_root` is `PKG_CONFIG_SYSROOT_DIR`, `CMAKE_SYSROOT`, etc.
   - `[host_machine]` section
     - `system`
       - <https://mesonbuild.com/Reference-tables.html#operating-system-names>
