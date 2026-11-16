@@ -163,7 +163,6 @@
     - select `PCI Express Downstream Port Containment support`
     - select `PCI Express Error Disconnect Recover support` if x86
     - select `Message Signaled Interrupts (MSI and MSI-X)`
-    - select `Support for PCI Hotplug` if needed (usb4)
     - select `PCI controller drivers` if arm
       - select `Broadcom Brcmstb PCIe controller` if rpi
       - select `Generic PCI host controller` if guest
