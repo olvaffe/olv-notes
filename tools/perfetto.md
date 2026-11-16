@@ -732,6 +732,41 @@
     service.  It calls back to `TracingMuxerImpl::ProducerImpl` for things
     such as `SetupDataSource`, `StartDataSource`, or `StopDataSource`
 
+## Producer and DataSource
+
+- `perfetto::Tracing::Initialize` calls `Tracing::InitializeInternal`
+  - `TracingMuxerImpl::InitializeInstance` creates `TracingMuxerImpl` singleton
+    - it creates a `TaskRunner` which is a thread
+    - it posts `TracingMuxerImpl::Initialize` and `TracingMuxerImpl::AddBackends` to the thread
+      - `AddProducerBackend` creates a `ProducerImpl`
+        - `SystemProducerTracingBackend::ConnectProducer` connects to the socket
+          - after connection and handshake, `ProducerIPCClientImpl::OnConnectionInitialized`
+            calls `ProducerImpl::OnConnect`
+        - `ProducerImpl::Initialize` inits the producer
+  - `TrackRegistry::InitializeInstance` creates `TrackRegistry` singleton
+- `DataSource::Register` calls `TracingMuxerImpl::RegisterDataSource`
+  - it posts `TracingMuxerImpl::UpdateDataSourceOnAllBackends` to the thread
+    - `ProducerIPCClientImpl::RegisterDataSource` rpcs
+      `ProducerIPCService::RegisterDataSource ->
+      ProducerEndpointImpl::RegisterDataSource ->
+      TracingServiceImpl::RegisterDataSource`
+- when tracing is enabled,
+  - traced: `TracingServiceImpl::EnableTracing ->
+    TracingServiceImpl::SetupDataSource ->
+    ProducerEndpointImpl::SetupDataSource ->
+    ProducerIPCService::RemoteProducer::SetupDataSource`
+  - producer: `ProducerIPCClientImpl::OnServiceRequest ->
+    TracingMuxerImpl::ProducerImpl::SetupDataSource ->
+    TracingMuxerImpl::SetupDataSource`
+  - there are other callbacks, but all in all, producer sees
+    - `DataSource::OnSetup`
+    - `DataSource::OnStart`
+- `DataSource::Trace` records a trace event
+  - it calls `DataSource::TraceWithInstances`
+    - `DataSourceType::TracePrologue`
+    - producer-specific trace lambda
+    - `DataSourceType::TraceEpilogue`
+
 ## Add Track Event
 
 - `PERFETTO_DEFINE_CATEGORIES(perfetto::Category("blah"))`
