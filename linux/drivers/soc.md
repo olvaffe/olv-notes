@@ -68,7 +68,7 @@
       - this is how we get type-c support on x1e
 - `CONFIG_QCOM_SMEM`
   - fw typically reserves 2MB memory for `qcom,smem`
-  - fw stores only partition table in this carveout
+  - fw partitions the carveout and describes them in a partition table
     - first 4KB: `struct smem_header`
       - `versions[SMEM_MASTER_SBL_VERSION_INDEX]` is the SBL (secondary
         bootloader) version, which is typically `SMEM_GLOBAL_PART_VERSION`
@@ -108,6 +108,26 @@
   - on warm reboot, xbl (extended bootloader) saves the minidump regions to
     persistent storage
     - the persistent storage typically has a `rawdump` partition
+- `CONFIG_QCOM_AOSS_QMP` coordinates soc deep sleep, subsys power state, etc.
+  - it talks to aop (always-on processor) in aoss (always-on subsys)
+  - `qmp_send` sends json-like cmd to aop
+    - it informs aop about rproc and gpu states
+- `CONFIG_QCOM_GENI_SE` communicates with uart/i2c/spi/i3c controllers
+  - it talks to QUPv3 (qcom universal peripheral), which hosts up to 8 SEs
+    (serial engines) that can act as one of uart/i2c/spi/i3c controllers
+    depending on the firmware loaded
+    - fw is loaded by bootloader and dt describes what a qupv3 acts as
+- `CONFIG_QCOM_COMMAND_DB` returns cmd addrs of RPMh components
+  - it parses a lookup table for the cmd addrs of
+    - ARC, for soc voltage corners
+    - VRM, for pmic regulators
+    - BCM, for interconnect clocks
+- `CONFIG_QCOM_RPMH` provides communications to RPMh
+  - other subsys drivers, such as clk, pd, regulator, interconnect, depend on
+    this
+- `CONFIG_QCOM_PD_MAPPER` runs qmi directory server
+  - when any rproc boots, it creates a pdm aux subdevice
+  - `qcom_pdm_start` starts the directory server on demand
 
 ## Rockchip
 
