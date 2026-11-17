@@ -25,6 +25,52 @@
   - soc can switch between host or device
 - 2.x compat: `soc (usb2) <-> port`
 
+## Core
+
+- `typec_port` corresponds to a physical connector
+  - its parent, pdc/tcpc driven by ucsi/tcpm driver, calls
+    `typec_register_port` to register a port
+- tcpm goes through these states on usb dongle insertion
+  - `TOGGLING` is inital state to toggle between power src/snk for detection
+  - after insertion, tcpc locks the power snk role and raises an irq
+    - `tcpm_cc_change` queues `tcpm_pd_event_handler` to call
+      `_tcpm_cc_change` to move to `SRC_ATTACH_WAIT`
+  - `SRC_ATTACH_WAIT` moves to `SRC_ATTACHED`, assuming vbus is ready
+  - `SRC_ATTACHED` calls `tcpm_src_attach`
+    - `tcpm_set_polarity` sets polarity (cc1/cc2)
+    - `tcpm_set_vbus` turns on 5v vbus
+    - `tcpm_set_roles` sets roles
+      - power role is `TYPEC_SOURCE`
+      - data role is `TYPEC_HOST`
+      - usb roles is `USB_ROLE_HOST`
+      - `tcpm_mux_set` updates mux
+      - `port->tcpc->set_roles` updates tcpc
+      - `typec_set_data_role` and `typec_set_pwr_role` update port
+  - tcpc raises another irq when vbus is turned on
+    - `tcpm_vbus_change` queues `tcpm_pd_event_handler` to call
+      `_tcpm_pd_vbus_on` to move to `SRC_STARTUP`
+  - `SRC_STARTUP`
+    - if port does not support pd, it transitions to `SRC_READY` directly
+    - else, `tcpm_ams_start` starts `POWER_NEGOTIATION` and transitions to
+      `SRC_SEND_CAPABILITIES` via `AMS_START`
+  - `SRC_SEND_CAPABILITIES` calls `tcpm_pd_send_source_caps`
+    - if dongle does not support pd, it transitions to `SRC_READY` after
+      timeout
+  - tcpc raises another irq when pd response is received
+    - `tcpm_pd_receive` queues `tcpm_pd_rx_handler` to transition to
+      `SRC_NEGOTIATE_CAPABILITIES`, `SRC_TRANSITION_SUPPLY`, and `SRC_READY`
+  - `SRC_READY` calls `tcpm_typec_connect`
+    - `typec_register_partner` registers a `typec_partner`, representing the
+      usb dongle
+    - it queues `tcpm_vdm_discovery_work` to send `CMD_DISCOVER_IDENT`
+      - high-end typec cable embeds a chip to identity the cable
+      - on cable pd response, `tcpm_pd_receive` queues `tcpm_pd_rx_handler` to
+        call `tcpm_handle_vdm_request -> tcpm_pd_svdm -> svdm_consume_identity_sop_prime`
+        - `typec_register_cable` registers a `typec_cable`, representing the
+          cable
+        - `typec_register_cable` registers a `typec_plug`, representing the
+          cable chip
+
 ## UCSI (USB Type-C Connector System Software Interface)
 
 - UCSI is a standard interface that the os can use to communicate with PDC, if
