@@ -27,9 +27,14 @@
 
 ## Core
 
-- `typec_port` corresponds to a physical connector
+- `typec_port` corresponds to a physical typec connector
   - its parent, pdc/tcpc driven by ucsi/tcpm driver, calls
     `typec_register_port` to register a port
+- `typec_partner` corresponds to a connected usb device
+  - if it supports altmode, `typec_altermode` corresponds to altmode
+- optionally, high-end cable embeds a emarker chip
+  - `typec_cable` corresponds to the cable
+  - `typec_plug` corresponds to the chip
 - tcpm goes through these states on usb dongle insertion
   - `TOGGLING` is inital state to toggle between power src/snk for detection
   - after insertion, tcpc locks the power snk role and raises an irq
@@ -70,6 +75,9 @@
           cable
         - `typec_register_cable` registers a `typec_plug`, representing the
           cable chip
+    - it also sends `CMD_DISCOVER_SVID` and `CMD_DISCOVER_MODES`
+      - `tcpm_handle_discover_mode` calls `tcpm_register_partner_altmodes`
+        - `typec_partner_register_altmode` registers a `typec_altmode`
 
 ## UCSI (USB Type-C Connector System Software Interface)
 
