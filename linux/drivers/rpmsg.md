@@ -55,6 +55,8 @@
   - `qcom_glink_send_version_ack` sends `GLINK_CMD_VERSION_ACK`
   - `qcom_glink_rx_open` handles `GLINK_CMD_OPEN`
     - `qcom_glink_alloc_channel` allocs a channel
+    - `qcom_glink_match_channel` optionally associates a dt node with the rpmsg
+      - the dt node can provide non-discoverable props for the channel
     - `rpmsg_register_device` registers an rpmsg dev for the channel
       - the name is specified by rproc, such as `PMIC_RTR_ADSP_APPS`
       - `glink_device_ops` is the ops
