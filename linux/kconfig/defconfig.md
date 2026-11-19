@@ -550,7 +550,6 @@
       - select `User-space I/O driver support for HID subsystem` if desired
       - select `Special HID drivers`
         - deselect all but needed, such as
-        - select `Vivaldi Keyboard` (cros detachable keyboard)
         - select `Logitech devices`, depending on `LEDS_CLASS_MULTICOLOR`
           - select `Logitech receivers full support`, depending on `HIDRAW`
           - select `Logitech HID++ devices support`
