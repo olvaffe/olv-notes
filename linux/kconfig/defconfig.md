@@ -29,7 +29,6 @@
     - select `Support for eBPF programs attached to cgroups` if desired (rootful podman)
   - select `Namespaces support`
     - select `User namespace` if desired (podman)
-  - select `Automatic process group scheduling`
   - select `Initial RAM filesystem and RAM disk (initramfs/initrd) support`
   - select `Kernel Performance Events And Counters`
     - select `Kernel performance events and counters`
@@ -940,8 +939,8 @@
     - select `Detect Hard Lockups`
     - select `Detect Hung Tasks`
   - select `Lock Debugging (spinlocks, mutexes, etc...)` if desired
-    - select `Lock debugging: prove locking correctness`
-    - select `Lock debugging: detect incorrect freeing of live locks`
+    - select `Lock debugging: prove locking correctness` (high overhead)
+    - select `Lock debugging: detect incorrect freeing of live locks` (lockdep)
   - select `Debug kernel data structures` if desired
     - select `Debug linked list manipulation`
   - select `Tracers`
