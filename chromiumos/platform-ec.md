@@ -87,3 +87,35 @@
 - power key
   - short press (200ms): power on, wake up from suspend, or notify OS
   - long press (10s): hard power off
+
+## Kernel
+
+- several mcus may run ec fw but provide different features
+  - real ec provides many features
+  - fpmcu provides `EC_FEATURE_FINGERPRINT`
+  - intel ish provides `EC_FEATURE_ISH`
+  - mtk scp provides `EC_FEATURE_SCP`
+- kernel talks to ec via one of the tranports
+  - `CONFIG_CROS_EC_SPI` matches `google,cros-ec-spi` on spi
+  - `CONFIG_CROS_EC_LPC` matches `GOOG0004` on lpc
+  - `CONFIG_CROS_EC_ISHTP` matches sensorhub uuid on intel ish (for intel ish)
+  - `CONFIG_CROS_EC_RPMSG` matches `google,cros-ec-rpmsg` on rpmsg (for mtk scp)
+- `CONFIG_MFD_CROS_EC_DEV` matches the platdev added by the transport drv and
+  adds subdevices
+  - if `EC_CMD_MOTION_SENSE_CMD`, add `cros-ec-sensorhub`
+  - if `EC_FEATURE_GPIO`, add `cros-ec-gpio`
+  - if `EC_FEATURE_RTC`, add `cros-ec-rtc`
+  - if `EC_FEATURE_LED`, add `cros-ec-led`
+  - if `EC_FEATURE_PWM_KEYB`, add `cros-keyboard-leds`
+  - if `EC_FEATURE_CHARGER`, add `cros-charge-control`
+  - if `EC_FEATURE_USB_PD` and `EC_FEATURE_UCSI_PPM`, add `cros_ec_ucsi`
+    - new devs use `google,cros-ec-ucsi` or `GOOG0021` directly
+  - if `EC_FEATURE_USB_PD` but not `EC_FEATURE_UCSI_PPM`, add
+    `cros-usbpd-charger` and `cros-usbpd-logger`
+  - if `EC_FEATURE_USB_PD`, add `cros-usbpd-notify`
+  - if `EC_CMD_PCHG_COUNT`, add `cros-ec-pchg`
+  - unconditionally add `cros-ec-chardev`, `cros-ec-debugfs`, etc.
+- more subdevs described by dt/acpi directly
+  - `CONFIG_I2C_CROS_EC_TUNNEL` matches `google,cros-ec-i2c-tunnel` and `GOOG0012`
+  - `CONFIG_KEYBOARD_CROS_EC` matches `google,cros-ec-keyb` and `GOOG0007`
+  - more

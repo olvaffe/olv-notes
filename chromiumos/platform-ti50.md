@@ -266,3 +266,12 @@
       - to hard reset ec
     - ac present sate: charger plug/unplug
       - to trigger batter cut-off for long-term storage
+
+## Kernel
+
+- kernel talks to ti50 via tpm2 app
+  - `common/applications/tpm2` is the tpm2 app
+    - it also provides vendor cmds, some handled by
+      `common/applications/sys_mgr`
+  - `CONFIG_TCG_TIS_I2C_CR50` matches `google,cr50` or `GOOG0005` on i2c
+  - `CONFIG_TCG_TIS_SPI_CR50` matches `google,cr50` on spi

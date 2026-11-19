@@ -333,3 +333,13 @@
   - `fastboot_cmd_oem_set_successful`
   - `fastboot_cmd_oem_set_priority`
   - `fastboot_cmd_oem_sha256`
+
+## Kernel
+
+- on x86, kernel learns via boot params, e820, and acpi
+  - various drivers match `GOOG*` (`src/ec/google/chromeec/acpi/*.asl`)
+- on arm, kernel learns via (patched) dt/cmdline
+  - `/firmware/coreboot`, `/reserved-memory/ramoops`
+  - kernel also talks to bl31/bl32 (atf, tee, ta)
+    - psci, scmi, smccc
+- `CONFIG_COREBOOT_*` match coreboot carveouts
