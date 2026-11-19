@@ -3,7 +3,9 @@
 ## `libpanfrost_perf`
 
 - `pan_perf_create`
+  - `pan_kmod_dev_create` creates kmod over the drm fd
   - `pan_kmod_perf_create` calls `panthor_kmod_perf_create`
+  - `pan_get_model` looks up the model
   - `mali_perf_get_info_for_gpu` returns the generated `mali_perf_gpu_info`
     - which defines derived counters on top of raw counters
 - `pan_perf_enable` calls `panthor_kmod_perf_enable`
