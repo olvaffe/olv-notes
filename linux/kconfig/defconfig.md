@@ -412,7 +412,6 @@
     - select `Intel MEI iAMT Watchdog` if intel
     - select `Broadcom BCM2835 hardware watchdog` if rpi
   - select `Multifunction device drivers`
-    - select `ChromeOS Embedded Controller multifunction device` if cros, depending on `CROS_EC`
     - select `Intel Low Power Subsystem support in PCI mode` if intel
     - select `MediaTek MT6397 PMIC Support` if before mt8196
     - select `MediaTek SPMI PMICs` if mt8196
@@ -551,8 +550,7 @@
       - select `User-space I/O driver support for HID subsystem` if desired
       - select `Special HID drivers`
         - deselect all but needed, such as
-        - select `Google Hammer Keyboard`, depending on `CROS_EC` and `LEDS_CLASS`
-        - select `Vivaldi Keyboard`
+        - select `Vivaldi Keyboard` (cros detachable keyboard)
         - select `Logitech devices`, depending on `LEDS_CLASS_MULTICOLOR`
           - select `Logitech receivers full support`, depending on `HIDRAW`
           - select `Logitech HID++ devices support`
