@@ -126,31 +126,43 @@
 
 ## Bootloader and Firmware Update
 
-- get board revision
-  - `cat /sys/firmware/devicetree/base/model`
-- get current bootloader version
-  - `hex=$(od -v -An -t x1 /sys/firmware/devicetree/base/chosen/bootloader/build-timestamp | tr -d ' ')`
-  - `epoch=$(printf %d 0x$hex)`
-  - `date -d@$epoch`
-- get `pieeprom.bin` version
-  - `strings pieeprom.bin | grep BUILD_TIMESTAMP`
-- prepare sd
-  - `curl -LO https://downloads.raspberrypi.com/imager/imager_latest_amd64.AppImage`
-  - `chmod +x imager_latest_amd64.AppImage`
-  - `xhost +SI:localuser:root`
-  - `sudo ./imager_latest_amd64.AppImage`
-  - select `OS -> Misc utility images -> Bootloader (Pi 4 family) -> USB Boot`
-  - this creates a recovery sd with
-    - `recovery.bin`
-    - `pieeprom.bin` and `pieeprom.sig`
-    - `vl805.bin` and `vl805.sig`
-  - this must be sd because stage1 bootloader boots from existing eeprom
-    before usb
-- boot from the recovery sd
+- update bootloader
+  - `git clone https://github.com/raspberrypi/rpi-eeprom.git`
+  - `sudo env PATH=$PWD:$PATH ./rpi-eeprom-update`
+  - `sudo reboot`
   - when the screen turns green, it is done
+  - `sudo rm /boot/{recovery.bin,pieeprom.sig,pieeprom.upd}`
+    - optionally `vl805.bin` and `vl805.sig`
 - update fw
-  - `curl -LO https://github.com/raspberrypi/firmware/releases/download/1.20250915/raspi-firmware_1.20250915.orig.tar.xz`
+  - `curl -LO https://github.com/raspberrypi/firmware/releases/download/1.20260915/raspi-firmware_1.20260915.orig.tar.xz`
   - copy `start4.elf` and `fixup4.dat` to esp
+- `rpi-eeprom-update`
+  - `checkDependencies`
+    - it decodes `/sys/firmware/devicetree/base/system/linux,revision`
+    - board revision is also available at `/sys/firmware/devicetree/base/model`
+  - `getBootloaderCurrentVersion`
+    - `hex=$(od -v -An -t x1 /sys/firmware/devicetree/base/chosen/bootloader/build-timestamp | tr -d ' ')`
+    - `epoch=$(printf %d 0x$hex)`
+    - `date -d@$epoch`
+  - `getBootloaderConfig`
+    - bootloader injects `/sys/firmware/devicetree/base/aliases/blconfig`
+    - it points to `/sys/firmware/devicetree/base/reserved-memory/nvram@0`
+    - it leads us to `/sys/bus/nvmem/devices/rmem0/nvmem` for current config
+      - `BOOT_UART=0`
+      - `WAKE_ON_GPIO=1`
+      - `ENABLE_SELF_UPDATE=1`
+      - `BOOT_ORDER=0xf14`
+      - `NET_INSTALL_AT_POWER_ON=1`
+  - `applyUpdate`
+    - `RPI_EEPROM_IMMEDIATE_UPDATE` is 0 by default
+      - otherwise, it uses `flashrom` to flash directly
+    - `applyRecoveryUpdate`
+      - it copies `pieeprom.{upd,sig}` to `/boot`
+      - it copies `vl805.{bin,sig}` to `/boot`
+      - it copies `recovery.bin` to `/boot`
+        - unless `RPI_EEPROM_SELF_UPDATE`
+        - older path: stage1 boots `recovery.bin` from sd to flash stage2
+        - newer path: stage1 boots stage2 which self-flashes
 
 ## Minimal Boot Partition
 
@@ -163,7 +175,6 @@
       - `boot/kernel8.img`
       - `boot/bcm2711-rpi-4-b.dtb`
     - `cp -r modules/<version>-v8+ /usr/lib/modules`
-    - downstream kernel is needed for eeprom bootloader update
 - create `config.txt` on esp
   - `auto_initramfs=1`, to load `initramfs8` as initramfs
   - `enable_uart=1`, to enable uart
