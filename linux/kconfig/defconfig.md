@@ -555,7 +555,7 @@
         - select `HID Multitouch panels`
         - select `Nintendo Joy-Con, NSO, and Pro Controller support`, depending on `LEDS_CLASS`
         - select `Wacom Intuos/Graphire tablet support (USB)`
-        - select `HID Sensors framework support` if amd/intel
+        - select `HID Sensors framework support` if needed
       - select `I2C HID support` if needed
         - select `HID over I2C transport layer ACPI driver` if x86
         - select `HID over I2C transport layer Open Firmware driver` if arm
@@ -657,7 +657,6 @@
     - select `ChromeOS Embedded Controller`
       - select `ChromeOS Embedded Controller (rpmsg)` if mtk
       - select `ChromeOS Embedded Controller (SPI)`
-      - select `ChromeOS Embedded Controller (UART)` if amd, depending on `SERIAL_DEV_BUS`
       - select `ChromeOS Embedded Controller (LPC)` if x86
     - select `Backlight LED support for Chrome OS keyboards`
   - select `X86 Platform Specific Device Drivers` if x86
