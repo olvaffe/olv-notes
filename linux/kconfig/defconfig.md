@@ -107,7 +107,6 @@
   - deselect `Disable heap randomization`
   - select `Enable KSM for page merging` if kvm
   - select `Transparent Hugepage Support`
-  - select `Contiguous Memory Allocator` if needed
   - select `Enable userfaultfd() system call` if desired
   - select `Multi-Gen LRU`
     - select `Enable by default`
@@ -131,10 +130,8 @@
           - select `Netfilter nf_tables fib inet support`, depending on `NFT_FIB_IPV4` and `NFT_FIB_IPV6`
     - select `802.1d Ethernet Bridging` if desired (kvm, podman)
     - select `802.1Q/802.1ad VLAN Support` if desired
-    - select `QoS and/or fair queueing` if desired
+    - select `QoS and/or fair queueing` if desired (systemd)
       - select `Fair Queue Controlled Delay AQM (FQ_CODEL)`
-      - select `Allow override default queue discipline`
-        - select `Default queuing discipline (Fair Queue Controlled Delay)`
     - select `Virtual Socket protocol` if desired (kvm, guest)
       - select `virtio transport for Virtual Sockets` if guest, depending on `VIRTIO_PCI`
     - select `Qualcomm IPC Router support` if qcom
@@ -188,8 +185,8 @@
       - select `Coreboot Table Access`
       - select `Firmware Memory Console`
       - select `Vital Product Data`
-    - select `EFI (Extensible Firmware Interface) Support` if uefi and arm
-      - select `Enable the generic EFI decompressor`
+    - select `EFI (Extensible Firmware Interface) Support` if uefi
+      - select `Enable the generic EFI decompressor` if arm
     - select `Qualcomm firmware drivers` if x1
       - select `TrustZone interface memory allocator: SHM Bridge`
       - select `Qualcomm QSEECOM interface driver`
@@ -846,7 +843,7 @@
   - select `Quota format vfsv0 and vfsv1 support` if `QUOTA`
   - select `Kernel automounter support (supports v3, v4 and v5)` (systemd)
   - select `FUSE (Filesystem in Userspace) support` if desired
-    - select `Virtio Filesystem` if desired
+    - select `Virtio Filesystem` if guest
   - select `Overlay filesystem support` if desired (podman)
   - select `CD-ROM/DVD Filesystems` if desired
     - select `ISO 9660 CDROM file system support`
@@ -859,6 +856,8 @@
     - select `NTFS file system support` if desired
       - select `NTFS Windows system compression support`
   - select `Pseudo filesystems`
+    - select `/proc file system support`
+      - select `/proc/kcore support`
     - select `Tmpfs virtual memory file system support (former shm fs)`
       - select `Tmpfs POSIX Access Control Lists`
       - select `Use 64-bit ino_t by default in tmpfs`
@@ -893,7 +892,7 @@
       - select `Enable heap memory zeroing on allocation by default`
     - select `Hardening of kernel data structures`
       - select `Trigger a BUG when data corruption is detected`
-- select `Cryptographic API` if desired
+- select `Cryptographic API`
   - select `Accelerated Cryptographic Algorithms for CPU (arm64)` if arm
     - select `AEAD cipher: AES in GCM mode (ARMv8 Crypto Extensions)`
     - select `Ciphers: AES, modes: ECB/CBC/CTR/XTS (ARMv8 Crypto Extensions)`
