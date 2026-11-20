@@ -192,7 +192,6 @@
       - select `Qualcomm QSEECOM interface driver`
         - select `Qualcomm SEE UEFI Secure App client driver`
   - select `Memory Technology Device (MTD) support` if needed (spi nor, etc.)
-    - select `Caching block device access to MTD devices`
     - select `Self-contained MTD device drivers`
       - select `Intel Discrete Graphics non-volatile memory driver` if needed
     - select `SPI NOR device support` if needed, depending on `SPI`
