@@ -727,19 +727,15 @@
       - select `MediaTek PMIC Wrapper Support`
       - select `MediaTek Smart Voltage Scaling(SVS)`, depending on `NVMEM_MTK_EFUSE`
     - select `Qualcomm SoC drivers` if qcom
-      - select `Qualcomm AOSS Driver`
-      - select `Qualcomm Command DB`
-      - select `Qualcomm GENI Serial Engine Driver`
       - select `Qualcomm LLCC driver`
+      - deselect `Qualcomm On Chip Memory (OCMEM) driver`
       - select `Qualcomm PMIC GLINK driver`
       - select `Qualcomm Remote Filesystem memory driver` if sc7180
-      - select `Qualcomm RPM-Hardened (RPMH) Communication`
-      - select `Qualcomm Shared Memory Manager (SMEM)`
-      - select `Qualcomm Shared Memory Point to Point support`
       - select `Qualcomm socinfo driver`
       - select `Qualcomm Sleep stats driver`
       - select `Qualcomm APR/GPR Bus (Asynchronous/Generic Packet Router)`
       - select `Qualcomm Interconnect Bandwidth Monitor driver`
+      - deselect `PBS trigger support for Qualcomm PMICs`
     - select `Rockchip IO domain support` if rk3568
   - select `PM Domains` if arm
     - select `SCMI performance domain driver` if x1
