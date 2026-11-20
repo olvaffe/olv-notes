@@ -457,7 +457,7 @@
       - select `Enable DisplayPort CEC-Tunneling-over-AUX HDMI support` if needed
       - select `AMD GPU` if amd
       - select `Display Interface Bridges` if arm
-        - select `Display connector support`
+        - select `Display connector support` if needed
         - select `ITE IT6505 DisplayPort bridge` if needed
         - select `Simple DRM bridge support` if needed
         - select `TI SN65DSI86 DSI to eDP bridge` if needed
@@ -578,6 +578,7 @@
       - select `VHCI hcd`
       - select `Host driver`
     - select `MediaTek USB3 Dual Role controller` if mtk
+      - select `MTU3 Mode Selection (Dual Role mode)`, depending on `USB_GADGET`
     - select `DesignWare USB3 DRD Core Support` if qcom or rk
       - select `DWC3 Mode Selection (Dual Role mode)`, depending on `USB_GADGET`
     - select `USB Serial Converter support` if needed
