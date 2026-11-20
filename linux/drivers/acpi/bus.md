@@ -2,10 +2,26 @@
 
 ## Initialization
 
-- `acpi_early_init` initializes acpica
-  - it calls `acpi_reallocate_root_table` and `acpi_initialize_subsystem`
-    defined by acpica
-- `acpi_init`
+- x86 `start_kernel -> setup_arch`
+  - `efi_init -> efi_config_init -> efi_config_parse_tables` parses efi tables
+  - `acpi_boot_table_init -> acpi_locate_initial_tables -> acpi_initialize_tables`
+    - `acpi_os_get_root_pointer` returns root pointer from efi
+    - `acpi_tb_parse_root_table` parses root table
+  - `early_acpi_boot_init` parses `BOOT` and `MADT`
+  - `acpi_boot_init` parses `BOOT`, `FADT`, `MADT`, `HPET`, `SPCR`, etc.
+- arm `start_kernel -> setup_arch`
+  - `efi_init -> efi_config_init -> efi_config_parse_tables` parses efi tables
+  - `acpi_boot_table_init`
+    - `acpi_table_init -> acpi_locate_initial_tables ->
+      acpi_locate_initial_tables -> acpi_initialize_tables` is similar to x86
+    - `acpi_fadt_sanity_check` parses `FADT`
+    - `acpi_parse_spcr` parses `SPCR`
+- `start_kernel`
+  - `acpi_early_init` initializes acpica
+    - it calls `acpi_reallocate_root_table` and `acpi_initialize_subsystem`
+      defined by acpica
+  - `acpi_subsystem_init`
+- `subsys_initcall(acpi_init)` inits acpi subsys
   - `acpi_kobj` is created at `/sys/firmware/acpi`
   - `init_prmt` parses `PRMT` (platform runtime mechanism table)
     - this appears to provide additional uefi runtime services that are
@@ -29,7 +45,8 @@
   - `acpi_sleep_init` initializes acpi-based sleep
   - `acpi_bus_init_irq` invokes `_PIC`
   - `acpi_root_dir` represents `/proc/acpi`
-  - `acpi_bus_type` is registered
+  - `companion_bus_register` registers `acpi_bus_type`
+    - there is no direct acpi driver
 
 ## `acpi_bus_type`
 
@@ -38,10 +55,8 @@
   - `ACPI_ROOT_OBJECT` is at `/sys/devices/LNXSYSTM:00`
   - each `acpi_device` also embeds a `fwnode_handle` with
     `acpi_device_fwnode_ops`
-- there are very few `acpi_driver`
-  - these true acpi drivers communicate with the acpi devices through acpi
-    methods
-- more often, other bus drivers are used to drive these devices
+- there is no `acpi_driver` in modern kernel
+- other bus drivers are used to drive these devices
   - e.g., acpi bus scan calls `acpi_create_platform_device` to create platform
     devices for some of the acpi devices
   - `platform_match`, the match function of the platform bus, calls
