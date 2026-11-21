@@ -182,21 +182,21 @@
   - `Physical Resizable BAR` is rebar
     - it shows current and supported bar sizes
 
-## x86 PCI Setup
+## Initialization (x86)
 
-- `pci_setup` parses pci= cmdline
-  - on x86, `pci_probe` defaults to
+- `pci_setup` parses `pci=` cmdline
+  - `pci_probe` defaults to
     - `PCI_PROBE_BIOS`
     - `PCI_PROBE_CONF1`
     - `PCI_PROBE_CONF2`
     - `PCI_PROBE_MMCONF`
-- `acpi_pci_init` is an arch initcall
+- `arch_initcall(acpi_pci_init)`
   - it registers `acpi_pci_bus`
-- `pci_arch_init` is an arch initcall
-  - `pci_direct_probe`
-    - sets `raw_pci_ops` to `&pci_direct_conf1`
+- `arch_initcall(pci_arch_init)`
+  - `pci_direct_probe` returns type 1
+    - `raw_pci_ops` is `pci_direct_conf1`
   - `pci_mmcfg_early_init`
-    - `pci_parse_mcfg` parses ACPI MCFG table
+    - `acpi_table_parse` parses `MCFG` and calls `pci_mmconfig_add`
       - `/sys/firmware/acpi/tables/MCFG`
       - `struct acpi_mcfg_allocation` example
         - `address = 0xf8000000`
@@ -206,21 +206,30 @@
       - `pci_mmconfig_add` adds a new `pci_mmcfg_region` to `pci_mmcfg_list`
     - `__pci_mmcfg_init`
       - `pci_mmcfg_reject_broken` checks if the mmconfig is reserved in E820
-      - `pci_mmcfg_arch_init` ioremaps the region and sets `raw_pci_ext_ops`
-        to `&pci_mmcfg`
-- `acpi_init` is a subsys initcall
-  - `acpi_pci_root_init` is called from `acpi_scan_init`.  It adds
-    `pci_root_handler` as a scan handler.
-  - PCI root device has `_HID` PNP0A08 and `_CID` PNP0A03
-  - `acpi_pci_root_add` adds the PCI root bridge
-    - `pci_acpi_scan_root` calls `acpi_pci_root_create` which calls
-      `pci_create_root_bus` to create and register a `pci_bus`
-      - `pci_scan_child_bus` and `pci_scan_slot` scans all slots
-    - the root bus ops is `acpi_pci_root_ops` and `pci_root_ops`
-    - `pci_bus_add_devices`
-- `arch_init_msi_domain` calls `pci_msi_create_irq_domain` with
-  `pci_msi_domain_info` to create "PCI-MSI" irq domain
-- `pcibios_*` are defined by arch
+      - `pci_mmcfg_arch_init` ioremaps mmcfg regions
+        - `raw_pci_ext_ops` is `pci_mmcfg`
+      - `pci_probe` is reduced to `PCI_PROBE_MMCONF`
+  - `x86_init.pci.arch_init` is NULL
+  - `x86_create_pci_msi_domain` calls `native_create_pci_msi_domain`
+  - `pci_pcbios_init` is nop
+  - `pci_direct_init` is nop because we have `raw_pci_ext_ops`
+- `subsys_initcall(acpi_init)`
+  - `pci_mmcfg_late_init` is likely nop
+  - `acpi_scan_init` scans acpi and `pci_root_handler` calls
+    `acpi_pci_root_add` on pci roots
+    - `negotiate_os_control` takes control from efi
+    - `pci_acpi_scan_root`
+      - `acpi_pci_root_create` creates `pci_host_bridge` and `pci_bus`
+        - ops is x86-specific `acpi_pci_root_ops`
+      - `pci_scan_child_bus` scans the bus
+- `subsys_initcall(pci_subsys_init)`
+  - `x86_init.pci.init` is `pci_acpi_init`
+    - it uses acpi for pci irq routing
+    - `pcibios_enable_irq` is `acpi_pci_irq_enable`
+    - `pcibios_disable_irq` is `acpi_pci_irq_disable`
+    - `x86_init.pci.init_irq` is `x86_init_noop`
+  - `pcibios_init -> pcibios_resource_survey` claims pci dev io resources
+- `fs_initcall(pcibios_assign_resources)` claims more io resources
 
 ## arm64 PCI Setup
 
