@@ -204,6 +204,7 @@
     - select `NVM Express block device`
     - select `NVMe hardware monitoring`
   - select `Misc devices`
+    - select `RPMB partition interface` if needed
     - select `Qualcomm FastRPC` if x1, depending on `RPMSG_QCOM_GLINK_SMEM`
     - select `Generic on-chip SRAM driver` if rk3588 or x1
     - select `NT synchronization primitive emulation` if desired (wine)
@@ -299,11 +300,12 @@
       - select `Rockchip True Random Number Generator` if rk
       - select `Qualcomm True Random Number Generator Driver` if qcom
     - select `TPM Hardware Support` if needed (luks, hwrng, etc.)
-      - select `TPM Interface Specification 1.2 Interface / TPM 2.0 FIFO Interface` if needed
-      - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if needed, depending on `SPI`
-        - select `Cr50 SPI Interface` if cros
+      - select `TPM Interface Specification 1.3 Interface / TPM 2.0 FIFO Interface - (SPI)` if cros, depending on `SPI`
+        - select `Cr50 SPI Interface`
       - select `TPM Interface Specification 2.0 Interface (I2C - CR50)` if cros, depending on `I2C`
       - select `TPM 2.0 CRB Interface` if needed
+        - select `TPM CRB over Arm FF-A Transport` if needed
+      - select `TEE based fTPM Interface` if needed
   - select `I2C support`
     - select `I2C support`
       - select `I2C device interface` if desired
@@ -883,6 +885,7 @@
     - select `NLS ISO 8859-1  (Latin 1; Western European Languages)`
     - select `NLS UTF-8`
 - select `Security options`
+  - select `Enable access key retention support` if desired (luks)
   - select `Enable different security models`
   - select `SELinux Support` if desired, depending on `SECURITY_NETWORK` and `AUDIT`
   - select `Landlock support` (pacman)
