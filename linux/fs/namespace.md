@@ -8,19 +8,50 @@
   - it has info to manipulate a fs
     - `mnt_sb` is the super block
     - `mnt_root` is the root dentry
-  - it lacks info about mountpoint, etc.
-    - it needs to be upcasted internal `struct mount` to access those info
+  - it lacks info beyond the fs, such as mountpoint, etc.
+- a `mount` also represents a mount
+  - it embeds `vfsmount`
+  - `real_mount` upcasts `vfsmount` to `mount`
+  - it has info beyond the fs
 
 ## Initialization
 
-- `mnt_init` creates `fs_kobj`, `/sys/fs`
-  - `/sys/fs/bpf` is from `bpf_init`
-  - `/sys/fs/cgroup` is from `cgroup_init`
-  - `/sys/fs/ext4` is from `ext4_init_sysfs`
-  - `/sys/fs/fuse` is from `fuse_sysfs_init`
-  - `/sys/fs/pstore` is from `pstore_init_fs`
-  - `/sys/fs/resctrl` is from `rdtgroup_init`
-  - `/sys/fs/virtiofs` is from `virtio_fs_sysfs_init`
+- `start_kernel -> vfs_caches_init -> mnt_init` is the entrypoint
+  - `kernfs_init`
+    - kernfs and libfs are helpers for pseudo filesystems
+    - sysfs and cgroup use kernfs
+      - they are more special and have no regular inode/dentry
+    - nullfs, failfs, debugfs, tracefs, ramfs, etc. use libfs
+    - procfs and configfs are also special but they predate kernfs
+  - `sysfs_init` registers sysfs
+  - `kobject_create_and_add` creates `fs_kobj` for `/sys/fs`
+    - `/sys/fs/ext4` is from `ext4_init_sysfs`
+    - `/sys/fs/pstore` is from `pstore_init_fs`
+    - `/sys/fs/cgroup` is from `cgroup_init`
+    - `/sys/fs/bpf` is from `bpf_init`
+    - etc.
+  - `shmem_init` registers tmpfs
+    - it also creates a mount for in-kernel use
+  - `init_rootfs` picks between tmpfs/ramfs for rootfs
+  - `init_mount_tree` bootstraps mount namespace for pid 0
+  - `failfs_init` mounts failfs for in-kernel use
+- `init_mount_tree` bootstraps mount namespace for pid 0
+  - it inits `init_mnt_ns.root`, the root mount of the mnt namespace
+    - it creates two mounts, of nullfs and rootfs respectively
+    - `init_mnt_ns.root` points to nullfs mount
+    - `mount_rootfs_on_nullfs` attaches rootfs to root of nullfs
+      - that is, rootfs overmounts nullfs
+    - it adds the two mounts to `init_mnt_ns` manually
+  - it chdirs and chroots for pid 0
+    - it creates another two mounts of nullfs
+      - these are used as sandboxes
+    - `set_fs_pwd` chdirs to root of `knullfs`
+    - `set_fs_root` chroots to root of `knullfs`
+  - later,
+    - `rest_init` creates pid 1 without `CLONE_FS`, which dups `current->fs`
+      - `kernel_init` calls `init_userspace_fs` to chdir/chroot to rootfs
+    - `rest_init` creates pid 2 with `CLONE_FS`, which shares `current->fs`
+      - all kthreads will use `knullfs` sandbox
 
 ## `mount`
 

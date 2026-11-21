@@ -92,7 +92,7 @@
   - `security_init` inits lsm
   - `net_ns_init` inits net
   - `vfs_caches_init` inits various vfs caches as well as rootfs
-    - `mnt_init` mounts `rootfs` to `/`
+    - `mnt_init` mounts `nullfs` to `/`, and mounts `rootfs` over it
   - `pagecache_init` inits pagecache
   - `signals_init` inits signal subsystem
   - `proc_root_init` inits procfs
@@ -120,6 +120,11 @@
 ## PID 1: `kernel_init`
 
 - pid 1 runs `kernel_init`
+  - it calls `init_userspace_fs` to chroot
+    - `topmost_overmount` finds the rootfs mount over nullfs
+      - see `init_mount_tree`
+    - `set_fs_root` chroots to rootfs
+    - `set_fs_pwd` chdirs to rootfs
   - it calls `kernel_init_freeable` to intialize more subsystems
   - it then `execve("/init")` or `execve("/sbin/init")` depending on whether
     there is initramfs
