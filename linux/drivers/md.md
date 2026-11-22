@@ -76,19 +76,31 @@
 
 ## dm-verity
 
-- it requires at least 10 args to create
+- lazy verification
+  - hashing and verifying a 1TB partition slows down boot
+  - instead, assuming 4KB blocks and 32B hashes
+    - split 1TB partition into 256M data blocks
+    - store 256M hashes in 2M hash blocks (level 0)
+    - store 2M hashes in 16K hash blocks (level 1)
+    - store 16K hashes in 128 hash blocks (level 2)
+    - store 128 hashes in 1 hash block (level 3, also root hash block)
+    - store 1 hash externally (root digest, typically in cmdline)
+  - after reading a data block,
+    - hash data block and compare against level 0
+    - hash level 0 and compare against level 1
+    - hash level 1 and compare against level 2
+    - hash level 2 and compare against level 3
+    - hash level 3 and compare against root digest
+- `verity_ctr` expects 10 or more args
   - `version` should be 1
-  - `dev` is the path or `major:minor` of the device to be verified
+  - `data_dev` is the path or `major:minor` of the device to be verified
   - `hash_dev` is the path or `major:minor` of the device containing hashes
-  - `data_block_size` is the size of a data block
-  - `hash_block_size` is the size of a hash block
-  - `num_data_blocks` is the number of data blocks in `dev`
-    - every data block is hashed to get a digest
-    - then, every `hash_block_size / digest_size` digests are hashed to get
-      another layer of digests
-      - this happens recursively to form a hash tree
+    - can be the same as `data_dev`
+  - `data_block_size` is the size of a data block, typically 4KB
+  - `hash_block_size` is the size of a hash block, typically 4KB
+  - `num_data_blocks` is the number of data blocks in `data_dev`
   - `hash_start_block` is the offset of the root hash block in `hash_dev`
-    - this is useful when `dev` and `hash_dev` are the same
+    - this is useful when `data_dev` and `hash_dev` are the same
   - `algorithm` is the algorithm
   - `digest` is the digest of the root hash block
   - `salt` is the salt
