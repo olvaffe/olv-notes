@@ -1,5 +1,34 @@
 # Linux block layer
 
+## Overview
+
+- modern hw: a controller has N hw queues and M disks
+- a controller has a `blk_mq_tag_set`
+  - `nr_hw_queues` is N
+  - `tags` is an array of N `blk_mq_tags`
+- each of the M disks has a `gendisk`
+  - `disk_name` is `nvme0n1`, etc.
+  - `queue` is `request_queue`
+    - `nr_hw_queues` is N
+    - `queue_hw_ctx` is an array of N `blk_mq_hw_ctx`
+    - `queue_ctx` is per-cpu sw `blk_mq_ctx`
+  - `bdi` is `backing_dev_info`
+    - it interfaces with mm for dirty throttle, bw estimate, writeback,
+      readahead, etc.
+  - `part0` is `block_device`
+  - `part_tbl` is an array of `block_device`
+    - one for each partition, including the special part0
+- each partition (including part0) has a `block_device`
+  - unless `GENHD_FL_HIDDEN`, there will be a `/dev/foo`
+  - `bd_mapping` is `address_space`
+    - direct bdev access uses this page cache, aka buffer
+- a `bio` describes a high-level request
+  - `bi_bdev` is the target `block_device`
+  - `bi_io_vec` is an array of `bio_vec`
+  - virtual drivers consume bio directly
+  - hw drivers typically use `blk-mq` to lower bio to `request`
+    - each `request` corresonds to a hw cmd
+
 ## Initialization
 
 - `subsys_initcall(genhd_device_init)`
