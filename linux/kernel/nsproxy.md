@@ -2,12 +2,35 @@
 
 ## `nsproxy`
 
-- `nsproxy` is a struct that holds all namespaces
-  - `current->nsproxy`
-- syscalls
-  - `clone` calls `copy_namespaces`
-  - `unshare` calls `unshare_nsproxy_namespaces`
-  - `setns`
+- `tsk->nsproxy` is the active namespaces of a task
+  - the pointer may swap but the object is immutable
+  - the object includes all except user ns
+    - `uts_ns`, `ipc_ns`, `mnt_ns`, `net_ns`, `time_ns`, `cgroup_ns`
+    - `pid_ns_for_children`, `time_ns_for_children`
+    - user ns is in `tsk->cred->user_ns`
+- `create_new_namespaces` creates a nsproxy object from an existing task
+  - it shares or clones each namespace of the existing task
+  - `CLONE_NEWNS` clones instead of shares `mnt_ns`
+  - `CLONE_NEWUTS` clones instead of shares `uts_ns`
+  - `CLONE_NEWIPC` clones instead of shares `ipc_ns`
+  - `CLONE_NEWPID` clones instead of shares `pid_ns_for_children`
+  - `CLONE_NEWCGROUP` clones instead of shares `cgroup_ns`
+  - `CLONE_NEWNET` clones instead of shares `net_ns`
+  - `CLONE_NEWTIME` clones instead of shares `time_ns_for_children`
+  - `time_ns` is always shared
+- `SYSCALL_DEFINE2(clone3) -> kernel_clone -> copy_process`
+  - `copy_namespaces`
+    - if all namespaces are shared, `get_nsproxy` shares the existing nsproxy
+    - otherwise, `create_new_namespaces` creates a new nsproxy
+- `SYSCALL_DEFINE1(unshare) -> ksys_unshare`
+  - `unshare_nsproxy_namespaces`
+    - `create_new_namespaces` creates a new nsproxy
+- `SYSCALL_DEFINE2(setns)`
+  - `prepare_nsset` creates a new nsproxy that shares all namespaces of
+    `current->nsproxy`
+  - `validate_nsset` updates the new nsproxy to share selected namespaces of
+    the specified task
+  - `commit_nsset` points `current->nsproxy` to the new nsproxy
 
 ## Namespaces
 
