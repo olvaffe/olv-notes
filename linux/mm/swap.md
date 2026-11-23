@@ -2,7 +2,7 @@
 
 ## Overview
 
-- `swap.c` is always enabled
+- `folio.c` is always enabled
   - it provides helpers to add folios to lru lists or move folios between lru
     lists
   - it applies to both anonymous mapping and file-based mapping, and is not
