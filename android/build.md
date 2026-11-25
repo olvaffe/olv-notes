@@ -91,6 +91,33 @@
   - `TARGET_BUILD_VARIANT` is userdebug, eng ,etc.
   - `BUILD_VERSION_TAGS` is dev-keys
 
+## AFlags
+
+- <https://android.googlesource.com/platform/build/+/refs/heads/android17-release/core/release_config.mk>
+  - release config maps are
+    - `build/release/release_config_map.textproto`
+    - `vendor/google_shared/build/release/release_config_map.textproto`
+    - `vendor/google/release/release_config_map.textproto`
+    - `device/*/release/release_config_map.textproto`
+    - `device/*/*/release/release_config_map.textproto`
+    - `vendor/*/release/release_config_map.textproto`
+    - `vendor/*/*/release/release_config_map.textproto`
+  - it generates
+    - `out/soong/release-config/maps_list-$(TARGET_PRODUCT).txt`
+    - `out/soong/release-config/release_config-$(TARGET_PRODUCT)-$(TARGET_RELEASE).vars`
+- runtime flags
+  - declared in `.aconfig`
+    - <https://android.googlesource.com/platform/frameworks/native/+/refs/heads/android17-release/services/surfaceflinger/surfaceflinger_flags_new.aconfig>
+  - value/permission specified in `<map_dir>/aconfig/<release>/<pkg>/*_flag_values.textproto`
+    - <https://android.googlesource.com/platform/build/release/+/refs/heads/android17-release/aconfig/cp2a/com.android.graphics.surfaceflinger.flags/>
+    - if not specified,
+      - disabled and read-only on releases
+      - disabled and read-write on staging
+- build flags
+  - declared in `<map_dir>/flag_declarations/RELEASE_*.textproto`
+    - unlike runtime flags, default values can be (and typically are) specified
+  - value specified in `<map_dir>/flag_values/<release>/RELEASE_*.textproto`
+
 ## Artifacts
 
 - artifacts in `out`
