@@ -344,6 +344,57 @@
 - `complete_all` sets `done` to `UINT_MAX` and wakes up all tasks
 - `reinit_completion` re-inits `done` to 0, for use after `complete_all`
 
+## Priority
+
+- let's see how `__pick_next_task` picks the next task to run
+  - `for_each_active_class` loops these classes in order, as defined by `SCHED_DATA`
+  - `stop_sched_class` calls `pick_task_stop`
+    - it returns the special `rq->stop`
+  - `dl_sched_class` calls `pick_task_dl`
+    - it returns next task on `dl_rq->root`, ordered by `dl_se->deadline`
+  - `rt_sched_class` calls `pick_task_rt`
+    - it returns next task on `rt_rq->active`, ordered by prio
+  - `fair_sched_class` calls `pick_task_fair`
+    - it returns next task on `cfs_rq->tasks_timeline`, ordered by `se->deadline`
+      - `set_load_weight` uses `sched_prio_to_weight` to derive weight from
+        prio
+      - `reweight_task_fair` derives deadline from weight
+  - `ext_sched_class` calls `pick_task_scx`
+  - `idle_sched_class` calls `pick_task_idle`
+    - it returns the special `rq->idle`
+- kernel priorities (the smaller the higher)
+  - `stop_sched_class` uses pseudo priority -2
+  - `dl_sched_class` uses priority `[-1, 0)`
+    - `MAX_DL_PRIO` is 0
+  - `rt_sched_class` uses priority `[0, 100)`
+    - `MAX_RT_PRIO` is 100
+  - `fair_sched_class` uses priority `[100, 140)`
+    - `NICE_WIDTH` is 40
+    - `MAX_PRIO` is 140
+    - `DEFAULT_PRIO` is 120
+  - `ext_sched_class`
+  - `idle_sched_class` uses pseudo priority 140
+- task fields
+  - `tsk->prio` is the effective priority
+    - it is `tsk->normal_prio` adjusted by priority inheritance/boost
+  - `tsk->normal_prio` is the real priority
+    - `normal_prio` derives it from `task->policy`, `task->rt_priority`, and
+      `task->static_prio`
+    - it is in the normal `[-1, 140)` range, ignoring stop/idle classes
+  - `tsk->static_prio` is derived from user-specified nice
+    - it is in `[100, 140)` range
+    - `SYSCALL_DEFINE1(nice)` calls `set_user_nice` to update the field
+  - `tsk->rt_priority` is user-specified "rt priority"
+    - it is in `[0, 100)` range
+      - rt must use `[1, 100)`
+      - non-rt must use 0
+    - note how `normal_prio` inverts the sign
+      - unlike kernel prio, "rt prio" is the biggest the higher
+    - `SYSCALL_DEFINE3(sched_setscheduler)` calls `__setscheduler_params` to
+      update the field
+  - `tsk->sched_class` is the sched class
+    - note how `__setscheduler_class` ignores policy but derives class from prio
+
 ## man 7 sched
 
 - conceptually,
